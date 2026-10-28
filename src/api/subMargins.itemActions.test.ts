@@ -11,8 +11,8 @@ describe("getItemActions", () => {
   beforeEach(() => axiosMock.mockClear());
 
   it("sends an explicit store list when it has one", async () => {
-    await getItemActions("u/", "t", "2026-10-18", "2026-10-24", 0, 0, 0, ["1200000088"], undefined, [101, 140]);
-    expect(sent()).toMatchObject({ storeids: [101, 140], singleStore: 0, useGroups: 0 });
+    await getItemActions("u/", "t", "2026-10-18", "2026-10-24", 1, 0, 0, ["1200000088"], undefined, [101, 140]);
+    expect(sent()).toMatchObject({ storeids: [101, 140], singleStore: 0, useGroups: 1, searchValue: 0 });
   });
 
   it("leaves the field off for a store or group search", async () => {

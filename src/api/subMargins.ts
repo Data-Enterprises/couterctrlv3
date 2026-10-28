@@ -189,8 +189,10 @@ export const getItemActions = async (
   product_codes: string[],
   signal?: AbortSignal,
   /** An explicit set of stores, which the endpoint takes ahead of
-   *  singleStore/useGroups (backend 8250b38). Each must be one the user
-   *  holds, or the call answers 403 naming the ones that aren't. */
+   *  singleStore/useGroups (backend 8250b38). Send it as a group search —
+   *  useGroups 1, singleStore 0, searchValue 0 — the form every endpoint
+   *  takes a list in. Each must be a store the user holds, or the call
+   *  answers 403 naming the ones that aren't. */
   storeids?: number[],
 ) => {
   const json = await axios({

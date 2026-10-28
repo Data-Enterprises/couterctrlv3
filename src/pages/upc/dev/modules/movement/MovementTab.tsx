@@ -92,8 +92,10 @@ const MovementTab = () => {
               (signal) =>
                 getItemActions(
                   ctx.url, ctx.token, w.start, w.end,
-                  // The list takes the place of a store or group search.
-                  0, 0, 0,
+                  // A store list travels as a group search: useGroups 1,
+                  // singleStore 0, no group id. The rule every endpoint
+                  // takes a list under (docs/backend-storeids-everywhere).
+                  1, 0, 0,
                   batch, signal, scopeIds,
                 ),
             );
