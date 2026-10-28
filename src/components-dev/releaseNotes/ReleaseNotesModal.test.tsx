@@ -40,9 +40,13 @@ const show = (href: string, pageName: string | null) =>
 describe("ReleaseNotesModal", () => {
   it("draws only the sections a release has", () => {
     show("user-management", "User Management");
-    expect(screen.getByText("Platform Updates")).toBeTruthy();
-    expect(screen.getByText("Updates")).toBeTruthy();
-    expect(screen.getByText("Fixes")).toBeTruthy();
+    const heading = (name: string) =>
+      screen.queryByRole("heading", { level: 4, name });
+    expect(heading("Platform Updates")).toBeTruthy();
+    expect(heading("Updates")).toBeTruthy();
+    expect(heading("Fixes")).toBeTruthy();
+    expect(heading("Now available")).toBeNull();
+    // The summary under the date names the same three, and not the fourth.
     expect(screen.queryByText("Now available")).toBeNull();
   });
 
