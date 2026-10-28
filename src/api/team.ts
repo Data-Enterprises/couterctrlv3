@@ -177,6 +177,53 @@ export const updateUser = async (
   return json;
 };
 
+/** What `users/set_active` says about each name it was given. */
+export interface SetActiveResult {
+  error: number;
+  success: boolean;
+  msg?: string;
+  /** Moved to the requested state. */
+  changed: string[];
+  /** Found and allowed, but already in that state. Not a failure. */
+  unchanged: string[];
+  /** Found, but a guard said no. `reason` is written to be shown as is. */
+  refused: { username: string; reason: string }[];
+  not_found: string[];
+}
+
+/**
+ * Deactivate (`active: 0`) or reactivate (`active: 1`) a list of users.
+ *
+ * The guarded replacement for `deleteUser` / `reactivateUser`, which check
+ * nothing — any signed-in caller could deactivate anyone, themselves
+ * included. This refuses, per name: outside the caller's companies, the
+ * caller, anyone at a higher level, and a username shared by several
+ * accounts. The rest change in one statement, and every name comes back in
+ * exactly one of the four lists, so a confirmation that promised a list of
+ * people can answer for each of them.
+ *
+ * Only `users.active` moves; links and assignments are untouched, so a
+ * reactivated user gets back exactly the access they had. Deactivating also
+ * ends a signed-in session on its next request.
+ */
+export const setUsersActive = async (
+  url: string,
+  token: string,
+  usernames: string[],
+  active: 0 | 1,
+) => {
+  const json = await axios<SetActiveResult>({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "users/set_active",
+    data: { usernames, active },
+  });
+  return json;
+};
+
 export const deleteUser = async (
   url: string,
   token: string,

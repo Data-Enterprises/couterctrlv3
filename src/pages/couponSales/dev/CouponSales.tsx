@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCoupons } from "../../../api/coupons";
-import type { CouponItem } from "../../../interfaces";
 import { useApiContext } from "../../../hooks/useApiContext";
 import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
 import {
@@ -21,6 +20,7 @@ import {
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
   setCouponBaseline,
+  setCouponMobileLines,
 } from "../../../features/dev/devCouponSalesSlice";
 import type { CouponsResponse, JsonError } from "../../../interfaces";
 import SearchCard from "../../../components-dev/SearchCard";
@@ -32,19 +32,6 @@ import CpnSalesExportModal from "./components/CpnSalesExportModal";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
 import { isGroupSearch } from "../../../features/searchSlice";
 
-/**
- * The week's coupon lines, kept for the mobile receipt sheet — every line of
- * every sale is already in hand, so opening one is a filter not a fetch.
- *
- * Module scope, not a ref. The rows these belong to live in the eventPerf
- * slice and survive leaving the page; a ref dies with the component. Coming
- * back to Coupon Sales therefore repainted the transaction list from the
- * slice while the receipt resolved against an empty array, and every sale
- * reported "No lines came back" over a list that was showing its amount.
- * Rows and lines come out of one payload and are only ever replaced together
- * by `load` below, so they want one lifetime.
- */
-let mobileLines: CouponItem[] = [];
 
 const CouponSales = () => {
   const toast = useToast();
@@ -83,6 +70,7 @@ const CouponSales = () => {
     metric,
     selectedStoreKey,
     exportOpen,
+    mobileLines,
   } = useAppSelector((s) => s.dev.couponSales);
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -237,7 +225,10 @@ const CouponSales = () => {
             },
             onProgress,
           );
-          mobileLines = result.items;
+          // The week's every line, for the receipt sheet. Kept beside the
+          // rest of this page's state so it lasts exactly as long: through
+          // leaving the page and back, and not past sign-out.
+          dispatch(setCouponMobileLines(result.items));
           return result;
         }}
         helpPage="coupon-sales"

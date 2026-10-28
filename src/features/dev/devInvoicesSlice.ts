@@ -5,7 +5,11 @@
  */
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { InvoiceEdit } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import {
+  ALL_INVOICES,
+  type InvoiceEdit,
+} from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import type { DiscardedInvoice } from "../../api/invoices";
 
 /**
  * AWG Invoices page state.
@@ -35,6 +39,11 @@ export interface InvoicesState {
   expandedId: string | null;
   /** Narrows the list to invoices that failed reconciliation. */
   failedOnly: boolean;
+  /** Narrows the list to invoices a check misses by more than 10¢ — past
+   *  the vendor's penny rounding, so worth a look. */
+  overTenCentsOnly: boolean;
+  /** Narrows the list to invoices that billed nothing — exceptions only. */
+  nothingBilledOnly: boolean;
   /** Narrows the list on store, invoice number or department. */
   textFilter: string;
   parsing: boolean;
@@ -50,6 +59,9 @@ export interface InvoicesState {
    *  memos among them. Money it saw and did not understand, so a run carrying
    *  these must not look like a clean one. */
   serverWarnings: string[];
+  /** Invoices the server read and would not save, with why. A send with any
+   *  of these is a partial one, whatever the toast said. */
+  serverDiscarded: DiscardedInvoice[];
 }
 
 const initialState: InvoicesState = {
@@ -58,6 +70,8 @@ const initialState: InvoicesState = {
   edits: [],
   expandedId: null,
   failedOnly: false,
+  overTenCentsOnly: false,
+  nothingBilledOnly: false,
   textFilter: "",
   parsing: false,
   error: null,
@@ -66,6 +80,7 @@ const initialState: InvoicesState = {
   sentAt: null,
   runId: null,
   serverWarnings: [],
+  serverDiscarded: [],
 };
 
 const invoicesSlice = createSlice({
@@ -96,6 +111,8 @@ const invoicesSlice = createSlice({
       state.edits = [];
       state.expandedId = null;
       state.failedOnly = false;
+      state.overTenCentsOnly = false;
+      state.nothingBilledOnly = false;
       state.textFilter = "";
       state.parsing = false;
       state.error = null;
@@ -104,6 +121,7 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
       state.runId = null;
       state.serverWarnings = [];
+      state.serverDiscarded = [];
     },
 
     /**
@@ -122,8 +140,10 @@ const invoicesSlice = createSlice({
           edit.field === next.field &&
           edit.rowIndex === next.rowIndex,
       );
-      if (at === -1) state.edits.push(next);
-      else state.edits[at] = next;
+      // Replaced at the end, not in place: suggested corrections applied since
+      // would otherwise be replayed over it.
+      if (at !== -1) state.edits.splice(at, 1);
+      state.edits.push(next);
       // A correction invalidates the last send: what is on the server is no
       // longer what is on screen.
       state.sentAt = null;
@@ -149,6 +169,30 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
     },
 
+    /** Every suggested correction, across the whole file, as one entry —
+     *  undone with the rest. Applying twice is a no-op. */
+    /**
+     * Suggested corrections on or off.
+     *
+     * It only went on before, and taking it back meant "Undo all
+     * corrections" — which also threw away every figure the user had typed
+     * by hand. Two different intentions on one button.
+     */
+    toggleSuggestedCorrections: (state) => {
+      const at = state.edits.findIndex((edit) => edit.kind === "suggested");
+      if (at >= 0) {
+        state.edits.splice(at, 1);
+      } else {
+        state.edits.push({
+          docId: ALL_INVOICES,
+          kind: "suggested",
+          field: "",
+          value: "",
+        });
+      }
+      state.sentAt = null;
+    },
+
     clearInvoiceEdits: (state) => {
       state.edits = [];
       state.sentAt = null;
@@ -160,6 +204,14 @@ const invoicesSlice = createSlice({
 
     setInvoiceFailedOnly: (state, action: PayloadAction<boolean>) => {
       state.failedOnly = action.payload;
+    },
+
+    setInvoiceOverTenCentsOnly: (state, action: PayloadAction<boolean>) => {
+      state.overTenCentsOnly = action.payload;
+    },
+
+    setInvoiceNothingBilledOnly: (state, action: PayloadAction<boolean>) => {
+      state.nothingBilledOnly = action.payload;
     },
 
     setInvoiceTextFilter: (state, action: PayloadAction<string>) => {
@@ -178,11 +230,16 @@ const invoicesSlice = createSlice({
 
     setInvoicesSent: (
       state,
-      action: PayloadAction<{ runId: string; warnings: string[] }>,
+      action: PayloadAction<{
+        runId: string;
+        warnings: string[];
+        discarded?: DiscardedInvoice[];
+      }>,
     ) => {
       state.sentAt = new Date().toISOString();
       state.runId = action.payload.runId;
       state.serverWarnings = action.payload.warnings;
+      state.serverDiscarded = action.payload.discarded ?? [];
       state.sending = false;
       state.sendError = null;
     },
@@ -197,9 +254,12 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
+  toggleSuggestedCorrections,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
+  setInvoiceOverTenCentsOnly,
+  setInvoiceNothingBilledOnly,
   setInvoiceTextFilter,
   setInvoicesSending,
   setInvoicesSendError,

@@ -2,13 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import { useDevApi } from "../../../hooks/useDevApi";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { openNew } from "../../../features/dev/devTicketsSlice";
-import type { TicketPriority } from "../../../api/tickets";
+import {
+  getTicketStoreOptions,
+  ticketFailed,
+  type TicketPriority,
+  type TicketStoreOption,
+} from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
 import { attachmentProblem, fileSize } from "./ticketsUtils";
 import {
@@ -20,13 +24,14 @@ import {
 } from "../../../utils/pageCalls";
 import {
   originOf,
+  pageUsesSearch,
   scopeLine,
   scopeOf,
   searchSummary,
-  storeLine,
-  storeScope,
   suggestedTitle,
 } from "./ticketOrigin";
+import StoreChecklist from "./StoreChecklist";
+import { initialStorePicks, optionsForGroup } from "./ticketStores";
 import Checkbox from "../../../components-dev/Checkbox";
 
 /**
@@ -84,33 +89,75 @@ const NewTicketModal = ({
   const [skip, setSkip] = useState<Set<string>>(new Set());
 
   /**
-   * Which store this is about, when nothing else says.
+   * Which stores this is about.
    *
-   * A ticket filed from a page takes its store from the search that page was
-   * running. One filed from the help desk has no page behind it, so it asks —
-   * from the list already fetched at login, because a client's own stores are
-   * the only ones they could be reporting on and a free-text box invites a
-   * name nobody can look up.
+   * Asked on every ticket, from a page or from the help desk, because the
+   * server scopes by it: a Manager sees a ticket that names one of their
+   * stores. The list is `store_options`, fed by the same rule as the guard
+   * behind it, so the form never offers a store the server would refuse.
    *
-   * One store means no question: it is the answer, chosen for them.
+   * One answer is required: stores, or "Not about a store". Someone with only
+   * one store is not asked; it is the answer.
    */
+  const searchedStoreId =
+    origin && pageUsesSearch(origin.href) && search.type === "Store"
+      ? (search.selectedStore?.storeid ?? null)
+      : null;
+  const [options, setOptions] = useState<TicketStoreOption[] | null>(null);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [notAbout, setNotAbout] = useState(false);
+  const [askStores, setAskStores] = useState(true);
+  const [showAllStores, setShowAllStores] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    const unread =
+      "Your stores could not be read, so this ticket will be filed as not about a store.";
+    getTicketStoreOptions(url, token)
+      .then((resp) => {
+        if (!live) return;
+        if (ticketFailed(resp.data)) {
+          setOptionsError(unread);
+          setOptions([]);
+          return;
+        }
+        const list: TicketStoreOption[] = resp.data.stores ?? [];
+        const start = initialStorePicks({
+          options: list,
+          isTech: ctx.isTech,
+          searchedStoreId,
+        });
+        setOptions(list);
+        setPicked(start.picked);
+        setAskStores(start.ask);
+      })
+      .catch(() => {
+        if (!live) return;
+        setOptionsError(unread);
+        setOptions([]);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
   /**
    * The stores inside the group the page was searching.
    *
    * A group search says the problem is somewhere in the group, which is not
-   * the same as saying it is everywhere in it — a client is usually looking
-   * at one store's row and it is wrong. Fetched rather than filtered out of
-   * the user's own list: which stores are in a group is the group's answer,
-   * and the two lists overlap without matching.
-   *
-   * Only for a group; a store search has already named its store.
+   * the same as saying it is everywhere in it, so the group's stores are
+   * listed first with none ticked. Only the ones that are also the reader's
+   * own: a shared group is search-only and can hold stores they cannot file
+   * against.
    */
   const groupId =
-    origin && search.type !== "Store" ? (search.selectedGroup?.id ?? 0) : 0;
+    origin && pageUsesSearch(origin.href) && search.type !== "Store"
+      ? (search.selectedGroup?.id ?? 0)
+      : 0;
   const [groupStores, setGroupStores] = useState<
     { storeid: number; store_number: string; store_name: string }[]
   >([]);
-  const [pickedStores, setPickedStores] = useState<string[]>([]);
 
   useEffect(() => {
     if (!groupId) return;
@@ -123,21 +170,31 @@ const NewTicketModal = ({
         );
         setGroupStores(rows);
       })
-      // The picker simply does not appear; the group is still on the ticket.
+      // The list simply is not narrowed; every store of theirs is offered.
       .catch(() => undefined);
     return () => {
       live = false;
     };
   }, [groupId]);
 
-  const myStores = useAppSelector((state) => state.user.assignedStores);
-  const [storeId, setStoreId] = useState(() =>
-    myStores.length === 1 ? String(myStores[0].storeid) : "",
-  );
-  const pickedStore = myStores.find((s) => String(s.storeid) === storeId);
-  const narrowedTo = groupStores.filter((s) =>
-    pickedStores.includes(String(s.storeid)),
-  );
+  const listed =
+    options && groupStores.length && !showAllStores
+      ? optionsForGroup(
+          options,
+          groupStores.map((s) => s.storeid),
+        )
+      : options;
+  const storesAnswered =
+    optionsError !== null || picked.length > 0 || notAbout;
+  // For a group search, the stores inside it they ticked, which the line at
+  // the foot of the first message names as "seen on".
+  const narrowedTo = groupStores.filter((s) => picked.includes(s.storeid));
+  const onlyStore = !askStores && options?.length === 1 ? options[0] : null;
+  // Access problems are about a person, and a person works at a store.
+  // Ticking it is what lets that store's manager see the ticket too.
+  const accessPage =
+    origin?.href === "user-management" || origin?.href === "groups";
+
   // Open when there is little to read, folded when the list would push the
   // fields people actually have to fill in off the screen.
   const [evidenceOpen, setEvidenceOpen] = useState(kept.length <= 3);
@@ -182,7 +239,8 @@ const NewTicketModal = ({
 
   const close = () => (onClose ? onClose() : ctx.dispatch(openNew(false)));
   const [sendError, setSendError] = useState<string | null>(null);
-  const ready = title.trim() !== "" && description.trim() !== "";
+  const ready =
+    title.trim() !== "" && description.trim() !== "" && storesAnswered;
 
   const priorities = (ctx.lookups?.priorities ?? [
     "low",
@@ -333,50 +391,44 @@ const NewTicketModal = ({
           </label>
         </div>
 
-        {/* A group search names the group; this names the stores inside it
-            the client is actually looking at. Optional — left empty the
-            ticket is about the group, which is what it was before. */}
-        {groupStores.length > 1 && (
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[12.5px] font-medium">
-              Which stores{" "}
-              <span className="font-normal text-content/85">— optional</span>
+        {onlyStore ? (
+          <p className="m-0 text-[12.5px] text-content/85">
+            About{" "}
+            <span className="font-medium text-content">
+              #{onlyStore.store_number} {onlyStore.store_name}
             </span>
-            <MultiSelectFilter
-              options={groupStores.map((s) => ({
-                label: `${s.store_number} - ${s.store_name}`,
-                value: String(s.storeid),
-              }))}
-              values={pickedStores}
-              onChange={setPickedStores}
-              placeholder="The whole group"
-              noun="stores"
-              className="w-full"
-            />
-          </label>
-        )}
-
-        {/* Only when no page answered it already. */}
-        {!origin && myStores.length > 1 && (
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[12.5px] font-medium">
-              Which store{" "}
-              <span className="font-normal text-content/85">— optional</span>
-            </span>
-            <SelectFilter
-              plain
-              searchable
-              searchPlaceholder="Find a store..."
-              placeholder="Not about one store"
-              options={myStores.map((s) => ({
-                label: `${s.store_number} - ${s.store_name}`,
-                value: String(s.storeid),
-              }))}
-              value={storeId}
-              onChange={setStoreId}
-              className="w-full"
-            />
-          </label>
+            , your store.
+          </p>
+        ) : (
+          <StoreChecklist
+            options={listed}
+            picked={picked}
+            onPicked={setPicked}
+            notAbout={notAbout}
+            onNotAbout={setNotAbout}
+            searchable={(options?.length ?? 0) > 12}
+            loadError={optionsError}
+            extra={
+              <>
+                {options && listed && listed.length < options.length && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllStores(true)}
+                    className="self-start text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2"
+                  >
+                    Showing the stores in this group. Show all {options.length}{" "}
+                    of yours
+                  </button>
+                )}
+                {accessPage && (
+                  <span className="text-[11.5px] text-content/85">
+                    About someone&apos;s access? Tick the store they work at, so
+                    its manager sees this too.
+                  </span>
+                )}
+              </>
+            }
+          />
         )}
 
         <label className="flex flex-col gap-1.5">
@@ -487,27 +539,24 @@ const NewTicketModal = ({
 
 —
 ${scopeLine(search, origin, narrowedTo)}`
-                    : pickedStore
-                      ? `${description}
-
-—
-${storeLine(pickedStore)}`
-                      : description,
+                    : description,
                   priority,
                   category_id: category ? Number(category) : null,
+                  // The stores are on the ticket as data now, which is what
+                  // the server scopes by. A help-desk ticket carries nothing
+                  // else, so it needs no line or record of its own.
+                  storeids: notAbout ? [] : picked,
                 },
-                origin || pickedStore
+                origin
                   ? [
                       ...files,
                       ...chosen.map(groupAsFile),
-                      // Store, company and dates as a record. The line in the
-                      // description says which store; this says which row.
+                      // The page, the search and the dates as a record. The
+                      // stores ride on the ticket; this says what was on screen.
                       new File(
                         [
                           JSON.stringify(
-                            origin
-                              ? scopeOf(search, origin, narrowedTo)
-                              : storeScope(pickedStore!),
+                            scopeOf(search, origin, narrowedTo),
                             null,
                             2,
                           ),

@@ -26,13 +26,20 @@ export interface AccessPicks {
   /** Base groups ticked in their own column. */
   baseGroups: number[];
   /**
-   * How each ticked group is held. Missing means `selected`, matching the
-   * endpoint's own default and today's behaviour.
+   * How this person holds **every** group they hold.
    *
    * `all` is the whole group and whatever joins it later — the auto grant.
    * `selected` is only the stores ticked in the third column.
+   *
+   * **One mode per person, not one per group.** `user_base_group_link.mode`
+   * is physically per link, and the screen used to expose that: each group
+   * carried its own Auto / Pick stores toggle. Nobody used it that way, the
+   * answer was invisible on a finished screen — a list of ticks looks the
+   * same either way — and it made "is this person by group or by store" a
+   * question with no answer. It is asked once now, on its own step, and every
+   * group the person holds is written in it.
    */
-  modes: Record<number, GrantMode>;
+  mode: GrantMode;
   /** Stores ticked, each tagged with the group it was picked through. */
   stores: SelectableStore[];
 }
@@ -73,10 +80,18 @@ export const NO_CARRY: CarriedAccess = {
   stores: [],
 };
 
+/**
+ * Holding nothing.
+ *
+ * `selected` rather than `all` because it is the narrower claim, and this is
+ * what Clear all lands on. Callers that know the person's answer spread their
+ * own mode over it — the wizard from the Access type step, Edit from what the
+ * person already holds — so the default is only ever a floor.
+ */
 export const NO_PICKS: AccessPicks = {
   companies: [],
   baseGroups: [],
-  modes: {},
+  mode: "selected",
   stores: [],
 };
 
@@ -107,9 +122,28 @@ export interface AccessSets {
 const uniq = (ids: number[]) =>
   Array.from(new Set(ids.filter((id) => Number.isFinite(id) && id !== 0)));
 
-/** How a group is held, with the endpoint's default applied. */
-export const modeOf = (picks: AccessPicks, groupid: number): GrantMode =>
-  picks.modes[groupid] ?? "selected";
+/**
+ * A person's one access type, read back from the groups they hold.
+ *
+ * `all` only when every held group says `all`. The column is physically per
+ * link, so a hand-edited or pre-split row could still produce a mix; nothing
+ * on these screens creates one, and `selected` is the reading that cannot
+ * silently widen somebody — a group read as `selected` keeps its picks, while
+ * one read as `all` would hand over every store in it and every store added
+ * to it afterwards.
+ *
+ * Edit and Duplicate both read it here, so the two can never disagree about
+ * which kind of person they are looking at.
+ *
+ * `mode` is null only for a group the person does not hold; the endpoint's
+ * default is the safe reading either way.
+ */
+export const accessModeOf = (
+  held: { mode: GrantMode | null }[],
+): GrantMode =>
+  held.length > 0 && held.every((g) => (g.mode ?? "selected") === "all")
+    ? "all"
+    : "selected";
 
 /** The stores ticked inside one group. */
 export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
@@ -131,6 +165,44 @@ export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
  */
 export const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
+
+/**
+ * The same picks, held the other way.
+ *
+ * **To `all`:** nothing but the mode changes. Ticks are left exactly where
+ * they are, so flipping back and forth does not lose a selection somebody
+ * just made — they simply stop being sent while the mode is `all`.
+ *
+ * **To `selected`:** every held group that has no ticks gets its whole roster
+ * ticked. This is the case that matters. A group held as `all` has no picks
+ * behind it — `user_group_picks` returns no rows for one, and the absence IS
+ * the answer — so switching a person to By store with nothing ticked would
+ * read as "picked nothing" and take away every store they have. Starting from
+ * the full roster makes the switch a no-op until somebody unticks, which is
+ * what the switch is for: dropping two stores out of a group, not starting
+ * over.
+ *
+ * A group whose roster has not loaded contributes nothing rather than an
+ * empty tick list, so a half-loaded panel cannot silently narrow anybody.
+ * Callers fetch the rosters first; `useAccessMode` does.
+ */
+export const picksForMode = (
+  picks: AccessPicks,
+  mode: GrantMode,
+  rosters: Record<number, Store[]>,
+): AccessPicks => {
+  if (mode === "all" || mode === picks.mode) return { ...picks, mode };
+
+  const added: SelectableStore[] = [];
+  heldGroupIds(picks).forEach((groupid) => {
+    if (picks.stores.some((s) => s.base_group === groupid)) return;
+    (rosters[groupid] ?? []).forEach((s) =>
+      added.push({ ...s, base_group: groupid }),
+    );
+  });
+
+  return { ...picks, mode, stores: [...picks.stores, ...added] };
+};
 
 /**
  * Each base group's company, keyed by group id.
@@ -176,17 +248,14 @@ export const accessSets = (
     ...heldGroupIds(picks).map((id) => groupCompany[id]),
   ]),
   grants: heldGroupIds(picks)
-    .map((groupid) => {
-      const mode = modeOf(picks, groupid);
-      return {
-        groupid,
-        mode,
-        storeids:
-          mode === "all"
-            ? []
-            : uniq(picksInGroup(picks, groupid).map((s) => s.storeid)),
-      };
-    })
+    .map((groupid) => ({
+      groupid,
+      mode: picks.mode,
+      storeids:
+        picks.mode === "all"
+          ? []
+          : uniq(picksInGroup(picks, groupid).map((s) => s.storeid)),
+    }))
     .sort((a, b) => a.groupid - b.groupid),
 });
 
@@ -211,11 +280,14 @@ export const revokedGroupIds = (
 /**
  * Groups that cannot be saved as they stand.
  *
- * A group held as `selected` with nothing selected is not a state the
- * endpoint accepts — it answers 400, because "these stores and no stores" is
- * not a grant. It is a real thing to land in, though: tick East, set it to
- * Pick stores, tick nothing. So it is named here and the UI blocks on it
- * rather than letting the save fail per group.
+ * A group held as `selected` with nothing selected grants no stores. The
+ * endpoint allows it — it reads as "holds the group, has picked nothing out
+ * of it yet", which is a legitimate halfway house — but it is almost never
+ * what somebody meant on this screen, so it is named here and the save blocks
+ * on it rather than writing a grant that gives nobody anything.
+ *
+ * (An older comment here claimed the endpoint answers 400 for this. It does
+ * not, and has not for some time.)
  */
 export const emptySelectedGroupIds = (sets: AccessSets): number[] =>
   sets.grants
@@ -243,29 +315,27 @@ export interface EffectiveStore {
  *
  * One row per store, not per grant: two groups can both contain store 053 and
  * the person has it once. The lowest group id wins so the attribution does not
- * change between renders — and an `all` group wins over a `selected` one,
- * because that is the stronger claim: it keeps granting the store whatever
- * happens to the picks.
+ * change between renders. Every group is held the same way now, so there is no
+ * longer a stronger claim to prefer between two groups that both have it.
  */
 export const effectiveStores = (
   picks: AccessPicks,
   rosters: Record<number, { storeid: number }[]>,
 ): EffectiveStore[] => {
   const byStore = new Map<number, EffectiveStore>();
+  const mode = picks.mode;
 
   heldGroupIds(picks)
     .slice()
     .sort((a, b) => a - b)
     .forEach((groupid) => {
-      const mode = modeOf(picks, groupid);
       const ids =
         mode === "all"
           ? (rosters[groupid] ?? []).map((s) => s.storeid)
           : picksInGroup(picks, groupid).map((s) => s.storeid);
 
       ids.forEach((storeid) => {
-        const held = byStore.get(storeid);
-        if (held === undefined || (held.mode === "selected" && mode === "all")) {
+        if (!byStore.has(storeid)) {
           byStore.set(storeid, { storeid, groupid, mode });
         }
       });

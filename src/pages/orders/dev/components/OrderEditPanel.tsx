@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import {
   PlusIcon,
   XMarkIcon,
@@ -10,6 +10,8 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import { formatCurrency2 } from "../../../../utils";
 import {
   EDITABLE,
+  perCase,
+  unitCostOf,
   FIELD_LABEL,
   addedLines,
   blankLines,
@@ -37,6 +39,7 @@ interface Props {
   search: EditSearch;
   onSearch: (next: EditSearch) => void;
   onField: (lineNumber: number, field: EditableField, value: number) => void;
+  onUnitCost: (lineNumber: number, unit: number) => void;
   onRevertLine: (lineNumber: number) => void;
   onRevertAll: () => void;
   onAddLine: () => void;
@@ -65,6 +68,14 @@ interface Props {
   subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onSubmit: () => void;
+  /** Opens the Problems tab, where one item's unit cost is fixed across
+   *  every order the left panel shows. */
+  onFixCost: () => void;
+  /**
+   * How many orders hold changes waiting to be sent — the open one and any
+   * Fix cost staged without opening. Submit sends all of them.
+   */
+  stagedCount: number;
   submitting: boolean;
   /** Set once the file is in the bucket: the draft goes read-only. */
   submitted: boolean;
@@ -99,6 +110,7 @@ const OrderEditPanel = ({
   search,
   onSearch,
   onField,
+  onUnitCost,
   onRevertLine,
   onRevertAll,
   onAddLine,
@@ -117,12 +129,15 @@ const OrderEditPanel = ({
   subDepts,
   loadingSubDepts,
   onSubmit,
+  onFixCost,
+  stagedCount,
   submitting,
   submitted,
   onLeaveEdit,
 }: Props) => {
   const rows = useMemo(
-    () => (draft ? visibleLines(draft, search) : []),
+    () =>
+      draft ? visibleLines(draft, search) : [],
     [draft, search],
   );
 
@@ -166,9 +181,33 @@ const OrderEditPanel = ({
           <span className="text-custom-white font-medium text-[13px]">
             Edit an order
           </span>
-          <span className="text-custom-white/60 text-[11.5px]">
+          <span className="text-custom-white/85 text-[11.5px]">
             pick one on the left
           </span>
+          <div className="flex-1" />
+        <button
+          onClick={onFixCost}
+          title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+        >
+          Fix cost
+        </button>
+          {stagedCount > 0 && (
+            <button
+              onClick={onSubmit}
+              disabled={submitting}
+              title="Build each changed order's file and submit it for import"
+              className="flex-shrink-0 rounded-md bg-custom-white px-3 py-1 text-[11.5px] font-bold text-brand_navy transition-opacity hover:opacity-90 disabled:opacity-45"
+            >
+              {submitting
+            ? "Submitting…"
+            : submitted
+              ? "Submitted"
+              : stagedCount > 1
+                ? `Submit ${stagedCount} orders`
+                : "Submit order update"}
+            </button>
+          )}
         </Band>
         {loading ? (
           <div className="flex-1 relative">
@@ -176,8 +215,12 @@ const OrderEditPanel = ({
           </div>
         ) : (
           <EmptyPrompt
-            title="Pick an order to edit"
-            description="Choose a store and an order date on the left. One order is one editable document, and the grid holds the whole of it — not what the filters happen to be showing."
+            title={stagedCount > 0 ? "Changes staged" : "Pick an order to edit"}
+            description={
+              stagedCount > 0
+                ? `${stagedCount} order${stagedCount === 1 ? " holds" : "s hold"} changes waiting to be sent — they are marked on the left. Open one to check it, or Submit to send them all.`
+                : "Choose a store and an order date on the left, or use Fix cost to set one item's cost across every order that carries it."
+            }
           />
         )}
       </div>
@@ -225,8 +268,18 @@ const OrderEditPanel = ({
         )}
 
         <button
+          onClick={onFixCost}
+          title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+        >
+          Fix cost
+        </button>
+
+        <button
           onClick={onSubmit}
-          disabled={changed.length === 0 || blank.length > 0 || locked}
+          // Any order with changes, not just this one — Fix cost stages into
+          // orders that were never opened.
+          disabled={stagedCount === 0 || blank.length > 0 || locked}
           title={
             blank.length > 0
               ? "An added line still has no item on it"
@@ -238,7 +291,9 @@ const OrderEditPanel = ({
             ? "Submitting…"
             : submitted
               ? "Submitted"
-              : "Submit order update"}
+              : stagedCount > 1
+                ? `Submit ${stagedCount} orders`
+                : "Submit order update"}
         </button>
       </Band>
 
@@ -308,6 +363,7 @@ const OrderEditPanel = ({
               <Head label="Vendor" width={150} />
               <Head label="Qty" width={76} align="right" editable />
               <Head label="Weight" width={82} align="right" editable />
+              <Head label="Unit cost" width={92} align="right" editable />
               <Head label="Case cost" width={92} align="right" editable />
               <Head label="Retail" width={86} align="right" editable />
               <Head label="Ext cost" width={92} align="right" />
@@ -319,7 +375,7 @@ const OrderEditPanel = ({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={12}
+                  colSpan={13}
                   className="px-3 py-5 text-center text-[12px] font-sans text-content"
                 >
                   No line matches that search. The save still carries all{" "}
@@ -338,6 +394,7 @@ const OrderEditPanel = ({
                   subDepts={subDepts}
                   loadingSubDepts={loadingSubDepts}
                   onField={onField}
+                  onUnitCost={onUnitCost}
                   onRevertLine={onRevertLine}
                   onDropLine={onDropLine}
                   onLookup={onLookup}
@@ -360,6 +417,9 @@ const OrderEditPanel = ({
                 subDepts={subDepts}
                 loadingSubDepts={loadingSubDepts}
                 onField={(_ln, field, value) => onPendingField(field, value)}
+                onUnitCost={(_ln, unit) =>
+                  onPendingField("base_cost", unit * perCase(pending))
+                }
                 onRevertLine={() => {}}
                 onDropLine={onCancelPending}
                 onConfirm={onConfirmPending}
@@ -418,7 +478,9 @@ const OrderEditPanel = ({
 };
 
 /** The navy band, with the way back to the read-only grid. */
-const Band = ({
+/** The navy band with the Browse / Edit switch. Shared with the Problems
+ *  tab's item view, so the two read as one screen in two states. */
+export const Band = ({
   children,
   onLeaveEdit,
 }: {
@@ -482,6 +544,7 @@ const Row = ({
   lookingUp,
   resetNonce,
   onField,
+  onUnitCost,
   onRevertLine,
   onDropLine,
   onConfirm,
@@ -503,6 +566,7 @@ const Row = ({
   subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onField: (lineNumber: number, field: EditableField, value: number) => void;
+  onUnitCost: (lineNumber: number, unit: number) => void;
   onRevertLine: (lineNumber: number) => void;
   onDropLine: (lineNumber: number) => void;
   onLookup: (lineNumber: number, upc: string) => void;
@@ -679,19 +743,32 @@ const Row = ({
       </td>
 
       {EDITABLE.map((field) => (
-        <EditCell
-          key={field}
-          field={field}
-          line={line}
-          tint={cellTint}
-          resetNonce={resetNonce}
-          // Weight is what the money is worked out from on a scale item and
-          // is ignored on everything else, so it is only offered where it
-          // does something. A typed weight that changed no figure would read
-          // as the grid being broken.
-          disabled={locked || (field === "weight" && !line.scalable)}
-          onField={onField}
-        />
+        <Fragment key={field}>
+          {/* Unit cost sits immediately before the case cost it writes, so
+              typing one and watching the other move is the whole
+              explanation of what it does. */}
+          {field === "base_cost" && (
+            <UnitCostCell
+              line={line}
+              tint={cellTint}
+              resetNonce={resetNonce}
+              disabled={locked}
+              onUnitCost={onUnitCost}
+            />
+          )}
+          <EditCell
+            field={field}
+            line={line}
+            tint={cellTint}
+            resetNonce={resetNonce}
+            // Weight is what the money is worked out from on a scale item and
+            // is ignored on everything else, so it is only offered where it
+            // does something. A typed weight that changed no figure would read
+            // as the grid being broken.
+            disabled={locked || (field === "weight" && !line.scalable)}
+            onField={onField}
+          />
+        </Fragment>
       ))}
 
       <td className="px-2.5 py-1 text-right tabular-nums text-content border-r border-brand_line">
@@ -708,6 +785,73 @@ const Row = ({
         {margin === null ? "—" : `${margin.toFixed(1)}%`}
       </td>
     </tr>
+  );
+};
+
+/**
+ * Unit cost — typed here, stored as the case cost it implies.
+ *
+ * Money, so two decimals like every other price on the row. What is stored is
+ * the case cost the typed unit implies, so a unit of $2.19 on a case of 12 is
+ * a case of $26.28 — the case column shows exactly what will be sent.
+ *
+ * A line with no case size has nothing to divide by, so unit and case are the
+ * same number — it is still typable, it just writes the same value through.
+ */
+const UnitCostCell = ({
+  line,
+  tint,
+  resetNonce,
+  disabled,
+  onUnitCost,
+}: {
+  line: DraftLine;
+  tint: string;
+  resetNonce: number;
+  disabled: boolean;
+  onUnitCost: (lineNumber: number, unit: number) => void;
+}) => {
+  const original = line.original;
+  const changed = original !== null && line.base_cost !== original.base_cost;
+  const value = unitCostOf(line).toFixed(2);
+  const wasUnit =
+    original === null
+      ? null
+      : (original.base_cost ?? 0) / perCase(line);
+
+  return (
+    <td
+      className={`px-2 py-1 align-top border-r border-brand_line ${tint || "bg-severity_watch_bg/[0.18]"}`}
+    >
+      <input
+        key={`${line.line_number}-unit_cost-${resetNonce}`}
+        type="number"
+        min={0}
+        step={0.01}
+        defaultValue={value}
+        disabled={disabled}
+        aria-label={`Unit cost on line ${line.line_number}`}
+        title={
+          line.casesize > 0
+            ? `Case of ${line.casesize}`
+            : "No case size — unit and case cost are the same"
+        }
+        onChange={(e) => {
+          const next = e.target.value === "" ? 0 : Number(e.target.value);
+          if (!Number.isFinite(next) || next < 0) return;
+          onUnitCost(line.line_number, next);
+        }}
+        className={`w-full rounded-[5px] border px-1.5 py-0.5 text-right tabular-nums text-[11px] transition-colors disabled:border-transparent disabled:bg-transparent disabled:text-content ${
+          changed
+            ? "border-severity_watch_text bg-custom-white font-bold text-severity_watch_text"
+            : "border-brand_line_2 bg-custom-white text-content hover:border-severity_watch_text/60"
+        }`}
+        style={{ outline: "none" }}
+      />
+      <span className="block h-[11px] text-right text-[9px] leading-[11px] tabular-nums text-severity_watch_text overflow-hidden">
+        {changed && wasUnit !== null ? `was ${wasUnit.toFixed(2)}` : ""}
+      </span>
+    </td>
   );
 };
 

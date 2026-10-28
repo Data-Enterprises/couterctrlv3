@@ -468,20 +468,23 @@ const AddTech = ({
 }) => {
   const [userid, setUserid] = useState("");
   const [shownAs, setShownAs] = useState("");
-  const [code, setCode] = useState("");
-  /** Until somebody edits the field it follows the pick, which is what lets a
-   *  returning tech's own code replace the next one without a race between
-   *  two bits of state. */
-  const [codeEdited, setCodeEdited] = useState(false);
   const picked = candidates.find((c) => String(c.userid) === userid);
 
   const nextCode = useMemo(() => nextTechCode(techs), [techs]);
-  // A returning tech keeps the row they had, so the code that comes back is
-  // theirs -- offering them the next one would read as a renumbering.
-  const suggested = picked?.was_a_tech
-    ? (picked.previous_tech_code ?? "")
-    : (nextCode ?? "");
-  const codeValue = codeEdited ? code : suggested;
+  /**
+   * The code this tech will have. Shown, not typed.
+   *
+   * It was a text field, which let somebody put anything in a column the rest
+   * of the desk is numbered by. Nobody chooses a tech's number — it is the
+   * next one — so the field was offering a decision that does not exist.
+   *
+   * A returning tech shows the code on their own row rather than the next one:
+   * adding them brings that row back, and showing them a new number would read
+   * as a renumbering that is not going to happen.
+   */
+  const codeValue = picked?.was_a_tech
+    ? (picked.previous_tech_code ?? nextCode)
+    : nextCode;
 
   return (
     <>
@@ -525,16 +528,19 @@ const AddTech = ({
               onChange={setShownAs}
             />
           </div>
-          <div className="flex-1">
-            <TextField
-              label="Code"
-              value={codeValue}
-              placeholder={picked?.previous_tech_code ?? "the next one"}
-              onChange={(v) => {
-                setCodeEdited(true);
-                setCode(v);
-              }}
-            />
+          {/* Dressed to sit level with "Shown as" beside it, but plainly not
+              an input: a box that looks typeable and is not is worse than one
+              that never looked it. */}
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">Code</span>
+            <span className="flex items-center rounded border border-brand_line bg-bkg px-1.5 py-1">
+              <span className="text-[12px] font-medium tabular-nums text-content">
+                {codeValue}
+              </span>
+            </span>
+            <span className="text-[11px] text-content/55">
+              {picked?.was_a_tech ? "The code on their row" : "The next one"}
+            </span>
           </div>
         </div>
 
@@ -564,10 +570,15 @@ const AddTech = ({
           disabled={working || !picked}
           onClick={() =>
             picked &&
+            /* The code is shown, not sent. The server generates it at insert
+               from the same rule this preview uses, so sending the preview
+               would only matter when the two disagree — which is exactly the
+               case where the preview is stale, because somebody else added a
+               tech while this was open. Letting the server decide means two
+               people adding at once get two numbers rather than one twice. */
             onConfirm({
               userid: picked.userid,
               ...(shownAs.trim() ? { display_name: shownAs.trim() } : {}),
-              ...(codeValue.trim() ? { tech_code: codeValue.trim() } : {}),
             })
           }
           className="rounded-lg bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-40"

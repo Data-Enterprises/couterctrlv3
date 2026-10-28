@@ -21,6 +21,8 @@ import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
 import SignInAsModal from "../../components-dev/SignInAsModal";
+import ReleaseNotesModal from "../../components-dev/releaseNotes/ReleaseNotesModal";
+import { SAMPLE_RELEASES } from "../../content/releaseNotes";
 import { impersonatedBy } from "../../utils/session";
 
 interface NavSheetProps {
@@ -172,6 +174,7 @@ const TitleBar = () => {
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [signInAsOpen, setSignInAsOpen] = useState(false);
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
   /** Who is really behind this session, when it is someone else's. */
   const realUser = impersonatedBy(context.token);
 
@@ -376,33 +379,23 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
-            {/* What went out, and when. Under View because it describes the
-                app those switches move you around in.
+            {/* Release Notes, as a window over the page you are on.
 
-                The page works now. It used to be commented out entirely: the
-                notes were HTML under `release/{env}/` in the help bucket, a
-                prefix that is not public the way `dev/` and `prod/` are, so an
-                anonymous frame got AccessDenied and the row opened a page that
-                could only report it could not read anything. The notes are
-                data in `content/releaseNotes` now — nothing to fetch, nothing
-                to sign — and they are the client set, written for the people
-                using the product rather than for us.
-
-                Still dev only, for timing rather than content: nothing about
-                this release is announced to clients until the switchover.
-                Drop the `apiEnv` check here and take "release-notes" out of
-                DEV_ONLY_ROUTES in navigation/utils when it is theirs to
-                read. */}
-            {context.apiEnv === "dev" ? (
+                Dev tree for now, and it moves to prod with the dev-to-prod
+                migration like any other page; the real notes are written then.
+                Until there are real ones it opens the sample set, so it is
+                level 9 only: support in dev mode would read a sample as news.
+                Dev's actual release notes are the weekly meeting doc. */}
+            {context.apiEnv === "dev" && user.userLevel === 9 ? (
               <button
                 onClick={() => {
                   setAvatarOpen(false);
-                  navigate("/release-notes");
+                  setReleaseNotesOpen(true);
                 }}
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
                 <span className="flex-1">Release Notes</span>
-                <span className="text-[11px] text-content/95">every release</span>
+                <span className="text-[11px] text-content/95">sample</span>
               </button>
             ) : null}
             {/* File a ticket about the page you are on.
@@ -716,6 +709,18 @@ const TitleBar = () => {
         </>
       )}
 
+      {releaseNotesOpen && (
+        <ReleaseNotesModal
+          releases={SAMPLE_RELEASES}
+          sample
+          href={currentPath}
+          pageName={
+            activeCategory?.pages.find((p) => p.href === currentPath)?.name ??
+            null
+          }
+          onClose={() => setReleaseNotesOpen(false)}
+        />
+      )}
       {signInAsOpen && (
         <SignInAsModal onClose={() => setSignInAsOpen(false)} />
       )}

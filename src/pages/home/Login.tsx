@@ -35,6 +35,10 @@ import {
 import type { SeatId } from "./portal/perspectives/perspectivesContent";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
+import {
+  clearSignOutReason,
+  peekSignOutReason,
+} from "../../utils/sessionGuard";
 
 const VERSION = "Last updated 10/12/2026 @ 3:02 PM CST";
 
@@ -145,7 +149,10 @@ const Login = () => {
     if (!on) clearRememberedUsername();
   };
 
-  const [authError, setAuthError] = useState<string | null>(null);
+  // Opens on the reason when the API ended the session -- deactivated, or
+  // expired -- so somebody signed out mid-click is told why.
+  const [authError, setAuthError] = useState<string | null>(peekSignOutReason);
+  useEffect(() => clearSignOutReason(), []);
   const [invalidField, setInvalidField] = useState<
     "username" | "password" | null
   >(null);

@@ -408,3 +408,492 @@ to narrow the write. It does not step over the caller's scope. The button
 disables when that scope leaves nobody, rather than staying lit and lying.
 
 Five tests on `AssignPanel` hold the distinction.
+
+---
+
+## Store comparison, for Brooks
+
+Two faults on the same screen, each owning a different part of it. Reconciled
+to the cent against the store's own JSON before anything was changed.
+
+### The comparison pairs departments by name, because the numbers are per store
+
+`a95a4cf8`
+
+Sub-department numbers are assigned per store. Chapel Hill's 5 is Fresh Meat
+and Tupelo's 5 is Tobacco, and there is no department master anywhere to say
+otherwise. Pairing the two stores on the number compared Chapel Hill's Tobacco
+($243.72) against Tupelo's Deli/Bakery ($66,072.57) and called the difference a
+tobacco gap of $65,828.85.
+
+Pairing is on the description now, case-folded and tolerant of a trailing s. A
+department only one store has is listed on its own side rather than silently
+matched to whatever shares its number.
+
+**This moved every row on the page.** It is the fix, not a regression.
+
+### The comparison headline leaves out what the store leaves out
+
+`f2587121`
+
+`sales/weekly` drops a store's hash sub departments -- fuel, lottery, cash
+accounts -- and the sub-department endpoints return them. The headline was
+summed from the endpoints that keep them, so it carried $82,277.95 the store's
+own figures never counted: $79,943.00 of Tupelo fuel and $2,334.95 of Chapel
+Hill lottery, cash accounts and RSA. That is exactly the distance between the
+$136,036.51 the page showed and the $53,758.56 the Compare tab did.
+
+The new `is_hash` flag is the whole rule, read through `src/utils/hashSubs.ts`
+so there is one place it lives.
+
+### The drill asks each store for its own department number
+
+`22aef959`
+
+Following a department into the item list narrowed on the department first and
+the store second, so a drill on Fresh Meat fetched whatever each store happened
+to number 5. Narrowed to the store first now, then that store's department.
+
+---
+
+## Responding to the 23 Oct re-check
+
+Everything below is **DEV tree only** -- this round is about getting dev ready
+to move to prod, so the prod UI is deliberately untouched.
+
+### The combined tab names both stores, and the two margin headers agree
+
+`81fa1f3e`
+
+**AV.** With no location selected, the combined tab fell through to the stored
+store name, which has one of the two numbers baked in -- so "Both $424.4K" sat
+under "Bruces Foodland 369". It reads "369 + 370" now, swapped in place so the
+rest of the name survives.
+
+**AU.** Sub Dept Margins summed each department's matched days and Vendors
+summed each vendor's, so the same store and week came out 0.03 points apart. A
+Tuesday one vendor missed is still a Tuesday its department worked. Both now
+match days once, store-wide, through `src/utils/storeMarginDelta.ts`.
+
+### Item Actions reads its prices from the server, not from receipts
+
+`582e452e`
+
+**AS and D are one change.** The price table was built by downloading every
+receipt and walking it -- 700 KB on opening a row, 1.8 MB on the first Trans
+click -- and the walk is also what produced the wrong prices. Pointing the
+table at `price_points` deletes the walk rather than optimising it. The hook
+moved to `src/hooks/usePricePoints.ts`, shared with Price Opt.
+
+### One promotion is one price, and one count says so
+
+`d7eb5c45`
+
+**AT and G.** A 2-for-$6.67 rings $3.34 as a single and averages to $3.33 as a
+pair, so one promotion appeared once in Exact and once in Avg, a penny apart,
+reading as two prices. They fold within a price type -- REG $3.34 and SALE
+$3.34 stay two prices, because they are. The tile and the pattern note also
+counted differently (5 against 4 on COKE 6PK); there is one count now.
+
+### Four more pages count what the store counts
+
+`8ee9b005`
+
+Categories, Sales Tracker, Vendors and Sub Dept Margins put their store headers
+beside figures from `sales/weekly`, which leaves hash departments out. Those
+headers now drop them too.
+
+**Store margin and sales headers move on any store with fuel, lottery or cash
+accounts.** The lists are untouched -- a department is still listed, graded and
+drillable, it just no longer moves the store's own number.
+
+### Keeping this round in the dev tree
+
+`7f783a76`
+
+Phases 1 and 4 had edited prod alongside dev. Reverted in five files across
+Categories, Vendors and Sub Dept Margins. The shared utils stay shared and are
+safe as they are: `storeIdentity` only gained an export, `csvExport` only
+widened a type, and `src/utils/pricePoints.ts` has no prod importer at all.
+
+### P and O close: the chicken margin was right
+
+`c40d53a6`
+
+No code change. The rows for 20016900000 say the item is priced per pound --
+net sales over weight is $3.99 on all seven days -- and `calculateCogs` already
+multiplies by weight, so 66.1% is the honest figure. The theory that we were
+dividing a package cost by a package count was wrong: `case_size` is 1.
+
+Documented the `margin` field on `SubDeptMargin`, which reports ~99% because
+the server computes `(total_sales - cost) / total_sales`: one unit's cost
+against a whole tax-inclusive day. Nothing consumes it. Comment only.
+
+### The Categories pill says which two figures it compared
+
+`2779e4b2`
+
+**5a.** Categories pairs per category per day and drops a category-day with no
+counterpart from both sides, so the percentage's base is not the headline --
+$96.8K against $90.3K behind a header reading $100.4K and +7.15%. Hovering the
+LW or LY pill now names both figures and repeats the headline. Said only when
+they differ.
+
+### The price table counts pounds, like the rest of the panel
+
+`f2b8b2f7`
+
+**AS, a second pass.** Fam Pak Breast Tenders had three figures for the same
+week in one panel: the header 180.7, the transactions table 180.68, and the
+price points table 97 under a column headed "Units". 97 is the ring count.
+
+`erasFromPoints` read `units` off the price point while `weight` -- 180.674 --
+sat on the same row, and `src/utils/pricedUnits` already holds the
+weight-before-rings rule the header and `calculateCogs` follow. It follows it
+too now, and the columns read "Price / lb" and "Lb" so the figure carries its
+unit. A packaged item is unchanged. The export prints the same eras and
+follows.
+
+### Price Opt remembers the departments it already read
+
+`f2f6ea8a`
+
+Opening a department fetched its items, and the slice held one list for
+whichever was open -- so walking a store and coming back to a department read
+it from the server again. Items cannot change inside a fixed store and date
+range, so the second read never said anything new.
+
+Kept per department for the life of the search window now. Reopening one is a
+render: no request, no spinner. Cleared when a new search is committed from the
+popup card, which is the only thing that can invalidate it. A failed load is
+left out so reopening retries; a department that really is empty keeps its
+entry, or it would re-ask forever.
+
+Vendors needs none of this -- its item lists come from rows the page has
+already read.
+
+### Package deal reads the server's receipt counts
+
+`fc0daa04`
+
+**D, closed.** The pattern is "the same receipt rang this item at two prices",
+and it had not fired since the receipt walk was deleted -- the panel called
+`classifyPattern` with an empty placeholder because there was no count to give
+it. The backend added one on the same query; the browser reads it.
+
+Three optional fields on `cashiers/price_points`: `receipts_total`,
+`multi_price_receipts`, `max_price_spread`. Optional on purpose, so the order
+the two halves deploy in does not matter -- without them the pattern stays
+quiet, which is the current behaviour.
+
+`receipts_total` is not the sum of `receipts` across the price points. One
+receipt can sit in two of those rows, so that sum over-counts by exactly the
+receipts this is about: 84 against a true 73 on COKE 6PK.
+
+**Two prices means more than a cent apart** -- a rule the backend added and the
+right one. A 3-for-$10 rings $3.33, $3.33, $3.34; on raw distinct prices 64 of
+85 two-price receipts at store 695 were that rounding. `foldPennyTwins` already
+applies it to the price list, so the two sides share one rule and have to move
+together.
+
+**Weighed items return null**, and null reads as "not answerable" rather than
+"none found" -- two packs of chicken in one basket compute to different prices
+per pound from rounding alone, and a BOGO is rung on packages.
+
+`mixedPriceInsight` is deleted. It walked receipt lines and divided by qty,
+which is 1 on a random-weight pack -- the arithmetic findings AS and D were
+both about.
+
+---
+
+## Readability
+
+### Price Opt reads easier
+
+`2bacd309`
+
+Type up one point across the whole Price Opt screen -- the department tree, the
+item panel, both price tables and the page shells. 9 to 10 through 15 to 16, so
+the hierarchy that was there survives and only the floor moves.
+
+`ACT_COLS`, `TXN_COLS` and `EST_COLS` widened with it. Those columns are fixed
+px sized to their widest real value, so a point of font has to be paid for in
+px or `$1,332.63` clips its own column. The `1fr` price column absorbs it.
+
+Text opacity floored at 85%: `/40`, `/50`, `/60` and `/70` all to `/85`. The
+dimmest were captions and column heads -- the text that was hardest to read at
+9 and 10 px.
+
+### The gap split's three sentences become one CTA strip
+
+`a6aead0e`
+
+On the store comparison, the bar was followed by three stacked sentences: where
+the gap concentrates, which departments only one store carries, and what sits
+outside net sales at both. Four lines of 11.5px type, and they pushed the list
+and the evidence panel down the screen -- so the thing a reader came to scan
+started lower the more there was to explain.
+
+It is a `CtaStrip` now. It lays over the panels instead of moving them, which
+is the house rule, and the sentences get 13px because the room is no longer
+rationed. Closed by default: the bar carries the finding, this is the working
+behind it. Neutral tone -- nothing in it is a verdict on the store.
+
+The label **counts** the unmatched departments rather than totalling them. A
+first draft read "$160,124.21 sits outside this comparison", which added one
+store's unmatched sales to the other's -- a figure that is nobody's sales and
+no kind of gap, and under "Behind by $53,758.56" it read as money missing from
+that. It also left out the hash departments, which are equally outside the
+comparison. Both figures are still in the detail with their stores attached.
+
+### The strip says Show, the back button says Back
+
+`16af1f07`
+
+The CTA strip takes a theme border instead of raw grays -- `brand_navy/25` over
+`bkg` with a `brand_navy/5` hover, the same token as the rule under the header
+beside it -- so it reads as a thing you can open.
+
+The chevron is labelled **Show / Hide**, in `CtaStrip` itself rather than at one
+call site: a chevron alone says there is more without saying it can be opened.
+**This also changes the group share rail**, the component's other caller.
+
+The back button on the comparison drill-down carries the word **Back** beside
+its chevron.
+
+### Every not-compared department is named
+
+`a60b12fb`
+
+The strip listed three department names and "and others", and only ever named
+the counterpart store's -- so on the biggest unexplained figure on the screen a
+reader was told there was something they were not being shown, and never saw
+this store's side at all.
+
+Both sides are named in full now, one line per store: "Only here: ..." and
+"Only at <store>: ...". The hash departments are listed in full too, where it
+was the same three-and-others.
+
+The overlay caps at 45vh and scrolls, since naming every department can run
+long on a pair of stores that share little and it must not reach past the panel
+it is laid over.
+
+## User Management
+
+Dev tree only. Asked for by Amanda, who needs to edit people's access this way
+rather than blow out every Houchens user and start again.
+
+### One access type per person, and Edit is Add filled in
+
+`1f3a39d5`
+
+A person is now **By group** or **By store**, one answer for everything they
+hold. Each base group used to carry its own Auto / Pick stores toggle, so the
+question had no single answer and nothing on a finished screen showed it. The
+toggle is gone; the AUTO / FIXED chip stays and reports the person's type.
+
+Edit user is the same four steps as Add user, filled in: every step reachable
+straight away, the username fixed, no password section (the key icon in the
+list does that). Save sends only what changed.
+
+The access type can now be changed on an existing person. Switching to By store
+starts with **every store they currently have ticked**, so nothing is lost until
+somebody unticks. The review step warns that saving rewrites all of their base
+groups.
+
+For the single store role, By group is shown greyed with the reason on the
+card. It had never actually been greyed for anyone -- the check compared the
+role against the word "singlestore", and the role is stored as the number 1.
+
+Duplicate copies the access type, and copies exactly the stores the source
+picked and through which group. It used to fetch every group's store list and
+guess, which could give the copy more than the original had.
+
+### Deactivate several users at once
+
+`a079d912`
+
+Users get a checkbox, and the header a select-all for what is on screen. While
+anything is ticked a bar offers **Deactivate N** (or **Reactivate N** under
+Inactive). The confirmation lists every person by name, then becomes the
+result: deactivated, already inactive, refused with the reason, or not found.
+
+Refused: anyone outside your companies, yourself, anyone above your level, and
+a username shared by more than one account. Your own row and rows above you
+have no checkbox.
+
+The single trash icon now says **Deactivate** and goes through the same
+confirmation. It always only deactivated -- the old confirmation said "This
+can't be undone" -- and reactivating gives back the companies, groups and
+stores the person had.
+
+A deactivated person is signed out on their next click rather than up to
+fifteen hours later (backend, `efd4cd6`).
+
+The grid has an **Access** column: By group, By store, or Mixed for a stray
+older account whose groups disagree.
+
+### Users with no access type can have one set
+
+`7a2c1cf5`
+
+Users made through the prod wizard, or before access types existed, show
+**Not set** in the Access column, and the Access filter can narrow to them.
+Editing one says no access type is set yet; picking By group or By store and
+saving sets it for every base group they hold.
+
+### A deactivated user is signed out on their next click
+
+`ddc979e2` &middot; dev mode only until prod is promoted
+
+When the server refuses a session -- the account was deactivated, or the
+session ran out -- the app signs the person out and the sign-in screen says
+why, instead of every click failing with an error. A wrong password still
+just says so on the form.
+
+### Filter users by access type
+
+`cb7ee37b`
+
+An **All access** filter beside the role filter narrows the grid to By group or
+By store. It is remembered with the other filters when you open someone and
+come back.
+
+## Orders, for Ben
+
+### Fix cost becomes a Problems tab in Edit
+
+`76374f03`
+
+Edit's left panel has two tabs under its filters: **Orders**, as before, and
+**Problems**. Problems lists every item with a cost that looks wrong, one row
+per UPC: missing cost first, then high margin from the worst down, then no case
+size.
+
+Pick one and it opens on the right across every order the filters show. Each
+store's row has its case size and unit cost, and its case cost, Ext cost and
+margin now and at the new unit cost. Type the unit cost once and every store's
+case cost follows from its own case size. Where at least two stores already pay
+the same unit cost, it is offered with "use it".
+
+Every store starts ticked; untick one that pays something else on purpose.
+**Stage** writes the cost into each order and opens the next item; **Skip** sets
+it aside for this session. A fixed item stays in the list, marked staged.
+Nothing is sent until Submit.
+
+The high-margin cutoff can be changed in the tab, and it is the same setting
+Browse uses. An item with no case size is treated as ordered by the unit, so
+the unit cost goes into the case cost column as it is, and the item says so.
+
+After Submit, the sent costs show straight away: in Browse, in the Problems
+list, and when an order is opened again. Before, they went back to the old
+figures until the import ran.
+
+## Tickets
+
+### A ticket from a page with no store search names no store
+
+`f9c981f0` &middot; TCK-44
+
+A ticket filed from User Management, Admin, Groups, Tickets, QuickSight or
+Settings printed whatever store was last searched on another page, as if the
+problem were about it. Erica's ticket about a B&T user read Grocery Basket.
+Those pages now record no store, group or dates on the ticket.
+
+### Tickets name their stores, and who sees them follows the stores
+
+dev mode only &middot; needs the goliath-platform ticket-store API (and
+`db/ticket_workflow.sql` run first) -- see
+`docs/backend-ticket-stores-2026-10-27.md`
+
+New Ticket and Report an issue now ask which stores a ticket is about, from the
+person's own stores, or "Not about a store". One of the two is required, and
+someone with only one store is not asked. From a store search that store is
+ticked already; from a group search the group's stores are listed first. A
+store they can only search through a shared group is never pre-ticked, since
+the ticket could not be filed against it. From User Management and Groups a
+hint says to tick the store of the person the access problem is about.
+
+Who sees a ticket now follows the stores: below Manager, your own; a Manager,
+also tickets about their stores and store-less ones from their stores' staff;
+an Owner, also everything for their companies. The inbox says which, rows show
+the store numbers, and the ticket header lists them in full. A store filter
+appears when the list spans more than one store.
+
+Techs get **Edit stores** under a ticket's title; the change is noted in the
+thread for the desk only. A ticket that leaves your view while it is open (its
+stores changed, or yours did) closes with "That ticket is no longer in your
+view" instead of failing on every poll.
+
+The Tickets entry in Coming Soon is open to every level now, not 7 and up:
+the server's tiers decide what each reader sees, and a level gate only hid the
+tickets someone had just filed through Report an issue. Coming Soon is still
+dev-only, so clients on prod do not see it.
+
+## Release Notes
+
+### Release Notes leaves the dev menu, parked for production
+
+dev mode only
+
+The avatar menu's Release Notes row is gone from dev. The weekly meeting doc
+is dev's release notes, written for the support team. The row was also broken:
+its route had been unmounted, so it landed on Sales. The page and the notes
+themselves are kept for clients, for when production makes the shift.
+TitleBar's parked block lists the three steps to open it on prod.
+
+### Release Notes come back as a window, in dev, with sample notes
+
+dev mode only, level 9 only
+
+**Release Notes** in the avatar menu opens a window over the page you are on,
+not a separate page. On the left is a list of release dates. On the right is
+that release's notes in up to four sections: Platform Updates, Now available,
+Updates and Fixes. Each section is a list of bullets under page headings, and
+empty sections are left out.
+
+It opens on the page you came from, with that page marked in every section
+it appears in. When the latest release does not touch the page, the window
+says so and links to the release that last did.
+
+The notes are a sample for trying the window, and the window says so. The real
+notes are prod-only and get written at the dev-to-prod migration, when this
+moves over like any other page. The old 20 October set is gone: it described
+pages that never reached prod. The old Release Notes page is in `trash/`.
+
+## AWG Invoices
+
+### A send says which invoices the server would not save
+
+dev mode only
+
+The server now reports invoices it read but would not save, each with a
+reason, beside each file it parsed (goliath-platform `8098e1e`). Send used to
+toast "Sent 5 invoices" even when one was dropped. It now says "Sent 4 of 5
+invoices", names the invoice that was not saved and the server's reason, and
+keeps a red line under the Send control instead of the green "Sent". The
+leftover references to Textract, an engine the server removed, are gone from
+the invoice API types.
+
+### Coupon Sales on a phone: receipt lines no longer outlive sign-out
+
+dev mode only
+
+A week's coupon lines, which the phone's receipt sheet reads from, were kept in
+a variable outside the store. That was so they would survive leaving the page,
+but it meant they also survived signing out. They are in the Coupon Sales slice
+now: leaving the page and coming back still opens receipts, and sign-out clears
+them with everything else. Nothing on screen changes.
+
+### Picking users to deactivate starts from the action
+
+dev mode only
+
+The users grid used to have a checkbox column with no heading, which only said
+what it was for once something was ticked. Now there are no checkboxes until
+you press **Deactivate users** in the toolbar (**Reactivate users** on the
+Inactive list). Pressing it shows a bar that says "Choose who to deactivate"
+before anything is ticked, with a count, "Select all N shown", Cancel, and the
+action button. Clicking anywhere on a row ticks it, and the row's own icons
+are hidden while picking. Escape or Cancel backs out. The single-row trash icon
+works as before.

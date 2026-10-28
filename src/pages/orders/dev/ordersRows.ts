@@ -1,5 +1,8 @@
 import type { AllOrder } from "../../../interfaces";
-import type { OrdersFilters } from "../../../features/dev/devOrdersSlice";
+import type {
+  OrderFlag,
+  OrdersFilters,
+} from "../../../features/dev/devOrdersSlice";
 import type { SortState } from "../../../utils/useTriStateSort";
 
 export type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
@@ -8,7 +11,34 @@ export type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
 export type GridSort = SortState<SortKey>;
 
 /**
- * The configuration panel's six filters, applied in one pass.
+ * What is wrong with a line's cost, if anything.
+ *
+ * `missingCost` is the cause and `highMargin` is usually its symptom — a line
+ * with no cost rings 100% margin — so a line can carry both and the panel
+ * counts them separately. Naming only the symptom would send somebody looking
+ * for a pricing decision that was never made.
+ *
+ * `noCaseSize` is its own flag rather than a flavour of missing cost. It
+ * usually means the item is ordered by the unit, so the case cost IS the unit
+ * cost — `perCase` reads it as a case of one, and a unit-cost fix writes the
+ * typed figure straight through. Flagged so somebody looks, not because it is
+ * necessarily wrong.
+ */
+export const lineFlags = (o: AllOrder, marginOver: number | null): OrderFlag[] => {
+  const flags: OrderFlag[] = [];
+  if (!o.base_cost) flags.push("missingCost");
+  if (!o.casesize || o.casesize <= 0) flags.push("noCaseSize");
+
+  const eRet = o.e_ret ?? 0;
+  if (marginOver !== null && eRet > 0) {
+    const margin = ((eRet - (o.cogs ?? 0)) / eRet) * 100;
+    if (margin > marginOver) flags.push("highMargin");
+  }
+  return flags;
+};
+
+/**
+ * The configuration panel's filters, applied in one pass.
  *
  * Empty means all, per filter — the same convention the controls use, so an
  * untouched panel produces the whole set rather than nothing.
@@ -20,6 +50,7 @@ export const applyFilters = (lines: AllOrder[], f: OrdersFilters): AllOrder[] =>
   const subs = new Set(f.subIds);
   const codes = new Set(f.productCodes);
   const ids = new Set(f.orderIds);
+  const wanted = new Set(f.flags);
 
   return lines.filter((o) => {
     if (types.size && !types.has(o.order_type)) return false;
@@ -28,6 +59,12 @@ export const applyFilters = (lines: AllOrder[], f: OrdersFilters): AllOrder[] =>
     if (subs.size && !subs.has(o.sub_department)) return false;
     if (codes.size && !codes.has(String(o.product_code))) return false;
     if (ids.size && !ids.has(o.order_id)) return false;
+    if (wanted.size) {
+      // Any, not all — "missing cost or no case size" is the question
+      // somebody asks, and a line holding both should answer it once.
+      const has = lineFlags(o, f.marginOver);
+      if (!has.some((fl) => wanted.has(fl))) return false;
+    }
     return true;
   });
 };

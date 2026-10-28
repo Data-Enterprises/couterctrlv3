@@ -113,10 +113,64 @@ export const blankLines = (d: OrderDraft) => d.lines.filter(isBlank);
  *
  * The storeid is part of it because order numbers are only unique within a
  * store, and the date because the same number can come round again.
+ *
+ * `storenumber` is part of it because a few storeids cover two physical
+ * locations and those are two stores — the same thing `storeIdentity` exists
+ * for, and the same key every other list on this page is built on. Without it
+ * the two locations merged into one draft holding two line 1s, which
+ * `mapLine` then edited together and the "was" note reported from whichever
+ * of them React had reused the input for.
  */
 export const docKey = (
-  o: Pick<AllOrder, "storeid" | "order_id" | "order_date">,
-) => `${o.storeid}|${o.order_id}|${o.order_date}`;
+  o: Pick<AllOrder, "storeid" | "storenumber" | "order_id" | "order_date">,
+) => `${o.storeid}|${o.storenumber}|${o.order_id}|${o.order_date}`;
+
+/**
+ * What the Edit-mode left panel is narrowed to. An empty string is "any".
+ */
+export interface OrderPick {
+  storeNumber: string;
+  orderDate: string;
+  orderType: string;
+}
+
+export const NO_PICK: OrderPick = { storeNumber: "", orderDate: "", orderType: "" };
+
+/**
+ * Whether an order passes the left panel's filters.
+ *
+ * `skip` leaves one filter out, which is how the panel works out what each
+ * dropdown may offer given the other two. Shared rather than kept in the
+ * panel because Fix cost has to agree with it exactly: the orders a fix
+ * stages into are the orders the panel is showing, and two copies of "which
+ * orders are showing" would drift.
+ */
+export const matchesPick = (
+  d: Pick<OrderDoc, "storenumber" | "order_date" | "order_type">,
+  pick: OrderPick,
+  skip: "store" | "date" | "type" | null = null,
+) => {
+  if (skip !== "store" && pick.storeNumber && d.storenumber !== pick.storeNumber)
+    return false;
+  if (skip !== "date" && pick.orderDate && d.order_date !== pick.orderDate)
+    return false;
+  if (skip !== "type" && pick.orderType && d.order_type !== pick.orderType)
+    return false;
+  return true;
+};
+
+/**
+ * Every line belonging to an order the left panel is showing.
+ *
+ * What Fix cost searches and stages into. It used to be every loaded line,
+ * so narrowing the panel to one store and fixing a cost wrote it into every
+ * other store's orders too — and the picker, filtered to that one store,
+ * hid the evidence.
+ */
+export const linesInPick = (lines: AllOrder[], pick: OrderPick): AllOrder[] =>
+  pick.storeNumber === "" && pick.orderDate === "" && pick.orderType === ""
+    ? lines
+    : lines.filter((o) => matchesPick(o, pick));
 
 /**
  * The orders in the result, for the picker.
@@ -222,6 +276,38 @@ export const applyField = (
 ): OrderDraft =>
   mapLine(draft, lineNumber, (l) =>
     recompute({ ...l, [field]: field === "qty" ? Math.round(value) : value }),
+  );
+
+/**
+ * Case size, or 1 where there is none.
+ *
+ * A line carrying casesize 0 is not cased, so its case cost IS its unit cost
+ * and the two fields move together. Same guard `getCogs` makes, for the same
+ * reason — dividing by the zero the data actually holds produced Infinity.
+ */
+export const perCase = (l: Pick<AllOrder, "casesize">) =>
+  l.casesize > 0 ? l.casesize : 1;
+
+/** What one unit costs, derived from the case cost that is actually stored. */
+export const unitCostOf = (l: Pick<AllOrder, "base_cost" | "casesize">) =>
+  (l.base_cost ?? 0) / perCase(l);
+
+/**
+ * A typed unit cost, stored as the case cost it implies.
+ *
+ * Nothing new reaches the payload: the file carries case cost, which is what
+ * the vendor reads, and this only changes which end of the division somebody
+ * types. It is the end people quote, and on a bulk edit across stores it is
+ * the only end that means the same thing twice — case size differs per store,
+ * so one case cost pushed to two stores is two different unit costs.
+ */
+export const applyUnitCost = (
+  draft: OrderDraft,
+  lineNumber: number,
+  unit: number,
+): OrderDraft =>
+  mapLine(draft, lineNumber, (l) =>
+    recompute({ ...l, base_cost: unit * perCase(l) }),
   );
 
 export const revertLine = (draft: OrderDraft, lineNumber: number): OrderDraft => ({
@@ -559,4 +645,114 @@ export const canEditOrders = (
   if (userLevel < EDIT_MIN_LEVEL) return false;
   if (!companyIds.some((id) => EDIT_COMPANY_IDS.includes(id))) return false;
   return userLevel >= EDIT_ANY_DAY_FROM_LEVEL || !isAfterOrderCutoff(now);
+};
+
+/* ── one cost, every store ─────────────────────────────────────────────── */
+
+/** One order Fix cost would change, for the modal's per-store list. */
+export type StagePreview = {
+  doc: OrderDoc;
+  /** The item's lines on this order — usually one. */
+  lineNumbers: number[];
+  casesize: number;
+  /** What the case cost becomes at the typed unit cost. */
+  newCaseCost: number;
+};
+
+/** The item's lines, grouped by the order they belong to. */
+const linesByDoc = (rows: AllOrder[]) => {
+  const byDoc = new Map<string, number[]>();
+  for (const r of rows) {
+    const key = docKey(r);
+    const list = byDoc.get(key) ?? [];
+    list.push(r.line_number);
+    byDoc.set(key, list);
+  }
+  return byDoc;
+};
+
+/**
+ * What Fix cost would do, per order, before it does anything.
+ *
+ * In unit cost because case size is per store: one store's case of 12 and
+ * another's case of 24 are the same item at the same unit price and two
+ * different case costs. This is the list that shows it.
+ *
+ * Grouped on `docKey`, which carries the storenumber — two locations sharing
+ * a storeid are two orders.
+ */
+export const stagePreview = (
+  rows: AllOrder[],
+  all: AllOrder[],
+  unit: number,
+): StagePreview[] => {
+  const byDoc = linesByDoc(rows);
+  return buildDocs(all)
+    .filter((doc) => byDoc.has(doc.key))
+    .map((doc) => {
+      const lineNumbers = byDoc.get(doc.key)!;
+      const first = rows.find(
+        (r) => docKey(r) === doc.key && r.line_number === lineNumbers[0],
+      )!;
+      return {
+        doc,
+        lineNumbers,
+        casesize: first.casesize,
+        newCaseCost: unit * perCase(first),
+      };
+    });
+};
+
+/**
+ * The drafts with the unit cost staged into every order the item is on.
+ *
+ * Frontend only — nothing is sent. Each order takes the change into its own
+ * draft, on top of anything already there: an order you had opened and
+ * edited keeps those edits, and one never opened is started fresh. The
+ * changes go out when Submit is pressed, through the same `buildPayload` a
+ * hand edit uses, so a staged order is exactly what editing it by hand would
+ * have sent.
+ */
+export const stageUnitCost = (
+  drafts: Record<string, OrderDraft>,
+  rows: AllOrder[],
+  all: AllOrder[],
+  unit: number,
+): Record<string, OrderDraft> => {
+  const byDoc = linesByDoc(rows);
+  const next = { ...drafts };
+  for (const doc of buildDocs(all)) {
+    const lineNumbers = byDoc.get(doc.key);
+    if (!lineNumbers) continue;
+    let draft = next[doc.key] ?? startDraft(doc, all);
+    for (const ln of lineNumbers) draft = applyUnitCost(draft, ln, unit);
+    next[doc.key] = draft;
+  }
+  return next;
+};
+
+/**
+ * The loaded lines with one sent order's figures written onto them.
+ *
+ * `all_orders` returns the old figures until the import runs, and the page
+ * does not refetch. Without this, a submitted order went back to its old
+ * costs the moment its draft was dropped: the Browse grid kept showing the
+ * missing cost, the Problems tab listed the item as unfixed again, and "Edit
+ * again" on the receipt started from the pre-edit figures — so the next
+ * Submit would have sent them back.
+ *
+ * Lines that were on the order take the draft's version; lines added in the
+ * draft are appended. `original` is stripped, since it is draft bookkeeping
+ * and not part of a line.
+ */
+export const applySent = (all: AllOrder[], draft: OrderDraft): AllOrder[] => {
+  const strip = ({ original: _o, ...line }: DraftLine): AllOrder => line;
+  const byLine = new Map(draft.lines.map((l) => [l.line_number, l]));
+  const kept = all.map((o) => {
+    if (docKey(o) !== draft.doc.key) return o;
+    const sent = byLine.get(o.line_number);
+    return sent ? strip(sent) : o;
+  });
+  const added = draft.lines.filter(isAdded).map(strip);
+  return [...kept, ...added];
 };

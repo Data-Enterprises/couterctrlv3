@@ -13,6 +13,7 @@ import {
   getTicketLookups,
   listTickets,
   setTicketStatus,
+  setTicketStores,
   ticketFailed,
   uploadTicketAttachment,
   type Ticket,
@@ -30,6 +31,7 @@ import {
   endWork,
   failDetail,
   failLoad,
+  lostTicket,
   openClosing,
   openNew,
   selectTicket,
@@ -42,12 +44,12 @@ import {
   startWork,
   upsertTicket,
 } from "../../../features/dev/devTicketsSlice";
-import {
-  sendFailureText,
-  ticketsInScope,
-  visibleTickets,
-  tabCounts,
-} from "./ticketsUtils";
+import { sendFailureText, visibleTickets, tabCounts } from "./ticketsUtils";
+
+/** The HTTP status of a failed call, from axios or from a test double. */
+const statusOf = (err: unknown) =>
+  (err as { response?: { status?: number } })?.response?.status ??
+  (err as { status?: number })?.status;
 
 /**
  * Everything the Client Help Desk needs, in one hook.
@@ -62,7 +64,6 @@ export const useTicketsCtx = () => {
   const toast = useToast();
   const tickets = useAppSelector((state) => state.dev.tickets);
   const userid = useAppSelector((state) => state.user.userid);
-  const userCompanies = useAppSelector((state) => state.user.companies);
 
   /**
    * Which view this is.
@@ -77,18 +78,16 @@ export const useTicketsCtx = () => {
   // always fixable by somebody.
   const canManageTechs = tickets.caps.canManageTechs;
 
-  /** What this reader may see at all, before any tab or search narrows it.
-   *  Counts read from it too, so a tab can't count tickets it won't show. */
-  const scoped = useMemo(
-    () =>
-      ticketsInScope(
-        tickets.tickets,
-        isTech,
-        userCompanies.map((c) => c.company),
-        userid,
-      ),
-    [tickets.tickets, isTech, userCompanies, userid],
-  );
+  /**
+   * What this reader may see at all is what the server sent.
+   *
+   * There used to be a client-side backstop here, filtering by company while
+   * the server's scope leaked across companies. The server now scopes by tier
+   * (`scope`), and a Manager legitimately sees tickets from another company
+   * when they name one of the Manager's stores, so a company filter here would
+   * hide exactly what the tiers were built to show.
+   */
+  const scoped = tickets.tickets;
 
   const rows = useMemo(
     () =>
@@ -135,6 +134,7 @@ export const useTicketsCtx = () => {
               canManage: j.canManage,
               canManageTechs: j.canManageTechs,
             },
+            scope: j.scope ?? null,
           }),
         );
         // Only someone who can assign has anyone to assign to. Asking anyway
@@ -203,10 +203,15 @@ export const useTicketsCtx = () => {
               canManage: j.canManage,
               canManageTechs: j.canManageTechs,
             },
+            scope: j.scope ?? null,
           }),
         );
       })
-      .catch(failed("Could not open that ticket"));
+      .catch((err: JsonError) => {
+        // Gone from this reader's view between the list and the click.
+        if (statusOf(err) === 404) dispatch(lostTicket(id));
+        else failed("Could not open that ticket")(err);
+      });
   };
 
   /**
@@ -233,8 +238,12 @@ export const useTicketsCtx = () => {
         // arrive. This is the line that makes a screenshot show up.
         if (j.attachments) dispatch(setAttachments(j.attachments));
       })
-      .catch(() => {
-        /* A missed poll is the next one's problem. */
+      .catch((err) => {
+        // A 404 is not a missed poll: the ticket has left this reader's view
+        // (a tech changed its stores, or they lost the store). Retrying would
+        // fail every five seconds forever.
+        if (statusOf(err) === 404) dispatch(lostTicket(id));
+        /* Anything else is the next poll's problem. */
       });
   };
 
@@ -285,6 +294,8 @@ export const useTicketsCtx = () => {
       description: string;
       priority?: TicketPriority;
       category_id?: number | null;
+      /** `[]` is "Not about a store". */
+      storeids?: number[];
     },
     files: File[] = [],
     /**
@@ -444,6 +455,39 @@ export const useTicketsCtx = () => {
       });
   };
 
+  /**
+   * Replace the open ticket's stores. Techs only.
+   *
+   * Returns why it did not save, or null. `changed: false` is a success with
+   * nothing to do. The internal note the server writes arrives with the next
+   * poll, which is asked for straight away so the tech sees it land.
+   */
+  const setStores = async (storeids: number[]): Promise<string | null> => {
+    const id = tickets.selectedId;
+    if (!id) return null;
+    dispatch(startWork());
+    try {
+      const resp = await setTicketStores(url, token, id, storeids);
+      if (ticketFailed(resp.data) || !resp.data.ticket) {
+        dispatch(endWork());
+        return "Those stores did not save.";
+      }
+      dispatch(upsertTicket(resp.data.ticket as Ticket));
+      if (resp.data.changed) void poll();
+      return null;
+    } catch (err) {
+      dispatch(endWork());
+      const status = statusOf(err);
+      if (status === 404) {
+        dispatch(lostTicket(id));
+        return null;
+      }
+      return status === 403
+        ? "Changing a ticket's stores needs a ticket tech's account."
+        : sendFailureText(err).replace("That did not send", "That did not save");
+    }
+  };
+
   /** Signed on click, and only then — opening a ticket signs nothing. */
   const openAttachment = (attachmentId: number) => {
     const id = tickets.selectedId;
@@ -479,6 +523,7 @@ export const useTicketsCtx = () => {
     move,
     attach,
     openAttachment,
+    setStores,
   };
 };
 

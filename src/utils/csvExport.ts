@@ -7,17 +7,22 @@ export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
   { value: "count", label: "Count" },
 ];
 
-export type AggRow = Record<string, string | number | null>;
+/** A row on its way to a CSV. `boolean` since the sales rows carry `is_hash`
+ *  — every value here is stringified on the way out, so it travels fine. */
+export type AggRow = Record<string, string | number | boolean | null>;
 
 export const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
 
-export const escCsv = (val: string | number | null | undefined) => {
+export const escCsv = (val: string | number | boolean | null | undefined) => {
   const s = String(val ?? "");
   return s.includes(",") || s.includes('"') || s.includes("\n")
     ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-export const rowsToCsv = (headers: string[], rows: (string | number | null)[][]): string => {
+export const rowsToCsv = (
+  headers: string[],
+  rows: (string | number | boolean | null)[][],
+): string => {
   const lines = [headers.map(escCsv).join(",")];
   for (const row of rows) lines.push(row.map(escCsv).join(","));
   return lines.join("\n");

@@ -1,49 +1,38 @@
 import { useRef, useState } from "react";
-import { DocumentArrowUpIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { DocumentArrowUpIcon } from "@heroicons/react/20/solid";
+import { readInvoiceFile } from "./readInvoiceFile";
 
 /**
  * The drop card.
  *
- * Just the card — the page supplies the frame around it, full-page before a
- * file has been read and an overlay after. Owning only the card is what lets
- * the two look identical: the re-read is the same card, not a shrunken copy of
- * it inside a generic modal shell.
+ * Just the card — the page supplies the frame around it. The same shape every
+ * other page's entry card takes, with a drop zone where they have a store
+ * picker and a date. Nothing is fetched: the file is read and decoded in the
+ * browser, so the "search" here is local work and finishes in milliseconds.
  *
- * The same shape every other page's entry card takes, with a drop zone where
- * they have a store picker and a date. Nothing is fetched: the file is read and
- * decoded in the browser, so the "search" here is local work and finishes in
- * milliseconds.
- *
- * The file must be read as **ISO-8859-1**. These are fixed-width records, and
- * reading them as UTF-8 shifts every column after the first non-ASCII byte —
- * which decodes as bad data rather than as an encoding error, so it would be
- * blamed on the vendor.
+ * **Only the first read.** This used to double as a re-read overlay, which
+ * meant the one place you could drop a file was behind a button you had to
+ * click first — backwards for drag and drop. Once a file is open the page
+ * itself takes the drop and the toolbar button opens the picker, so there is
+ * no overlay and nothing to close.
  */
 interface Props {
   onFile: (text: string, fileName: string) => void;
   error: string | null;
-  /** Set when the card is the re-read overlay: adds the close control. Absent
-   *  on the first read, where there is nothing to go back to. */
-  onClose?: () => void;
 }
 
-const InvoicesEntry = ({ onFile, error, onClose }: Props) => {
+const InvoicesEntry = ({ onFile, error }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  const read = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (event) =>
-      onFile(String(event.target?.result ?? ""), file.name);
-    reader.readAsText(file, "ISO-8859-1");
-  };
+  const read = (file: File) => readInvoiceFile(file, onFile);
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm w-full max-w-[560px] overflow-hidden">
       <div className="bg-brand_navy px-4 py-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-custom-white text-[13px] font-semibold">
-            {onClose ? "Read another file" : "AWG Invoices"}
+            AWG Invoices
           </p>
           <p className="text-custom-white/85 text-[12px]">
             Drop an AWG electronic invoice file to read it. Every line is
@@ -51,15 +40,6 @@ const InvoicesEntry = ({ onFile, error, onClose }: Props) => {
             anything is shown.
           </p>
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            title="Keep the file already open"
-            className="flex-shrink-0 p-1 -mr-1 rounded text-custom-white/85 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       <div className="p-4">

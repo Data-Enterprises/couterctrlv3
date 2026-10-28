@@ -1,4 +1,9 @@
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import { countedRows } from "../../../utils/hashSubs";
+import { storeMarginDelta } from "../../../utils/storeMarginDelta";
+import {
+  applyStoreNumberToName,
+  combinedStoreName,
+} from "../../../utils/storeIdentity";
 import LocationTabs from "../../../components/filters/LocationTabs";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import VendorRow from "./VendorRow";
@@ -100,12 +105,11 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
    * label these stores identically.
    */
   const locationName = vend.selectedStoreNumber
-    ? applyStoreNumberToName(
-        vend.storeName,
-        vend.selectedStoreNumber,
-        vend.availableStoreNumbers,
-      )
-    : vend.storeName;
+    ? applyStoreNumberToName(vend.storeName, vend.selectedStoreNumber, vend.availableStoreNumbers)
+    // No location picked is the combined tab, which is both of them. Falling
+    // through to the stored name put one store's number over a figure that is
+    // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
+    : combinedStoreName(vend.storeName, vend.availableStoreNumbers);
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
@@ -227,32 +231,42 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     const twNet = sum((g) => g.twNet);
     const twCogs = sum((g) => g.twCogs);
     const twNetLW = sum((g) => g.twNetForLW);
-    const twCogsLW = sum((g) => g.twCogsForLW);
     const lwNet = sum((g) => g.lwNet);
-    const lwCogs = sum((g) => g.lwCogs);
     const twNetLY = sum((g) => g.twNetForLY);
-    const twCogsLY = sum((g) => g.twCogsForLY);
     const lyNet = sum((g) => g.lyNet);
-    const lyCogs = sum((g) => g.lyCogs);
     return {
       // Store margin is WEIGHTED — dollars over dollars, not a mean of the
       // vendors' percentages, which would let a $5 supplier count as much as
       // the wholesaler behind half the shelves.
       tw: isMargin ? marginPct(twNet, twCogs) : twNet,
+      // The MARGIN delta is the store's, matched over the store's days.
+      // Summing each vendor's own matched days answers a slightly different
+      // question from summing each department's, which is how this and Sub
+      // Dept Margins came to disagree by 0.03 points on an identical week.
+      // The sales delta stays as it is: it is a total, not a rate, so the
+      // grouping does not change it.
       lwPct:
-        lwNet > 0
-          ? isMargin
-            ? marginPct(twNetLW, twCogsLW) - marginPct(lwNet, lwCogs)
-            : pctChange(twNetLW, lwNet)
-          : null,
+        isMargin
+          ? storeMarginDelta(
+              countedRows(vend.raw.tw),
+              countedRows(vend.raw.lw),
+              "lw",
+            )
+          : lwNet > 0
+            ? pctChange(twNetLW, lwNet)
+            : null,
       lyPct:
-        lyNet > 0
-          ? isMargin
-            ? marginPct(twNetLY, twCogsLY) - marginPct(lyNet, lyCogs)
-            : pctChange(twNetLY, lyNet)
-          : null,
+        isMargin
+          ? storeMarginDelta(
+              countedRows(vend.raw.tw),
+              countedRows(vend.raw.ly),
+              "ly",
+            )
+          : lyNet > 0
+            ? pctChange(twNetLY, lyNet)
+            : null,
     };
-  }, [graded, metric]);
+  }, [graded, metric, vend.raw]);
 
   /** Coupon lines and anything else with no supplier. Surfaced rather than
    *  hidden — a large bucket here is worth knowing about, and it explains why

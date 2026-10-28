@@ -14,6 +14,13 @@ interface Props {
   inputWidth?: number;
   stretch?: boolean;
   variant?: "light" | "dark";
+  /**
+   * `sm` is the grid popover size it was built at. `md` is for a form where
+   * the amount is the thing being decided — a unit cost, say — and has to
+   * read at the size of the text around it.
+   */
+  size?: "sm" | "md";
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -30,9 +37,13 @@ const ThresholdFilter = ({
   inputWidth = 64,
   stretch = false,
   variant = "light",
+  size = "sm",
+  ariaLabel,
   className = "",
 }: Props) => {
   const isDark = variant === "dark";
+  const md = size === "md";
+  const textSize = md ? 13 : 10;
 
   const colors = {
     bg: isDark ? "rgb(var(--color-custom-white) / 0.12)" : "rgb(var(--color-brand-navy) / 0.06)",
@@ -55,7 +66,7 @@ const ThresholdFilter = ({
     boxShadow: "none",
     WebkitAppearance: "none",
     MozAppearance: "textfield",
-    fontSize: 10,
+    fontSize: textSize,
     color: colors.text,
     width: inputWidth,
     padding: `0 ${hasRight ? 20 : 6}px 0 ${prefix ? 2 : 6}px`,
@@ -65,7 +76,7 @@ const ThresholdFilter = ({
   return (
     <div
       className={`relative inline-flex items-center rounded flex-shrink-0 ${className}`}
-      style={{ height: 24, background: colors.bg, boxShadow: colors.shadow }}
+      style={{ height: md ? 32 : 24, background: colors.bg, boxShadow: colors.shadow }}
     >
       {/* Operator dropdown — hidden when showOp=false */}
       {showOp && (
@@ -104,13 +115,14 @@ const ThresholdFilter = ({
       {/* Input area */}
       <div style={{ position: "relative", display: "flex", alignItems: "center", height: "100%", background: colors.bgInset, ...(stretch ? { flex: 1 } : {}) }}>
         {prefix && (
-          <span style={{ fontSize: 10, color: colors.prefix, paddingLeft: 6, lineHeight: 1, flexShrink: 0 }}>{prefix}</span>
+          <span style={{ fontSize: textSize, color: colors.prefix, paddingLeft: md ? 9 : 6, lineHeight: 1, flexShrink: 0 }}>{prefix}</span>
         )}
         <input
           type="number"
           min={0}
           value={value?.amount ?? ""}
           placeholder={placeholder}
+          aria-label={ariaLabel}
           style={{ ...inputStyle, ...(stretch ? { width: "100%" } : {}) }}
           className="border-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           onChange={(e) => {
@@ -122,7 +134,7 @@ const ThresholdFilter = ({
           }}
         />
         {suffix && (
-          <span style={{ position: "absolute", right: 6, fontSize: 10, color: colors.prefix, lineHeight: 1, pointerEvents: "none" }}>
+          <span style={{ position: "absolute", right: md ? 9 : 6, fontSize: textSize, color: colors.prefix, lineHeight: 1, pointerEvents: "none" }}>
             {suffix}
           </span>
         )}
@@ -131,8 +143,8 @@ const ThresholdFilter = ({
             onClick={() => onChange(null)}
             style={{
               position: "absolute",
-              right: 5,
-              fontSize: 10,
+              right: md ? 8 : 5,
+              fontSize: textSize,
               lineHeight: 1,
               color: colors.clear,
               background: "none",

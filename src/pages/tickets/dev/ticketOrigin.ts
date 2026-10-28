@@ -113,6 +113,31 @@ const PAGE_DATES: Record<string, DateShape> = {
 };
 
 /**
+ * Pages the store and group search does not scope at all.
+ *
+ * The search slice outlives every page: it holds whatever store was last
+ * searched anywhere in the session. A ticket filed from one of these pages
+ * printed that store as if the problem were about it — Erica's ticket from
+ * User Management read "GROCERY BASKET · #1 · storeid 805" while she and
+ * Wayne were working on a B&T user, because Grocery Basket was the last store
+ * she had searched on another page.
+ *
+ * The same pages the dates already leave out, plus Settings: nothing on them
+ * is about a store somebody picked.
+ */
+const NO_SEARCH = new Set([
+  "admin",
+  "user-management",
+  "groups",
+  "tickets",
+  "quicksight",
+  "settings",
+]);
+
+/** Whether the page reads the store or group search at all. */
+export const pageUsesSearch = (href: string) => !NO_SEARCH.has(href);
+
+/**
  * One date, as mm/dd/yyyy, whichever way it arrives.
  *
  * Two shapes reach this. The search slice stores what `formatDate` produced,
@@ -163,6 +188,7 @@ export const searchSummary = (
   search: SearchState,
   href: string,
 ): string | null => {
+  if (!pageUsesSearch(href)) return null;
   const where =
     search.type === "Store"
       ? search.selectedStore?.store_name
@@ -233,40 +259,45 @@ export const scopeOf = (
   /** For a group search, the stores inside it the client is actually looking
    *  at. Empty means the whole group, which is what the search was. */
   stores: PickedStore[] = [],
-): Record<string, unknown> => ({
-  page: origin.page ?? origin.href,
-  area: origin.area,
-  search_type: search.type,
-  ...(search.type === "Store"
-    ? {
-        store: {
-          storeid: search.selectedStore?.storeid ?? null,
-          store_number: search.selectedStore?.store_number ?? null,
-          store_name: search.selectedStore?.store_name ?? null,
-          company: search.selectedStore?.company ?? null,
-          company_name: search.selectedStore?.company_name ?? null,
-        },
-      }
+): Record<string, unknown> =>
+  // A page with no search behind it has nothing to scope: no store, no
+  // group, no dates. The session's last search is about some other page.
+  !pageUsesSearch(origin.href)
+    ? { page: origin.page ?? origin.href, area: origin.area, search_type: null }
     : {
-        group: {
-          id: search.selectedGroup?.id ?? null,
-          group_name: search.selectedGroup?.group_name ?? null,
-          is_shared: search.selectedGroup?.is_shared ?? null,
-          // Inside the group rather than beside it — these are a narrowing of
-          // it, and one self-contained key beats a second top-level shape
-          // that only exists sometimes. Absent rather than empty when they
-          // did not narrow: present and empty reads as "no stores", which is
-          // the opposite of "the whole group".
-          ...(stores.length ? { stores } : {}),
+        page: origin.page ?? origin.href,
+        area: origin.area,
+        search_type: search.type,
+        ...(search.type === "Store"
+          ? {
+              store: {
+                storeid: search.selectedStore?.storeid ?? null,
+                store_number: search.selectedStore?.store_number ?? null,
+                store_name: search.selectedStore?.store_name ?? null,
+                company: search.selectedStore?.company ?? null,
+                company_name: search.selectedStore?.company_name ?? null,
+              },
+            }
+          : {
+              group: {
+                id: search.selectedGroup?.id ?? null,
+                group_name: search.selectedGroup?.group_name ?? null,
+                is_shared: search.selectedGroup?.is_shared ?? null,
+                // Inside the group rather than beside it — these are a narrowing of
+                // it, and one self-contained key beats a second top-level shape
+                // that only exists sometimes. Absent rather than empty when they
+                // did not narrow: present and empty reads as "no stores", which is
+                // the opposite of "the whole group".
+                ...(stores.length ? { stores } : {}),
+              },
+            }),
+        dates: {
+          shape: PAGE_DATES[origin.href] ?? "range",
+          start_date: search.startDate,
+          end_date: search.endDate,
+          single_date: search.singleDate,
         },
-      }),
-  dates: {
-    shape: PAGE_DATES[origin.href] ?? "range",
-    start_date: search.startDate,
-    end_date: search.endDate,
-    single_date: search.singleDate,
-  },
-});
+      };
 
 /**
  * The same thing in a sentence, for the foot of the first message.
@@ -279,6 +310,7 @@ export const scopeLine = (
   origin: TicketOrigin,
   stores: PickedStore[] = [],
 ): string => {
+  if (!pageUsesSearch(origin.href)) return origin.page ?? origin.href;
   const where =
     search.type === "Store"
       ? [
@@ -297,7 +329,10 @@ export const scopeLine = (
           search.selectedGroup?.id ? `group ${search.selectedGroup.id}` : null,
           stores.length
             ? `seen on ${stores
-                .map((s) => `${s.store_name} #${s.store_number} (storeid ${s.storeid})`)
+                .map(
+                  (s) =>
+                    `${s.store_name} #${s.store_number} (storeid ${s.storeid})`,
+                )
                 .join(", ")}`
             : null,
         ]
@@ -307,46 +342,6 @@ export const scopeLine = (
   const when = datesFor(search, PAGE_DATES[origin.href] ?? "range");
   return [origin.page ?? origin.href, where, when].filter(Boolean).join(" · ");
 };
-
-/**
- * The same two, for a ticket filed from the help desk itself.
- *
- * No page and no search behind it, so there is a store and nothing else —
- * whichever one they picked out of their own assigned list. Kept beside
- * `scopeOf` so both shapes of ticket describe a store the same way and a tech
- * does not have to learn two.
- */
-export const storeScope = (store: {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-  company: number;
-  company_name: string;
-}): Record<string, unknown> => ({
-  page: null,
-  area: null,
-  search_type: "Store",
-  store: {
-    storeid: store.storeid,
-    store_number: store.store_number,
-    store_name: store.store_name,
-    company: store.company,
-    company_name: store.company_name,
-  },
-});
-
-export const storeLine = (store: {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-}): string =>
-  [
-    store.store_name,
-    store.store_number ? `#${store.store_number}` : null,
-    store.storeid ? `storeid ${store.storeid}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
 /** The title a page-filed ticket opens with, so it is never blank. */
 export const suggestedTitle = (origin: TicketOrigin) =>

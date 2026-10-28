@@ -4,6 +4,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatDateSimple } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { usePricePoints } from "../../../hooks/usePricePoints";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import {
   setItemReportStoreId,
@@ -106,6 +107,14 @@ const ItemReport = () => {
 
   const { startWalk, cancelWalk } = useReceivingWalk();
   const { actual, loadActual, resetActual } = useActualPricePoints();
+  /**
+   * The price table, from `cashiers/price_points`.
+   *
+   * The rail used to build it by walking every receipt, which listed a
+   * random-weight item at package prices and pulled about 700 KB to do it.
+   * One small call now; the receipts follow only when a price is opened.
+   */
+  const { prices, loadPrices } = usePricePoints();
   const storeName = useStoreName(state.scope?.storeid ?? state.storeId);
 
   const run = async (
@@ -508,11 +517,14 @@ const ItemReport = () => {
     dispatch(setItemReportSelected(code));
     // Already fetched this search? Two calls saved, and the panel paints from
     // the cache immediately instead of spinning.
+    const { storeid, start, end } = state.scope;
+    loadPrices(code, storeid, start, end);
+    // Receipts are the expensive half and most rows never open one. Cached
+    // from an earlier look, they are already here; otherwise they wait.
     if (state.actualByUpc[code]) {
       resetActual();
       return;
     }
-    loadActual(code, state.scope.storeid, state.scope.start, state.scope.end);
   };
 
   /**
@@ -679,6 +691,17 @@ const ItemReport = () => {
           lookbackDays={RECEIVING_LOOKBACK}
           periods={periods}
           actual={selectedActual}
+          prices={prices}
+          onOpenPrice={() => {
+            const code = state.selectedUpc;
+            if (!state.scope || !code || state.actualByUpc[code]) return;
+            loadActual(
+              code,
+              state.scope.storeid,
+              state.scope.start,
+              state.scope.end,
+            );
+          }}
         />
       </div>
     </div>

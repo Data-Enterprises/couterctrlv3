@@ -134,10 +134,10 @@ const InventoryTreePanel = ({
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
           <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
+            <div className="text-[14px] font-semibold text-custom-white leading-tight truncate">
               {title}
             </div>
-            <div className="text-[10px] mt-0.5 text-custom-white truncate">
+            <div className="text-[11px] mt-0.5 text-custom-white truncate">
               {storeName} · {dateLabel}
             </div>
           </div>
@@ -172,21 +172,21 @@ const InventoryTreePanel = ({
                   }`}
                 >
                   {isOpen ? (
-                    <ChevronDownIcon className="w-3.5 h-3.5 text-content/40 flex-shrink-0" />
+                    <ChevronDownIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
                   ) : (
-                    <ChevronRightIcon className="w-3.5 h-3.5 text-content/40 flex-shrink-0" />
+                    <ChevronRightIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
                   )}
                   <span
-                    className={`flex-1 min-w-0 truncate text-[12px] ${isOpen ? "font-semibold text-content" : "text-content"}`}
+                    className={`flex-1 min-w-0 truncate text-[13px] ${isOpen ? "font-semibold text-content" : "text-content"}`}
                   >
                     {g.label}
                   </span>
                   {g.itemCount !== null && (
-                    <span className="text-[10px] text-content/50 tabular-nums flex-shrink-0">
+                    <span className="text-[11px] text-content/85 tabular-nums flex-shrink-0">
                       {g.itemCount}
                     </span>
                   )}
-                  <span className="text-[10px] text-content/60 tabular-nums flex-shrink-0">
+                  <span className="text-[11px] text-content/85 tabular-nums flex-shrink-0">
                     {treeMoney(g.sales)}
                   </span>
                 </button>
@@ -194,12 +194,12 @@ const InventoryTreePanel = ({
                 {isOpen && (
                   <div className="pb-1">
                     {productsLoading && (
-                      <div className="pl-8 pr-3 py-2 text-[11px] text-content/60">
+                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/85">
                         Loading items…
                       </div>
                     )}
                     {!productsLoading && visibleProducts.length === 0 && (
-                      <div className="pl-8 pr-3 py-2 text-[11px] text-content/60">
+                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/85">
                         No items matched
                       </div>
                     )}
@@ -216,7 +216,7 @@ const InventoryTreePanel = ({
                           }`}
                         >
                           <span
-                            className={`flex-1 min-w-0 truncate text-[11.5px] ${
+                            className={`flex-1 min-w-0 truncate text-[12.5px] ${
                               isSel
                                 ? "text-blue-900 font-medium"
                                 : "text-content"
@@ -225,8 +225,8 @@ const InventoryTreePanel = ({
                             {p.description}
                           </span>
                           <span
-                            className={`text-[10px] tabular-nums flex-shrink-0 ${
-                              isSel ? "text-blue-900" : "text-content/60"
+                            className={`text-[11px] tabular-nums flex-shrink-0 ${
+                              isSel ? "text-blue-900" : "text-content/85"
                             }`}
                           >
                             {treeMoney(p.sales)}

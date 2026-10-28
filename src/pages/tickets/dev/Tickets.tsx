@@ -8,6 +8,7 @@ import {
 } from "../../../features/dev/devTicketsSlice";
 import { useTicketsCtx } from "./hooks";
 import { priorityCounts, statusCounts } from "./ticketsUtils";
+import { storesOnTickets } from "./ticketStores";
 import TicketInbox from "./TicketInbox";
 import TicketDetail from "./TicketDetail";
 import TicketSidebar from "./TicketSidebar";
@@ -20,9 +21,10 @@ import TechsModal from "./TechsModal";
  *
  * Which view someone gets is decided by the server and arrives with the data:
  * `canViewAll` brings the queue, every company's tickets and the internal
- * notes; without it the page is a client's own tickets and the conversation on
- * them. Nothing here derives that from a user level, because the rule lives
- * server-side and the two would drift the first time a level moved.
+ * notes; without it the page is the tickets the client may see, which `scope`
+ * names: their own, also their stores', or also their companies'. Nothing here
+ * derives that from a user level, because the rule lives server-side and the
+ * two would drift the first time a level moved.
  *
  * One route rather than two nav entries. The flags come back on every list and
  * detail response, so the page always knows which of itself to be, and there
@@ -58,6 +60,10 @@ const Tickets = () => {
 
   const byStatus = useMemo(() => statusCounts(ctx.tickets), [ctx.tickets]);
   const byPriority = useMemo(() => priorityCounts(ctx.tickets), [ctx.tickets]);
+  const storeOptions = useMemo(
+    () => storesOnTickets(ctx.tickets),
+    [ctx.tickets],
+  );
 
   const refresh = () => {
     // A poll has already fetched the newer queue, so applying it is instant
@@ -73,6 +79,9 @@ const Tickets = () => {
         selectedId={ctx.selectedId}
         onSelect={ctx.open}
         isTech={ctx.isTech}
+        scope={ctx.scope}
+        userid={ctx.userid}
+        storeOptions={storeOptions}
         loading={ctx.loading}
         tab={ctx.tab}
         counts={ctx.counts}

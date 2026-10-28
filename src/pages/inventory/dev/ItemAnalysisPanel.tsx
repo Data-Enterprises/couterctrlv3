@@ -10,7 +10,6 @@ import {
   estimatedPricePoints,
   pricePointsFromServer,
   linesAtPrice,
-  mixedPriceInsight,
   classifyPattern,
   suggestPrice,
   suggestionWithheld,
@@ -19,7 +18,7 @@ import {
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
-import type { PricePointsState } from "./usePricePoints";
+import type { PricePointsState } from "../../../hooks/usePricePoints";
 import { resolveUnitCost } from "./invoiceCost";
 import type { InvoiceCostState } from "./useInvoiceCost";
 
@@ -56,7 +55,7 @@ interface Props {
   invoice: InvoiceCostState;
 }
 
-const EST_COLS = "1fr 46px 42px 52px 34px";
+const EST_COLS = "1fr 50px 46px 56px 38px";
 const NO_ROWS: PricePointsState["rows"] = [];
 const dash = "—";
 
@@ -71,6 +70,9 @@ const ItemAnalysisPanel = ({
   // for the previously-clicked UPC is dropped rather than rendered.
   const isCurrent = prices.upc === product.productCode;
   const rows = isCurrent ? prices.rows : NO_ROWS;
+  /** Same staleness gate as the rows: counts for the last item must not
+   *  be read against this one. */
+  const mixed = isCurrent ? prices.mixed : null;
   // The panel's loading and error states are the price table's. The receipts
   // only ever load under an opened row, and say so there.
   const actual = prices;
@@ -106,13 +108,13 @@ const ItemAnalysisPanel = ({
     () => pricePointsFromServer(rows, unitCost),
     [rows, unitCost],
   );
-  // "Package deal" reads each receipt for the item at two prices, and the
-  // server's table counts receipts without naming them. Until it reports
-  // that count, the pattern is judged without it rather than from a download
-  // of every receipt, which is what the table replaced.
+  // "Package deal" reads each receipt for the item at two prices. The server
+  // reports that count now (finding D), so the pattern is judged from it
+  // rather than from a download of every receipt. Null on a weighed item or
+  // an older API, and the pattern then stays quiet.
   const pattern = useMemo(
-    () => classifyPattern(act, mixedPriceInsight([])),
-    [act],
+    () => classifyPattern(act, mixed),
+    [act, mixed],
   );
   // Weighed items have per-pound prices on both sides now, so the notice that
   // withheld their suggestion (finding A's stop-gap) is gone.
@@ -131,9 +133,10 @@ const ItemAnalysisPanel = ({
       units: product.units,
       marginPct: stats.marginPct,
       unitCost: stats.unitCost,
-      // Counts prices actually rung, not inferred ones — the tile has to agree
-      // with the table the suggestion comes from.
-      prices: act.exact.length + act.averaged.length,
+      // One count, shared with the pattern note under it. These were computed
+      // separately and disagreed on screen — 5 here against "4 prices across
+      // 84 transactions" below (finding AT).
+      prices: act.priceCount,
       // Receipts, once each, even when one sits in both tables.
       trans: act.receiptCount,
     }),
@@ -146,30 +149,30 @@ const ItemAnalysisPanel = ({
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-[10px] bg-brand_navy">
-          <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
+          <div className="text-[14px] font-semibold text-custom-white leading-tight truncate">
             {product.description}
           </div>
-          <div className="text-[10px] mt-0.5 text-custom-white truncate">
+          <div className="text-[11px] mt-0.5 text-custom-white truncate">
             {product.productCode}
           </div>
         </div>
 
         <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Sales
             </div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+            <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(totals.sales)}
             </div>
           </div>
           {/* The floor under every price on this screen. Without it a reader
               can see that $6.50 moves fastest but not that it's below cost. */}
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Cost / unit
             </div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+            <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.unitCost !== null
                 ? formatCurrency2(totals.unitCost)
                 : dash}
@@ -177,7 +180,7 @@ const ItemAnalysisPanel = ({
             {/* Where the figure came from, because the two sources can differ
                 by a dollar a unit and a reader checking an invoice needs to
                 know which one this is. */}
-            <div className="text-[10px] text-content/70 leading-tight mt-0.5">
+            <div className="text-[11px] text-content/85 leading-tight mt-0.5">
               {cost.source === "invoice" && cost.invoice
                 ? `invoice ${cost.invoice.date.slice(5).replace("-", "/")}`
                 : invoice.loading && invoice.upc === product.productCode
@@ -186,19 +189,19 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Units
             </div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+            <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.units % 1 === 0 ? totals.units : totals.units.toFixed(2)}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               GM%
             </div>
             <div
-              className={`text-[14px] font-bold tabular-nums mt-0.5 ${
+              className={`text-[15px] font-bold tabular-nums mt-0.5 ${
                 totals.marginPct === null
                   ? "text-content"
                   : totals.marginPct < 0
@@ -212,18 +215,18 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Prices
             </div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+            <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.prices}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Trans
             </div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+            <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {actual.loading && isCurrent ? (
                 <span className="text-gray-400">…</span>
               ) : (
@@ -238,8 +241,8 @@ const ItemAnalysisPanel = ({
         {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
-              <InformationCircleIcon className="w-4 h-4 text-content/60 flex-shrink-0 mt-px" />
-              <p className="text-[12px] text-content leading-snug">{withheld}</p>
+              <InformationCircleIcon className="w-4 h-4 text-content/85 flex-shrink-0 mt-px" />
+              <p className="text-[13px] text-content leading-snug">{withheld}</p>
             </div>
           </div>
         )}
@@ -249,13 +252,13 @@ const ItemAnalysisPanel = ({
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <ArrowTrendingUpIcon className="w-4 h-4 text-blue-800 flex-shrink-0" />
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-blue-900">
+                <span className="text-[12px] font-semibold uppercase tracking-wide text-blue-900">
                   Moves fastest at
                 </span>
-                <span className="text-[15px] font-bold text-blue-900 tabular-nums">
+                <span className="text-[16px] font-bold text-blue-900 tabular-nums">
                   {formatCurrency2(suggestion.best.point.price)}
                 </span>
-                <span className="text-[11px] text-blue-900">
+                <span className="text-[12px] text-blue-900">
                   {suggestion.best.point.priceType} ·{" "}
                   {suggestion.best.velocity.toFixed(1)}/day over{" "}
                   {suggestion.best.point.daysSeen}{" "}
@@ -266,19 +269,19 @@ const ItemAnalysisPanel = ({
                 {/* A price can be the fastest mover and still lose money on
                     every unit. That has to outrank everything else on the row. */}
                 {suggestion.best.point.marginPerUnit < 0 && (
-                  <span className="text-[10px] px-1.5 py-px rounded bg-red-100 text-red-900 font-medium">
+                  <span className="text-[11px] px-1.5 py-px rounded bg-red-100 text-red-900 font-medium">
                     Below cost
                   </span>
                 )}
                 {suggestion.isCurrent && (
-                  <span className="text-[10px] px-1.5 py-px rounded bg-blue-100 text-blue-900 font-medium">
+                  <span className="text-[11px] px-1.5 py-px rounded bg-blue-100 text-blue-900 font-medium">
                     Already selling here
                   </span>
                 )}
               </div>
 
               {suggestion.current && (
-                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11px] text-blue-900">
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[12px] text-blue-900">
                   <span>
                     Now at{" "}
                     <span className="tabular-nums font-medium">
@@ -304,7 +307,7 @@ const ItemAnalysisPanel = ({
               )}
 
               {suggestion.isCheapest && !suggestion.isCurrent && (
-                <div className="mt-1.5 text-[10.5px] text-blue-900/85">
+                <div className="mt-1.5 text-[11.5px] text-blue-900/85">
                   This is also the lowest price on record — volume at the
                   cheapest price is expected, not a finding.
                 </div>
@@ -325,10 +328,10 @@ const ItemAnalysisPanel = ({
               {pattern.concerning ? (
                 <ExclamationTriangleIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
               ) : (
-                <InformationCircleIcon className="w-4 h-4 text-content/60 flex-shrink-0" />
+                <InformationCircleIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
               )}
               <span
-                className={`text-[11.5px] truncate ${pattern.concerning ? "text-amber-900" : "text-content"}`}
+                className={`text-[12.5px] truncate ${pattern.concerning ? "text-amber-900" : "text-content"}`}
               >
                 <span className="font-medium">{pattern.title}</span> —{" "}
                 {pattern.detail}
@@ -344,15 +347,19 @@ const ItemAnalysisPanel = ({
             className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
           >
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-[11px] font-semibold text-content">
-                Estimated
+              {/* "Estimated" read as approximate-but-right, which is the one
+                  thing this side is not. Naming the arithmetic is the warning:
+                  a reader who knows it is an average already knows not to
+                  quote a figure from it. */}
+              <span className="text-[12px] font-semibold text-content">
+                Daily average
               </span>
-              <span className="text-[10px] text-content/60">
-                daily roll-ups
+              <span className="text-[11px] text-content/85">
+                a day&rsquo;s sales &divide; its units
               </span>
             </div>
             <div
-              className="grid px-1 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+              className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
               style={{ gridTemplateColumns: EST_COLS }}
             >
               <span>Price</span>
@@ -365,13 +372,13 @@ const ItemAnalysisPanel = ({
               return (
                 <div
                   key={`${p.price}-${p.priceType}`}
-                  className="grid px-1 py-2 text-[12px] border-b border-gray-50 even:bg-row_stripe"
+                  className="grid px-1 py-2 text-[13px] border-b border-gray-50 even:bg-row_stripe"
                   style={{ gridTemplateColumns: EST_COLS }}
                 >
                   <span className="tabular-nums text-content">
                     {formatCurrency2(p.price)}
                   </span>
-                  <span className="text-content/70">{p.priceType}</span>
+                  <span className="text-content/85">{p.priceType}</span>
                   <span className="text-right tabular-nums text-content">
                     {p.units % 1 === 0 ? p.units : p.units.toFixed(2)}
                   </span>
@@ -387,7 +394,7 @@ const ItemAnalysisPanel = ({
               );
             })}
             {estimated.length === 0 && (
-              <div className="py-6 text-center text-[11.5px] text-content/60">
+              <div className="py-6 text-center text-[12.5px] text-content/85">
                 No sales rows in this window
               </div>
             )}
@@ -399,18 +406,20 @@ const ItemAnalysisPanel = ({
             className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
           >
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-[11px] font-semibold text-content">
-                Actual
+              {/* Paired with "Daily average" so the two headers contrast on
+                  the thing that matters: one is worked out, this one happened. */}
+              <span className="text-[12px] font-semibold text-content">
+                Actually charged
               </span>
               {isCurrent && !actual.loading && act.exactCount > 0 && (
-                <span className="text-[10px] px-1.5 py-px rounded bg-blue-50 text-blue-800">
+                <span className="text-[11px] px-1.5 py-px rounded bg-blue-50 text-blue-800">
                   {act.isWeighted ? "$/lb" : "Exact"} · {act.exactCount} trans
                 </span>
               )}
             </div>
 
             {actual.loading && isCurrent && (
-              <div className="py-6 text-center text-[11.5px] text-content/60">
+              <div className="py-6 text-center text-[12.5px] text-content/85">
                 Reading registers…
               </div>
             )}
@@ -418,7 +427,7 @@ const ItemAnalysisPanel = ({
             {isCurrent && actual.error && (
               <div className="flex items-start gap-1.5 px-2.5 py-2 rounded-lg bg-amber-50">
                 <ExclamationTriangleIcon className="w-4 h-4 text-amber-800 flex-shrink-0 mt-px" />
-                <span className="text-[11.5px] text-amber-900">
+                <span className="text-[12.5px] text-amber-900">
                   {actual.error}
                 </span>
               </div>
@@ -427,7 +436,7 @@ const ItemAnalysisPanel = ({
             {isCurrent && !actual.loading && !actual.error && (
               <>
                 {act.exact.length === 0 && act.averaged.length === 0 && (
-                  <div className="py-6 text-center text-[11.5px] text-content/60">
+                  <div className="py-6 text-center text-[12.5px] text-content/85">
                     No register lines matched this item
                   </div>
                 )}
@@ -435,7 +444,7 @@ const ItemAnalysisPanel = ({
                 {act.exact.length > 0 && (
                   <>
                     <div
-                      className="grid px-1 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
+                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
                       style={{ gridTemplateColumns: ACT_COLS }}
                     >
                       <span>{act.isWeighted ? "$/lb" : "Price"}</span>
@@ -465,12 +474,12 @@ const ItemAnalysisPanel = ({
                 {act.averaged.length > 0 && (
                   <>
                     <div className="mt-3 mb-1">
-                      <span className="text-[10px] px-1.5 py-px rounded bg-gray-100 text-content">
+                      <span className="text-[11px] px-1.5 py-px rounded bg-gray-100 text-content">
                         Avg · {act.averagedCount} trans
                       </span>
                     </div>
                     <div
-                      className="grid px-1 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
+                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
                       style={{ gridTemplateColumns: ACT_COLS }}
                     >
                       <span>Price</span>

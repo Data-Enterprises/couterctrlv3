@@ -6,6 +6,8 @@ import CheckBox from "../../../components-dev/inputs/CheckBox";
 import { openClosing } from "../../../features/dev/devTicketsSlice";
 import type { TicketStatus } from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
+import EditStoresModal from "./EditStoresModal";
+import { storeFullText, storesOf } from "./ticketStores";
 import {
   PRIORITY_CLASS,
   STATUS_CLASS,
@@ -30,6 +32,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [internal, setInternal] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [filesOpen, setFilesOpen] = useState(false);
+  const [storesOpen, setStoresOpen] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
   const thread = useRef<HTMLDivElement>(null);
   /** Was the reader at the bottom before this batch arrived? */
@@ -180,6 +183,17 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
               <span>{ticket.category_name}</span>
             </>
           )}
+          {/* Which stores, in full: they decide which managers can see it,
+              so whoever is reading should be able to check them. Only once
+              the API sends them; an older one has no answer to print. */}
+          {ticket.stores && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="font-medium text-content">
+                {storeFullText(storesOf(ticket))}
+              </span>
+            </>
+          )}
           {/* Who has it, for the readers who have no assign control below —
               a client, and a tech without canManage. */}
           {!ctx.canManage && (
@@ -237,6 +251,17 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
               }}
               className="w-[160px]"
             />
+            {ticket.stores && (
+              <button
+                type="button"
+                onClick={() => setStoresOpen(true)}
+                disabled={ctx.working}
+                title="Change which stores this ticket is about"
+                className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
+              >
+                Edit stores
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -469,6 +494,15 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           </button>
         </div>
       </div>
+      )}
+
+      {storesOpen && ctx.canManage && (
+        <EditStoresModal
+          ticket={ticket}
+          onSave={ctx.setStores}
+          onClose={() => setStoresOpen(false)}
+          working={ctx.working}
+        />
       )}
     </div>
   );

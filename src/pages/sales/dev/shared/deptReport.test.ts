@@ -4,6 +4,7 @@ import {
   chainFor,
   NOT_CHECKED,
   splitGap,
+  hashTotals,
   totalsFrom,
   type Bands,
   type DeptTotals,
@@ -12,7 +13,12 @@ import {
 import type { SubSale } from "../../../../interfaces";
 
 const dept = (over: Partial<DeptTotals> = {}): DeptTotals => ({
-  id: 1,
+  key: "thing",
+  mineId: 1,
+  theirsId: 1,
+  // Both stores carry it unless a test says otherwise — these cases are
+  // about ranking a gap, which only a comparable department has.
+  matched: true,
   name: "Thing",
   mine: 0,
   theirs: 0,
@@ -206,7 +212,7 @@ describe("what the report prints", () => {
   const spread = () =>
     [30, 20, 10, 10, 10, 10, 10].map((loss, i) =>
       dept({
-        id: i,
+        key: `d${i}`, mineId: i, theirsId: i,
         name: `D${i}`,
         mine: 100 - loss,
         mineUnits: 10,
@@ -225,16 +231,16 @@ describe("what the report prints", () => {
 
   it("prints one row when one department is the whole problem", () => {
     const depts = [
-      dept({ id: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
-      dept({ id: 2, name: "Small", mine: 95, mineUnits: 10, theirs: 100, theirsUnits: 10 }),
+      dept({ key: "d1", mineId: 1, theirsId: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
+      dept({ key: "d2", mineId: 2, theirsId: 2, name: "Small", mine: 95, mineUnits: 10, theirs: 100, theirsUnits: 10 }),
     ];
     expect(buildReport(depts, bands).shown.map((x) => x.name)).toEqual(["Big"]);
   });
 
   it("separates over from under and nets them", () => {
     const depts = [
-      dept({ id: 1, mine: 60, mineUnits: 6, theirs: 100, theirsUnits: 10 }),
-      dept({ id: 2, mine: 130, mineUnits: 13, theirs: 100, theirsUnits: 10 }),
+      dept({ key: "d1", mineId: 1, theirsId: 1, mine: 60, mineUnits: 6, theirs: 100, theirsUnits: 10 }),
+      dept({ key: "d2", mineId: 2, theirsId: 2, mine: 130, mineUnits: 13, theirs: 100, theirsUnits: 10 }),
     ];
     const r = buildReport(depts, bands);
     expect(r.underTotal).toBeCloseTo(40, 6);
@@ -248,7 +254,7 @@ describe("what the report prints", () => {
    */
   it("names a folded department that is a long way behind in its own terms", () => {
     const depts = spread().concat([
-      dept({ id: 99, name: "Halved", mine: 4, mineUnits: 2, theirs: 12, theirsUnits: 6 }),
+      dept({ key: "d99", mineId: 99, theirsId: 99, name: "Halved", mine: 4, mineUnits: 2, theirs: 12, theirsUnits: 6 }),
     ]);
     const r = buildReport(depts, bands);
     expect(r.shown.map((x) => x.name)).not.toContain("Halved");
@@ -258,7 +264,7 @@ describe("what the report prints", () => {
 
   it("never names a printed department as steep — it is already on screen", () => {
     const depts = [
-      dept({ id: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
+      dept({ key: "d1", mineId: 1, theirsId: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
     ];
     const r = buildReport(depts, bands);
     expect(r.shown.map((x) => x.name)).toEqual(["Big"]);
@@ -266,7 +272,7 @@ describe("what the report prints", () => {
   });
 
   it("prints everything when there is nothing to apportion", () => {
-    const r = buildReport([dept({ id: 1, mine: 100, theirs: 100 })], bands);
+    const r = buildReport([dept({ key: "d1", mineId: 1, theirsId: 1, mine: 100, theirs: 100 })], bands);
     expect(r.underTotal).toBe(0);
     expect(r.shownShare).toBe(0);
   });
@@ -282,10 +288,19 @@ describe("grouping by what failed", () => {
    */
   it("collects the departments that failed the same gate", () => {
     const silent = (id: number, theirs: number) =>
-      dept({ id, name: `S${id}`, mine: 0, mineUnits: 0, theirs, theirsUnits: 100 });
+      dept({
+        key: `s${id}`,
+        mineId: id,
+        theirsId: id,
+        name: `S${id}`,
+        mine: 0,
+        mineUnits: 0,
+        theirs,
+        theirsUnits: 100,
+      });
     const r = buildReport(
       [
-        dept({ id: 1, name: "Big", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
+        dept({ key: "d1", mineId: 1, theirsId: 1, name: "Big", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
         silent(2, 900),
         silent(3, 400),
         silent(4, 150),
@@ -300,8 +315,8 @@ describe("grouping by what failed", () => {
   it("puts the costliest group first", () => {
     const r = buildReport(
       [
-        dept({ id: 1, name: "Quiet", mine: 0, mineUnits: 0, theirs: 500, theirsUnits: 50 }),
-        dept({ id: 2, name: "Thin", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
+        dept({ key: "d1", mineId: 1, theirsId: 1, name: "Quiet", mine: 0, mineUnits: 0, theirs: 500, theirsUnits: 50 }),
+        dept({ key: "d2", mineId: 2, theirsId: 2, name: "Thin", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
       ],
       bands,
     );
@@ -347,14 +362,19 @@ describe("reading the payload", () => {
     expect(out[0].theirsUnits).toBe(4);
   });
 
-  it("keeps a department only one store carries", () => {
+  it("keeps a department only one store carries, and marks it unmatched", () => {
     const out = totalsFrom({
       mineTw: [row({ sub_department: 10, total_sales: 100, qty: 2 })],
       theirsTw: [row({ sub_department: 20, sub_department_description: "Bakery", total_sales: 80, qty: 3 })],
       mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
     });
     expect(out).toHaveLength(2);
-    expect(out.find((d) => d.id === 20)?.mine).toBe(0);
+    const bakery = out.find((d) => d.name === "Bakery");
+    expect(bakery?.mine).toBe(0);
+    // Theirs only: no number on our side, and nothing to be behind on.
+    expect(bakery?.matched).toBe(false);
+    expect(bakery?.mineId).toBeNull();
+    expect(bakery?.theirsId).toBe(20);
   });
 
   it("carries the same subtraction in the two earlier periods", () => {
@@ -370,3 +390,240 @@ describe("reading the payload", () => {
     expect(out[0].lyGap).toBeCloseTo(10, 6);
   });
 });
+
+/**
+ * Brooks Chapel Hill (1105) against Brooks Tupelo (1521), week ending
+ * 10/22/2026 — the pair the bug was found on.
+ *
+ * Their sub-department numbering has nothing to do with each other: Chapel
+ * Hill's 5 is Fresh Meat where Tupelo's 5 is Tobacco, and Chapel Hill's 10 is
+ * Tobacco where Tupelo's 10 is Deli/Bakery. Pairing on the number reported
+ * Chapel Hill $65,828.85 behind on cigarettes, which was $243.72 of tobacco
+ * set against $66,072.57 of somebody else's deli.
+ */
+describe("pairing two stores that number their departments differently", () => {
+  const at = (sub: number, name: string, sales: number) =>
+    row({
+      sub_department: sub,
+      sub_department_description: name,
+      total_sales: sales,
+      total_tax: 0,
+      qty: 1,
+    });
+
+  const brooks = () =>
+    totalsFrom({
+      mineTw: [
+        at(5, "Fresh Meat", 26150.59),
+        at(10, "Tobacco", 243.72),
+        at(3, "Non-Foods", 8537.01),
+        at(9, "Frozen Foods", 13702.56),
+        at(14, "Lottery", 187),
+      ],
+      theirsTw: [
+        at(12, "FRESH MEAT", 28065.56),
+        at(5, "Tobacco", 8.49),
+        at(10, "Deli/Bakery", 66072.57),
+        at(4, "Non-Food", 9517.84),
+        at(7, "Frozen Food", 11400.64),
+        at(97, "UNLEADED", 61519.29),
+      ],
+      mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+    });
+
+  const find = (out: ReturnType<typeof brooks>, name: string) =>
+    out.find((d) => d.name.toLowerCase() === name.toLowerCase());
+
+  it("puts tobacco against tobacco", () => {
+    const t = find(brooks(), "Tobacco")!;
+    expect(t.mine).toBeCloseTo(243.72, 2);
+    expect(t.theirs).toBeCloseTo(8.49, 2);
+    // Chapel Hill is AHEAD on tobacco by $235.23. It was told it was
+    // $65,828.85 behind.
+    expect(t.mine - t.theirs).toBeCloseTo(235.23, 2);
+  });
+
+  it("keeps each store's own number for the drill", () => {
+    const t = find(brooks(), "Tobacco")!;
+    expect(t.mineId).toBe(10);
+    expect(t.theirsId).toBe(5);
+  });
+
+  it("matches across case and a trailing s", () => {
+    expect(find(brooks(), "Fresh Meat")!.theirs).toBeCloseTo(28065.56, 2);
+    expect(find(brooks(), "Non-Foods")!.theirs).toBeCloseTo(9517.84, 2);
+    expect(find(brooks(), "Frozen Foods")!.theirs).toBeCloseTo(11400.64, 2);
+  });
+
+  it("does not invent a counterpart for a department the other store lacks", () => {
+    const fuel = find(brooks(), "UNLEADED")!;
+    expect(fuel.matched).toBe(false);
+    expect(fuel.mine).toBe(0);
+    expect(fuel.mineId).toBeNull();
+
+    const lottery = find(brooks(), "Lottery")!;
+    expect(lottery.matched).toBe(false);
+    expect(lottery.theirs).toBe(0);
+  });
+});
+
+describe("a report over two differently numbered stores", () => {
+  const at = (sub: number, name: string, sales: number) =>
+    row({
+      sub_department: sub,
+      sub_department_description: name,
+      total_sales: sales,
+      total_tax: 0,
+      qty: 1,
+    });
+
+  const report = () =>
+    buildReport(
+      totalsFrom({
+        mineTw: [at(1, "Grocery", 1000), at(14, "Lottery", 50)],
+        theirsTw: [at(1, "Grocery", 1500), at(97, "UNLEADED", 9000)],
+        mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+      }),
+    );
+
+  it("leaves the uncomparable departments out of the piles", () => {
+    const r = report();
+    // Only Grocery is comparable: $500 behind, nothing ahead.
+    expect(r.underTotal).toBe(500);
+    expect(r.overTotal).toBe(0);
+    expect(r.matchedNet).toBe(-500);
+    // Fuel is not a shortfall. It used to be the biggest row on the screen.
+    expect(r.under.some((x) => x.name === "UNLEADED")).toBe(false);
+  });
+
+  it("accounts for them separately, so the three parts still add up", () => {
+    const r = report();
+    expect(r.onlyMineTotal).toBe(50);
+    expect(r.onlyTheirsTotal).toBe(9000);
+    expect(r.onlyMine.map((x) => x.name)).toEqual(["Lottery"]);
+    expect(r.onlyTheirs.map((x) => x.name)).toEqual(["UNLEADED"]);
+    // matchedNet + mine-only - theirs-only is the whole difference between
+    // the two stores, which is what the headline reports.
+    expect(r.netGap).toBe(-500 + 50 - 9000);
+  });
+
+  it("still names the right departments in the findings", () => {
+    const r = report();
+    expect(r.byFinding.flatMap((g) => g.rows.map((x) => x.name))).toEqual([
+      "Grocery",
+    ]);
+  });
+});
+
+describe("the sold gate's percentage", () => {
+  const gates = { units: 0.05, rate: 0.05, mix: 0.2 };
+  const soldValue = (mineUnits: number, theirsUnits: number) =>
+    chainFor(
+      dept({ mine: 1, theirs: 100, mineUnits, theirsUnits }),
+      gates,
+    ).gates.find((g) => g.name === "sold")!.value;
+
+  it("says 100% only when the store really rang nothing", () => {
+    expect(soldValue(0, 9051)).toBe("100% fewer units");
+  });
+
+  it("does not round a near-miss up to none at all", () => {
+    // Chapel Hill rang 16 units of tobacco against Tupelo's 9,051 — 99.8%
+    // fewer. Math.round made that "100% fewer units", which reads as NONE,
+    // and is what made the row look impossible.
+    expect(soldValue(16, 9051)).toBe("99% fewer units");
+  });
+
+  it("leaves everything else alone", () => {
+    expect(soldValue(50, 100)).toBe("50% fewer units");
+    expect(soldValue(150, 100)).toBe("50% more units");
+  });
+});
+
+/**
+ * The reconciliation the whole thing was for.
+ *
+ * Brooks Chapel Hill (1105) and Tupelo (1521), week to 10/22/2026, as the
+ * rows actually come back:
+ *
+ *   sub_sales            Chapel Hill $220,855.15   Tupelo $356,891.66
+ *   of which hash                    -$2,334.95           $79,943.00
+ *   sales/weekly                    $223,190.10          $276,948.66
+ *
+ * The Stores tab says Chapel Hill is $53,758.56 behind. The Sub depts
+ * headline said $136,036.51, which is the same subtraction over rows that
+ * include fuel and cash accounts. Dropping the hash rows is what closes the
+ * $82,277.95 between them.
+ */
+describe("the headline against the Stores tab", () => {
+  const at = (sub: number, name: string, sales: number, hash = false) =>
+    row({
+      sub_department: sub,
+      sub_department_description: name,
+      total_sales: sales,
+      total_tax: 0,
+      qty: 1,
+      is_hash: hash,
+    });
+
+  // Standing in for each store's week: what it counts, and what it doesn't.
+  const periods = {
+    mineTw: [
+      at(1, "Grocery", 223190.1),
+      at(27, "Cash Acct", -2334.95, true),
+    ],
+    theirsTw: [
+      at(1, "Grocery", 276948.66),
+      at(97, "UNLEADED", 79943.0, true),
+    ],
+    mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+  };
+
+  it("nets to what the Stores tab shows", () => {
+    const r = buildReport(totalsFrom(periods));
+    expect(r.netGap).toBeCloseTo(-53758.56, 2);
+  });
+
+  it("was out by the hash departments before", () => {
+    // The same rows with the flag stripped -- the shape the endpoint returned
+    // until `is_hash` landed.
+    const unflagged = {
+      ...periods,
+      mineTw: periods.mineTw.map(({ is_hash: _h, ...r }) => r),
+      theirsTw: periods.theirsTw.map(({ is_hash: _h, ...r }) => r),
+    };
+    const r = buildReport(totalsFrom(unflagged));
+    expect(r.netGap).toBeCloseTo(-136036.51, 2);
+    // And the difference between the two readings is the hash money.
+    expect(-53758.56 - -136036.51).toBeCloseTo(82277.95, 2);
+  });
+
+  it("keeps the hash money for the note rather than discarding it", () => {
+    const h = hashTotals(periods);
+    expect(h.theirs).toBeCloseTo(79943.0, 2);
+    expect(h.mine).toBeCloseTo(-2334.95, 2);
+    expect(h.names).toEqual(["UNLEADED"]);
+  });
+
+  it("leaves hash departments out of the rows entirely", () => {
+    const out = totalsFrom(periods);
+    expect(out.map((d) => d.name)).toEqual(["Grocery"]);
+  });
+
+  it("keeps a negative department in the total", () => {
+    // Cash Acct, RSA and the 60 Plus Club are all negative. Picking the two
+    // lists by "made money" rather than by "which store has it" dropped them
+    // from both, and the headline silently stopped matching the rows.
+    const r = buildReport(
+      totalsFrom({
+        mineTw: [at(1, "Grocery", 1000), at(27, "Cash Acct", -300)],
+        theirsTw: [at(1, "Grocery", 1000)],
+        mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+      }),
+    );
+    expect(r.onlyMine.map((x) => x.name)).toEqual(["Cash Acct"]);
+    expect(r.onlyMineTotal).toBe(-300);
+    expect(r.netGap).toBe(-300);
+  });
+});
+

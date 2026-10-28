@@ -3,7 +3,14 @@ import {
   canEditOrders,
   addedLines,
   appendLine,
+  applySent,
   applyField,
+  applyUnitCost,
+  stagePreview,
+  stageUnitCost,
+  changedLines,
+  perCase,
+  unitCostOf,
   blankLine,
   blankLines,
   buildDocs,
@@ -13,6 +20,9 @@ import {
   docKey,
   dropLine,
   editedLines,
+  linesInPick,
+  matchesPick,
+  NO_PICK,
   isAdded,
   isEdited,
   nextSeq,
@@ -90,6 +100,48 @@ const OTHER = [
 const ALL = [...ORDER, ...OTHER];
 const docs = buildDocs(ALL);
 const draftOf = () => startDraft(docs[0], ALL);
+
+/**
+ * The same storeid at two physical locations — the case `storeIdentity` exists
+ * for, and the one that broke the "was" note: a merged draft holds two line 1s.
+ */
+const CO_LOCATED = [
+  line({ storenumber: "369", storename: "Bruces Foodland 369", line_number: 1, qty: 12 }),
+  line({ storenumber: "369", storename: "Bruces Foodland 369", line_number: 2, qty: 4 }),
+  line({ storenumber: "370", storename: "Bruces Foodland 370", line_number: 1, qty: 13 }),
+  line({ storenumber: "370", storename: "Bruces Foodland 370", line_number: 2, qty: 7 }),
+];
+
+describe("co-located stores", () => {
+  it("keeps the two locations as separate orders", () => {
+    expect(docKey(CO_LOCATED[0])).not.toBe(docKey(CO_LOCATED[2]));
+    expect(buildDocs(CO_LOCATED)).toHaveLength(2);
+  });
+
+  it("gives each draft only its own location's lines", () => {
+    const [first, second] = buildDocs(CO_LOCATED);
+    const a = startDraft(first, CO_LOCATED);
+    const b = startDraft(second, CO_LOCATED);
+
+    expect(a.lines).toHaveLength(2);
+    expect(b.lines).toHaveLength(2);
+    expect(a.lines.map((l) => l.storenumber)).toEqual(["369", "369"]);
+    expect(b.lines.map((l) => l.storenumber)).toEqual(["370", "370"]);
+  });
+
+  it("edits one location without touching the other, and keeps its own was", () => {
+    const [first] = buildDocs(CO_LOCATED);
+    const draft = startDraft(first, CO_LOCATED);
+    // 369 line 1 is qty 12; 370 line 1 is qty 13. Editing by line number
+    // alone used to hit both and report the wrong original.
+    const next = applyField(draft, 1, "qty", 9);
+
+    const edited = next.lines.find((l) => l.line_number === 1)!;
+    expect(edited.qty).toBe(9);
+    expect(edited.original?.qty).toBe(12);
+    expect(next.lines.filter((l) => l.qty === 9)).toHaveLength(1);
+  });
+});
 
 describe("buildDocs", () => {
   it("makes one document per store, order and date", () => {
@@ -542,5 +594,190 @@ describe("canEditOrders", () => {
 
   it("refuses somebody holding nothing", () => {
     expect(canEditOrders(5, [], MON)).toBe(false);
+  });
+});
+
+describe("unit cost", () => {
+  it("reads as case cost over case size", () => {
+    // base_cost 24 on a case of 12
+    expect(unitCostOf(ORDER[0])).toBe(2);
+  });
+
+  it("writes the case cost it implies, and recomputes ext cost", () => {
+    const next = applyUnitCost(draftOf(), 1, 2.5);
+    const l = next.lines.find((x) => x.line_number === 1)!;
+    expect(l.base_cost).toBe(30); // 2.50 × 12
+    // qty 10 on a case of 12: 30 / 12 × 10
+    expect(l.cogs).toBeCloseTo(25, 6);
+  });
+
+  it("keeps the case cost it started from as the original", () => {
+    const next = applyUnitCost(draftOf(), 1, 2.5);
+    const l = next.lines.find((x) => x.line_number === 1)!;
+    expect(l.original?.base_cost).toBe(24);
+  });
+
+  it("treats no case size as a case of one", () => {
+    const uncased = line({ casesize: 0, base_cost: 3 });
+    expect(perCase(uncased)).toBe(1);
+    expect(unitCostOf(uncased)).toBe(3);
+
+    const [doc] = buildDocs([uncased]);
+    const next = applyUnitCost(startDraft(doc, [uncased]), 1, 4);
+    expect(next.lines[0].base_cost).toBe(4);
+    expect(Number.isFinite(next.lines[0].cogs)).toBe(true);
+  });
+
+  it("touches only its own location when a storeid is shared", () => {
+    const [first] = buildDocs(CO_LOCATED);
+    const next = applyUnitCost(startDraft(first, CO_LOCATED), 1, 5);
+    expect(next.lines.filter((l) => l.base_cost === 60)).toHaveLength(1);
+    expect(next.lines.every((l) => l.storenumber === "369")).toBe(true);
+  });
+});
+
+describe("staged unit cost", () => {
+  /** One item, three stores, two case sizes — the case that forced unit cost. */
+  const PIZZA = "004470036114";
+  const SPREAD = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 1, product_code: PIZZA, casesize: 12, base_cost: 0, qty: 18 }),
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 2, product_code: "OTHER", casesize: 6, base_cost: 9 }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, line_number: 1, product_code: PIZZA, casesize: 24, base_cost: 0, qty: 6 }),
+    line({ storeid: 206, storenumber: "206", order_id: 3, line_number: 4, product_code: PIZZA, casesize: 12, base_cost: 0, qty: 9 }),
+  ];
+  const pizza = SPREAD.filter((l) => l.product_code === PIZZA);
+
+  it("previews one row per order", () => {
+    expect(stagePreview(pizza, SPREAD, 2)).toHaveLength(3);
+  });
+
+  it("gives each store the case cost its own case size implies", () => {
+    const byStore = Object.fromEntries(
+      stagePreview(pizza, SPREAD, 2).map((p) => [p.doc.storenumber, p.newCaseCost]),
+    );
+    expect(byStore).toEqual({ "010": 24, "114": 48, "206": 24 });
+  });
+
+  it("stages a draft per order, changing only the item's lines", () => {
+    const drafts = stageUnitCost({}, pizza, SPREAD, 2);
+    const all = Object.values(drafts);
+    expect(all).toHaveLength(3);
+
+    const store10 = all.find((d) => d.doc.storenumber === "010")!;
+    expect(store10.lines).toHaveLength(2); // the whole order, other line included
+    expect(changedLines(store10).map((l) => l.product_code)).toEqual([PIZZA]);
+    expect(store10.lines.find((l) => l.product_code === "OTHER")!.base_cost).toBe(9);
+  });
+
+  it("keeps each line's own original for the was note", () => {
+    const drafts = stageUnitCost({}, pizza, SPREAD, 2);
+    const l = Object.values(drafts)
+      .find((d) => d.doc.storenumber === "114")!
+      .lines.find((x) => x.line_number === 1)!;
+    expect(l.base_cost).toBe(48);
+    expect(l.original?.base_cost).toBe(0);
+  });
+
+  it("stages on top of edits already made, rather than starting over", () => {
+    const [doc] = buildDocs(SPREAD).filter((d) => d.storenumber === "010");
+    // someone had already changed qty on the other line of this order
+    const edited = applyField(startDraft(doc, SPREAD), 2, "qty", 7);
+    const drafts = stageUnitCost({ [doc.key]: edited }, pizza, SPREAD, 2);
+
+    const after = drafts[doc.key];
+    expect(after.lines.find((l) => l.line_number === 2)!.qty).toBe(7);
+    expect(after.lines.find((l) => l.line_number === 1)!.base_cost).toBe(24);
+    expect(changedLines(after)).toHaveLength(2);
+  });
+
+  it("leaves orders that do not carry the item alone", () => {
+    const drafts = stageUnitCost({}, pizza, [...SPREAD, line({ storeid: 999, storenumber: "999", order_id: 9 })], 2);
+    expect(Object.values(drafts).some((d) => d.doc.storenumber === "999")).toBe(false);
+  });
+
+  it("keeps two locations of one storeid as two drafts", () => {
+    const shared = CO_LOCATED.map((l) => ({ ...l, product_code: PIZZA }));
+    const drafts = Object.values(stageUnitCost({}, shared, shared, 2));
+    expect(drafts).toHaveLength(2);
+    for (const d of drafts) {
+      expect(new Set(d.lines.map((l) => l.storenumber)).size).toBe(1);
+    }
+  });
+});
+
+describe("Fix cost follows the left panel", () => {
+  const PIZZA = "004470036114";
+  const LINES = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, product_code: PIZZA, order_date: "2026-10-20T00:00:00", order_type: "SMS" }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, product_code: PIZZA, order_date: "2026-10-20T00:00:00", order_type: "SMS" }),
+    line({ storeid: 114, storenumber: "114", order_id: 3, product_code: PIZZA, order_date: "2026-10-21T00:00:00", order_type: "DSD" }),
+  ];
+
+  it("covers every loaded line when the panel is not narrowed", () => {
+    expect(linesInPick(LINES, NO_PICK)).toBe(LINES);
+  });
+
+  it("covers only the store the panel is narrowed to", () => {
+    const got = linesInPick(LINES, { ...NO_PICK, storeNumber: "114" });
+    expect(got.map((l) => l.order_id)).toEqual([2, 3]);
+  });
+
+  it("applies every filter the panel has set", () => {
+    const got = linesInPick(LINES, {
+      storeNumber: "114",
+      orderDate: "2026-10-21T00:00:00",
+      orderType: "DSD",
+    });
+    expect(got.map((l) => l.order_id)).toEqual([3]);
+  });
+
+  it("stages into the narrowed store only", () => {
+    // The bug: narrowed to 114, a fix reached 010 as well.
+    const scope = linesInPick(LINES, { ...NO_PICK, storeNumber: "114" });
+    const drafts = Object.values(stageUnitCost({}, scope, LINES, 2));
+    expect(drafts.map((d) => d.doc.storenumber).sort()).toEqual(["114", "114"]);
+  });
+
+  it("lets one filter be skipped, for what each dropdown offers", () => {
+    const d = { storenumber: "010", order_date: "2026-10-20T00:00:00", order_type: "SMS" };
+    const pick = { storeNumber: "114", orderDate: "", orderType: "" };
+    expect(matchesPick(d, pick)).toBe(false);
+    expect(matchesPick(d, pick, "store")).toBe(true);
+  });
+});
+
+describe("applySent", () => {
+  const LINES = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 1, base_cost: 0 }),
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 2, base_cost: 9 }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, line_number: 1, base_cost: 0 }),
+  ];
+  const [doc10] = buildDocs(LINES).filter((d) => d.storenumber === "010");
+
+  it("writes a sent order's figures onto the loaded lines", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect(got.find((l) => l.storenumber === "010" && l.line_number === 1)!.base_cost).toBe(24);
+  });
+
+  it("leaves every other order alone", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect(got.find((l) => l.storenumber === "114")).toBe(LINES[2]);
+  });
+
+  it("does not carry draft bookkeeping onto the line", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect("original" in got[0]).toBe(false);
+  });
+
+  it("appends a line added in the draft", () => {
+    const draft = startDraft(doc10, LINES);
+    const fresh = blankLine(draft)!;
+    const sent = appendLine(draft, { ...fresh, product_code: "NEW" });
+    const got = applySent(LINES, sent);
+    expect(got).toHaveLength(4);
+    expect(got[3].product_code).toBe("NEW");
   });
 });

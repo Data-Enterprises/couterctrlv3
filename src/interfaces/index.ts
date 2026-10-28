@@ -153,6 +153,24 @@ export type SubSale = {
   digital_coupons: number;
   store_coupon: number;
   transaction_count: number;
+  /**
+   * This line is in a sub department its store leaves out of net sales.
+   *
+   * Fuel, lottery, cash accounts — "hash" departments. The store sets them
+   * per store in `sub_department_exclusions`: Tupelo excludes its five fuel
+   * departments, Chapel Hill excludes Lottery, Cash Acct, RSA and Default,
+   * and neither list resembles the other.
+   *
+   * `sales/weekly` and `sales/daily` drop these rows, so a store total built
+   * from `sub_sales` disagrees with the header above it — by $79,943 at
+   * Tupelo for the week to 10/22/2026. The flag is how a caller gets either
+   * answer; see `utils/hashSubs`.
+   *
+   * Optional because it arrived after this type. A response without it reads
+   * as "not known to be hash", which keeps every existing screen on the
+   * behaviour it had.
+   */
+  is_hash?: boolean;
 };
 
 export type SubGridRow = SubSale & {
@@ -238,6 +256,13 @@ export interface User {
   role: number | null;
   password_change_needed: number;
   logged_in: boolean | null;
+  /**
+   * How they hold their base groups, rolled up by `GET /users/`: `all` (By
+   * group), `selected` (By store), `mixed` when their links disagree, null
+   * with no groups. `mixed` is a tell-tale for a stray legacy row — no screen
+   * creates one. Optional because only that list returns it.
+   */
+  access_mode?: GrantMode | "mixed" | null;
 }
 
 /**
@@ -1118,6 +1143,18 @@ export type SubDeptMargin = {
   cost: number;
   case_size: number;
   calculated_cost: number;
+  /**
+   * Server-computed and NOT to be consumed. Use `calculateCogs`.
+   *
+   * It is `(total_sales - cost) / total_sales`: one unit's cost set against a
+   * whole day of sales, on a base that still includes tax. So it reads near
+   * 100% on anything that sells more than a couple of units -- 99.0% on a week
+   * of Fam Pak Breast Tenders whose real margin is 66.1%. Reproduced to seven
+   * decimal places on all seven days of storeid 695, 2026-10-16..22.
+   *
+   * The same warning is on `CatItem`, which is this type with the grouping
+   * column swapped. It lives here too because this is where it is read first.
+   */
   margin: number;
   cost_fees: number;
   net_cost: number;
@@ -1137,6 +1174,16 @@ export type SubDeptMargin = {
   price?: number;
   price_split?: number;
   avg_unit_price?: number;
+  /**
+   * In a sub department this store leaves out of its own net sales.
+   *
+   * Same flag `subs/sub_sales` carries, on the item rows. `sales/weekly`
+   * drops these, so anything summing these rows to set beside a store figure
+   * has to drop them too -- see `utils/hashSubs`. Optional because it arrived
+   * after this type; absent reads as "not known to be hash", which keeps
+   * every screen that has not been changed on the behaviour it had.
+   */
+  is_hash?: boolean;
 };
 
 export type SubMarginsJsonResp = {
@@ -1487,6 +1534,14 @@ export interface UpdateFileResp {
    `displayHourly` flags. Fields common to all three sit in the base. */
 
 export interface CatSalesBase {
+  /**
+   * In a sub department this store leaves out of its own net sales.
+   *
+   * On `categories/cat_sales` since 23 Oct. Optional because it arrived
+   * after this type: absent reads as "not known to be hash", which is what
+   * keeps a response from an older deploy behaving as it did.
+   */
+  is_hash?: boolean;
   storeid: number;
   store_name: string;
   store_number: string;
@@ -2685,16 +2740,40 @@ export interface InvoiceRow {
   totalCost: string;
   totalRetail: string;
   totalAllowances: string;
+  /** The billed lines' extended cost alone, before delivery and pallet
+   *  allowances. */
+  lineItemsCost: string;
+  /** The `11` delivery charges, which the total cost includes. */
+  deliveryFees: string;
+  /** The `03` pallet allowances — netted out of the total cost, and part of
+   *  `totalAllowances`. */
+  palletAllowances: string;
+  /** The part of per-pound deals no line took off, which the total cost
+   *  subtracts. Null until suggested corrections are applied. */
+  perLbDeals: string | null;
   totalCases: string;
   reconciled: boolean;
-  /** Set when the invoice couldn't be checked at all — no total record. */
+  /** `checked` against a `19` total; without one, `nothingBilled` when only
+   *  exceptions came through, `noTotal` when billed lines did. */
+  status: "checked" | "noTotal" | "nothingBilled";
+  /** Why the invoice could not be checked. */
   note?: string;
+  /** Items that did not ship, from the `05` records, with the vendor's
+   *  reason. */
+  exceptions: { itemCode: string; description: string; reason: string }[];
+  /** Allowance on the vendor's total that no record in the file carries. */
+  unitemizedAllowance: string | null;
+  /** A money check misses by more than 10¢, or the cases miss at all. */
+  overTenCents: boolean;
   checks: {
+    id: "cost" | "retail" | "allowances" | "cases";
     label: string;
     derived: string;
     reported: string;
     ok: boolean;
     difference: string;
+    /** Derived less reported, signed: "+0.05" when ours is higher. */
+    offBy: string;
   }[];
   lines: InvoiceLineRow[];
 }

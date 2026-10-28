@@ -198,7 +198,7 @@ const buildPriceRows = (
   const rows: Row[] = estimatedPricePoints(product.rows, override).map((p) => {
     const perDay = p.daysSeen > 0 ? p.units / p.daysSeen : 0;
     return {
-      source: "Estimated",
+      source: "Daily average",
       price: money(p.price),
       priceType: p.priceType,
       // Daily roll-ups have no transaction count — blank, never 0, so the
@@ -245,12 +245,12 @@ const buildPriceRows = (
   rows.push(
     ...actualRows(
       act.exact,
-      act.isWeighted ? "Actual ($/lb)" : "Actual (exact)",
+      act.isWeighted ? "Charged ($/lb)" : "Charged (exact)",
       true,
     ),
     // A multi-unit ring divided by its quantity is a derived figure, so it's
     // never the suggestion — same rule the panel applies.
-    ...actualRows(act.averaged, "Actual (averaged)", false),
+    ...actualRows(act.averaged, "Charged (averaged)", false),
   );
   return rows;
 };

@@ -660,18 +660,19 @@ export const categories: NavCategory[] = [
         name: "Tickets",
         href: "tickets",
         icon: TicketIcon,
-        // Owner and up, so the client half can be tested by somebody who
-        // really is one: both capability flags trip at level 8, so a level-7
-        // account gets the client view from the server rather than from a
-        // preview switch. That is the only way to prove the internal-note
-        // filter, which has never been exercised by a non-tech.
+        // Every level. Who sees which tickets is the server's answer, by tier:
+        // below Manager their own, a Manager also their stores', an Owner
+        // also their companies'. Report an issue already files from any
+        // level in dev, so a level gate here only hid the tickets people had
+        // just filed, from the very readers the "own" tier exists for.
         //
         // Still Coming Soon: dev UI tree only, against the dev API, desktop
-        // only.
+        // only. The category is offered on the dev API alone, and only 7+
+        // can switch to it, so on prod no client sees this entry.
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: ["*"],
         isHovering: false,
         isVisible: true,
       },
@@ -714,28 +715,6 @@ export const isComingSoonRoute = (route: string): boolean => {
   );
 };
 
-/**
- * Routes that exist on the dev API only, whether or not the menu offers them.
- *
- * The Coming Soon pages render `DevOnlyNotice` on prod; Release Notes would
- * render perfectly well, which is the more dangerous case — the route is
- * reachable by typing it, and nothing about the page says it should not have
- * been.
- *
- * Release Notes is named here rather than read off the nav because it is
- * deliberately not in the nav at all.
- *
- * It is closed for a different reason than it used to be. The notes were our
- * own and named unreleased work; they are the client set now, written for the
- * people using the product and shipped with the build. What keeps the route
- * shut is timing — nothing about this release is announced to clients until
- * the switchover. Opening it is one line here and one in TitleBar, and both
- * say so.
- */
-const DEV_ONLY_ROUTES = new Set(["release-notes"]);
-
 /** The test both the sign-in restore and the mode switch use. */
-export const isDevOnlyRoute = (route: string): boolean => {
-  const href = route.replace(/^\//, "");
-  return DEV_ONLY_ROUTES.has(href) || isComingSoonRoute(href);
-};
+export const isDevOnlyRoute = (route: string): boolean =>
+  isComingSoonRoute(route.replace(/^\//, ""));

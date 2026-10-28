@@ -139,6 +139,10 @@ const DeptMatrixPanel = ({
         storeNumber: store.storeNumber,
         storeName: applyStoreNumberToName(store.storeName, store.storeNumber, []),
         compareStoreid: against.storeid,
+        // The matrix's columns ARE department numbers, so the counterpart it
+        // picked is that same number at the other store. Which is the matrix's
+        // own bug, not this call site's: see deptMatrix's `key`.
+        compareSubDept: cell.subDept,
         compareStoreNumber: against.storeNumber,
         compareStoreName: applyStoreNumberToName(
           against.storeName,

@@ -2,7 +2,9 @@ import { formatDateSimple } from "../../../utils";
 import { Decimal, sumDecimals } from "./core/Decimal";
 import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
+import { invoiceTotals } from "./vendors/awg/totals";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
+import type { DiscardedInvoice } from "../../../api/invoices";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 
@@ -66,10 +68,22 @@ const presentRetail = (price: Decimal, pricingUnit: Decimal): string => {
  */
 const UNIT_COST_PLACES = 2;
 
-const presentLines = (invoice: AwgInvoice): InvoiceLineRow[] =>
+/** A difference with its sign written out, so "+0.05" and "-0.05" read as
+ *  which side is higher. */
+const signed = (value: Decimal): string =>
+  value.isNegative() ? value.toString() : `+${value.toString()}`;
+
+/** Past the vendor's penny rounding — the line between "AWG's arithmetic" and
+ *  "something on this invoice is wrong". */
+const TEN_CENTS = new Decimal(10n, 2);
+
+const presentLines = (
+  invoice: AwgInvoice,
+  retails: Decimal[],
+): InvoiceLineRow[] =>
   invoice.lineItems.map((record, index) => {
     const extCost = money(record.fields.cost_ext);
-    const extRetail = money(record.fields.ba_retail_ext);
+    const extRetail = retails[index];
     const billedUnits =
       count(record.fields.case_qty_billed).units *
       count(record.fields.pack).units;
@@ -104,10 +118,8 @@ export const presentInvoices = (
 
   return invoices.map((invoice) => {
     const result = byInvoice.get(invoice.invoiceNbr);
-    const lineCosts = invoice.lineItems.map((r) => money(r.fields.cost_ext));
-    const deliveryCosts = invoice.deliveryCharges.map((r) =>
-      money(r.fields.cost_ext),
-    );
+    // The derived side of the checks, so the figures above them agree.
+    const figures = invoiceTotals(invoice);
 
     return {
       id: `${invoice.storeNbr}-${invoice.invoiceNbr}`,
@@ -120,29 +132,55 @@ export const presentInvoices = (
         ? formatDateSimple(invoice.deliveryDate)
         : null,
       lineCount: invoice.lineItems.length,
-      totalCost: sumDecimals([...lineCosts, ...deliveryCosts], 2).toString(),
-      totalRetail: sumDecimals(
-        invoice.lineItems.map((r) => money(r.fields.ba_retail_ext)),
-        2,
-      ).toString(),
-      totalAllowances: sumDecimals(
-        invoice.deals.map((r) => money(r.fields.deal_amount)),
-        2,
-      ).toString(),
+      totalCost: figures.totalCost.toString(),
+      totalRetail: figures.totalRetail.toString(),
+      totalAllowances: figures.totalAllowances.toString(),
+      lineItemsCost: figures.lineItemsCost.toString(),
+      deliveryFees: figures.deliveryFees.toString(),
+      palletAllowances: figures.palletAllowances.toString(),
+      perLbDeals: figures.perLbDeals?.toString() ?? null,
       totalCases: sumDecimals(
         invoice.lineItems.map((r) => count(r.fields.case_qty_billed)),
         0,
       ).toString(),
       reconciled: result?.ok ?? false,
+      status: result?.status ?? "checked",
       note: result?.note,
+      exceptions: invoice.exceptions.map((record) => ({
+        itemCode: text(record.fields.item_code_bil),
+        description: text(record.fields.item_desc),
+        reason: text(record.fields.excpt_desc),
+      })),
+      unitemizedAllowance: result?.unitemizedAllowance?.toString() ?? null,
+      overTenCents: (result?.checks ?? []).some((check) =>
+        check.difference.decimals === 0
+          ? !check.difference.isZero()
+          : check.difference.compare(TEN_CENTS) > 0,
+      ),
       checks: (result?.checks ?? []).map((check) => ({
+        id: check.id,
         label: check.label,
         derived: check.derived.toString(),
         reported: check.reported.toString(),
         ok: check.ok,
         difference: check.difference.toString(),
+        offBy: signed(check.derived.subtract(check.reported)),
       })),
-      lines: presentLines(invoice),
+      // Judged across the lines, not one at a time: a random-weight line's
+      // retail depends on the lines beside it — see `vendors/awg/retail`.
+      lines: presentLines(invoice, figures.lineRetails),
     };
   });
 };
+
+/**
+ * Invoices the server would not save, in one line: each by number with the
+ * server's own reason, since the reason is what says how to fix it.
+ */
+export const discardedText = (list: DiscardedInvoice[]): string =>
+  list
+    .map(
+      (d) =>
+        `${d.invoiceNumber ? `invoice ${d.invoiceNumber}` : "an invoice with no number"} (${d.error})`,
+    )
+    .join("; ");

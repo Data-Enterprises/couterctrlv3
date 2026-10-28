@@ -88,9 +88,7 @@ const UserDataLoader = () => {
           // always lands on prod. Somebody who was last on one was in dev when
           // they left. A Coming Soon page restored here is the under
           // construction placeholder — a dead end that reads as a broken app.
-          // Release Notes is the worse case: it renders, so nothing tells a
-          // client they are reading something not meant for them. Sales is
-          // where they would have gone anyway.
+          // Sales is where they would have gone anyway.
           const lastRoute =
             context.apiEnv !== "dev" && isDevOnlyRoute(stored)
               ? "sales"

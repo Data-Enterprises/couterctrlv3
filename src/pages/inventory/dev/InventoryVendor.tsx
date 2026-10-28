@@ -13,7 +13,7 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { usePricePoints } from "./usePricePoints";
+import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchVendors,
@@ -317,7 +317,7 @@ const InventoryVendor = () => {
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
             <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">
-              <p className="text-[13px] text-content/60">
+              <p className="text-[14px] text-content/85">
                 Open a vendor and pick an item
               </p>
             </div>

@@ -1,4 +1,5 @@
 import type { SubSale } from "../../../../interfaces";
+import { countedRows, hashRows } from "../../../../utils/hashSubs";
 
 /**
  * The sub-department comparison, as a report.
@@ -21,7 +22,32 @@ interface Side {
 }
 
 export interface DeptTotals {
-  id: number;
+  /** The matched department, by normalised description — what the two stores
+   *  are paired on, and the row's identity on screen. See `deptKey`. */
+  key: string;
+  /**
+   * The department's number AT EACH STORE, because they are not the same
+   * number.
+   *
+   * Sub-department numbering is a per-store setup. At Brooks, Chapel Hill's
+   * 5 is Fresh Meat and Tupelo's 5 is Tobacco; Chapel Hill's 10 is Tobacco
+   * and Tupelo's 10 is Deli/Bakery. Pairing on the number compared Chapel
+   * Hill's $243.72 of tobacco against $66,072.57 of someone else's deli and
+   * called the store $65,828.85 behind on cigarettes.
+   *
+   * Null on the side that does not carry the department at all.
+   */
+  mineId: number | null;
+  theirsId: number | null;
+  /**
+   * Both stores carry this department.
+   *
+   * An unmatched one is not a gap. Tupelo sells fuel and Chapel Hill has no
+   * pumps; Chapel Hill rings Lottery and Tupelo does not. Counting either as
+   * money the other failed to make is a shortfall nobody can close, and it
+   * was the whole of UNLEADED's "-$61,519.29 / Nothing rung" row.
+   */
+  matched: boolean;
   name: string;
   /** The open store. */
   mine: number;
@@ -183,7 +209,19 @@ const FOCUS: Record<Finding, Focus> = {
 const cash = (v: number) =>
   "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const whole = (v: number) => Math.round(v).toLocaleString("en-US");
-const pct = (v: number) => Math.round(Math.abs(v) * 100) + "%";
+/**
+ * A percentage, floored off 100 unless it really is everything.
+ *
+ * `Math.round` turned a ratio of 0.005 into "100% fewer units", which reads
+ * as NONE AT ALL -- a stronger claim than the data makes, and the one
+ * rounding where the word changes rather than the digit. Chapel Hill rang 16
+ * units of tobacco against Tupelo's 9,051 and was told it had rung nothing.
+ */
+const pct = (v: number) => {
+  const whole = Math.round(Math.abs(v) * 100);
+  const exact = Math.abs(v) >= 1;
+  return (whole >= 100 && !exact ? 99 : whole) + "%";
+};
 
 /** What a gate the chain never reached shows instead of a figure. */
 export const NOT_CHECKED = "Not checked";
@@ -356,7 +394,26 @@ export interface Report {
   byFinding: { finding: Finding; rows: ReportRow[]; total: number }[];
   underTotal: number;
   overTotal: number;
-  /** Under netted against over — the figure the Stores tab shows. */
+  /**
+   * Departments only one of the two stores carries.
+   *
+   * Kept out of the piles and out of the findings, because they are not a
+   * shortfall: Tupelo sells fuel and Chapel Hill has no pumps. Shown on their
+   * own, with their own totals, so the money is still accounted for and
+   * nobody has to wonder where it went.
+   */
+  onlyMine: ReportRow[];
+  onlyTheirs: ReportRow[];
+  onlyMineTotal: number;
+  onlyTheirsTotal: number;
+  /** Under netted against over, across the departments both stores carry. */
+  matchedNet: number;
+  /**
+   * The whole difference between the two stores, comparable or not.
+   *
+   * `matchedNet` plus what only one of them sells, so the three parts on
+   * screen add back to it and the reader can see which is which.
+   */
   netGap: number;
   /** What the printed departments account for, 0–1. */
   shownShare: number;
@@ -375,7 +432,30 @@ export const buildReport = (
   bands: Bands = DEFAULT_BANDS,
   gates: Gates = DEFAULT_GATES,
 ): Report => {
-  const rows = depts.map((d) => rowOf(d, gates));
+  const all = depts.map((d) => rowOf(d, gates));
+
+  /**
+   * Comparable first, and only those get a gap.
+   *
+   * A department one store does not carry has no counterpart to be behind,
+   * so putting it in the piles invents a shortfall: UNLEADED read
+   * "-$61,519.29 / Nothing rung" against a store with no pumps. Its money is
+   * not lost from the report -- it is counted below, on its own side.
+   */
+  const rows = all.filter((r) => r.matched);
+  // Which SIDE has it, not whether it made money. Cash Acct, RSA and the
+  // 60 Plus Club are all negative departments, and testing `mine > 0` lost
+  // them from both lists and from the net -- so the three figures on screen
+  // stopped adding up, by exactly the amount of the negative ones.
+  const onlyMine = all
+    .filter((r) => !r.matched && r.mineId !== null)
+    .sort((a, b) => b.mine - a.mine);
+  const onlyTheirs = all
+    .filter((r) => !r.matched && r.theirsId !== null)
+    .sort((a, b) => b.theirs - a.theirs);
+  const onlyMineTotal = onlyMine.reduce((t, r) => t + r.mine, 0);
+  const onlyTheirsTotal = onlyTheirs.reduce((t, r) => t + r.theirs, 0);
+
   const under = rows
     .filter((r) => r.gap < 0)
     .sort((a, b) => a.gap - b.gap);
@@ -438,7 +518,12 @@ export const buildReport = (
     steep,
     underTotal,
     overTotal,
-    netGap: overTotal - underTotal,
+    onlyMine,
+    onlyTheirs,
+    onlyMineTotal,
+    onlyTheirsTotal,
+    matchedNet: overTotal - underTotal,
+    netGap: overTotal - underTotal + onlyMineTotal - onlyTheirsTotal,
     shownShare: underTotal > 0 ? shownTotal / underTotal : 0,
   };
 };
@@ -447,20 +532,40 @@ export const buildReport = (
 /* Getting there from the payload                                      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The handle two stores can be compared on.
+ *
+ * Not the number -- that is per store. The description is the only thing in
+ * the data that means the same at both, and it is written by hand at each
+ * one, so "Non-Foods" has to meet "Non-Food" and "Fresh Meat" has to meet
+ * "FRESH MEAT". Case and a trailing s are the two differences actually seen
+ * in the Brooks data; anything further apart than that -- Cold Deli against
+ * Deli/Bakery, Package Meats against Meat -- is left unmatched on purpose.
+ * Those are not the same department, and guessing is how you get a $65,828.85
+ * tobacco gap.
+ *
+ * A real department mapping would be better than this and does not exist:
+ * identity lives on the sales rows, as a number and a description, per store.
+ */
+export const deptKey = (description: string) =>
+  description.trim().toLowerCase().replace(/s$/, "");
+
 const sidesBySubDept = (rows: SubSale[]) =>
-  rows.reduce<Record<number, Side & { name: string }>>((acc, s) => {
-    if (!acc[s.sub_department])
-      acc[s.sub_department] = {
+  rows.reduce<Record<string, Side & { name: string; id: number }>>((acc, s) => {
+    const k = deptKey(s.sub_department_description);
+    if (!acc[k])
+      acc[k] = {
         name: s.sub_department_description,
+        id: s.sub_department,
         money: 0,
         qty: 0,
         weight: 0,
       };
     // `total_sales - total_tax`, the basis the whole page is on — see the
     // note in PopupSubDeptList for why it is not `net_sales`.
-    acc[s.sub_department].money += s.total_sales - s.total_tax;
-    acc[s.sub_department].qty += s.qty;
-    acc[s.sub_department].weight += s.weight;
+    acc[k].money += s.total_sales - s.total_tax;
+    acc[k].qty += s.qty;
+    acc[k].weight += s.weight;
     return acc;
   }, {});
 
@@ -473,7 +578,44 @@ export interface Periods {
   theirsLy: SubSale[];
 }
 
+/**
+ * The money each store leaves out of its own net sales, this week.
+ *
+ * Reported rather than silently dropped: the comparison below skips fuel and
+ * lottery so its total can agree with the store figures in the Stores tab,
+ * and a reader looking at a store with $79,943 of fuel is owed that number
+ * somewhere on the screen.
+ */
+export const hashTotals = (p: Periods) => ({
+  mine: hashRows(p.mineTw).reduce((t, r) => t + r.total_sales - r.total_tax, 0),
+  theirs: hashRows(p.theirsTw).reduce(
+    (t, r) => t + r.total_sales - r.total_tax,
+    0,
+  ),
+  names: [
+    ...new Set(hashRows(p.theirsTw).map((r) => r.sub_department_description)),
+  ],
+});
+
+/**
+ * One row per department, both stores' figures on it.
+ *
+ * Hash departments are dropped on the way in. They are in these responses on
+ * purpose -- a store's own drill-down should show its fuel -- but a total
+ * built from every row disagrees with `sales/weekly`, which leaves them out,
+ * and this report's headline is set beside exactly that figure. Tupelo's
+ * $79,943 of fuel and Chapel Hill's -$2,334.95 of cash accounts were the
+ * whole $82,277.95 by which the two disagreed.
+ */
 export const totalsFrom = (p: Periods): DeptTotals[] => {
+  p = {
+    mineTw: countedRows(p.mineTw),
+    mineLw: countedRows(p.mineLw),
+    mineLy: countedRows(p.mineLy),
+    theirsTw: countedRows(p.theirsTw),
+    theirsLw: countedRows(p.theirsLw),
+    theirsLy: countedRows(p.theirsLy),
+  };
   const mTw = sidesBySubDept(p.mineTw);
   const mLw = sidesBySubDept(p.mineLw);
   const mLy = sidesBySubDept(p.mineLy);
@@ -484,16 +626,17 @@ export const totalsFrom = (p: Periods): DeptTotals[] => {
   // Every department either store has in any week — one of them not carrying
   // a department is a finding, not a row to drop.
   const ids = [
-    ...new Set(
-      [mTw, mLw, mLy, tTw, tLw, tLy].flatMap((m) => Object.keys(m)).map(Number),
-    ),
+    ...new Set([mTw, mLw, mLy, tTw, tLw, tLy].flatMap((m) => Object.keys(m))),
   ];
 
-  const money = (m: Record<number, Side>, id: number) => m[id]?.money ?? 0;
+  const money = (m: Record<string, Side>, id: string) => m[id]?.money ?? 0;
 
   return ids.map((id) => {
     const mine = mTw[id];
     const theirs = tTw[id];
+    const inBoth = Boolean(
+      (mine ?? mLw[id] ?? mLy[id]) && (theirs ?? tLw[id] ?? tLy[id]),
+    );
     // Weight only counts as the unit when BOTH sides ring by it. One store
     // weighing and the other not is a data oddity, and comparing pounds
     // against lines would be worse than comparing lines against lines.
@@ -501,7 +644,13 @@ export const totalsFrom = (p: Periods): DeptTotals[] => {
     const units = (s?: Side) => (weighed ? (s?.weight ?? 0) : (s?.qty ?? 0));
 
     return {
-      id,
+      key: id,
+      matched: inBoth,
+      // The open store's number leads, because the investigation drills into
+      // ITS department first; `theirsId` travels with it so the counterpart
+      // is fetched by its own number rather than by ours.
+      mineId: (mine ?? mLw[id] ?? mLy[id])?.id ?? null,
+      theirsId: (theirs ?? tLw[id] ?? tLy[id])?.id ?? null,
       name:
         mine?.name ??
         theirs?.name ??

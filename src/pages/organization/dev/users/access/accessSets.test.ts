@@ -8,8 +8,9 @@ import {
   groupCompanies,
   hasChanges,
   heldGroupIds,
-  modeOf,
+  accessModeOf,
   NO_PICKS,
+  picksForMode,
   revokedGroupIds,
   type AccessPicks,
 } from "./accessSets";
@@ -33,13 +34,84 @@ const picks = (over: Partial<AccessPicks> = {}): AccessPicks => ({
   ...over,
 });
 
-describe("modeOf", () => {
-  it("defaults to selected, matching the endpoint", () => {
-    expect(modeOf(picks(), 4)).toBe("selected");
+describe("accessModeOf", () => {
+  it("reads By group when every held group is all", () => {
+    expect(accessModeOf([{ mode: "all" }, { mode: "all" }])).toBe("all");
   });
 
-  it("reads the mode when one is set", () => {
-    expect(modeOf(picks({ modes: { 4: "all" } }), 4)).toBe("all");
+  it("reads By store when every held group is selected", () => {
+    expect(accessModeOf([{ mode: "selected" }])).toBe("selected");
+  });
+
+  it("reads a stray mix as By store, the reading that cannot widen anyone", () => {
+    expect(accessModeOf([{ mode: "all" }, { mode: "selected" }])).toBe(
+      "selected",
+    );
+  });
+
+  it("treats a missing mode as the endpoint's default", () => {
+    expect(accessModeOf([{ mode: null }])).toBe("selected");
+  });
+
+  it("reads somebody holding nothing as By store", () => {
+    expect(accessModeOf([])).toBe("selected");
+  });
+});
+
+describe("picksForMode", () => {
+  const rosters = {
+    4: [store(53, 4), store(56, 4)],
+    9: [store(76, 9)],
+  };
+
+  it("ticks every store of a held group when switching to By store", () => {
+    // A By group person has no picks — the absence is the answer — so an
+    // empty switch would take every store away. It starts full instead.
+    const got = picksForMode(
+      picks({ baseGroups: [4, 9], mode: "all" }),
+      "selected",
+      rosters,
+    );
+    expect(got.mode).toBe("selected");
+    expect(got.stores.map((s) => [s.base_group, s.storeid])).toEqual([
+      [4, 53],
+      [4, 56],
+      [9, 76],
+    ]);
+  });
+
+  it("leaves a group's existing ticks alone rather than refilling it", () => {
+    const got = picksForMode(
+      picks({ baseGroups: [4, 9], mode: "all", stores: [store(56, 4)] }),
+      "selected",
+      rosters,
+    );
+    expect(got.stores.map((s) => s.storeid)).toEqual([56, 76]);
+  });
+
+  it("adds nothing for a group whose roster has not loaded", () => {
+    const got = picksForMode(
+      picks({ baseGroups: [12], mode: "all" }),
+      "selected",
+      rosters,
+    );
+    expect(got.stores).toEqual([]);
+  });
+
+  it("keeps the ticks when switching to By group, so switching back loses nothing", () => {
+    const before = picks({ baseGroups: [4], stores: [store(56, 4)] });
+    const got = picksForMode(before, "all", rosters);
+    expect(got.mode).toBe("all");
+    expect(got.stores).toEqual(before.stores);
+    // ...and they are not sent while the mode is all.
+    expect(accessSets(got).grants).toEqual([
+      { groupid: 4, mode: "all", storeids: [] },
+    ]);
+  });
+
+  it("is a no-op when the mode does not change", () => {
+    const p = picks({ baseGroups: [4], stores: [store(56, 4)] });
+    expect(picksForMode(p, "selected", rosters)).toEqual(p);
   });
 });
 
@@ -56,7 +128,7 @@ describe("accessSets", () => {
   });
 
   it("holds a group that was ticked with no stores in it", () => {
-    const sets = accessSets(picks({ baseGroups: [4], modes: { 4: "all" } }));
+    const sets = accessSets(picks({ baseGroups: [4], mode: "all" }));
     expect(sets.grants).toEqual([{ groupid: 4, mode: "all", storeids: [] }]);
   });
 
@@ -72,7 +144,7 @@ describe("accessSets", () => {
     const sets = accessSets(
       picks({
         baseGroups: [4],
-        modes: { 4: "all" },
+        mode: "all",
         // Stale ticks from before the mode was switched must not travel.
         stores: [store(53, 4)],
       }),
@@ -80,16 +152,16 @@ describe("accessSets", () => {
     expect(sets.grants[0]).toEqual({ groupid: 4, mode: "all", storeids: [] });
   });
 
-  it("keeps two groups in different modes apart", () => {
+  it("writes every group in the person's one mode", () => {
     const sets = accessSets(
       picks({
         baseGroups: [4, 9],
-        modes: { 4: "all" },
-        stores: [store(76, 9)],
+        mode: "selected",
+        stores: [store(53, 4), store(76, 9)],
       }),
     );
     expect(sets.grants).toEqual([
-      { groupid: 4, mode: "all", storeids: [] },
+      { groupid: 4, mode: "selected", storeids: [53] },
       { groupid: 9, mode: "selected", storeids: [76] },
     ]);
   });
@@ -137,15 +209,16 @@ describe("revokedGroupIds", () => {
 
   it("does not revoke a group that only changed mode", () => {
     const next = accessSets(
-      picks({ baseGroups: [4, 9], modes: { 9: "all" } }),
+      picks({ baseGroups: [4, 9], mode: "all" }),
     );
     expect(revokedGroupIds(next, before)).toEqual([]);
   });
 });
 
 describe("emptySelectedGroupIds", () => {
-  it("catches a group set to pick-stores with nothing picked", () => {
-    // The endpoint answers 400 for this, so the UI has to block first.
+  it("catches a group held By store with nothing picked", () => {
+    // The endpoint accepts it, but it grants nothing — nearly always an
+    // accident on this screen, so the UI blocks first.
     const sets = accessSets(picks({ baseGroups: [4] }));
     expect(emptySelectedGroupIds(sets)).toEqual([4]);
   });
@@ -156,14 +229,14 @@ describe("emptySelectedGroupIds", () => {
   });
 
   it("never complains about an all-mode group", () => {
-    const sets = accessSets(picks({ baseGroups: [4], modes: { 4: "all" } }));
+    const sets = accessSets(picks({ baseGroups: [4], mode: "all" }));
     expect(emptySelectedGroupIds(sets)).toEqual([]);
   });
 });
 
 describe("changedGrants", () => {
   const before = accessSets(
-    picks({ baseGroups: [4, 9], modes: { 4: "all" }, stores: [store(76, 9)] }),
+    picks({ baseGroups: [4, 9], stores: [store(53, 4), store(76, 9)] }),
   );
 
   it("sends nothing when nothing moved", () => {
@@ -174,30 +247,29 @@ describe("changedGrants", () => {
     const next = accessSets(
       picks({
         baseGroups: [4, 9],
-        modes: { 4: "all" },
-        stores: [store(76, 9), store(77, 9)],
+        stores: [store(53, 4), store(76, 9), store(77, 9)],
       }),
     );
     expect(changedGrants(next, before).map((g) => g.groupid)).toEqual([9]);
   });
 
-  it("sends a group whose mode changed even though its stores did not", () => {
+  it("sends every group when the access type changes", () => {
+    // One mode per person, so a switch rewrites everything they hold.
     const next = accessSets(
       picks({
         baseGroups: [4, 9],
-        modes: { 4: "all", 9: "all" },
-        stores: [store(76, 9)],
+        mode: "all",
+        stores: [store(53, 4), store(76, 9)],
       }),
     );
-    expect(changedGrants(next, before).map((g) => g.groupid)).toEqual([9]);
+    expect(changedGrants(next, before).map((g) => g.groupid)).toEqual([4, 9]);
   });
 
   it("sends a newly held group", () => {
     const next = accessSets(
       picks({
         baseGroups: [4, 9, 12],
-        modes: { 4: "all", 12: "all" },
-        stores: [store(76, 9)],
+        stores: [store(53, 4), store(76, 9), store(80, 12)],
       }),
     );
     expect(changedGrants(next, before).map((g) => g.groupid)).toEqual([12]);
@@ -205,18 +277,14 @@ describe("changedGrants", () => {
 
   it("ignores the order stores were ticked in", () => {
     const next = accessSets(
-      picks({
-        baseGroups: [4, 9],
-        modes: { 4: "all" },
-        stores: [store(76, 9)],
-      }),
+      picks({ baseGroups: [9, 4], stores: [store(76, 9), store(53, 4)] }),
     );
     expect(changedGrants(next, before)).toEqual([]);
   });
 });
 
 describe("hasChanges", () => {
-  const before = accessSets(picks({ baseGroups: [4], modes: { 4: "all" } }));
+  const before = accessSets(picks({ baseGroups: [4], mode: "all" }));
 
   it("is false for the same access", () => {
     expect(hasChanges(before, before)).toBe(false);
@@ -230,7 +298,7 @@ describe("hasChanges", () => {
 
   it("is true for a company added on its own", () => {
     const next = accessSets(
-      picks({ companies: [21], baseGroups: [4], modes: { 4: "all" } }),
+      picks({ companies: [21], baseGroups: [4], mode: "all" }),
     );
     expect(hasChanges(next, before)).toBe(true);
   });
@@ -244,7 +312,7 @@ describe("effectiveStores", () => {
 
   it("counts a whole group from its roster, which the grant does not name", () => {
     const got = effectiveStores(
-      picks({ baseGroups: [4], modes: { 4: "all" } }),
+      picks({ baseGroups: [4], mode: "all" }),
       rosters,
     );
     expect(got.map((e) => e.storeid)).toEqual([53, 56, 71]);
@@ -258,33 +326,29 @@ describe("effectiveStores", () => {
 
   it("holds a store once when two groups both contain it", () => {
     const got = effectiveStores(
-      picks({ baseGroups: [4, 9], modes: { 4: "all", 9: "all" } }),
+      picks({ baseGroups: [4, 9], mode: "all" }),
       rosters,
     );
     expect(got.map((e) => e.storeid)).toEqual([53, 56, 71, 76]);
   });
 
-  it("attributes a shared store to the auto group, the stronger claim", () => {
-    // 53 is in both. Held as a pick in 4 and automatically in 9, it survives
-    // the pick being removed, so 9 is what actually accounts for it.
+  it("attributes a shared store to the lowest group id, every render", () => {
+    // 53 is in both. One mode for the person, so neither claim is stronger;
+    // the lowest id wins so the attribution never flickers.
     const got = effectiveStores(
-      picks({
-        baseGroups: [4, 9],
-        modes: { 9: "all" },
-        stores: [store(53, 4)],
-      }),
+      picks({ baseGroups: [9, 4], mode: "all" }),
       rosters,
     );
     expect(got.find((e) => e.storeid === 53)).toEqual({
       storeid: 53,
-      groupid: 9,
+      groupid: 4,
       mode: "all",
     });
   });
 
   it("contributes nothing for a roster that has not loaded", () => {
     const got = effectiveStores(
-      picks({ baseGroups: [12], modes: { 12: "all" } }),
+      picks({ baseGroups: [12], mode: "all" }),
       rosters,
     );
     expect(got).toEqual([]);
@@ -322,7 +386,7 @@ describe("a held group brings its company", () => {
 
   it("sends the company of a group held as all, with nothing ticked", () => {
     const sets = accessSets(
-      picks({ baseGroups: [4], modes: { 4: "all" } }),
+      picks({ baseGroups: [4], mode: "all" }),
       undefined,
       groupCompany,
     );
@@ -340,7 +404,7 @@ describe("a held group brings its company", () => {
 
   it("does not duplicate a company that was also ticked", () => {
     const sets = accessSets(
-      picks({ companies: [7], baseGroups: [4], modes: { 4: "all" } }),
+      picks({ companies: [7], baseGroups: [4], mode: "all" }),
       undefined,
       groupCompany,
     );
@@ -351,7 +415,7 @@ describe("a held group brings its company", () => {
     // The panel may not have loaded that company's groups. Better to send the
     // rest than to put an undefined in the middle of an id array.
     const sets = accessSets(
-      picks({ baseGroups: [4, 99], modes: { 4: "all", 99: "all" } }),
+      picks({ baseGroups: [4, 99], mode: "all" }),
       undefined,
       groupCompany,
     );
