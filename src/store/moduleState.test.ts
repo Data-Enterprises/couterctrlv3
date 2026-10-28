@@ -18,8 +18,6 @@ import { describe, expect, it } from "vitest";
 const ALLOWED: Record<string, string> = {
   "components-dev/scanner/useScanGun.ts:modelLookup":
     "the device's model name, not anybody's data",
-  "pages/couponSales/dev/CouponSales.tsx:mobileLines":
-    "the last coupon search's receipt lines. Only read for a sale picked from the coupon slice's rows, which sign-out empties, so nothing in it can be reached",
   "pages/inventory/dev/ItemAnalysisPanel.tsx:NO_ROWS":
     "a shared empty array, never written to",
   "pages/sales/dev/components/PopupSubDeptList.tsx:inFlightItems":

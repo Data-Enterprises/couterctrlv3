@@ -874,3 +874,13 @@ invoices", names the invoice that was not saved and the server's reason, and
 keeps a red line under the Send control instead of the green "Sent". The
 leftover references to Textract, an engine the server removed, are gone from
 the invoice API types.
+
+### Coupon Sales on a phone: receipt lines no longer outlive sign-out
+
+dev mode only
+
+A week's coupon lines, which the phone's receipt sheet reads from, were kept in
+a variable outside the store. That was so they would survive leaving the page,
+but it meant they also survived signing out. They are in the Coupon Sales slice
+now: leaving the page and coming back still opens receipts, and sign-out clears
+them with everything else. Nothing on screen changes.
