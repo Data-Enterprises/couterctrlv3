@@ -121,6 +121,13 @@ export const itemSeverity = (
  * can appear under more than one department and the report needs the one it
  * actually sold in. The department also narrows the report's fan-out on the
  * far side.
+ *
+ * Every item that sold in any of the three weeks is graded, not only the ones
+ * that sold this week. An item that sold last week or last year and nothing
+ * this week is down 100%, which is as critical as an item gets, and Sales
+ * already grades it that way in its Inactive list. Walking this week's rows
+ * alone dropped exactly those items, so "See item actions" left out the ones
+ * that had stopped selling.
  */
 export const collectCriticalItems = (
   ty: SubDeptMargin[],
@@ -147,7 +154,15 @@ export const collectCriticalItems = (
   const { coverage } = matchDatedRows(ty, lw, ly);
 
   const out: { productCode: string; dept: string }[] = [];
-  for (const [dept, tyRows] of tyByDept) {
+  // A department that sold nothing this week can still hold items that did
+  // last week or last year, so the departments come from all three periods.
+  const depts = new Set([
+    ...tyByDept.keys(),
+    ...lwByDept.keys(),
+    ...lyByDept.keys(),
+  ]);
+  for (const dept of depts) {
+    const tyRows = tyByDept.get(dept) ?? [];
     const tyMap = aggregateByCode(tyRows);
     const lwMap = aggregateByCode(lwByDept.get(dept) ?? []);
     const lyMap = aggregateByCode(lyByDept.get(dept) ?? []);
@@ -157,16 +172,19 @@ export const collectCriticalItems = (
       lyByDept.get(dept) ?? [],
     );
 
-    for (const [code, tw] of tyMap) {
+    const codes = new Set([...tyMap.keys(), ...lwMap.keys(), ...lyMap.keys()]);
+    for (const code of codes) {
+      const tw = tyMap.get(code);
       const lwEntry = lwMap.get(code) ?? null;
       const lyEntry = lyMap.get(code) ?? null;
       const item: Top10Item = {
         productCode: code,
         upc: code,
-        desc: tw.desc,
-        tyNet: tw.net,
-        tyQty: tw.qty,
-        tyWeight: tw.weight,
+        desc: tw?.desc ?? lwEntry?.desc ?? lyEntry?.desc ?? code,
+        // No row this week is a real zero: the store traded, the item didn't.
+        tyNet: tw?.net ?? 0,
+        tyQty: tw?.qty ?? 0,
+        tyWeight: tw?.weight ?? 0,
         lwNet: lwEntry ? lwEntry.net : null,
         lwQty: lwEntry ? lwEntry.qty : null,
         lwWeight: lwEntry ? lwEntry.weight : null,

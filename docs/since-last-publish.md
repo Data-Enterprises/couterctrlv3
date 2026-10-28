@@ -897,3 +897,17 @@ before anything is ticked, with a count, "Select all N shown", Cancel, and the
 action button. Clicking anywhere on a row ticks it, and the row's own icons
 are hidden while picking. Escape or Cancel backs out. The single-row trash icon
 works as before.
+
+## Item Actions
+
+### See item actions from Sales includes items that stopped selling
+
+dev mode only
+
+The store-wide **See item actions** button on Sales sends a rule (the item
+threshold and grading metric on screen), and Item Actions works out which
+items are critical. It only looked at items that sold this week, so an item
+that sold last week or last year and nothing this week, down 100%, never made
+the list. Sales already counts those as critical in its Inactive list. They
+come through now, including ones from a department that sold nothing this
+week.
