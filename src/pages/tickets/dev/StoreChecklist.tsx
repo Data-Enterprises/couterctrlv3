@@ -171,10 +171,10 @@ const StoreChecklist = ({
                         onChange={(on) => toggle(o.storeid, on)}
                         label={
                           <span className="min-w-0 truncate text-[12.5px] text-content">
-                            <span className="font-mono text-[11.5px]">
-                              #{o.store_number}
-                            </span>{" "}
-                            {o.store_name}
+                            {/* The name already leads with the number
+                                ("010 - IGA LEITCHFIELD KY"), so no #10 before
+                                it. The search box still matches on number. */}
+                            {o.store_name || `Store ${o.store_number}`}
                             {o.deactivated && (
                               <span className="text-content/85"> (closed)</span>
                             )}
