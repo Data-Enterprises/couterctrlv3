@@ -48,23 +48,34 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
     // its code and total, and the bottom row repeats the total. The one thing a
     // heading said that nothing else did is the unit, so the bottom row says it.
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
+      {/*
+        Scrolls both ways. Thirteen weeks of a long store name is wider than
+        the panel, and the cells never wrap or squeeze, so the weeks scroll
+        sideways while the Store column stays pinned on the left and the Total
+        column on the right: the reader never loses which store a row is.
+
+        `border-separate` rather than `border-collapse`, with the rules drawn
+        on the cells: in collapse mode a sticky cell's border stays behind and
+        scrolls away with the column it used to touch. Pinned cells carry
+        their own background so the weeks pass under them, not through them.
+      */}
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        <table className="min-w-full text-[13.5px] text-content border-collapse">
-          <thead className="sticky top-0 z-10 bg-bkg">
-            <tr className="border-b-2 border-gray-200">
-              <th className="px-4 py-2 text-left text-[12px] font-bold uppercase tracking-wide whitespace-nowrap">
+        <table className="min-w-full text-[13.5px] text-content border-separate border-spacing-0">
+          <thead className="sticky top-0 z-20">
+            <tr>
+              <th className="sticky left-0 z-10 bg-bkg px-4 py-2 text-left text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-r border-gray-200">
                 Store
               </th>
               {weekEndings.map((w) => (
                 <th
                   key={w}
-                  className="px-2 py-2 text-center text-[12px] font-bold whitespace-nowrap"
+                  className="bg-bkg px-2 py-2 text-center text-[12px] font-bold whitespace-nowrap border-b-2 border-gray-200"
                   title={`Week ending ${w}`}
                 >
                   {shortDate(w)}
                 </th>
               ))}
-              <th className="px-4 py-2 text-right text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-l border-gray-200">
+              <th className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-l border-gray-200">
                 Total
               </th>
             </tr>
@@ -73,17 +84,16 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
             {grid.rows.map(({ store, cells, total }) => {
               const idle = cells.every((v) => v === null || v === 0);
               return (
-                <tr
-                  key={store.storeid}
-                  className={`border-b border-gray-100 hover:bg-row_selected ${idle ? "text-content/85" : ""}`}
-                >
-                  <td className={`px-4 py-1.5 whitespace-nowrap ${idle ? "" : "font-semibold"}`}>
+                <tr key={store.storeid} className={`group ${idle ? "text-content/85" : ""}`}>
+                  <td
+                    className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-gray-100 ${idle ? "" : "font-semibold"}`}
+                  >
                     {store.store_name || `Store ${store.store_number}`}
                   </td>
                   {cells.map((v, i) => {
                     if (v === null || v === 0) {
                       return (
-                        <td key={weekEndings[i]} className={tileCell}>
+                        <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
                           <div className={`${tile} text-content/85`}>–</div>
                         </td>
                       );
@@ -92,7 +102,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                     // place on a scale of how much moved, so it stays unshaded.
                     const heat = heatStyle(Math.max(v, 0), peak);
                     return (
-                      <td key={weekEndings[i]} className={tileCell}>
+                      <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
                         <div
                           className={`${tile} font-semibold`}
                           style={v > 0 ? { background: heat.bg, color: heat.color } : undefined}
@@ -102,7 +112,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                       </td>
                     );
                   })}
-                  <td className="px-4 py-1.5 text-right tabular-nums whitespace-nowrap font-bold border-l border-gray-200 bg-bkg">
+                  <td className="sticky right-0 z-[1] bg-bkg px-4 py-1.5 text-right tabular-nums whitespace-nowrap font-bold border-b border-l border-gray-200">
                     {idle ? <span className="font-normal">0</span> : fmt(total)}
                   </td>
                 </tr>
@@ -111,17 +121,20 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
           </tbody>
           {/* The header's own colours, so the totals read as the grid's frame
               rather than as a separate bar laid over it. */}
-          <tfoot className="sticky bottom-0 bg-bkg">
-            <tr className="border-t-2 border-gray-200 font-bold">
-              <td className="px-4 py-2 whitespace-nowrap">
+          <tfoot className="sticky bottom-0 z-20">
+            <tr className="font-bold">
+              <td className="sticky left-0 z-10 bg-bkg px-4 py-2 whitespace-nowrap border-t-2 border-r border-gray-200">
                 Total movement <span className="font-semibold">({unit})</span>
               </td>
               {grid.weekTotals.map((v, i) => (
-                <td key={weekEndings[i]} className="px-2 py-2 text-center tabular-nums whitespace-nowrap">
+                <td
+                  key={weekEndings[i]}
+                  className="bg-bkg px-2 py-2 text-center tabular-nums whitespace-nowrap border-t-2 border-gray-200"
+                >
                   {fmt(v)}
                 </td>
               ))}
-              <td className="px-4 py-2 text-right tabular-nums whitespace-nowrap border-l border-gray-200">
+              <td className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right tabular-nums whitespace-nowrap border-t-2 border-l border-gray-200">
                 {fmt(grid.total)}
               </td>
             </tr>

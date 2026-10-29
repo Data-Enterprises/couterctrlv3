@@ -5,6 +5,7 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import {
   mergeDevMovement,
   setDevMovementLoading,
+  setDevMovementSelected,
   setDevMovementWeeks,
   setDevUpcItems,
   type MovementRow,
@@ -91,7 +92,6 @@ const MovementTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number; week: string } | null>(
     null,
   );
@@ -216,9 +216,13 @@ const MovementTab = () => {
   );
 
   useEffect(() => {
-    if (!codes.length) setSelectedCode(null);
-    else if (!selectedCode || !codes.includes(selectedCode)) setSelectedCode(codes[0]);
-  }, [codes, selectedCode]);
+    const current = ctx.movementSelected;
+    if (!codes.length) {
+      if (current !== null) dispatch(setDevMovementSelected(null));
+    } else if (!current || !codes.includes(current)) {
+      dispatch(setDevMovementSelected(codes[0]));
+    }
+  }, [codes, ctx.movementSelected]);
 
   const controls = (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 flex-shrink-0 text-[13px] font-semibold text-content">
@@ -286,7 +290,7 @@ const MovementTab = () => {
     );
   }
 
-  const selected = selectedCode ?? codes[0];
+  const selected = ctx.movementSelected ?? codes[0];
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
@@ -300,7 +304,7 @@ const MovementTab = () => {
             return (
               <button
                 key={code}
-                onClick={() => setSelectedCode(code)}
+                onClick={() => dispatch(setDevMovementSelected(code))}
                 className={`w-full text-left px-2.5 py-2 border-b border-gray-50 transition-colors ${
                   isSelected ? "bg-custom-white" : "hover:bg-gray-50"
                 }`}

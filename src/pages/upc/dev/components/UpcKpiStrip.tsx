@@ -5,7 +5,7 @@ import { getPriceOptKpis } from "../modules/priceOpt/PriceOptKpis";
 import { getTrendKpis } from "../modules/trend/TrendKpis";
 import { getAssociationKpis } from "../modules/association/AssociationKpis";
 import { getMovementKpis } from "../modules/movement/MovementKpis";
-import { movementStores } from "../modules/movement/movementStats";
+import { movementGrid, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
 
 const UpcKpiStrip = () => {
@@ -22,18 +22,25 @@ const UpcKpiStrip = () => {
     switch (ctx.activeTab) {
       case "salesComp":
         return getSalesCompKpis(ctx.salesComp, ctx.salesCompLY, ctx.selectedUpcs, ctx.endDate);
-      case "movement":
-        return getMovementKpis(
+      case "movement": {
+        // The item the grid is showing: the strip describes one item, as the
+        // grid does. Same fallback as the tab when nothing is picked yet.
+        const inView = ctx.searchedUpcs.filter((u) => ctx.selectedUpcs.includes(u));
+        const code =
+          ctx.movementSelected && inView.includes(ctx.movementSelected)
+            ? ctx.movementSelected
+            : inView[0];
+        const stores = movementStores(
+          ctx.storeids.split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0),
+          ctx.assignedStores,
           ctx.movementRows,
-          ctx.searchedUpcs.filter((u) => ctx.selectedUpcs.includes(u)),
+        );
+        return getMovementKpis(
+          movementGrid(ctx.movementRows, code ?? "", stores, movementWindow.weekEndings),
           movementWindow.weeks,
           movementWindow.endIso,
-          movementStores(
-            ctx.storeids.split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0),
-            ctx.assignedStores,
-            ctx.movementRows,
-          ).length,
         );
+      }
       case "forecast":
         return getForecastKpis(ctx.forecastQtyData, ctx.selectedUpcs);
       case "priceOpt":

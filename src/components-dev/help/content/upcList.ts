@@ -98,6 +98,16 @@ export const UPC_LIST_HELP: HelpContent = {
       anchor: "tabs",
     },
     {
+      term: "Per store per week",
+      def: "On Movement, how much a store that carries the item moves in a week: its total over the stores that sold any, times the weeks. Stores that sold none are left out, so it shows how fast the item sells where it is on the shelf.",
+      anchor: "tabs",
+    },
+    {
+      term: "Last week vs average",
+      def: "On Movement, the most recent week against the average of the weeks before it, so you can see whether the item is running ahead or behind. New means it sold nothing in the earlier weeks.",
+      anchor: "tabs",
+    },
+    {
       term: "Price Opt",
       def: "Every price each item sold at in the range, with the quantity and revenue at each. The price marked “best” brought in the most revenue. Elasticity shows how far sales moved when the price changed, and needs at least two prices to appear.",
       anchor: "tabs",

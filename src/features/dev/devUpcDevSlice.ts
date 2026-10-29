@@ -121,6 +121,10 @@ interface UpcDevState {
   movementCoverage: string[];
   movementLoading: boolean;
   movementRows: MovementRow[];
+  /** The one item the tab is showing. Movement is read an item at a time, and
+   *  the strip above it describes that item, so both read it from here. Null
+   *  falls back to the first item in the list. */
+  movementSelected: string | null;
   // Forecast
   forecastLoaded: boolean;
   forecastLoading: boolean;
@@ -202,6 +206,7 @@ const initialState: UpcDevState = {
   movementCoverage: [],
   movementLoading: false,
   movementRows: [],
+  movementSelected: null,
   // Forecast
   forecastLoaded: false,
   forecastLoading: false,
@@ -368,6 +373,9 @@ const upcDevSlice = createSlice({
     setDevMovementLoading(state, action: PayloadAction<boolean>) {
       state.movementLoading = action.payload;
     },
+    setDevMovementSelected(state, action: PayloadAction<string | null>) {
+      state.movementSelected = action.payload;
+    },
     mergeDevMovement(state, action: PayloadAction<MergePayload<MovementRow>>) {
       state.movementRows = mergeRows(state.movementRows, action.payload);
       state.movementCoverage = extendCoverage(state.movementCoverage, action.payload.codes);
@@ -470,6 +478,9 @@ const upcDevSlice = createSlice({
       state.optBestPricesByUpc = keepRows(state.optBestPricesByUpc);
       state.upcTrends = keepRows(state.upcTrends);
       state.movementRows = keepRows(state.movementRows);
+      if (state.movementSelected && drop.has(state.movementSelected)) {
+        state.movementSelected = null;
+      }
 
       // Coverage has to shrink with the data. A removed UPC that stayed in a
       // coverage list would be treated as already-fetched if the user added it
@@ -523,6 +534,7 @@ const upcDevSlice = createSlice({
       state.movementCoverage = [];
       state.movementLoading = false;
       state.movementRows = [];
+      state.movementSelected = null;
       state.salesCompCoverage = [];
       state.salesCompLoading = false;
       state.salesComp = [];
@@ -589,6 +601,7 @@ export const {
   mergeDevTrends,
   setDevMovementWeeks,
   setDevMovementLoading,
+  setDevMovementSelected,
   mergeDevMovement,
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,

@@ -255,3 +255,47 @@ export const movementCsv = (
   }
   return { headers, lines };
 };
+
+/** A rate as the strip shows it: pounds to two places, units to one. */
+export const fmtRate = (n: number, weighed: boolean) =>
+  n.toLocaleString("en-US", {
+    minimumFractionDigits: weighed ? 2 : 1,
+    maximumFractionDigits: weighed ? 2 : 1,
+  });
+
+/**
+ * How much a store that carries the item moves in a week: the item's total
+ * over (stores that moved any of it × weeks).
+ *
+ * Divided by the stores that sold it, not every store searched. A store that
+ * doesn't carry the item would otherwise drag the rate down and hide how
+ * fast it sells where it is on the shelf; how many stores that is gets its own
+ * tile. Null when no store moved any.
+ */
+export const perStorePerWeek = (
+  grid: MovementGrid,
+): { value: number; stores: number } | null => {
+  const stores = grid.rows.filter((r) => r.cells.some((v) => v !== null && v !== 0)).length;
+  if (stores === 0 || grid.weekEndings.length === 0) return null;
+  return { value: grid.total / (stores * grid.weekEndings.length), stores };
+};
+
+/**
+ * The most recent week against the average of the weeks before it.
+ *
+ * The weeks before it, not every week: counting the latest week in its own
+ * average pulls the comparison toward zero, and the question is whether this
+ * week is running ahead of or behind what came before. `pct` is null when
+ * the earlier weeks moved nothing, so there is no rate to compare against.
+ * Null altogether with fewer than two weeks.
+ */
+export const latestVsPrior = (
+  grid: MovementGrid,
+): { latest: number; priorAvg: number; pct: number | null } | null => {
+  const totals = grid.weekTotals;
+  if (totals.length < 2) return null;
+  const latest = totals[totals.length - 1];
+  const prior = totals.slice(0, -1);
+  const priorAvg = prior.reduce((a, v) => a + v, 0) / prior.length;
+  return { latest, priorAvg, pct: priorAvg === 0 ? null : ((latest - priorAvg) / priorAvg) * 100 };
+};

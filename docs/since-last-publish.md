@@ -1000,6 +1000,12 @@ incomplete. Each week's figure is shaded by how much it moved, on the same blue
 scale as Sales Comp's day grid, so the stores carrying an item stand out; the
 bottom row is the Total movement for each week.
 
+The strip above the grid describes the one item on screen: the weeks, how many
+of the searched stores moved it, **per store per week** (its total over the
+stores that sold any, times the weeks) and **last week against the average of
+the weeks before it**. The grid scrolls sideways when the weeks run wide, with
+the store names pinned on the left and the totals on the right.
+
 The weeks end on the search's end date; pick a Saturday for Sunday-to-Saturday
 weeks. A **Weeks** control (1 to 13) sets how far back it goes, and changing it
 reloads only this tab, never Sales Comp or the others. The download icon
