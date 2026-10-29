@@ -330,9 +330,12 @@ export const useExportBuilderCtx = () => {
   ) => {
     const trimmed = name.trim();
     if (!trimmed || !sql.trim()) return;
-    // Blank is stored as null on that table, so blank is what is sent: an
-    // empty string would be a description someone has to notice and clear.
+    // A new row stores a blank description as null. An update cannot send
+    // null for that: the endpoint reads null as "leave it alone", so a
+    // description someone had emptied stayed on the row. An update sends the
+    // empty string instead, which every list here shows as no description.
     const note = description.trim() || null;
+    const noteOnUpdate = description.trim();
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       if (j.error !== 0 || !j.query) {
@@ -356,7 +359,7 @@ export const useExportBuilderCtx = () => {
       updateSavedQuery(url, token, id, {
         name: trimmed,
         sql,
-        description: note,
+        description: noteOnUpdate,
       }).then(done, failed);
     }
   };
@@ -372,7 +375,8 @@ export const useExportBuilderCtx = () => {
     if (!trimmed) return;
     updateSavedQuery(url, token, id, {
       name: trimmed,
-      description: description.trim() || null,
+      // Empty, not null, so an emptied description is cleared (see saveQuery).
+      description: description.trim(),
     })
       .then((resp) => {
         const j = resp.data as SavedQueryResp;

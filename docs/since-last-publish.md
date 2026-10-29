@@ -1025,3 +1025,7 @@ typing is never overwritten while you're still in the middle of it.
 (`row_count`) lost that sort every time the saved configuration was loaded,
 with a note that the sort "named a column this configuration no longer has".
 It now loads with the sort intact.
+
+**A saved query's description can be removed.** Emptying the description of
+a saved query and saving it (or renaming it) kept the old description. It
+now clears.
