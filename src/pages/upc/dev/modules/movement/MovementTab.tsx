@@ -22,6 +22,7 @@ import {
   isWeighed,
   movementStores,
   movementTotal,
+  shortDate,
   sumWeek,
   weekdayOf,
 } from "./movementStats";
@@ -30,6 +31,46 @@ import MovementGridPanel from "./MovementGridPanel";
 
 const inBatches = <T,>(xs: T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(xs.length / size) }, (_, i) => xs.slice(i * size, (i + 1) * size));
+
+/** How long one week may take. A week of 14 stores answers in well under a
+ *  second; one that hasn't answered in this long isn't going to, and the
+ *  queue has one slot, so waiting on it would stall every UPC List tab. */
+export const MOVEMENT_WEEK_TIMEOUT_MS = 90_000;
+
+class WeekTimeout extends Error {}
+
+/** Run a request with its own deadline, still honouring the queue's abort. */
+const withDeadline = async <T,>(
+  signal: AbortSignal,
+  ms: number,
+  run: (signal: AbortSignal) => Promise<T>,
+): Promise<T> => {
+  const own = new AbortController();
+  const follow = () => own.abort();
+  signal.addEventListener("abort", follow, { once: true });
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    own.abort();
+  }, ms);
+  try {
+    return await run(own.signal);
+  } catch (err) {
+    if (timedOut) throw new WeekTimeout();
+    throw err;
+  } finally {
+    clearTimeout(timer);
+    signal.removeEventListener("abort", follow);
+  }
+};
+
+const reasonOf = (err: unknown): string => {
+  if (err instanceof WeekTimeout) return "the server didn't answer";
+  const e = err as { response?: { status?: number; data?: { detail?: string } } };
+  const detail = e.response?.data?.detail;
+  if (e.response?.status) return detail ? `${detail} (${e.response.status})` : `error ${e.response.status}`;
+  return "it couldn't be reached";
+};
 
 /**
  * Movement: units, or pounds for a weighed item, per store per week ending.
@@ -51,7 +92,17 @@ const MovementTab = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; week: string } | null>(
+    null,
+  );
+  /**
+   * The last load that failed, by what it asked for. While the question is
+   * unchanged the tab shows the failure and waits for Try again rather than
+   * asking again by itself: loading going false re-runs the effect, and
+   * without this a request that fails every time would fire again at once,
+   * forever, with a toast each time.
+   */
+  const [failed, setFailed] = useState<{ key: string; msg: string } | null>(null);
 
   const { endIso, weeks, windows, weekEndings, windowKey } = useMovementWindow();
   // The window a finished load was asked for may not be the one on screen any
@@ -71,46 +122,58 @@ const MovementTab = () => {
     [ctx.storeids],
   );
 
+  const loadKey = `${windowKey}|${missingKey}|${ctx.storeids}`;
+
   useEffect(() => {
     if (ctx.activeTab !== "movement") return;
     if (ctx.movementLoading || !scopeIds.length || !missingKey || !windows.length) return;
+    if (failed?.key === loadKey) return;
 
     const codes = missing;
     const asked = windowKey;
+    const key = loadKey;
     const load = async () => {
       dispatch(setDevMovementLoading(true));
       const batches = inBatches(codes, ITEM_ACTIONS_MAX_CODES);
       const total = windows.length * batches.length;
       let done = 0;
-      setProgress({ done, total });
+      let current = windows[0].end;
+      setProgress({ done, total, week: current });
       const rows: MovementRow[] = [];
+      // A failed week is a failure, not a week of nothing. Coverage is left
+      // alone, and the tab says which week and why, and waits to be asked.
+      const fail = (msg: string) => {
+        setFailed({ key, msg: `Week ending ${shortDate(current)} didn't load: ${msg}.` });
+        toast.warn("Movement could not be read for these UPCs");
+      };
       try {
         for (const w of windows) {
+          current = w.end;
           for (const batch of batches) {
+            setProgress({ done, total, week: w.end });
             const res = await upcQueue.enqueue(
               `movement:${asked}:${w.end}:${batch.join(",")}`,
               (signal) =>
-                getItemActions(
-                  ctx.url, ctx.token, w.start, w.end,
-                  // A store list travels as a group search: useGroups 1,
-                  // singleStore 0, no group id. The rule every endpoint
-                  // takes a list under (docs/backend-storeids-everywhere).
-                  1, 0, 0,
-                  batch, signal, scopeIds,
+                withDeadline(signal, MOVEMENT_WEEK_TIMEOUT_MS, (s) =>
+                  getItemActions(
+                    ctx.url, ctx.token, w.start, w.end,
+                    // A store list travels as a group search: useGroups 1,
+                    // singleStore 0, no group id. The rule every endpoint
+                    // takes a list under (docs/backend-storeids-everywhere).
+                    1, 0, 0,
+                    batch, s, scopeIds,
+                  ),
                 ),
             );
             // Superseded by a newer search: nothing of this one belongs.
             if (!res) return;
             const body: ItemActionsResp = res.data;
-            // A failed week is a failure, not a week of nothing. Coverage is
-            // left alone so opening the tab again retries.
             if (body.error !== 0) {
-              toast.warn(body.msg || "Movement could not be read for these UPCs");
+              fail(body.msg || "the server reported an error");
               return;
             }
             rows.push(...sumWeek(body.data ?? [], w.end));
             done += 1;
-            setProgress({ done, total });
           }
         }
         if (liveWindow.current !== asked) return;
@@ -122,8 +185,8 @@ const MovementTab = () => {
             [...seen].map(([product_code, description]) => ({ product_code, description })),
           ),
         );
-      } catch {
-        toast.warn("Movement could not be read for these UPCs");
+      } catch (err) {
+        fail(reasonOf(err));
       } finally {
         dispatch(setDevMovementLoading(false));
         setProgress(null);
@@ -132,7 +195,7 @@ const MovementTab = () => {
 
     load();
     // `missing`, `windows` and `scopeIds` are read through their keys.
-  }, [ctx.activeTab, missingKey, ctx.movementLoading, windowKey, ctx.storeids]);
+  }, [ctx.activeTab, missingKey, ctx.movementLoading, windowKey, ctx.storeids, failed]);
 
   const codes = useMemo(
     () =>
@@ -187,8 +250,26 @@ const MovementTab = () => {
         {controls}
         <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
           {progress && progress.total > 1
-            ? `Loading movement: ${progress.done} of ${progress.total} weeks…`
+            ? `Loading movement: week ending ${shortDate(progress.week)}, ${progress.done} of ${progress.total} done…`
             : "Loading movement…"}
+        </div>
+      </div>
+    );
+  }
+
+  if (failed?.key === loadKey) {
+    return (
+      <div className="flex flex-col h-full">
+        {controls}
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[11px] text-content/85">
+          <span>{failed.msg}</span>
+          <button
+            type="button"
+            onClick={() => setFailed(null)}
+            className="text-[12px] font-semibold text-brand_navy_hover underline underline-offset-2"
+          >
+            Try again
+          </button>
         </div>
       </div>
     );
