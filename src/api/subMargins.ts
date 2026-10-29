@@ -174,18 +174,15 @@ export const ITEM_ACTIONS_MAX_CODES = 2000;
  * are 111 rows in 94ms, so the switch would only be something to get wrong.
  *
  * **Scope is one store or one user group** — the same triple /subs/subs takes:
- * singleStore with a storeid, or useGroups with a group id. The deployed
- * endpoint has no list form, so a caller that has already resolved a set of
- * stores (UPC List's Movement tab) asks once per store rather than once for
- * the set.
+ * singleStore with a storeid, or useGroups with a group id. Rows come back
+ * grouped by storeid either way, so a group search answers for every store in
+ * it in one call.
  *
- * An explicit `storeids` field exists on a backend branch and would collapse
- * that to one call. It is not on dev, where an unknown field is dropped
- * silently rather than refused — so sending it would fall through to the
- * triple, and a group id there resolves the SIGNED-IN user's link rows rather
- * than the group owner's, with no active-store filter. That is a different set
- * of stores from the one the rest of the page shows, which is why this does
- * not try.
+ * An explicit `storeids` field exists on a backend branch, for a caller that
+ * has resolved a set of stores that is not exactly a group. It is not on dev,
+ * where an unknown field is dropped silently rather than refused — so sending
+ * it today would fall through to the triple and scope by whatever that said,
+ * which is how it goes wrong quietly rather than loudly.
  *
  * Codes go out as they are held. The backend matches the column raw rather
  * than through `replace(product_code, '.0', '')`, having verified the suffix

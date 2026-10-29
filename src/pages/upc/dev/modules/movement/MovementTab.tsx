@@ -28,14 +28,15 @@ import {
   weekdayOf,
 } from "./movementStats";
 import { useMovementWindow } from "./useMovementWindow";
+import { isGroupSearch } from "../../../../../features/searchSlice";
 import MovementGridPanel from "./MovementGridPanel";
 
 const inBatches = <T,>(xs: T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(xs.length / size) }, (_, i) => xs.slice(i * size, (i + 1) * size));
 
-/** How long one store's week may take. It answers in well under a second;
- *  one that hasn't answered in this long isn't going to, and the queue has
- *  one slot, so waiting on it would stall every UPC List tab. */
+/** How long one week may take. A week of 14 stores answers in well under a
+ *  second; one that hasn't answered in this long isn't going to, and the
+ *  queue has one slot, so waiting on it would stall every UPC List tab. */
 export const MOVEMENT_WEEK_TIMEOUT_MS = 90_000;
 
 class WeekTimeout extends Error {}
@@ -76,25 +77,13 @@ const reasonOf = (err: unknown): string => {
 /**
  * Movement: units, or pounds for a weighed item, per store per week ending.
  *
- * Asks `subs/item_actions` once per store per week for the searched UPCs,
+ * Asks `subs/item_actions` once per week for the searched UPCs, scoped the way
+ * the search was made -- a group id for a group, a store id for a store --
  * through the page's queue like every other tab, and only when the tab is
- * opened. The weeks end on the search's end date; how many of them is this
- * tab's own setting, so asking for thirteen weeks here never re-runs Sales
- * Comp or Trend over thirteen weeks.
- *
- * ### Why one call per store
- *
- * The endpoint scopes to one store or one user group and has no list form, so
- * the page's resolved store list cannot go out in a single request. Asking per
- * store keeps the set of stores identical to Sales Comp and Trend -- the
- * group's own stores, active ones only, the owner's links for a shared group.
- * Passing the group id instead would be one call, and a different question:
- * the endpoint resolves a group against the SIGNED-IN user's links with no
- * active filter, which drops a shared group to nothing and lets a closed store
- * back in. Cost is stores x weeks x batches, each one small -- a store-week of
- * 100 codes is about 110ms -- and `subs/item_actions` gaining an explicit
- * store list would collapse it back to one call per week without changing
- * anything below.
+ * opened. The endpoint groups by storeid, so one call per week comes back
+ * already split per store, which is the grid. The weeks end on the search's
+ * end date; how many of them is this tab's own setting, so asking for thirteen
+ * weeks here never re-runs Sales Comp or Trend over thirteen weeks.
  *
  * A whole window lands at once rather than week by week. Coverage is per UPC,
  * and a UPC recorded as covered after two of six weeks would never be asked
@@ -134,11 +123,37 @@ const MovementTab = () => {
     [ctx.storeids],
   );
 
+  /**
+   * The search, in the form the endpoint scopes by: a group id, or a store id.
+   *
+   * `item_actions` groups by storeid, so one call for the group comes back
+   * already split per store -- which is the whole grid. Sending the page's
+   * resolved store list instead would mean one call per store, six weeks of
+   * them, to assemble what one call already answers.
+   *
+   * A shared group goes out as its own id like any other: every consumer in
+   * the app resolves a Shared search that way, and the endpoint answers for
+   * the stores in it the searcher holds. The two resolutions are not quite the
+   * same set -- the page reads the group owner's active stores, the endpoint
+   * reads the searcher's own links -- so `movementStores` still lists every
+   * store the page searched, and one the endpoint left out keeps its row of
+   * dashes instead of vanishing.
+   */
+  const scope = useMemo(
+    () =>
+      isGroupSearch(ctx.searchType)
+        ? { useGroups: 1, searchValue: ctx.selectedGroup.id, singleStore: 0 }
+        : { useGroups: 0, searchValue: ctx.selectedStore?.storeid ?? 0, singleStore: 1 },
+    [ctx.searchType, ctx.selectedGroup.id, ctx.selectedStore?.storeid],
+  );
+
   const loadKey = `${windowKey}|${missingKey}|${ctx.storeids}`;
 
   useEffect(() => {
     if (ctx.activeTab !== "movement") return;
     if (ctx.movementLoading || !scopeIds.length || !missingKey || !windows.length) return;
+    // No group picked, or no store: there is nothing to scope the call by.
+    if (!scope.searchValue) return;
     if (failed?.key === loadKey) return;
 
     const codes = missing;
@@ -147,54 +162,42 @@ const MovementTab = () => {
     const load = async () => {
       dispatch(setDevMovementLoading(true));
       const batches = inBatches(codes, ITEM_ACTIONS_MAX_CODES);
-      const total = windows.length * scopeIds.length * batches.length;
+      const total = windows.length * batches.length;
       let done = 0;
       let current = windows[0].end;
-      let currentStore = scopeIds[0];
       setProgress({ done, total, week: current });
       const rows: MovementRow[] = [];
-      // A failed call is a failure, not a week of nothing. Coverage is left
-      // alone, and the tab says which week, which store and why, and waits to
-      // be asked. Naming the store matters now that one week is several calls:
-      // "week ending 10/24 didn't load" would not say that the other eight
-      // stores in it were fine.
+      // A failed week is a failure, not a week of nothing. Coverage is left
+      // alone, and the tab says which week and why, and waits to be asked.
       const fail = (msg: string) => {
-        setFailed({
-          key,
-          msg: `Week ending ${shortDate(current)} at store ${currentStore} didn't load: ${msg}.`,
-        });
+        setFailed({ key, msg: `Week ending ${shortDate(current)} didn't load: ${msg}.` });
         toast.warn("Movement could not be read for these UPCs");
       };
       try {
         for (const w of windows) {
           current = w.end;
-          for (const storeid of scopeIds) {
-            currentStore = storeid;
-            for (const batch of batches) {
-              setProgress({ done, total, week: w.end });
-              const res = await upcQueue.enqueue(
-                `movement:${asked}:${w.end}:${storeid}:${batch.join(",")}`,
-                (signal) =>
-                  withDeadline(signal, MOVEMENT_WEEK_TIMEOUT_MS, (s) =>
-                    getItemActions(
-                      ctx.url, ctx.token, w.start, w.end,
-                      // One store: singleStore with its id, useGroups off.
-                      // The page already resolved which stores these are.
-                      0, storeid, 1,
-                      batch, s,
-                    ),
+          for (const batch of batches) {
+            setProgress({ done, total, week: w.end });
+            const res = await upcQueue.enqueue(
+              `movement:${asked}:${w.end}:${batch.join(",")}`,
+              (signal) =>
+                withDeadline(signal, MOVEMENT_WEEK_TIMEOUT_MS, (s) =>
+                  getItemActions(
+                    ctx.url, ctx.token, w.start, w.end,
+                    scope.useGroups, scope.searchValue, scope.singleStore,
+                    batch, s,
                   ),
-              );
-              // Superseded by a newer search: nothing of this one belongs.
-              if (!res) return;
-              const body: ItemActionsResp = res.data;
-              if (body.error !== 0) {
-                fail(body.msg || "the server reported an error");
-                return;
-              }
-              rows.push(...sumWeek(body.data ?? [], w.end));
-              done += 1;
+                ),
+            );
+            // Superseded by a newer search: nothing of this one belongs.
+            if (!res) return;
+            const body: ItemActionsResp = res.data;
+            if (body.error !== 0) {
+              fail(body.msg || "the server reported an error");
+              return;
             }
+            rows.push(...sumWeek(body.data ?? [], w.end));
+            done += 1;
           }
         }
         if (liveWindow.current !== asked) return;

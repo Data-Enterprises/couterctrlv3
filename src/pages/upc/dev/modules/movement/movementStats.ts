@@ -10,8 +10,8 @@ import type { MovementRow } from "../../../../../features/dev/devUpcDevSlice";
  * other UPC List tab can, because every other UPC endpoint adds the stores
  * together.
  *
- * Read from `subs/item_actions`, one call per store per week -- it scopes to
- * one store and has no list form. That endpoint already
+ * Read from `subs/item_actions`, one call per week, scoped by the search's
+ * own group or store. That endpoint already
  * returns rows per store and day with the refund sign applied and weight in
  * pounds, so a week's total is a sum and nothing here re-derives a sales rule.
  * Asking week by week, rather than once for the whole window, means each row's
