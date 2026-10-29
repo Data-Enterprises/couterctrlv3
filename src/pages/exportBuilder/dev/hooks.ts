@@ -361,14 +361,27 @@ export const useExportBuilderCtx = () => {
     }
   };
 
-  /** A rename carries the name alone; the payload is not touched. */
-  const renameQuery = (id: number, name: string) => {
+  /**
+   * A rename carries the name and the description; the query text is not
+   * touched. Rename used to go through saveQuery with whatever was in the
+   * box, so renaming a query you had been editing also replaced what it
+   * said -- and a new name went out as a POST, leaving the old row behind.
+   */
+  const renameQuery = (id: number, name: string, description = "") => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    updateSavedQuery(url, token, id, { name: trimmed })
+    updateSavedQuery(url, token, id, {
+      name: trimmed,
+      description: description.trim() || null,
+    })
       .then((resp) => {
         const j = resp.data as SavedQueryResp;
-        if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
+        if (j.error !== 0 || !j.query) {
+          dispatch(failQueriesLoad("That did not rename."));
+          return;
+        }
+        dispatch(upsertQuery(j.query));
+        toast.success(`Renamed to "${j.query.name}"`);
       })
       .catch((err: JsonError) =>
         dispatch(failQueriesLoad("That did not rename: " + reasonOf(err))),

@@ -1008,3 +1008,9 @@ keeps them, and you can narrow stores by typing them there too.
 **Taking ORDER BY out of the query takes the sort out.** Deleting the
 `order by` line from the query box and pressing Apply left the old sort in
 force. It now clears it, and the Apply summary says "Sort removed".
+
+**Rename only renames.** Renaming a saved query also replaced its text with
+whatever was in the query box, and giving it a new name saved a second copy
+instead of renaming the first. **Rename** now changes the name and
+description only, on the same saved query. **Save as new** always makes a
+new one.
