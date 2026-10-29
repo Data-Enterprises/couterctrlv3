@@ -495,6 +495,20 @@ describe("a filter the query does not mention", () => {
     expect(out.applied.join(" ")).toMatch(/days/);
   });
 
+  it("drops a sort the query no longer has", () => {
+    const sorted = { ...config, orderBy: [{ key: "qty", desc: true }] };
+    const out = planApply(parseQuery("select * where sale_type = 'Sale'"), sorted);
+    expect(
+      out.actions.find((a) => a.type === "devExportBuilder/setOrderBy")?.payload,
+    ).toEqual([]);
+    expect(out.applied).toContain("Sort removed");
+  });
+
+  it("leaves an unsorted file unsorted without saying so", () => {
+    const out = planApply(parseQuery("select * where sale_type = 'Sale'"), config);
+    expect(out.actions.some((a) => a.type === "devExportBuilder/setOrderBy")).toBe(false);
+  });
+
   it("touches nothing when the WHERE could not be read", () => {
     // An OR across columns already leaves every filter alone; widening there
     // would quietly throw away filters the query never spoke about.

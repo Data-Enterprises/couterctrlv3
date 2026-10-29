@@ -519,6 +519,13 @@ export const planApply = (
           .join(", ")}`,
       );
     }
+  } else if (config.orderBy.length > 0) {
+    // The box writes ORDER BY whenever the file is sorted, so a query without
+    // one is a sort somebody took out -- the same rule as a filter line
+    // deleted from the WHERE. Left alone, the old sort stayed in force under
+    // a query that no longer said it.
+    actions.push(setOrderBy([]));
+    applied.push("Sort removed");
   }
   if (query.limit !== null) {
     leftBehind.push("LIMIT — an export is every row that matches");

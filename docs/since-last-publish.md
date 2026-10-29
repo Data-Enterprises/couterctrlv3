@@ -1004,3 +1004,7 @@ pressing **Apply to configuration** ticked every store again, because the
 query never mentioned stores and Apply treats anything unmentioned as "all".
 The query now carries the stores you picked (`storeid in (…)`), so Apply
 keeps them, and you can narrow stores by typing them there too.
+
+**Taking ORDER BY out of the query takes the sort out.** Deleting the
+`order by` line from the query box and pressing Apply left the old sort in
+force. It now clears it, and the Apply summary says "Sort removed".
