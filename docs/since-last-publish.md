@@ -963,3 +963,6 @@ stores column read "counting…" until a company was clicked, because a group's
 stores were only fetched when its company was opened. The groups the person
 holds now load as the edit opens, so the count and the list appear without a
 click, each store naming the group it comes from.
+The summary under the Assignments step names those groups straight away too
+("Food Giant: All Stores (all)"), where it used to read "#66 (all)" until the
+group's company was opened.

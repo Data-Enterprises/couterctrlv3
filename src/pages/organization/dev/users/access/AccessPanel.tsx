@@ -6,6 +6,7 @@ import {
   getAllStoresInBaseGroup,
 } from "../../../../../api/baseGroups";
 import type {
+  BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
@@ -57,6 +58,9 @@ interface AccessPanelProps {
   /** Hide the empty-picks notice, for a caller placing its own higher up the
    *  screen where a warning is read before the thing it warns about. */
   hideEmptyNotice?: boolean;
+  /** Edit: the groups the person already holds, so the summary can name them
+   *  before their company is opened ("#66 (all)" otherwise). */
+  heldGroups?: BaseGroup[];
 }
 
 /**
@@ -101,6 +105,7 @@ const AccessPanel = ({
   rightColumn,
   hideFooter = false,
   hideEmptyNotice = false,
+  heldGroups = [],
 }: AccessPanelProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
@@ -683,7 +688,7 @@ const AccessPanel = ({
         ) : (
           <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
             {held.map((id, i) => {
-              const group = groupsById[id];
+              const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
               const mode = picks.mode;
               const count = selectedStores.filter(
                 (s) => s.base_group === id,
