@@ -145,13 +145,13 @@ const StoreChecklist = ({
                       className="-mx-1 flex items-center gap-1 rounded px-1 pt-1 text-left hover:bg-row_selected"
                     >
                       <ChevronRightIcon
-                        className={`h-3.5 w-3.5 shrink-0 text-content/85 transition-transform ${open ? "rotate-90" : ""}`}
+                        className={`h-4 w-4 shrink-0 text-content/85 transition-transform ${open ? "rotate-90" : ""}`}
                         aria-hidden
                       />
-                      <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      <span className="text-[13px] font-semibold text-content">
                         {name}
                       </span>
-                      <span className="text-[11px] text-content/85">
+                      <span className="text-[12px] text-content/85">
                         · {g.stores.length}{" "}
                         {g.stores.length === 1 ? "store" : "stores"}
                         {ticked > 0 && (
