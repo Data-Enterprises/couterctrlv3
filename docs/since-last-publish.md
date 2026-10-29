@@ -946,6 +946,11 @@ and 399, Houchens Corp Bowling Green, Sonic 0). The server sends them with no
 company name, and sorting the companies by name threw on them. They are listed
 now, last, under **No company**.
 
+The picker's companies now fold. A tech's list is 400-odd stores, so each
+company starts folded and shows as one line with its store count; a click
+opens it. A company with a ticked store starts open and says how many are
+ticked, and typing in the search box opens every company with a match.
+
 **Every page now files under a category.** A ticket from any page used to
 arrive with the category blank on nine of them (User Management among them).
 The categories now follow the nav's page families, decided 29 Oct: Sales,

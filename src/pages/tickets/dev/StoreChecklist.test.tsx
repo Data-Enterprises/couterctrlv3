@@ -85,6 +85,39 @@ describe("StoreChecklist", () => {
     expect(screen.getByText("S&C Foods")).toBeTruthy();
   });
 
+  it("folds each company until it is opened, and a search opens the matches", async () => {
+    render(
+      <Harness
+        options={[
+          option("54"),
+          option("9", { company: 1, company_name: "Houchens" }),
+        ]}
+        searchable
+      />,
+    );
+    expect(screen.queryByText("S&C Foods 54")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: /Houchens/ }));
+    expect(screen.getByText("S&C Foods 9")).toBeTruthy();
+    expect(screen.queryByText("S&C Foods 54")).toBeNull();
+
+    await userEvent.type(screen.getByLabelText("Find a store"), "54");
+    expect(screen.getByText("S&C Foods 54")).toBeTruthy();
+  });
+
+  it("keeps a company with a ticked store open, and counts the ticks", async () => {
+    render(
+      <Harness
+        options={[
+          option("54"),
+          option("9", { company: 1, company_name: "Houchens" }),
+        ]}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /S&C Foods/ }));
+    await userEvent.click(screen.getByText("S&C Foods 54"));
+    expect(screen.getByText(/1 ticked/)).toBeTruthy();
+  });
+
   it("narrows by search without dropping what is already ticked", async () => {
     const spy = vi.fn();
     render(
