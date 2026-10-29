@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { createUser, updateUser } from "../../../../../api/team";
+import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 import {
   resetUserInfo,
   setRefresh,
@@ -184,6 +185,38 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     if (!editing) return;
     setPicks(existing.picks);
   }, [editing, existing.picks]);
+
+  /**
+   * Edit: every held group's stores, as soon as the groups are known.
+   *
+   * Effective stores counts the held groups' stores, and the access panel
+   * only fetches a group's stores when its company is opened, so the count
+   * sat at "counting…" until somebody clicked a company. A list that will not
+   * load counts as empty, as the mode switch treats it, rather than leaving
+   * the count waiting for ever.
+   */
+  const rosterAsked = useRef(new Set<number>());
+  useEffect(() => {
+    if (!editing) return;
+    held.heldGroups.forEach((g) => {
+      if (groupStores[g.id] !== undefined || rosterAsked.current.has(g.id)) return;
+      rosterAsked.current.add(g.id);
+      const land = (stores: Store[]) =>
+        setGroupStores((prev) =>
+          prev[g.id] !== undefined ? prev : { ...prev, [g.id]: stores },
+        );
+      getAllStoresInBaseGroup(ctx.url, ctx.token, g.id)
+        .then((resp) => {
+          const j = resp.data;
+          land(
+            j.error === 0
+              ? (j.assigned_stores as Store[]).filter((s) => s.store_name != null)
+              : [],
+          );
+        })
+        .catch(() => land([]));
+    });
+  }, [editing, held.heldGroups]);
 
   const singleStoreOnly = isSingleStoreRole(ctx.userInfo.role);
 
@@ -529,6 +562,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
                 editing ? (
                   <EffectiveStoresPanel
                     picks={picks}
+                    heldGroups={held.heldGroups}
                     companyGroups={companyGroups}
                     groupStores={groupStores}
                     directStoreIds={existing.carried.stores}

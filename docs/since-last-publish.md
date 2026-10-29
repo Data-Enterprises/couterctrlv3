@@ -957,3 +957,9 @@ ticked and greyed out. A group opened only to look at its stores now shows a
 plain list, with a line saying to tick the group to give them all of it, or to
 choose **By store** to pick stores one at a time. Before, those stores had live
 checkboxes, and ticking one quietly gave the person the whole group.
+
+**Effective stores counts straight away.** Editing a user, the Effective
+stores column read "counting…" until a company was clicked, because a group's
+stores were only fetched when its company was opened. The groups the person
+holds now load as the edit opens, so the count and the list appear without a
+click, each store naming the group it comes from.

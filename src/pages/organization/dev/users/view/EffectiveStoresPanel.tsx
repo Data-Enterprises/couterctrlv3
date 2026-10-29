@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { CompanyBaseGroup, Store } from "../../../../../interfaces";
+import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../interfaces";
 import {
   effectiveStores,
   type AccessPicks,
@@ -32,6 +32,7 @@ const EffectiveStoresPanel = ({
   groupStores,
   directStoreIds,
   assignedStores,
+  heldGroups = [],
 }: {
   picks: AccessPicks;
   companyGroups: Record<number, CompanyBaseGroup[]>;
@@ -40,18 +41,23 @@ const EffectiveStoresPanel = ({
   directStoreIds: number[];
   /** Everything the person currently holds, for names the rosters lack. */
   assignedStores: Store[];
+  /** The groups they hold, for names before their company is opened. */
+  heldGroups?: BaseGroup[];
 }) => {
   const [filter, setFilter] = useState("");
 
   const groupsById = useMemo(() => {
-    const map: Record<number, CompanyBaseGroup> = {};
+    const map: Record<number, { name: string }> = {};
+    heldGroups.forEach((g) => {
+      map[g.id] = g;
+    });
     Object.values(companyGroups)
       .flat()
       .forEach((g) => {
         map[g.id] = g;
       });
     return map;
-  }, [companyGroups]);
+  }, [companyGroups, heldGroups]);
 
   /** Names come from whichever source has them: a group roster, the stores
    *  the person holds, or the picks themselves. */
