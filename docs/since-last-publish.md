@@ -946,3 +946,14 @@ Cashiers, Item Lookup, UPC List, Forecasting, Orders & Receiving, Price
 Optimization, Users & Access, Analyses, and Other. Chat, Teams and Tickets are
 retired. **Needs the database first:** the category rows in
 `docs/ticket-categories-2026-10-29.md` must be in place before this publishes.
+
+## User Management: By group means no store boxes
+
+dev mode only
+
+When a user gets their stores **By group**, the Assignments step no longer
+offers a checkbox beside each store. A group they hold still lists its stores
+ticked and greyed out. A group opened only to look at its stores now shows a
+plain list, with a line saying to tick the group to give them all of it, or to
+choose **By store** to pick stores one at a time. Before, those stores had live
+checkboxes, and ticking one quietly gave the person the whole group.

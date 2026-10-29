@@ -518,7 +518,11 @@ const AccessPanel = ({
             {openGroups.map((group) => {
               const held = picks.baseGroups.includes(group.id);
               const mode = picks.mode;
-              const preview = held && mode === "all";
+              // By group means no store is ever picked one at a time, so no
+              // group's stores get checkboxes: a held group shows them all
+              // ticked, and one opened only to look shows a plain list. A live
+              // box there used to hold the whole group from one tick.
+              const preview = mode === "all";
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
               );
@@ -545,7 +549,9 @@ const AccessPanel = ({
                         {group.name}
                         {preview
                           ? total !== undefined
-                            ? ` — all ${total}`
+                            ? held
+                              ? ` — all ${total}`
+                              : ` — ${total} store${total === 1 ? "" : "s"}`
                             : ""
                           : ` — ${inGroup.length}${
                               total !== undefined ? ` of ${total}` : ""
@@ -571,8 +577,9 @@ const AccessPanel = ({
                     <div className="px-2 divide-y divide-brand_navy/15">
                       {preview && (
                         <p className="text-[10.5px] text-content/85 leading-snug px-1 py-1.5">
-                          Read only — this person has the whole group. Stores
-                          added to it later will appear for them automatically.
+                          {held
+                            ? "Read only — this person has the whole group. Stores added to it later will appear for them automatically."
+                            : "Viewing only. Tick the group to give them every store in it, or choose By store on the Access type step to pick stores one at a time."}
                         </p>
                       )}
                       {stores.map((s) => {
@@ -580,20 +587,23 @@ const AccessPanel = ({
                           (sel) => sel.storeid === s.storeid,
                         );
                         return preview ? (
-                          // Ticked and disabled, not plain text. Every store
-                          // here IS included — an unticked row beside a held
-                          // group reads as "not granted", which is the
-                          // opposite of what Auto means.
+                          // Held: ticked and disabled, not plain text. Every
+                          // store here IS included, and an unticked row beside
+                          // a held group reads as "not granted", the opposite
+                          // of what Auto means. Not held: no box at all, since
+                          // there is nothing to tick in By group.
                           <div
                             key={s.storeid}
                             className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
                           >
-                            <Checkbox
-                              checked
-                              disabled
-                              onChange={() => undefined}
-                              ariaLabel={`${s.store_name} is included automatically`}
-                            />
+                            {held && (
+                              <Checkbox
+                                checked
+                                disabled
+                                onChange={() => undefined}
+                                ariaLabel={`${s.store_name} is included automatically`}
+                              />
+                            )}
                             <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
                               {s.store_number}
                             </span>
