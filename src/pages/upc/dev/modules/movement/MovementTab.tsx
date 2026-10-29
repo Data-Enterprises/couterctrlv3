@@ -221,13 +221,13 @@ const MovementTab = () => {
   }, [codes, selectedCode]);
 
   const controls = (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 flex-shrink-0 text-[13px] text-content">
-      <label className="flex items-center gap-2 font-semibold">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 flex-shrink-0 text-[13px] font-semibold text-content">
+      <label className="flex items-center gap-2">
         Weeks
         <select
           value={weeks}
           onChange={(e) => dispatch(setDevMovementWeeks(Number(e.target.value)))}
-          className="text-[13px] font-normal pl-2 pr-6 py-1 rounded border border-content/20 bg-custom-white"
+          className="text-[13px] pl-2 pr-6 py-1 rounded border border-content/20 bg-custom-white"
         >
           {Array.from({ length: MOVEMENT_MAX_WEEKS }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
