@@ -258,6 +258,7 @@ const Detail = ({
   row,
   us,
   them,
+  day: picked,
   onInvestigate,
 }: {
   row: ReportRow;
@@ -265,6 +266,9 @@ const Detail = ({
    *  anybody calls it. */
   us: string;
   them: string;
+  /** The day picked in the strip, or null for the week. The figures are
+   *  that day's, so the headings have to say so. */
+  day: string | null;
   onInvestigate: (row: ReportRow) => void;
 }) => {
   const ahead = row.gap >= 0;
@@ -405,8 +409,15 @@ const Detail = ({
                 it belongs with the rest of what is true of the gap rather
                 than in a card of its own beside the stores. */}
             <p className={`text-[11.5px] mt-2 ${cta.text}`}>
-              {againstWeek("last week", row.lwGap)} &middot;{" "}
-              {againstWeek("last year", row.lyGap)}
+              {againstWeek(
+                picked ? "the same day last week" : "last week",
+                row.lwGap,
+              )}{" "}
+              &middot;{" "}
+              {againstWeek(
+                picked ? "the same day last year" : "last year",
+                row.lyGap,
+              )}
             </p>
           </div>
         )}
@@ -443,7 +454,17 @@ const Detail = ({
           </div>
         </Block>
 
-        <Block title={`This week against ${them}`}>
+        <Block
+          title={`${
+            picked
+              ? new Date(picked + "T12:00:00").toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "This week"
+          } against ${them}`}
+        >
           <div className="flex flex-col gap-2.5">
             <Measure
               title="Sales"
@@ -1024,6 +1045,7 @@ const DeptReport = ({
             row={selected}
             us={openStoreName}
             them={compareStoreName}
+            day={selectedDate}
             onInvestigate={investigate}
           />
         ) : (

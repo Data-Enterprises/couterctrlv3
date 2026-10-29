@@ -976,3 +976,6 @@ depts comparison set that day at the open store against the **whole week** at
 the other one, so a single Friday read as hundreds of thousands behind. Both
 stores now show the same day, including the last-week and last-year columns.
 The week view was already right. Found by Wayne.
+The panel beside the list now names the day too ("Fri, Oct 23 against …"
+rather than "This week against …"), and compares the gap with the same day
+last week and last year.
