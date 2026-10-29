@@ -137,6 +137,19 @@ describe("loading one onto a different range", () => {
     ]);
   });
 
+  it("keeps a sort on a row count", () => {
+    const saved = toPayload(
+      september({
+        groupBy: ["storeid"],
+        aggregates: [{ column: "*", fn: "count" }],
+        orderBy: [{ key: "row_count", desc: true }],
+      }),
+    );
+    const plan = planLoad(saved, september());
+    expect(picks(plan.actions, "setOrderBy")).toEqual([{ key: "row_count", desc: true }]);
+    expect(plan.missing.join(" ")).not.toMatch(/sort/);
+  });
+
   it("says that the days came back ticked", () => {
     const plan = planLoad(toPayload(september()), september());
     expect(plan.missing.join(" ")).toMatch(/Days are not saved/);

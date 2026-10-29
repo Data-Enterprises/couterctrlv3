@@ -1,6 +1,7 @@
 import type { UnknownAction } from "@reduxjs/toolkit";
 import type { ExportExpr } from "../../../api/salesExport";
 import type { SavedConfigPayload } from "../../../api/savedConfigs";
+import { aliasFor } from "./aggregates";
 
 import {
   setAggregates,
@@ -226,12 +227,14 @@ export const planLoad = (
   );
 
   // A sort key is a column of the file, so it survives only as long as the
-  // measure or key it names does.
+  // measure or key it names does. Named by aliasFor, the endpoint's own rule:
+  // count(*) is `row_count`, and spelling it `*_count` here dropped every
+  // saved sort on a row count.
   const sortable = new Set(
     payload.mode === "summary"
       ? [
           ...payload.groupBy,
-          ...payload.aggregates.map((m) => m.alias ?? `${m.column}_${m.fn}`),
+          ...payload.aggregates.map((m) => m.alias || aliasFor(m.column, m.fn)),
           ...(payload.computed).map((m) => m.alias),
         ]
       : payload.columns,

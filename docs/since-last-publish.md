@@ -1020,3 +1020,8 @@ saved configuration, reloading a build or applying the query, the product
 codes, description terms and file name boxes kept their old text even though
 the export was using the new values. They now update to match. Your own
 typing is never overwritten while you're still in the middle of it.
+
+**A saved sort on a row count comes back.** A summary sorted by its row count
+(`row_count`) lost that sort every time the saved configuration was loaded,
+with a note that the sort "named a column this configuration no longer has".
+It now loads with the sort intact.
