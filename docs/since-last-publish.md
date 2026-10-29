@@ -926,3 +926,14 @@ as tiles, instead of three copies of a four-column strip that gave every
 figure equal weight. A grouped row (a store, a sub department, a date, a
 cashier) labels its count and shows the average on its second line, instead
 of an unlabelled number that read as a second amount.
+
+## Report an issue: the store picker no longer crashes
+
+dev mode only
+
+Opening **Report an issue** as a tech crashed the page ("Cannot read
+properties of null (reading 'localeCompare')"). A tech's picker lists every
+store, and six stores belong to no company (Crossroads IGA 782 and 785, ACE 316
+and 399, Houchens Corp Bowling Green, Sonic 0). The server sends them with no
+company name, and sorting the companies by name threw on them. They are listed
+now, last, under **No company**.

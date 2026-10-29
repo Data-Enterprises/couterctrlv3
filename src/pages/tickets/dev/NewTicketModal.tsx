@@ -31,7 +31,7 @@ import {
   suggestedTitle,
 } from "./ticketOrigin";
 import StoreChecklist from "./StoreChecklist";
-import { initialStorePicks, optionsForGroup } from "./ticketStores";
+import { cleanStoreOptions, initialStorePicks, optionsForGroup } from "./ticketStores";
 import Checkbox from "../../../components-dev/Checkbox";
 
 /**
@@ -122,7 +122,7 @@ const NewTicketModal = ({
           setOptions([]);
           return;
         }
-        const list: TicketStoreOption[] = resp.data.stores ?? [];
+        const list: TicketStoreOption[] = cleanStoreOptions(resp.data.stores ?? []);
         const start = initialStorePicks({
           options: list,
           isTech: ctx.isTech,

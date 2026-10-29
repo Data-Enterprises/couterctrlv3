@@ -109,10 +109,10 @@ const StoreChecklist = ({
               </p>
             )}
             {groups.map((g) => (
-              <div key={g.company} className="flex flex-col gap-1 py-0.5">
+              <div key={g.company ?? "none"} className="flex flex-col gap-1 py-0.5">
                 {several && (
                   <div className="pt-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-                    {g.company_name}
+                    {g.company_name || "No company"}
                   </div>
                 )}
                 {g.stores.map((o) => (

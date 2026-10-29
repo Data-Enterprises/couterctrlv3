@@ -5,6 +5,7 @@ import reducer, {
   lostTicket,
 } from "../../../features/dev/devTicketsSlice";
 import {
+  cleanStoreOptions,
   groupByCompany,
   initialStorePicks,
   matchesStoreQuery,
@@ -170,5 +171,32 @@ describe("a ticket that leaves the reader's view", () => {
     const next = reducer(held, lostTicket(8));
     expect(next.selectedId).toBe(7);
     expect(next.tickets.map((t) => t.id)).toEqual([7]);
+  });
+});
+
+describe("store options with nulls in them", () => {
+  // store_options left-joins companies: a store whose company has no row
+  // arrives with company_name null, and the picker used to throw on it.
+  const raw = [
+    option("5"),
+    option("7", { company: null, company_name: null as unknown as string }),
+    option("9", {
+      store_number: null as unknown as string,
+      store_name: null as unknown as string,
+    }),
+  ];
+
+  it("sorts, groups and searches without throwing", () => {
+    const clean = cleanStoreOptions(raw);
+    expect(() => groupByCompany(clean)).not.toThrow();
+    expect(groupByCompany(clean).map((g) => g.company_name)).toEqual(["S&C Foods", ""]);
+    expect(clean.filter((o) => matchesStoreQuery(o, "foods")).map((o) => o.storeid)).toEqual([
+      50, 70, 90,
+    ]);
+  });
+
+  it("turns a numeric store number into text", () => {
+    const [o] = cleanStoreOptions([option("1", { store_number: 12 as unknown as string })]);
+    expect(o.store_number).toBe("12");
   });
 });
