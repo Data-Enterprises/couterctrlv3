@@ -135,6 +135,12 @@ const NewTicketModal = ({
   const [groupStores, setGroupStores] = useState<
     { storeid: number; store_number: string; store_name: string }[]
   >([]);
+  /**
+   * Whether the group's stores are in. The list waits for them rather than
+   * drawing every store and then narrowing: a list that jumps from all of
+   * someone's companies to the five they searched reads as a bug.
+   */
+  const [groupRead, setGroupRead] = useState(!groupId);
 
   useEffect(() => {
     if (!groupId) return;
@@ -148,14 +154,18 @@ const NewTicketModal = ({
         setGroupStores(rows);
       })
       // The list simply is not narrowed; every store of theirs is offered.
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (live) setGroupRead(true);
+      });
     return () => {
       live = false;
     };
   }, [groupId]);
 
-  const listed =
-    groupStores.length && !showAllStores
+  const listed = !groupRead
+    ? null
+    : groupStores.length && !showAllStores
       ? optionsForGroup(
           options,
           groupStores.map((s) => s.storeid),
@@ -387,7 +397,7 @@ const NewTicketModal = ({
             loadError={optionsError}
             extra={
               <>
-                {listed.length < options.length && (
+                {listed && listed.length < options.length && (
                   <button
                     type="button"
                     onClick={() => setShowAllStores(true)}
