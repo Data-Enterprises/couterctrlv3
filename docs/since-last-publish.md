@@ -1007,19 +1007,22 @@ the weeks before it**. The grid scrolls sideways when the weeks run wide, with
 the store names pinned on the left and the totals on the right.
 
 The weeks end on the search's end date; pick a Saturday for Sunday-to-Saturday
-weeks. A **Weeks** control (1 to 13) sets how far back it goes, and changing it
+weeks. It opens on six weeks whatever the search covers, and a **Weeks**
+control (1 to 13) sets how far back it goes; changing it
 reloads only this tab, never Sales Comp or the others. The download icon
 exports it as a CSV with a line per UPC per store and a column per week ending,
 the shape a store's movement request asks for.
 
-It reads the Item Actions sales endpoint one week at a time, through the same
-one-at-a-time queue as the other tabs, and only when the tab is opened. It sends
-the page's own list of stores, so a group means the same (active) stores here as
-on Sales Comp.
+It reads the Item Actions sales endpoint one store and week at a time, through
+the same one-at-a-time queue as the other tabs, and only when the tab is
+opened. That endpoint answers for one store or one group and takes no list, so
+a nine-store search is nine small calls a week; each is about a tenth of a
+second. Asking per store keeps the stores the same as Sales Comp and Trend --
+the group's own, active ones only -- which passing the group id would not: the
+endpoint reads a group against the signed-in user's own links, so a shared
+group comes back empty and a closed store comes back in.
 
-**Needs the backend first:** goliath-platform `8250b38` ("item_actions: accept
-an explicit list of store ids") must be on the API before this publishes.
-Against an older API every week answers "No stores found". A
-dedicated movement endpoint is planned
-(`docs/backend-movement-and-store-lists-2026-10-28.md`, part A); the tab can
-switch to it without changing what it shows.
+Two backend changes would each collapse this to one call and neither changes
+what the tab shows: an explicit store list on item_actions
+(`docs/backend-storeids-everywhere-2026-10-28.md`), and the dedicated movement
+endpoint (`docs/backend-movement-and-store-lists-2026-10-28.md`, part A).

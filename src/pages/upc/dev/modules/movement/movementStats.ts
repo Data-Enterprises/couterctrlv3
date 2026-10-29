@@ -10,7 +10,8 @@ import type { MovementRow } from "../../../../../features/dev/devUpcDevSlice";
  * other UPC List tab can, because every other UPC endpoint adds the stores
  * together.
  *
- * Read from `subs/item_actions`, one call per week. That endpoint already
+ * Read from `subs/item_actions`, one call per store per week -- it scopes to
+ * one store and has no list form. That endpoint already
  * returns rows per store and day with the refund sign applied and weight in
  * pounds, so a week's total is a sum and nothing here re-derives a sales rule.
  * Asking week by week, rather than once for the whole window, means each row's
@@ -36,26 +37,19 @@ export const isoFromMdy = (mdy: string): string => {
   return `${y}-${pad(m)}-${pad(d)}`;
 };
 
-/** Whole days from one yyyy-mm-dd to another, in UTC so no zone moves it. */
-const daysBetween = (a: string, b: string) => {
-  const ms = (iso: string) => {
-    const [y, m, d] = iso.split("-").map(Number);
-    return Date.UTC(y, m - 1, d);
-  };
-  return Math.round((ms(b) - ms(a)) / 86_400_000);
-};
-
 const shift = (iso: string, days: number) => {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 };
 
-/** How many weeks the tab opens on: the weeks the search's own range covers,
- *  rounded up, within 1 to the cap. A two-week search opens on two weeks. */
-export const defaultMovementWeeks = (startMdy: string, endMdy: string): number => {
-  const days = daysBetween(isoFromMdy(startMdy), isoFromMdy(endMdy)) + 1;
-  return Math.min(MOVEMENT_MAX_WEEKS, Math.max(1, Math.ceil(days / 7)));
-};
+/** How many weeks the tab opens on.
+ *
+ *  Six rather than the search's own range. The tab answers which way an item
+ *  is heading, and the search is usually a single week -- following it opened
+ *  the grid on one column, which is a number, not a direction. Six weeks is a
+ *  month and a half to read a trend from, and the Weeks control moves it
+ *  anywhere from 1 to the cap. */
+export const MOVEMENT_DEFAULT_WEEKS = 6;
 
 /**
  * The weeks, oldest first, each ending on the same weekday as `endIso`.

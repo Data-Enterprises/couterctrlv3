@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SubDeptMargin } from "../../../../../interfaces";
 import type { MovementRow } from "../../../../../features/dev/devUpcDevSlice";
 import {
-  defaultMovementWeeks,
+  MOVEMENT_DEFAULT_WEEKS,
   fmtMovement,
   isoFromMdy,
   movementCsv,
@@ -55,11 +55,10 @@ describe("movement weeks", () => {
     expect(weekdayOf("2026-10-24")).toBe("Sat");
   });
 
-  it("opens on the weeks the search covers, within 1 and 13", () => {
-    expect(defaultMovementWeeks("10/18/2026", "10/24/2026")).toBe(1);
-    expect(defaultMovementWeeks("9/13/2026", "10/24/2026")).toBe(6);
-    expect(defaultMovementWeeks("10/20/2026", "10/24/2026")).toBe(1);
-    expect(defaultMovementWeeks("1/1/2026", "10/24/2026")).toBe(13);
+  it("opens on six weeks, whatever the search covers", () => {
+    expect(MOVEMENT_DEFAULT_WEEKS).toBe(6);
+    expect(movementWeeks("2026-10-24", MOVEMENT_DEFAULT_WEEKS)).toHaveLength(6);
+    expect(movementWeeks("2026-10-24", MOVEMENT_DEFAULT_WEEKS)[0].start).toBe("2026-09-13");
   });
 
   it("reads one-digit months and days", () => {

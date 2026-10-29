@@ -21,7 +21,7 @@ export const UPC_LIST_HELP: HelpContent = {
           title: "Open Movement",
           pre: "Open the",
           chip: "Movement",
-          post: "tab and set Weeks to how many weeks back you want, up to 13.",
+          post: "tab. It opens on the last six weeks; set Weeks to go back further, up to 13.",
           see: "Each item's stores down the side and its weeks across, with a total per store and per week. Weighed items are in pounds, everything else in units.",
           anchor: "tabs",
         },
@@ -94,7 +94,7 @@ export const UPC_LIST_HELP: HelpContent = {
     },
     {
       term: "Movement",
-      def: "How much of each item every store moved, week by week: units, or pounds for an item sold by weight, with refunds taken off. The weeks end on the search's end date, and Weeks sets how many — changing it reloads only this tab.",
+      def: "How much of each item every store moved, week by week: units, or pounds for an item sold by weight, with refunds taken off. The weeks end on the search's end date, and Weeks sets how many — six to begin with — changing it reloads only this tab.",
       anchor: "tabs",
     },
     {

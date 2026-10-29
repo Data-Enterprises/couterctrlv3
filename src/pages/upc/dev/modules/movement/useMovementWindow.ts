@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
-import { defaultMovementWeeks, isoFromMdy, movementWeeks } from "./movementStats";
+import { MOVEMENT_DEFAULT_WEEKS, isoFromMdy, movementWeeks } from "./movementStats";
 
 /**
  * The weeks Movement shows: ending on the search's end date, as many as the
@@ -13,9 +13,7 @@ import { defaultMovementWeeks, isoFromMdy, movementWeeks } from "./movementStats
 export const useMovementWindow = () => {
   const ctx = useUpcDevCtx();
   const endIso = ctx.endDate ? isoFromMdy(ctx.endDate) : "";
-  const weeks =
-    ctx.movementWeeks ??
-    (ctx.startDate && ctx.endDate ? defaultMovementWeeks(ctx.startDate, ctx.endDate) : 1);
+  const weeks = ctx.movementWeeks ?? MOVEMENT_DEFAULT_WEEKS;
   const windows = useMemo(() => (endIso ? movementWeeks(endIso, weeks) : []), [endIso, weeks]);
   return {
     endIso,
