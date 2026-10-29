@@ -53,3 +53,18 @@ export const sortRows = (
     return 0;
   });
 };
+
+/**
+ * The sort, narrowed to keys the file still has.
+ *
+ * A key stays in the sort after its column is unticked, its measure removed
+ * or the file switches between lines and a summary -- and the endpoint
+ * refuses the whole export over it ("Cannot sort by"). Same order, same
+ * directions, only the orphans gone. Returns the same array when nothing
+ * changed, so a caller can tell there is nothing to do.
+ */
+export const keepSortable = (orderBy: ExportSort[], sortable: string[]) => {
+  const keys = new Set(sortable);
+  const kept = orderBy.filter((s) => keys.has(s.key));
+  return kept.length === orderBy.length ? orderBy : kept;
+};

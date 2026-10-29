@@ -992,3 +992,9 @@ said: the store you no longer hold, the column or sort key it didn't
 recognise. The same goes for every other failure on the page (saving,
 deleting a build, reading saved work), and an export that comes back marked
 as failed now includes the reason the server gave.
+
+**A sort goes when its column does.** Sorting by a column and then unticking
+it (or removing a sorted total, or switching between every line and a
+summary) left that column in **Sort by**, and the next build was refused
+because the file no longer had it. The sort now drops it at once and keeps
+the rest in order.

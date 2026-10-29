@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortRows } from "./sortRows";
+import { keepSortable, sortRows } from "./sortRows";
 import type { ExportColumn, ExportRow } from "../../../api/salesExport";
 
 const columns: ExportColumn[] = [
@@ -62,5 +62,28 @@ describe("the order the file will be written in", () => {
 
   it("leaves the rows alone when nothing is sorted", () => {
     expect(sortRows(rows, [], columns)).toBe(rows);
+  });
+});
+
+describe("keepSortable", () => {
+  const sort = [
+    { key: "store_number", desc: false },
+    { key: "total_sales_sum", desc: true },
+    { key: "vendor_id", desc: false },
+  ];
+
+  it("drops a key the file no longer has, keeping order and direction", () => {
+    expect(keepSortable(sort, ["vendor_id", "store_number"])).toEqual([
+      { key: "store_number", desc: false },
+      { key: "vendor_id", desc: false },
+    ]);
+  });
+
+  it("hands back the same array when every key is still there", () => {
+    expect(keepSortable(sort, ["vendor_id", "store_number", "total_sales_sum"])).toBe(sort);
+  });
+
+  it("empties when the file has none of them", () => {
+    expect(keepSortable(sort, [])).toEqual([]);
   });
 });

@@ -9,6 +9,8 @@ import QueryPanel from "./QueryPanel";
 import DownloadsModal from "./DownloadsModal";
 import SavedExportsModal from "./SavedExportsModal";
 import { useExportBuilderCtx } from "./hooks";
+import { keepSortable } from "./sortRows";
+import { setOrderBy } from "../../../features/dev/devExportBuilderSlice";
 
 /**
  * Sales Export — pick a scope, narrow what goes in the file, build it.
@@ -43,6 +45,22 @@ const ExportBuilder = () => {
     return () => cancelAnimationFrame(id);
   }, []);
   const ctx = useExportBuilderCtx();
+
+  /**
+   * A sort key goes when its column does.
+   *
+   * Unticking a sorted column, removing a sorted measure or switching between
+   * lines and a summary left the key in the sort, and the endpoint refused
+   * the next build over a column the file no longer had. Pruned here, once,
+   * rather than in each of the dozen actions that can take a key away -- and
+   * in the slice, so the chips, the preview and the request all agree.
+   */
+  const sortableKey = ctx.sortableKeys.join(",");
+  useEffect(() => {
+    if (!ctx.loaded) return;
+    const kept = keepSortable(ctx.orderBy, ctx.sortableKeys);
+    if (kept !== ctx.orderBy) ctx.dispatch(setOrderBy(kept));
+  }, [ctx.loaded, sortableKey, ctx.orderBy]);
 
   if (!ctx.loaded) {
     return (
