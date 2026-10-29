@@ -937,3 +937,12 @@ store, and six stores belong to no company (Crossroads IGA 782 and 785, ACE 316
 and 399, Houchens Corp Bowling Green, Sonic 0). The server sends them with no
 company name, and sorting the companies by name threw on them. They are listed
 now, last, under **No company**.
+
+**Every page now files under a category.** A ticket from any page used to
+arrive with the category blank on nine of them (User Management among them).
+The categories now follow the nav's page families, decided 29 Oct: Sales,
+Margins (Sub Dept Margins, Categories, Vendors), Coupons, Loss Prevention,
+Cashiers, Item Lookup, UPC List, Forecasting, Orders & Receiving, Price
+Optimization, Users & Access, Analyses, and Other. Chat, Teams and Tickets are
+retired. **Needs the database first:** the category rows in
+`docs/ticket-categories-2026-10-29.md` must be in place before this publishes.

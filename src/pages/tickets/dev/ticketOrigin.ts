@@ -14,31 +14,45 @@ import { formatDateSimple } from "../../../utils";
 /**
  * Page to ticket category, by the nav's own href.
  *
- * The thirteen categories are product areas and most of them name a page
- * outright. Where they do not, the entry is absent and the category is left
- * unset — the backend's own advice, and better than guessing: a ticket filed
- * under the wrong area is worse than one filed under none, because the wrong
- * one looks deliberate.
+ * One category per family of pages in the nav, so every page has an answer
+ * (decided 29 Oct 2026). Sub Dept Margins, Categories and Vendors are one
+ * screen and one category; Orders, Receivers and AWG Invoices are the
+ * receiving side; User Management, Groups, Admin and Settings are all who can
+ * see what. Only the help desk itself (`tickets`) and Home name no category:
+ * a ticket filed from there is about nothing in particular.
  *
- * Deliberately unmapped, with nothing to map them to: admin, cashiers,
- * categories, coupons, coupon-sales, orders, groups, user-management,
- * vendors. And three categories have no page — Chat, Teams and Tickets
- * itself.
+ * The names are matched against the server's `ticket_categories` at the point
+ * of use. A name the server does not hold leaves the category unset, never a
+ * wrong one, so the rows have to exist before this reaches anybody
+ * (docs/ticket-categories-2026-10-29.md). Chat, Teams and Tickets are retired.
  */
-const PAGE_CATEGORY: Record<string, string> = {
+export const PAGE_CATEGORY: Record<string, string> = {
   sales: "Sales",
   "sales-tracker": "Sales",
   "sales-export": "Sales",
+  "sub-dept-margins": "Margins",
+  categories: "Margins",
+  vendors: "Margins",
+  "coupon-sales": "Coupons",
+  coupons: "Coupons",
   "loss-prevention": "Loss Prevention",
   "lp-actions": "Loss Prevention",
-  "upc-upload": "UPC List",
+  cashiers: "Cashiers",
   "item-lookup": "Item Lookup",
   "item-report": "Item Lookup",
+  "upc-upload": "UPC List",
+  "upc-scanner": "UPC List",
   forecasting: "Forecasting",
-  receivers: "Receivers",
-  "sub-dept-margins": "Margins",
+  orders: "Orders & Receiving",
+  receivers: "Orders & Receiving",
+  invoices: "Orders & Receiving",
+  "inventory-sub-department": "Price Optimization",
+  "inventory-vendor": "Price Optimization",
+  "user-management": "Users & Access",
+  groups: "Users & Access",
+  admin: "Users & Access",
+  settings: "Users & Access",
   quicksight: "Analyses",
-  tickets: "Tickets",
 };
 
 export interface TicketOrigin {

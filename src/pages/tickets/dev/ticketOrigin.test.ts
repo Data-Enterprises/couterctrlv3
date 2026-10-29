@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { emptyGroup } from "../../../features/groupSlice";
 import { initialState } from "../../../features/searchSlice";
 import type { SearchState } from "../../../features/searchSlice";
-import { originOf, scopeLine, scopeOf, searchSummary } from "./ticketOrigin";
+import { PAGE_CATEGORY, originOf, scopeLine, scopeOf, searchSummary } from "./ticketOrigin";
 
 const store = {
   storeid: 369,
@@ -155,3 +155,31 @@ describe("a page with no store search", () => {
     expect(scopeLine(searching(), at("sales"))).toContain("storeid 369");
   });
 });
+
+describe("every page files under a category", () => {
+  // The nav's hrefs on 29 Oct 2026, less Home, the help desk and the
+  // placeholders. A page added to the nav belongs here and in PAGE_CATEGORY.
+  const pages = [
+    "admin", "cashiers", "categories", "coupon-sales", "coupons", "forecasting",
+    "groups", "inventory-sub-department", "inventory-vendor", "invoices",
+    "item-lookup", "item-report", "loss-prevention", "lp-actions", "orders",
+    "quicksight", "receivers", "sales", "sales-export", "sales-tracker",
+    "settings", "sub-dept-margins", "upc-scanner", "upc-upload",
+    "user-management", "vendors",
+  ];
+
+  it.each(pages)("%s has one", (href) => {
+    expect(PAGE_CATEGORY[href]).toBeTruthy();
+  });
+
+  it("names only the thirteen, and never a retired one", () => {
+    const used = new Set(Object.values(PAGE_CATEGORY));
+    for (const gone of ["Chat", "Teams", "Tickets", "Receivers"]) expect(used.has(gone)).toBe(false);
+    expect(used.size).toBe(12); // the thirteenth, Other, is picked by hand
+  });
+
+  it("leaves the help desk itself unset", () => {
+    expect(originOf({ reportFrom: "/tickets" }).category).toBeNull();
+  });
+});
+
