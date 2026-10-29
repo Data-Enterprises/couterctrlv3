@@ -4,6 +4,7 @@ import type {
   TicketStore,
   TicketStoreOption,
 } from "../../../api/tickets";
+import type { Store } from "../../../interfaces";
 
 /**
  * The stores a ticket is about, and who that lets see it.
@@ -71,6 +72,28 @@ const byNumber = (a: { store_number: string }, b: { store_number: string }) => {
   const nb = b.store_number ?? "";
   return (parseInt(na, 10) || 0) - (parseInt(nb, 10) || 0) || na.localeCompare(nb);
 };
+
+/**
+ * The signed-in person's own stores, as the New Ticket picker's options.
+ *
+ * Their `assigned` stores, which the app already holds from sign-in
+ * (`user.assignedStores`), so filing a ticket costs no store call. It is the
+ * same set the server files against: `_has_store` in tickets.py is a row in
+ * `assigned`, and `assigned_stores` is read from it too. A tech's
+ * `store_options` was every store on the system (423); this is only theirs.
+ */
+export const assignedAsOptions = (stores: Store[]): TicketStoreOption[] =>
+  cleanStoreOptions(
+    stores.map((s) => ({
+      storeid: s.storeid,
+      store_number: s.store_number,
+      store_name: s.store_name,
+      company: s.company ?? null,
+      company_name: s.company_name,
+      deactivated: Boolean(s.deactivated_at),
+      selected: false,
+    })),
+  );
 
 /**
  * The server's options with every text field a string.

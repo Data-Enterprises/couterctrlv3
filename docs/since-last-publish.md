@@ -951,6 +951,17 @@ company starts folded and shows as one line with its store count; a click
 opens it. A company with a ticked store starts open and says how many are
 ticked, and typing in the search box opens every company with a match.
 
+**Report an issue lists your own stores.** The picker no longer asks the
+server for a store list each time it opens. It uses the stores assigned to the
+person signed in, which the app already has from sign-in, so it opens straight
+away. Before, a tech was offered every store on the system (423); now it's only
+theirs, the same stores the server lets anyone file against. The page still
+decides where the list starts: a store search ticks that store, a group search
+lists the group's stores first, and pages with no search (User Management,
+Groups, the help desk) start on all of yours. Someone with no stores is told,
+and the ticket is filed as not about a store. The store names no longer carry
+a "#10" in front, since each name already starts with its number.
+
 **Every page now files under a category.** A ticket from any page used to
 arrive with the category blank on nine of them (User Management among them).
 The categories now follow the nav's page families, decided 29 Oct: Sales,
