@@ -995,7 +995,10 @@ A new **Movement** tab answers "how much of this item did each store move,
 week by week": units, or pounds for an item sold by weight, with refunds taken
 off. Each item shows its stores down the side and its weeks across, with a
 total for every store and every week. Stores in the search that sold none of it
-keep their row of dashes, so the list reads as checked rather than incomplete.
+keep their row of dashes, muted, so the list reads as checked rather than
+incomplete. Each week's figure is shaded by how much it moved, on the same blue
+scale as Sales Comp's day grid, so the stores carrying an item stand out; the
+bottom row is the Total movement for each week.
 
 The weeks end on the search's end date; pick a Saturday for Sunday-to-Saturday
 weeks. A **Weeks** control (1 to 13) sets how far back it goes, and changing it
