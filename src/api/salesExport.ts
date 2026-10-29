@@ -78,6 +78,19 @@ export interface ExportCashier {
 }
 
 /**
+ * The two as the preview actually sends them: a line can carry a vendor or
+ * cashier name with no id, and the endpoint lists that pair with a null id.
+ * The slice drops those on the way in (nothing can filter on a missing id),
+ * so everything past it holds ExportVendor and ExportCashier.
+ */
+export type ExportVendorSent = Omit<ExportVendor, "vendor_id"> & {
+  vendor_id: string | null;
+};
+export type ExportCashierSent = Omit<ExportCashier, "cashier_number"> & {
+  cashier_number: number | null;
+};
+
+/**
  * A price type present in the window.
  *
  * `{value, label}` rather than a bare string, because one member of the list
@@ -113,8 +126,8 @@ export interface ExportPreviewResp {
    *  option in the UI can come back empty. */
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
-  vendors: ExportVendor[];
-  cashiers: ExportCashier[];
+  vendors: ExportVendorSent[];
+  cashiers: ExportCashierSent[];
   priceTypes: ExportPriceType[];
   /** The Output date control is built from this, not from a list of ours. */
   dateFormats: ExportDateFormat[];

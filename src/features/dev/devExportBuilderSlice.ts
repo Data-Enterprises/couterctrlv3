@@ -9,12 +9,14 @@ import type {
   ExportPriceType,
   ExportSort,
   ExportCashier,
+  ExportCashierSent,
   ExportColumn,
   ExportFile,
   ExportRow,
   ExportStore,
   ExportSubDepartment,
   ExportVendor,
+  ExportVendorSent,
 } from "../../api/salesExport";
 
 /** What the export endpoint takes that the preview knows nothing about:
@@ -358,10 +360,19 @@ const mergeSubDepartments = (
   }));
 };
 
-/** The same fold for vendors: one row per id, names gathered. */
-const mergeVendors = (rows: ExportVendor[]): ExportVendor[] => {
+/**
+ * The same fold for vendors: one row per id, names gathered.
+ *
+ * A vendor with no id is left out. The filter is on the id, and the endpoint
+ * matches it with `= ANY`, so no tick could ever select those lines -- and
+ * String(null) had been turning the missing id into a vendor called "null".
+ * Its lines are not lost: they are in the file whenever Vendors is not
+ * narrowed, the same as before.
+ */
+const mergeVendors = (rows: ExportVendorSent[]): ExportVendor[] => {
   const names = new Map<string, string[]>();
   for (const row of rows) {
+    if (row.vendor_id === null || String(row.vendor_id).trim() === "") continue;
     const id = String(row.vendor_id);
     const label = String(row.vendor_name ?? "").trim();
     const seen = names.get(id) ?? [];
@@ -379,8 +390,8 @@ interface ConfigPayload {
   saleTypes: string[];
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
-  vendors: ExportVendor[];
-  cashiers: ExportCashier[];
+  vendors: ExportVendorSent[];
+  cashiers: ExportCashierSent[];
   priceTypes: ExportPriceType[];
   dateFormats: ExportDateFormat[];
   /** The days in the range, from the caller — not from the response. */
@@ -437,8 +448,12 @@ const devExportBuilderSlice = createSlice({
       state.vendors = mergeVendors(vendors);
       // No fold here: the endpoint already keys these on cashier_number and
       // keeps the first name it finds, because the spellings vary far more
-      // than the sub department and vendor names do.
-      state.cashiers = cashiers;
+      // than the sub department and vendor names do. A cashier with no
+      // number is left out for the vendors' reason, and here the null used
+      // to reach the export, which refused the whole request (422).
+      state.cashiers = cashiers.filter(
+        (c): c is ExportCashier => c.cashier_number !== null,
+      );
       state.priceTypes = priceTypes;
       state.dateFormats = dateFormats;
       state.saleDates = saleDates;
@@ -455,7 +470,7 @@ const devExportBuilderSlice = createSlice({
         String(s.sub_department),
       );
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
-      state.selectedCashiers = cashiers.map((c) => c.cashier_number);
+      state.selectedCashiers = state.cashiers.map((c) => c.cashier_number);
       state.selectedPriceTypes = priceTypes.map((p) => p.value);
       state.configStamp += 1;
       state.selectedSaleDates = [...saleDates];

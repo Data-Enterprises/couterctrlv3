@@ -1029,3 +1029,10 @@ It now loads with the sort intact.
 **A saved query's description can be removed.** Emptying the description of
 a saved query and saving it (or renaming it) kept the old description. It
 now clears.
+
+**No more vendors or cashiers that can't be filtered on.** Some sales lines
+carry a vendor or cashier name with no id behind it. Those showed up in the
+Vendors and Cashiers lists (a vendor could appear as "null"), and
+narrowing Cashiers with one of them in the list made the export fail
+outright. They're no longer listed, since a filter can only work on the id.
+Their lines still go into the file whenever that list isn't narrowed.

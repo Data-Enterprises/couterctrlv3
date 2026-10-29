@@ -98,8 +98,13 @@ describe("lists that come back as distinct pairs", () => {
           { vendor_id: "50", vendor_name: "AWG" },
           { vendor_id: "50", vendor_name: "Associated Wholesale" },
           { vendor_id: "148", vendor_name: null },
+          // A name with no id: nothing can filter on it.
+          { vendor_id: null, vendor_name: "DSD RETURNS" },
         ],
-        cashiers: [],
+        cashiers: [
+          { cashier_number: 7, cashier_name: "D HALL" },
+          { cashier_number: null, cashier_name: "TRAINING" },
+        ],
         priceTypes: [],
         dateFormats: [],
         saleDates: [],
@@ -128,6 +133,13 @@ describe("lists that come back as distinct pairs", () => {
       { vendor_id: "148", vendor_name: null },
     ]);
     expect(s.selectedVendors).toEqual(["50", "148"]);
+  });
+
+  it("leaves out a vendor or cashier with no id, which no filter can pick", () => {
+    const s = withDuplicates();
+    expect(s.vendors.map((v) => v.vendor_id)).not.toContain("null");
+    expect(s.cashiers).toEqual([{ cashier_number: 7, cashier_name: "D HALL" }]);
+    expect(s.selectedCashiers).toEqual([7]);
   });
 });
 
