@@ -979,3 +979,16 @@ The week view was already right. Found by Wayne.
 The panel beside the list now names the day too ("Fri, Oct 23 against …"
 rather than "This week against …"), and compares the gap with the same day
 last week and last year.
+
+## Sales Export fixes
+
+dev mode only
+
+**A refused export says why.** When the server turned an export down, the page
+always showed its own generic line ("The endpoint refused this
+configuration", "One of these stores is no longer yours to export"), because
+it read the server's answer from the wrong place. It now shows what the server
+said: the store you no longer hold, the column or sort key it didn't
+recognise. The same goes for every other failure on the page (saving,
+deleting a build, reading saved work), and an export that comes back marked
+as failed now includes the reason the server gave.

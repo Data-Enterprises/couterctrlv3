@@ -3,6 +3,7 @@ import { useDevApi } from "../../../hooks/useDevApi";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { isGroupSearch } from "../../../features/searchSlice";
 import { formatGoliathDate } from "../../../utils";
+import { reasonOf, serverDetail, serverStatus } from "./serverError";
 import {
   getExportPreview,
   runExport,
@@ -309,7 +310,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) =>
         dispatch(
-          failQueriesLoad("Could not read your saved queries: " + err.message),
+          failQueriesLoad("Could not read your saved queries: " + reasonOf(err)),
         ),
       );
   };
@@ -343,7 +344,7 @@ export const useExportBuilderCtx = () => {
       toast.success(`Saved "${j.query.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failQueriesLoad("That did not save: " + err.message));
+      dispatch(failQueriesLoad("That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedQuery(url, token, {
@@ -370,7 +371,7 @@ export const useExportBuilderCtx = () => {
         if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("That did not rename: " + err.message)),
+        dispatch(failQueriesLoad("That did not rename: " + reasonOf(err))),
       );
   };
 
@@ -390,7 +391,7 @@ export const useExportBuilderCtx = () => {
       .catch((err: JsonError) => {
         dispatch(upsertQuery(query));
         dispatch(clearDeletedQuery());
-        dispatch(failQueriesLoad("That did not delete: " + err.message));
+        dispatch(failQueriesLoad("That did not delete: " + reasonOf(err)));
       });
   };
 
@@ -410,7 +411,7 @@ export const useExportBuilderCtx = () => {
         if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("Could not put it back: " + err.message)),
+        dispatch(failQueriesLoad("Could not put it back: " + reasonOf(err))),
       );
   };
 
@@ -472,7 +473,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(failConfigLoad());
-        toast.error("Could not load the export config: " + err.message);
+        toast.error("Could not load the export config: " + reasonOf(err));
       });
   };
 
@@ -581,7 +582,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(setSql(null));
-        toast.error("Could not read the query back: " + err.message);
+        toast.error("Could not read the query back: " + reasonOf(err));
       });
   };
 
@@ -614,7 +615,7 @@ export const useExportBuilderCtx = () => {
       .catch((err: JsonError) =>
         dispatch(
           failSavedWork(
-            "Could not read your saved configurations: " + err.message,
+            "Could not read your saved configurations: " + reasonOf(err),
           ),
         ),
       );
@@ -647,7 +648,7 @@ export const useExportBuilderCtx = () => {
       toast.success(`Saved "${saved.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failSavedWork("That did not save: " + err.message));
+      dispatch(failSavedWork("That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedConfig(url, token, {
@@ -669,7 +670,7 @@ export const useExportBuilderCtx = () => {
     deleteSavedConfig(url, token, id)
       .then(() => dispatch(removeSaved(id)))
       .catch((err: JsonError) =>
-        dispatch(failSavedWork("That did not delete: " + err.message)),
+        dispatch(failSavedWork("That did not delete: " + reasonOf(err))),
       );
   };
 
@@ -708,7 +709,7 @@ export const useExportBuilderCtx = () => {
         );
       })
       .catch((err: JsonError) =>
-        dispatch(failBuildsLoad("Could not read your past builds: " + err.message)),
+        dispatch(failBuildsLoad("Could not read your past builds: " + reasonOf(err))),
       );
   };
 
@@ -735,12 +736,12 @@ export const useExportBuilderCtx = () => {
         );
       })
       .catch((err: JsonError) => {
-        const status = (err as { status?: number }).status;
+        const status = serverStatus(err);
         dispatch(
           failBuildsLoad(
             status === 409
               ? "That build was changed somewhere else. Reload the list and try again."
-              : "Could not label that build: " + err.message,
+              : "Could not label that build: " + reasonOf(err),
           ),
         );
       });
@@ -862,7 +863,7 @@ export const useExportBuilderCtx = () => {
         dispatch(
           failBuildsLoad(
             "That build could not be deleted: " +
-              err.message +
+              reasonOf(err) +
               " — anything already removed stays removed, so trying again is safe.",
           ),
         );
@@ -897,7 +898,14 @@ export const useExportBuilderCtx = () => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
         if (j.error !== 0 || j.success === false) {
-          dispatch(failExport("The export did not complete."));
+          // The house convention: a 200 carrying `error: 1` and the reason
+          // in `msg`. The reason is the useful half.
+          const msg = (j as { msg?: string }).msg;
+          dispatch(
+            failExport(
+              msg ? "The export did not complete: " + msg : "The export did not complete.",
+            ),
+          );
           return;
         }
         dispatch(
@@ -920,8 +928,8 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         window.clearTimeout(slowTimer);
-        const status = (err as { status?: number }).status;
-        const detail = (err as { data?: { detail?: string } }).data?.detail;
+        const status = serverStatus(err);
+        const detail = serverDetail(err);
 
         // Each of these is a different thing to do next, so each says so.
         //
@@ -942,7 +950,7 @@ export const useExportBuilderCtx = () => {
                   ? "That saved configuration is gone. Save this one again before building."
                   : !status || config.slow
                     ? "The connection gave up before the file was ready — the load balancer stops waiting at 150 seconds. The file is probably still being written: look in Previous builds in a minute, or try a shorter range."
-                    : "The export failed: " + err.message,
+                    : "The export failed: " + reasonOf(err),
           ),
         );
       });
