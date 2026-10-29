@@ -998,3 +998,9 @@ it (or removing a sorted total, or switching between every line and a
 summary) left that column in **Sort by**, and the next build was refused
 because the file no longer had it. The sort now drops it at once and keeps
 the rest in order.
+
+**Applying the query keeps your stores.** With only some stores ticked,
+pressing **Apply to configuration** ticked every store again, because the
+query never mentioned stores and Apply treats anything unmentioned as "all".
+The query now carries the stores you picked (`storeid in (…)`), so Apply
+keeps them, and you can narrow stores by typing them there too.

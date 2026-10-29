@@ -108,6 +108,31 @@ describe("the round trip", () => {
     expect(picked("setSelectedVendors")).toEqual(["C0021"]);
   });
 
+  it("keeps a narrowed store pick through Apply", () => {
+    const twoStores = {
+      stores: [
+        { storeid: 36, store_number: "036", store_name: "036 - IGA" },
+        { storeid: 111, store_number: "111", store_name: "111 - IGA" },
+      ],
+    };
+    expect(write(loaded({ ...twoStores, selectedStoreIds: [111] }))).toMatch(
+      /storeid = 111/,
+    );
+    const { picked } = roundTrip(loaded({ ...twoStores, selectedStoreIds: [111] }));
+    expect(picked("setSelectedStoreIds")).toEqual([111]);
+  });
+
+  it("says nothing about stores when every one is picked", () => {
+    const all = loaded({
+      stores: [
+        { storeid: 36, store_number: "036", store_name: "036 - IGA" },
+        { storeid: 111, store_number: "111", store_name: "111 - IGA" },
+      ],
+      selectedStoreIds: [36, 111],
+    });
+    expect(write(all)).not.toMatch(/storeid/);
+  });
+
   it("brings a two-term description search back as two terms", () => {
     // It goes out as an OR, which the configuration reads as the set it is.
     const { picked, plan } = roundTrip(

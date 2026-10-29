@@ -34,6 +34,17 @@ const whole = (picked: unknown[], available: unknown[]) =>
 const whereLines = (config: ExportBuilderState) => {
   const lines: string[] = [];
 
+  // Stores first, as the panel has them. Apply widens any filter the query
+  // does not mention back to all, so leaving a narrowed store pick out of
+  // the text meant every Apply quietly put every store back. Compared as a
+  // set: co-located stores share an id, so the two lists can differ in
+  // length and still pick the same stores.
+  const storeIds = [...new Set(config.stores.map((s) => s.storeid))];
+  const pickedIds = storeIds.filter((id) => config.selectedStoreIds.includes(id));
+  if (pickedIds.length > 0 && pickedIds.length < storeIds.length) {
+    lines.push(asList("storeid", pickedIds.map(String), true));
+  }
+
   if (!whole(config.selectedSaleTypes, config.saleTypes)) {
     lines.push(asList("sale_type", config.selectedSaleTypes));
   }
