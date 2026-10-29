@@ -21,9 +21,10 @@ interface Props {
  * right and each week's total along the bottom.
  *
  * Every cell is shaded by how much it moved against the busiest cell, on the
- * ramp Sales Comp's day grid uses, so the stores carrying an item read at a
- * glance instead of by scanning numbers. That is magnitude, not a grade:
- * blue, never red or green.
+ * ramp Sales Comp's day grid uses and in its form: the colour fills the cell
+ * as a tile, with a small gutter, and the figure sits centred in it. So the
+ * stores carrying an item read at a glance instead of by scanning numbers.
+ * That is magnitude, not a grade: blue, never red or green.
  *
  * A store that sold none of it in a week shows a dash rather than 0. A store
  * that sold none at all keeps its row, muted: the reader is checking a list of
@@ -38,7 +39,10 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
   const unit = grid.weighed ? "lbs" : "units";
   const peak = Math.max(0, ...grid.rows.flatMap((r) => r.cells.map((v) => v ?? 0)));
 
-  const num = "px-2 py-1.5 text-right tabular-nums whitespace-nowrap";
+  /** The cell is only a frame; the tile inside it carries the colour, so a
+   *  2px gutter keeps neighbouring tiles apart, as in Sales Comp's grid. */
+  const tileCell = "p-0.5 min-w-[64px]";
+  const tile = "flex items-center justify-center h-8 rounded tabular-nums whitespace-nowrap";
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -71,7 +75,7 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
               {weekEndings.map((w) => (
                 <th
                   key={w}
-                  className="px-2 py-2 text-right text-[12px] font-bold whitespace-nowrap"
+                  className="px-2 py-2 text-center text-[12px] font-bold whitespace-nowrap"
                   title={`Week ending ${w}`}
                 >
                   {shortDate(w)}
@@ -96,20 +100,22 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
                   {cells.map((v, i) => {
                     if (v === null || v === 0) {
                       return (
-                        <td key={weekEndings[i]} className={num}>
-                          <span className="inline-block min-w-[48px] px-2 text-content/85">–</span>
+                        <td key={weekEndings[i]} className={tileCell}>
+                          <div className={`${tile} text-content/85`}>–</div>
                         </td>
                       );
                     }
+                    // A net return week (refunds beat sales) is real but has no
+                    // place on a scale of how much moved, so it stays unshaded.
                     const heat = heatStyle(Math.max(v, 0), peak);
                     return (
-                      <td key={weekEndings[i]} className={num}>
-                        <span
-                          className="inline-block min-w-[48px] rounded-md px-2 py-0.5 font-semibold"
+                      <td key={weekEndings[i]} className={tileCell}>
+                        <div
+                          className={`${tile} font-semibold`}
                           style={v > 0 ? { background: heat.bg, color: heat.color } : undefined}
                         >
                           {fmt(v)}
-                        </span>
+                        </div>
                       </td>
                     );
                   })}
@@ -120,15 +126,17 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
               );
             })}
           </tbody>
-          <tfoot className="sticky bottom-0">
-            <tr className="bg-brand_navy text-custom-white font-bold">
+          {/* The header's own colours, so the totals read as the grid's frame
+              rather than as a separate bar laid over it. */}
+          <tfoot className="sticky bottom-0 bg-bkg">
+            <tr className="border-t-2 border-gray-200 font-bold">
               <td className="px-4 py-2 whitespace-nowrap">Total movement</td>
               {grid.weekTotals.map((v, i) => (
-                <td key={weekEndings[i]} className="px-2 py-2 text-right tabular-nums whitespace-nowrap">
-                  <span className="inline-block min-w-[48px] px-2">{fmt(v)}</span>
+                <td key={weekEndings[i]} className="px-2 py-2 text-center tabular-nums whitespace-nowrap">
+                  {fmt(v)}
                 </td>
               ))}
-              <td className="px-4 py-2 text-right tabular-nums whitespace-nowrap border-l border-custom-white/20">
+              <td className="px-4 py-2 text-right tabular-nums whitespace-nowrap border-l border-gray-200">
                 {fmt(grid.total)}
               </td>
             </tr>
