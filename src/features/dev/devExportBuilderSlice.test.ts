@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
+  clearSavedNotes,
   clearSelections,
+  markSavedLoaded,
   dismissBuild,
   finishExport,
   relabelBuild,
@@ -20,10 +22,7 @@ const columns = ["sale_id", "sale_date", "qty", "price"].map((name) => ({
   data_type: "text",
 }));
 
-const loaded = () =>
-  reducer(
-    initialState,
-    setConfig({
+const configPayload = () => ({
       stores: [{ storeid: 1, store_number: "945", store_name: "BG" }],
       saleTypes: ["Sale", "Refunded"],
       itemRingTypes: ["ITEM"],
@@ -40,8 +39,9 @@ const loaded = () =>
       rows: [],
       hasData: true,
       message: null,
-    }),
-  );
+});
+
+const loaded = () => reducer(initialState, setConfig(configPayload()));
 
 /** What the file will hold: the order, narrowed to what is ticked. */
 const fileColumns = (s: ReturnType<typeof loaded>) =>
@@ -297,5 +297,23 @@ describe("clearing the picks", () => {
     expect(cleared.stores).toHaveLength(1);
     expect(cleared.columns).toHaveLength(4);
     expect(cleared.loaded).toBe(true);
+  });
+});
+
+describe("what a load could not carry over", () => {
+  const withNotes = () =>
+    reducer(
+      loaded(),
+      markSavedLoaded({ id: null, notes: ["Loaded from the build of 2026-10-01 to 2026-10-07."] }),
+    );
+
+  it("stays until it is dismissed", () => {
+    expect(withNotes().savedNotes).toHaveLength(1);
+    expect(reducer(withNotes(), clearSavedNotes()).savedNotes).toEqual([]);
+  });
+
+  it("goes with the scope it was about", () => {
+    const fresh = reducer(withNotes(), setConfig({ ...configPayload() }));
+    expect(fresh.savedNotes).toEqual([]);
   });
 });

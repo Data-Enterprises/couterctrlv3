@@ -10,7 +10,10 @@ import DownloadsModal from "./DownloadsModal";
 import SavedExportsModal from "./SavedExportsModal";
 import { useExportBuilderCtx } from "./hooks";
 import { keepSortable } from "./sortRows";
-import { setOrderBy } from "../../../features/dev/devExportBuilderSlice";
+import {
+  clearSavedNotes,
+  setOrderBy,
+} from "../../../features/dev/devExportBuilderSlice";
 
 /**
  * Sales Export — pick a scope, narrow what goes in the file, build it.
@@ -107,6 +110,35 @@ const ExportBuilder = () => {
             configOpen={configOpen}
             onToggleConfig={() => setConfigOpen((v) => !v)}
           />
+          {/*
+            * What the last load could not carry over.
+            *
+            * On the page, not in a modal: Load (Saved) and Reload (Previous
+            * builds) both close the window they were pressed in, so these
+            * notes used to wait inside the Saved window until somebody
+            * happened to open it again.
+            */}
+          {ctx.savedNotes.length > 0 && (
+            <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-[12px] font-semibold text-amber-900">
+                  Loaded, with notes
+                </div>
+                {ctx.savedNotes.map((note, i) => (
+                  <div key={i} className="text-[11.5px] text-amber-900/85 mt-0.5">
+                    · {note}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => ctx.dispatch(clearSavedNotes())}
+                className="flex-shrink-0 text-[11.5px] font-medium text-amber-900 underline underline-offset-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
           {!ctx.hasData ? (
             <div className="flex-1 bg-card_bg border border-brand_line rounded-xl flex items-center justify-center text-center px-6">
               <div className="max-w-[40ch]">

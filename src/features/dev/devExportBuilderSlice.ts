@@ -481,6 +481,8 @@ const devExportBuilderSlice = createSlice({
       state.productDescriptions = [];
       // And the step back belonged to the old one too.
       state.preApply = null;
+      // As did whatever the last load said it could not carry over.
+      state.savedNotes = [];
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
       state.builtAt = null;
@@ -756,6 +758,10 @@ const devExportBuilderSlice = createSlice({
       state.savedNotes = action.payload.notes;
       state.configStamp += 1;
     },
+    /** The load notes, read and put away. */
+    clearSavedNotes: (state) => {
+      state.savedNotes = [];
+    },
     /** Kept so closing the window is not the same as losing the query. */
     setQuerySql: (state, action: PayloadAction<string>) => {
       state.querySql = action.payload;
@@ -1017,6 +1023,7 @@ export const {
   setComputedAlias,
   removeComputed,
   setOrderBy,
+  clearSavedNotes,
   toggleSortKey,
   removeAggregate,
   setColumnOrder,

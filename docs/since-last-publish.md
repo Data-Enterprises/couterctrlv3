@@ -1036,3 +1036,10 @@ Vendors and Cashiers lists (a vendor could appear as "null"), and
 narrowing Cashiers with one of them in the list made the export fail
 outright. They're no longer listed, since a filter can only work on the id.
 Their lines still go into the file whenever that list isn't narrowed.
+
+**What a load couldn't carry over is shown on the page.** Loading a saved
+configuration or reloading a previous build closes its window, and the notes
+about what didn't carry over (a vendor this range doesn't have, a sort on a
+column that's gone) were left inside the Saved window, unseen unless you
+opened it again. They now appear in a strip above the preview until you
+dismiss them, and a new search clears them.

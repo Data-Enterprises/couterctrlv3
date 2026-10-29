@@ -77,19 +77,6 @@ const SavedExportsModal = () => {
           </div>
         )}
 
-        {ctx.savedNotes.length > 0 && (
-          <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            <div className="text-[12px] font-semibold text-amber-900">
-              The open range could not honour all of it
-            </div>
-            {ctx.savedNotes.map((note, i) => (
-              <div key={i} className="text-[11.5px] text-amber-900/85 mt-0.5">
-                · {note}
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Saving what is on screen, which is the reason most people open this */}
         <div className="flex-shrink-0 border border-brand_line rounded-lg p-3 bg-custom-white flex flex-col gap-2">
           <div className="text-[12.5px] font-semibold">
