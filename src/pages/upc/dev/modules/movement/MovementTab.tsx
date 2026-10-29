@@ -326,7 +326,6 @@ const MovementTab = () => {
         </div>
         <MovementGridPanel
           code={selected}
-          description={descriptions.get(selected) ?? ""}
           rows={ctx.movementRows}
           stores={stores}
           weekEndings={weekEndings}

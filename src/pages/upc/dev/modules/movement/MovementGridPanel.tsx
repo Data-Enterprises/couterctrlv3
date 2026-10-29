@@ -10,7 +10,6 @@ import {
 
 interface Props {
   code: string;
-  description: string;
   rows: MovementRow[];
   stores: MovementStore[];
   weekEndings: string[];
@@ -30,7 +29,7 @@ interface Props {
  * that sold none at all keeps its row, muted: the reader is checking a list of
  * stores, and a missing row looks like a store that was forgotten.
  */
-const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Props) => {
+const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
   const grid = useMemo(
     () => movementGrid(rows, code, stores, weekEndings),
     [rows, code, stores, weekEndings],
@@ -45,26 +44,10 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
   const tile = "flex items-center justify-center h-8 rounded tabular-nums whitespace-nowrap";
 
   return (
+    // No heading above the grid: the left list already highlights the item with
+    // its code and total, and the bottom row repeats the total. The one thing a
+    // heading said that nothing else did is the unit, so the bottom row says it.
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3 flex-shrink-0">
-        <div className="min-w-0">
-          <div className="text-[15px] font-semibold text-content truncate">
-            {description || code}
-          </div>
-          <div className="text-[12px] text-content/85">
-            {code} · {grid.weighed ? "Pounds" : "Units"} per store, per week ending
-          </div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <div className="text-[11px] font-bold uppercase tracking-wide text-content">
-            Total movement
-          </div>
-          <div className="text-[17px] font-bold tabular-nums text-content">
-            {fmt(grid.total)} <span className="text-[12px] font-semibold">{unit}</span>
-          </div>
-        </div>
-      </div>
-
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
         <table className="min-w-full text-[13.5px] text-content border-collapse">
           <thead className="sticky top-0 z-10 bg-bkg">
@@ -130,7 +113,9 @@ const MovementGridPanel = ({ code, description, rows, stores, weekEndings }: Pro
               rather than as a separate bar laid over it. */}
           <tfoot className="sticky bottom-0 bg-bkg">
             <tr className="border-t-2 border-gray-200 font-bold">
-              <td className="px-4 py-2 whitespace-nowrap">Total movement</td>
+              <td className="px-4 py-2 whitespace-nowrap">
+                Total movement <span className="font-semibold">({unit})</span>
+              </td>
               {grid.weekTotals.map((v, i) => (
                 <td key={weekEndings[i]} className="px-2 py-2 text-center tabular-nums whitespace-nowrap">
                   {fmt(v)}
