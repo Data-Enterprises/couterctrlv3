@@ -349,6 +349,7 @@ const ConfigPanel = () => {
     setDescriptionText(value);
     window.clearTimeout(termTimer.current);
     termTimer.current = window.setTimeout(() => {
+      termTimer.current = undefined;
       ctx.dispatch(setProductDescriptions(parseDescriptionTerms(value)));
     }, 250);
   };
@@ -359,6 +360,7 @@ const ConfigPanel = () => {
     setFileName(value);
     window.clearTimeout(nameTimer.current);
     nameTimer.current = window.setTimeout(() => {
+      nameTimer.current = undefined;
       ctx.dispatch(setFlag({ filePrefix: value }));
     }, 250);
   };
@@ -366,9 +368,40 @@ const ConfigPanel = () => {
     setCodeText(value);
     window.clearTimeout(parseTimer.current);
     parseTimer.current = window.setTimeout(() => {
+      parseTimer.current = undefined;
       ctx.dispatch(setProductCodes(parseProductCodes(value)));
     }, 250);
   };
+
+  /**
+   * The three boxes follow the store when something else writes to it.
+   *
+   * Loading a saved configuration, reloading a build or applying the query
+   * all set the codes, the description terms and the file name in the store,
+   * and the boxes kept showing what had been typed before -- so the filter in
+   * force and the text on screen disagreed. Each box is rewritten from the
+   * store only when the two no longer mean the same thing, so someone's own
+   * spacing survives, and never while their typing is still waiting to
+   * settle: the store is a beat behind the box then, by design.
+   */
+  const codesKey = ctx.productCodes.join("\n");
+  useEffect(() => {
+    if (parseTimer.current !== undefined) return;
+    if (parseProductCodes(codeText).join("\n") === codesKey) return;
+    setCodeText(codesKey);
+  }, [codesKey]);
+
+  const termsKey = ctx.productDescriptions.join("\n");
+  useEffect(() => {
+    if (termTimer.current !== undefined) return;
+    if (parseDescriptionTerms(descriptionText).join("\n") === termsKey) return;
+    setDescriptionText(termsKey);
+  }, [termsKey]);
+
+  useEffect(() => {
+    if (nameTimer.current !== undefined) return;
+    if (fileName !== ctx.flags.filePrefix) setFileName(ctx.flags.filePrefix);
+  }, [ctx.flags.filePrefix]);
 
   const shown = useMemo(() => {
     const q = columnQuery.trim().toLowerCase();

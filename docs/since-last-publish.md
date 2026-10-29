@@ -1014,3 +1014,9 @@ whatever was in the query box, and giving it a new name saved a second copy
 instead of renaming the first. **Rename** now changes the name and
 description only, on the same saved query. **Save as new** always makes a
 new one.
+
+**The Products and File name boxes show what's in force.** After loading a
+saved configuration, reloading a build or applying the query, the product
+codes, description terms and file name boxes kept their old text even though
+the export was using the new values. They now update to match. Your own
+typing is never overwritten while you're still in the middle of it.
