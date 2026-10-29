@@ -909,6 +909,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               lwEnd={lwEnd}
               lyStart={lyStart}
               lyEnd={lyEnd}
+              lwWeekDates={lwWeekDates}
+              lyWeekDates={lyWeekDates}
+              selectedDate={selectedDate}
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (

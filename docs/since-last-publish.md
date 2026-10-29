@@ -966,3 +966,13 @@ click, each store naming the group it comes from.
 The summary under the Assignments step names those groups straight away too
 ("Food Giant: All Stores (all)"), where it used to read "#66 (all)" until the
 group's company was opened.
+
+## Sales: comparing two stores on one day
+
+dev mode only
+
+With a day picked in the strip and another store chosen to compare, the Sub
+depts comparison set that day at the open store against the **whole week** at
+the other one, so a single Friday read as hundreds of thousands behind. Both
+stores now show the same day, including the last-week and last-year columns.
+The week view was already right. Found by Wayne.
