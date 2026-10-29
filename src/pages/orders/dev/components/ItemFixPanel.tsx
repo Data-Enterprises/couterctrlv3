@@ -242,9 +242,11 @@ const ItemFixPanel = ({
                     <td className="px-2.5 py-2 text-right tabular-nums text-content">
                       {r.casesize > 0 ? r.casesize : "by unit"}
                     </td>
-                    <td className="px-2.5 py-2 text-right tabular-nums text-content">
-                      {formatCurrency2(r.unitNow)}
-                    </td>
+                    <Change
+                      now={r.now}
+                      after={moving ? r.after : null}
+                      pick={(f) => formatCurrency2(f.unitCost)}
+                    />
                     <Change
                       now={r.now}
                       after={moving ? r.after : null}

@@ -789,6 +789,14 @@ After Submit, the sent costs show straight away: in Browse, in the Problems
 list, and when an order is opened again. Before, they went back to the old
 figures until the import ran.
 
+### The Unit cost column shows what you typed
+
+Case cost, Ext cost and margin each read `now → after` as soon as a unit
+cost is typed. Unit cost — the one column the box above it feeds — showed only
+the loaded figure, so on an item ordered by the unit the screen said $0.00
+under Unit cost while the arrow appeared under Case cost. It now moves with
+the rest.
+
 ## Tickets
 
 ### A ticket from a page with no store search names no store
