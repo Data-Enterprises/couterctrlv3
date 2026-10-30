@@ -3,7 +3,12 @@ import ResizableModalShell from "../../../../components-dev/modals/ResizableModa
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/dev/devUpcDevSlice";
-import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
+import {
+  computeUpcSalesCompStats,
+  salesCompRange,
+  DAYS,
+  DAY_SHORT,
+} from "../modules/salesComp/salesCompStats";
 import { getTrendStatus, impactUnits, isDecline } from "../modules/trend/trendStats";
 import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
 import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
@@ -136,7 +141,12 @@ const UpcExportModal = ({ onClose }: Props) => {
         if (exportShape === "summary") {
           const dataLY = ctx.salesCompLY.filter((s) => sel === "all" || isSelected(s.product_code));
           const upcCodes = [...new Set(data.map((s) => s.product_code))];
-          const stats = computeUpcSalesCompStats(upcCodes, data, dataLY, ctx.endDate);
+          const stats = computeUpcSalesCompStats(
+            upcCodes,
+            data,
+            dataLY,
+            salesCompRange(ctx.startDate, ctx.endDate),
+          );
           const headers = ["UPC", "Description", "TY Total", "LY Total", "vs LY %", "WoW %", "Peak Day", "Peak Shifted vs LY"];
           const rows = stats.map((s) => [
             s.code,

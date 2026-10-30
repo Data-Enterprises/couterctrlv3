@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { UpcSalesComp } from "../../../../../interfaces";
-import { combineSalesCompRows, computeUpcSalesCompStats } from "./salesCompStats";
+import {
+  combineSalesCompRows,
+  computeUpcSalesCompStats,
+  type SalesCompRange,
+} from "./salesCompStats";
 import { getSalesCompKpis } from "./SalesCompKpis";
 
 const week = (
@@ -58,12 +62,20 @@ describe("combineSalesCompRows", () => {
   });
 });
 
+// The two whole weeks the rows cover, Monday 8/31 to Sunday 9/13.
+const TWO_WEEKS: SalesCompRange = {
+  start: "8/31/2026",
+  end: "9/13/2026",
+  lyStart: "2025-09-01",
+  lyEnd: "2025-09-14",
+};
+
 describe("computeUpcSalesCompStats on combined rows", () => {
   const [s] = computeUpcSalesCompStats(
     ["70417"],
     combineSalesCompRows(RESPONSE),
     [],
-    "9/14/2026",
+    TWO_WEEKS,
   );
 
   it("week-by-week rows add up to the total", () => {
@@ -94,7 +106,33 @@ describe("computeUpcSalesCompStats on combined rows", () => {
   });
 
   it("KPI strip's avg daily matches the detail panel for one UPC", () => {
-    const kpis = getSalesCompKpis(combineSalesCompRows(RESPONSE), [], ["70417"], "9/14/2026");
+    const kpis = getSalesCompKpis(combineSalesCompRows(RESPONSE), [], ["70417"], TWO_WEEKS);
     expect(kpis.find((k) => k.label === "Avg daily / UPC")?.value).toBe("$463.42");
+  });
+});
+
+describe("week over week", () => {
+  // $100 every day.
+  const flat = (wk: string) =>
+    week(wk, "Flat", {
+      Monday: 100, Tuesday: 100, Wednesday: 100, Thursday: 100,
+      Friday: 100, Saturday: 100, Sunday: 100,
+    });
+
+  it("leaves a part week at the start out", () => {
+    // Wed 10/7 to Sun 10/18. The week of 10/5 holds only Wed-Sun ($500) and
+    // used to count as complete, so the next week's $700 read as +16.7%.
+    const rows = [
+      { ...flat("2026-10-05"), Monday: null, Tuesday: null },
+      flat("2026-10-12"),
+    ];
+    const [s] = computeUpcSalesCompStats(["70417"], rows, [], {
+      start: "10/7/2026",
+      end: "10/18/2026",
+      lyStart: "2025-10-08",
+      lyEnd: "2025-10-19",
+    });
+    // One complete week is not enough to compare.
+    expect(s.wowPct).toBeNull();
   });
 });

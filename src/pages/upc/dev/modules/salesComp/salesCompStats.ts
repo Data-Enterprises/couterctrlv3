@@ -1,4 +1,4 @@
-import { addDays } from "../../../../../utils";
+import { addDays, sameWeekDayLastYear } from "../../../../../utils";
 import type { UpcSalesComp } from "../../../../../interfaces";
 
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
@@ -46,12 +46,52 @@ export function fmtWeekRange(weekStart: string): string {
   return `${startStr} - ${endStr}`;
 }
 
-// A trailing week whose 7-day span hasn't fully elapsed within the query
-// range is "incomplete" — its partial total would skew both the "recent
-// week" value and the average it's compared against if left in.
-export function makeIsWeekComplete(endDate: string) {
-  const queryEndDate = new Date(endDate);
-  return (wk: string) => addDays(wk, 6) <= queryEndDate;
+/**
+ * The dates a Sales Comp answer covers: the search's, and last year's that the
+ * tab asked for alongside them. Any of the app's date forms: m/d/yyyy, or ISO
+ * with or without a time.
+ */
+export type SalesCompRange = { start: string; end: string; lyStart: string; lyEnd: string };
+
+/** The range for a search, with last year's dates worked out the same way the
+ *  tab's last-year call works them out. */
+export function salesCompRange(startDate: string, endDate: string): SalesCompRange {
+  return {
+    start: startDate,
+    end: endDate,
+    lyStart: sameWeekDayLastYear(startDate).date,
+    lyEnd: sameWeekDayLastYear(endDate).date,
+  };
+}
+
+/** A date as a local midnight: "2026-09-07T00:00:00", "2026-09-07" or
+ *  "9/7/2026". ISO without a time would otherwise parse as UTC and land on the
+ *  day before anywhere in the US. */
+export function dayOf(s: string): Date {
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+  const [m, d, y] = s.split("/").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+const plusDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+/**
+ * Whether a week's seven days all fall inside the searched range.
+ *
+ * Both ends. A range that starts mid-week makes its first week partial just as
+ * one that ends mid-week makes its last, and only the end used to be checked:
+ * a Wednesday start counted Wed-Sun as a full week, so flat sales read as up
+ * 16.7% week over week. A partial week's total would skew both the "recent
+ * week" figure and the average it's compared against, so it's left out of both.
+ */
+export function makeIsWeekComplete(startDate: string, endDate: string) {
+  const first = dayOf(startDate);
+  const last = dayOf(endDate);
+  return (wk: string) => {
+    const weekStart = dayOf(wk);
+    return weekStart >= first && plusDays(weekStart, 6) <= last;
+  };
 }
 
 export type UpcSalesCompStats = {
@@ -86,9 +126,9 @@ export function computeUpcSalesCompStats(
   upcCodes: string[],
   tyRows: UpcSalesComp[],
   lyRows: UpcSalesComp[],
-  endDate: string,
+  range: SalesCompRange,
 ): UpcSalesCompStats[] {
-  const isWeekComplete = makeIsWeekComplete(endDate);
+  const isWeekComplete = makeIsWeekComplete(range.start, range.end);
 
   return upcCodes.map((code) => {
     const rows = tyRows.filter((r) => r.product_code === code);

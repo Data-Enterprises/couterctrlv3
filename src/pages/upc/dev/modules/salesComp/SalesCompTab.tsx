@@ -15,7 +15,7 @@ import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
 import { answerOf } from "../../answer";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import { combineSalesCompRows, computeUpcSalesCompStats } from "./salesCompStats";
+import { combineSalesCompRows, computeUpcSalesCompStats, salesCompRange } from "./salesCompStats";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import SalesCompLeftList from "./SalesCompLeftList";
 import SalesCompDetailPanel from "./SalesCompDetailPanel";
@@ -178,9 +178,13 @@ const SalesCompTab = () => {
     [filtered],
   );
 
+  const range = useMemo(
+    () => salesCompRange(ctx.startDate, ctx.endDate),
+    [ctx.startDate, ctx.endDate],
+  );
   const upcStats = useMemo(
-    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, ctx.endDate),
-    [upcCodes, filtered, filteredLY, ctx.endDate],
+    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, range),
+    [upcCodes, filtered, filteredLY, range],
   );
 
   // Keep the detail panel pointed at a valid item — default to the first

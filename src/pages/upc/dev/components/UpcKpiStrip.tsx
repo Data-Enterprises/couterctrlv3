@@ -1,5 +1,6 @@
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { getSalesCompKpis } from "../modules/salesComp/SalesCompKpis";
+import { salesCompRange } from "../modules/salesComp/salesCompStats";
 import { getForecastKpis } from "../modules/forecast/ForecastKpis";
 import { getPriceOptKpis } from "../modules/priceOpt/PriceOptKpis";
 import { getTrendKpis } from "../modules/trend/TrendKpis";
@@ -22,7 +23,12 @@ const UpcKpiStrip = () => {
   const kpis = (() => {
     switch (ctx.activeTab) {
       case "salesComp":
-        return getSalesCompKpis(ctx.salesComp, ctx.salesCompLY, ctx.selectedUpcs, ctx.endDate);
+        return getSalesCompKpis(
+          ctx.salesComp,
+          ctx.salesCompLY,
+          ctx.selectedUpcs,
+          salesCompRange(ctx.startDate, ctx.endDate),
+        );
       case "movement": {
         // The item the grid is showing: the strip describes one item, as the
         // grid does. Same fallback as the tab when nothing is picked yet.

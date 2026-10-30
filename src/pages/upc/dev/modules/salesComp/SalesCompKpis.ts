@@ -1,7 +1,7 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import type { KpiCell } from "../../types";
-import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "./salesCompStats";
+import { computeUpcSalesCompStats, DAYS, DAY_SHORT, type SalesCompRange } from "./salesCompStats";
 
 /** Calendar days in the selection on which any UPC sold. Counted per (week,
  *  weekday), not per weekday column — counting columns capped a two-week range
@@ -19,7 +19,7 @@ export function getSalesCompKpis(
   salesComp: UpcSalesComp[],
   salesCompLY: UpcSalesComp[],
   selectedUpcs: string[],
-  endDate: string,
+  range: SalesCompRange,
 ): KpiCell[] {
   const filtered =
     selectedUpcs.length > 0
@@ -35,7 +35,7 @@ export function getSalesCompKpis(
   const weekCount = new Set(filtered.map((s) => s.week)).size;
   const hasLY = filteredLY.length > 0;
 
-  const stats = computeUpcSalesCompStats(upcCodes, filtered, filteredLY, endDate);
+  const stats = computeUpcSalesCompStats(upcCodes, filtered, filteredLY, range);
 
   const totalSales = stats.reduce((acc, s) => acc + s.periodTotal, 0);
   const totalSalesLY = stats.reduce((acc, s) => acc + (s.hasLY ? s.lyPeriodTotal : 0), 0);

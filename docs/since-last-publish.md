@@ -1172,3 +1172,14 @@ loading, and a lookup cut short by a new search or a server error showed it
 for good. Now the tab says "Loading …'s associations" until that item's answer
 arrives. If it can't load, the tab goes back to the seed view with a line
 saying which item failed and why, which you can dismiss.
+
+## UPC List: batch 4 fixes (Sales Comp)
+
+dev mode only
+
+**A part week at the start no longer skews week over week.** Week over week
+compares the last full week with the average of the full weeks. Only the end
+of the range was checked, so a search starting on a Wednesday counted
+Wednesday to Sunday as a full week: an item selling the same every day read
+as up 16.7%. A week now counts only when all seven of its days are inside the
+searched dates.
