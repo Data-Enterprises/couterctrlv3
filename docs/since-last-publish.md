@@ -1190,3 +1190,11 @@ simply wasn't there. An item that stopped selling in the last week compared
 its last selling week with its average and read as flat or up. Every week in
 the searched dates is now in the week table, a week with no sales shows $0,
 and it counts in week over week: that item now reads down 100%.
+
+**The peak day is the real peak.** Each weekday's average was its total
+divided by the number of weeks, so a weekday the dates include fewer times
+was understated. Over Monday 10/5 to Wednesday 10/14 (two Mondays, one
+Saturday), a $100 Saturday averaged $50 and lost the peak to two $60 Mondays.
+Each weekday is now divided by how many times it falls in the searched dates,
+for this year and last, in the item's figures, the KPI strip's peak day and
+the export.

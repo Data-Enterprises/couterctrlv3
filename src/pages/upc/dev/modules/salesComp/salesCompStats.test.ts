@@ -3,6 +3,7 @@ import type { UpcSalesComp } from "../../../../../interfaces";
 import {
   combineSalesCompRows,
   computeUpcSalesCompStats,
+  weekdayCounts,
   type SalesCompRange,
 } from "./salesCompStats";
 import { getSalesCompKpis } from "./SalesCompKpis";
@@ -167,5 +168,36 @@ describe("a week with no sales", () => {
     // Last week 0 against an average of 525: down 100%, where skipping the
     // week compared 700 with 700 and read flat.
     expect(s.wowPct).toBeCloseTo(-100);
+  });
+});
+
+describe("the peak day", () => {
+  // Monday 10/5 to Wednesday 10/14: two Mondays, one Saturday.
+  const range: SalesCompRange = {
+    start: "10/5/2026",
+    end: "10/14/2026",
+    lyStart: "2025-10-06",
+    lyEnd: "2025-10-15",
+  };
+  const rows = [
+    week("2026-10-05", "Item", { Monday: 60, Saturday: 100 }),
+    week("2026-10-12", "Item", { Monday: 60 }),
+  ];
+
+  it("counts each weekday as often as the range holds it", () => {
+    expect(weekdayCounts(range.start, range.end)).toEqual([2, 2, 2, 1, 1, 1, 1]);
+  });
+
+  it("averages per occurrence, so the $100 Saturday is the peak", () => {
+    // Per week, Saturday averaged $50 against Monday's $60.
+    const [s] = computeUpcSalesCompStats(["70417"], rows, [], range);
+    expect(s.dayAvgs[5]).toBe(100);
+    expect(s.dayAvgs[0]).toBe(60);
+    expect(s.peakIdx).toBe(5);
+  });
+
+  it("and the KPI strip agrees", () => {
+    const kpis = getSalesCompKpis(rows, [], ["70417"], range);
+    expect(kpis.find((k) => k.label === "Peak day")?.value).toBe("Sat");
   });
 });

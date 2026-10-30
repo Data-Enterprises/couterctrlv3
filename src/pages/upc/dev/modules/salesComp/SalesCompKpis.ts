@@ -1,7 +1,13 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import type { KpiCell } from "../../types";
-import { computeUpcSalesCompStats, DAYS, DAY_SHORT, type SalesCompRange } from "./salesCompStats";
+import {
+  computeUpcSalesCompStats,
+  weekdayCounts,
+  DAYS,
+  DAY_SHORT,
+  type SalesCompRange,
+} from "./salesCompStats";
 
 /** Calendar days in the selection on which any UPC sold. Counted per (week,
  *  weekday), not per weekday column — counting columns capped a two-week range
@@ -46,7 +52,12 @@ export function getSalesCompKpis(
   // UPC's own average day, so it's computed directly rather than from `stats`.
   // Mode (which day most individual UPCs peak on) is the sub — the two can
   // genuinely disagree when a few high-volume UPCs outweigh many small ones.
-  const daySums = DAYS.map((d) => filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0));
+  // Per occurrence of the weekday, as the item rows do: a weekday the range
+  // holds twice would otherwise outweigh one it holds once.
+  const dayCounts = weekdayCounts(range.start, range.end);
+  const daySums = DAYS.map(
+    (d, i) => filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0) / (dayCounts[i] || 1),
+  );
   const activeDays = activeDayCount(filtered);
   const avgDaily = upcCount > 0 && activeDays > 0 ? totalSales / activeDays / upcCount : 0;
   const activeDaysLY = activeDayCount(filteredLY);

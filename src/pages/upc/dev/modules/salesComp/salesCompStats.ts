@@ -115,6 +115,21 @@ export function weeksIn(startDate: string, endDate: string): string[] {
   return weeks;
 }
 
+/**
+ * How many times each weekday falls in the range, Monday first.
+ *
+ * What a weekday's average divides by. Dividing by the number of weeks
+ * understated any weekday the range holds fewer of: Monday 10/5 to Wednesday
+ * 10/14 has two Mondays but one Saturday, so a $100 Saturday averaged $50 and
+ * lost the peak to two $60 Mondays.
+ */
+export function weekdayCounts(startDate: string, endDate: string): number[] {
+  const counts = DAYS.map(() => 0);
+  const end = dayOf(endDate);
+  for (let d = dayOf(startDate); d <= end; d = plusDays(d, 1)) counts[(d.getDay() + 6) % 7]++;
+  return counts;
+}
+
 /** A week with no sales, for the week table: every day blank. */
 const emptyWeek = (code: string, description: string, week: string): UpcSalesComp => ({
   product_code: code,
@@ -165,6 +180,8 @@ export function computeUpcSalesCompStats(
 ): UpcSalesCompStats[] {
   const isWeekComplete = makeIsWeekComplete(range.start, range.end);
   const rangeWeeks = weeksIn(range.start, range.end);
+  const tyDays = weekdayCounts(range.start, range.end);
+  const lyDays = weekdayCounts(range.lyStart, range.lyEnd);
 
   return upcCodes.map((code) => {
     const rows = tyRows.filter((r) => r.product_code === code);
@@ -176,12 +193,10 @@ export function computeUpcSalesCompStats(
     const sortedWeeks = [
       ...new Set([...rangeWeeks.map((w) => w.slice(0, 10)), ...byWeek.keys()]),
     ].sort((a, b) => a.localeCompare(b));
-    // Distinct weeks, not rows — the two only agree once rows are combined,
-    // and an average by day of week is per week.
-    const weekCount = sortedWeeks.length;
 
-    const dayAvgs = DAYS.map((d) =>
-      rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (weekCount || 1),
+    // Per occurrence of that weekday in the range: see weekdayCounts.
+    const dayAvgs = DAYS.map(
+      (d, i) => rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (tyDays[i] || 1),
     );
     const peakIdx = dayAvgs.indexOf(Math.max(...dayAvgs));
     const periodTotal = rows.reduce((acc, r) => acc + rowTotal(r), 0);
@@ -206,9 +221,8 @@ export function computeUpcSalesCompStats(
 
     const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
     const hasLY = lyRowsForCode.length > 0;
-    const lyWeekCount = new Set(lyRowsForCode.map((r) => r.week)).size;
-    const lyDayAvgs = DAYS.map((d) =>
-      lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyWeekCount || 1),
+    const lyDayAvgs = DAYS.map(
+      (d, i) => lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyDays[i] || 1),
     );
     const lyPeakIdx = hasLY ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
     const lyPeriodTotal = lyRowsForCode.reduce((acc, r) => acc + rowTotal(r), 0);
