@@ -11,8 +11,7 @@ import {
   DAY_SHORT,
 } from "../modules/salesComp/salesCompStats";
 import { getTrendStatus, impactUnits, isDecline } from "../modules/trend/trendStats";
-import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
-import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
+import { computePriceOptRowSummary } from "../modules/priceOpt/priceOptStats";
 import { movementCsv, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
 import { exportWaitReason } from "./exportWait";
@@ -192,20 +191,19 @@ const UpcExportModal = ({ onClose }: Props) => {
         const headers = ctx.fixes
           ? ["UPC", "Description", "Best Price", "Best Revenue", "Best Volume", "Unit", "Elasticity", "Price Points"]
           : ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
+        // The panel's own summary, so the file's points, elasticity and
+        // volume are the ones on screen.
         const rows = data.map((row) => {
-          const points = pricePoints(ctx.optBestPrices, row.product_code);
-          const weighted =
-            ctx.fixes && (isWeighted(row.total_weight) || points.some((p) => p.weight > 0));
-          const elasticity = elasticityFromPoints(points, weighted);
+          const s = computePriceOptRowSummary(row, ctx.optBestPrices, ctx.fixes);
           return [
             row.product_code,
             row.product_description,
             String(row.price),
             String(row.total_revenue),
-            String(weighted ? pricedUnits(row.total_qty, row.total_weight) : row.total_qty),
-            ...(ctx.fixes ? [pricedUnitLabel(weighted ? row.total_weight : 0)] : []),
-            elasticity !== null ? elasticity.toFixed(2) : "",
-            String(points.length),
+            String(ctx.fixes ? s.bestUnits : row.total_qty),
+            ...(ctx.fixes ? [s.weighted ? "lb" : "ea"] : []),
+            s.elasticity !== null ? s.elasticity.toFixed(2) : "",
+            String(s.points.length),
           ];
         });
         download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);

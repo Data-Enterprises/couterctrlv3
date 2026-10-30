@@ -1206,3 +1206,20 @@ one read up 33%. It now compares only items that sold in both years, and when
 that's not all of them it says so ("on 4 of 5 items sold both years"). An item
 that sold last year and not this year used to vanish from the list, the strip
 and the export; it now stays in the list at $0, down 100%, with no peak day.
+
+## UPC List: batch 5 fixes (Price Opt)
+
+dev mode only
+
+**The KPI strip, the item panel and the export agree on price points.** The
+strip left out prices that rang but moved nothing (a sale and its refund,
+say), while the panel and the export kept them, so one item could read 2
+points and elasticity -1.7 in the strip and 3 points and "—" in the panel.
+All three now leave those prices out, and the item list's "N price points
+tested" follows.
+
+**A weighed item's best-price volume is in pounds everywhere.** For a
+by-the-pound item whose best price had no weight on its own row, the tile
+showed "0" next to a per-pound price while the export wrote the ring count
+as "ea". The volume now adds up every sale at that price and is shown in
+pounds in both places, "0.00 lb" if that's what it moved.
