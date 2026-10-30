@@ -9,6 +9,7 @@ import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptS
 import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
 import { movementCsv, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
+import { exportWaitReason } from "./exportWait";
 import {
   getDisplayItems,
   getDepartmentBreakdown,
@@ -98,7 +99,27 @@ const UpcExportModal = ({ onClose }: Props) => {
   const isSelected = (pc: string) => ctx.selectedUpcs.includes(pc);
   const nothingSelected = ctx.selectedUpcs.length === 0;
 
+  const waitReason = exportWaitReason({
+    tab: ctx.activeTab,
+    preset: selectedPreset,
+    shape: exportShape,
+    searchedUpcs: ctx.searchedUpcs,
+    selectedUpcs: ctx.selectedUpcs,
+    salesCompCoverage: ctx.salesCompCoverage,
+    salesCompLYLoading: ctx.salesCompLYLoading,
+    priceOptCoverage: ctx.priceOptCoverage,
+    trendCoverage: ctx.trendCoverage,
+    movementCoverage: ctx.movementCoverage,
+    associationSeedLoaded: ctx.associationSeedLoaded,
+    associationSeedLoading: ctx.associationSeedLoading,
+    associationRerootUpc: ctx.associationRerootUpc,
+    associationRerootLoaded: Boolean(
+      ctx.associationRerootUpc && ctx.associationRerootCache[ctx.associationRerootUpc],
+    ),
+  });
+
   const handleExport = () => {
+    if (waitReason) return;
     const tab = ctx.activeTab;
     const sel = selectedPreset;
 
@@ -342,9 +363,16 @@ const UpcExportModal = ({ onClose }: Props) => {
             </div>
           )}
 
+          {waitReason && (
+            <div className="text-[10px] text-content/85 bg-gray-50 rounded px-3 py-2">
+              {waitReason}
+            </div>
+          )}
+
           <button
             onClick={handleExport}
-            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity"
+            disabled={waitReason !== null}
+            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
             style={{ background: "rgb(var(--color-brand-navy))" }}
           >
             <ArrowDownTrayIcon className="h-3.5 w-3.5" />

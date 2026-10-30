@@ -1104,3 +1104,12 @@ lookup, and a lookup that returns after a newer search has started is ignored.
 list, the screen says "No UPCs selected", but exporting "Selected UPCs"
 downloaded every UPC. The option is now greyed out with "(none selected)"
 until something is ticked.
+
+**Export waits for the data.** Clicking Download while a tab was still loading,
+or after its call failed, saved a file with headers only (or, on Movement, rows
+of blanks that read like nothing sold), and the window closed as if it had
+worked. Download is now greyed out until the tab has loaded every UPC the file
+would hold, with a line saying what it's waiting for ("Sales Comp hasn't loaded
+for 3 UPCs yet."). Sales Comp's summary also waits for last year to finish.
+Trend and Association, which only export ticked UPCs, say "No UPCs selected."
+when nothing is ticked.
