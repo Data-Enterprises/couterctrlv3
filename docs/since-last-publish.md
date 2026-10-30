@@ -1223,3 +1223,33 @@ by-the-pound item whose best price had no weight on its own row, the tile
 showed "0" next to a per-pound price while the export wrote the ring count
 as "ea". The volume now adds up every sale at that price and is shown in
 pounds in both places, "0.00 lb" if that's what it moved.
+
+## User Management: the ? help follows the real workflow
+
+dev mode only
+
+The help panel described a screen that has not existed for months: an edit
+view of two tabs with a "Save access" button, a trash icon that "deletes", and
+a user list with no access type in it. Anybody following it was hunting for
+controls that are not there.
+
+It now follows the tree as built. Six guides — add a user, change what they
+can see, copy a setup, build a base group, switch somebody off or back on,
+reset a password — each one walking the four steps of the wizard that is both
+Add and Edit. The chips are labels as the screen carries them, so
+**Check Availability** is named (nothing is checked as you type, which the old
+help implied), and so are **Create user**, **Save changes**, **Deactivate
+users** and **Inactive**.
+
+Four diagnostics replace the single one: can't open a user, they can't see a
+store they should, a base group isn't in my list, and a save didn't finish.
+The second and third are the two that cost the most time on the phone — the
+answer to "they can't see it" is almost always their access type, and a base
+group you created is invisible until you grant it to yourself.
+
+The glossary gained By group / By store, the Access column's four values,
+Effective stores, Direct, Assign all and Check Availability.
+
+Four new `data-help` anchors so the "Show me" button has something to point
+at on this page: the tab row, the base groups list, a group's Stores/Users
+sub-tabs, and its assign panel.
