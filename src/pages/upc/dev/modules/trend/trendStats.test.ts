@@ -162,3 +162,35 @@ describe("an item that stopped selling", () => {
     expect(text).toContain("1,463 units not sold");
   });
 });
+
+describe("reduced availability", () => {
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+  // 10 a day on 85 of 90 days before; 11 a day since, but on 8 of 16 days.
+  const SHORT: UpcTrend = {
+    ...BANANAS,
+    mean_before: 10,
+    total_before: 850,
+    active_days_before: 85,
+    mean_after: 11,
+    total_after: 88,
+    active_days_after: 8,
+    pct_change_mean: 10,
+  };
+
+  it("comes up when it sold faster on the days it sold, but on fewer days", () => {
+    // 9.4 a calendar day before, 5.5 since. It used to be unreachable.
+    expect(getTrendStatus(SHORT, true, window)).toBe("reduced-availability");
+    expect(Math.round(impactUnits(SHORT, true, window))).toBe(-63);
+  });
+
+  it("is growing when it sold on as many days too", () => {
+    const steady = { ...SHORT, active_days_after: 16, total_after: 176 };
+    expect(getTrendStatus(steady, true, window)).toBe("growing");
+  });
+
+  it("describes the drop as a share of days", () => {
+    const text = getTrendInsight(SHORT, "reduced-availability", true, window);
+    expect(text).toContain("50% of days since, down from 94% before");
+  });
+});
+

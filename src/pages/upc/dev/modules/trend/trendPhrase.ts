@@ -1,6 +1,7 @@
 import type { UpcTrend } from "../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 import { accelerationFactor, impactUnits, type TrendStatus } from "./trendStats";
+import { activeRatePct } from "./trendWindow";
 
 export type TrendTone = "up" | "down" | "flat" | "muted";
 export type TrendPhrase = { text: string; tone: TrendTone };
@@ -78,8 +79,16 @@ export function getTrendInsight(
     }
     case "declining":
       return `Sales declining at ${meanAfter} units/day, down from ${meanBefore} before — the pace of decline isn't speeding up, and is ${reliability} (${confidencePct}% confidence).${availabilityNote}`;
-    case "reduced-availability":
-      return `Per-day sales rate held steady or improved (${t.pct_change_mean >= 0 ? "+" : ""}${t.pct_change_mean.toFixed(1)}%), but total volume fell because this item was only actively sold ${t.active_days_after} of ${t.active_days_before} prior active days. This looks like a stocking or availability issue, not weaker demand.`;
+    case "reduced-availability": {
+      const rate = `${t.pct_change_mean >= 0 ? "+" : ""}${t.pct_change_mean.toFixed(1)}%`;
+      // Shares of each window's days, so the two counts are comparable: 15
+      // selling days of 16 is not a drop from 73 of 90.
+      const days = window
+        ? `it sold on ${activeRatePct(t.active_days_after, window.afterDays)}% of days since, down from ${activeRatePct(t.active_days_before, window.beforeDays)}% before`
+        : "it sold on fewer days";
+      const lost = impact < 0 ? `, about ${Math.abs(impact).toLocaleString()} units` : "";
+      return `Sales per selling day held steady or improved (${rate}), but ${days}, so total volume fell${lost}. This looks like a stocking or availability issue, not weaker demand.`;
+    }
     // No baseline to measure against, so the sentence reports what the item
     // has done since it started rather than inventing a comparison.
     case "new":

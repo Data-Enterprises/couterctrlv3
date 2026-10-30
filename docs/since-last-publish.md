@@ -1135,3 +1135,12 @@ date and not once since was labelled Growing, in green, with "Sales are up
 before and roughly how many units it would have sold since at that pace. It
 counts toward "Declining items" (the tile says "incl. 2 stopped selling") and
 goes in the Declining export.
+
+**"Reduced availability" can come up.** The status is meant for an item that
+sells as well as ever on the days it's on the shelf, but is on the shelf on
+fewer days, so less of it moves overall. Its test compared two figures that
+always moved together, so no item ever got it: the tile always read "0 of n"
+and that export was always empty. It now compares units per calendar day, so
+an item selling faster per selling day on half as many days is flagged, with
+roughly how many units the missing days cost. The sentence gives the days as
+shares ("sold on 50% of days since, down from 94% before").

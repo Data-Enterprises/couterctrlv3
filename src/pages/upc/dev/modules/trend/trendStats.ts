@@ -17,6 +17,30 @@ export const isDecline = (s: TrendStatus) =>
 /** Sold before the pivot and not on a single day since. */
 export const hasStopped = (t: UpcTrend) => hasBaseline(t) && t.active_days_after === 0;
 
+/** Units per calendar day in each window: the total over the window's
+ *  length, selling days or not. `mean_*` is per selling day. */
+export const calendarRates = (t: UpcTrend, window: UpcTrendWindow) => ({
+  before: t.total_before / window.beforeDays,
+  after: t.total_after / window.afterDays,
+});
+
+/**
+ * Sold as fast as before on the days it sold, but on fewer of them, so it
+ * moved less overall: a stocking or availability problem, not weaker demand.
+ *
+ * Measured per calendar day. The per-selling-day rate (`pct_change_mean`)
+ * held or rose, while units per calendar day fell. The old test compared that
+ * rate against the impact figure, which is the same rate change times the
+ * after window's selling days, so the two always had the same sign and the
+ * status could never come up. Needs the windows; without them, no.
+ */
+export const hasReducedAvailability = (t: UpcTrend, window: UpcTrendWindow | null) => {
+  if (!window || !hasBaseline(t) || t.active_days_after === 0) return false;
+  if (t.pct_change_mean < 0) return false;
+  const rate = calendarRates(t, window);
+  return rate.after < rate.before;
+};
+
 /** Whether the item sold at all before the pivot.
  *
  *  `trend_detector` answers for items that didn't exist in the before window
@@ -64,6 +88,12 @@ export function impactUnits(
   if (t.active_days_after === 0) {
     return window ? -(t.total_before / window.beforeDays) * window.afterDays : 0;
   }
+  // Its rate per selling day held, so the formula below reads as a gain. What
+  // it lost is the drop in units per calendar day, over the days since.
+  if (window && hasReducedAvailability(t, window)) {
+    const rate = calendarRates(t, window);
+    return (rate.after - rate.before) * window.afterDays;
+  }
   return (t.mean_after - t.mean_before) * t.active_days_after;
 }
 
@@ -85,6 +115,7 @@ export function getTrendStatus(
   // different conversation from "it's slowing", and the rate and slope
   // figures that describe a decline are all zero here.
   if (fixes && hasStopped(t)) return "stopped";
+  if (fixes && hasReducedAvailability(t, window)) return "reduced-availability";
   if (impactUnits(t, fixes, window) >= 0) return "growing";
   if (t.pct_change_mean >= 0) return "reduced-availability";
   // A decline accelerates when the after-slope is STEEPER downward than the
