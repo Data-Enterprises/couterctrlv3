@@ -85,12 +85,15 @@ const UpcList = () => {
       return;
     }
 
+    // The live search, not ctx: ctx serves the tabs the search their data
+    // answers, and this is the one place that has to read what is about to be
+    // asked.
     const scopeKey = buildScopeKey(
       searchState.type,
       searchState.selectedStore?.storeid,
       searchState.selectedGroup?.id,
-      ctx.startDate,
-      ctx.endDate,
+      searchState.startDate,
+      searchState.endDate,
     );
     const removed = ctx.searchedUpcs.filter((u) => !ctx.upcs.includes(u));
     const added = ctx.upcs.filter((u) => !ctx.searchedUpcs.includes(u));
@@ -155,7 +158,19 @@ const UpcList = () => {
     // so the left panel is complete and stable from the moment the search
     // commits. Descriptions arrive as modules respond.
     dispatch(seedDevUpcItems(ctx.upcs));
-    dispatch(setDevSearchSnapshot({ upcs: ctx.upcs, scopeKey }));
+    dispatch(
+      setDevSearchSnapshot({
+        upcs: ctx.upcs,
+        scopeKey,
+        scope: {
+          type: searchState.type,
+          startDate: searchState.startDate,
+          endDate: searchState.endDate,
+          selectedStore: searchState.selectedStore,
+          selectedGroup: searchState.selectedGroup,
+        },
+      }),
+    );
     dispatch(setDevDataLoaded(true));
     // No fetch here. Every module — Sales Comp included — asks for its own
     // delta when the user actually opens it. A search costs zero calls on its

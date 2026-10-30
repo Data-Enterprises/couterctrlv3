@@ -14,6 +14,9 @@ import type {
   UpcPriceOpt,
   UpcTrend,
 } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+import type { Group } from "../groupSlice";
+import type { Store } from "../../interfaces";
 
 export type UpcDevTab =
   | "salesComp"
@@ -44,6 +47,18 @@ export type MovementRow = {
   week_ending: string;
   qty: number;
   weight: number;
+};
+
+/** The search the data on screen answers: what it was asked for, as it was
+ *  when Search was pressed. The search card edits the app-wide search live,
+ *  so reading that instead would let a date picked and then abandoned in the
+ *  re-search window steer every later fetch. */
+export type UpcSearchedScope = {
+  type: SEARCH_TYPE;
+  startDate: string;
+  endDate: string;
+  selectedStore: Store;
+  selectedGroup: Group;
 };
 
 export type UpcDevDisplayMode = "code" | "desc";
@@ -90,6 +105,8 @@ interface UpcDevState {
   // instead of re-fetching every module.
   searchedUpcs: string[];
   searchedScopeKey: string;
+  /** Null until the first search. See UpcSearchedScope. */
+  searchedScope: UpcSearchedScope | null;
   upcItems: UpcItem[];
   selectedUpcs: string[];
   filterText: string;
@@ -189,6 +206,7 @@ const initialState: UpcDevState = {
   searchVersion: 0,
   searchedUpcs: [],
   searchedScopeKey: "",
+  searchedScope: null,
   upcItems: [],
   selectedUpcs: [],
   filterText: "",
@@ -429,10 +447,11 @@ const upcDevSlice = createSlice({
      *  completed search, once, so the next search can diff against it. */
     setDevSearchSnapshot(
       state,
-      action: PayloadAction<{ upcs: string[]; scopeKey: string }>,
+      action: PayloadAction<{ upcs: string[]; scopeKey: string; scope: UpcSearchedScope }>,
     ) {
       state.searchedUpcs = action.payload.upcs;
       state.searchedScopeKey = action.payload.scopeKey;
+      state.searchedScope = action.payload.scope;
     },
 
     /** Drop UPCs from every place their data lives, without re-fetching.
@@ -527,6 +546,7 @@ const upcDevSlice = createSlice({
       state.dataLoaded = false;
       state.searchedUpcs = [];
       state.searchedScopeKey = "";
+      state.searchedScope = null;
       state.upcItems = [];
       state.selectedUpcs = [];
       state.filterText = "";

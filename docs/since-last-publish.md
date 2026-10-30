@@ -1075,3 +1075,14 @@ with no last year, that was the page's heaviest call every time you opened
 Sales Comp. No sales is now a real answer: the item shows no figures, and it
 isn't asked for again. A real failure still warns and retries on the next
 visit.
+
+## UPC List: batch 1 fixes (search and export)
+
+dev mode only
+
+**The tabs stay on the search you ran.** Changing the dates, store or group in
+the re-search window and then closing it without searching used to steer the
+next tab you opened: it fetched the new dates for the old stores, Sales Comp's
+week figures moved to the new end date, and the header showed the new dates
+over the old data. The search is now kept as it was when you pressed Search,
+and the tabs and the header read that until you search again.
