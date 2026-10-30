@@ -1036,3 +1036,11 @@ tab is opened. That endpoint reports per store, so one call a week covers every
 store in the group. A dedicated movement endpoint is planned
 (`docs/backend-movement-and-store-lists-2026-10-28.md`, part A); the tab can
 switch to it without changing what it shows.
+
+## The date picker names the day
+
+dev mode only
+
+The single date on a search card now shows its weekday, "8/16 · Sun"
+instead of "8/16", so you can see a week-ending date lands on the right day
+before you load. Every dev page with a single date picker gets it.
