@@ -11,6 +11,8 @@ import {
 import { getTrendDetect } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
+import { answerOf } from "../../answer";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import type { UpcTrend } from "../../../../../interfaces";
 import { getTrendStatus, impactUnits } from "./trendStats";
 import TrendLeftList from "./TrendLeftList";
@@ -24,6 +26,7 @@ const TrendTab = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
   // Echoed back once per fetch — the actual pivot the backend split
   // before/after on, needed to compute window lengths.
   const [trendStartDate, setTrendStartDate] = useState<string | null>(null);
@@ -46,6 +49,7 @@ const TrendTab = () => {
 
     const load = async () => {
       dispatch(setDevTrendLoading(true));
+      let abandoned = false;
       try {
         const res = await upcQueue.enqueue(`trend:${ctx.trendPeriods}:${missingKey}`, (signal) =>
           getTrendDetect(
@@ -54,19 +58,23 @@ const TrendTab = () => {
           ),
         );
         // Superseded by a newer search — see the same guard in PriceOptTab.
-        if (!res) return;
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
-        // An endpoint-level failure is a failure, not an empty answer. Taking
-        // the success path here extended coverage, which recorded these UPCs
-        // as fetched-and-empty and meant the tab never asked again — the
-        // catch below deliberately leaves coverage alone for exactly this
-        // reason, and `error !== 0` has to behave the same way.
-        if (ctx.fixes && j.error !== 0) {
+        const answer = answerOf(j);
+        // A failure is a failure, not an empty answer. Taking the success path
+        // here extended coverage, which recorded these UPCs as
+        // fetched-and-empty and meant the tab never asked again — the catch
+        // below deliberately leaves coverage alone for exactly this reason. No
+        // sales in the window is a real answer, though, and covers them.
+        if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Trend detection failed for these UPCs");
           return;
         }
-        const rows: UpcTrend[] = j.error === 0 && j.trends?.length > 0 ? j.trends : [];
+        const rows: UpcTrend[] = answer === "ok" && j.trends?.length > 0 ? j.trends : [];
         // j.top_5 / j.bottom_5 are dropped on the floor: they're the backend's
         // own cross-UPC rankings, and nothing in this page reads them — the
         // left list ranks by impact_units itself, so a stored ranking would
@@ -87,11 +95,12 @@ const TrendTab = () => {
         // Coverage is left alone, so revisiting the tab retries.
       } finally {
         dispatch(setDevTrendLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingKey]);
+  }, [ctx.activeTab, missingKey, retryTick]);
 
   // Parked with the Window input row below — re-enable together.
   // const handleWindowChange = (periods: number) => {

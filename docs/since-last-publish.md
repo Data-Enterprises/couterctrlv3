@@ -1055,3 +1055,23 @@ hold the group) and **Unassigned users**, each a list of username, first
 name, last name and email, alongside the assigned and unassigned stores it
 already offered. Tick any mix and they go into one file. It lists only people
 at or below your own level, the same people the Users tab shows you.
+
+## UPC List: tabs recover from a re-search, and no sales is an answer
+
+dev mode only
+
+**A search while a tab is loading no longer leaves it empty.** Pressing
+Search again while Sales Comp, Price Opt, Trend or Association was still
+loading cancelled the call, and if the search didn't change that tab's list of
+UPCs -- the same UPCs again, or only new ones added -- the tab never asked
+again: last year's figures stayed blank, or the tab read "No sales comparison
+data", until you left it and came back. A cancelled call now asks again on its
+own, for the search as it is.
+
+**UPCs with no sales are no longer treated as an error.** When the UPCs asked
+about sold nothing in the window, Sales Comp, Price Opt and Trend showed a "No
+data was returned." warning and asked again on every visit -- for a new item
+with no last year, that was the page's heaviest call every time you opened
+Sales Comp. No sales is now a real answer: the item shows no figures, and it
+isn't asked for again. A real failure still warns and retries on the next
+visit.

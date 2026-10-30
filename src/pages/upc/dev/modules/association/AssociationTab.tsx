@@ -15,6 +15,7 @@ import {
 } from "../../../../../features/dev/devUpcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
@@ -41,6 +42,7 @@ const AssociationTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
 
   const storeidsArr = useMemo(() => ctx.storeids.split(",").map(Number).filter(Boolean), [ctx.storeids]);
 
@@ -90,10 +92,15 @@ const AssociationTab = () => {
           storeidsArr, upcsToQuery, LIMIT, "top", signal,
         ),
       );
-      // Superseded by a newer search. Leaving seedLoaded alone matters here:
-      // marking it loaded would let the guard below skip the new run's fetch.
+      // Superseded by a newer search. The seed key was already moved to this
+      // seed set, so a seedLoaded left true by the previous seed would let the
+      // guard below take that seed's companions for this one and never ask.
+      // Marked unloaded instead, and looked at again against the search as it
+      // is now.
       if (!res) {
         dispatch(setDevAssociationSeedLoading(false));
+        dispatch(setDevAssociationSeedLoaded(false));
+        retry();
         return;
       }
       if (res.data.error === 0) {
@@ -142,7 +149,7 @@ const AssociationTab = () => {
     // ctx.searchVersion: a re-search with the exact same UPCs/store wouldn't
     // otherwise change buildSeedKey's output, so it's needed to force a
     // refetch the same way every other tab's initial-fetch effect does.
-  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion]);
+  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion, retryTick]);
 
   const rerootTo = async (upc: string) => {
     dispatch(setDevAssociationRerootUpc(upc));
