@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { UpcTrend } from "../../../../../interfaces";
 import { accelerationFactor, getTrendStatus, impactUnits, isDecline } from "./trendStats";
-import { getTrendInsight } from "./trendPhrase";
+import { getTrendInsight, hasAvailabilityFlag } from "./trendPhrase";
 import { trendRequest } from "./trendWindow";
 
 /** Verbatim from a live `marketing/trend_detector` answer: store 545,
@@ -191,6 +191,20 @@ describe("reduced availability", () => {
   it("describes the drop as a share of days", () => {
     const text = getTrendInsight(SHORT, "reduced-availability", true, window);
     expect(text).toContain("50% of days since, down from 94% before");
+  });
+});
+
+describe("the fewer-selling-days note", () => {
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+
+  it("doesn't fire for an item that sold nearly every day in both windows", () => {
+    // 73 of 90 against 15 of 16: the counts fell by 80%, the shares rose.
+    expect(hasAvailabilityFlag(BANANAS, window)).toBe(false);
+  });
+
+  it("fires when the share of days fell by more than half", () => {
+    const patchy = { ...BANANAS, active_days_after: 5 };
+    expect(hasAvailabilityFlag(patchy, window)).toBe(true);
   });
 });
 

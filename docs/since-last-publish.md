@@ -1144,3 +1144,10 @@ and that export was always empty. It now compares units per calendar day, so
 an item selling faster per selling day on half as many days is flagged, with
 roughly how many units the missing days cost. The sentence gives the days as
 shares ("sold on 50% of days since, down from 94% before").
+
+**No more false "selling days dropped sharply".** A declining item's sentence
+can add that it also sold on far fewer days. That compared raw day counts
+across two windows of very different lengths (73 days in 90 against 15 in 16),
+so an item selling nearly every day got the note. It now compares the share of
+days with a sale in each window, and flags only when that share fell by more
+than half ("sold on 30% of days since, down from 81% before").

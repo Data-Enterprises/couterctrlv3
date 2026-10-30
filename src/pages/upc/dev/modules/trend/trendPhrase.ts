@@ -40,8 +40,16 @@ export function getTrendPhrase(status: TrendStatus): TrendPhrase {
 // is genuinely losing demand too — checked independently of status so it can
 // flag on top of Declining/Accelerating, not just inside Reduced-
 // availability's own definition.
-export function hasAvailabilityFlag(t: UpcTrend): boolean {
-  return t.active_days_before > 0 && t.active_days_after / t.active_days_before < 0.5;
+//
+// Compared as shares of each window's days, not as counts: the windows are
+// 90 days and however long since the pivot, so 73 selling days before
+// against 15 since read as a sharp drop for an item that sold nearly every
+// day in both. Flags when the share since is under half the share before.
+export function hasAvailabilityFlag(t: UpcTrend, window: UpcTrendWindow | null): boolean {
+  if (!window || t.active_days_before <= 0) return false;
+  const before = t.active_days_before / window.beforeDays;
+  const after = t.active_days_after / window.afterDays;
+  return after / before < 0.5;
 }
 
 // Daily rates in this sentence use mean_before/mean_after (the item's own
@@ -61,8 +69,8 @@ export function getTrendInsight(
   const meanAfter = t.mean_after.toFixed(2);
   const meanBefore = t.mean_before.toFixed(2);
   const impact = Math.round(impactUnits(t, fixes, window));
-  const availabilityNote = hasAvailabilityFlag(t)
-    ? ` Active selling days also dropped sharply (${t.active_days_before} → ${t.active_days_after}), which may be an availability issue layered on top of the demand decline.`
+  const availabilityNote = window && hasAvailabilityFlag(t, window)
+    ? ` It also sold on far fewer days (${activeRatePct(t.active_days_after, window.afterDays)}% of days since, down from ${activeRatePct(t.active_days_before, window.beforeDays)}% before), which may be an availability issue layered on top of the demand decline.`
     : "";
 
   switch (status) {
