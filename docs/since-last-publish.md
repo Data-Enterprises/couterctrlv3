@@ -1093,3 +1093,9 @@ the answer away, so a store deactivated in the group since the first search
 kept being searched. If the group's stores have changed, the search now counts
 as a new one and every tab reloads for the current stores; if they haven't,
 adding UPCs still only fetches the new ones.
+
+**Two group searches can't finish out of order.** A group search waits while
+the group's stores are looked up. Pressing Search again during that wait could
+let the first search finish last and put its stores under the second one's
+header. The Search button now reads "Searching…" and is disabled during the
+lookup, and a lookup that returns after a newer search has started is ignored.

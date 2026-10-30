@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -49,6 +49,15 @@ const UpcList = () => {
   const toast = useToast();
   const searchState = useAppSelector((s) => s.search);
   const [reSearchOpen, setReSearchOpen] = useState(false);
+  /**
+   * Which search is the newest. A group search waits on the group's store
+   * lookup, and two pressed in quick succession could finish in either order:
+   * the older one landing last put its stores under the newer one's header.
+   * Each search takes a number, and one whose lookup returns after a newer
+   * search has started is dropped.
+   */
+  const searchSeq = useRef(0);
+  const [lookingUp, setLookingUp] = useState(false);
 
   useEffect(() => {
     if (!reSearchOpen) return;
@@ -96,6 +105,7 @@ const UpcList = () => {
       toast.warn("Add at least one UPC before running");
       return;
     }
+    const seq = ++searchSeq.current;
 
     // The live search, not ctx: ctx serves the tabs the search their data
     // answers, and this is the one place that has to read what is about to be
@@ -127,6 +137,9 @@ const UpcList = () => {
       // sends it back for the reduced set when the user next looks at it.
       upcQueue.startRun();
       dispatch(removeDevUpcs(removed));
+      // No lookup here, but an older search's may still be pending; it was
+      // just superseded and won't clear the busy state itself.
+      setLookingUp(false);
       setReSearchOpen(false);
       toast.success(
         `Removed ${removed.length} UPC${removed.length === 1 ? "" : "s"}`,
@@ -134,7 +147,12 @@ const UpcList = () => {
       return;
     }
 
+    setLookingUp(true);
     const storeids = await resolveStoreids();
+    // A newer search has started while this one looked its stores up: that
+    // one owns the page now, and its own lookup clears the busy state.
+    if (seq !== searchSeq.current) return;
+    setLookingUp(false);
     if (!storeids) return;
 
     setReSearchOpen(false);
@@ -196,7 +214,7 @@ const UpcList = () => {
   };
 
   if (!ctx.dataLoaded) {
-    return <UpcSearchCard onSearch={handleSearch} />;
+    return <UpcSearchCard onSearch={handleSearch} busy={lookingUp} />;
   }
 
   return (
@@ -218,6 +236,7 @@ const UpcList = () => {
             <UpcSearchCard
               onSearch={handleSearch}
               onClose={() => setReSearchOpen(false)}
+              busy={lookingUp}
             />
           </div>
         </div>

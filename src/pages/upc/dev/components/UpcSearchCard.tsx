@@ -23,6 +23,8 @@ interface Props {
    *  overlay untappable, since the wrapper covering the whole screen
    *  swallowed every backdrop click. In overlay mode the backdrop centers. */
   onClose?: () => void;
+  /** The search is looking up the group's stores. */
+  busy?: boolean;
 }
 
 const parseUpcs = (text: string): string[] =>
@@ -31,7 +33,7 @@ const parseUpcs = (text: string): string[] =>
     .map((u) => u.trim())
     .filter((u) => u.length > 0 && /^\d+$/.test(u));
 
-const UpcSearchCard = ({ onSearch, onClose }: Props) => {
+const UpcSearchCard = ({ onSearch, onClose, busy = false }: Props) => {
   const ctx = useUpcDevCtx();
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
@@ -195,9 +197,9 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
         <button
           onClick={onSearch}
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
-          disabled={!ctx.upcs.length || nothingPicked}
+          disabled={!ctx.upcs.length || nothingPicked || busy}
         >
-          {nothingPicked ? pickLabel : "Search"}
+          {nothingPicked ? pickLabel : busy ? "Searching…" : "Search"}
         </button>
 
       </div>
