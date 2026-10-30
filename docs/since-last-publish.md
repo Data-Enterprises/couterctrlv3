@@ -1086,3 +1086,10 @@ next tab you opened: it fetched the new dates for the old stores, Sales Comp's
 week figures moved to the new end date, and the header showed the new dates
 over the old data. The search is now kept as it was when you pressed Search,
 and the tabs and the header read that until you search again.
+
+**Adding UPCs to the same group picks up its current stores.** Searching the
+same group again with more UPCs looked the group's stores up and then threw
+the answer away, so a store deactivated in the group since the first search
+kept being searched. If the group's stores have changed, the search now counts
+as a new one and every tab reloads for the current stores; if they haven't,
+adding UPCs still only fetches the new ones.

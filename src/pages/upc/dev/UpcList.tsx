@@ -31,6 +31,18 @@ const buildScopeKey = (
   endDate: string,
 ) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
 
+/** Whether two comma-joined store lists hold the same stores, in any order. */
+const sameStores = (a: string, b: string) => {
+  const norm = (s: string) =>
+    s
+      .split(",")
+      .map(Number)
+      .filter((n) => Number.isFinite(n) && n > 0)
+      .sort((x, y) => x - y)
+      .join(",");
+  return norm(a) === norm(b);
+};
+
 const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -146,7 +158,13 @@ const UpcList = () => {
     //
     //  - Anything else (different store, different dates, first search): the
     //    loaded rows answer a different question, so everything goes.
-    const incremental = ctx.dataLoaded && scopeKey === ctx.searchedScopeKey;
+    //
+    // The same group can hold different stores than it did last time: one
+    // deactivated or added since. The scope key names the group, not its
+    // stores, so the stores just looked up are compared too; without that the
+    // new list was thrown away and every fetch kept asking for the old one.
+    const incremental =
+      ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && sameStores(storeids, ctx.storeids);
     if (incremental) {
       if (removed.length) dispatch(removeDevUpcs(removed));
     } else {
