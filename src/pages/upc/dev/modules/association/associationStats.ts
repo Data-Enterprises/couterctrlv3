@@ -1,4 +1,22 @@
-import type { AssociationItem } from "../../../../../features/dev/devUpcDevSlice";
+import type { AssociationItem, AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
+
+/** A seed set as one string: the UPCs sorted and joined, so the same set ticked
+ *  in a different order is the same key. */
+export const buildSeedKey = (upcs: string[]) => [...upcs].sort().join(",");
+
+/**
+ * The seed answer, if it is the answer for the UPCs ticked now; otherwise null.
+ *
+ * The answer stays in state while a new seed set loads, and after a failed
+ * load. Reading it without this check showed the previous seed's companions,
+ * KPIs and export under the new seed set's title.
+ */
+export const seedDataFor = (
+  selectedUpcs: string[],
+  data: AssociationResult | null,
+  dataKey: string,
+): AssociationResult | null =>
+  data && dataKey === buildSeedKey(selectedUpcs) ? data : null;
 
 // Seed items showing up in their own results isn't useful cross-merchandising
 // information the way it first seemed — it just re-lists what's already

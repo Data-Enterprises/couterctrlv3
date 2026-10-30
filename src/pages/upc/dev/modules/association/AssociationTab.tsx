@@ -5,7 +5,8 @@ import {
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
-  setDevAssociationSeedData,
+  setDevAssociationSeedResult,
+  clearDevAssociationSeedError,
   setDevAssociationRerootUpc,
   setDevAssociationRerootLoading,
   setDevAssociationRerootCacheEntry,
@@ -16,6 +17,8 @@ import {
 import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+import { failureReason } from "../../answer";
+import { buildSeedKey, seedDataFor } from "./associationStats";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
@@ -33,8 +36,6 @@ const fmtDate = (d: string) => {
   const [m, day, y] = d.split("/");
   return `${y}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
-
-const buildSeedKey = (upcs: string[]) => [...upcs].sort().join(",");
 
 type ContextMenuState = { x: number; y: number; upc: string };
 
@@ -84,6 +85,7 @@ const AssociationTab = () => {
   const seedUpcs = ctx.selectedUpcs;
 
   const fetchSeed = async (upcsToQuery: string[]) => {
+    const key = buildSeedKey(upcsToQuery);
     dispatch(setDevAssociationSeedLoading(true));
     try {
       const res = await upcQueue.enqueue(`assoc:seed:${buildSeedKey(upcsToQuery)}`, (signal) =>
@@ -103,16 +105,31 @@ const AssociationTab = () => {
         retry();
         return;
       }
+      // A failed answer is recorded as one, with its reason. It used to mark
+      // the seed loaded and leave the previous seed's companions in place,
+      // which then showed under this seed set's title with no retry.
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
-        dispatch(setDevAssociationSeedData({ totalBaskets: res.data.total_baskets, items }));
+        const result = { totalBaskets: res.data.total_baskets, items };
+        dispatch(setDevAssociationSeedResult({ key, result, error: null }));
+      } else {
+        const error = res.data.msg || "the association lookup failed";
+        dispatch(setDevAssociationSeedResult({ key, result: null, error }));
       }
       dispatch(setDevAssociationSeedLoading(false));
       dispatch(setDevAssociationSeedLoaded(true));
-    } catch {
+    } catch (err) {
+      dispatch(setDevAssociationSeedResult({ key, result: null, error: failureReason(err) }));
       dispatch(setDevAssociationSeedLoading(false));
       dispatch(setDevAssociationSeedLoaded(true));
     }
+  };
+
+  /** Ask again for the seed set that failed. */
+  const retrySeed = () => {
+    dispatch(clearDevAssociationSeedError());
+    dispatch(setDevAssociationSeedLoaded(false));
+    retry();
   };
 
   // Fetches whenever the effective seed set actually changes — content, not
@@ -198,7 +215,30 @@ const AssociationTab = () => {
     );
   }
 
-  if (ctx.associationSeedLoading && !ctx.associationSeedLoaded) {
+  if (ctx.associationSeedError && ctx.associationSeedKey === seedKey) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 h-full text-[11px] text-content/85">
+        <span>Associations didn't load: {ctx.associationSeedError}.</span>
+        <button
+          type="button"
+          onClick={retrySeed}
+          className="text-[12px] font-semibold text-brand_navy_hover underline underline-offset-2"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Only the answer for the UPCs ticked now. Between ticking a new set and its
+  // answer landing -- the debounce, then the call -- the previous set's
+  // companions are not this set's, so the tab says it's loading instead.
+  const seedData = seedDataFor(
+    ctx.selectedUpcs,
+    ctx.associationSeedData,
+    ctx.associationSeedDataKey,
+  );
+  if (!seedData) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         Loading associations…
@@ -206,22 +246,14 @@ const AssociationTab = () => {
     );
   }
 
-  if (!ctx.associationSeedLoaded || !ctx.associationSeedData) {
-    return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
-        Navigate here to load associations
-      </div>
-    );
-  }
-
   const rerootUpc = ctx.associationRerootUpc;
   const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
 
-  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : ctx.associationSeedData;
+  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : seedData;
 
   const allVisibleUpcs = [
     ...ctx.searchedUpcs,
-    ...(ctx.associationSeedData?.items.map((i) => i.product_code) ?? []),
+    ...seedData.items.map((i) => i.product_code),
   ];
 
   return (
@@ -245,7 +277,7 @@ const AssociationTab = () => {
           title={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : `${seedUpcs.length} seed items`}
           isReroot={Boolean(rerootUpc)}
           rerootUpc={rerootUpc}
-          prevTotalBaskets={rerootUpc ? ctx.associationSeedData?.totalBaskets : undefined}
+          prevTotalBaskets={rerootUpc ? seedData.totalBaskets : undefined}
           onReroot={rerootTo}
           onContextMenu={openContextMenu}
         />

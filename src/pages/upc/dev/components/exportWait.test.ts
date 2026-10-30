@@ -12,8 +12,8 @@ const base: ExportWaitInput = {
   priceOptCoverage: ["4011", "4046"],
   trendCoverage: ["4011", "4046"],
   movementCoverage: ["4011", "4046"],
-  associationSeedLoaded: true,
-  associationSeedLoading: false,
+  associationSeedReady: true,
+  associationSeedError: null,
   associationRerootUpc: null,
   associationRerootLoaded: false,
 };
@@ -66,5 +66,18 @@ describe("exportWaitReason", () => {
         associationRerootLoaded: true,
       }),
     ).toBeNull();
+  });
+});
+
+describe("exportWaitReason for a seed that failed", () => {
+  it("says why instead of waiting", () => {
+    expect(
+      exportWaitReason({
+        ...base,
+        tab: "association",
+        associationSeedReady: false,
+        associationSeedError: "error 500",
+      }),
+    ).toBe("Associations didn't load: error 500.");
   });
 });

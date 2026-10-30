@@ -178,6 +178,10 @@ interface UpcDevState {
   associationSeedLoaded: boolean;
   associationSeedLoading: boolean;
   associationSeedData: AssociationResult | null;
+  /** The seed key `associationSeedData` answers. See seedDataFor. */
+  associationSeedDataKey: string;
+  /** Why the last seed load failed, for the seed set in associationSeedKey. */
+  associationSeedError: string | null;
   associationRerootUpc: string | null;
   associationRerootCache: Record<string, AssociationResult>;
   associationRerootLoading: boolean;
@@ -259,6 +263,8 @@ const initialState: UpcDevState = {
   associationSeedLoaded: false,
   associationSeedLoading: false,
   associationSeedData: null,
+  associationSeedDataKey: "",
+  associationSeedError: null,
   associationRerootUpc: null,
   associationRerootCache: {},
   associationRerootLoading: false,
@@ -432,8 +438,18 @@ const upcDevSlice = createSlice({
     setDevAssociationSeedLoading(state, action: PayloadAction<boolean>) {
       state.associationSeedLoading = action.payload;
     },
-    setDevAssociationSeedData(state, action: PayloadAction<AssociationResult | null>) {
-      state.associationSeedData = action.payload;
+    /** A finished seed load: its answer for `key`, or why it failed. A failure
+     *  clears the previous answer rather than leaving it under the new key. */
+    setDevAssociationSeedResult(
+      state,
+      action: PayloadAction<{ key: string; result: AssociationResult | null; error: string | null }>,
+    ) {
+      state.associationSeedData = action.payload.result;
+      state.associationSeedDataKey = action.payload.result ? action.payload.key : "";
+      state.associationSeedError = action.payload.error;
+    },
+    clearDevAssociationSeedError(state) {
+      state.associationSeedError = null;
     },
     setDevAssociationRerootUpc(state, action: PayloadAction<string | null>) {
       state.associationRerootUpc = action.payload;
@@ -455,6 +471,8 @@ const upcDevSlice = createSlice({
       state.associationSeedLoaded = false;
       state.associationSeedLoading = false;
       state.associationSeedData = null;
+      state.associationSeedDataKey = "";
+      state.associationSeedError = null;
       state.associationRerootUpc = null;
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
@@ -552,6 +570,8 @@ const upcDevSlice = createSlice({
         state.associationSeedKey = "";
         state.associationSeedLoaded = false;
         state.associationSeedData = null;
+        state.associationSeedDataKey = "";
+        state.associationSeedError = null;
         state.associationRerootUpc = null;
         state.associationRerootCache = {};
       }
@@ -595,6 +615,8 @@ const upcDevSlice = createSlice({
       state.associationSeedLoaded = false;
       state.associationSeedLoading = false;
       state.associationSeedData = null;
+      state.associationSeedDataKey = "";
+      state.associationSeedError = null;
       state.associationRerootUpc = null;
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
@@ -644,7 +666,8 @@ export const {
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
-  setDevAssociationSeedData,
+  setDevAssociationSeedResult,
+  clearDevAssociationSeedError,
   setDevAssociationRerootUpc,
   setDevAssociationRerootLoading,
   setDevAssociationRerootCacheEntry,

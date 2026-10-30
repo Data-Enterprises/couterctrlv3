@@ -11,6 +11,7 @@ import { movementCsv, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
 import { exportWaitReason } from "./exportWait";
 import {
+  seedDataFor,
   getDisplayItems,
   getDepartmentBreakdown,
   getQueryDepartments,
@@ -98,6 +99,12 @@ const UpcExportModal = ({ onClose }: Props) => {
    *  UPCs" with none ticked downloaded all of them. */
   const isSelected = (pc: string) => ctx.selectedUpcs.includes(pc);
   const nothingSelected = ctx.selectedUpcs.length === 0;
+  // The seed answer only if it is for the UPCs ticked now: see seedDataFor.
+  const seedData = seedDataFor(
+    ctx.selectedUpcs,
+    ctx.associationSeedData,
+    ctx.associationSeedDataKey,
+  );
 
   const waitReason = exportWaitReason({
     tab: ctx.activeTab,
@@ -110,8 +117,8 @@ const UpcExportModal = ({ onClose }: Props) => {
     priceOptCoverage: ctx.priceOptCoverage,
     trendCoverage: ctx.trendCoverage,
     movementCoverage: ctx.movementCoverage,
-    associationSeedLoaded: ctx.associationSeedLoaded,
-    associationSeedLoading: ctx.associationSeedLoading,
+    associationSeedReady: seedData !== null,
+    associationSeedError: ctx.associationSeedError,
     associationRerootUpc: ctx.associationRerootUpc,
     associationRerootLoaded: Boolean(
       ctx.associationRerootUpc && ctx.associationRerootCache[ctx.associationRerootUpc],
@@ -237,9 +244,9 @@ const UpcExportModal = ({ onClose }: Props) => {
         // reroot state, matching the left panel's own persistent list.
         const rerootUpc = ctx.associationRerootUpc;
         const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
-        const activeResult = rerootUpc ? rerootResult : ctx.associationSeedData;
+        const activeResult = rerootUpc ? rerootResult : seedData;
         const activeItems = activeResult ? getDisplayItems(activeResult.items, rerootUpc) : [];
-        const seedItems = (ctx.associationSeedData?.items ?? []).filter((i) => i.is_seed);
+        const seedItems = (seedData?.items ?? []).filter((i) => i.is_seed);
         const rerootTargetItem = rerootUpc ? rerootResult?.items.find((i) => i.is_seed) : undefined;
 
         const itemFields = (item: AssociationItem) => [

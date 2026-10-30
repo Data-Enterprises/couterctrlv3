@@ -14,8 +14,9 @@ export interface ExportWaitInput {
   priceOptCoverage: string[];
   trendCoverage: string[];
   movementCoverage: string[];
-  associationSeedLoaded: boolean;
-  associationSeedLoading: boolean;
+  /** The seed answer on hand is for the UPCs ticked now. */
+  associationSeedReady: boolean;
+  associationSeedError: string | null;
   associationRerootUpc: string | null;
   associationRerootLoaded: boolean;
 }
@@ -63,9 +64,8 @@ export const exportWaitReason = (p: ExportWaitInput): string | null => {
       return unloaded(inFile(false), p.trendCoverage, "Trend");
     case "association":
       if (nothingSelected) return "No UPCs selected.";
-      if (!p.associationSeedLoaded || p.associationSeedLoading) {
-        return `Associations are still loading.${READY}`;
-      }
+      if (p.associationSeedError) return `Associations didn't load: ${p.associationSeedError}.`;
+      if (!p.associationSeedReady) return `Associations are still loading.${READY}`;
       if (p.associationRerootUpc && !p.associationRerootLoaded) {
         return `Associations for ${p.associationRerootUpc} are still loading.${READY}`;
       }

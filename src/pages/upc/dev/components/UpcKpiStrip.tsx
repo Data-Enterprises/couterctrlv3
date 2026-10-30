@@ -4,6 +4,7 @@ import { getForecastKpis } from "../modules/forecast/ForecastKpis";
 import { getPriceOptKpis } from "../modules/priceOpt/PriceOptKpis";
 import { getTrendKpis } from "../modules/trend/TrendKpis";
 import { getAssociationKpis } from "../modules/association/AssociationKpis";
+import { seedDataFor } from "../modules/association/associationStats";
 import { getMovementKpis } from "../modules/movement/MovementKpis";
 import { movementGrid, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
@@ -49,7 +50,7 @@ const UpcKpiStrip = () => {
         return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs, ctx.fixes, ctx.trendWindow);
       case "association":
         return getAssociationKpis(
-          ctx.associationSeedData,
+          seedDataFor(ctx.selectedUpcs, ctx.associationSeedData, ctx.associationSeedDataKey),
           ctx.associationRerootUpc,
           ctx.associationRerootUpc ? ctx.associationRerootCache[ctx.associationRerootUpc] ?? null : null,
         );

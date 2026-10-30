@@ -1151,3 +1151,16 @@ across two windows of very different lengths (73 days in 90 against 15 in 16),
 so an item selling nearly every day got the note. It now compares the share of
 days with a sale in each window, and flags only when that share fell by more
 than half ("sold on 30% of days since, down from 81% before").
+
+## UPC List: batch 3 fixes (Association)
+
+dev mode only
+
+**Association never shows one seed's companions under another's name.** When
+you ticked a different set of UPCs, the tab kept showing the previous set's
+companions, KPIs and export, titled as the new set, until the new answer
+landed. If that answer failed, the old companions stayed for good, or the tab
+sat on "Navigate here to load associations" with no way to retry. Now the
+tab says "Loading associations…" until the answer for the ticked UPCs arrives,
+and a failed load shows the reason with a Try again button. The KPI strip and
+the export follow the same rule.
