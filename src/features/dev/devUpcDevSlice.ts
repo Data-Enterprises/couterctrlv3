@@ -454,6 +454,12 @@ const upcDevSlice = createSlice({
     setDevAssociationRerootUpc(state, action: PayloadAction<string | null>) {
       state.associationRerootUpc = action.payload;
     },
+    /** Back to the seed view, but only if `upc` is still the item on screen:
+     *  a re-root that failed or was cancelled may have been overtaken by
+     *  another one, which keeps its place. */
+    dropDevAssociationReroot(state, action: PayloadAction<string>) {
+      if (state.associationRerootUpc === action.payload) state.associationRerootUpc = null;
+    },
     setDevAssociationRerootLoading(state, action: PayloadAction<boolean>) {
       state.associationRerootLoading = action.payload;
     },
@@ -670,6 +676,7 @@ export const {
   clearDevAssociationSeedError,
   setDevAssociationRerootUpc,
   setDevAssociationRerootLoading,
+  dropDevAssociationReroot,
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   resetDevAssociations,

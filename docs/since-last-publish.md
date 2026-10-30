@@ -1164,3 +1164,11 @@ sat on "Navigate here to load associations" with no way to retry. Now the
 tab says "Loading associations…" until the answer for the ticked UPCs arrives,
 and a failed load shows the reason with a Try again button. The KPI strip and
 the export follow the same rule.
+
+**Looking up a companion's own associations no longer claims "No
+associations found" by mistake.** Clicking one companion and then another
+could show "No associations found" for the second while it was still
+loading, and a lookup cut short by a new search or a server error showed it
+for good. Now the tab says "Loading …'s associations" until that item's answer
+arrives. If it can't load, the tab goes back to the seed view with a line
+saying which item failed and why, which you can dismiss.

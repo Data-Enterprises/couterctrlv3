@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
   clearDevUpcData,
+  dropDevAssociationReroot,
+  setDevAssociationRerootUpc,
   setDevAssociationSeedResult,
   setDevSearchSnapshot,
   type UpcSearchedScope,
@@ -60,6 +62,21 @@ describe("the association seed answer", () => {
     );
     expect(state.associationSeedData).toBeNull();
     expect(state.associationSeedError).toBe("error 500");
+  });
+});
+
+describe("dropping a re-root that didn't load", () => {
+  it("goes back to the seed view", () => {
+    let state = reducer(undefined, setDevAssociationRerootUpc("4011"));
+    state = reducer(state, dropDevAssociationReroot("4011"));
+    expect(state.associationRerootUpc).toBeNull();
+  });
+
+  it("leaves a newer re-root alone", () => {
+    // X failed after the user had already moved on to Y.
+    let state = reducer(undefined, setDevAssociationRerootUpc("4046"));
+    state = reducer(state, dropDevAssociationReroot("4011"));
+    expect(state.associationRerootUpc).toBe("4046");
   });
 });
 
