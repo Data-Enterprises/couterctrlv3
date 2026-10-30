@@ -61,6 +61,17 @@ export type UpcSearchedScope = {
   selectedGroup: Group;
 };
 
+/** The before and after windows a Trend answer describes, as asked for; see
+ *  trendRequest in modules/trend/trendWindow. Kept with the rows, not in the
+ *  tab, so coming back to the page doesn't lose them. */
+export type UpcTrendWindow = {
+  /** The search's start date, m/d/yyyy: where before ends and after begins. */
+  pivot: string;
+  beforeDays: number;
+  /** From the pivot through the day before the call. */
+  afterDays: number;
+};
+
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
 
@@ -158,6 +169,7 @@ interface UpcDevState {
   trendCoverage: string[];
   trendLoading: boolean;
   upcTrends: UpcTrend[];
+  trendWindow: UpcTrendWindow | null;
   // Association — one re-rootable panel over the seed UPC set (upcs/
   // selectedUpcs), keyed on the seed set itself so revisiting a re-rooted
   // item under an unchanged seed set never refetches. associationSeedKey is
@@ -241,6 +253,7 @@ const initialState: UpcDevState = {
   trendCoverage: [],
   trendLoading: false,
   upcTrends: [],
+  trendWindow: null,
   // Association
   associationSeedKey: "",
   associationSeedLoaded: false,
@@ -401,6 +414,9 @@ const upcDevSlice = createSlice({
     // Trend
     setDevTrendLoading(state, action: PayloadAction<boolean>) {
       state.trendLoading = action.payload;
+    },
+    setDevTrendWindow(state, action: PayloadAction<UpcTrendWindow>) {
+      state.trendWindow = action.payload;
     },
     mergeDevTrends(state, action: PayloadAction<MergePayload<UpcTrend>>) {
       state.upcTrends = mergeRows(state.upcTrends, action.payload);
@@ -574,6 +590,7 @@ const upcDevSlice = createSlice({
       state.trendCoverage = [];
       state.trendLoading = false;
       state.upcTrends = [];
+      state.trendWindow = null;
       state.associationSeedKey = "";
       state.associationSeedLoaded = false;
       state.associationSeedLoading = false;
@@ -619,6 +636,7 @@ export const {
   mergeDevPriceOpt,
   setDevTrendLoading,
   mergeDevTrends,
+  setDevTrendWindow,
   setDevMovementWeeks,
   setDevMovementLoading,
   setDevMovementSelected,

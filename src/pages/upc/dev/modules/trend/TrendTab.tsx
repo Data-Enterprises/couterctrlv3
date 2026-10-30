@@ -6,6 +6,7 @@ import {
   setDevTrendLoading,
   // setDevTrendPeriods, // parked with the Window input row — re-enable together
   mergeDevTrends,
+  setDevTrendWindow,
   setDevUpcItems,
 } from "../../../../../features/dev/devUpcDevSlice";
 import { getTrendDetect } from "../../../../../api/upc";
@@ -15,6 +16,7 @@ import { answerOf } from "../../answer";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import type { UpcTrend } from "../../../../../interfaces";
 import { getTrendStatus, impactUnits } from "./trendStats";
+import { trendRequest } from "./trendWindow";
 import TrendLeftList from "./TrendLeftList";
 import TrendDetailPanel from "./TrendDetailPanel";
 
@@ -27,12 +29,6 @@ const TrendTab = () => {
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [retryTick, retry] = useAbandonedRetry();
-  // Echoed back once per fetch — the actual pivot the backend split
-  // before/after on, needed to compute window lengths.
-  const [trendStartDate, setTrendStartDate] = useState<string | null>(null);
-  // The window's far end, also echoed back. The after window is the searched
-  // range, not "startdate through today" — see getWindowDays.
-  const [trendEndDate, setTrendEndDate] = useState<string | null>(null);
 
   // searchedUpcs, not upcs: `upcs` is the search card's working list and
   // changes live as the user edits chips in the re-search popup, which would
@@ -47,14 +43,19 @@ const TrendTab = () => {
     if (ctx.activeTab !== "trend") return;
     if (ctx.trendLoading || !ctx.storeids || !missingKey) return;
 
+    // `trendPeriods` is the baseline: how many days before the start date to
+    // compare against. What goes out is that plus the days since the start
+    // date, because the endpoint counts its window back from today.
+    const { periods, window } = trendRequest(ctx.startDate, ctx.trendPeriods);
+
     const load = async () => {
       dispatch(setDevTrendLoading(true));
       let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`trend:${ctx.trendPeriods}:${missingKey}`, (signal) =>
+        const res = await upcQueue.enqueue(`trend:${periods}:${missingKey}`, (signal) =>
           getTrendDetect(
             ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate,
-            ctx.trendPeriods, missingKey, signal,
+            periods, missingKey, signal,
           ),
         );
         // Superseded by a newer search — see the same guard in PriceOptTab.
@@ -81,10 +82,7 @@ const TrendTab = () => {
         // only be one more thing to keep true as UPCs are added and removed.
         // They'd also be wrong under delta fetching, being a ranking of
         // whatever subset that one call happened to ask about.
-        if (rows.length) {
-          setTrendStartDate(j.startdate);
-          setTrendEndDate(j.end_date ?? null);
-        }
+        dispatch(setDevTrendWindow(window));
         dispatch(mergeDevTrends({ rows, codes: missing }));
         dispatch(
           setDevUpcItems(
@@ -184,9 +182,7 @@ const TrendTab = () => {
           <TrendDetailPanel
             trend={selected.t}
             status={selected.status}
-            periods={ctx.trendPeriods}
-            trendStartDate={trendStartDate}
-            trendEndDate={trendEndDate}
+            window={ctx.trendWindow}
             fixes={ctx.fixes}
           />
         )}

@@ -1113,3 +1113,18 @@ would hold, with a line saying what it's waiting for ("Sales Comp hasn't loaded
 for 3 UPCs yet."). Sales Comp's summary also waits for last year to finish.
 Trend and Association, which only export ticked UPCs, say "No UPCs selected."
 when nothing is ticked.
+
+## UPC List: batch 2 fixes (Trend)
+
+dev mode only
+
+**Trend compares against the 90 days before your start date.** Trend's data
+runs from the start date to today, whatever the end date says, and compares it
+with what came before. It used to ask for a flat 90 days ending today, so a
+recent search compared against whatever was left of those 90 days, and a
+search starting more than 90 days ago had no "before" at all: every item read
+"New since pivot". It now always gets the full 90 days before the start date.
+The "Since pivot" tile shows the real length of the window, labelled "from 8/1,
+to date", so the active rates and the small-sample note are measured against
+the right number of days. The window is also kept with the Trend data, so
+leaving the page and coming back no longer shows "Since pivot 0d" or "NaN%".

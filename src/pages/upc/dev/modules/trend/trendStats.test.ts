@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { UpcTrend } from "../../../../../interfaces";
 import { accelerationFactor, getTrendStatus, impactUnits } from "./trendStats";
-import { getWindowDays } from "./trendWindow";
+import { trendRequest } from "./trendWindow";
 
 /** Verbatim from a live `marketing/trend_detector` answer: store 545,
  *  9/1/2026 - 9/16/2026, periods 90. Both rows are real, and between them they
@@ -104,28 +104,30 @@ describe("acceleration factor", () => {
   });
 });
 
-describe("window days", () => {
-  it("takes the after window from the response's own two ends", () => {
-    // 9/1 - 9/16 inclusive. Bananas sold on 15 of them, which is what makes
-    // 16 the only divisor an active rate of <= 100% can come from.
-    const { afterWindowDays } = getWindowDays(
-      "2026-09-01T00:00:00",
-      "2026-09-16T00:00:00",
-      90,
-      true,
-    );
-    expect(afterWindowDays).toBe(16);
-    expect(BANANAS.active_days_after).toBeLessThanOrEqual(afterWindowDays);
+describe("trend window", () => {
+  // Read on 9/17, the day after the live answer above was taken.
+  const sept17 = new Date(2026, 8, 17, 15, 30);
+
+  it("asks for the days since the start date plus the baseline", () => {
+    // The endpoint counts back from today, so 90 alone would leave 74 days
+    // of "before" for a 9/1 search read on 9/17.
+    const { periods, window } = trendRequest("9/1/2026", 90, sept17);
+    expect(periods).toBe(106);
+    expect(window.beforeDays).toBe(90);
   });
 
-  it("falls back to measuring against today when the fixes are off", () => {
-    // A pivot a decade back: the end date says 16 days, "today" says
-    // thousands, so the two paths can't be confused whatever day this runs.
-    const { afterWindowDays } = getWindowDays(
-      "2016-09-01T00:00:00",
-      "2016-09-16T00:00:00",
-      90,
-    );
-    expect(afterWindowDays).toBeGreaterThan(1000);
+  it("counts the after window from the start date through yesterday", () => {
+    // 9/1 - 9/16: bananas sold on 15 of those 16 days.
+    const { window } = trendRequest("9/1/2026", 90, sept17);
+    expect(window.afterDays).toBe(16);
+    expect(BANANAS.active_days_after).toBeLessThanOrEqual(window.afterDays);
+  });
+
+  it("keeps a full baseline however old the search is", () => {
+    // A start date 200 days back used to leave no "before" at all.
+    const { periods, window } = trendRequest("3/1/2026", 90, sept17);
+    expect(window.afterDays).toBe(200);
+    expect(periods).toBe(290);
+    expect(window.beforeDays).toBe(90);
   });
 });
