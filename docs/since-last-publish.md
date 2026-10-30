@@ -1128,3 +1128,10 @@ The "Since pivot" tile shows the real length of the window, labelled "from 8/1,
 to date", so the active rates and the small-sample note are measured against
 the right number of days. The window is also kept with the Trend data, so
 leaving the page and coming back no longer shows "Since pivot 0d" or "NaN%".
+
+**An item that stopped selling says so.** An item that sold before the start
+date and not once since was labelled Growing, in green, with "Sales are up
+-100.0%". It now reads **Stopped selling**, in red, with how much it sold a day
+before and roughly how many units it would have sold since at that pace. It
+counts toward "Declining items" (the tile says "incl. 2 stopped selling") and
+goes in the Declining export.

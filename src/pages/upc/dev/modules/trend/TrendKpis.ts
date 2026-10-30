@@ -1,11 +1,13 @@
 import type { UpcTrend } from "../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 import type { KpiCell } from "../../types";
-import { getTrendStatus, impactUnits } from "./trendStats";
+import { getTrendStatus, impactUnits, isDecline } from "./trendStats";
 
 export function getTrendKpis(
   upcTrends: UpcTrend[],
   selectedUpcs: string[],
   fixes = false,
+  window: UpcTrendWindow | null = null,
 ): KpiCell[] {
   const filtered =
     selectedUpcs.length > 0
@@ -16,17 +18,19 @@ export function getTrendKpis(
   let acceleratingCount = 0;
   let reducedAvailabilityCount = 0;
   let newCount = 0;
+  let stoppedCount = 0;
   let totalUnitsLost = 0;
   let mostImpacted: { desc: string; units: number } | null = null;
 
   for (const t of filtered) {
-    const status = getTrendStatus(t, fixes);
-    if (status === "declining" || status === "accelerating") decliningCount++;
+    const status = getTrendStatus(t, fixes, window);
+    if (isDecline(status)) decliningCount++;
+    if (status === "stopped") stoppedCount++;
     if (status === "accelerating") acceleratingCount++;
     if (status === "reduced-availability") reducedAvailabilityCount++;
     if (status === "new") newCount++;
 
-    const impact = impactUnits(t, fixes);
+    const impact = impactUnits(t, fixes, window);
     if (impact < 0) {
       totalUnitsLost += impact;
       if (!mostImpacted || impact < mostImpacted.units) {
@@ -38,7 +42,12 @@ export function getTrendKpis(
   const fmt = (units: number) => Math.round(units).toLocaleString();
 
   return [
-    { label: "Declining items", value: `${decliningCount} of ${filtered.length}`, sub: "vs period avg", variant: decliningCount > 0 ? "down" : undefined },
+    {
+      label: "Declining items",
+      value: `${decliningCount} of ${filtered.length}`,
+      sub: stoppedCount > 0 ? `incl. ${stoppedCount} stopped selling` : "vs period avg",
+      variant: decliningCount > 0 ? "down" : undefined,
+    },
     {
       label: "Total units lost",
       value: totalUnitsLost < 0 ? fmt(totalUnitsLost) : "—",

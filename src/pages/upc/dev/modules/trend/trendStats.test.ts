@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { UpcTrend } from "../../../../../interfaces";
-import { accelerationFactor, getTrendStatus, impactUnits } from "./trendStats";
+import { accelerationFactor, getTrendStatus, impactUnits, isDecline } from "./trendStats";
+import { getTrendInsight } from "./trendPhrase";
 import { trendRequest } from "./trendWindow";
 
 /** Verbatim from a live `marketing/trend_detector` answer: store 545,
@@ -129,5 +130,35 @@ describe("trend window", () => {
     expect(window.afterDays).toBe(200);
     expect(periods).toBe(290);
     expect(window.beforeDays).toBe(90);
+  });
+});
+
+describe("an item that stopped selling", () => {
+  // Bananas' before half, and not a sale since.
+  const STOPPED: UpcTrend = {
+    ...BANANAS,
+    slope_after: 0,
+    mean_after: 0,
+    pct_change_mean: -100,
+    total_after: 0,
+    active_days_after: 0,
+  };
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+
+  it("is Stopped selling, not Growing", () => {
+    // The old formula gave (0 - 112.72) x 0 = 0, and 0 counted as growing.
+    expect(getTrendStatus(STOPPED, true, window)).toBe("stopped");
+    expect(isDecline("stopped")).toBe(true);
+  });
+
+  it("lost what it would have sold at its old pace", () => {
+    // 8228.4 units over 90 days, for 16 days: about 1,463 not sold.
+    expect(Math.round(impactUnits(STOPPED, true, window))).toBe(-1463);
+  });
+
+  it("says so in plain words", () => {
+    const text = getTrendInsight(STOPPED, "stopped", true, window);
+    expect(text).toContain("nothing since 9/1");
+    expect(text).toContain("1,463 units not sold");
   });
 });

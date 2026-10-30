@@ -4,7 +4,7 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/dev/devUpcDevSlice";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
-import { getTrendStatus, impactUnits } from "../modules/trend/trendStats";
+import { getTrendStatus, impactUnits, isDecline } from "../modules/trend/trendStats";
 import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
 import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
 import { movementCsv, movementStores } from "../modules/movement/movementStats";
@@ -197,12 +197,12 @@ const UpcExportModal = ({ onClose }: Props) => {
         const src = ctx.upcTrends.filter((t) => {
           if (!isSelected(t.product_code)) return false;
           if (sel === "all") return true;
-          const status = getTrendStatus(t, ctx.fixes);
-          if (sel === "declining") return status === "declining" || status === "accelerating";
+          const status = getTrendStatus(t, ctx.fixes, ctx.trendWindow);
+          if (sel === "declining") return isDecline(status);
           return status === sel;
         });
         const headers = ["UPC", "Description", "Status", "Slope Before", "Slope After", "Slope Change", "Confidence", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
-        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes))) : String(t.impact_units)]);
+        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes, ctx.trendWindow), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes, ctx.trendWindow))) : String(t.impact_units)]);
         download(toBlobCsv(headers, rows), `trends_${sel}.csv`);
         break;
       }

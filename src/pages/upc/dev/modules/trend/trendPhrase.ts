@@ -1,4 +1,5 @@
 import type { UpcTrend } from "../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 import { accelerationFactor, impactUnits, type TrendStatus } from "./trendStats";
 
 export type TrendTone = "up" | "down" | "flat" | "muted";
@@ -16,6 +17,7 @@ const STATUS_LABEL: Record<TrendStatus, string> = {
   growing: "Growing",
   declining: "Declining",
   accelerating: "Accelerating",
+  stopped: "Stopped selling",
   "reduced-availability": "Reduced availability",
   new: "New since pivot",
 };
@@ -24,6 +26,7 @@ const STATUS_TONE: Record<TrendStatus, TrendTone> = {
   growing: "up",
   declining: "down",
   accelerating: "down",
+  stopped: "down",
   "reduced-availability": "flat",
   new: "muted",
 };
@@ -46,12 +49,17 @@ export function hasAvailabilityFlag(t: UpcTrend): boolean {
 // plugging it into a "declining at X units/day" sentence describes the wrong
 // quantity. The server's own plain-language tooltip field uses the same
 // mean-based phrasing, which is what confirmed this.
-export function getTrendInsight(t: UpcTrend, status: TrendStatus, fixes = false): string {
+export function getTrendInsight(
+  t: UpcTrend,
+  status: TrendStatus,
+  fixes = false,
+  window: UpcTrendWindow | null = null,
+): string {
   const confidencePct = Math.round(t["r2-after"] * 100);
   const reliability = t["r2-after"] >= 0.5 ? "fairly consistent" : "not very consistent";
   const meanAfter = t.mean_after.toFixed(2);
   const meanBefore = t.mean_before.toFixed(2);
-  const impact = Math.round(impactUnits(t, fixes));
+  const impact = Math.round(impactUnits(t, fixes, window));
   const availabilityNote = hasAvailabilityFlag(t)
     ? ` Active selling days also dropped sharply (${t.active_days_before} → ${t.active_days_after}), which may be an availability issue layered on top of the demand decline.`
     : "";
@@ -62,6 +70,11 @@ export function getTrendInsight(t: UpcTrend, status: TrendStatus, fixes = false)
       return `Sales declining at ${meanAfter} units/day, down from ${meanBefore} before — the decline has accelerated${
         factor !== null ? ` roughly ${factor.toFixed(1)}×` : ""
       } and is ${reliability} (${confidencePct}% confidence).${availabilityNote}`;
+    }
+    case "stopped": {
+      const since = window ? ` since ${window.pivot.split("/").slice(0, 2).join("/")}` : " since";
+      const lost = impact < 0 ? ` At its old pace that's about ${Math.abs(impact).toLocaleString()} units not sold.` : "";
+      return `Sold ${meanBefore} units a day on ${t.active_days_before} selling days before, and nothing${since}.${lost}`;
     }
     case "declining":
       return `Sales declining at ${meanAfter} units/day, down from ${meanBefore} before — the pace of decline isn't speeding up, and is ${reliability} (${confidencePct}% confidence).${availabilityNote}`;

@@ -1,4 +1,5 @@
 import type { UpcTrend } from "../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 import { impactUnits, type TrendStatus } from "./trendStats";
 import { getTrendPhrase, type TrendTone } from "./trendPhrase";
 
@@ -7,6 +8,7 @@ interface Props {
   selectedCode: string | null;
   onSelect: (code: string) => void;
   fixes: boolean;
+  window: UpcTrendWindow | null;
 }
 
 const TONE_TEXT: Record<TrendTone, string> = {
@@ -20,12 +22,12 @@ const TONE_TEXT: Record<TrendTone, string> = {
 // unit, matching the aggregate KPI strip above it. Phrase is just the
 // status label itself; no synthesis needed here the way Sales Comp/Price
 // Opt required.
-const TrendLeftList = ({ rows, selectedCode, onSelect, fixes }: Props) => {
+const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: Props) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
       {rows.map(({ t, status }) => {
         const phrase = getTrendPhrase(status);
-        const impact = Math.round(impactUnits(t, fixes));
+        const impact = Math.round(impactUnits(t, fixes, window));
         // Nothing to compare against, so no arrow and no colour — a green
         // zero read as a verdict on an item that simply has no before.
         const noBaseline = status === "new";

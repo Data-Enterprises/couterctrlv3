@@ -112,11 +112,15 @@ const TrendTab = () => {
         ? ctx.upcTrends.filter((t) => ctx.selectedUpcs.includes(t.product_code))
         : ctx.upcTrends;
     return [...src]
-      .map((t) => ({ t, status: getTrendStatus(t, ctx.fixes) }))
+      .map((t) => ({ t, status: getTrendStatus(t, ctx.fixes, ctx.trendWindow) }))
       // Worst first. Ranked on the same figure the rows print, so the order
       // can be read off them.
-      .sort((a, b) => impactUnits(a.t, ctx.fixes) - impactUnits(b.t, ctx.fixes));
-  }, [ctx.upcTrends, ctx.selectedUpcs, ctx.fixes]);
+      .sort(
+        (a, b) =>
+          impactUnits(a.t, ctx.fixes, ctx.trendWindow) -
+          impactUnits(b.t, ctx.fixes, ctx.trendWindow),
+      );
+  }, [ctx.upcTrends, ctx.selectedUpcs, ctx.fixes, ctx.trendWindow]);
 
   // Keep the detail panel pointed at a valid item — same pattern as Sales
   // Comp/Price Opt: default to the first row, re-pick if the current
@@ -177,6 +181,7 @@ const TrendTab = () => {
           selectedCode={selectedCode}
           onSelect={setSelectedCode}
           fixes={ctx.fixes}
+          window={ctx.trendWindow}
         />
         {selected && (
           <TrendDetailPanel

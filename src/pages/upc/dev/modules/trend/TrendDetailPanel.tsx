@@ -26,9 +26,9 @@ const TrendDetailPanel = ({
   fixes,
 }: Props) => {
   const phrase = getTrendPhrase(status);
-  const insight = getTrendInsight(t, status, fixes);
+  const insight = getTrendInsight(t, status, fixes, window);
   const factor = status === "accelerating" ? accelerationFactor(t, fixes) : null;
-  const impact = Math.round(impactUnits(t, fixes));
+  const impact = Math.round(impactUnits(t, fixes, window));
   const noBaseline = status === "new";
 
   const beforeWindowDays = window?.beforeDays ?? 0;
