@@ -92,10 +92,15 @@ const UpcExportModal = ({ onClose }: Props) => {
   const [selectedPreset, setSelectedPreset] = useState(presets[0].id);
   const [exportShape, setExportShape] = useState<ExportShape>("summary");
 
+  /** Ticked in the left list. Nothing ticked means nothing, as on screen,
+   *  which reads "No UPCs selected" -- it used to mean every UPC, so "Selected
+   *  UPCs" with none ticked downloaded all of them. */
+  const isSelected = (pc: string) => ctx.selectedUpcs.includes(pc);
+  const nothingSelected = ctx.selectedUpcs.length === 0;
+
   const handleExport = () => {
     const tab = ctx.activeTab;
     const sel = selectedPreset;
-    const isSelected = (pc: string) => ctx.selectedUpcs.length === 0 || ctx.selectedUpcs.includes(pc);
 
     switch (tab) {
       case "salesComp": {
@@ -307,17 +312,27 @@ const UpcExportModal = ({ onClose }: Props) => {
               Export type
             </div>
             <div className="flex flex-col gap-1.5">
-              {presets.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={selectedPreset === p.id}
-                    onChange={() => setSelectedPreset(p.id)}
-                    className="accent-brand_navy"
-                  />
-                  <span className="text-[11px] text-content/85">{p.label}</span>
-                </label>
-              ))}
+              {presets.map((p) => {
+                const unavailable = p.id === "selected" && nothingSelected;
+                return (
+                  <label
+                    key={p.id}
+                    className={`flex items-center gap-2 ${unavailable ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    <input
+                      type="radio"
+                      checked={selectedPreset === p.id}
+                      disabled={unavailable}
+                      onChange={() => setSelectedPreset(p.id)}
+                      className="accent-brand_navy"
+                    />
+                    <span className="text-[11px] text-content/85">
+                      {p.label}
+                      {unavailable ? " (none selected)" : ""}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 

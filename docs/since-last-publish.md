@@ -1099,3 +1099,8 @@ the group's stores are looked up. Pressing Search again during that wait could
 let the first search finish last and put its stores under the second one's
 header. The Search button now reads "Searching…" and is disabled during the
 lookup, and a lookup that returns after a newer search has started is ignored.
+
+**"Selected UPCs" means the ticked ones.** With nothing ticked in the left
+list, the screen says "No UPCs selected", but exporting "Selected UPCs"
+downloaded every UPC. The option is now greyed out with "(none selected)"
+until something is ticked.
