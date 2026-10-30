@@ -94,6 +94,41 @@ export function makeIsWeekComplete(startDate: string, endDate: string) {
   };
 }
 
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const isoDay = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+/**
+ * Every week the range touches, by its Monday, written the way the endpoint
+ * writes a row's week ("2026-09-07T00:00:00").
+ *
+ * The endpoint only answers weeks that sold, so the weeks have to come from
+ * the range: built from the rows, a week with no sales simply wasn't there,
+ * and an item that stopped selling in its last week read as flat or up.
+ */
+export function weeksIn(startDate: string, endDate: string): string[] {
+  const end = dayOf(endDate);
+  const start = dayOf(startDate);
+  const weeks: string[] = [];
+  for (let monday = plusDays(start, -((start.getDay() + 6) % 7)); monday <= end; monday = plusDays(monday, 7)) {
+    weeks.push(`${isoDay(monday)}T00:00:00`);
+  }
+  return weeks;
+}
+
+/** A week with no sales, for the week table: every day blank. */
+const emptyWeek = (code: string, description: string, week: string): UpcSalesComp => ({
+  product_code: code,
+  description,
+  week,
+  Monday: null,
+  Tuesday: null,
+  Wednesday: null,
+  Thursday: null,
+  Friday: null,
+  Saturday: null,
+  Sunday: null,
+});
+
 export type UpcSalesCompStats = {
   code: string;
   desc: string;
@@ -129,11 +164,18 @@ export function computeUpcSalesCompStats(
   range: SalesCompRange,
 ): UpcSalesCompStats[] {
   const isWeekComplete = makeIsWeekComplete(range.start, range.end);
+  const rangeWeeks = weeksIn(range.start, range.end);
 
   return upcCodes.map((code) => {
     const rows = tyRows.filter((r) => r.product_code === code);
     const desc = rows.find((r) => r.description)?.description || code;
-    const sortedWeeks = [...new Set(rows.map((r) => r.week))].sort((a, b) => a.localeCompare(b));
+    // Every week in the range, sold or not, plus any week a row carries that
+    // the range somehow doesn't. Matched on the date alone, so the row's own
+    // spelling of its week doesn't matter.
+    const byWeek = new Map(rows.map((r) => [r.week.slice(0, 10), r]));
+    const sortedWeeks = [
+      ...new Set([...rangeWeeks.map((w) => w.slice(0, 10)), ...byWeek.keys()]),
+    ].sort((a, b) => a.localeCompare(b));
     // Distinct weeks, not rows — the two only agree once rows are combined,
     // and an average by day of week is per week.
     const weekCount = sortedWeeks.length;
@@ -144,11 +186,16 @@ export function computeUpcSalesCompStats(
     const peakIdx = dayAvgs.indexOf(Math.max(...dayAvgs));
     const periodTotal = rows.reduce((acc, r) => acc + rowTotal(r), 0);
 
-    const weekTotals = sortedWeeks.map(
-      (wk) => rowTotal(rows.find((r) => r.week === wk)!),
-    );
-    const completeTotals = sortedWeeks
-      .map((wk, i) => (isWeekComplete(wk) ? weekTotals[i] : null))
+    const weekRows = sortedWeeks.map((day) => {
+      const row = byWeek.get(day);
+      const week = row?.week ?? `${day}T00:00:00`;
+      return { week, row: row ?? emptyWeek(code, desc, week) };
+    });
+    // A week that sold nothing is a 0, here and in the average it's compared
+    // against.
+    const weekTotals = weekRows.map(({ row }) => rowTotal(row));
+    const completeTotals = weekRows
+      .map(({ week }, i) => (isWeekComplete(week) ? weekTotals[i] : null))
       .filter((v): v is number => v !== null);
     let wowPct: number | null = null;
     if (completeTotals.length >= 2) {
@@ -156,11 +203,6 @@ export function computeUpcSalesCompStats(
       const avg = completeTotals.reduce((a, b) => a + b, 0) / completeTotals.length;
       wowPct = avg === 0 ? null : ((lw - avg) / avg) * 100;
     }
-
-    const weekRows = sortedWeeks.map((wk) => ({
-      week: wk,
-      row: rows.find((r) => r.week === wk)!,
-    }));
 
     const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
     const hasLY = lyRowsForCode.length > 0;

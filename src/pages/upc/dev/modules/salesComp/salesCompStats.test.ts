@@ -136,3 +136,36 @@ describe("week over week", () => {
     expect(s.wowPct).toBeNull();
   });
 });
+
+describe("a week with no sales", () => {
+  const sold = (wk: string) => week(wk, "Item", { Monday: 700 });
+  // Four whole weeks, 9/14 to 10/11. It sold in the first three only.
+  const range: SalesCompRange = {
+    start: "9/14/2026",
+    end: "10/11/2026",
+    lyStart: "2025-09-15",
+    lyEnd: "2025-10-12",
+  };
+  const [s] = computeUpcSalesCompStats(
+    ["70417"],
+    [sold("2026-09-14"), sold("2026-09-21"), sold("2026-09-28")],
+    [],
+    range,
+  );
+
+  it("is in the week table as a 0", () => {
+    expect(s.weekRows.map((w) => w.week.slice(0, 10))).toEqual([
+      "2026-09-14",
+      "2026-09-21",
+      "2026-09-28",
+      "2026-10-05",
+    ]);
+    expect(s.weekTotals).toEqual([700, 700, 700, 0]);
+  });
+
+  it("counts against week over week", () => {
+    // Last week 0 against an average of 525: down 100%, where skipping the
+    // week compared 700 with 700 and read flat.
+    expect(s.wowPct).toBeCloseTo(-100);
+  });
+});

@@ -1183,3 +1183,10 @@ of the range was checked, so a search starting on a Wednesday counted
 Wednesday to Sunday as a full week: an item selling the same every day read
 as up 16.7%. A week now counts only when all seven of its days are inside the
 searched dates.
+
+**A week with no sales counts as zero.** The server only sends weeks that
+sold, and the tab built its weeks from what came back, so a week with no sales
+simply wasn't there. An item that stopped selling in the last week compared
+its last selling week with its average and read as flat or up. Every week in
+the searched dates is now in the week table, a week with no sales shows $0,
+and it counts in week over week: that item now reads down 100%.
