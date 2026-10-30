@@ -1044,3 +1044,14 @@ dev mode only
 The single date on a search card now shows its weekday, "8/16 · Sun"
 instead of "8/16", so you can see a week-ending date lands on the right day
 before you load. Every dev page with a single date picker gets it.
+
+## User Management: export a base group's users
+
+dev mode only
+
+The download button on a base group now exports its users as well as its
+stores. The window has a Users section with **Assigned users** (people who
+hold the group) and **Unassigned users**, each a list of username, first
+name, last name and email, alongside the assigned and unassigned stores it
+already offered. Tick any mix and they go into one file. It lists only people
+at or below your own level, the same people the Users tab shows you.

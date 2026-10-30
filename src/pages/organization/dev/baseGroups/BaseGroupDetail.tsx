@@ -194,7 +194,7 @@ const BaseGroupDetail = ({
         <div className="flex-1" />
         <IconButton
           icon={ArrowDownTrayIcon}
-          title="Export this group's stores to CSV"
+          title="Export this group's stores or users to CSV"
           onClick={() => setExportOpen(true)}
         />
       </div>
@@ -254,10 +254,11 @@ const BaseGroupDetail = ({
       {exportOpen && (
         <BaseGroupExportModal
           onClose={() => setExportOpen(false)}
-          groupName={group.name}
+          group={group}
           companyName={companyName}
           assigned={assigned}
           unassigned={unassigned}
+          users={users}
         />
       )}
 
