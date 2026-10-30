@@ -5,6 +5,7 @@ import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/dev/devUpcDevSlice";
 import {
   computeUpcSalesCompStats,
+  salesCompCodes,
   salesCompRange,
   DAYS,
   DAY_SHORT,
@@ -140,7 +141,7 @@ const UpcExportModal = ({ onClose }: Props) => {
         const data = ctx.salesComp.filter((s) => sel === "all" || isSelected(s.product_code));
         if (exportShape === "summary") {
           const dataLY = ctx.salesCompLY.filter((s) => sel === "all" || isSelected(s.product_code));
-          const upcCodes = [...new Set(data.map((s) => s.product_code))];
+          const upcCodes = salesCompCodes(data, dataLY);
           const stats = computeUpcSalesCompStats(
             upcCodes,
             data,
@@ -155,7 +156,7 @@ const UpcExportModal = ({ onClose }: Props) => {
             s.hasLY ? String(Math.round(s.lyPeriodTotal)) : "",
             s.vsLYPct === null ? "" : s.vsLYPct.toFixed(2),
             s.wowPct === null ? "" : s.wowPct.toFixed(2),
-            DAY_SHORT[s.peakIdx],
+            s.peakIdx >= 0 ? DAY_SHORT[s.peakIdx] : "",
             s.hasLY ? (s.peakShifted ? "Yes" : "No") : "",
           ]);
           download(toBlobCsv(headers, rows), `sales_comp_summary_${sel}.csv`);

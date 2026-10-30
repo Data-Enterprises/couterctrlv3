@@ -15,7 +15,12 @@ import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
 import { answerOf } from "../../answer";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import { combineSalesCompRows, computeUpcSalesCompStats, salesCompRange } from "./salesCompStats";
+import {
+  combineSalesCompRows,
+  computeUpcSalesCompStats,
+  salesCompCodes,
+  salesCompRange,
+} from "./salesCompStats";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import SalesCompLeftList from "./SalesCompLeftList";
 import SalesCompDetailPanel from "./SalesCompDetailPanel";
@@ -173,10 +178,7 @@ const SalesCompTab = () => {
       : ctx.salesCompLY;
   }, [ctx.salesCompLY, ctx.selectedUpcs]);
 
-  const upcCodes = useMemo(
-    () => [...new Set(filtered.map((r) => r.product_code))],
-    [filtered],
-  );
+  const upcCodes = useMemo(() => salesCompCodes(filtered, filteredLY), [filtered, filteredLY]);
 
   const range = useMemo(
     () => salesCompRange(ctx.startDate, ctx.endDate),
@@ -200,7 +202,7 @@ const SalesCompTab = () => {
     }
   }, [upcStats, selectedCode]);
 
-  if (!filtered.length) {
+  if (!upcCodes.length) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}

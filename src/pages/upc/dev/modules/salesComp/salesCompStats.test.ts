@@ -201,3 +201,34 @@ describe("the peak day", () => {
     expect(kpis.find((k) => k.label === "Peak day")?.value).toBe("Sat");
   });
 });
+
+describe("comparing with last year", () => {
+  const range = TWO_WEEKS;
+  const item = (code: string, wk: string, amount: number) => ({
+    ...week(wk, `Item ${code}`, { Monday: amount }),
+    product_code: code,
+  });
+  // A: $1,000 both years. B: new, $1,000 this year only. C: $500 last year only.
+  const ty = [item("A", "2026-08-31", 1000), item("B", "2026-08-31", 1000)];
+  const ly = [item("A", "2025-09-01", 1000), item("C", "2025-09-01", 500)];
+
+  it("keeps an item that only sold last year, at -100%", () => {
+    const stats = computeUpcSalesCompStats(["A", "B", "C"], ty, ly, range);
+    const c = stats.find((s) => s.code === "C")!;
+    expect(c.desc).toBe("Item C");
+    expect(c.periodTotal).toBe(0);
+    expect(c.vsLYPct).toBe(-100);
+    // No sales, so no peak day and no shift to report.
+    expect(c.peakIdx).toBe(-1);
+    expect(c.peakShifted).toBe(false);
+  });
+
+  it("compares the strip like for like, and says on how many", () => {
+    const kpis = getSalesCompKpis(ty, ly, [], range);
+    const vsLY = kpis.find((k) => k.label === "vs LY")!;
+    // Only A sold both years, and it was flat. Summing everything read +33%.
+    expect(vsLY.value).toBe("▲ 0.00%");
+    expect(vsLY.sub).toBe("on 1 of 3 items sold both years");
+    expect(kpis.find((k) => k.label === "TY sales")?.sub).toBe("2 wks · 3 UPCs");
+  });
+});

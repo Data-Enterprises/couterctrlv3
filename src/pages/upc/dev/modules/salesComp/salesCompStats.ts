@@ -130,6 +130,17 @@ export function weekdayCounts(startDate: string, endDate: string): number[] {
   return counts;
 }
 
+/**
+ * Every UPC with sales in either year, this year's first.
+ *
+ * Built from this year's rows alone, an item that sold last year and nothing
+ * this year wasn't in the list, the strip or the export at all: a -100% item
+ * simply vanished.
+ */
+export function salesCompCodes(tyRows: UpcSalesComp[], lyRows: UpcSalesComp[]): string[] {
+  return [...new Set([...tyRows.map((r) => r.product_code), ...lyRows.map((r) => r.product_code)])];
+}
+
 /** A week with no sales, for the week table: every day blank. */
 const emptyWeek = (code: string, description: string, week: string): UpcSalesComp => ({
   product_code: code,
@@ -185,7 +196,12 @@ export function computeUpcSalesCompStats(
 
   return upcCodes.map((code) => {
     const rows = tyRows.filter((r) => r.product_code === code);
-    const desc = rows.find((r) => r.description)?.description || code;
+    const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
+    // Last year's description for an item that only sold last year.
+    const desc =
+      rows.find((r) => r.description)?.description ||
+      lyRowsForCode.find((r) => r.description)?.description ||
+      code;
     // Every week in the range, sold or not, plus any week a row carries that
     // the range somehow doesn't. Matched on the date alone, so the row's own
     // spelling of its week doesn't matter.
@@ -198,8 +214,10 @@ export function computeUpcSalesCompStats(
     const dayAvgs = DAYS.map(
       (d, i) => rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (tyDays[i] || 1),
     );
-    const peakIdx = dayAvgs.indexOf(Math.max(...dayAvgs));
     const periodTotal = rows.reduce((acc, r) => acc + rowTotal(r), 0);
+    // No peak without sales: -1, shown as a dash. indexOf(max) of seven zeros
+    // would otherwise name Monday.
+    const peakIdx = periodTotal > 0 ? dayAvgs.indexOf(Math.max(...dayAvgs)) : -1;
 
     const weekRows = sortedWeeks.map((day) => {
       const row = byWeek.get(day);
@@ -219,15 +237,14 @@ export function computeUpcSalesCompStats(
       wowPct = avg === 0 ? null : ((lw - avg) / avg) * 100;
     }
 
-    const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
     const hasLY = lyRowsForCode.length > 0;
     const lyDayAvgs = DAYS.map(
       (d, i) => lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyDays[i] || 1),
     );
-    const lyPeakIdx = hasLY ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
     const lyPeriodTotal = lyRowsForCode.reduce((acc, r) => acc + rowTotal(r), 0);
+    const lyPeakIdx = hasLY && lyPeriodTotal > 0 ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
     const vsLYPct = hasLY && lyPeriodTotal > 0 ? ((periodTotal - lyPeriodTotal) / lyPeriodTotal) * 100 : null;
-    const peakShifted = hasLY && lyPeakIdx !== peakIdx;
+    const peakShifted = peakIdx >= 0 && lyPeakIdx >= 0 && lyPeakIdx !== peakIdx;
 
     const dayDeltaPcts = DAYS.map((_, di) =>
       hasLY && lyDayAvgs[di] > 0 ? ((dayAvgs[di] - lyDayAvgs[di]) / lyDayAvgs[di]) * 100 : null,

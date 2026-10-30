@@ -1198,3 +1198,11 @@ Saturday), a $100 Saturday averaged $50 and lost the peak to two $60 Mondays.
 Each weekday is now divided by how many times it falls in the searched dates,
 for this year and last, in the item's figures, the KPI strip's peak day and
 the export.
+
+**vs LY compares like for like, and items that stopped selling stay in.** The
+strip's vs LY added up every item's sales this year against last year's, so a
+new item counted in full with nothing against it: two flat items and one new
+one read up 33%. It now compares only items that sold in both years, and when
+that's not all of them it says so ("on 4 of 5 items sold both years"). An item
+that sold last year and not this year used to vanish from the list, the strip
+and the export; it now stays in the list at $0, down 100%, with no peak day.
