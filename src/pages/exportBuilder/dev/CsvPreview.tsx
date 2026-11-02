@@ -17,8 +17,8 @@ import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
  * hundred rows from one scan position is often a handful of stores and a
  * couple of sale types.
  *
- * Personal columns show a mask rather than the value. The file carries the
- * real thing; this is a screen someone else can be standing behind.
+ * Personal columns are shaded in the heading and show their values, the same
+ * as the file does.
  */
 const CsvPreview = () => {
   const ctx = useExportBuilderCtx();
@@ -191,7 +191,8 @@ const CsvPreview = () => {
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
         <span className="text-[11.5px] text-content/85">
-          Personal values are hidden here and written to the file.
+          Personal columns are shaded. Their values are shown here and written
+          to the file.
         </span>
       </div>
     </div>

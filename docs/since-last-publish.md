@@ -1373,3 +1373,8 @@ listed per source; Sales keeps its existing list. An empty file name now means
 the table's own name, so the File name box shows "sales" greyed out instead of
 filled in, and the file is still called sales. Needs the new export router on
 the dev API, like phases 1 and 2.
+
+**The sample's footer no longer says personal values are hidden.** Since the
+masking came out this morning the sample shows them, but the line under it
+still said "Personal values are hidden here". It now says the personal columns
+are shaded and their values are shown and written to the file.
