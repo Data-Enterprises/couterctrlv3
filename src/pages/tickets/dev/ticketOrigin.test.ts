@@ -160,10 +160,11 @@ describe("every page files under a category", () => {
   // The nav's hrefs on 29 Oct 2026, less Home, the help desk and the
   // placeholders. A page added to the nav belongs here and in PAGE_CATEGORY.
   const pages = [
-    "admin", "cashiers", "categories", "coupon-sales", "coupons", "forecasting",
+    "admin", "cashiers", "categories", "coupon-sales", "coupons", "data-export",
+    "forecasting",
     "groups", "inventory-sub-department", "inventory-vendor", "invoices",
     "item-lookup", "item-report", "loss-prevention", "lp-actions", "orders",
-    "quicksight", "receivers", "sales", "sales-export", "sales-tracker",
+    "quicksight", "receivers", "sales", "sales-tracker",
     "settings", "sub-dept-margins", "upc-scanner", "upc-upload",
     "user-management", "vendors",
   ];

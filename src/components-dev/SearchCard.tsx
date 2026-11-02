@@ -43,7 +43,7 @@ interface SearchCardProps {
    *  form. */
   extraControls?: ReactNode;
   /** Inputs above the store picker, for a choice the store and dates
-   *  depend on -- which table Sales Export reads, for one. */
+   *  depend on -- which table Data Export reads, for one. */
   leadingControls?: ReactNode;
 }
 

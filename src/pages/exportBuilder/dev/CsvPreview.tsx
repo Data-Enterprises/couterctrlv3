@@ -15,7 +15,7 @@ import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
  * changes both. The rows are the two hundred the preview returned —
  * unordered, so they show the file's shape accurately but not its variety: two
  * hundred rows from one scan position is often a handful of stores and a
- * couple of sale types.
+ * couple of values from each list.
  *
  * Personal columns are shaded in the heading and show their values, the same
  * as the file does.

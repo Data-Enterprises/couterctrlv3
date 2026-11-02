@@ -529,7 +529,7 @@ const ConfigPanel = () => {
         * still on it; coming back to it is not a second fetch. Not while a
         * build is running, whose answer belongs to this source.
         */}
-      <div className="px-2.5 pb-1.5 flex-shrink-0">
+      <div className="px-2.5 pb-1.5 flex-shrink-0" data-help="source">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
             Data
@@ -1294,7 +1294,7 @@ const ConfigPanel = () => {
       </div>
 
       <InfoModal
-        page="sales-export"
+        page="data-export"
         isOpen={help}
         onClose={() => setHelp(false)}
       />

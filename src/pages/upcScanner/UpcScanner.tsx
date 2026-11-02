@@ -12,7 +12,7 @@ import DevUpcScanner from "./dev/UpcScanner";
  * dev. Anywhere else it renders DevOnlyNotice: none of the page's code runs
  * and nothing is fetched.
  *
- * Same gate and same reason as Sales Export, and it matters more here: a send
+ * Same gate and same reason as Data Export, and it matters more here: a send
  * writes a real file that a client's tag printer picks up, which is not
  * something to reach by wandering into the section.
  */

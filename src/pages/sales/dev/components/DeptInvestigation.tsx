@@ -3041,7 +3041,7 @@ const DeptInvestigation = ({
               scroll position and the active filter — which matters, because
               step 5's "Show in grid" lands the reader in it.
 
-              The Sales Export preview's grid: one real table, every cell
+              The Data Export preview's grid: one real table, every cell
               ruled, mono at 11px, a sticky heading row and a sticky row
               number. Dense is the point — a department is hundreds of items
               and an airy list shows eight of them. */}

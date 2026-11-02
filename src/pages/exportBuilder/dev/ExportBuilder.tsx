@@ -17,12 +17,13 @@ import {
 } from "../../../features/dev/devExportBuilderSlice";
 
 /**
- * Sales Export — pick a scope, narrow what goes in the file, build it.
+ * Data Export — pick a table and a scope, narrow what goes in the file,
+ * build it.
  *
- * Two calls and one screen. `export/sales/preview` resolves the scope and
+ * Two calls and one screen. `export/{table}/preview` resolves the scope and
  * describes the data; every list on the left is that response. Narrowing is
  * local, so the sample redraws as it is ticked and nothing is fetched twice.
- * `export/sales` then writes the file to storage and answers with a link.
+ * `export/{table}` then writes the file to storage and answers with a link.
  */
 const ExportBuilder = () => {
   /**
@@ -69,7 +70,7 @@ const ExportBuilder = () => {
   if (!ctx.loaded) {
     return (
       <SearchCard
-        title="Sales Export"
+        title="Data Export"
         description="Pick what to export, a store or group, and a date range. What comes back is the thing you configure: the stores it covers, the lists it holds and every column of the table."
         buttonLabel="Load config"
         loadingMessage="Reading the range..."

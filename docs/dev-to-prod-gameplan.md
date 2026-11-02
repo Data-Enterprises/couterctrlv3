@@ -77,7 +77,7 @@ Needed by non-Coming-Soon pages:
 - [ ] `help/useHelpHighlight.ts`
 - [ ] `help/content/index.ts` + 16 content modules (admin, cashiers,
       categories, couponSales, coupons, forecasting, itemLookup,
-      lossPrevention, orders, receivers, sales, salesExport, storeGroups,
+      lossPrevention, orders, receivers, sales, dataExport, storeGroups,
       subDeptMargins, upcList, vendors)
 - [ ] `PageInfoButton.tsx`
 - [ ] `InfoModal.tsx`
@@ -341,7 +341,7 @@ switchers.
       them into prod. Update that list.
 
 #### Staying in Coming Soon
-LP Actions, Sales Export, AWG Invoices, Upc Scanner (all
+LP Actions, Data Export, AWG Invoices, Upc Scanner (all
 `PROGRAMMER_ONLY_LEVELS`), and Suggested Weight (commented out).
 
 ### Step 9 — organization + admin + groups

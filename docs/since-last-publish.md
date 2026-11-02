@@ -1378,3 +1378,16 @@ the dev API, like phases 1 and 2.
 masking came out this morning the sample shows them, but the line under it
 still said "Personal values are hidden here". It now says the personal columns
 are shaded and their values are shown and written to the file.
+
+**Data Export, phase 4: the name, the address and the help.** Sales Export is
+now Data Export: in the Coming Soon menu, on the search card and in the help.
+Its address is /data-export; the old /sales-export forwards there, so a
+bookmark, or a session last left on the page, still lands on it. The "?" help
+is rewritten for all four tables: the Data choice on the search card, a new
+guide to switching tables with Change and Back, each table's own filter lists
+(Invoices has no Cashiers), Output's voids, refunds and returns, saved
+configurations and Previous builds per table, and the personal columns as they
+are now (shown, not hidden). The Coming Soon overview (the client hand-out)
+has its section renamed and rewritten the same way, and no longer says the
+sample hides personal values. Tickets filed from the page still
+go under Sales.

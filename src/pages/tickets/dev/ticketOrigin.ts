@@ -29,7 +29,8 @@ import { formatDateSimple } from "../../../utils";
 export const PAGE_CATEGORY: Record<string, string> = {
   sales: "Sales",
   "sales-tracker": "Sales",
-  "sales-export": "Sales",
+  // Mostly sales; its other tables do not earn it a category of its own.
+  "data-export": "Sales",
   "sub-dept-margins": "Margins",
   categories: "Margins",
   vendors: "Margins",
