@@ -71,6 +71,7 @@ const ExportBuilder = () => {
     return (
       <SearchCard
         title="Data Export"
+        description="Choose the data, a store or group, and a date range, then shape the file from what the search finds."
         buttonLabel="Load config"
         loadingMessage="Reading the range..."
         loading={ctx.loadingConfig}

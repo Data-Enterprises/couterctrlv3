@@ -1404,3 +1404,10 @@ four Data choices on it, the card had grown tall enough that the date pickers
 opened off the bottom of the window. The description under the title is gone,
 and each choice is one line, its description beside the name instead of under
 it.
+
+**The Data choices use the app's own checkbox, without a "Data" heading.**
+The four choices on the search card were native radio buttons in the
+browser's blue; they now use the same checkbox as the rest of the page, and
+still pick one of the four. The "Data" heading over them is gone, and the
+card's description is back, shorter: "Choose the data, a store or group, and
+a date range, then shape the file from what the search finds."
