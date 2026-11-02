@@ -1411,3 +1411,17 @@ browser's blue; they now use the same checkbox as the rest of the page, and
 still pick one of the four. The "Data" heading over them is gone, and the
 card's description is back, shorter: "Choose the data, a store or group, and
 a date range, then shape the file from what the search finds."
+
+**Data Export: Change opens the search over the page, and the "?" opens the
+help panel.** Change on the Data line now opens the search card as a popup
+over the loaded page, with the table, store and dates already on it, the way
+the other pages search again; clicking outside it closes it and nothing
+changes. The magnifier at the top of the configuration is gone: a new search
+is a different store or dates on that same card. The "?" in the configuration
+opened an old help page that does not exist for Data Export (an "Access
+Denied" box); it now opens the help panel the other pages use, rewritten
+against the page as it is: searching, shaping and building, switching tables,
+summaries, the query box above the sample, saved exports and previous builds,
+and what each list, Output and the bottom strip mean. The file is now always
+built over the dates that were searched, even if the search card's dates were
+changed and left without searching.

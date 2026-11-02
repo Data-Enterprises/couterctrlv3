@@ -8,9 +8,8 @@ import reducer, {
   relabelBuild,
   setBuilds,
   setSaved,
-  changeSource,
+  stashSource,
   restoreSource,
-  resetExportBuilder,
   setSearchSource,
   startConfigLoad,
   initialState,
@@ -339,7 +338,7 @@ describe("switching sources", () => {
   const SCOPE = "store:1:2026-09-14:2026-09-15";
   /** Sales loaded for SCOPE, a vendor narrowed and a key grouped. */
   const salesOnScreen = () => {
-    let s = reducer(initialState, startConfigLoad({ source: "sales", scope: SCOPE }));
+    let s = reducer(initialState, startConfigLoad({ source: "sales", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
     s = reducer(s, setConfig(configPayload()));
     s = reducer(s, togglePick({ filter: "vendorIds", value: "50" }));
     return s;
@@ -350,17 +349,31 @@ describe("switching sources", () => {
     lists: { orderTypes: [{ value: "INV", label: "INV" }] },
   });
 
-  it("keeps the source on screen when Change goes back to the card", () => {
-    const s = reducer(salesOnScreen(), changeSource());
-    expect(s.loaded).toBe(false);
-    expect(s.searchSource).toBe("sales");
+  it("keeps the source on screen when a search asks for another", () => {
+    const s = reducer(salesOnScreen(), stashSource());
+    expect(s.loaded).toBe(true);
     expect(s.cache.sales?.picks.vendorIds).toEqual([]);
   });
 
+  it("goes back to the card while the next answer is on its way", () => {
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    expect(s.loaded).toBe(false);
+    expect(s.loadingConfig).toBe(true);
+  });
+
+  it("records the dates the search asked for", () => {
+    const s = reducer(
+      initialState,
+      startConfigLoad({ source: "sales", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-20" }),
+    );
+    expect([s.rangeStart, s.rangeEnd]).toEqual(["2026-09-14", "2026-09-20"]);
+  });
+
   it("starts another source from nothing, and keeps the first", () => {
-    let s = reducer(salesOnScreen(), changeSource());
+    let s = reducer(salesOnScreen(), stashSource());
     s = reducer(s, setSearchSource("orders"));
-    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
     expect(s.source).toBe("orders");
     expect(s.picks).toEqual({});
     expect(s.cache.sales).toBeDefined();
@@ -369,10 +382,10 @@ describe("switching sources", () => {
   });
 
   it("brings a kept source back as it was left", () => {
-    let s = reducer(salesOnScreen(), changeSource());
-    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
     s = reducer(s, setConfig(orders()));
-    s = reducer(s, changeSource());
+    s = reducer(s, stashSource());
     s = reducer(s, restoreSource("sales"));
     expect(s.loaded).toBe(true);
     expect(s.source).toBe("sales");
@@ -384,34 +397,25 @@ describe("switching sources", () => {
   });
 
   it("drops every kept source on a new search", () => {
-    let s = reducer(salesOnScreen(), changeSource());
-    s = reducer(s, startConfigLoad({ source: "orders", scope: "store:1:2026-09-21:2026-09-22" }));
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: "store:1:2026-09-21:2026-09-22", startDate: "2026-09-14", endDate: "2026-09-15" }));
     expect(s.cache).toEqual({});
   });
 
   it("keeps the shape of the same source over a new range", () => {
     let s = reducer(salesOnScreen(), setFlag({ ordered: true }));
-    s = reducer(s, changeSource());
-    s = reducer(s, startConfigLoad({ source: "sales", scope: "store:1:2026-09-21:2026-09-22" }));
+    s = reducer(s, stashSource());
+    s = reducer(s, startConfigLoad({ source: "sales", scope: "store:1:2026-09-21:2026-09-22", startDate: "2026-09-14", endDate: "2026-09-15" }));
     expect(s.flags.ordered).toBe(true);
   });
 
   it("drops a list that answers for a source no longer on screen", () => {
-    let s = reducer(salesOnScreen(), changeSource());
-    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
     s = reducer(s, setBuilds({ source: "sales", builds: [{} as ExportBuild], expireMinutes: 60 }));
     s = reducer(s, setSaved({ source: "sales", saved: [] }));
     expect(s.builds).toEqual([]);
     expect(s.savedLoaded).toBe(false);
   });
 
-  it("offers the source that was on screen after the magnifier", () => {
-    let s = reducer(salesOnScreen(), changeSource());
-    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
-    s = reducer(s, setConfig(orders()));
-    s = reducer(s, resetExportBuilder());
-    expect(s.searchSource).toBe("orders");
-    expect(s.cache).toEqual({});
-    expect(s.loaded).toBe(false);
-  });
 });

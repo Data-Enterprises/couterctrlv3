@@ -14,6 +14,7 @@ import { keepSortable } from "./sortRows";
 import {
   clearSavedNotes,
   setOrderBy,
+  setSearchSource,
 } from "../../../features/dev/devExportBuilderSlice";
 
 /**
@@ -52,6 +53,20 @@ const ExportBuilder = () => {
   const ctx = useExportBuilderCtx();
 
   /**
+   * The search card over the loaded page, from Change on the Data line.
+   *
+   * An overlay rather than a return to the entry card, as on the other
+   * pages: closing it leaves the page exactly as it was. It opens on the
+   * table on screen, and the build never reads the card's dates, so nothing
+   * changed on it and abandoned reaches the file.
+   */
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = () => {
+    ctx.dispatch(setSearchSource(ctx.source.key));
+    setSearchOpen(true);
+  };
+
+  /**
    * A sort key goes when its column does.
    *
    * Unticking a sorted column, removing a sorted measure or switching between
@@ -67,27 +82,36 @@ const ExportBuilder = () => {
     if (kept !== ctx.orderBy) ctx.dispatch(setOrderBy(kept));
   }, [ctx.loaded, sortableKey, ctx.orderBy]);
 
-  if (!ctx.loaded) {
-    return (
-      <SearchCard
-        title="Data Export"
-        description="Choose the data, a store or group, and a date range, then shape the file from what the search finds."
-        buttonLabel="Load config"
-        loadingMessage="Reading the range..."
-        loading={ctx.loadingConfig}
-        blocked={ctx.searchBlocked}
-        leadingControls={<SourcePicker />}
-        onSearch={() => ctx.loadConfig()}
-        // Only while the source that was on screen still answers the search
-        // the card holds: back to a different question is not back.
-        onBack={ctx.canGoBack ? ctx.goBack : undefined}
-        backLabel={`Back to ${ctx.source.label}`}
-      />
-    );
-  }
+  const searchCard = (
+    <SearchCard
+      title="Data Export"
+      description="Choose the data, a store or group, and a date range, then shape the file from what the search finds."
+      buttonLabel="Load config"
+      loadingMessage="Reading the range..."
+      loading={ctx.loadingConfig}
+      blocked={ctx.searchBlocked}
+      leadingControls={<SourcePicker />}
+      onSearch={() => {
+        setSearchOpen(false);
+        ctx.loadConfig();
+      }}
+    />
+  );
+
+  if (!ctx.loaded) return searchCard;
 
   return (
     <div className="h-[calc(100vh-3rem)] bg-bkg flex flex-col p-3 gap-3">
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+          onClick={() => setSearchOpen(false)}
+        >
+          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            {searchCard}
+          </div>
+        </div>
+      )}
       <div className="flex gap-3 flex-1 min-h-0">
         {/*
           * The sleeve, not the panel, is what moves.
@@ -110,7 +134,7 @@ const ExportBuilder = () => {
           aria-hidden={!configOpen}
           data-help="config"
         >
-          <ConfigPanel />
+          <ConfigPanel onChangeSearch={openSearch} />
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-3">
           <QueryPanel

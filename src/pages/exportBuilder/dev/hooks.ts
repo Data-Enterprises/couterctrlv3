@@ -40,6 +40,7 @@ import {
   finishExport,
   markExportSlow,
   restoreSource,
+  stashSource,
   setConfig,
   setRouterFilters,
   setSql,
@@ -157,13 +158,9 @@ export const useExportBuilderCtx = () => {
     endDate,
   );
 
-  /**
-   * The source that was on screen, kept and still answering the search the
-   * card holds: what the card's Back returns to. A different store or dates
-   * on the card means it would be the old question, so there is no Back.
-   */
-  const canGoBack =
-    !config.loaded && scope === config.cacheScope && Boolean(config.cache[config.source]);
+  /** The dates the loaded search asked for, which the file is built over. */
+  const rangeStart = config.rangeStart || startDate;
+  const rangeEnd = config.rangeEnd || endDate;
 
   /**
    * The columns as the file will hold them: the user's order, narrowed to what
@@ -469,12 +466,16 @@ export const useExportBuilderCtx = () => {
    */
   const loadConfig = () => {
     const chosen = sourceFor(config.searchSource);
+    // The popup over a loaded page, asked the question already on screen.
+    if (config.loaded && scope === config.cacheScope && chosen.key === config.source) return;
+    // Kept before anything replaces it: the same search may come back to it.
+    if (config.loaded) dispatch(stashSource());
     if (scope === config.cacheScope && config.cache[chosen.key]) {
       dispatch(restoreSource(chosen.key));
       loadBuilds(chosen.key);
       return;
     }
-    dispatch(startConfigLoad({ source: chosen.key, scope }));
+    dispatch(startConfigLoad({ source: chosen.key, scope, startDate, endDate }));
     // Alongside the preview rather than after it. None of these waits on
     // another, and the lists are ready by the time anyone looks for them.
     loadQueries();
@@ -519,13 +520,6 @@ export const useExportBuilderCtx = () => {
         dispatch(failConfigLoad());
         toast.error("Could not load the export config: " + reasonOf(err));
       });
-  };
-
-  /** The search card's Back: the source that was on screen, as it was. */
-  const goBack = () => {
-    if (!canGoBack) return;
-    dispatch(restoreSource(config.source));
-    loadBuilds(config.source);
   };
 
   /**
@@ -592,8 +586,8 @@ export const useExportBuilderCtx = () => {
       filters[flag.filter] = config.rowFlags[flag.filter] ?? null;
     }
     return {
-      startDate,
-      endDate,
+      startDate: rangeStart,
+      endDate: rangeEnd,
       storeids: config.selectedStoreIds,
       // Always the explicit list, never null — null means "every column" to
       // the endpoint, including the provenance columns the preview withholds,
@@ -898,7 +892,7 @@ export const useExportBuilderCtx = () => {
         // claiming one would put the wrong name on the next build.
         id: build.userQueryId,
         notes: [
-          `Loaded from the build of ${build.startDate} to ${build.endDate}. The dates on the search card were left as they are.`,
+          `Loaded from the build of ${build.startDate} to ${build.endDate}. The dates you searched were left as they are.`,
           ...plan.missing,
         ],
       }),
@@ -1038,8 +1032,9 @@ export const useExportBuilderCtx = () => {
     source,
     dispatch,
     search,
-    startDate,
-    endDate,
+    // The loaded search's, which is what the file is named and built by.
+    startDate: rangeStart,
+    endDate: rangeEnd,
     orderedColumns,
     visibleRows,
     measureItems,
@@ -1054,8 +1049,6 @@ export const useExportBuilderCtx = () => {
     blocked,
     searchBlocked,
     loadConfig,
-    canGoBack,
-    goBack,
     loadBuilds,
     reloadBuild,
     labelBuild,

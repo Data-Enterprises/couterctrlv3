@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowPathIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
-import InfoModal from "../../../components-dev/InfoModal";
+import HelpPanel from "../../../components-dev/help/HelpPanel";
+import { HELP_CONTENT } from "../../../components-dev/help/content";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter, {
@@ -31,8 +31,6 @@ import {
   removeComputed,
   setOrderBy,
   toggleSortKey,
-  resetExportBuilder,
-  changeSource,
   setSelectedColumns,
   setSelectedStoreIds,
   setSelectedDays,
@@ -299,7 +297,12 @@ const ListSearch = ({
   </div>
 );
 
-const ConfigPanel = () => {
+interface ConfigPanelProps {
+  /** Change on the Data line: the search card, over the page. */
+  onChangeSearch: () => void;
+}
+
+const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
   const [help, setHelp] = useState(false);
@@ -513,21 +516,13 @@ const ConfigPanel = () => {
         >
           <ArrowPathIcon className="w-3.5 h-3.5" />
         </button>
-        <button data-help="search"
-          type="button"
-          onClick={() => ctx.dispatch(resetExportBuilder())}
-          title="New search — clears this configuration"
-          aria-label="New search, clears this configuration"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
-        >
-          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-        </button>
       </div>
       {/*
-        * Which table this is, and the way to another. Change keeps this one
-        * as it is and goes back to the search card with the store and dates
-        * still on it; coming back to it is not a second fetch. Not while a
-        * build is running, whose answer belongs to this source.
+        * Which table this is, and the way to another search. Change opens
+        * the search card over the page with this table, store and dates on
+        * it: another table keeps this one as it is, and coming back to it is
+        * not a second fetch. Not while a build is running, whose answer
+        * belongs to this source.
         */}
       <div className="px-2.5 pb-1.5 flex-shrink-0" data-help="source">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
@@ -537,12 +532,12 @@ const ConfigPanel = () => {
           <span className="text-[12px] font-semibold flex-1">{ctx.source.label}</span>
           <button
             type="button"
-            onClick={() => ctx.dispatch(changeSource())}
+            onClick={onChangeSearch}
             disabled={ctx.building}
             title={
               ctx.building
                 ? "Wait for the build to finish"
-                : "Export another table, keeping this one as it is"
+                : "Search another table, store or dates"
             }
             className="text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2 disabled:opacity-50 disabled:no-underline"
           >
@@ -1293,11 +1288,9 @@ const ConfigPanel = () => {
       </Row>
       </div>
 
-      <InfoModal
-        page="data-export"
-        isOpen={help}
-        onClose={() => setHelp(false)}
-      />
+      {help && (
+        <HelpPanel content={HELP_CONTENT["data-export"]} onClose={() => setHelp(false)} />
+      )}
     </div>
   );
 };

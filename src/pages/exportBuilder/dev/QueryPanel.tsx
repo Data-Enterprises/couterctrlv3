@@ -223,7 +223,10 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
   };
 
   return (
-    <div className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
+    <div
+      data-help="query"
+      className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden"
+    >
       {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
         <div className="bg-amber-100 border-b border-amber-300 px-3 py-2">
           <span className="text-[12.5px] font-semibold text-amber-900">

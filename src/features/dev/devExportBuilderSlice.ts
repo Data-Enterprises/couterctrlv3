@@ -149,6 +149,15 @@ export interface ExportBuilderState {
    * source answered the old one, so they all go.
    */
   cacheScope: string | null;
+  /**
+   * The dates the loaded search asked for, as the API spells them.
+   *
+   * The build and the file name read these, not the search card: the card is
+   * shared with every page and opens over this one, so its dates can move
+   * without anything here being loaded for them.
+   */
+  rangeStart: string;
+  rangeEnd: string;
   /** The other sources already loaded for `cacheScope`, as they were left. */
   cache: Partial<Record<ExportTableKey, SourceSnapshot>>;
   /**
@@ -344,6 +353,8 @@ export const initialState: ExportBuilderState = {
   source: "sales",
   searchSource: "sales",
   cacheScope: null,
+  rangeStart: "",
+  rangeEnd: "",
   cache: {},
   routerFilters: null,
   stores: [],
@@ -448,16 +459,27 @@ const devExportBuilderSlice = createSlice({
      * from nothing: another table's group keys, measures and sort name
      * columns this one does not have. The same source over a new range keeps
      * its shape, as a new search always has.
+     *
+     * The page goes back to the search card, spinning, until the answer
+     * lands: what was on screen answered another question.
      */
     startConfigLoad: (
       state,
-      action: PayloadAction<{ source: ExportTableKey; scope: string }>,
+      action: PayloadAction<{
+        source: ExportTableKey;
+        scope: string;
+        startDate: string;
+        endDate: string;
+      }>,
     ) => {
-      const { source, scope } = action.payload;
+      const { source, scope, startDate, endDate } = action.payload;
       if (scope !== state.cacheScope) {
         state.cache = {};
         state.cacheScope = scope;
       }
+      state.rangeStart = startDate;
+      state.rangeEnd = endDate;
+      state.loaded = false;
       if (source !== state.source) {
         Object.assign(state, snapshotOf(initialState));
         state.source = source;
@@ -471,14 +493,11 @@ const devExportBuilderSlice = createSlice({
       state.searchSource = action.payload;
     },
     /**
-     * Back to the search card with this source kept, so the next search can
-     * come back to it without asking again. The store and dates are the
-     * search card's own, and stay as they are.
+     * The source on screen kept as it is, because the search over it asked
+     * for another: the next search can come back to it without a fetch.
      */
-    changeSource: (state) => {
+    stashSource: (state) => {
       if (state.loaded) state.cache[state.source] = snapshotOf(current(state));
-      state.loaded = false;
-      state.searchSource = state.source;
       state.savedOpen = false;
       state.buildsOpen = false;
       state.sql = null;
@@ -998,23 +1017,13 @@ const devExportBuilderSlice = createSlice({
       state.building = false;
       state.exportError = action.payload;
     },
-    /**
-     * The magnifier: a new search, everything kept thrown away. The search
-     * card offers the source that was on screen, and the router's filter list
-     * is static, so neither is asked for again.
-     */
-    resetExportBuilder: (state) => ({
-      ...initialState,
-      searchSource: state.source,
-      routerFilters: state.routerFilters,
-    }),
   },
 });
 
 export const {
   startConfigLoad,
   setSearchSource,
-  changeSource,
+  stashSource,
   restoreSource,
   setConfig,
   setRouterFilters,
@@ -1080,6 +1089,5 @@ export const {
   failBuildsLoad,
   openBuilds,
   relabelBuild,
-  resetExportBuilder,
 } = devExportBuilderSlice.actions;
 export default devExportBuilderSlice.reducer;

@@ -58,7 +58,7 @@ const renderPanel = (over: { saleDates?: string[] } = {}) => {
   );
   return render(
     <Provider store={store}>
-      <ConfigPanel />
+      <ConfigPanel onChangeSearch={() => {}} />
     </Provider>,
   );
 };
