@@ -1353,3 +1353,23 @@ descriptions. Saved configurations now record which data they export; every
 configuration saved before this loads exactly as it did, as a Sales one. The
 page also checks its filter names against the export router's own list before
 a build, so a mismatch is stopped on screen instead of after the wait.
+
+**Data Export, phase 3: Orders, Invoices and Markdowns.** The search card now
+asks what to export: Sales, Orders, Invoices or Markdowns, each with a line
+saying what a row is. Sales is picked by default. Each source shows its own
+filter rows in Configuration: Orders has order types, statuses, vendors, sub
+departments and categories; Invoices has vendors, sub departments, categories
+and statuses, plus voided lines, refunds and returns under Output (no cashiers);
+Markdowns has types (waste included), vendors, sub departments and categories.
+Stores, days, products, columns, group by, aggregates, output, the sample, the
+query box, Saved and Previous builds work the same for all four. A new Data
+line at the top of Configuration names the source, and its Change button goes
+back to the search card with the store and dates kept. Each source is fetched
+once per search: switch from Sales to Markdowns and back, and Sales comes back
+as you left it, without being fetched again. A different store or dates is a
+new search and fetches again. The search card's Back button returns to the
+source you came from while the search is unchanged. Saved configurations are
+listed per source; Sales keeps its existing list. An empty file name now means
+the table's own name, so the File name box shows "sales" greyed out instead of
+filled in, and the file is still called sales. Needs the new export router on
+the dev API, like phases 1 and 2.

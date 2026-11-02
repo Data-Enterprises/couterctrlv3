@@ -184,7 +184,8 @@ const CsvPreview = () => {
         <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/85 flex-shrink-0">
           None of the sample lines match what you have kept. The file can still
           hold plenty: the sample is two hundred lines taken where the scan
-          landed, often a handful of stores and a couple of sale types.
+          landed, often a handful of stores and a couple of{" "}
+          {ctx.source.lists[0]?.noun ?? "values"}.
         </div>
       )}
 

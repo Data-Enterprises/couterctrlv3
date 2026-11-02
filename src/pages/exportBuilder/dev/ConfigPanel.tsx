@@ -32,6 +32,7 @@ import {
   setOrderBy,
   toggleSortKey,
   resetExportBuilder,
+  changeSource,
   setSelectedColumns,
   setSelectedStoreIds,
   setSelectedDays,
@@ -521,6 +522,33 @@ const ConfigPanel = () => {
         >
           <MagnifyingGlassIcon className="w-3.5 h-3.5" />
         </button>
+      </div>
+      {/*
+        * Which table this is, and the way to another. Change keeps this one
+        * as it is and goes back to the search card with the store and dates
+        * still on it; coming back to it is not a second fetch. Not while a
+        * build is running, whose answer belongs to this source.
+        */}
+      <div className="px-2.5 pb-1.5 flex-shrink-0">
+        <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+            Data
+          </span>
+          <span className="text-[12px] font-semibold flex-1">{ctx.source.label}</span>
+          <button
+            type="button"
+            onClick={() => ctx.dispatch(changeSource())}
+            disabled={ctx.building}
+            title={
+              ctx.building
+                ? "Wait for the build to finish"
+                : "Export another table, keeping this one as it is"
+            }
+            className="text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2 disabled:opacity-50 disabled:no-underline"
+          >
+            Change
+          </button>
+        </div>
       </div>
       {/*
         * What the file is, read off the configuration rather than switched.

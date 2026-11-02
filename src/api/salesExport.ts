@@ -28,8 +28,8 @@ const post = (url: string, token: string, path: string, data: unknown) =>
     data,
   });
 
-/** The tables `export/{table}` serves. Only "sales" is exported so far; the
- *  other three come with the data sources plan. */
+/** The tables `export/{table}` serves, each described for the page in
+ *  pages/exportBuilder/dev/sources.ts. */
 export type ExportTableKey = "sales" | "orders" | "invoices" | "markdowns";
 
 /** A store the search resolved to. */

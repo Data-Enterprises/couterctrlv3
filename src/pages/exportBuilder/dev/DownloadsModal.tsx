@@ -89,7 +89,7 @@ const DownloadsModal = () => {
           <div className="flex-1" />
           <button
             type="button"
-            onClick={ctx.loadBuilds}
+            onClick={() => ctx.loadBuilds()}
             disabled={ctx.buildsLoading}
             className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
           >

@@ -7,6 +7,12 @@ import reducer, {
   finishExport,
   relabelBuild,
   setBuilds,
+  setSaved,
+  changeSource,
+  restoreSource,
+  resetExportBuilder,
+  setSearchSource,
+  startConfigLoad,
   initialState,
   moveColumn,
   setConfig,
@@ -78,7 +84,8 @@ describe("the output switches", () => {
     expect(s.rowFlags.voidFlag).toBe(1);
     expect(s.rowFlags.refundFlag ?? null).toBeNull();
     expect(s.flags.fileFormat).toBe("csv");
-    expect(s.flags.filePrefix).toBe("sales");
+    // Empty is the table's own name, so no source can inherit another's.
+    expect(s.flags.filePrefix).toBe("");
   });
 
   it("can put a flag back to leaving the column alone", () => {
@@ -238,7 +245,7 @@ describe("the list of past builds", () => {
   it("takes the link window from the listing that minted the links", () => {
     const s = reducer(
       initialState,
-      setBuilds({ builds: [build()], expireMinutes: 15 }),
+      setBuilds({ source: "sales", builds: [build()], expireMinutes: 15 }),
     );
     expect(s.buildsExpireMinutes).toBe(15);
   });
@@ -247,6 +254,7 @@ describe("the list of past builds", () => {
     const listed = reducer(
       initialState,
       setBuilds({
+        source: "sales",
         builds: [build({ buildId: "b1" }), build({ buildId: "b2" })],
         expireMinutes: 60,
       }),
@@ -324,5 +332,86 @@ describe("what a load could not carry over", () => {
   it("goes with the scope it was about", () => {
     const fresh = reducer(withNotes(), setConfig({ ...configPayload() }));
     expect(fresh.savedNotes).toEqual([]);
+  });
+});
+
+describe("switching sources", () => {
+  const SCOPE = "store:1:2026-09-14:2026-09-15";
+  /** Sales loaded for SCOPE, a vendor narrowed and a key grouped. */
+  const salesOnScreen = () => {
+    let s = reducer(initialState, startConfigLoad({ source: "sales", scope: SCOPE }));
+    s = reducer(s, setConfig(configPayload()));
+    s = reducer(s, togglePick({ filter: "vendorIds", value: "50" }));
+    return s;
+  };
+  const orders = () => ({
+    ...configPayload(),
+    source: "orders" as const,
+    lists: { orderTypes: [{ value: "INV", label: "INV" }] },
+  });
+
+  it("keeps the source on screen when Change goes back to the card", () => {
+    const s = reducer(salesOnScreen(), changeSource());
+    expect(s.loaded).toBe(false);
+    expect(s.searchSource).toBe("sales");
+    expect(s.cache.sales?.picks.vendorIds).toEqual([]);
+  });
+
+  it("starts another source from nothing, and keeps the first", () => {
+    let s = reducer(salesOnScreen(), changeSource());
+    s = reducer(s, setSearchSource("orders"));
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    expect(s.source).toBe("orders");
+    expect(s.picks).toEqual({});
+    expect(s.cache.sales).toBeDefined();
+    s = reducer(s, setConfig(orders()));
+    expect(s.picks.orderTypes).toEqual(["INV"]);
+  });
+
+  it("brings a kept source back as it was left", () => {
+    let s = reducer(salesOnScreen(), changeSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, changeSource());
+    s = reducer(s, restoreSource("sales"));
+    expect(s.loaded).toBe(true);
+    expect(s.source).toBe("sales");
+    expect(s.picks.vendorIds).toEqual([]);
+    expect(s.picks.saleTypes).toEqual(["Sale", "Refunded"]);
+    // Orders is kept in its turn.
+    expect(s.cache.orders?.picks.orderTypes).toEqual(["INV"]);
+    expect(s.cache.sales).toBeUndefined();
+  });
+
+  it("drops every kept source on a new search", () => {
+    let s = reducer(salesOnScreen(), changeSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: "store:1:2026-09-21:2026-09-22" }));
+    expect(s.cache).toEqual({});
+  });
+
+  it("keeps the shape of the same source over a new range", () => {
+    let s = reducer(salesOnScreen(), setFlag({ ordered: true }));
+    s = reducer(s, changeSource());
+    s = reducer(s, startConfigLoad({ source: "sales", scope: "store:1:2026-09-21:2026-09-22" }));
+    expect(s.flags.ordered).toBe(true);
+  });
+
+  it("drops a list that answers for a source no longer on screen", () => {
+    let s = reducer(salesOnScreen(), changeSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    s = reducer(s, setBuilds({ source: "sales", builds: [{} as ExportBuild], expireMinutes: 60 }));
+    s = reducer(s, setSaved({ source: "sales", saved: [] }));
+    expect(s.builds).toEqual([]);
+    expect(s.savedLoaded).toBe(false);
+  });
+
+  it("offers the source that was on screen after the magnifier", () => {
+    let s = reducer(salesOnScreen(), changeSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, resetExportBuilder());
+    expect(s.searchSource).toBe("orders");
+    expect(s.cache).toEqual({});
+    expect(s.loaded).toBe(false);
   });
 });

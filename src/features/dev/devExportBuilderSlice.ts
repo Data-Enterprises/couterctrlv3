@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, current, type PayloadAction } from "@reduxjs/toolkit";
 import type { SavedConfig } from "../../api/savedConfigs";
 import type { ExportBuild } from "../../api/exportBuilds";
 import type { SavedQuery } from "../../api/savedQueries";
@@ -34,6 +34,9 @@ export interface ExportFlags {
   /** A key from the preview's `dateFormats`, or "" for as-stored. */
   dateFormat: string;
   fileFormat: string;
+  /** "" for the source's own name (the router names the file after its
+   *  table), so clearing the picks can never leave one table's name on
+   *  another's file. */
   filePrefix: string;
   ordered: boolean;
 }
@@ -75,10 +78,79 @@ export type ConfigSnapshot = Pick<
   | "flags"
 >;
 
+/**
+ * Everything that belongs to one source: what its preview returned, what was
+ * picked in it, and its saved configurations and builds.
+ *
+ * Kept per source so switching back is not a second fetch -- Sales, then
+ * Markdowns, then Sales again comes back as it was left. The query box text,
+ * the saved scratchpad queries and the router's filter list are the page's,
+ * not a source's, so they stay where they are.
+ */
+const SOURCE_KEYS = [
+  "stores",
+  "lists",
+  "dateFormats",
+  "days",
+  "columns",
+  "rows",
+  "hasData",
+  "message",
+  "selectedStoreIds",
+  "picks",
+  "selectedDays",
+  "rowFlags",
+  "selectedColumns",
+  "productCodes",
+  "productDescriptions",
+  "columnOrder",
+  "groupBy",
+  "aggregates",
+  "computed",
+  "orderBy",
+  "flags",
+  "preApply",
+  "saved",
+  "savedLoaded",
+  "savedCurrentId",
+  "savedNotes",
+  "files",
+  "builds",
+  "buildsExpireMinutes",
+  "buildId",
+  "builtRequest",
+  "builtQueryId",
+  "builtQueryName",
+  "manifestWritten",
+  "rowsUploaded",
+  "elapsedSeconds",
+  "urlExpiresInMinutes",
+  "builtAt",
+  "exportError",
+] as const satisfies readonly (keyof ExportBuilderState)[];
+
+export type SourceSnapshot = Pick<ExportBuilderState, (typeof SOURCE_KEYS)[number]>;
+
+const snapshotOf = (state: ExportBuilderState): SourceSnapshot =>
+  Object.fromEntries(SOURCE_KEYS.map((k) => [k, state[k]])) as SourceSnapshot;
+
 export interface ExportBuilderState {
   loadingConfig: boolean;
   /** The table the loaded configuration exports. */
   source: ExportTableKey;
+  /** The table picked on the search card: what the next search loads. */
+  searchSource: ExportTableKey;
+  /**
+   * The search the kept sources answer: the store or group and the dates,
+   * as one key (see scopeKey in the page's hook).
+   *
+   * Another source over the same search is restored from `cache` without a
+   * fetch. A different store, group or dates is a new search, and every kept
+   * source answered the old one, so they all go.
+   */
+  cacheScope: string | null;
+  /** The other sources already loaded for `cacheScope`, as they were left. */
+  cache: Partial<Record<ExportTableKey, SourceSnapshot>>;
   /**
    * The filter names the router takes, by table, from `GET export/tables`;
    * null until that has answered. A build whose request names one the router
@@ -270,6 +342,9 @@ export interface ExportBuilderState {
 export const initialState: ExportBuilderState = {
   loadingConfig: false,
   source: "sales",
+  searchSource: "sales",
+  cacheScope: null,
+  cache: {},
   routerFilters: null,
   stores: [],
   lists: {},
@@ -298,7 +373,7 @@ export const initialState: ExportBuilderState = {
   flags: {
     dateFormat: "",
     fileFormat: "csv",
-    filePrefix: "sales",
+    filePrefix: "",
     ordered: false,
   },
 
@@ -366,9 +441,59 @@ const devExportBuilderSlice = createSlice({
   name: "devExportBuilder",
   initialState,
   reducers: {
-    startConfigLoad: (state) => {
+    /**
+     * A search has started, for one source over one scope.
+     *
+     * A different scope drops every kept source. A different source starts
+     * from nothing: another table's group keys, measures and sort name
+     * columns this one does not have. The same source over a new range keeps
+     * its shape, as a new search always has.
+     */
+    startConfigLoad: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; scope: string }>,
+    ) => {
+      const { source, scope } = action.payload;
+      if (scope !== state.cacheScope) {
+        state.cache = {};
+        state.cacheScope = scope;
+      }
+      if (source !== state.source) {
+        Object.assign(state, snapshotOf(initialState));
+        state.source = source;
+      }
+      delete state.cache[source];
       state.loadingConfig = true;
       state.exportError = null;
+    },
+    /** The search card's source choice. */
+    setSearchSource: (state, action: PayloadAction<ExportTableKey>) => {
+      state.searchSource = action.payload;
+    },
+    /**
+     * Back to the search card with this source kept, so the next search can
+     * come back to it without asking again. The store and dates are the
+     * search card's own, and stay as they are.
+     */
+    changeSource: (state) => {
+      if (state.loaded) state.cache[state.source] = snapshotOf(current(state));
+      state.loaded = false;
+      state.searchSource = state.source;
+      state.savedOpen = false;
+      state.buildsOpen = false;
+      state.sql = null;
+    },
+    /** A kept source back on screen, as it was left. */
+    restoreSource: (state, action: PayloadAction<ExportTableKey>) => {
+      const kept = state.cache[action.payload];
+      if (!kept) return;
+      Object.assign(state, kept);
+      delete state.cache[action.payload];
+      state.source = action.payload;
+      state.searchSource = action.payload;
+      state.loaded = true;
+      state.loadingConfig = false;
+      state.configStamp += 1;
     },
     /**
      * Everything selectable arrives here, and everything arrives selected:
@@ -603,10 +728,16 @@ const devExportBuilderSlice = createSlice({
       state.savedBusy = true;
       state.savedError = null;
     },
-    setSaved: (state, action: PayloadAction<SavedConfig[]>) => {
+    /** A source's saved list. One that answers after the page has moved to
+     *  another source is not this list, and is dropped. */
+    setSaved: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; saved: SavedConfig[] }>,
+    ) => {
+      if (action.payload.source !== state.source) return;
       state.savedBusy = false;
       state.savedLoaded = true;
-      state.saved = action.payload;
+      state.saved = action.payload.saved;
     },
     /** One saved configuration back from a save: new or replacing its twin. */
     upsertSaved: (state, action: PayloadAction<SavedConfig>) => {
@@ -784,10 +915,16 @@ const devExportBuilderSlice = createSlice({
       state.buildsLoading = true;
       state.buildsError = null;
     },
+    /** As setSaved: a list for a source no longer on screen is dropped. */
     setBuilds: (
       state,
-      action: PayloadAction<{ builds: ExportBuild[]; expireMinutes: number }>,
+      action: PayloadAction<{
+        source: ExportTableKey;
+        builds: ExportBuild[];
+        expireMinutes: number;
+      }>,
     ) => {
+      if (action.payload.source !== state.source) return;
       state.buildsLoading = false;
       state.builds = action.payload.builds;
       state.buildsExpireMinutes = action.payload.expireMinutes;
@@ -861,12 +998,24 @@ const devExportBuilderSlice = createSlice({
       state.building = false;
       state.exportError = action.payload;
     },
-    resetExportBuilder: () => initialState,
+    /**
+     * The magnifier: a new search, everything kept thrown away. The search
+     * card offers the source that was on screen, and the router's filter list
+     * is static, so neither is asked for again.
+     */
+    resetExportBuilder: (state) => ({
+      ...initialState,
+      searchSource: state.source,
+      routerFilters: state.routerFilters,
+    }),
   },
 });
 
 export const {
   startConfigLoad,
+  setSearchSource,
+  changeSource,
+  restoreSource,
   setConfig,
   setRouterFilters,
   failConfigLoad,

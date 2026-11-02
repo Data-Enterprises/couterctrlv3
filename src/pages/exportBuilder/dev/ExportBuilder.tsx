@@ -8,6 +8,7 @@ import SqlModal from "./SqlModal";
 import QueryPanel from "./QueryPanel";
 import DownloadsModal from "./DownloadsModal";
 import SavedExportsModal from "./SavedExportsModal";
+import SourcePicker from "./SourcePicker";
 import { useExportBuilderCtx } from "./hooks";
 import { keepSortable } from "./sortRows";
 import {
@@ -69,12 +70,17 @@ const ExportBuilder = () => {
     return (
       <SearchCard
         title="Sales Export"
-        description="Pick a store or group and a date range. What comes back is the thing you configure: the stores it covers, the row types it holds and every column of the table."
+        description="Pick what to export, a store or group, and a date range. What comes back is the thing you configure: the stores it covers, the lists it holds and every column of the table."
         buttonLabel="Load config"
         loadingMessage="Reading the range..."
         loading={ctx.loadingConfig}
         blocked={ctx.searchBlocked}
-        onSearch={ctx.loadConfig}
+        leadingControls={<SourcePicker />}
+        onSearch={() => ctx.loadConfig()}
+        // Only while the source that was on screen still answers the search
+        // the card holds: back to a different question is not back.
+        onBack={ctx.canGoBack ? ctx.goBack : undefined}
+        backLabel={`Back to ${ctx.source.label}`}
       />
     );
   }

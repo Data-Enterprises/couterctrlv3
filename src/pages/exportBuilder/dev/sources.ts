@@ -280,8 +280,195 @@ export const SALES: ExportSource = {
   filePrefix: "sales",
 };
 
-/** Every source the page can export. Only Sales so far. */
-export const SOURCES: ExportSource[] = [SALES];
+/*
+ * The lists every other table shares. Their shapes are the router's own: a
+ * facet of pairs comes back keyed by the table's column names, so the same
+ * list is spelled differently from table to table (invoices says vendorid and
+ * subdepartment), and each source names its own.
+ */
+const vendors = (column: string): ListFilter => ({
+  // Text, like sales's vendor_id, and the name is often missing.
+  filter: "vendorIds",
+  facet: "vendors",
+  column,
+  match: "in",
+  label: "Vendors",
+  noun: "vendors",
+  nounOne: "vendor",
+  look: "name",
+  search: "Find a vendor...",
+  inSummary: true,
+  toItems: pairs(column, "vendor_name"),
+});
+
+const subDepartments = (column: string, nameColumn: string): ListFilter => ({
+  filter: "subDepartments",
+  facet: "subDepartments",
+  column,
+  match: "in",
+  numeric: true,
+  label: "Sub Departments",
+  noun: "sub departments",
+  nounOne: "sub department",
+  look: "idName",
+  search: "Find a sub department...",
+  inSummary: true,
+  toItems: pairs(column, nameColumn),
+});
+
+const CATEGORIES: ListFilter = {
+  filter: "categories",
+  facet: "categories",
+  column: "category",
+  match: "in",
+  numeric: true,
+  label: "Categories",
+  noun: "categories",
+  nounOne: "category",
+  look: "idName",
+  search: "Find a category...",
+  inSummary: true,
+  toItems: pairs("category", "category_description"),
+};
+
+const STATUSES: ListFilter = {
+  filter: "statuses",
+  facet: "statuses",
+  column: "status",
+  match: "in",
+  label: "Statuses",
+  noun: "statuses",
+  nounOne: "status",
+  look: "plain",
+  empty: "No statuses in this range.",
+  toItems: values,
+};
+
+/**
+ * Order lines, from `orders`.
+ *
+ * Counts, damages and vendor orders share the table and are told apart by
+ * order_type, so the type list is first: it is the question being asked.
+ */
+export const ORDERS: ExportSource = {
+  key: "orders",
+  label: "Orders",
+  blurb: "Order lines, counts (INV, PER), damages",
+  days: { filter: "orderDates", column: "order_date" },
+  codes: { filter: "productCodes", column: "product_code" },
+  descriptions: { filter: "productDescriptions", column: "description" },
+  lists: [
+    {
+      filter: "orderTypes",
+      facet: "orderTypes",
+      column: "order_type",
+      match: "in",
+      label: "Order Types",
+      noun: "order types",
+      nounOne: "order type",
+      look: "plain",
+      note: "INV and PER are counts, DAM and DMG are damages, and the rest are orders.",
+      empty: "No order types in this range.",
+      inSummary: true,
+      toItems: values,
+    },
+    STATUSES,
+    vendors("vendor_id"),
+    subDepartments("sub_department", "sub_department_description"),
+    CATEGORIES,
+  ],
+  flags: [],
+  filePrefix: "orders",
+};
+
+/**
+ * Received vendor invoice lines, from `invoices`.
+ *
+ * The router takes cashier numbers here too, and the page leaves them out on
+ * purpose: an invoice is an order received, entered by whoever runs the
+ * back office, so the cashier is not a question anyone asks of one.
+ */
+export const INVOICES: ExportSource = {
+  key: "invoices",
+  label: "Invoices",
+  blurb: "Received vendor invoice lines",
+  days: { filter: "invoiceDates", column: "invoice_date" },
+  codes: { filter: "productCodes", column: "product_code" },
+  descriptions: { filter: "productDescriptions", column: "product_description" },
+  lists: [
+    vendors("vendorid"),
+    subDepartments("subdepartment", "subdepartment_description"),
+    CATEGORIES,
+    STATUSES,
+  ],
+  flags: [
+    {
+      filter: "voidFlag",
+      column: "void_flag",
+      label: "Voided lines",
+      plural: "voids",
+      excluded: "voided lines excluded",
+      only: "voided lines only",
+      widened: "the void filter",
+    },
+    {
+      filter: "refundFlag",
+      column: "refund_key_flag",
+      label: "Refunds",
+      plural: "refunds",
+      excluded: "refunds excluded",
+      only: "refunds only",
+      widened: "the refund filter",
+    },
+    {
+      filter: "returnFlag",
+      column: "item_return_flag",
+      label: "Returns",
+      plural: "returns",
+      excluded: "returns excluded",
+      only: "returns only",
+      widened: "the return filter",
+    },
+  ],
+  filePrefix: "invoices",
+};
+
+/**
+ * Items marked down, from `markdowns`. Waste is one of the types, so it is
+ * exported from here rather than a source of its own.
+ */
+export const MARKDOWNS: ExportSource = {
+  key: "markdowns",
+  label: "Markdowns",
+  blurb: "Items marked down",
+  days: { filter: "orderDates", column: "order_date" },
+  codes: { filter: "productCodes", column: "product_code" },
+  descriptions: { filter: "productDescriptions", column: "description" },
+  lists: [
+    {
+      filter: "types",
+      facet: "types",
+      column: "type",
+      match: "in",
+      label: "Types",
+      noun: "types",
+      nounOne: "type",
+      look: "plain",
+      note: "Waste is one of these.",
+      empty: "No markdown types in this range.",
+      inSummary: true,
+      toItems: values,
+    },
+    vendors("vendor_id"),
+    subDepartments("sub_department", "sub_department_description"),
+    CATEGORIES,
+  ],
+  flags: [],
+  filePrefix: "markdowns",
+};
+
+/** Every source the page can export, in the search card's order. */
+export const SOURCES: ExportSource[] = [SALES, ORDERS, INVOICES, MARKDOWNS];
 
 /** The description for a table, Sales for one the page does not know. */
 export const sourceFor = (key: ExportTableKey | string): ExportSource =>

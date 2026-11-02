@@ -13,6 +13,7 @@ import {
   type ExportParams,
   type ExportPreviewResp,
   type ExportResp,
+  type ExportTableKey,
   type ExportTablesResp,
 } from "../../../api/salesExport";
 import {
@@ -38,6 +39,7 @@ import {
   failExport,
   finishExport,
   markExportSlow,
+  restoreSource,
   setConfig,
   setRouterFilters,
   setSql,
@@ -114,6 +116,18 @@ export const daysInRange = (start: string, end: string) => {
   return days.length > MAX_DAYS ? [] : days;
 };
 
+/**
+ * The search a configuration answers, as one key: the store or the group, and
+ * the dates. Two sources loaded under the same key answered the same question
+ * of different tables, so either can come back without a fetch.
+ */
+export const scopeKey = (
+  group: boolean,
+  id: number,
+  startDate: string,
+  endDate: string,
+) => `${group ? "group" : "store"}:${id}:${startDate}:${endDate}`;
+
 export const useExportBuilderCtx = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -133,6 +147,23 @@ export const useExportBuilderCtx = () => {
 
   /** Why the search card cannot run this range, or null. */
   const searchBlocked = rangeBlock(startDate, endDate);
+
+  /** The search the card holds now, keyed the way the kept sources are. */
+  const searchingGroup = isGroupSearch(search.type);
+  const scope = scopeKey(
+    searchingGroup,
+    searchingGroup ? search.selectedGroup.id : search.selectedStore.storeid,
+    startDate,
+    endDate,
+  );
+
+  /**
+   * The source that was on screen, kept and still answering the search the
+   * card holds: what the card's Back returns to. A different store or dates
+   * on the card means it would be the old question, so there is no Back.
+   */
+  const canGoBack =
+    !config.loaded && scope === config.cacheScope && Boolean(config.cache[config.source]);
 
   /**
    * The columns as the file will hold them: the user's order, narrowed to what
@@ -429,27 +460,33 @@ export const useExportBuilderCtx = () => {
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
-   * scope resolved to, the sale types actually present, every column, and ten
-   * sample rows. Narrowing afterwards is local — nothing here is asked twice.
+   * scope resolved to, the lists actually present, every column, and the
+   * sample rows. Narrowing afterwards is local -- nothing here is asked twice.
+   *
+   * Nor is a source: one already loaded for this same search comes back from
+   * the store as it was left, and only its builds are read again, because
+   * their links expire.
    */
-  const loadConfig = (
-    range?: { start: string; end: string },
-    after?: () => void,
-  ) => {
-    const group = isGroupSearch(search.type);
-    dispatch(startConfigLoad());
-    // Alongside the preview rather than after it. None of the three waits on
+  const loadConfig = () => {
+    const chosen = sourceFor(config.searchSource);
+    if (scope === config.cacheScope && config.cache[chosen.key]) {
+      dispatch(restoreSource(chosen.key));
+      loadBuilds(chosen.key);
+      return;
+    }
+    dispatch(startConfigLoad({ source: chosen.key, scope }));
+    // Alongside the preview rather than after it. None of these waits on
     // another, and the lists are ready by the time anyone looks for them.
     loadQueries();
-    loadSaved();
-    loadBuilds();
+    loadSaved(chosen.key);
+    loadBuilds(chosen.key);
     loadRouterFilters();
-    getExportPreview(url, token, TABLE, {
-      startDate: range?.start ?? startDate,
-      endDate: range?.end ?? endDate,
-      singleStore: group ? 0 : 1,
-      useGroups: group ? 1 : 0,
-      searchValue: group ? search.selectedGroup.id : search.selectedStore.storeid,
+    getExportPreview(url, token, chosen.key, {
+      startDate,
+      endDate,
+      singleStore: searchingGroup ? 0 : 1,
+      useGroups: searchingGroup ? 1 : 0,
+      searchValue: searchingGroup ? search.selectedGroup.id : search.selectedStore.storeid,
     })
       .then((resp) => {
         const j = resp.data as ExportPreviewResp;
@@ -461,33 +498,34 @@ export const useExportBuilderCtx = () => {
         const facets = j.facets ?? {};
         dispatch(
           setConfig({
-            source: source.key,
+            source: chosen.key,
             stores: j.stores ?? [],
             // Each list turned into choices by the source's description.
             lists: Object.fromEntries(
-              source.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]),
+              chosen.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]),
             ),
             dateFormats: j.dateFormats ?? [],
             // Not from the response: the endpoint returns no day list, and a
             // day with no rows is still a day someone can ask to exclude.
-            days: daysInRange(
-              range?.start ?? startDate,
-              range?.end ?? endDate,
-            ),
+            days: daysInRange(startDate, endDate),
             columns: j.columns ?? [],
             rows: j.rows ?? [],
             hasData: j.hasData,
             message: j.message,
           }),
         );
-        // setConfig has just put every list back to all of it, so anything
-        // that means to narrow them has to land after it, not before.
-        after?.();
       })
       .catch((err: JsonError) => {
         dispatch(failConfigLoad());
         toast.error("Could not load the export config: " + reasonOf(err));
       });
+  };
+
+  /** The search card's Back: the source that was on screen, as it was. */
+  const goBack = () => {
+    if (!canGoBack) return;
+    dispatch(restoreSource(config.source));
+    loadBuilds(config.source);
   };
 
   /**
@@ -616,9 +654,9 @@ export const useExportBuilderCtx = () => {
    * report someone set up on Monday is still there on Friday and on another
    * machine. The page holds the shape; the endpoint holds the file.
    */
-  const loadSaved = () => {
+  const loadSaved = (table: ExportTableKey = TABLE) => {
     dispatch(startSavedWork());
-    listSavedConfigs(url, token)
+    listSavedConfigs(url, token, table)
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
@@ -626,13 +664,15 @@ export const useExportBuilderCtx = () => {
           return;
         }
         // A row that will not parse is skipped rather than shown: the table
-        // is shared, and one saved by hand is not ours to render.
+        // is shared, and one saved by hand is not ours to render. So is one
+        // that exports another table, whatever label it was filed under.
         dispatch(
-          setSaved(
-            (j.queries ?? [])
+          setSaved({
+            source: table,
+            saved: (j.queries ?? [])
               .map(parseConfigRow)
-              .filter((c): c is SavedConfig => c !== null),
-          ),
+              .filter((c): c is SavedConfig => c !== null && c.payload.source === table),
+          }),
         );
       })
       .catch((err: JsonError) =>
@@ -715,9 +755,9 @@ export const useExportBuilderCtx = () => {
   const failed = (j: { error?: number; success?: boolean }) =>
     j.error !== 0 || j.success === false;
 
-  const loadBuilds = () => {
+  const loadBuilds = (table: ExportTableKey = TABLE) => {
     dispatch(startBuildsLoad());
-    listExportBuilds(url, token, TABLE)
+    listExportBuilds(url, token, table)
       .then((resp) => {
         const j = resp.data as ExportBuildsResp;
         if (failed(j)) {
@@ -726,6 +766,7 @@ export const useExportBuilderCtx = () => {
         }
         dispatch(
           setBuilds({
+            source: table,
             builds: j.builds ?? [],
             expireMinutes: j.urlExpiresInMinutes ?? 60,
           }),
@@ -843,7 +884,8 @@ export const useExportBuilderCtx = () => {
       output: {
         dateFormat: request.dateFormat ?? "",
         fileFormat: request.fileFormat ?? "csv",
-        filePrefix: request.filePrefix ?? source.filePrefix,
+        // None is the table's own name, which is what "" means here.
+        filePrefix: request.filePrefix ?? "",
         ordered: request.ordered ?? false,
       },
     };
@@ -1012,6 +1054,8 @@ export const useExportBuilderCtx = () => {
     blocked,
     searchBlocked,
     loadConfig,
+    canGoBack,
+    goBack,
     loadBuilds,
     reloadBuild,
     labelBuild,
