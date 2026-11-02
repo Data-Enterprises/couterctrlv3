@@ -5,9 +5,11 @@ import {
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
-  setDevAssociationSeedData,
+  setDevAssociationSeedResult,
+  clearDevAssociationSeedError,
   setDevAssociationRerootUpc,
   setDevAssociationRerootLoading,
+  dropDevAssociationReroot,
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   type AssociationItem,
@@ -15,6 +17,9 @@ import {
 } from "../../../../../features/dev/devUpcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+import { failureReason } from "../../answer";
+import { buildSeedKey, seedDataFor } from "./associationStats";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
@@ -33,14 +38,16 @@ const fmtDate = (d: string) => {
   return `${y}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
 
-const buildSeedKey = (upcs: string[]) => [...upcs].sort().join(",");
-
 type ContextMenuState = { x: number; y: number; upc: string };
 
 const AssociationTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
+  /** Why the last re-root didn't load, shown over the seed view it fell back
+   *  to. Cleared by the next re-root or Dismiss. */
+  const [rerootNote, setRerootNote] = useState<string | null>(null);
 
   const storeidsArr = useMemo(() => ctx.storeids.split(",").map(Number).filter(Boolean), [ctx.storeids]);
 
@@ -82,6 +89,7 @@ const AssociationTab = () => {
   const seedUpcs = ctx.selectedUpcs;
 
   const fetchSeed = async (upcsToQuery: string[]) => {
+    const key = buildSeedKey(upcsToQuery);
     dispatch(setDevAssociationSeedLoading(true));
     try {
       const res = await upcQueue.enqueue(`assoc:seed:${buildSeedKey(upcsToQuery)}`, (signal) =>
@@ -90,22 +98,42 @@ const AssociationTab = () => {
           storeidsArr, upcsToQuery, LIMIT, "top", signal,
         ),
       );
-      // Superseded by a newer search. Leaving seedLoaded alone matters here:
-      // marking it loaded would let the guard below skip the new run's fetch.
+      // Superseded by a newer search. The seed key was already moved to this
+      // seed set, so a seedLoaded left true by the previous seed would let the
+      // guard below take that seed's companions for this one and never ask.
+      // Marked unloaded instead, and looked at again against the search as it
+      // is now.
       if (!res) {
         dispatch(setDevAssociationSeedLoading(false));
+        dispatch(setDevAssociationSeedLoaded(false));
+        retry();
         return;
       }
+      // A failed answer is recorded as one, with its reason. It used to mark
+      // the seed loaded and leave the previous seed's companions in place,
+      // which then showed under this seed set's title with no retry.
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
-        dispatch(setDevAssociationSeedData({ totalBaskets: res.data.total_baskets, items }));
+        const result = { totalBaskets: res.data.total_baskets, items };
+        dispatch(setDevAssociationSeedResult({ key, result, error: null }));
+      } else {
+        const error = res.data.msg || "the association lookup failed";
+        dispatch(setDevAssociationSeedResult({ key, result: null, error }));
       }
       dispatch(setDevAssociationSeedLoading(false));
       dispatch(setDevAssociationSeedLoaded(true));
-    } catch {
+    } catch (err) {
+      dispatch(setDevAssociationSeedResult({ key, result: null, error: failureReason(err) }));
       dispatch(setDevAssociationSeedLoading(false));
       dispatch(setDevAssociationSeedLoaded(true));
     }
+  };
+
+  /** Ask again for the seed set that failed. */
+  const retrySeed = () => {
+    dispatch(clearDevAssociationSeedError());
+    dispatch(setDevAssociationSeedLoaded(false));
+    retry();
   };
 
   // Fetches whenever the effective seed set actually changes — content, not
@@ -142,12 +170,20 @@ const AssociationTab = () => {
     // ctx.searchVersion: a re-search with the exact same UPCs/store wouldn't
     // otherwise change buildSeedKey's output, so it's needed to force a
     // refetch the same way every other tab's initial-fetch effect does.
-  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion]);
+  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion, retryTick]);
 
   const rerootTo = async (upc: string) => {
+    setRerootNote(null);
     dispatch(setDevAssociationRerootUpc(upc));
     if (ctx.associationRerootCache[upc]) return;
     dispatch(setDevAssociationRerootLoading(true));
+    // A re-root that can't load goes back to the seed view and says why. It
+    // used to stay on the item with no answer, which read "No associations
+    // found" -- a claim about the item, not about the call.
+    const fail = (why: string) => {
+      dispatch(dropDevAssociationReroot(upc));
+      setRerootNote(`Couldn't load associations for ${upcItemsMap.get(upc) ?? upc}: ${why}.`);
+    };
     try {
       const res = await upcQueue.enqueue(`assoc:reroot:${upc}`, (signal) =>
         getItemAssociation(
@@ -156,13 +192,21 @@ const AssociationTab = () => {
         ),
       );
       // Superseded by a newer search — the re-root cache has been cleared and
-      // this companion belongs to the old seed set.
-      if (!res) return;
+      // this companion belongs to the old seed set. Back to the seed view,
+      // quietly: the search changed, nothing failed.
+      if (!res) {
+        dispatch(dropDevAssociationReroot(upc));
+        return;
+      }
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
         const result: AssociationResult = { totalBaskets: res.data.total_baskets, items };
         dispatch(setDevAssociationRerootCacheEntry({ upc, result }));
+      } else {
+        fail(res.data.msg || "the association lookup failed");
       }
+    } catch (err) {
+      fail(failureReason(err));
     } finally {
       dispatch(setDevAssociationRerootLoading(false));
     }
@@ -191,7 +235,30 @@ const AssociationTab = () => {
     );
   }
 
-  if (ctx.associationSeedLoading && !ctx.associationSeedLoaded) {
+  if (ctx.associationSeedError && ctx.associationSeedKey === seedKey) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 h-full text-[11px] text-content/85">
+        <span>Associations didn't load: {ctx.associationSeedError}.</span>
+        <button
+          type="button"
+          onClick={retrySeed}
+          className="text-[12px] font-semibold text-brand_navy_hover underline underline-offset-2"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Only the answer for the UPCs ticked now. Between ticking a new set and its
+  // answer landing -- the debounce, then the call -- the previous set's
+  // companions are not this set's, so the tab says it's loading instead.
+  const seedData = seedDataFor(
+    ctx.selectedUpcs,
+    ctx.associationSeedData,
+    ctx.associationSeedDataKey,
+  );
+  if (!seedData) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         Loading associations…
@@ -199,22 +266,14 @@ const AssociationTab = () => {
     );
   }
 
-  if (!ctx.associationSeedLoaded || !ctx.associationSeedData) {
-    return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
-        Navigate here to load associations
-      </div>
-    );
-  }
-
   const rerootUpc = ctx.associationRerootUpc;
   const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
 
-  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : ctx.associationSeedData;
+  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : seedData;
 
   const allVisibleUpcs = [
     ...ctx.searchedUpcs,
-    ...(ctx.associationSeedData?.items.map((i) => i.product_code) ?? []),
+    ...seedData.items.map((i) => i.product_code),
   ];
 
   return (
@@ -228,23 +287,41 @@ const AssociationTab = () => {
         onBackToSeed={backToSeed}
       />
 
-      {rerootUpc && ctx.associationRerootLoading && !rerootResult ? (
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
-          Loading {upcItemsMap.get(rerootUpc) ?? rerootUpc}’s associations…
-        </div>
-      ) : activeResult ? (
-        <AssociationDetailPanel
-          result={activeResult}
-          title={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : `${seedUpcs.length} seed items`}
-          isReroot={Boolean(rerootUpc)}
-          rerootUpc={rerootUpc}
-          prevTotalBaskets={rerootUpc ? ctx.associationSeedData?.totalBaskets : undefined}
-          onReroot={rerootTo}
-          onContextMenu={openContextMenu}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">No associations found</div>
-      )}
+      <div className="flex-1 min-w-0 flex flex-col min-h-0">
+        {rerootNote && !rerootUpc && (
+          <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] text-content/85">
+            <span>{rerootNote}</span>
+            <button
+              type="button"
+              onClick={() => setRerootNote(null)}
+              className="font-semibold text-brand_navy_hover underline underline-offset-2 flex-shrink-0"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        {/* A re-root with no answer yet is loading, whatever the shared loading
+            flag says: an earlier re-root finishing used to clear it, and the
+            one still on its way then read "No associations found". A failed or
+            cancelled one leaves the re-root, so this can't stick. */}
+        {rerootUpc && !rerootResult ? (
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+            Loading {upcItemsMap.get(rerootUpc) ?? rerootUpc}’s associations…
+          </div>
+        ) : activeResult ? (
+          <AssociationDetailPanel
+            result={activeResult}
+            title={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : `${seedUpcs.length} seed items`}
+            isReroot={Boolean(rerootUpc)}
+            rerootUpc={rerootUpc}
+            prevTotalBaskets={rerootUpc ? seedData.totalBaskets : undefined}
+            onReroot={rerootTo}
+            onContextMenu={openContextMenu}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">No associations found</div>
+        )}
+      </div>
 
       {contextMenu && (
         <UpcContextMenu

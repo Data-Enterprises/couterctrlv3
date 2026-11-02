@@ -20,6 +20,7 @@ import {
   useCompanyFilterPredicate,
 } from "../users/companyFilter";
 import { callReason } from "./storeMembership";
+import { withinReachOf } from "./userReach";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -71,25 +72,14 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     load();
   }, [group.id]);
 
-  const levelOf = useMemo(
-    () => new Map(users.map((u) => [u.id, u.user_level])),
-    [users],
-  );
-
   /**
-   * Whether this person is the viewer's to see and change.
-   *
-   * **Fails closed.** This used to read `?? 0`, so a userid with no level
-   * behind it counted as level 0 and was shown — and until the user list
-   * lands that is every row. `assign_base_group_to_user` takes a bare userid
-   * and checks no levels, so this is the only thing between a level 7 and a
-   * level 9's access, and one that defaults to "probably fine" is not a
-   * guard.
+   * Whether this person is the viewer's to see and change. Fails closed;
+   * the rule and why are in userReach.ts, which the export reads too.
    */
-  const withinReach = (r: BaseGroupUserRow) => {
-    const level = levelOf.get(r.userid);
-    return level !== undefined && level <= ctx.userLevel;
-  };
+  const withinReach = useMemo(
+    () => withinReachOf(users, ctx.userLevel),
+    [users, ctx.userLevel],
+  );
 
   /** Until the levels arrive every row is hidden, which reads as "this group
    *  has nobody" rather than "still loading". Say the second one. */

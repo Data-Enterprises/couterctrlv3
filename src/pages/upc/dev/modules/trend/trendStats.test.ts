@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UpcTrend } from "../../../../../interfaces";
-import { accelerationFactor, getTrendStatus, impactUnits } from "./trendStats";
-import { getWindowDays } from "./trendWindow";
+import { accelerationFactor, getTrendStatus, impactUnits, isDecline } from "./trendStats";
+import { getTrendInsight, hasAvailabilityFlag } from "./trendPhrase";
+import { trendRequest } from "./trendWindow";
 
 /** Verbatim from a live `marketing/trend_detector` answer: store 545,
  *  9/1/2026 - 9/16/2026, periods 90. Both rows are real, and between them they
@@ -104,28 +105,106 @@ describe("acceleration factor", () => {
   });
 });
 
-describe("window days", () => {
-  it("takes the after window from the response's own two ends", () => {
-    // 9/1 - 9/16 inclusive. Bananas sold on 15 of them, which is what makes
-    // 16 the only divisor an active rate of <= 100% can come from.
-    const { afterWindowDays } = getWindowDays(
-      "2026-09-01T00:00:00",
-      "2026-09-16T00:00:00",
-      90,
-      true,
-    );
-    expect(afterWindowDays).toBe(16);
-    expect(BANANAS.active_days_after).toBeLessThanOrEqual(afterWindowDays);
+describe("trend window", () => {
+  // Read on 9/17, the day after the live answer above was taken.
+  const sept17 = new Date(2026, 8, 17, 15, 30);
+
+  it("asks for the days since the start date plus the baseline", () => {
+    // The endpoint counts back from today, so 90 alone would leave 74 days
+    // of "before" for a 9/1 search read on 9/17.
+    const { periods, window } = trendRequest("9/1/2026", 90, sept17);
+    expect(periods).toBe(106);
+    expect(window.beforeDays).toBe(90);
   });
 
-  it("falls back to measuring against today when the fixes are off", () => {
-    // A pivot a decade back: the end date says 16 days, "today" says
-    // thousands, so the two paths can't be confused whatever day this runs.
-    const { afterWindowDays } = getWindowDays(
-      "2016-09-01T00:00:00",
-      "2016-09-16T00:00:00",
-      90,
-    );
-    expect(afterWindowDays).toBeGreaterThan(1000);
+  it("counts the after window from the start date through yesterday", () => {
+    // 9/1 - 9/16: bananas sold on 15 of those 16 days.
+    const { window } = trendRequest("9/1/2026", 90, sept17);
+    expect(window.afterDays).toBe(16);
+    expect(BANANAS.active_days_after).toBeLessThanOrEqual(window.afterDays);
+  });
+
+  it("keeps a full baseline however old the search is", () => {
+    // A start date 200 days back used to leave no "before" at all.
+    const { periods, window } = trendRequest("3/1/2026", 90, sept17);
+    expect(window.afterDays).toBe(200);
+    expect(periods).toBe(290);
+    expect(window.beforeDays).toBe(90);
   });
 });
+
+describe("an item that stopped selling", () => {
+  // Bananas' before half, and not a sale since.
+  const STOPPED: UpcTrend = {
+    ...BANANAS,
+    slope_after: 0,
+    mean_after: 0,
+    pct_change_mean: -100,
+    total_after: 0,
+    active_days_after: 0,
+  };
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+
+  it("is Stopped selling, not Growing", () => {
+    // The old formula gave (0 - 112.72) x 0 = 0, and 0 counted as growing.
+    expect(getTrendStatus(STOPPED, true, window)).toBe("stopped");
+    expect(isDecline("stopped")).toBe(true);
+  });
+
+  it("lost what it would have sold at its old pace", () => {
+    // 8228.4 units over 90 days, for 16 days: about 1,463 not sold.
+    expect(Math.round(impactUnits(STOPPED, true, window))).toBe(-1463);
+  });
+
+  it("says so in plain words", () => {
+    const text = getTrendInsight(STOPPED, "stopped", true, window);
+    expect(text).toContain("nothing since 9/1");
+    expect(text).toContain("1,463 units not sold");
+  });
+});
+
+describe("reduced availability", () => {
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+  // 10 a day on 85 of 90 days before; 11 a day since, but on 8 of 16 days.
+  const SHORT: UpcTrend = {
+    ...BANANAS,
+    mean_before: 10,
+    total_before: 850,
+    active_days_before: 85,
+    mean_after: 11,
+    total_after: 88,
+    active_days_after: 8,
+    pct_change_mean: 10,
+  };
+
+  it("comes up when it sold faster on the days it sold, but on fewer days", () => {
+    // 9.4 a calendar day before, 5.5 since. It used to be unreachable.
+    expect(getTrendStatus(SHORT, true, window)).toBe("reduced-availability");
+    expect(Math.round(impactUnits(SHORT, true, window))).toBe(-63);
+  });
+
+  it("is growing when it sold on as many days too", () => {
+    const steady = { ...SHORT, active_days_after: 16, total_after: 176 };
+    expect(getTrendStatus(steady, true, window)).toBe("growing");
+  });
+
+  it("describes the drop as a share of days", () => {
+    const text = getTrendInsight(SHORT, "reduced-availability", true, window);
+    expect(text).toContain("50% of days since, down from 94% before");
+  });
+});
+
+describe("the fewer-selling-days note", () => {
+  const window = { pivot: "9/1/2026", beforeDays: 90, afterDays: 16 };
+
+  it("doesn't fire for an item that sold nearly every day in both windows", () => {
+    // 73 of 90 against 15 of 16: the counts fell by 80%, the shares rose.
+    expect(hasAvailabilityFlag(BANANAS, window)).toBe(false);
+  });
+
+  it("fires when the share of days fell by more than half", () => {
+    const patchy = { ...BANANAS, active_days_after: 5 };
+    expect(hasAvailabilityFlag(patchy, window)).toBe(true);
+  });
+});
+

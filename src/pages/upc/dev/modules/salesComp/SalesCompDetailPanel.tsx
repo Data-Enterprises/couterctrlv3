@@ -32,7 +32,7 @@ const SalesCompDetailPanel = ({ stats: s }: Props) => {
     },
     {
       label: "Peak day",
-      value: DAY_SHORT[s.peakIdx],
+      value: s.peakIdx >= 0 ? DAY_SHORT[s.peakIdx] : "—",
       sub: !s.hasLY
         ? undefined
         : s.peakShifted

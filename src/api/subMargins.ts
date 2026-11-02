@@ -173,6 +173,17 @@ export const ITEM_ACTIONS_MAX_CODES = 2000;
  * are a second expensive query and `subs/subs` still gates them; narrowed they
  * are 111 rows in 94ms, so the switch would only be something to get wrong.
  *
+ * **Scope is one store or one user group** — the same triple /subs/subs takes:
+ * singleStore with a storeid, or useGroups with a group id. Rows come back
+ * grouped by storeid either way, so a group search answers for every store in
+ * it in one call.
+ *
+ * An explicit `storeids` field exists on a backend branch, for a caller that
+ * has resolved a set of stores that is not exactly a group. It is not on dev,
+ * where an unknown field is dropped silently rather than refused — so sending
+ * it today would fall through to the triple and scope by whatever that said,
+ * which is how it goes wrong quietly rather than loudly.
+ *
  * Codes go out as they are held. The backend matches the column raw rather
  * than through `replace(product_code, '.0', '')`, having verified the suffix
  * is gone from `sales_partitioned` — and this page normalises on the way in
@@ -187,6 +198,7 @@ export const getItemActions = async (
   searchValue: number,
   singleStore: number,
   product_codes: string[],
+  signal?: AbortSignal,
 ) => {
   const json = await axios({
     method: "POST",
@@ -195,6 +207,7 @@ export const getItemActions = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "subs/item_actions",
+    signal,
     data: {
       startDate,
       endDate,

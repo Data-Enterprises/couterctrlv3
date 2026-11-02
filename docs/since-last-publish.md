@@ -789,6 +789,14 @@ After Submit, the sent costs show straight away: in Browse, in the Problems
 list, and when an order is opened again. Before, they went back to the old
 figures until the import ran.
 
+### The Unit cost column shows what you typed
+
+Case cost, Ext cost and margin each read `now → after` as soon as a unit
+cost is typed. Unit cost — the one column the box above it feeds — showed only
+the loaded figure, so on an item ordered by the unit the screen said $0.00
+under Unit cost while the arrow appeared under Case cost. It now moves with
+the rest.
+
 ## Tickets
 
 ### A ticket from a page with no store search names no store
@@ -938,6 +946,22 @@ and 399, Houchens Corp Bowling Green, Sonic 0). The server sends them with no
 company name, and sorting the companies by name threw on them. They are listed
 now, last, under **No company**.
 
+The picker's companies now fold. A tech's list is 400-odd stores, so each
+company starts folded and shows as one line with its store count; a click
+opens it. A company with a ticked store starts open and says how many are
+ticked, and typing in the search box opens every company with a match.
+
+**Report an issue lists your own stores.** The picker no longer asks the
+server for a store list each time it opens. It uses the stores assigned to the
+person signed in, which the app already has from sign-in, so it opens straight
+away. Before, a tech was offered every store on the system (423); now it's only
+theirs, the same stores the server lets anyone file against. The page still
+decides where the list starts: a store search ticks that store, a group search
+lists the group's stores first, and pages with no search (User Management,
+Groups, the help desk) start on all of yours. Someone with no stores is told,
+and the ticket is filed as not about a store. The store names no longer carry
+a "#10" in front, since each name already starts with its number.
+
 **Every page now files under a category.** A ticket from any page used to
 arrive with the category blank on nine of them (User Management among them).
 The categories now follow the nav's page families, decided 29 Oct: Sales,
@@ -1043,3 +1067,254 @@ about what didn't carry over (a vendor this range doesn't have, a sort on a
 column that's gone) were left inside the Saved window, unseen unless you
 opened it again. They now appear in a strip above the preview until you
 dismiss them, and a new search clears them.
+
+## UPC List: a Movement tab (Amanda's request, 28 Oct)
+
+dev mode only
+
+A new **Movement** tab answers "how much of this item did each store move,
+week by week": units, or pounds for an item sold by weight, with refunds taken
+off. Each item shows its stores down the side and its weeks across, with a
+total for every store and every week. Stores in the search that sold none of it
+keep their row of dashes, muted, so the list reads as checked rather than
+incomplete. Each week's figure is shaded by how much it moved, on the same blue
+scale as Sales Comp's day grid, so the stores carrying an item stand out; the
+bottom row is the Total movement for each week.
+
+The strip above the grid describes the one item on screen: the weeks, how many
+of the searched stores moved it, **per store per week** (its total over the
+stores that sold any, times the weeks) and **last week against the average of
+the weeks before it**. The grid scrolls sideways when the weeks run wide, with
+the store names pinned on the left and the totals on the right.
+
+The weeks end on the search's end date; pick a Saturday for Sunday-to-Saturday
+weeks. It opens on six weeks whatever the search covers, and a **Weeks**
+control (1 to 13) sets how far back it goes; changing it
+reloads only this tab, never Sales Comp or the others. The download icon
+exports it as a CSV with a line per UPC per store and a column per week ending,
+the shape a store's movement request asks for.
+
+It reads the Item Actions sales endpoint one week at a time, scoped the way the
+search was made -- the group for a group search, the store for a store search
+-- through the same one-at-a-time queue as the other tabs, and only when the
+tab is opened. That endpoint reports per store, so one call a week covers every
+store in the group. A dedicated movement endpoint is planned
+(`docs/backend-movement-and-store-lists-2026-10-28.md`, part A); the tab can
+switch to it without changing what it shows.
+
+## The date picker names the day
+
+dev mode only
+
+The single date on a search card now shows its weekday, "8/16 · Sun"
+instead of "8/16", so you can see a week-ending date lands on the right day
+before you load. Every dev page with a single date picker gets it.
+
+## User Management: export a base group's users
+
+dev mode only
+
+The download button on a base group now exports its users as well as its
+stores. The window has a Users section with **Assigned users** (people who
+hold the group) and **Unassigned users**, each a list of username, first
+name, last name and email, alongside the assigned and unassigned stores it
+already offered. Tick any mix and they go into one file. It lists only people
+at or below your own level, the same people the Users tab shows you.
+
+## UPC List: tabs recover from a re-search, and no sales is an answer
+
+dev mode only
+
+**A search while a tab is loading no longer leaves it empty.** Pressing
+Search again while Sales Comp, Price Opt, Trend or Association was still
+loading cancelled the call, and if the search didn't change that tab's list of
+UPCs -- the same UPCs again, or only new ones added -- the tab never asked
+again: last year's figures stayed blank, or the tab read "No sales comparison
+data", until you left it and came back. A cancelled call now asks again on its
+own, for the search as it is.
+
+**UPCs with no sales are no longer treated as an error.** When the UPCs asked
+about sold nothing in the window, Sales Comp, Price Opt and Trend showed a "No
+data was returned." warning and asked again on every visit -- for a new item
+with no last year, that was the page's heaviest call every time you opened
+Sales Comp. No sales is now a real answer: the item shows no figures, and it
+isn't asked for again. A real failure still warns and retries on the next
+visit.
+
+## UPC List: batch 1 fixes (search and export)
+
+dev mode only
+
+**The tabs stay on the search you ran.** Changing the dates, store or group in
+the re-search window and then closing it without searching used to steer the
+next tab you opened: it fetched the new dates for the old stores, Sales Comp's
+week figures moved to the new end date, and the header showed the new dates
+over the old data. The search is now kept as it was when you pressed Search,
+and the tabs and the header read that until you search again.
+
+**Adding UPCs to the same group picks up its current stores.** Searching the
+same group again with more UPCs looked the group's stores up and then threw
+the answer away, so a store deactivated in the group since the first search
+kept being searched. If the group's stores have changed, the search now counts
+as a new one and every tab reloads for the current stores; if they haven't,
+adding UPCs still only fetches the new ones.
+
+**Two group searches can't finish out of order.** A group search waits while
+the group's stores are looked up. Pressing Search again during that wait could
+let the first search finish last and put its stores under the second one's
+header. The Search button now reads "Searching…" and is disabled during the
+lookup, and a lookup that returns after a newer search has started is ignored.
+
+**"Selected UPCs" means the ticked ones.** With nothing ticked in the left
+list, the screen says "No UPCs selected", but exporting "Selected UPCs"
+downloaded every UPC. The option is now greyed out with "(none selected)"
+until something is ticked.
+
+**Export waits for the data.** Clicking Download while a tab was still loading,
+or after its call failed, saved a file with headers only (or, on Movement, rows
+of blanks that read like nothing sold), and the window closed as if it had
+worked. Download is now greyed out until the tab has loaded every UPC the file
+would hold, with a line saying what it's waiting for ("Sales Comp hasn't loaded
+for 3 UPCs yet."). Sales Comp's summary also waits for last year to finish.
+Trend and Association, which only export ticked UPCs, say "No UPCs selected."
+when nothing is ticked.
+
+## UPC List: batch 2 fixes (Trend)
+
+dev mode only
+
+**Trend compares against the 90 days before your start date.** Trend's data
+runs from the start date to today, whatever the end date says, and compares it
+with what came before. It used to ask for a flat 90 days ending today, so a
+recent search compared against whatever was left of those 90 days, and a
+search starting more than 90 days ago had no "before" at all: every item read
+"New since pivot". It now always gets the full 90 days before the start date.
+The "Since pivot" tile shows the real length of the window, labelled "from 8/1,
+to date", so the active rates and the small-sample note are measured against
+the right number of days. The window is also kept with the Trend data, so
+leaving the page and coming back no longer shows "Since pivot 0d" or "NaN%".
+
+**An item that stopped selling says so.** An item that sold before the start
+date and not once since was labelled Growing, in green, with "Sales are up
+-100.0%". It now reads **Stopped selling**, in red, with how much it sold a day
+before and roughly how many units it would have sold since at that pace. It
+counts toward "Declining items" (the tile says "incl. 2 stopped selling") and
+goes in the Declining export.
+
+**"Reduced availability" can come up.** The status is meant for an item that
+sells as well as ever on the days it's on the shelf, but is on the shelf on
+fewer days, so less of it moves overall. Its test compared two figures that
+always moved together, so no item ever got it: the tile always read "0 of n"
+and that export was always empty. It now compares units per calendar day, so
+an item selling faster per selling day on half as many days is flagged, with
+roughly how many units the missing days cost. The sentence gives the days as
+shares ("sold on 50% of days since, down from 94% before").
+
+**No more false "selling days dropped sharply".** A declining item's sentence
+can add that it also sold on far fewer days. That compared raw day counts
+across two windows of very different lengths (73 days in 90 against 15 in 16),
+so an item selling nearly every day got the note. It now compares the share of
+days with a sale in each window, and flags only when that share fell by more
+than half ("sold on 30% of days since, down from 81% before").
+
+## UPC List: batch 3 fixes (Association)
+
+dev mode only
+
+**Association never shows one seed's companions under another's name.** When
+you ticked a different set of UPCs, the tab kept showing the previous set's
+companions, KPIs and export, titled as the new set, until the new answer
+landed. If that answer failed, the old companions stayed for good, or the tab
+sat on "Navigate here to load associations" with no way to retry. Now the
+tab says "Loading associations…" until the answer for the ticked UPCs arrives,
+and a failed load shows the reason with a Try again button. The KPI strip and
+the export follow the same rule.
+
+**Looking up a companion's own associations no longer claims "No
+associations found" by mistake.** Clicking one companion and then another
+could show "No associations found" for the second while it was still
+loading, and a lookup cut short by a new search or a server error showed it
+for good. Now the tab says "Loading …'s associations" until that item's answer
+arrives. If it can't load, the tab goes back to the seed view with a line
+saying which item failed and why, which you can dismiss.
+
+## UPC List: batch 4 fixes (Sales Comp)
+
+dev mode only
+
+**A part week at the start no longer skews week over week.** Week over week
+compares the last full week with the average of the full weeks. Only the end
+of the range was checked, so a search starting on a Wednesday counted
+Wednesday to Sunday as a full week: an item selling the same every day read
+as up 16.7%. A week now counts only when all seven of its days are inside the
+searched dates.
+
+**A week with no sales counts as zero.** The server only sends weeks that
+sold, and the tab built its weeks from what came back, so a week with no sales
+simply wasn't there. An item that stopped selling in the last week compared
+its last selling week with its average and read as flat or up. Every week in
+the searched dates is now in the week table, a week with no sales shows $0,
+and it counts in week over week: that item now reads down 100%.
+
+**The peak day is the real peak.** Each weekday's average was its total
+divided by the number of weeks, so a weekday the dates include fewer times
+was understated. Over Monday 10/5 to Wednesday 10/14 (two Mondays, one
+Saturday), a $100 Saturday averaged $50 and lost the peak to two $60 Mondays.
+Each weekday is now divided by how many times it falls in the searched dates,
+for this year and last, in the item's figures, the KPI strip's peak day and
+the export.
+
+**vs LY compares like for like, and items that stopped selling stay in.** The
+strip's vs LY added up every item's sales this year against last year's, so a
+new item counted in full with nothing against it: two flat items and one new
+one read up 33%. It now compares only items that sold in both years, and when
+that's not all of them it says so ("on 4 of 5 items sold both years"). An item
+that sold last year and not this year used to vanish from the list, the strip
+and the export; it now stays in the list at $0, down 100%, with no peak day.
+
+## UPC List: batch 5 fixes (Price Opt)
+
+dev mode only
+
+**The KPI strip, the item panel and the export agree on price points.** The
+strip left out prices that rang but moved nothing (a sale and its refund,
+say), while the panel and the export kept them, so one item could read 2
+points and elasticity -1.7 in the strip and 3 points and "—" in the panel.
+All three now leave those prices out, and the item list's "N price points
+tested" follows.
+
+**A weighed item's best-price volume is in pounds everywhere.** For a
+by-the-pound item whose best price had no weight on its own row, the tile
+showed "0" next to a per-pound price while the export wrote the ring count
+as "ea". The volume now adds up every sale at that price and is shown in
+pounds in both places, "0.00 lb" if that's what it moved.
+
+## User Management: the ? help follows the real workflow
+
+dev mode only
+
+The help panel described a screen that has not existed for months: an edit
+view of two tabs with a "Save access" button, a trash icon that "deletes", and
+a user list with no access type in it. Anybody following it was hunting for
+controls that are not there.
+
+It now follows the tree as built. Six guides — add a user, change what they
+can see, copy a setup, build a base group, switch somebody off or back on,
+reset a password — each one walking the four steps of the wizard that is both
+Add and Edit. The chips are labels as the screen carries them, so
+**Check Availability** is named (nothing is checked as you type, which the old
+help implied), and so are **Create user**, **Save changes**, **Deactivate
+users** and **Inactive**.
+
+Four diagnostics replace the single one: can't open a user, they can't see a
+store they should, a base group isn't in my list, and a save didn't finish.
+The second and third are the two that cost the most time on the phone — the
+answer to "they can't see it" is almost always their access type, and a base
+group you created is invisible until you grant it to yourself.
+
+The glossary gained By group / By store, the Access column's four values,
+Effective stores, Direct, Assign all and Check Availability.
+
+Four new `data-help` anchors so the "Show me" button has something to point
+at on this page: the tab row, the base groups list, a group's Stores/Users
+sub-tabs, and its assign panel.

@@ -10,6 +10,8 @@ import {
 import { getPriceOpt } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
+import { answerOf } from "../../answer";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import { computePriceOptRowSummary } from "./priceOptStats";
 import PriceOptLeftList from "./PriceOptLeftList";
@@ -20,6 +22,7 @@ const PriceOptTab = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
 
   // searchedUpcs, not upcs: `upcs` is the search card's working list and
   // changes live as the user edits chips in the re-search popup, which would
@@ -45,6 +48,7 @@ const PriceOptTab = () => {
 
     const load = async () => {
       dispatch(setDevPriceOptLoading(true));
+      let abandoned = false;
       try {
         const res = await upcQueue.enqueue(`priceOpt:${missingKey}`, (signal) =>
           getPriceOpt(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingKey, signal),
@@ -52,17 +56,23 @@ const PriceOptTab = () => {
         // Superseded by a newer search. Returning before any dispatch is the
         // whole point — a late response used to write its old UPC set into
         // setDevUpcItems and repopulate the left panel behind the new search.
-        if (!res) return;
+        // Looked at again once loading clears, against the search as it is.
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
-        // An endpoint-level failure is a failure, not an empty answer — see
-        // the same guard in TrendTab. Covering on it recorded these UPCs as
-        // fetched-and-empty and the tab never asked again.
-        if (ctx.fixes && j.error !== 0) {
+        const answer = answerOf(j);
+        // A failure is a failure, not an empty answer — see the same guard in
+        // SalesCompTab. Covering on it recorded these UPCs as fetched-and-empty
+        // and the tab never asked again. No price history at all is a real
+        // answer, though, and covers them.
+        if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Price optimization failed for these UPCs");
           return;
         }
-        const ok = j.error === 0 && j.best_prices_by_upc?.length > 0;
+        const ok = answer === "ok" && j.best_prices_by_upc?.length > 0;
         const byUpc: UpcPriceOpt[] = ok ? j.best_prices_by_upc : [];
         // best_prices can be absent even on a good answer; mergeRows spreads
         // it, so undefined here throws rather than merging nothing.
@@ -80,11 +90,12 @@ const PriceOptTab = () => {
         // Coverage is left alone, so revisiting the tab retries.
       } finally {
         dispatch(setDevPriceOptLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingKey]);
+  }, [ctx.activeTab, missingKey, retryTick]);
 
   const rows = useMemo(() => {
     const src = ctx.selectedUpcs.length > 0

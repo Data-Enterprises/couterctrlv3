@@ -212,7 +212,7 @@ const Organization = () => {
           <PageInfoButton page="user-management" title="About this page" />
         </div>
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
+        <div data-help="tabs" className="flex border-b border-gray-100 flex-shrink-0">
           {tabs.map((t) => (
             <button
               key={t.id}

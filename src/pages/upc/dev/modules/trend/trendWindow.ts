@@ -1,45 +1,47 @@
+import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
+
 const MIN_SAMPLE_AFTER_DAYS = 30;
 const WEAK_BASELINE_R2 = 0.2;
 const DAY_MS = 86_400_000;
 
-/** Whole days from a to b. Both sides come from the same response and are
- *  parsed the same way ("2026-09-01T00:00:00", no zone, so local midnight),
- *  which is what makes the subtraction exact rather than off-by-one across a
- *  DST boundary. */
+/** Whole days from a to b, both local midnights, so a DST change in between
+ *  can't make the subtraction land a day off. */
 const daysBetween = (a: Date, b: Date) =>
   Math.round((b.getTime() - a.getTime()) / DAY_MS);
 
+/** The search's m/d/yyyy as a local midnight. */
+const fromMdy = (mdy: string) => {
+  const [m, d, y] = mdy.split("/").map(Number);
+  return new Date(y, m - 1, d);
+};
+
 /**
- * How long the before and after windows are.
+ * What to ask `trend_detector` for, and the window its answer will describe.
  *
- * The after window is the searched date range, and `trend_detector` hands both
- * of its ends back — `startdate` and `end_date`. It used to be measured
- * against `new Date()` instead, on the belief that after always runs through
- * today; the response disproves that. A 9/1-9/16 search read on 9/17 returned
- * `active_days_after: 15` for an item selling nearly every day, which only
- * fits a 16-day window, and the panel printed "Since pivot 17d" while every
- * active-rate percentage came out understated against the longer divisor.
+ * The endpoint reads `CURRENT_DATE - periods` through `CURRENT_DATE` and splits
+ * it at the start date; it never reads the end date. So "after" always runs
+ * from the start date to today, and "before" is whatever is left of `periods`
+ * ahead of the start date. With a flat `periods` of 90, a search that started
+ * 100 days ago had no "before" at all and every item read "New since pivot",
+ * and a recent one had a "before" of whatever was left over.
  *
- * The before window is still `periods - afterWindowDays` and is still a guess
- * — the one response in hand can't separate it from "periods days ending at
- * the pivot", because with periods 90 the two land on 73 and 90 and the item
- * measured had 73 active days either way. Left as it was rather than changed
- * on a hunch; it needs one run at a different `periods` to settle.
+ * Asking for the days since the start date plus `baselineDays` makes "before"
+ * exactly `baselineDays` long however old the search is. "After" is counted
+ * through yesterday: today's sales are rarely in yet. A 9/1 search read on
+ * 9/17 has a 16-day after window, and that is what a live answer showed
+ * (bananas, 15 selling days of 16).
  */
-export function getWindowDays(
-  startdate: string,
-  enddate: string | null,
-  periods: number,
-  fixes = false,
-): { beforeWindowDays: number; afterWindowDays: number } {
-  const pivot = new Date(startdate);
-  // Inclusive: a 9/1 - 9/16 range is 16 days of trading, not 15.
-  const afterWindowDays =
-    fixes && enddate
-      ? Math.max(daysBetween(pivot, new Date(enddate)) + 1, 1)
-      : Math.max(daysBetween(pivot, new Date()), 1);
-  const beforeWindowDays = Math.max(periods - afterWindowDays, 1);
-  return { beforeWindowDays, afterWindowDays };
+export function trendRequest(
+  startMdy: string,
+  baselineDays: number,
+  today: Date = new Date(),
+): { periods: number; window: UpcTrendWindow } {
+  const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const since = Math.max(daysBetween(fromMdy(startMdy), midnight), 0);
+  return {
+    periods: since + baselineDays,
+    window: { pivot: startMdy, beforeDays: baselineDays, afterDays: Math.max(since, 1) },
+  };
 }
 
 export function activeRatePct(activeDays: number, windowDays: number): number {

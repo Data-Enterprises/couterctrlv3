@@ -162,6 +162,10 @@ export const workingOrder = (
 
 /** What the item's lines on one order come to. */
 export interface Figures {
+  /** The unit cost behind the case cost. Here so the column somebody types
+   *  into previews like every other one: case size is per store, so one
+   *  typed unit cost is one number here and a different case cost there. */
+  unitCost: number;
   caseCost: number;
   extCost: number;
   margin: number | null;
@@ -217,6 +221,7 @@ export const itemStoreRows = (
       const eRet = rows.reduce((t, l) => t + (l.e_ret ?? 0), 0);
       const cogs = rows.reduce((t, l) => t + (l.cogs ?? 0), 0);
       return {
+        unitCost: rows[0] ? unitCostOf(rows[0]) : 0,
         caseCost: rows[0]?.base_cost ?? 0,
         extCost: cogs,
         margin: marginOf(eRet, cogs),

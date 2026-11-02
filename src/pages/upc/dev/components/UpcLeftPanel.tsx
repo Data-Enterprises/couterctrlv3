@@ -2,7 +2,6 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
-import { useAppSelector } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import UpcItemList from "./UpcItemList";
 
@@ -12,13 +11,13 @@ interface Props {
 
 const UpcLeftPanel = ({ onReSearch }: Props) => {
   const ctx = useUpcDevCtx();
-  const searchState = useAppSelector((s) => s.search);
 
+  // What was searched, from ctx, not the search being edited in the re-search
+  // window: the header names the data underneath it.
   const locationLabel =
-    searchState.type === "Store"
-      ? searchState.selectedStore.store_name ||
-        `Store ${searchState.selectedStore.storeid}`
-      : searchState.selectedGroup.group_name || "Group";
+    ctx.searchType === "Store"
+      ? ctx.selectedStore.store_name || `Store ${ctx.selectedStore.storeid}`
+      : ctx.selectedGroup.group_name || "Group";
 
   const dateRange =
     ctx.startDate && ctx.endDate

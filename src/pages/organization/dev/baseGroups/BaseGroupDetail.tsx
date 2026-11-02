@@ -194,13 +194,13 @@ const BaseGroupDetail = ({
         <div className="flex-1" />
         <IconButton
           icon={ArrowDownTrayIcon}
-          title="Export this group's stores to CSV"
+          title="Export this group's stores or users to CSV"
           onClick={() => setExportOpen(true)}
         />
       </div>
       <div className="text-[11.5px] text-content/85 mb-2">{companyName}</div>
 
-      <div className="flex border-b border-gray-100 mb-4">
+      <div data-help="group-tabs" className="flex border-b border-gray-100 mb-4">
         {(["stores", "users"] as const).map((t) => (
           <button
             key={t}
@@ -220,7 +220,7 @@ const BaseGroupDetail = ({
         (!stores ? (
           <div className="text-[11.5px] text-content/85">Loading…</div>
         ) : (
-          <div className="w-full">
+          <div data-help="assign" className="w-full">
             {/* A move is one call per store and hands the stores out to every
                 user holding this group automatically, so it is neither
                 instant nor only about this screen. Saying so beats a list
@@ -254,10 +254,11 @@ const BaseGroupDetail = ({
       {exportOpen && (
         <BaseGroupExportModal
           onClose={() => setExportOpen(false)}
-          groupName={group.name}
+          group={group}
           companyName={companyName}
           assigned={assigned}
           unassigned={unassigned}
+          users={users}
         />
       )}
 

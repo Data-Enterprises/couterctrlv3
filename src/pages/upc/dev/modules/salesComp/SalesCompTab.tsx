@@ -13,7 +13,14 @@ import { getSalesComp } from "../../../../../api/upc";
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { combineSalesCompRows, computeUpcSalesCompStats } from "./salesCompStats";
+import { answerOf } from "../../answer";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+import {
+  combineSalesCompRows,
+  computeUpcSalesCompStats,
+  salesCompCodes,
+  salesCompRange,
+} from "./salesCompStats";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import SalesCompLeftList from "./SalesCompLeftList";
 import SalesCompDetailPanel from "./SalesCompDetailPanel";
@@ -33,6 +40,7 @@ const SalesCompTab = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
 
   // Both fetches ask only for the UPCs they're missing. Joined into a string so
   // they can be effect dependencies: the effect then fires exactly when the
@@ -56,26 +64,34 @@ const SalesCompTab = () => {
 
     const load = async () => {
       dispatch(setDevSalesCompLoading(true));
+      let abandoned = false;
       try {
         const res = await upcQueue.enqueue(`salesComp:ty:${missingTyKey}`, (signal) =>
           getSalesComp(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingTyKey, signal),
         );
-        // Superseded by a newer search — that run owns this state now.
-        if (!res) return;
+        // Superseded by a newer search — that run owns this state now. Looked
+        // at again once loading clears, against the search as it is then.
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
-        // An endpoint-level failure is a failure, not an empty answer. Taking
-        // the success path extended coverage below, which recorded these UPCs
-        // as fetched-and-empty and meant the tab never asked again — the catch
-        // deliberately leaves coverage alone for exactly this reason.
-        if (ctx.fixes && j.error !== 0) {
+        const answer = answerOf(j);
+        // A failure is a failure, not an empty answer. Taking the success path
+        // extended coverage below, which recorded these UPCs as
+        // fetched-and-empty and meant the tab never asked again — the catch
+        // deliberately leaves coverage alone for exactly this reason. "No data
+        // was returned." is a real answer, though, and covers them: see
+        // answerOf.
+        if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Sales comparison failed for these UPCs");
           return;
         }
         // Combined on the way in, so the table, KPI strip and export all see
         // one row per UPC per week — see combineSalesCompRows.
         const rows: UpcSalesComp[] =
-          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
+          answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
         // Merged against the UPCs that were *asked for*, not the ones that
         // answered: a UPC with no sales in the window returns nothing, and it
         // still has to count as covered or it would be re-requested forever.
@@ -91,11 +107,12 @@ const SalesCompTab = () => {
         // Coverage is left alone, so revisiting the tab retries.
       } finally {
         dispatch(setDevSalesCompLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingTyKey]);
+  }, [ctx.activeTab, missingTyKey, retryTick]);
 
   // Last year is a second hit on upload_upcs_daily_sales — the heaviest
   // endpoint the page has — so a user who opens to Trend or Price Opt never
@@ -110,6 +127,7 @@ const SalesCompTab = () => {
 
     const load = async () => {
       dispatch(setDevSalesCompLYLoading(true));
+      let abandoned = false;
       try {
         const res = await upcQueue.enqueue(`salesComp:ly:${missingLyKey}`, (signal) =>
           getSalesComp(
@@ -122,25 +140,31 @@ const SalesCompTab = () => {
             signal,
           ),
         );
-        if (!res) return;
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
+        const answer = answerOf(j);
         // Same guard as this year. Supplementary data, so no toast — a missing
         // last year is already reported by `hasLY` leaving the vs-LY figures
-        // blank; all this does is let a failed call be retried.
-        if (ctx.fixes && j.error !== 0) return;
+        // blank; all this does is let a failed call be retried. A new item with
+        // no last year answers empty, and that covers it.
+        if (ctx.fixes && answer === "failed") return;
         const rows: UpcSalesComp[] =
-          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
+          answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
         dispatch(mergeDevSalesCompLY({ rows, codes: missingLy }));
       } catch {
         /* supplementary — the tab is already usable on TY alone */
       } finally {
         dispatch(setDevSalesCompLYLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingLyKey]);
+  }, [ctx.activeTab, missingLyKey, retryTick]);
 
   const filtered = useMemo(() => {
     return ctx.selectedUpcs.length > 0
@@ -154,14 +178,15 @@ const SalesCompTab = () => {
       : ctx.salesCompLY;
   }, [ctx.salesCompLY, ctx.selectedUpcs]);
 
-  const upcCodes = useMemo(
-    () => [...new Set(filtered.map((r) => r.product_code))],
-    [filtered],
-  );
+  const upcCodes = useMemo(() => salesCompCodes(filtered, filteredLY), [filtered, filteredLY]);
 
+  const range = useMemo(
+    () => salesCompRange(ctx.startDate, ctx.endDate),
+    [ctx.startDate, ctx.endDate],
+  );
   const upcStats = useMemo(
-    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, ctx.endDate),
-    [upcCodes, filtered, filteredLY, ctx.endDate],
+    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, range),
+    [upcCodes, filtered, filteredLY, range],
   );
 
   // Keep the detail panel pointed at a valid item — default to the first
@@ -177,7 +202,7 @@ const SalesCompTab = () => {
     }
   }, [upcStats, selectedCode]);
 
-  if (!filtered.length) {
+  if (!upcCodes.length) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}

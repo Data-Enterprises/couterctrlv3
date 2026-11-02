@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Checkbox from "../../../components-dev/Checkbox";
 import type { TicketStoreOption } from "../../../api/tickets";
 import { groupByCompany, matchesStoreQuery } from "./ticketStores";
@@ -31,6 +32,12 @@ interface Props {
  * Grouped by company when the list spans more than one, because two companies
  * can both have a store 5. Closed stores sit last in their company and can
  * still be ticked.
+ *
+ * Each company folds. A tech's list is 400-odd stores in a dozen companies,
+ * so they start folded and the list reads as the companies; one opens on a
+ * click. A company holding a ticked store starts open, so a pre-ticked store
+ * is never hidden, and typing in the search box opens every company with a
+ * match, since the search is how someone who knows the store finds it.
  */
 const StoreChecklist = ({
   options,
@@ -43,6 +50,8 @@ const StoreChecklist = ({
   extra,
 }: Props) => {
   const [query, setQuery] = useState("");
+  /** Companies the reader has opened or closed; the rest follow their picks. */
+  const [folded, setFolded] = useState<Map<string, boolean>>(new Map());
   const groups = useMemo(
     () =>
       groupByCompany(
@@ -55,10 +64,19 @@ const StoreChecklist = ({
     [options],
   );
 
+  const companyKey = (company: number | null) => String(company ?? "none");
+  const isOpen = (company: number | null, stores: TicketStoreOption[]) => {
+    if (!several || query.trim()) return true;
+    const set = folded.get(companyKey(company));
+    return set === undefined
+      ? stores.some((o) => picked.includes(o.storeid))
+      : !set;
+  };
+  const setOpen = (company: number | null, open: boolean) =>
+    setFolded((m) => new Map(m).set(companyKey(company), !open));
+
   const toggle = (storeid: number, on: boolean) => {
-    onPicked(
-      on ? [...picked, storeid] : picked.filter((id) => id !== storeid),
-    );
+    onPicked(on ? [...picked, storeid] : picked.filter((id) => id !== storeid));
     if (on && notAbout) onNotAbout(false);
   };
 
@@ -108,33 +126,65 @@ const StoreChecklist = ({
                 {query ? "No store matches that." : "No stores to pick from."}
               </p>
             )}
-            {groups.map((g) => (
-              <div key={g.company ?? "none"} className="flex flex-col gap-1 py-0.5">
-                {several && (
-                  <div className="pt-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-                    {g.company_name || "No company"}
-                  </div>
-                )}
-                {g.stores.map((o) => (
-                  <Checkbox
-                    key={o.storeid}
-                    checked={picked.includes(o.storeid)}
-                    onChange={(on) => toggle(o.storeid, on)}
-                    label={
-                      <span className="min-w-0 truncate text-[12.5px] text-content">
-                        <span className="font-mono text-[11.5px]">
-                          #{o.store_number}
-                        </span>{" "}
-                        {o.store_name}
-                        {o.deactivated && (
-                          <span className="text-content/85"> (closed)</span>
+            {groups.map((g) => {
+              const open = isOpen(g.company, g.stores);
+              const ticked = g.stores.filter((o) =>
+                picked.includes(o.storeid),
+              ).length;
+              const name = g.company_name || "No company";
+              return (
+                <div
+                  key={companyKey(g.company)}
+                  className="flex flex-col gap-1 py-0.5"
+                >
+                  {several && (
+                    <button
+                      type="button"
+                      onClick={() => setOpen(g.company, !open)}
+                      aria-expanded={open}
+                      className="-mx-1 flex items-center gap-1 rounded px-1 pt-1 text-left hover:bg-row_selected"
+                    >
+                      <ChevronRightIcon
+                        className={`h-4 w-4 shrink-0 text-content/85 transition-transform ${open ? "rotate-90" : ""}`}
+                        aria-hidden
+                      />
+                      <span className="text-[13px] font-semibold text-content">
+                        {name}
+                      </span>
+                      <span className="text-[12px] text-content/85">
+                        · {g.stores.length}{" "}
+                        {g.stores.length === 1 ? "store" : "stores"}
+                        {ticked > 0 && (
+                          <span className="font-semibold text-content">
+                            {" "}
+                            · {ticked} ticked
+                          </span>
                         )}
                       </span>
-                    }
-                  />
-                ))}
-              </div>
-            ))}
+                    </button>
+                  )}
+                  {open &&
+                    g.stores.map((o) => (
+                      <Checkbox
+                        key={o.storeid}
+                        checked={picked.includes(o.storeid)}
+                        onChange={(on) => toggle(o.storeid, on)}
+                        label={
+                          <span className="min-w-0 truncate text-[12.5px] text-content">
+                            {/* The name already leads with the number
+                                ("010 - IGA LEITCHFIELD KY"), so no #10 before
+                                it. The search box still matches on number. */}
+                            {o.store_name || `Store ${o.store_number}`}
+                            {o.deactivated && (
+                              <span className="text-content/85"> (closed)</span>
+                            )}
+                          </span>
+                        }
+                      />
+                    ))}
+                </div>
+              );
+            })}
           </div>
 
           <div className="flex items-center gap-3">

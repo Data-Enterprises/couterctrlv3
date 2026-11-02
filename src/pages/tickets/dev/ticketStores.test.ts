@@ -5,6 +5,7 @@ import reducer, {
   lostTicket,
 } from "../../../features/dev/devTicketsSlice";
 import {
+  assignedAsOptions,
   cleanStoreOptions,
   groupByCompany,
   initialStorePicks,
@@ -189,14 +190,48 @@ describe("store options with nulls in them", () => {
   it("sorts, groups and searches without throwing", () => {
     const clean = cleanStoreOptions(raw);
     expect(() => groupByCompany(clean)).not.toThrow();
-    expect(groupByCompany(clean).map((g) => g.company_name)).toEqual(["S&C Foods", ""]);
-    expect(clean.filter((o) => matchesStoreQuery(o, "foods")).map((o) => o.storeid)).toEqual([
-      50, 70, 90,
+    expect(groupByCompany(clean).map((g) => g.company_name)).toEqual([
+      "S&C Foods",
+      "",
     ]);
+    expect(
+      clean.filter((o) => matchesStoreQuery(o, "foods")).map((o) => o.storeid),
+    ).toEqual([50, 70, 90]);
   });
 
   it("turns a numeric store number into text", () => {
-    const [o] = cleanStoreOptions([option("1", { store_number: 12 as unknown as string })]);
+    const [o] = cleanStoreOptions([
+      option("1", { store_number: 12 as unknown as string }),
+    ]);
     expect(o.store_number).toBe("12");
+  });
+});
+
+describe("the signed-in person's stores as picker options", () => {
+  it("keeps their stores, flags a closed one, and fills the option fields", () => {
+    const opts = assignedAsOptions([
+      {
+        storeid: 54,
+        store_number: "10",
+        store_name: "010 - IGA LEITCHFIELD KY",
+        company: 1,
+        company_name: "Houchens",
+      },
+      {
+        storeid: 29,
+        store_number: "29",
+        store_name: "029 - IGA CLOSED",
+        company: 1,
+        company_name: "Houchens",
+        deactivated_at: "2026-01-02",
+      },
+    ]);
+    expect(opts.map((o) => [o.storeid, o.deactivated, o.selected])).toEqual([
+      [54, false, false],
+      [29, true, false],
+    ]);
+    expect(groupByCompany(opts)[0].stores.map((o) => o.storeid)).toEqual([
+      54, 29,
+    ]);
   });
 });
