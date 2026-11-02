@@ -1391,3 +1391,10 @@ are now (shown, not hidden). The Coming Soon overview (the client hand-out)
 has its section renamed and rewritten the same way, and no longer says the
 sample hides personal values. Tickets filed from the page still
 go under Sales.
+
+**Tickets filed from Data Export go under a new Export category.** They went
+under Sales, but the page now exports orders, invoices and markdowns too. The
+category needs an "Export" row in the help desk's ticket categories before
+this reaches anyone (the SQL is in docs/ticket-categories-2026-10-29.md);
+until then a ticket from the page arrives with no category rather than a wrong
+one.

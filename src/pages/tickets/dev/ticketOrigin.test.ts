@@ -173,10 +173,10 @@ describe("every page files under a category", () => {
     expect(PAGE_CATEGORY[href]).toBeTruthy();
   });
 
-  it("names only the thirteen, and never a retired one", () => {
+  it("names only the fourteen, and never a retired one", () => {
     const used = new Set(Object.values(PAGE_CATEGORY));
     for (const gone of ["Chat", "Teams", "Tickets", "Receivers"]) expect(used.has(gone)).toBe(false);
-    expect(used.size).toBe(12); // the thirteenth, Other, is picked by hand
+    expect(used.size).toBe(13); // the fourteenth, Other, is picked by hand
   });
 
   it("leaves the help desk itself unset", () => {

@@ -11,11 +11,12 @@ blank, so **run the SQL below before the frontend change publishes**. Until
 then the renamed pages (Receivers) file with no category rather than a wrong
 one.
 
-## The thirteen
+## The thirteen (fourteen since 2 Nov)
 
 | Category | Pages |
 |---|---|
-| Sales | Sales, Sales Tracker, Sales Export |
+| Sales | Sales, Sales Tracker |
+| Export | Data Export (added 2 Nov, see below) |
 | Margins | Sub Dept Margins, Categories, Vendors |
 | Coupons | Coupon Sales, Coupons |
 | Loss Prevention | Loss Prevention, LP Actions |
@@ -74,3 +75,18 @@ The table holds two categories the frontend never referred to, and I haven't
 seen their names. The final `select` lists them: retire them unless they're
 one of the thirteen under another spelling, in which case rename them instead
 of keeping the inserted row.
+
+## Added 2 Nov 2026: Export
+
+Sales Export became Data Export, which reads orders, invoices and markdowns as
+well as sales, so it files under a category of its own rather than Sales.
+Until this row exists, a ticket filed from Data Export arrives with no
+category. Safe to run twice, and independent of the block above.
+
+```sql
+insert into ticket_categories (name, is_active)
+select 'Export', true
+ where not exists (select 1 from ticket_categories where name = 'Export');
+
+update ticket_categories set is_active = true where name = 'Export';
+```
