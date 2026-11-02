@@ -1,16 +1,20 @@
 import axios from "axios";
 
 /**
- * The two endpoints behind Sales Export.
+ * The two endpoints behind the export page, on the export router.
  *
- * `export_preview` resolves a scope and describes the data: which stores the
- * search actually covers, which sale types are present in the window, every
- * column the table has, and ten sample rows. Everything the page offers comes
- * from that one response — the page invents no lists of its own.
+ * `export/{table}/preview` resolves a scope and describes the data: which
+ * stores the search actually covers, which sale types are present in the
+ * window, every column the table has, and sample rows. Everything the page
+ * offers comes from that one response — the page invents no lists of its own.
  *
- * `export` writes the file and answers with links. Nothing streams through the
- * API: RDS writes straight to S3 and the browser downloads from there, so the
- * response is `files[].url` rather than bytes.
+ * `export/{table}` writes the file and answers with links. Nothing streams
+ * through the API: RDS writes straight to S3 and the browser downloads from
+ * there, so the response is `files[].url` rather than bytes.
+ *
+ * These used to be `sales/export_preview` and `sales/export`. The export router
+ * removed them, so every call names its table now; the page only exports
+ * `sales` so far.
  */
 
 const post = (url: string, token: string, path: string, data: unknown) =>
@@ -23,6 +27,10 @@ const post = (url: string, token: string, path: string, data: unknown) =>
     url: url + path,
     data,
   });
+
+/** The tables `export/{table}` serves. Only "sales" is exported so far; the
+ *  other three come with the data sources plan. */
+export type ExportTableKey = "sales" | "orders" | "invoices" | "markdowns";
 
 /** A store the search resolved to. */
 export interface ExportStore {
@@ -162,11 +170,21 @@ export interface ExportPreviewParams {
   searchValue: number;
 }
 
+/**
+ * The router returns the filter lists under `facets`. They are lifted back to
+ * the top level here, where the page has always read them, so nothing past
+ * this file has to know the response moved.
+ */
 export const getExportPreview = (
   url: string,
   token: string,
+  table: ExportTableKey,
   params: ExportPreviewParams,
-) => post(url, token, "sales/export_preview", params);
+) =>
+  post(url, token, `export/${table}/preview`, params).then((resp) => ({
+    ...resp,
+    data: { ...resp.data, ...(resp.data?.facets ?? {}) },
+  }));
 
 /** One file the export produced. Usually one, but RDS starts a new part past
  *  ~6 GB, so callers iterate rather than reading `files[0]`. */
@@ -188,7 +206,7 @@ export interface ExportResp {
   bucket: string;
   filePath: string;
   storeids: number[];
-  /** The build's folder, and the key `export_build_link` takes. Opaque. */
+  /** The build's folder, and the key `export/{table}/build_link` takes. Opaque. */
   buildId: string;
   userQueryId: number | null;
   userQueryName: string | null;
@@ -370,14 +388,6 @@ export interface ExportParams {
   voidFlag: number | null;
   refundFlag: number | null;
   /**
-   * Superseded by `voidFlag: 0`, which is what this page sends.
-   *
-   * Still accepted by the endpoint for callers written before the flag
-   * existed, and `voidFlag` wins if both arrive. Optional here so nothing has
-   * to send a switch it no longer uses.
-   */
-  excludeVoids?: boolean;
-  /**
    * The file's sort, in order of precedence.
    *
    * Null or empty leaves `ordered` to mean what it always has: the line key
@@ -419,8 +429,76 @@ export interface ExportParams {
   dryRun: boolean;
 }
 
-export const runExport = (url: string, token: string, params: ExportParams) =>
-  post(url, token, "sales/export", params);
+/** The fields that travel inside `filters` for sales. Same names as before
+ *  the move. The router refuses a filter name it does not know. */
+export const SALES_FILTER_KEYS = [
+  "saleTypes",
+  "itemRingTypes",
+  "subDepartments",
+  "vendorIds",
+  "cashierNumbers",
+  "priceTypes",
+  "saleDates",
+  "productCodes",
+  "productDescriptions",
+  "voidFlag",
+  "refundFlag",
+] as const satisfies readonly (keyof ExportParams)[];
+
+/** The fields the export takes at the top level of its body. */
+export const EXPORT_TOP_LEVEL_KEYS = [
+  "startDate",
+  "endDate",
+  "storeids",
+  "columns",
+  "groupBy",
+  "aggregates",
+  "computed",
+  "orderBy",
+  "dateFormat",
+  "fileFormat",
+  "filePrefix",
+  "ordered",
+  "userQueryId",
+  "dryRun",
+] as const satisfies readonly (keyof ExportParams)[];
+
+// Every field of ExportParams has to be one or the other. A field added to
+// the params and to neither list is a compile error here rather than a field
+// that silently never reaches the export.
+type Classified =
+  | (typeof SALES_FILTER_KEYS)[number]
+  | (typeof EXPORT_TOP_LEVEL_KEYS)[number];
+type MustBeNever<T extends never> = T;
+export type EveryParamClassified = MustBeNever<Exclude<keyof ExportParams, Classified>>;
+
+/**
+ * The page's flat params, in the router's shape: the top-level fields, and the
+ * filters inside `filters`.
+ *
+ * Built from the two lists rather than by spreading the params, so nothing
+ * outside them is ever sent. That matters because the router ignores a field
+ * it does not know instead of refusing it: a filter left at the top level
+ * would export every line in the stores and dates without an error.
+ */
+export const toExportBody = (params: ExportParams) => {
+  const body: Record<string, unknown> = {};
+  for (const key of EXPORT_TOP_LEVEL_KEYS) {
+    if (params[key] !== undefined) body[key] = params[key];
+  }
+  const filters: Record<string, unknown> = {};
+  for (const key of SALES_FILTER_KEYS) {
+    if (params[key] !== undefined) filters[key] = params[key];
+  }
+  return { ...body, filters };
+};
+
+export const runExport = (
+  url: string,
+  token: string,
+  table: ExportTableKey,
+  params: ExportParams,
+) => post(url, token, `export/${table}`, toExportBody(params));
 
 /**
  * What `dryRun: true` answers with instead.

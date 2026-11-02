@@ -10,6 +10,7 @@ import {
   type ExportDryRunResp,
   type ExportPreviewResp,
   type ExportResp,
+  type ExportTableKey,
 } from "../../../api/salesExport";
 import {
   clearDeletedQuery,
@@ -79,6 +80,10 @@ import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
 const SLOW_AFTER_MS = 120_000;
+
+/** The table every call names on the export router. Only sales so far; the
+ *  data sources plan makes it the source picked on the search card. */
+const TABLE: ExportTableKey = "sales";
 
 /**
  * A day list is only offered for a range someone could reasonably tick
@@ -448,7 +453,7 @@ export const useExportBuilderCtx = () => {
     loadQueries();
     loadSaved();
     loadBuilds();
-    getExportPreview(url, token, {
+    getExportPreview(url, token, TABLE, {
       startDate: range?.start ?? startDate,
       endDate: range?.end ?? endDate,
       singleStore: group ? 0 : 1,
@@ -561,10 +566,9 @@ export const useExportBuilderCtx = () => {
       productDescriptions: config.productDescriptions.length
         ? config.productDescriptions
         : null,
-      // `excludeVoids` is not sent at all. It is the older spelling of
-      // `voidFlag: 0`, the endpoint lets voidFlag win when both arrive, and
-      // sending a switch this page no longer reads would only be one more
-      // thing to keep in step.
+      // Flat here, like every filter above; toExportBody moves them under
+      // `filters` on the way out. (`excludeVoids`, the older spelling of
+      // voidFlag: 0, is gone from the export router.)
       voidFlag: config.flags.voidFlag,
       refundFlag: config.flags.refundFlag,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
@@ -580,7 +584,7 @@ export const useExportBuilderCtx = () => {
 
   const showSql = () => {
     dispatch(startSqlLoad());
-    runExport(url, token, { ...params(), dryRun: true })
+    runExport(url, token, TABLE, { ...params(), dryRun: true })
       .then((resp) => {
         const j = resp.data as ExportDryRunResp;
         if (j.error !== 0) {
@@ -711,7 +715,7 @@ export const useExportBuilderCtx = () => {
 
   const loadBuilds = () => {
     dispatch(startBuildsLoad());
-    listExportBuilds(url, token)
+    listExportBuilds(url, token, TABLE)
       .then((resp) => {
         const j = resp.data as ExportBuildsResp;
         if (failed(j)) {
@@ -737,7 +741,7 @@ export const useExportBuilderCtx = () => {
    * list was read, which is a reload rather than a retry.
    */
   const labelBuild = (buildId: string, userQueryId: number | null) => {
-    linkExportBuild(url, token, buildId, userQueryId)
+    linkExportBuild(url, token, TABLE, buildId, userQueryId)
       .then((resp) => {
         const j = resp.data as BuildLinkResp;
         if (failed(j)) {
@@ -859,7 +863,7 @@ export const useExportBuilderCtx = () => {
    */
   const removeBuild = (buildId: string) => {
     dispatch(startBuildsLoad());
-    deleteExportBuild(url, token, buildId)
+    deleteExportBuild(url, token, TABLE, buildId)
       .then((resp) => {
         const j = resp.data as DeleteBuildResp;
         if (failed(j)) {
@@ -910,7 +914,7 @@ export const useExportBuilderCtx = () => {
     // The same object that was sent, so the card can tell later whether it
     // still describes what is on screen.
     const sent = params();
-    runExport(url, token, sent)
+    runExport(url, token, TABLE, sent)
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;

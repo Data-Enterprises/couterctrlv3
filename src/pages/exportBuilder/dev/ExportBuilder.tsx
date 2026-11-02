@@ -18,10 +18,10 @@ import {
 /**
  * Sales Export — pick a scope, narrow what goes in the file, build it.
  *
- * Two calls and one screen. `export_preview` resolves the scope and describes
- * the data; every list on the left is that response. Narrowing is local, so
- * the sample redraws as it is ticked and nothing is fetched twice. `export`
- * then writes the file to storage and answers with a link.
+ * Two calls and one screen. `export/sales/preview` resolves the scope and
+ * describes the data; every list on the left is that response. Narrowing is
+ * local, so the sample redraws as it is ticked and nothing is fetched twice.
+ * `export/sales` then writes the file to storage and answers with a link.
  */
 const ExportBuilder = () => {
   /**

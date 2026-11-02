@@ -113,7 +113,7 @@ export interface ExportBuilderState {
   selectedStoreIds: number[];
   selectedSaleTypes: string[];
   /**
-   * All four filters reach `/sales/export`, so what narrows the sample narrows
+   * All four filters reach `export/sales`, so what narrows the sample narrows
    * the file. Each is matched there the way the endpoint matches it: sale_type
    * lower-cased on both sides, the other three as stored.
    */

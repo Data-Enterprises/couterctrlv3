@@ -1325,3 +1325,18 @@ Effective stores, Direct, Assign all and Check Availability.
 Four new `data-help` anchors so the "Show me" button has something to point
 at on this page: the tab row, the base groups list, a group's Stores/Users
 sub-tabs, and its assign panel.
+
+## Data Export (from Sales Export)
+
+dev mode only
+
+**Data Export, phase 1: Sales Export on the export router.** The page now
+talks to the new export router (`export/sales`, `export/sales/preview` and the
+`export/sales/builds` routes) instead of the old `sales/export*` ones, which
+the router removes. Nothing on screen changes. Every export request is now
+built from a fixed list of the fields the router takes, with the filters
+nested where it expects them, so a filter can't be sent where the router would
+quietly ignore it and export everything. Builds made before and after the
+change both reload with their filters. This needs the new router on the dev
+API: against today's dev API the page's calls 404, so it ships together with
+that backend deploy.

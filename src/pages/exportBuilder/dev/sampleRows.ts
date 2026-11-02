@@ -65,7 +65,7 @@ const lower = (s: string) => s.toLowerCase();
  * applied here. Without it, unticking Tender leaves tender lines sitting in a
  * preview of a file that will not have them.
  *
- * Every one of these reaches `/sales/export` too, so what narrows the sample
+ * Every one of these reaches `export/sales` too, so what narrows the sample
  * narrows the file. They are matched the same way the endpoint matches them,
  * which is the point of doing it here at all.
  */
