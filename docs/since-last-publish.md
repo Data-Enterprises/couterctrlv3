@@ -1425,3 +1425,10 @@ summaries, the query box above the sample, saved exports and previous builds,
 and what each list, Output and the bottom strip mean. The file is now always
 built over the dates that were searched, even if the search card's dates were
 changed and left without searching.
+
+**Saved queries are kept per table.** The Queries list above the sample
+showed one list for all four tables, so a query written for Sales turned up on
+Orders and stopped at its first Sales column. Each table now has its own list,
+like saved exports. Every query saved before today was written for Sales and
+stays in the Sales list. Switching tables and back keeps each table's list
+without reading it again.

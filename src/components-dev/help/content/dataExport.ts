@@ -132,14 +132,14 @@ export const DATA_EXPORT_HELP: HelpContent = {
           title: "Keep it",
           pre: "Save as new keeps the box as a named query, and",
           chip: "Queries",
-          post: "lists the ones you have kept. With one open, Update, Rename and Delete act on it.",
+          post: "lists the ones you have kept for this table — each table has its own list. With one open, Update, Rename and Delete act on it.",
           anchor: "query",
         },
       ],
       issues: [
         {
-          q: "A saved query says there is no column called something",
-          a: "Queries are one list for all four tables, so it was probably written for another one. Open the table it was written for, or change the column names to this table's.",
+          q: "The query says there is no column called something",
+          a: "It names a column this table does not have — usually a query typed or pasted from another table. Change the column names to this table's.",
         },
       ],
     },

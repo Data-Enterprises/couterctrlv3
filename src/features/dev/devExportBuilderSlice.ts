@@ -1,7 +1,7 @@
 import { createSlice, current, type PayloadAction } from "@reduxjs/toolkit";
 import type { SavedConfig } from "../../api/savedConfigs";
 import type { ExportBuild } from "../../api/exportBuilds";
-import type { SavedQuery } from "../../api/savedQueries";
+import { queryProject, type SavedQuery } from "../../api/savedQueries";
 import type {
   ExportAggregate,
   ExportComputed,
@@ -80,12 +80,11 @@ export type ConfigSnapshot = Pick<
 
 /**
  * Everything that belongs to one source: what its preview returned, what was
- * picked in it, and its saved configurations and builds.
+ * picked in it, and its saved configurations, saved queries and builds.
  *
  * Kept per source so switching back is not a second fetch -- Sales, then
- * Markdowns, then Sales again comes back as it was left. The query box text,
- * the saved scratchpad queries and the router's filter list are the page's,
- * not a source's, so they stay where they are.
+ * Markdowns, then Sales again comes back as it was left. The router's filter
+ * list is the page's, not a source's, so it stays where it is.
  */
 const SOURCE_KEYS = [
   "stores",
@@ -114,6 +113,11 @@ const SOURCE_KEYS = [
   "savedLoaded",
   "savedCurrentId",
   "savedNotes",
+  "queries",
+  "queriesLoading",
+  "queriesError",
+  "currentQueryId",
+  "deletedQuery",
   "files",
   "builds",
   "buildsExpireMinutes",
@@ -807,9 +811,15 @@ const devExportBuilderSlice = createSlice({
       state.queriesLoading = true;
       state.queriesError = null;
     },
-    setQueries: (state, action: PayloadAction<SavedQuery[]>) => {
+    /** One table's list; an answer for a table no longer on screen is
+     *  dropped rather than shown under another. */
+    setQueries: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; queries: SavedQuery[] }>,
+    ) => {
+      if (action.payload.source !== state.source) return;
       state.queriesLoading = false;
-      state.queries = action.payload;
+      state.queries = action.payload.queries;
     },
     failQueriesLoad: (state, action: PayloadAction<string>) => {
       state.queriesLoading = false;
@@ -819,6 +829,8 @@ const devExportBuilderSlice = createSlice({
      *  one stays where it was. */
     upsertQuery: (state, action: PayloadAction<SavedQuery>) => {
       const row = action.payload;
+      // A write that lands after a switch belongs to the other table's list.
+      if (row.project && row.project !== queryProject(state.source)) return;
       state.deletedQuery = null;
       const at = state.queries.findIndex((q) => q.id === row.id);
       state.queries =

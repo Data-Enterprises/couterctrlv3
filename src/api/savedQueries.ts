@@ -1,3 +1,4 @@
+import type { ExportTableKey } from "./salesExport";
 import axios from "axios";
 
 /**
@@ -32,6 +33,16 @@ import axios from "axios";
  */
 export const SALES_EXPORT_PROJECT = "sales_export";
 export const SALES_EXPORT_QUERY_PROJECT = "sales_export_query";
+
+/**
+ * Each table's own list of saved queries.
+ *
+ * A query names its table's columns, so one written for Sales stops at the
+ * first column Orders does not have. Sales keeps the label it had before
+ * there were other tables, so every query saved until then is a Sales one.
+ */
+export const queryProject = (table: ExportTableKey) =>
+  table === "sales" ? SALES_EXPORT_QUERY_PROJECT : `${table}_export_query`;
 
 export interface SavedQuery {
   id: number;

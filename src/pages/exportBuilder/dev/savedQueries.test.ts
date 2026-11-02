@@ -7,17 +7,18 @@ import reducer, {
   setGroupBy,
   setPicks,
   setQueries,
+  stashSource,
   undoApply,
   upsertQuery,
 } from "../../../features/dev/devExportBuilderSlice";
-import type { SavedQuery } from "../../../api/savedQueries";
+import { queryProject, type SavedQuery } from "../../../api/savedQueries";
 
 const row = (over: Partial<SavedQuery> = {}): SavedQuery => ({
   id: 26,
   userid: 45,
   name: "Loss and gain by vendor",
   description: null,
-  project: "sales_export",
+  project: "sales_export_query",
   sql: "select vendor_id, sum(total_sales) group by vendor_id",
   created_at: "2026-09-02T22:09:35.373750",
   updated_at: "2026-09-02T22:09:35.373750",
@@ -28,7 +29,10 @@ describe("the saved queries a session holds", () => {
   it("puts a new row on top and leaves an edited one where it was", () => {
     const listed = reducer(
       initialState,
-      setQueries([row({ id: 1, name: "First" }), row({ id: 2, name: "Second" })]),
+      setQueries({
+        source: "sales",
+        queries: [row({ id: 1, name: "First" }), row({ id: 2, name: "Second" })],
+      }),
     );
 
     const added = reducer(listed, upsertQuery(row({ id: 3, name: "Third" })));
@@ -47,7 +51,7 @@ describe("the saved queries a session holds", () => {
   });
 
   it("keeps a deleted row whole, so the undo can post it back", () => {
-    const listed = reducer(initialState, setQueries([row({ id: 4 })]));
+    const listed = reducer(initialState, setQueries({ source: "sales", queries: [row({ id: 4 })] }));
     const held = reducer(listed, forgetQuery(row({ id: 4 })));
 
     expect(held.queries).toEqual([]);
@@ -63,10 +67,36 @@ describe("the saved queries a session holds", () => {
   });
 });
 
+describe("one list of queries per table", () => {
+  it("files Sales under the label it always had, and the others apart", () => {
+    expect(queryProject("sales")).toBe("sales_export_query");
+    const all = (["sales", "orders", "invoices", "markdowns"] as const).map(queryProject);
+    expect(new Set(all).size).toBe(4);
+  });
+
+  it("drops a list that answers for a table no longer on screen", () => {
+    const after = reducer(initialState, setQueries({ source: "orders", queries: [row()] }));
+    expect(after.queries).toEqual([]);
+  });
+
+  it("leaves a row written for another table out of this one's list", () => {
+    const after = reducer(initialState, upsertQuery(row({ project: "orders_export_query" })));
+    expect(after.queries).toEqual([]);
+    expect(after.currentQueryId).toBeNull();
+  });
+
+  it("keeps a table's queries with it when another is searched", () => {
+    let s = reducer(initialState, setQueries({ source: "sales", queries: [row({ id: 7 })] }));
+    s = { ...s, loaded: true };
+    s = reducer(s, stashSource());
+    expect(s.cache.sales?.queries.map((q) => q.id)).toEqual([7]);
+  });
+});
+
 describe("taking back an Apply", () => {
   const picked = reducer(
     initialState,
-    setQueries([]),
+    setQueries({ source: "sales", queries: [] }),
   );
 
   it("remembers the picks as they stood, and puts them back", () => {

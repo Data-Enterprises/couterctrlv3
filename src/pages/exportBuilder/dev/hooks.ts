@@ -77,6 +77,7 @@ import {
   createSavedQuery,
   deleteSavedQuery,
   listSavedQueries,
+  queryProject,
   updateSavedQuery,
   type DeletedQueryResp,
   type SavedQueriesResp,
@@ -320,16 +321,16 @@ export const useExportBuilderCtx = () => {
    * a developer who also uses this page should not find those in their export
    * list.
    */
-  const loadQueries = () => {
+  const loadQueries = (table: ExportTableKey = TABLE) => {
     dispatch(startQueriesLoad());
-    listSavedQueries(url, token)
+    listSavedQueries(url, token, queryProject(table))
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
           dispatch(failQueriesLoad("Could not read your saved queries."));
           return;
         }
-        dispatch(setQueries(j.queries ?? []));
+        dispatch(setQueries({ source: table, queries: j.queries ?? [] }));
       })
       .catch((err: JsonError) =>
         dispatch(
@@ -377,6 +378,7 @@ export const useExportBuilderCtx = () => {
         name: trimmed,
         sql,
         description: note,
+        project: queryProject(TABLE),
       }).then(done, failed);
     } else {
       updateSavedQuery(url, token, id, {
@@ -445,6 +447,8 @@ export const useExportBuilderCtx = () => {
       name: row.name,
       sql: row.sql,
       description: row.description,
+      // Back into the list it was deleted from.
+      project: row.project ?? queryProject(TABLE),
     })
       .then((resp) => {
         const j = resp.data as SavedQueryResp;
@@ -471,14 +475,18 @@ export const useExportBuilderCtx = () => {
     // Kept before anything replaces it: the same search may come back to it.
     if (config.loaded) dispatch(stashSource());
     if (scope === config.cacheScope && config.cache[chosen.key]) {
+      // Its queries were still on their way when it was left, and that
+      // answer was dropped: ask again.
+      const unanswered = config.cache[chosen.key]?.queriesLoading;
       dispatch(restoreSource(chosen.key));
       loadBuilds(chosen.key);
+      if (unanswered) loadQueries(chosen.key);
       return;
     }
     dispatch(startConfigLoad({ source: chosen.key, scope, startDate, endDate }));
     // Alongside the preview rather than after it. None of these waits on
     // another, and the lists are ready by the time anyone looks for them.
-    loadQueries();
+    loadQueries(chosen.key);
     loadSaved(chosen.key);
     loadBuilds(chosen.key);
     loadRouterFilters();
