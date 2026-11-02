@@ -1068,6 +1068,13 @@ column that's gone) were left inside the Saved window, unseen unless you
 opened it again. They now appear in a strip above the preview until you
 dismiss them, and a new search clears them.
 
+**Personal values show in the sample.** The sample used to hide customer
+name, email, phone, address and location as "••••••", while the file always
+had the real values. The people exporting need to see that information, so
+the sample now shows them as the file does. Those columns are still marked
+PERSONAL in the column picker, can still be turned on or off together, and the
+export bar still says how many are in the file.
+
 ## UPC List: a Movement tab (Amanda's request, 28 Oct)
 
 dev mode only

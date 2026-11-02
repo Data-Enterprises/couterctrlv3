@@ -2,10 +2,11 @@
  * Which columns hold personal data.
  *
  * The endpoint returns 102 flat column names and says nothing about what is
- * sensitive, so the judgement is made here. It decides two things: the marker
- * beside a column in the picker, and whether a sample VALUE is shown on screen
- * — the file gets the real thing, the preview does not, because a preview is
- * read over someone's shoulder far more often than a CSV is opened.
+ * sensitive, so the judgement is made here. It labels them -- the marker in
+ * the picker, the "Personal columns" toggle, the note on the export bar --
+ * and hides nothing: the sample shows their values as the file does. The
+ * people exporting need to see that information (Steve, 2 Nov 2026), so the
+ * masking the sample used to apply is gone.
  */
 const PII = new Set([
   "customer_name",
@@ -23,10 +24,3 @@ export const isPii = (column: string) => PII.has(column);
 /** How many of the given columns are personal. */
 export const countPii = (columns: string[]) =>
   columns.filter((c) => PII.has(c)).length;
-
-/**
- * A masked stand-in, shaped like the value it replaces so the column still
- * reads as populated or empty.
- */
-export const maskValue = (value: unknown) =>
-  value === null || value === undefined || value === "" ? "" : "••••••";

@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
-import { isPii, maskValue } from "./piiColumns";
+import { isPii } from "./piiColumns";
 // PARKED with the Dates control — see dateFormats.ts.
 // import { formatDateValue, isDateColumn } from "./dateFormats";
 import { useColumnDrag } from "./useColumnDrag";
@@ -158,7 +158,6 @@ const CsvPreview = () => {
                     //   ? formatDateValue(row[c.name], ctx.flags.dateFormat)
                     //   : row[c.name];
                     const raw = row[c.name];
-                    const masked = isPii(c.name);
                     return (
                       <td
                         key={c.name}
@@ -168,13 +167,9 @@ const CsvPreview = () => {
                         }}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${
                           drag.isDragging(i) ? "bg-filter_active/40" : ""
-                        } ${masked ? "text-amber-900" : ""}`}
+                        }`}
                       >
-                        {masked
-                          ? maskValue(raw)
-                          : raw === null || raw === undefined
-                            ? ""
-                            : String(raw)}
+                        {raw === null || raw === undefined ? "" : String(raw)}
                       </td>
                     );
                   })}
