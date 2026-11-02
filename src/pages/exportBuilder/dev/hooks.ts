@@ -6,11 +6,14 @@ import { formatGoliathDate } from "../../../utils";
 import { reasonOf, serverDetail, serverStatus } from "./serverError";
 import {
   getExportPreview,
+  getExportTables,
   runExport,
   type ExportDryRunResp,
+  type ExportFilters,
+  type ExportParams,
   type ExportPreviewResp,
   type ExportResp,
-  type ExportTableKey,
+  type ExportTablesResp,
 } from "../../../api/salesExport";
 import {
   clearDeletedQuery,
@@ -36,13 +39,15 @@ import {
   finishExport,
   markExportSlow,
   setConfig,
+  setRouterFilters,
   setSql,
   startConfigLoad,
   startExport,
   startSqlLoad,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
-import { filterSampleRows } from "./sampleRows";
+import { filterSampleRows, rowFiltersFor } from "./sampleRows";
+import { filterNames, sourceFor } from "./sources";
 import { sortRows } from "./sortRows";
 import { rangeBlock } from "./rangeLimit";
 import { aliasFor } from "./aggregates";
@@ -81,10 +86,6 @@ import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
  *  explanation arrives before the failure does. */
 const SLOW_AFTER_MS = 120_000;
 
-/** The table every call names on the export router. Only sales so far; the
- *  data sources plan makes it the source picked on the search card. */
-const TABLE: ExportTableKey = "sales";
-
 /**
  * A day list is only offered for a range someone could reasonably tick
  * through. Past this the section is hidden and the range itself is the filter
@@ -121,6 +122,11 @@ export const useExportBuilderCtx = () => {
   const { url, token } = useDevApi();
   const search = useAppSelector((s) => s.search);
   const config = useAppSelector((s) => s.dev.exportBuilder);
+  /** What the page knows about the table it exports. */
+  const source = sourceFor(config.source);
+  const TABLE = source.key;
+  /** The filter names the request may carry: the source's, and only those. */
+  const names = filterNames(source);
 
   const startDate = formatGoliathDate(search.startDate);
   const endDate = formatGoliathDate(search.endDate);
@@ -148,29 +154,23 @@ export const useExportBuilderCtx = () => {
    * be served, so the page refuses to send it.
    */
   const emptied = [
-    config.saleTypes.length > 0 && config.selectedSaleTypes.length === 0
-      ? "sale type"
-      : null,
-    config.itemRingTypes.length > 0 && config.selectedRingTypes.length === 0
-      ? "ring type"
-      : null,
-    config.subDepartments.length > 0 &&
-    config.selectedSubDepartments.length === 0
-      ? "sub department"
-      : null,
-    config.vendors.length > 0 && config.selectedVendors.length === 0
-      ? "vendor"
-      : null,
-    config.cashiers.length > 0 && config.selectedCashiers.length === 0
-      ? "cashier"
-      : null,
-    config.priceTypes.length > 0 && config.selectedPriceTypes.length === 0
-      ? "price type"
-      : null,
-    config.saleDates.length > 0 && config.selectedSaleDates.length === 0
-      ? "day"
-      : null,
+    ...source.lists.map((l) =>
+      (config.lists[l.filter] ?? []).length > 0 && (config.picks[l.filter] ?? []).length === 0
+        ? l.nounOne
+        : null,
+    ),
+    config.days.length > 0 && config.selectedDays.length === 0 ? "day" : null,
   ].filter(Boolean) as string[];
+
+  /**
+   * Filter names the router does not take for this table.
+   *
+   * The request is built from the source's own names, so this only fires if
+   * the description and the router have drifted apart -- and then the build
+   * stops here, with the names, instead of failing after the wait.
+   */
+  const routerNames = config.routerFilters?.[source.key];
+  const unknownNames = routerNames ? names.filter((n) => !routerNames.includes(n)) : [];
 
   /**
    * The file's shape, read off the configuration rather than switched.
@@ -231,7 +231,9 @@ export const useExportBuilderCtx = () => {
     config.flags.filePrefix !== "" &&
     !/^[A-Za-z0-9_-]{1,60}$/.test(config.flags.filePrefix);
 
-  const blocked = badPrefix
+  const blocked = unknownNames.length > 0
+    ? `The export doesn't take ${unknownNames.join(", ")} for ${source.label}. This page needs updating before it can build.`
+    : badPrefix
     ? "The file name takes letters, digits, - and _ only, up to 60 characters."
     : config.selectedStoreIds.length === 0
       ? "Pick at least one store."
@@ -241,19 +243,7 @@ export const useExportBuilderCtx = () => {
           : null));
 
   /** The sample rows the file would actually hold. */
-  const matchingRows = filterSampleRows(config.rows, {
-    saleTypes: config.selectedSaleTypes,
-    ringTypes: config.selectedRingTypes,
-    subDepartments: config.selectedSubDepartments,
-    vendors: config.selectedVendors,
-    cashiers: config.selectedCashiers,
-    priceTypes: config.selectedPriceTypes,
-    saleDates: config.selectedSaleDates,
-    productCodes: config.productCodes,
-    productDescriptions: config.productDescriptions,
-    voidFlag: config.flags.voidFlag,
-    refundFlag: config.flags.refundFlag,
-  });
+  const matchingRows = filterSampleRows(config.rows, rowFiltersFor(source, config));
 
   /**
    * Every column the finished file has, which is what a sort may name.
@@ -453,6 +443,7 @@ export const useExportBuilderCtx = () => {
     loadQueries();
     loadSaved();
     loadBuilds();
+    loadRouterFilters();
     getExportPreview(url, token, TABLE, {
       startDate: range?.start ?? startDate,
       endDate: range?.end ?? endDate,
@@ -467,19 +458,19 @@ export const useExportBuilderCtx = () => {
           toast.error("Could not load the export config");
           return;
         }
+        const facets = j.facets ?? {};
         dispatch(
           setConfig({
+            source: source.key,
             stores: j.stores ?? [],
-            saleTypes: j.saleTypes ?? [],
-            itemRingTypes: j.itemRingTypes ?? [],
-            subDepartments: j.subDepartments ?? [],
-            vendors: j.vendors ?? [],
-            cashiers: j.cashiers ?? [],
-            priceTypes: j.priceTypes ?? [],
+            // Each list turned into choices by the source's description.
+            lists: Object.fromEntries(
+              source.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]),
+            ),
             dateFormats: j.dateFormats ?? [],
             // Not from the response: the endpoint returns no day list, and a
-            // day with no sales is still a day someone can ask to exclude.
-            saleDates: daysInRange(
+            // day with no rows is still a day someone can ask to exclude.
+            days: daysInRange(
               range?.start ?? startDate,
               range?.end ?? endDate,
             ),
@@ -500,6 +491,27 @@ export const useExportBuilderCtx = () => {
   };
 
   /**
+   * The filter names each table takes, from the router. Read once a session:
+   * it is static on the router's side. A failure leaves the check off rather
+   * than blocking every build -- the request is built from the source's own
+   * names either way.
+   */
+  const loadRouterFilters = () => {
+    if (config.routerFilters) return;
+    getExportTables(url, token)
+      .then((resp) => {
+        const j = resp.data as ExportTablesResp;
+        if (j.error !== 0 || !Array.isArray(j.tables)) return;
+        dispatch(
+          setRouterFilters(
+            Object.fromEntries(j.tables.map((t) => [t.key, t.filters.map((x) => x.name)])),
+          ),
+        );
+      })
+      .catch(() => undefined);
+  };
+
+  /**
    * The stores are sent explicitly, so the scope modes never run on this side
    * — the question of which stores was settled by the config call.
    */
@@ -511,20 +523,44 @@ export const useExportBuilderCtx = () => {
    * writing and answers with the statement instead. So what comes back is the
    * query this configuration would actually run, not an approximation of it.
    */
-  const params = () => {
+  const params = (): ExportParams => {
     // Null means "every one" to the endpoint, so a list that has not been
     // narrowed is sent as null rather than as every value — same result, and
     // it keeps the condition out of the SQL entirely.
     const all = (picked: unknown[], available: unknown[]) =>
       picked.length === available.length;
+    const filters: ExportFilters = {};
+    for (const list of source.lists) {
+      const picked = config.picks[list.filter] ?? [];
+      filters[list.filter] = all(picked, config.lists[list.filter] ?? [])
+        ? null
+        : list.numeric
+          ? picked.map(Number)
+          : picked;
+    }
+    // Every day ticked is the range itself, which startDate and endDate
+    // already say — sending the list as well would add a predicate that
+    // cannot exclude anything.
+    filters[source.days.filter] = all(config.selectedDays, config.days)
+      ? null
+      : config.selectedDays;
+    // Empty means no filter here, which is the endpoint's own reading of an
+    // empty list — and the right one, since nothing typed is nothing asked.
+    filters[source.codes.filter] = config.productCodes.length ? config.productCodes : null;
+    filters[source.descriptions.filter] = config.productDescriptions.length
+      ? config.productDescriptions
+      : null;
+    for (const flag of source.flags) {
+      filters[flag.filter] = config.rowFlags[flag.filter] ?? null;
+    }
     return {
       startDate,
       endDate,
       storeids: config.selectedStoreIds,
       // Always the explicit list, never null — null means "every column" to
-      // the endpoint, which is 102, including the three provenance columns the
-      // preview withholds, and in the endpoint's own order. Either would hand
-      // back a file that is not the one on screen.
+      // the endpoint, including the provenance columns the preview withholds,
+      // and in the endpoint's own order. Either would hand back a file that
+      // is not the one on screen.
       //
       // Except when aggregating, where the endpoint refuses a column list
       // outright: the output is the group keys and the measures, so a list of
@@ -536,41 +572,7 @@ export const useExportBuilderCtx = () => {
       // sends nothing rather than sending emptiness.
       computed:
         aggregating && config.computed.length > 0 ? config.computed : null,
-      saleTypes: all(config.selectedSaleTypes, config.saleTypes)
-        ? null
-        : config.selectedSaleTypes,
-      itemRingTypes: all(config.selectedRingTypes, config.itemRingTypes)
-        ? null
-        : config.selectedRingTypes,
-      subDepartments: all(config.selectedSubDepartments, config.subDepartments)
-        ? null
-        : config.selectedSubDepartments.map(Number),
-      vendorIds: all(config.selectedVendors, config.vendors)
-        ? null
-        : config.selectedVendors,
-      cashierNumbers: all(config.selectedCashiers, config.cashiers)
-        ? null
-        : config.selectedCashiers,
-      priceTypes: all(config.selectedPriceTypes, config.priceTypes)
-        ? null
-        : config.selectedPriceTypes,
-      // Every day ticked is the range itself, which startDate and endDate
-      // already say — sending the list as well would add a predicate that
-      // cannot exclude anything.
-      saleDates: all(config.selectedSaleDates, config.saleDates)
-        ? null
-        : config.selectedSaleDates,
-      // Empty means no filter here, which is the endpoint's own reading of an
-      // empty list — and the right one, since nothing typed is nothing asked.
-      productCodes: config.productCodes.length ? config.productCodes : null,
-      productDescriptions: config.productDescriptions.length
-        ? config.productDescriptions
-        : null,
-      // Flat here, like every filter above; toExportBody moves them under
-      // `filters` on the way out. (`excludeVoids`, the older spelling of
-      // voidFlag: 0, is gone from the export router.)
-      voidFlag: config.flags.voidFlag,
-      refundFlag: config.flags.refundFlag,
+      filters,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
       // A key from the preview's own list, not a pattern of ours.
       dateFormat: config.flags.dateFormat || null,
@@ -584,7 +586,7 @@ export const useExportBuilderCtx = () => {
 
   const showSql = () => {
     dispatch(startSqlLoad());
-    runExport(url, token, TABLE, { ...params(), dryRun: true })
+    runExport(url, token, TABLE, { ...params(), dryRun: true }, names)
       .then((resp) => {
         const j = resp.data as ExportDryRunResp;
         if (j.error !== 0) {
@@ -657,7 +659,7 @@ export const useExportBuilderCtx = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
     dispatch(startSavedWork());
-    const payload = toPayload(config);
+    const payload = toPayload(config, source);
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       const saved = j.error === 0 && j.query ? parseConfigRow(j.query) : null;
@@ -776,7 +778,7 @@ export const useExportBuilderCtx = () => {
    * fell out is reported rather than quietly dropped.
    */
   const applySaved = (saved: SavedConfig) => {
-    const plan = planLoad(saved.payload, config);
+    const plan = planLoad(saved.payload, config, source);
     plan.actions.forEach((action) => dispatch(action));
     dispatch(markSavedLoaded({ id: saved.id, notes: plan.missing }));
   };
@@ -810,8 +812,17 @@ export const useExportBuilderCtx = () => {
    */
   const reloadBuild = (build: ExportBuild) => {
     const request = build.request;
+    const filters = request.filters ?? {};
+    // A list filter's values as strings, the way the slice holds them. A
+    // number column came back from the manifest as numbers.
+    const listValues = (name: string) => {
+      const value = filters[name];
+      return Array.isArray(value) ? value.map(String) : null;
+    };
+    const typed = (name: string) => listValues(name) ?? [];
     const payload: SavedConfigPayload = {
-      v: 1,
+      v: 2,
+      source: source.key,
       mode: request.groupBy?.length ? "summary" : "lines",
       columns: request.columns ?? [],
       columnOrder: request.columns ?? [],
@@ -820,25 +831,24 @@ export const useExportBuilderCtx = () => {
       computed: request.computed ?? [],
       orderBy: request.orderBy ?? [],
       storeIds: request.storeids ?? null,
-      saleTypes: request.saleTypes ?? null,
-      ringTypes: request.itemRingTypes ?? null,
-      subDepartments: request.subDepartments?.map(String) ?? null,
-      vendors: request.vendorIds ?? null,
-      cashiers: request.cashierNumbers ?? null,
-      priceTypes: request.priceTypes ?? null,
-      productCodes: request.productCodes ?? [],
-      productDescriptions: request.productDescriptions ?? [],
-      flags: {
-        voidFlag: request.voidFlag ?? null,
-        refundFlag: request.refundFlag ?? null,
+      filters: Object.fromEntries(source.lists.map((l) => [l.filter, listValues(l.filter)])),
+      productCodes: typed(source.codes.filter),
+      productDescriptions: typed(source.descriptions.filter),
+      rowFlags: Object.fromEntries(
+        source.flags.map((f) => {
+          const value = filters[f.filter];
+          return [f.filter, typeof value === "number" ? value : null];
+        }),
+      ),
+      output: {
         dateFormat: request.dateFormat ?? "",
         fileFormat: request.fileFormat ?? "csv",
-        filePrefix: request.filePrefix ?? "sales",
+        filePrefix: request.filePrefix ?? source.filePrefix,
         ordered: request.ordered ?? false,
       },
     };
 
-    const plan = planLoad(payload, config);
+    const plan = planLoad(payload, config, source);
     plan.actions.forEach((action) => dispatch(action));
     dispatch(
       markSavedLoaded({
@@ -914,7 +924,7 @@ export const useExportBuilderCtx = () => {
     // The same object that was sent, so the card can tell later whether it
     // still describes what is on screen.
     const sent = params();
-    runExport(url, token, TABLE, sent)
+    runExport(url, token, TABLE, sent, names)
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
@@ -981,6 +991,9 @@ export const useExportBuilderCtx = () => {
     ...config,
     /** The whole slice, for the few callers that translate it wholesale. */
     config,
+    /** What the page knows about the table it exports. The slice's own
+     *  `source` is the key; this is the description. */
+    source,
     dispatch,
     search,
     startDate,

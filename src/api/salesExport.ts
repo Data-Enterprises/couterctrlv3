@@ -48,75 +48,6 @@ export interface ExportColumn {
 /** A sample row: every column, keyed by column name. */
 export type ExportRow = Record<string, string | number | boolean | null>;
 
-/**
- * A sub department present in the window: id to filter on, label to show.
- *
- * `sub_department` arrives as a NUMBER — the column is a bigint and the router
- * hands it back unconverted, whatever the written spec says. Typed as either
- * so nothing here assumes one, and every use goes through String().
- */
-export interface ExportSubDepartment {
-  sub_department: string | number;
-  sub_department_description: string;
-}
-
-/**
- * A vendor present in the window.
- *
- * `vendor_id` is text despite looking numeric ("148" and "B3389" both occur),
- * and `vendor_name` is frequently null — the id is the only field that is
- * always there, so it is what the list falls back to showing.
- */
-export interface ExportVendor {
-  vendor_id: string;
-  vendor_name: string | null;
-}
-
-/**
- * A cashier present in the window.
- *
- * `cashier_number` is a bigint on the table, unlike `vendor_id` — the filter
- * takes numbers, not text. The name is spelled inconsistently between imports,
- * so the endpoint folds on the number: one window returned 384 distinct
- * (number, name) pairs for 188 actual cashiers.
- */
-export interface ExportCashier {
-  cashier_number: number;
-  cashier_name: string | null;
-}
-
-/**
- * The two as the preview actually sends them: a line can carry a vendor or
- * cashier name with no id, and the endpoint lists that pair with a null id.
- * The slice drops those on the way in (nothing can filter on a missing id),
- * so everything past it holds ExportVendor and ExportCashier.
- */
-export type ExportVendorSent = Omit<ExportVendor, "vendor_id"> & {
-  vendor_id: string | null;
-};
-export type ExportCashierSent = Omit<ExportCashier, "cashier_number"> & {
-  cashier_number: number | null;
-};
-
-/**
- * A price type present in the window.
- *
- * `{value, label}` rather than a bare string, because one member of the list
- * is the ABSENCE of a value: `value: ""`, labelled `(none)`. Those lines are
- * a real population — all of one company's, 15% of another's — so they are
- * something to choose rather than something to lose the moment anyone filters.
- *
- * The vocabulary belongs to the company, not to the table: Food Giant says
- * `Regular` and `Managers Special`, other companies say `REG` and `STOR`, and
- * `TPR` is the only token they all share. So this list is only true for the
- * stores in scope, and a saved configuration carrying one company's words is
- * checked against it when it is loaded.
- */
-export interface ExportPriceType {
-  value: string;
-  label: string;
-}
-
 /** A way of spelling dates in the file, as the endpoint offers them. */
 export interface ExportDateFormat {
   value: string;
@@ -127,16 +58,16 @@ export interface ExportDateFormat {
 export interface ExportPreviewResp {
   error: number;
   success: boolean;
+  table: ExportTableKey;
   stores: ExportStore[];
   storeids: number[];
-  saleTypes: string[];
-  /** Every filter list holds only what this window actually contains, so no
-   *  option in the UI can come back empty. */
-  itemRingTypes: string[];
-  subDepartments: ExportSubDepartment[];
-  vendors: ExportVendorSent[];
-  cashiers: ExportCashierSent[];
-  priceTypes: ExportPriceType[];
+  /**
+   * The table's filter lists, by facet name: what this window actually
+   * contains, so no choice in the UI can come back empty. Their shapes vary
+   * (bare values, `{value, label}`, id/name pairs), and the source
+   * descriptions turn each into choices.
+   */
+  facets: Record<string, unknown>;
   /** The Output date control is built from this, not from a list of ours. */
   dateFormats: ExportDateFormat[];
   /**
@@ -170,21 +101,13 @@ export interface ExportPreviewParams {
   searchValue: number;
 }
 
-/**
- * The router returns the filter lists under `facets`. They are lifted back to
- * the top level here, where the page has always read them, so nothing past
- * this file has to know the response moved.
- */
+/** The preview for a table. Its lists come back under `facets`, by name. */
 export const getExportPreview = (
   url: string,
   token: string,
   table: ExportTableKey,
   params: ExportPreviewParams,
-) =>
-  post(url, token, `export/${table}/preview`, params).then((resp) => ({
-    ...resp,
-    data: { ...resp.data, ...(resp.data?.facets ?? {}) },
-  }));
+) => post(url, token, `export/${table}/preview`, params);
 
 /** One file the export produced. Usually one, but RDS starts a new part past
  *  ~6 GB, so callers iterate rather than reading `files[0]`. */
@@ -331,62 +254,16 @@ export interface ExportParams {
    * in one column. Null when nothing is computed.
    */
   computed: ExportComputed[] | null;
-  /** Lower-cased both sides by the endpoint, so casing here does not matter. */
-  saleTypes: string[] | null;
-  /** Matched as stored — no normalising, because these come straight off the
-   *  preview, which reads them from the same column. */
-  itemRingTypes: string[] | null;
-  /** bigint[] on the endpoint: the numeric id, not the description, and a
-   *  number rather than the string the preview returns it as. */
-  subDepartments: number[] | null;
-  /** `vendorIds`, not `vendors` — and text, despite looking numeric. */
-  vendorIds: string[] | null;
-  /** `cashierNumbers`, and bigint — the one id on this endpoint that is not
-   *  text. */
-  cashierNumbers: number[] | null;
   /**
-   * Matched as stored, from the preview's list for THESE stores.
+   * The table's filters, by the router's own names, as the source description
+   * lists them.
    *
-   * `""` selects the lines with no price type at all — the one list filter on
-   * this endpoint that does not drop its nulls, because for some companies
-   * those are all of them.
+   * Null or an empty list leaves that filter off. A list filter goes as its
+   * values (numbers for a numeric column), a flag as null, 0 or 1. The router
+   * refuses a name it does not know, and the request is only ever built from
+   * the source's own names.
    */
-  priceTypes: string[] | null;
-  /**
-   * Particular days inside the range, as `YYYY-MM-DD`.
-   *
-   * Not a replacement for startDate/endDate, which stay required and still do
-   * the real work: they are what prunes the monthly partitions. This narrows
-   * within that window, for someone who wants three Saturdays rather than
-   * everything between them.
-   */
-  saleDates: string[] | null;
-  /** Typed or pasted, not chosen from a list — the preview returns no code
-   *  catalog, and a window can hold tens of thousands of them. */
-  productCodes: string[] | null;
-  /**
-   * Words to find in `product_description`.
-   *
-   * Each one is a contains, matched without case — descriptions are written
-   * the way a till writes them ("WHOLE MILK GAL", "MILK 2% 1/2GAL"), so an
-   * exact match is a filter nobody can use. A line is kept if any of these
-   * appears in its description.
-   *
-   * Sent alongside the codes rather than folded into them: two filters that
-   * both narrow, like every other pair on this endpoint.
-   */
-  productDescriptions: string[] | null;
-  /**
-   * Null leaves the flag alone, 0 excludes flagged lines, 1 returns only them.
-   *
-   * Neither is an equality test on the endpoint, and that matters: both
-   * columns are nullable across roughly a third of rows, and `refund_flag` is
-   * not a boolean — it carries 1, 2 and 9, with 2 the most common marker. The
-   * endpoint tests COALESCE(flag, 0) against zero instead, so "only refunds"
-   * means every marker rather than the literal 1.
-   */
-  voidFlag: number | null;
-  refundFlag: number | null;
+  filters: ExportFilters;
   /**
    * The file's sort, in order of precedence.
    *
@@ -429,21 +306,10 @@ export interface ExportParams {
   dryRun: boolean;
 }
 
-/** The fields that travel inside `filters` for sales. Same names as before
- *  the move. The router refuses a filter name it does not know. */
-export const SALES_FILTER_KEYS = [
-  "saleTypes",
-  "itemRingTypes",
-  "subDepartments",
-  "vendorIds",
-  "cashierNumbers",
-  "priceTypes",
-  "saleDates",
-  "productCodes",
-  "productDescriptions",
-  "voidFlag",
-  "refundFlag",
-] as const satisfies readonly (keyof ExportParams)[];
+/** A filter's value: a list, a flag, or null for off. */
+export type ExportFilterValue = string[] | number[] | number | null;
+
+export type ExportFilters = Record<string, ExportFilterValue>;
 
 /** The fields the export takes at the top level of its body. */
 export const EXPORT_TOP_LEVEL_KEYS = [
@@ -463,32 +329,30 @@ export const EXPORT_TOP_LEVEL_KEYS = [
   "dryRun",
 ] as const satisfies readonly (keyof ExportParams)[];
 
-// Every field of ExportParams has to be one or the other. A field added to
-// the params and to neither list is a compile error here rather than a field
-// that silently never reaches the export.
-type Classified =
-  | (typeof SALES_FILTER_KEYS)[number]
-  | (typeof EXPORT_TOP_LEVEL_KEYS)[number];
+// Every field of ExportParams is a top-level field or `filters`. A field added
+// to the params and not to that list is a compile error here rather than a
+// field that silently never reaches the export.
+type Classified = (typeof EXPORT_TOP_LEVEL_KEYS)[number] | "filters";
 type MustBeNever<T extends never> = T;
 export type EveryParamClassified = MustBeNever<Exclude<keyof ExportParams, Classified>>;
 
 /**
- * The page's flat params, in the router's shape: the top-level fields, and the
- * filters inside `filters`.
+ * The params, in the router's shape, from two allowlists.
  *
- * Built from the two lists rather than by spreading the params, so nothing
- * outside them is ever sent. That matters because the router ignores a field
- * it does not know instead of refusing it: a filter left at the top level
- * would export every line in the stores and dates without an error.
+ * Built from the top-level list and the source's own filter names rather than
+ * by spreading the params, so nothing outside them is ever sent. That matters
+ * because the router ignores a top-level field it does not know instead of
+ * refusing it: a filter left at the top level would export every row in the
+ * stores and dates without an error.
  */
-export const toExportBody = (params: ExportParams) => {
+export const toExportBody = (params: ExportParams, filterNames: readonly string[]) => {
   const body: Record<string, unknown> = {};
   for (const key of EXPORT_TOP_LEVEL_KEYS) {
     if (params[key] !== undefined) body[key] = params[key];
   }
-  const filters: Record<string, unknown> = {};
-  for (const key of SALES_FILTER_KEYS) {
-    if (params[key] !== undefined) filters[key] = params[key];
+  const filters: ExportFilters = {};
+  for (const name of filterNames) {
+    if (params.filters[name] !== undefined) filters[name] = params.filters[name];
   }
   return { ...body, filters };
 };
@@ -498,7 +362,38 @@ export const runExport = (
   token: string,
   table: ExportTableKey,
   params: ExportParams,
-) => post(url, token, `export/${table}`, toExportBody(params));
+  filterNames: readonly string[],
+) => post(url, token, `export/${table}`, toExportBody(params, filterNames));
+
+/** One table as `GET export/tables` describes it. */
+export interface ExportTableInfo {
+  key: ExportTableKey;
+  description: string;
+  dated: boolean;
+  dateColumn: string | null;
+  filters: { name: string; column: string; kind: string; type: string }[];
+  facets: string[];
+}
+
+export interface ExportTablesResp {
+  error: number;
+  success: boolean;
+  tables: ExportTableInfo[];
+}
+
+/**
+ * What the router can export, and the filter names each table takes.
+ *
+ * Static on the router's side, so read once. The page checks its request's
+ * filter names against this before a build, so a name the router would
+ * refuse is caught on screen rather than after the wait.
+ */
+export const getExportTables = (url: string, token: string) =>
+  axios({
+    method: "GET",
+    headers: { Authorization: "Bearer " + token },
+    url: url + "export/tables",
+  });
 
 /**
  * What `dryRun: true` answers with instead.

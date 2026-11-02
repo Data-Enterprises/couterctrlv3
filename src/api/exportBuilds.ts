@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { ExportFile, ExportParams, ExportTableKey } from "./salesExport";
+import {
+  EXPORT_TOP_LEVEL_KEYS,
+  type ExportFile,
+  type ExportFilters,
+  type ExportParams,
+  type ExportTableKey,
+} from "./salesExport";
 
 /**
  * Past builds, and the label on one.
@@ -62,15 +68,28 @@ export interface ExportBuildsResp {
 }
 
 /**
- * A manifest written by the export router carries its filters under
- * `filters`; one written before the move carries them at the top level. Both
- * come back in one list, because the S3 folder did not move, so they are
- * lifted here and the page reads both the same way.
+ * A manifest's request, in the router's shape.
+ *
+ * One written by the export router carries its filters under `filters`; one
+ * written before the move carries them at the top level, beside the rest.
+ * Both come back in one list, because the S3 folder did not move, so the old
+ * ones are nested here: every top-level field the export takes stays where it
+ * is, and anything else is a filter. The page then reads both the same way,
+ * by the source's own filter names.
  */
-export const flattenRequest = (request: unknown): Partial<ExportParams> => {
-  if (!request || typeof request !== "object") return {};
-  const { filters, ...rest } = request as { filters?: Record<string, unknown> };
-  return { ...rest, ...(filters ?? {}) } as Partial<ExportParams>;
+export const nestRequest = (request: unknown): Partial<ExportParams> => {
+  if (!request || typeof request !== "object") return { filters: {} };
+  const { filters, ...rest } = request as Record<string, unknown> & {
+    filters?: ExportFilters;
+  };
+  const top = new Set<string>(EXPORT_TOP_LEVEL_KEYS);
+  const out: Record<string, unknown> = {};
+  const loose: ExportFilters = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (top.has(key)) out[key] = value;
+    else loose[key] = value as ExportFilters[string];
+  }
+  return { ...out, filters: filters ?? loose } as Partial<ExportParams>;
 };
 
 export const listExportBuilds = (
@@ -90,7 +109,7 @@ export const listExportBuilds = (
       ...resp.data,
       builds: (resp.data?.builds ?? []).map((b: ExportBuild) => ({
         ...b,
-        request: flattenRequest(b.request),
+        request: nestRequest(b.request),
       })),
     },
   }));

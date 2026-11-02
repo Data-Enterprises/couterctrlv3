@@ -42,20 +42,13 @@ const ExportBar = () => {
    * count stays.
    */
   const narrowed = [
-    ctx.selectedSaleTypes.length < ctx.saleTypes.length &&
-      `${ctx.selectedSaleTypes.length} of ${ctx.saleTypes.length} sale types`,
-    ctx.selectedRingTypes.length < ctx.itemRingTypes.length &&
-      `${ctx.selectedRingTypes.length} of ${ctx.itemRingTypes.length} ring types`,
-    ctx.selectedSubDepartments.length < ctx.subDepartments.length &&
-      `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length} sub departments`,
-    ctx.selectedVendors.length < ctx.vendors.length &&
-      `${ctx.selectedVendors.length} of ${ctx.vendors.length} vendors`,
-    ctx.selectedCashiers.length < ctx.cashiers.length &&
-      `${ctx.selectedCashiers.length} of ${ctx.cashiers.length} cashiers`,
-    ctx.selectedPriceTypes.length < ctx.priceTypes.length &&
-      `${ctx.selectedPriceTypes.length} of ${ctx.priceTypes.length} price types`,
-    ctx.selectedSaleDates.length < ctx.saleDates.length &&
-      `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length} days`,
+    ...ctx.source.lists.map((l) => {
+      const picked = (ctx.picks[l.filter] ?? []).length;
+      const total = (ctx.lists[l.filter] ?? []).length;
+      return picked < total && `${picked} of ${total} ${l.noun}`;
+    }),
+    ctx.selectedDays.length < ctx.days.length &&
+      `${ctx.selectedDays.length} of ${ctx.days.length} days`,
     ctx.productCodes.length > 0 &&
       `${ctx.productCodes.length} product code${
         ctx.productCodes.length === 1 ? "" : "s"
@@ -64,10 +57,10 @@ const ExportBar = () => {
       `description${ctx.productDescriptions.length === 1 ? "" : "s"} matching ${ctx.productDescriptions
         .map((t) => `"${t}"`)
         .join(", ")}`,
-    ctx.flags.voidFlag === 0 && "voided lines excluded",
-    ctx.flags.voidFlag === 1 && "voided lines only",
-    ctx.flags.refundFlag === 0 && "refunds excluded",
-    ctx.flags.refundFlag === 1 && "refunds only",
+    ...ctx.source.flags.map((f) => {
+      const value = ctx.rowFlags[f.filter] ?? null;
+      return value === 0 ? f.excluded : value === 1 ? f.only : false;
+    }),
     ctx.flags.ordered && "sorted",
   ].filter(Boolean) as string[];
 

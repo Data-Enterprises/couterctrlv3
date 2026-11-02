@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { setupStore } from "../../../store";
 import { setConfig } from "../../../features/dev/devExportBuilderSlice";
 import ConfigPanel from "./ConfigPanel";
+import { SALES } from "./sources";
 
 vi.mock("../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
@@ -24,24 +25,31 @@ const vendors = [
   { vendor_id: "148", vendor_name: null },
 ];
 
+/** A preview's facets, as the page turns them into lists. */
+const salesLists = (facets: Record<string, unknown>) =>
+  Object.fromEntries(SALES.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]));
+
 const renderPanel = (over: { saleDates?: string[] } = {}) => {
   const store = setupStore();
   store.dispatch(
     setConfig({
+      source: "sales",
       stores: [{ storeid: 1, store_number: "001", store_name: "001 - IGA" }],
-      saleTypes: ["Sale"],
-      itemRingTypes: ["ITEM"],
-      // Numbers, as the endpoint actually sends them — a string here is what
-      // let `s.sub_department.toLowerCase()` reach a browser.
-      subDepartments: [
-        { sub_department: 10, sub_department_description: "Grocery" },
-        { sub_department: 20, sub_department_description: "Produce" },
-      ],
-      vendors,
-      cashiers: [],
-      priceTypes: [],
+      lists: salesLists({
+        saleTypes: ["Sale"],
+        itemRingTypes: ["ITEM"],
+        // Numbers, as the endpoint actually sends them — a string here is
+        // what let `s.sub_department.toLowerCase()` reach a browser.
+        subDepartments: [
+          { sub_department: 10, sub_department_description: "Grocery" },
+          { sub_department: 20, sub_department_description: "Produce" },
+        ],
+        vendors,
+        cashiers: [],
+        priceTypes: [],
+      }),
       dateFormats: [],
-      saleDates: over.saleDates ?? [],
+      days: over.saleDates ?? [],
       columns: [{ name: "sale_id", data_type: "bigint" }],
       rows: [],
       hasData: true,

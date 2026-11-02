@@ -83,7 +83,7 @@ const SavedExportsModal = () => {
             Save the configuration on screen
           </div>
           <div className="text-[11.5px] text-content/85">
-            {describePayload(toPayload(ctx.config))}
+            {describePayload(toPayload(ctx.config, ctx.source), ctx.source)}
           </div>
           <div className="flex items-end gap-2">
             <TextField
@@ -150,7 +150,7 @@ const SavedExportsModal = () => {
                   {saved.name}
                 </div>
                 <div className="text-[11.5px] text-content/85 truncate">
-                  {describePayload(saved.payload)}
+                  {describePayload(saved.payload, ctx.source)}
                 </div>
                 <div className="text-[11px] text-content/85 mt-0.5">
                   saved {when(saved.updated_at || saved.created_at)}

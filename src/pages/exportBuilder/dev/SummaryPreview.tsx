@@ -22,7 +22,7 @@ const SummaryPreview = () => {
   const { columns, rows } = ctx.summary;
   const keys = ctx.groupBy;
 
-  const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
+  const name = `${ctx.flags.filePrefix || ctx.source.filePrefix}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
 

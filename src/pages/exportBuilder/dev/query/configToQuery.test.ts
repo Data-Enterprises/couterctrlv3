@@ -4,6 +4,13 @@ import { parseQuery } from "./parseQuery";
 import { planApply } from "./applyQuery";
 import { initialState } from "../../../../features/dev/devExportBuilderSlice";
 import type { ExportBuilderState } from "../../../../features/dev/devExportBuilderSlice";
+import { SALES } from "../sources";
+
+/** The sales picks these cases narrow, by the names they were written in. */
+interface Over extends Partial<ExportBuilderState> {
+  selectedSaleTypes?: string[];
+  selectedVendors?: string[];
+}
 
 const columns = [
   { name: "storeid", data_type: "bigint" },
@@ -14,26 +21,35 @@ const columns = [
   { name: "qty", data_type: "numeric" },
 ];
 
-const loaded = (over: Partial<ExportBuilderState> = {}): ExportBuilderState => ({
-  ...initialState,
-  columns,
-  columnOrder: columns.map((c) => c.name),
-  selectedColumns: columns.map((c) => c.name),
-  stores: [{ storeid: 36, store_number: "036", store_name: "036 - IGA" }],
-  selectedStoreIds: [36],
-  saleTypes: ["Sale", "Tender"],
-  selectedSaleTypes: ["Sale", "Tender"],
-  vendors: [
-    { vendor_id: "50", vendor_name: "AWG" },
-    { vendor_id: "C0021", vendor_name: "Clark" },
-  ],
-  selectedVendors: ["50", "C0021"],
-  ...over,
-});
+const loaded = (over: Over = {}): ExportBuilderState => {
+  const { selectedSaleTypes = ["Sale", "Tender"], selectedVendors = ["50", "C0021"], ...rest } =
+    over;
+  return {
+    ...initialState,
+    columns,
+    columnOrder: columns.map((c) => c.name),
+    selectedColumns: columns.map((c) => c.name),
+    stores: [{ storeid: 36, store_number: "036", store_name: "036 - IGA" }],
+    selectedStoreIds: [36],
+    lists: {
+      saleTypes: [
+        { value: "Sale", label: "Sale" },
+        { value: "Tender", label: "Tender" },
+      ],
+      vendorIds: [
+        { value: "50", label: "AWG" },
+        { value: "C0021", label: "Clark" },
+      ],
+    },
+    picks: { saleTypes: selectedSaleTypes, vendorIds: selectedVendors },
+    ...rest,
+  };
+};
 
 const write = (config: ExportBuilderState) =>
   configToQuery(
     config,
+    SALES,
     config.groupBy.length > 0 || config.aggregates.length > 0,
     config.aggregates.map((m) => ({
       alias: m.alias ?? `${m.column}_${m.fn}`,
@@ -94,9 +110,18 @@ describe("the configuration, written as a query", () => {
 describe("the round trip", () => {
   /** What comes out has to be readable by the thing that reads it back. */
   const roundTrip = (config: ExportBuilderState) => {
-    const plan = planApply(parseQuery(write(config)), config);
-    const picked = (type: string) =>
-      plan.actions.find((a) => a.type === `devExportBuilder/${type}`)?.payload;
+    const plan = planApply(parseQuery(write(config)), config, SALES);
+    const picked = (type: string) => {
+      // A list's picks, by the old name of the setter that used to carry them.
+      const filter = { setSelectedSaleTypes: "saleTypes", setSelectedVendors: "vendorIds" }[type];
+      const action = plan.actions.find((a) =>
+        filter
+          ? a.type === "devExportBuilder/setPicks" &&
+            (a.payload as { filter: string }).filter === filter
+          : a.type === `devExportBuilder/${type}`,
+      );
+      return filter ? (action?.payload as { values: string[] } | undefined)?.values : action?.payload;
+    };
     return { plan, picked };
   };
 

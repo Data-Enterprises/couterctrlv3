@@ -306,7 +306,7 @@ const DownloadsModal = () => {
                     key={`${build.buildId}-query`}
                     className="bg-custom-white border border-brand_line rounded-lg px-3 py-2 text-[11.5px] font-mono whitespace-pre-wrap break-words text-content"
                   >
-                    {requestToQuery(build.request)}
+                    {requestToQuery(build.request, ctx.source)}
                   </pre>
                 ))}
             </div>

@@ -54,7 +54,7 @@ const CsvPreview = () => {
       ? "none"
       : "transform 180ms cubic-bezier(.2,.8,.3,1)";
 
-  const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
+  const name = `${ctx.flags.filePrefix || ctx.source.filePrefix}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
 

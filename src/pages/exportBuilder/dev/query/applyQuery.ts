@@ -4,21 +4,17 @@ import {
   setComputed,
   setColumnOrder,
   setOrderBy,
-  setFlag,
   setGroupBy,
+  setPicks,
   setProductCodes,
   setProductDescriptions,
-  setSelectedCashiers,
-  setSelectedPriceTypes,
+  setRowFlag,
   setSelectedColumns,
-  setSelectedRingTypes,
-  setSelectedSaleDates,
-  setSelectedSaleTypes,
+  setSelectedDays,
   setSelectedStoreIds,
-  setSelectedSubDepartments,
-  setSelectedVendors,
   type ExportBuilderState,
 } from "../../../../features/dev/devExportBuilderSlice";
+import { capitalize, type ExportSource } from "../sources";
 import {
   aggLeaves,
   defaultAlias,
@@ -37,32 +33,6 @@ export interface ApplyPlan {
   /** What the configuration cannot express, and is therefore being dropped. */
   leftBehind: string[];
 }
-
-/** The filters the configuration actually has, and how a value reaches them. */
-type FilterColumn =
-  | "storeid"
-  | "sale_type"
-  | "item_ring_type"
-  | "sub_department"
-  | "vendor_id"
-  | "cashier_number"
-  | "price_type"
-  | "sale_date"
-  | "product_code"
-  | "product_description";
-
-const FILTER_COLUMNS: FilterColumn[] = [
-  "storeid",
-  "sale_type",
-  "item_ring_type",
-  "sub_department",
-  "vendor_id",
-  "cashier_number",
-  "price_type",
-  "sale_date",
-  "product_code",
-  "product_description",
-];
 
 /** Every `col = x` and `col IN (...)` joined by AND, or null if anything else
  *  is in the way. An OR cannot be a set of ticks. */
@@ -126,6 +96,7 @@ const pickFrom = (available: string[], wanted: (string | number)[]) => {
 export const planApply = (
   query: Query,
   config: ExportBuilderState,
+  source: ExportSource,
 ): ApplyPlan => {
   const actions: UnknownAction[] = [];
   const applied: string[] = [];
@@ -278,7 +249,7 @@ export const planApply = (
       // A LIKE on the description is the one pattern the configuration can
       // hold, because that filter is a contains itself. The % marks come off:
       // the filter puts them back.
-      if (part.kind === "like" && column === "product_description" && !part.negated) {
+      if (part.kind === "like" && column === source.descriptions.column && !part.negated) {
         const term = part.pattern.replace(/^%+|%+$/g, "");
         if (term && !term.includes("%") && !term.includes("_")) {
           // One op per term, so the second one appends rather than replacing
@@ -288,15 +259,15 @@ export const planApply = (
         }
       }
 
-      // The two flags are switches rather than lists.
-      if (column === "void_flag" || column === "refund_flag") {
-        const key = column === "void_flag" ? "voidFlag" : "refundFlag";
+      // The flags are switches rather than lists.
+      const flag = source.flags.find((f) => f.column === column);
+      if (flag) {
         if (part.kind === "cmp" && (part.op === "=" || part.op === "!=")) {
           const zero = Number(part.value) === 0;
           const value = part.op === "=" ? (zero ? 0 : 1) : zero ? 1 : 0;
-          actions.push(setFlag({ [key]: value }));
+          actions.push(setRowFlag({ filter: flag.filter, value }));
           applied.push(
-            `${column === "void_flag" ? "Voids" : "Refunds"}: ${value ? "only these" : "excluded"}`,
+            `${capitalize(flag.plural)}: ${value ? "only these" : "excluded"}`,
           );
           continue;
         }
@@ -304,105 +275,62 @@ export const planApply = (
         continue;
       }
 
-      if (!FILTER_COLUMNS.includes(column as FilterColumn) || wanted.length === 0) {
+      const list = source.lists.find((l) => l.column === column);
+      const known =
+        column === "storeid" ||
+        list !== undefined ||
+        column === source.days.column ||
+        column === source.codes.column ||
+        column === source.descriptions.column;
+      if (!known || wanted.length === 0) {
         leftBehind.push(describe(part));
         continue;
       }
 
-      switch (column as FilterColumn) {
-        case "storeid": {
-          const ids = config.stores
-            .map((s) => s.storeid)
-            .filter((id) => wanted.some((w) => Number(w) === id));
-          if (ids.length === 0) break;
-          actions.push(setSelectedStoreIds(ids));
-          applied.push(`${ids.length} store${ids.length === 1 ? "" : "s"}`);
-          break;
-        }
-        case "sale_type": {
-          const picked = pickFrom(config.saleTypes, wanted);
-          if (picked.length === 0) break;
-          actions.push(setSelectedSaleTypes(picked));
-          applied.push(`Sale types: ${picked.join(", ")}`);
-          break;
-        }
-        case "item_ring_type": {
-          const picked = pickFrom(config.itemRingTypes, wanted);
-          if (picked.length === 0) break;
-          actions.push(setSelectedRingTypes(picked));
-          applied.push(`Ring types: ${picked.join(", ")}`);
-          break;
-        }
-        case "sub_department": {
-          const picked = pickFrom(
-            config.subDepartments.map((s) => String(s.sub_department)),
-            wanted,
-          );
-          if (picked.length === 0) break;
-          actions.push(setSelectedSubDepartments(picked));
-          applied.push(
-            `${picked.length} sub department${picked.length === 1 ? "" : "s"}`,
-          );
-          break;
-        }
-        case "vendor_id": {
-          const picked = pickFrom(
-            config.vendors.map((v) => v.vendor_id),
-            wanted,
-          );
-          if (picked.length === 0) break;
-          actions.push(setSelectedVendors(picked));
-          applied.push(`${picked.length} vendor${picked.length === 1 ? "" : "s"}`);
-          break;
-        }
-        case "cashier_number": {
-          const picked = config.cashiers
-            .map((c) => c.cashier_number)
-            .filter((n) => wanted.some((w) => Number(w) === n));
-          if (picked.length === 0) break;
-          actions.push(setSelectedCashiers(picked));
-          applied.push(`${picked.length} cashier${picked.length === 1 ? "" : "s"}`);
-          break;
-        }
-        case "price_type": {
-          // "" is a value here — the lines that carry no price type — so an
-          // empty string is picked rather than filtered out as blank.
-          const picked = config.priceTypes
-            .map((p) => p.value)
-            .filter((v) => wanted.some((w) => String(w) === v));
-          if (picked.length === 0) break;
-          actions.push(setSelectedPriceTypes(picked));
-          applied.push(
-            `Price types: ${picked.map((v) => (v === "" ? "(none)" : v)).join(", ")}`,
-          );
-          break;
-        }
-        case "sale_date": {
-          // sale_date is a timestamp; the day is what the list holds.
-          const days = wanted.map((w) => String(w).slice(0, 10));
-          const picked = config.saleDates.filter((d) => days.includes(d));
-          if (picked.length === 0) break;
-          actions.push(setSelectedSaleDates(picked));
-          applied.push(`${picked.length} day${picked.length === 1 ? "" : "s"}`);
-          break;
-        }
-        case "product_code": {
-          const codes = wanted.map(String);
-          actions.push(setProductCodes(codes));
-          applied.push(`${codes.length} product code${codes.length === 1 ? "" : "s"}`);
-          break;
-        }
-        case "product_description": {
-          // An exact match becomes a contains, which is the only shape the
-          // filter has — wider than the query was, so it is said out loud.
-          const terms = wanted.map(String);
-          actions.push(setProductDescriptions(terms));
-          applied.push(`Descriptions holding ${terms.map((t) => `"${t}"`).join(", ")}`);
-          leftBehind.push(
-            "product_description was an exact match in the query and is a contains in the file",
-          );
-          break;
-        }
+      if (column === "storeid") {
+        const ids = config.stores
+          .map((s) => s.storeid)
+          .filter((id) => wanted.some((w) => Number(w) === id));
+        if (ids.length === 0) continue;
+        actions.push(setSelectedStoreIds(ids));
+        applied.push(`${ids.length} store${ids.length === 1 ? "" : "s"}`);
+      } else if (list) {
+        const available = (config.lists[list.filter] ?? []).map((i) => i.value);
+        // A number column compares as numbers, so 007 is 7. A blank-or list
+        // compares exactly: "" is a value there -- the rows with none -- not
+        // something to fold away.
+        const picked = list.numeric
+          ? available.filter((v) => wanted.some((w) => Number(w) === Number(v)))
+          : list.match === "in_or_blank"
+            ? available.filter((v) => wanted.some((w) => String(w) === v))
+            : pickFrom(available, wanted);
+        if (picked.length === 0) continue;
+        actions.push(setPicks({ filter: list.filter, values: picked }));
+        applied.push(
+          list.look === "plain"
+            ? `${capitalize(list.noun)}: ${picked.map((v) => (v === "" ? "(none)" : v)).join(", ")}`
+            : `${picked.length} ${picked.length === 1 ? list.nounOne : list.noun}`,
+        );
+      } else if (column === source.days.column) {
+        // The day column may be a timestamp; the day is what the list holds.
+        const days = wanted.map((w) => String(w).slice(0, 10));
+        const picked = config.days.filter((d) => days.includes(d));
+        if (picked.length === 0) continue;
+        actions.push(setSelectedDays(picked));
+        applied.push(`${picked.length} day${picked.length === 1 ? "" : "s"}`);
+      } else if (column === source.codes.column) {
+        const codes = wanted.map(String);
+        actions.push(setProductCodes(codes));
+        applied.push(`${codes.length} product code${codes.length === 1 ? "" : "s"}`);
+      } else {
+        // An exact match becomes a contains, which is the only shape the
+        // filter has — wider than the query was, so it is said out loud.
+        const terms = wanted.map(String);
+        actions.push(setProductDescriptions(terms));
+        applied.push(`Descriptions holding ${terms.map((t) => `"${t}"`).join(", ")}`);
+        leftBehind.push(
+          `${column} was an exact match in the query and is a contains in the file`,
+        );
       }
     }
   }
@@ -446,45 +374,28 @@ export const planApply = (
       setSelectedStoreIds(config.stores.map((s) => s.storeid)),
       "stores",
     );
-    widen("sale_type", setSelectedSaleTypes([...config.saleTypes]), "sale types");
-    widen(
-      "item_ring_type",
-      setSelectedRingTypes([...config.itemRingTypes]),
-      "ring types",
-    );
-    widen(
-      "sub_department",
-      setSelectedSubDepartments(
-        config.subDepartments.map((s) => String(s.sub_department)),
-      ),
-      "sub departments",
-    );
-    widen(
-      "vendor_id",
-      setSelectedVendors(config.vendors.map((v) => v.vendor_id)),
-      "vendors",
-    );
-    widen(
-      "cashier_number",
-      setSelectedCashiers(config.cashiers.map((c) => c.cashier_number)),
-      "cashiers",
-    );
-    widen(
-      "price_type",
-      setSelectedPriceTypes(config.priceTypes.map((p) => p.value)),
-      "price types",
-    );
-    widen("sale_date", setSelectedSaleDates([...config.saleDates]), "days");
-    widen("product_code", setProductCodes([]), "product codes");
+    for (const list of source.lists) {
+      widen(
+        list.column,
+        setPicks({
+          filter: list.filter,
+          values: (config.lists[list.filter] ?? []).map((i) => i.value),
+        }),
+        list.noun,
+      );
+    }
+    widen(source.days.column, setSelectedDays([...config.days]), "days");
+    widen(source.codes.column, setProductCodes([]), "product codes");
     if (descriptions.length === 0) {
       widen(
-        "product_description",
+        source.descriptions.column,
         setProductDescriptions([]),
         "description words",
       );
     }
-    widen("void_flag", setFlag({ voidFlag: null }), "the void filter");
-    widen("refund_flag", setFlag({ refundFlag: null }), "the refund filter");
+    for (const flag of source.flags) {
+      widen(flag.column, setRowFlag({ filter: flag.filter, value: null }), flag.widened);
+    }
 
     if (widened.length > 0) {
       applied.push(

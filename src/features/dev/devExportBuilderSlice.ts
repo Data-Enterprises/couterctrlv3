@@ -6,32 +6,31 @@ import type {
   ExportAggregate,
   ExportComputed,
   ExportDateFormat,
-  ExportPriceType,
   ExportSort,
-  ExportCashier,
-  ExportCashierSent,
   ExportColumn,
   ExportFile,
   ExportRow,
   ExportStore,
-  ExportSubDepartment,
-  ExportVendor,
-  ExportVendorSent,
+  ExportTableKey,
 } from "../../api/salesExport";
+
+/**
+ * One choice in a filter list: what goes to the router, and what is shown.
+ *
+ * Every list is held this way whatever shape the preview sent it in (bare
+ * values, `{value, label}`, or id/name pairs) -- see the source descriptions
+ * in pages/exportBuilder/dev/sources.ts, which do the turning. The value is a
+ * string everywhere and only becomes a number on the way out, for the lists
+ * whose column is one.
+ */
+export interface ExportListItem {
+  value: string;
+  label: string;
+}
 
 /** What the export endpoint takes that the preview knows nothing about:
  *  switches, not data. */
 export interface ExportFlags {
-  /**
-   * Null leaves the flag alone, 0 excludes flagged lines, 1 keeps only them.
-   *
-   * Three states rather than a tick because "only the voids" is a real
-   * question — the line someone is hunting for is usually the voided one.
-   * The endpoint tests COALESCE(flag, 0) against zero, so 1 means every
-   * marker it finds, not the literal 1.
-   */
-  voidFlag: number | null;
-  refundFlag: number | null;
   /** A key from the preview's `dateFormats`, or "" for as-stored. */
   dateFormat: string;
   fileFormat: string;
@@ -66,13 +65,9 @@ export type ConfigSnapshot = Pick<
   | "computed"
   | "orderBy"
   | "selectedStoreIds"
-  | "selectedSaleTypes"
-  | "selectedRingTypes"
-  | "selectedSubDepartments"
-  | "selectedVendors"
-  | "selectedCashiers"
-  | "selectedPriceTypes"
-  | "selectedSaleDates"
+  | "picks"
+  | "selectedDays"
+  | "rowFlags"
   | "selectedColumns"
   | "columnOrder"
   | "productCodes"
@@ -82,16 +77,25 @@ export type ConfigSnapshot = Pick<
 
 export interface ExportBuilderState {
   loadingConfig: boolean;
+  /** The table the loaded configuration exports. */
+  source: ExportTableKey;
+  /**
+   * The filter names the router takes, by table, from `GET export/tables`;
+   * null until that has answered. A build whose request names one the router
+   * does not list is stopped on screen. Null is no check, not a refusal: the
+   * request is still built from the source's own names.
+   */
+  routerFilters: Record<string, string[]> | null;
   /** Null until a config has been loaded; the page shows its search card. */
   stores: ExportStore[];
-  saleTypes: string[];
-  itemRingTypes: string[];
-  subDepartments: ExportSubDepartment[];
-  vendors: ExportVendor[];
-  cashiers: ExportCashier[];
-  /** Present in this window, `{value,label}`, one of them the absence of a
-   *  value. */
-  priceTypes: ExportPriceType[];
+  /**
+   * The source's filter lists, keyed by the router's filter name.
+   *
+   * Each holds only what this window actually contains, so no choice can come
+   * back empty. Which lists there are, and what they are called, is the
+   * source description's business, not the slice's.
+   */
+  lists: Record<string, ExportListItem[]>;
   /** The ways the endpoint will spell dates, as it offers them. */
   dateFormats: ExportDateFormat[];
   /**
@@ -99,10 +103,10 @@ export interface ExportBuilderState {
    *
    * Worked out from the search dates when the config loads rather than read
    * off the response — the endpoint returns no day list, and a day with no
-   * sales is still a day someone can ask about. Frozen at load time so it
+   * rows is still a day someone can ask about. Frozen at load time so it
    * describes the config on screen and not whatever the search card says now.
    */
-  saleDates: string[];
+  days: string[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -111,18 +115,24 @@ export interface ExportBuilderState {
 
   /** The picks, made against what came back and nothing else. */
   selectedStoreIds: number[];
-  selectedSaleTypes: string[];
   /**
-   * All four filters reach `export/sales`, so what narrows the sample narrows
-   * the file. Each is matched there the way the endpoint matches it: sale_type
-   * lower-cased on both sides, the other three as stored.
+   * What is ticked in each list, by filter name, as values.
+   *
+   * Every one reaches the export, so what narrows the sample narrows the file;
+   * the sample is matched the way the router matches each one.
    */
-  selectedRingTypes: string[];
-  selectedSubDepartments: string[];
-  selectedVendors: string[];
-  selectedCashiers: number[];
-  selectedPriceTypes: string[];
-  selectedSaleDates: string[];
+  picks: Record<string, string[]>;
+  selectedDays: string[];
+  /**
+   * The source's switches, by filter name: null leaves the flag alone, 0
+   * excludes flagged rows, 1 keeps only them.
+   *
+   * Three states rather than a tick because "only the voids" is a real
+   * question — the line someone is hunting for is usually the voided one. The
+   * router tests COALESCE(flag, 0) against zero, so 1 means every marker it
+   * finds, not the literal 1. A flag not here is null.
+   */
+  rowFlags: Record<string, number | null>;
   selectedColumns: string[];
   /**
    * Product codes the user supplied, rather than picked.
@@ -259,15 +269,12 @@ export interface ExportBuilderState {
 
 export const initialState: ExportBuilderState = {
   loadingConfig: false,
+  source: "sales",
+  routerFilters: null,
   stores: [],
-  saleTypes: [],
-  itemRingTypes: [],
-  subDepartments: [],
-  vendors: [],
-  cashiers: [],
-  priceTypes: [],
+  lists: {},
   dateFormats: [],
-  saleDates: [],
+  days: [],
   columns: [],
   rows: [],
   hasData: false,
@@ -275,13 +282,9 @@ export const initialState: ExportBuilderState = {
   loaded: false,
 
   selectedStoreIds: [],
-  selectedSaleTypes: [],
-  selectedRingTypes: [],
-  selectedSubDepartments: [],
-  selectedVendors: [],
-  selectedCashiers: [],
-  selectedPriceTypes: [],
-  selectedSaleDates: [],
+  picks: {},
+  selectedDays: [],
+  rowFlags: {},
   selectedColumns: [],
   productCodes: [],
   productDescriptions: [],
@@ -293,8 +296,6 @@ export const initialState: ExportBuilderState = {
   orderBy: [],
 
   flags: {
-    voidFlag: null,
-    refundFlag: null,
     dateFormat: "",
     fileFormat: "csv",
     filePrefix: "sales",
@@ -341,61 +342,20 @@ export const initialState: ExportBuilderState = {
   exportError: null,
 };
 
-/** The distinct pairs, folded to one entry per sub department number. */
-const mergeSubDepartments = (
-  rows: ExportSubDepartment[],
-): ExportSubDepartment[] => {
-  const names = new Map<string, string[]>();
-  for (const row of rows) {
-    const id = String(row.sub_department);
-    const label = String(row.sub_department_description ?? "").trim();
-    const seen = names.get(id) ?? [];
-    if (label && !seen.includes(label)) seen.push(label);
-    names.set(id, seen);
-  }
-  // Insertion order, so the endpoint's sort by number survives.
-  return [...names].map(([sub_department, labels]) => ({
-    sub_department,
-    sub_department_description: labels.join(" / "),
-  }));
-};
-
-/**
- * The same fold for vendors: one row per id, names gathered.
- *
- * A vendor with no id is left out. The filter is on the id, and the endpoint
- * matches it with `= ANY`, so no tick could ever select those lines -- and
- * String(null) had been turning the missing id into a vendor called "null".
- * Its lines are not lost: they are in the file whenever Vendors is not
- * narrowed, the same as before.
- */
-const mergeVendors = (rows: ExportVendorSent[]): ExportVendor[] => {
-  const names = new Map<string, string[]>();
-  for (const row of rows) {
-    if (row.vendor_id === null || String(row.vendor_id).trim() === "") continue;
-    const id = String(row.vendor_id);
-    const label = String(row.vendor_name ?? "").trim();
-    const seen = names.get(id) ?? [];
-    if (label && !seen.includes(label)) seen.push(label);
-    names.set(id, seen);
-  }
-  return [...names].map(([vendor_id, labels]) => ({
-    vendor_id,
-    vendor_name: labels.join(" / ") || null,
-  }));
-};
+/** Everything about all of every list: what "nothing narrowed" means. */
+const allPicks = (lists: Record<string, ExportListItem[]>) =>
+  Object.fromEntries(
+    Object.entries(lists).map(([filter, items]) => [filter, items.map((i) => i.value)]),
+  );
 
 interface ConfigPayload {
+  source: ExportTableKey;
   stores: ExportStore[];
-  saleTypes: string[];
-  itemRingTypes: string[];
-  subDepartments: ExportSubDepartment[];
-  vendors: ExportVendorSent[];
-  cashiers: ExportCashierSent[];
-  priceTypes: ExportPriceType[];
+  /** The source's lists, already turned into choices by its description. */
+  lists: Record<string, ExportListItem[]>;
   dateFormats: ExportDateFormat[];
   /** The days in the range, from the caller — not from the response. */
-  saleDates: string[];
+  days: string[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -415,65 +375,23 @@ const devExportBuilderSlice = createSlice({
      * the file is the whole table until someone narrows it.
      */
     setConfig: (state, action: PayloadAction<ConfigPayload>) => {
-      const {
-        stores,
-        saleTypes,
-        itemRingTypes,
-        subDepartments,
-        vendors,
-        cashiers,
-        priceTypes,
-        dateFormats,
-        saleDates,
-        columns,
-        rows,
-        hasData,
-        message,
-      } = action.payload;
+      const { source, stores, lists, dateFormats, days, columns, rows, hasData, message } =
+        action.payload;
       state.loadingConfig = false;
       state.loaded = true;
+      state.source = source;
       state.stores = stores;
-      state.saleTypes = saleTypes;
-      state.itemRingTypes = itemRingTypes;
-      // One row per number, not per (number, description) pair.
-      //
-      // The endpoint returns the distinct pairs it finds, and stores disagree
-      // about what a number is called — 5 is Cigarettes in one and Tobacco in
-      // another, 30 is Beer in one and Money Orders in another. The filter is
-      // the number, so two rows for one number would be two ticks that mean
-      // the same thing; the names are gathered into one label instead.
-      state.subDepartments = mergeSubDepartments(subDepartments);
-      // Distinct pairs again: an id whose name differs between stores would
-      // otherwise be two ticks for one vendor.
-      state.vendors = mergeVendors(vendors);
-      // No fold here: the endpoint already keys these on cashier_number and
-      // keeps the first name it finds, because the spellings vary far more
-      // than the sub department and vendor names do. A cashier with no
-      // number is left out for the vendors' reason, and here the null used
-      // to reach the export, which refused the whole request (422).
-      state.cashiers = cashiers.filter(
-        (c): c is ExportCashier => c.cashier_number !== null,
-      );
-      state.priceTypes = priceTypes;
+      state.lists = lists;
       state.dateFormats = dateFormats;
-      state.saleDates = saleDates;
+      state.days = days;
       state.columns = columns;
       state.rows = rows;
       state.hasData = hasData;
       state.message = message;
       state.selectedStoreIds = stores.map((s) => s.storeid);
-      state.selectedSaleTypes = [...saleTypes];
-      state.selectedRingTypes = [...itemRingTypes];
-      // Held as strings whatever the endpoint sent, so a selection is one
-      // type everywhere and only becomes a number on the way back out.
-      state.selectedSubDepartments = state.subDepartments.map((s) =>
-        String(s.sub_department),
-      );
-      state.selectedVendors = state.vendors.map((v) => v.vendor_id);
-      state.selectedCashiers = state.cashiers.map((c) => c.cashier_number);
-      state.selectedPriceTypes = priceTypes.map((p) => p.value);
+      state.picks = allPicks(lists);
       state.configStamp += 1;
-      state.selectedSaleDates = [...saleDates];
+      state.selectedDays = [...days];
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       // A new scope is a new question; the codes belonged to the old one.
@@ -487,6 +405,9 @@ const devExportBuilderSlice = createSlice({
       state.files = [];
       state.builtAt = null;
     },
+    setRouterFilters: (state, action: PayloadAction<Record<string, string[]>>) => {
+      state.routerFilters = action.payload;
+    },
     failConfigLoad: (state) => {
       state.loadingConfig = false;
     },
@@ -499,11 +420,18 @@ const devExportBuilderSlice = createSlice({
     setSelectedStoreIds: (state, action: PayloadAction<number[]>) => {
       state.selectedStoreIds = action.payload;
     },
-    toggleSaleType: (state, action: PayloadAction<string>) => {
-      const t = action.payload;
-      state.selectedSaleTypes = state.selectedSaleTypes.includes(t)
-        ? state.selectedSaleTypes.filter((s) => s !== t)
-        : [...state.selectedSaleTypes, t];
+    /** One choice in one list, on or off. */
+    togglePick: (state, action: PayloadAction<{ filter: string; value: string }>) => {
+      const { filter, value } = action.payload;
+      const picked = state.picks[filter] ?? [];
+      state.picks[filter] = picked.includes(value)
+        ? picked.filter((v) => v !== value)
+        : [...picked, value];
+    },
+    /** A whole list's picks at once: all, none, or what a load or a query
+     *  says. */
+    setPicks: (state, action: PayloadAction<{ filter: string; values: string[] }>) => {
+      state.picks[action.payload.filter] = action.payload.values;
     },
     toggleColumn: (state, action: PayloadAction<string>) => {
       const c = action.payload;
@@ -531,62 +459,14 @@ const devExportBuilderSlice = createSlice({
       next.splice(Math.max(0, Math.min(to, next.length)), 0, name);
       state.columnOrder = next;
     },
-    setSelectedSaleTypes: (state, action: PayloadAction<string[]>) => {
-      state.selectedSaleTypes = action.payload;
-    },
-    toggleRingType: (state, action: PayloadAction<string>) => {
+    toggleDay: (state, action: PayloadAction<string>) => {
       const v = action.payload;
-      state.selectedRingTypes = state.selectedRingTypes.includes(v)
-        ? state.selectedRingTypes.filter((x) => x !== v)
-        : [...state.selectedRingTypes, v];
+      state.selectedDays = state.selectedDays.includes(v)
+        ? state.selectedDays.filter((x) => x !== v)
+        : [...state.selectedDays, v];
     },
-    setSelectedRingTypes: (state, action: PayloadAction<string[]>) => {
-      state.selectedRingTypes = action.payload;
-    },
-    toggleSubDepartment: (state, action: PayloadAction<string>) => {
-      const v = action.payload;
-      state.selectedSubDepartments = state.selectedSubDepartments.includes(v)
-        ? state.selectedSubDepartments.filter((x) => x !== v)
-        : [...state.selectedSubDepartments, v];
-    },
-    setSelectedSubDepartments: (state, action: PayloadAction<string[]>) => {
-      state.selectedSubDepartments = action.payload;
-    },
-    toggleVendor: (state, action: PayloadAction<string>) => {
-      const v = action.payload;
-      state.selectedVendors = state.selectedVendors.includes(v)
-        ? state.selectedVendors.filter((x) => x !== v)
-        : [...state.selectedVendors, v];
-    },
-    setSelectedVendors: (state, action: PayloadAction<string[]>) => {
-      state.selectedVendors = action.payload;
-    },
-    toggleCashier: (state, action: PayloadAction<number>) => {
-      const v = action.payload;
-      state.selectedCashiers = state.selectedCashiers.includes(v)
-        ? state.selectedCashiers.filter((x) => x !== v)
-        : [...state.selectedCashiers, v];
-    },
-    setSelectedCashiers: (state, action: PayloadAction<number[]>) => {
-      state.selectedCashiers = action.payload;
-    },
-    togglePriceType: (state, action: PayloadAction<string>) => {
-      const v = action.payload;
-      state.selectedPriceTypes = state.selectedPriceTypes.includes(v)
-        ? state.selectedPriceTypes.filter((x) => x !== v)
-        : [...state.selectedPriceTypes, v];
-    },
-    setSelectedPriceTypes: (state, action: PayloadAction<string[]>) => {
-      state.selectedPriceTypes = action.payload;
-    },
-    toggleSaleDate: (state, action: PayloadAction<string>) => {
-      const v = action.payload;
-      state.selectedSaleDates = state.selectedSaleDates.includes(v)
-        ? state.selectedSaleDates.filter((x) => x !== v)
-        : [...state.selectedSaleDates, v];
-    },
-    setSelectedSaleDates: (state, action: PayloadAction<string[]>) => {
-      state.selectedSaleDates = action.payload;
+    setSelectedDays: (state, action: PayloadAction<string[]>) => {
+      state.selectedDays = action.payload;
     },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
@@ -701,6 +581,13 @@ const devExportBuilderSlice = createSlice({
      */
     setFlag: (state, action: PayloadAction<Partial<ExportFlags>>) => {
       Object.assign(state.flags, action.payload);
+    },
+    /** One of the source's row switches, by filter name. */
+    setRowFlag: (
+      state,
+      action: PayloadAction<{ filter: string; value: number | null }>,
+    ) => {
+      state.rowFlags[action.payload.filter] = action.payload.value;
     },
     openQuery: (state, action: PayloadAction<boolean>) => {
       state.queryOpen = action.payload;
@@ -821,13 +708,9 @@ const devExportBuilderSlice = createSlice({
         computed: state.computed,
         orderBy: state.orderBy,
         selectedStoreIds: state.selectedStoreIds,
-        selectedSaleTypes: state.selectedSaleTypes,
-        selectedRingTypes: state.selectedRingTypes,
-        selectedSubDepartments: state.selectedSubDepartments,
-        selectedVendors: state.selectedVendors,
-        selectedCashiers: state.selectedCashiers,
-        selectedPriceTypes: state.selectedPriceTypes,
-        selectedSaleDates: state.selectedSaleDates,
+        picks: state.picks,
+        selectedDays: state.selectedDays,
+        rowFlags: state.rowFlags,
         selectedColumns: state.selectedColumns,
         columnOrder: state.columnOrder,
         productCodes: state.productCodes,
@@ -956,15 +839,9 @@ const devExportBuilderSlice = createSlice({
      */
     clearSelections: (state) => {
       state.selectedStoreIds = state.stores.map((s) => s.storeid);
-      state.selectedSaleTypes = [...state.saleTypes];
-      state.selectedRingTypes = [...state.itemRingTypes];
-      state.selectedSubDepartments = state.subDepartments.map((s) =>
-        String(s.sub_department),
-      );
-      state.selectedVendors = state.vendors.map((v) => v.vendor_id);
-      state.selectedCashiers = state.cashiers.map((c) => c.cashier_number);
-      state.selectedPriceTypes = state.priceTypes.map((p) => p.value);
-      state.selectedSaleDates = [...state.saleDates];
+      state.picks = allPicks(state.lists);
+      state.selectedDays = [...state.days];
+      state.rowFlags = {};
       state.selectedColumns = state.columns.map((c) => c.name);
       state.columnOrder = state.columns.map((c) => c.name);
       state.productCodes = [];
@@ -991,23 +868,14 @@ const devExportBuilderSlice = createSlice({
 export const {
   startConfigLoad,
   setConfig,
+  setRouterFilters,
   failConfigLoad,
   toggleStore,
   setSelectedStoreIds,
-  toggleSaleType,
-  setSelectedSaleTypes,
-  toggleRingType,
-  setSelectedRingTypes,
-  toggleSubDepartment,
-  setSelectedSubDepartments,
-  toggleVendor,
-  setSelectedVendors,
-  toggleCashier,
-  setSelectedCashiers,
-  togglePriceType,
-  setSelectedPriceTypes,
-  toggleSaleDate,
-  setSelectedSaleDates,
+  togglePick,
+  setPicks,
+  toggleDay,
+  setSelectedDays,
   toggleColumn,
   moveColumn,
   setSelectedColumns,
@@ -1048,6 +916,7 @@ export const {
   markSavedLoaded,
   setQuerySql,
   setFlag,
+  setRowFlag,
   startSqlLoad,
   setSql,
   closeSql,

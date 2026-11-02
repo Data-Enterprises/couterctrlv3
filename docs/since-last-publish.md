@@ -1340,3 +1340,16 @@ quietly ignore it and export everything. Builds made before and after the
 change both reload with their filters. This needs the new router on the dev
 API: against today's dev API the page's calls 404, so it ships together with
 that backend deploy.
+
+**Data Export, phase 2: Sales rebuilt so other data can follow.** Nothing on
+screen changes: the same rows, in the same order, with the same labels, lists,
+searches and notes. Underneath, everything that was specific to sales lines
+now comes from one description of the Sales data: which filters it has, the
+list each is picked from, the column it narrows, and how a row reads. The
+Configuration panel, the sample's narrowing, the query box, the export bar,
+saved configurations, reloading a build and the request itself all read that
+description, so adding Orders, Invoices and Markdowns is adding their
+descriptions. Saved configurations now record which data they export; every
+configuration saved before this loads exactly as it did, as a Sales one. The
+page also checks its filter names against the export router's own list before
+a build, so a mismatch is stopped on screen instead of after the wait.

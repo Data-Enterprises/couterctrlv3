@@ -24,15 +24,18 @@ const renderBar = (setup: (dispatch: (a: unknown) => void) => void) => {
   const dispatch = store.dispatch as unknown as (a: unknown) => void;
   dispatch(
     setConfig({
+      source: "sales",
       stores: [{ storeid: 36, store_number: "036", store_name: "036 - IGA" }],
-      saleTypes: ["Sale"],
-      itemRingTypes: ["ITEM"],
-      subDepartments: [],
-      vendors: [],
-      cashiers: [],
-      priceTypes: [],
+      lists: {
+        saleTypes: [{ value: "Sale", label: "Sale" }],
+        itemRingTypes: [{ value: "ITEM", label: "ITEM" }],
+        subDepartments: [],
+        vendorIds: [],
+        cashierNumbers: [],
+        priceTypes: [],
+      },
       dateFormats: [],
-      saleDates: [],
+      days: [],
       columns: [
         { name: "storeid", data_type: "bigint" },
         { name: "total_sales", data_type: "numeric" },

@@ -5,8 +5,8 @@ import reducer, {
   initialState,
   rememberBeforeApply,
   setGroupBy,
+  setPicks,
   setQueries,
-  setSelectedSaleTypes,
   undoApply,
   upsertQuery,
 } from "../../../features/dev/devExportBuilderSlice";
@@ -75,20 +75,20 @@ describe("taking back an Apply", () => {
     // arrow clears everything, and neither is "as it was a moment ago".
     const before = {
       ...picked,
-      selectedSaleTypes: ["Sale"],
+      picks: { saleTypes: ["Sale"] },
       productCodes: ["1200000088"],
     };
     const remembered = reducer(before, rememberBeforeApply());
 
     const applied = reducer(
       reducer(remembered, setGroupBy(["storeid"])),
-      setSelectedSaleTypes(["Sale", "Tender"]),
+      setPicks({ filter: "saleTypes", values: ["Sale", "Tender"] }),
     );
     expect(applied.groupBy).toEqual(["storeid"]);
 
     const back = reducer(applied, undoApply());
     expect(back.groupBy).toEqual([]);
-    expect(back.selectedSaleTypes).toEqual(["Sale"]);
+    expect(back.picks.saleTypes).toEqual(["Sale"]);
     expect(back.productCodes).toEqual(["1200000088"]);
     // One step back, not a history: the offer goes once it is taken.
     expect(back.preApply).toBeNull();

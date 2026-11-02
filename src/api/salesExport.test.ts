@@ -5,23 +5,27 @@ vi.mock("axios", () => ({ default: (req: unknown) => axiosMock(req) }));
 
 import {
   EXPORT_TOP_LEVEL_KEYS,
-  SALES_FILTER_KEYS,
   getExportPreview,
+  getExportTables,
   runExport,
   toExportBody,
   type ExportParams,
 } from "./salesExport";
 import {
   deleteExportBuild,
-  flattenRequest,
   linkExportBuild,
   listExportBuilds,
+  nestRequest,
 } from "./exportBuilds";
+import { SALES, filterNames } from "../pages/exportBuilder/dev/sources";
 
 type Req = { url: string; method: string; data?: Record<string, unknown> };
 const lastRequest = () => axiosMock.mock.calls.at(-1)![0] as Req;
 
-/** Every field set, so a field that went missing would show. */
+const salesNames = filterNames(SALES);
+
+/** Every field set, every sales filter included, so a field that went
+ *  missing would show. */
 const params: ExportParams = {
   startDate: "2026-10-18",
   endDate: "2026-10-24",
@@ -30,17 +34,19 @@ const params: ExportParams = {
   groupBy: null,
   aggregates: null,
   computed: null,
-  saleTypes: ["sale"],
-  itemRingTypes: ["Item"],
-  subDepartments: [12],
-  vendorIds: ["00042"],
-  cashierNumbers: [7],
-  priceTypes: [""],
-  saleDates: ["2026-10-20"],
-  productCodes: ["4011"],
-  productDescriptions: ["MILK"],
-  voidFlag: 0,
-  refundFlag: null,
+  filters: {
+    saleTypes: ["sale"],
+    itemRingTypes: ["Item"],
+    subDepartments: [12],
+    vendorIds: ["00042"],
+    cashierNumbers: [7],
+    priceTypes: [""],
+    saleDates: ["2026-10-20"],
+    productCodes: ["4011"],
+    productDescriptions: ["MILK"],
+    voidFlag: 0,
+    refundFlag: null,
+  },
   orderBy: null,
   dateFormat: "us",
   fileFormat: "csv",
@@ -51,29 +57,34 @@ const params: ExportParams = {
 };
 
 describe("toExportBody", () => {
-  it("moves every filter under `filters` and leaves none at the top level", () => {
-    const body = toExportBody(params) as Record<string, unknown> & {
+  it("sends every sales filter under `filters` and none at the top level", () => {
+    const body = toExportBody(params, salesNames) as Record<string, unknown> & {
       filters: Record<string, unknown>;
     };
-    for (const key of SALES_FILTER_KEYS) {
-      expect(body.filters).toHaveProperty(key, params[key]);
+    for (const name of salesNames) {
+      expect(body.filters).toHaveProperty(name, params.filters[name]);
       // Left at the top level, the router would ignore it and export
       // everything in the stores and dates.
-      expect(body).not.toHaveProperty(key);
+      expect(body).not.toHaveProperty(name);
     }
   });
 
   it("sends the top-level fields as they are", () => {
-    const body = toExportBody(params) as Record<string, unknown>;
+    const body = toExportBody(params, salesNames) as Record<string, unknown>;
     for (const key of EXPORT_TOP_LEVEL_KEYS) expect(body[key]).toEqual(params[key]);
   });
 
   it("sends nothing outside the two lists", () => {
-    const stray = { ...params, excludeVoids: true, isHash: 1 } as unknown as ExportParams;
-    const body = toExportBody(stray) as Record<string, unknown>;
+    const stray = {
+      ...params,
+      excludeVoids: true,
+      filters: { ...params.filters, isHash: 1, statuses: ["open"] },
+    } as unknown as ExportParams;
+    const body = toExportBody(stray, salesNames) as Record<string, unknown>;
     const allowed = new Set<string>([...EXPORT_TOP_LEVEL_KEYS, "filters"]);
     expect(Object.keys(body).filter((k) => !allowed.has(k))).toEqual([]);
-    expect(Object.keys(body.filters as object).sort()).toEqual([...SALES_FILTER_KEYS].sort());
+    // A filter the source does not have is not sent, whatever the params say.
+    expect(Object.keys(body.filters as object).sort()).toEqual([...salesNames].sort());
   });
 });
 
@@ -81,15 +92,15 @@ describe("the export router's routes", () => {
   beforeEach(() => axiosMock.mockClear());
 
   it("builds a file on export/sales, filters nested", async () => {
-    await runExport("u/", "t", "sales", params);
+    await runExport("u/", "t", "sales", params, salesNames);
     const req = lastRequest();
     expect(req.url).toBe("u/export/sales");
     expect(req.data).toMatchObject({ storeids: [101, 102], filters: { saleTypes: ["sale"] } });
   });
 
-  it("previews on export/sales/preview and lifts the facets to the top", async () => {
+  it("previews on export/sales/preview, its lists left under facets", async () => {
     axiosMock.mockResolvedValueOnce({
-      data: { error: 0, stores: [], facets: { saleTypes: ["sale", "refund"], vendors: [] } },
+      data: { error: 0, stores: [], facets: { saleTypes: ["sale", "refund"] } },
     });
     const resp = await getExportPreview("u/", "t", "sales", {
       startDate: "2026-10-18",
@@ -99,7 +110,12 @@ describe("the export router's routes", () => {
       searchValue: 101,
     });
     expect(lastRequest().url).toBe("u/export/sales/preview");
-    expect(resp.data.saleTypes).toEqual(["sale", "refund"]);
+    expect(resp.data.facets).toEqual({ saleTypes: ["sale", "refund"] });
+  });
+
+  it("reads what each table takes from export/tables", async () => {
+    await getExportTables("u/", "t");
+    expect(lastRequest()).toMatchObject({ method: "GET", url: "u/export/tables" });
   });
 
   it("lists, labels and deletes builds under export/sales", async () => {
@@ -114,21 +130,29 @@ describe("the export router's routes", () => {
 });
 
 describe("old and new build manifests", () => {
-  it("reads a manifest from before the move unchanged", () => {
-    const old = { startDate: "2026-09-01", saleTypes: ["sale"] };
-    expect(flattenRequest(old)).toEqual(old);
+  it("nests a manifest from before the move", () => {
+    // Its filters sat at the top level, beside fields the router has dropped.
+    const old = { startDate: "2026-09-01", storeids: [36], saleTypes: ["sale"], voidFlag: 0 };
+    expect(nestRequest(old)).toEqual({
+      startDate: "2026-09-01",
+      storeids: [36],
+      filters: { saleTypes: ["sale"], voidFlag: 0 },
+    });
   });
 
-  it("lifts a new manifest's filters to the top level", () => {
+  it("reads a new manifest as it is", () => {
     const fresh = { startDate: "2026-11-01", filters: { saleTypes: ["sale"], voidFlag: 0 } };
-    expect(flattenRequest(fresh)).toEqual({ startDate: "2026-11-01", saleTypes: ["sale"], voidFlag: 0 });
+    expect(nestRequest(fresh)).toEqual(fresh);
   });
 
-  it("flattens every build the list returns", async () => {
+  it("nests every build the list returns", async () => {
     axiosMock.mockResolvedValueOnce({
-      data: { builds: [{ buildId: "b1", request: { filters: { vendorIds: ["00042"] } } }] },
+      data: { builds: [{ buildId: "b1", request: { vendorIds: ["00042"], ordered: true } }] },
     });
     const resp = await listExportBuilds("u/", "t", "sales");
-    expect(resp.data.builds[0].request).toEqual({ vendorIds: ["00042"] });
+    expect(resp.data.builds[0].request).toEqual({
+      ordered: true,
+      filters: { vendorIds: ["00042"] },
+    });
   });
 });

@@ -1,9 +1,54 @@
 import { describe, expect, it } from "vitest";
 import { parseQuery, QueryError } from "./parseQuery";
 import { evalQuery } from "./evalQuery";
-import { planApply } from "./applyQuery";
-import { initialState } from "../../../../features/dev/devExportBuilderSlice";
+import { planApply as planApplyFor } from "./applyQuery";
+import {
+  initialState,
+  type ExportBuilderState,
+  type ExportFlags,
+} from "../../../../features/dev/devExportBuilderSlice";
 import type { ExportColumn, ExportRow } from "../../../../api/salesExport";
+import type { Query } from "./parseQuery";
+import { SALES } from "../sources";
+
+/** A configuration as these cases write it: the sales lists by the names
+ *  they had before the page had sources. */
+type Written = Omit<Partial<ExportBuilderState>, "flags"> & {
+  saleTypes?: string[];
+  selectedSaleTypes?: string[];
+  vendors?: { vendor_id: string; vendor_name: string }[];
+  saleDates?: string[];
+  selectedSaleDates?: string[];
+  flags?: Partial<ExportFlags> & { voidFlag?: number | null };
+};
+
+/** That configuration in the slice's own shape. */
+const asState = (written: Written): ExportBuilderState => {
+  const { saleTypes, selectedSaleTypes, vendors, saleDates, selectedSaleDates, flags, ...rest } =
+    written;
+  const { voidFlag, ...output } = flags ?? {};
+  return {
+    ...initialState,
+    ...rest,
+    lists: {
+      ...(saleTypes ? { saleTypes: saleTypes.map((t) => ({ value: t, label: t })) } : {}),
+      ...(vendors
+        ? { vendorIds: vendors.map((v) => ({ value: v.vendor_id, label: v.vendor_name })) }
+        : {}),
+    },
+    picks: {
+      ...(saleTypes ? { saleTypes: selectedSaleTypes ?? saleTypes } : {}),
+      ...(vendors ? { vendorIds: vendors.map((v) => v.vendor_id) } : {}),
+    },
+    days: saleDates ?? [],
+    selectedDays: selectedSaleDates ?? saleDates ?? [],
+    flags: { ...initialState.flags, ...output },
+    rowFlags: voidFlag !== undefined ? { voidFlag } : {},
+  };
+};
+
+const planApply = (query: Query, config: Written) =>
+  planApplyFor(query, asState(config), SALES);
 
 const columns: ExportColumn[] = [
   { name: "storeid", data_type: "bigint" },
@@ -469,24 +514,35 @@ describe("a filter the query does not mention", () => {
       (a) => a.type === `devExportBuilder/${type}`,
     )?.payload;
 
+  /** The values Apply picks for one list. */
+  const pickedList = (sql: string, filter: string) =>
+    (
+      planApply(parseQuery(sql), config).actions.find(
+        (a) =>
+          a.type === "devExportBuilder/setPicks" &&
+          (a.payload as { filter: string }).filter === filter,
+      )?.payload as { values: string[] } | undefined
+    )?.values;
+
   it("widens it back to everything", () => {
     // Deleting `sale_date in (...)` from the box has to mean every day. The
     // box IS the configuration; a line taken out of it cannot stay in force.
-    expect(picked("select * where sale_type = 'Sale'", "setSelectedSaleDates")).toEqual([
+    expect(picked("select * where sale_type = 'Sale'", "setSelectedDays")).toEqual([
       "2026-09-04",
       "2026-09-05",
       "2026-09-06",
     ]);
     expect(picked("select * where sale_type = 'Sale'", "setProductCodes")).toEqual([]);
-    expect(picked("select * where sale_type = 'Sale'", "setFlag")).toEqual({
-      voidFlag: null,
+    expect(picked("select * where sale_type = 'Sale'", "setRowFlag")).toEqual({
+      filter: "voidFlag",
+      value: null,
     });
   });
 
   it("leaves alone the one it does mention", () => {
-    expect(
-      picked("select * where sale_type = 'Tender'", "setSelectedSaleTypes"),
-    ).toEqual(["Tender"]);
+    expect(pickedList("select * where sale_type = 'Tender'", "saleTypes")).toEqual([
+      "Tender",
+    ]);
   });
 
   it("says which filters it let go", () => {
@@ -517,7 +573,7 @@ describe("a filter the query does not mention", () => {
       config,
     );
     expect(
-      out.actions.some((a) => a.type === "devExportBuilder/setSelectedSaleDates"),
+      out.actions.some((a) => a.type === "devExportBuilder/setSelectedDays"),
     ).toBe(false);
   });
 });

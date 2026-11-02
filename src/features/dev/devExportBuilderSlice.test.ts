@@ -12,10 +12,16 @@ import reducer, {
   setConfig,
   setFlag,
   setProductCodes,
+  setRowFlag,
   toggleColumn,
-  toggleSaleType,
+  togglePick,
 } from "./devExportBuilderSlice";
 import type { ExportBuild } from "../../api/exportBuilds";
+import { SALES } from "../../pages/exportBuilder/dev/sources";
+
+/** A preview's facets, turned into the slice's lists the way the page does. */
+const salesLists = (facets: Record<string, unknown>) =>
+  Object.fromEntries(SALES.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]));
 
 const columns = ["sale_id", "sale_date", "qty", "price"].map((name) => ({
   name,
@@ -23,18 +29,21 @@ const columns = ["sale_id", "sale_date", "qty", "price"].map((name) => ({
 }));
 
 const configPayload = () => ({
+      source: "sales" as const,
       stores: [{ storeid: 1, store_number: "945", store_name: "BG" }],
-      saleTypes: ["Sale", "Refunded"],
-      itemRingTypes: ["ITEM"],
-      subDepartments: [{ sub_department: "10", sub_department_description: "Grocery" }],
-      vendors: [{ vendor_id: "50", vendor_name: "AWG" }],
-      cashiers: [
-        { cashier_number: 7, cashier_name: "D HALL" },
-        { cashier_number: 12, cashier_name: null },
-      ],
-      priceTypes: [],
+      lists: salesLists({
+        saleTypes: ["Sale", "Refunded"],
+        itemRingTypes: ["ITEM"],
+        subDepartments: [{ sub_department: "10", sub_department_description: "Grocery" }],
+        vendors: [{ vendor_id: "50", vendor_name: "AWG" }],
+        cashiers: [
+          { cashier_number: 7, cashier_name: "D HALL" },
+          { cashier_number: 12, cashier_name: null },
+        ],
+        priceTypes: [],
+      }),
       dateFormats: [],
-      saleDates: ["2026-09-14", "2026-09-15"],
+      days: ["2026-09-14", "2026-09-15"],
       columns,
       rows: [],
       hasData: true,
@@ -52,94 +61,91 @@ describe("the export config", () => {
     const s = loaded();
     expect(s.columnOrder).toEqual(["sale_id", "sale_date", "qty", "price"]);
     expect(s.selectedColumns).toEqual(s.columnOrder);
-    expect(s.selectedSaleTypes).toEqual(["Sale", "Refunded"]);
-    expect(s.selectedRingTypes).toEqual(["ITEM"]);
-    expect(s.selectedSubDepartments).toEqual(["10"]);
-    expect(s.selectedVendors).toEqual(["50"]);
-    expect(s.selectedCashiers).toEqual([7, 12]);
-    expect(s.selectedSaleDates).toEqual(["2026-09-14", "2026-09-15"]);
+    expect(s.picks.saleTypes).toEqual(["Sale", "Refunded"]);
+    expect(s.picks.itemRingTypes).toEqual(["ITEM"]);
+    expect(s.picks.subDepartments).toEqual(["10"]);
+    expect(s.picks.vendorIds).toEqual(["50"]);
+    // Held as strings; they become numbers on the way out.
+    expect(s.picks.cashierNumbers).toEqual(["7", "12"]);
+    expect(s.selectedDays).toEqual(["2026-09-14", "2026-09-15"]);
     expect(s.selectedStoreIds).toEqual([1]);
   });
 });
 
 describe("the output switches", () => {
   it("changes the one that was sent and leaves the rest alone", () => {
-    const s = reducer(loaded(), setFlag({ voidFlag: 1 }));
-    expect(s.flags.voidFlag).toBe(1);
-    expect(s.flags.refundFlag).toBeNull();
+    const s = reducer(loaded(), setRowFlag({ filter: "voidFlag", value: 1 }));
+    expect(s.rowFlags.voidFlag).toBe(1);
+    expect(s.rowFlags.refundFlag ?? null).toBeNull();
     expect(s.flags.fileFormat).toBe("csv");
     expect(s.flags.filePrefix).toBe("sales");
   });
 
   it("can put a flag back to leaving the column alone", () => {
-    const off = reducer(loaded(), setFlag({ refundFlag: 0 }));
-    expect(reducer(off, setFlag({ refundFlag: null })).flags.refundFlag).toBeNull();
+    const off = reducer(loaded(), setRowFlag({ filter: "refundFlag", value: 0 }));
+    expect(
+      reducer(off, setRowFlag({ filter: "refundFlag", value: null })).rowFlags.refundFlag,
+    ).toBeNull();
+  });
+
+  it("leaves the row switches alone when a file setting changes", () => {
+    const on = reducer(loaded(), setRowFlag({ filter: "voidFlag", value: 0 }));
+    expect(reducer(on, setFlag({ fileFormat: "text" })).rowFlags.voidFlag).toBe(0);
   });
 });
 
 describe("lists that come back as distinct pairs", () => {
+  // Real data: stores disagree about what a number is called, and the
+  // endpoint's DISTINCT is over the pair, so the number repeats.
+  const lists = () =>
+    salesLists({
+      subDepartments: [
+        { sub_department: 5, sub_department_description: "Cigarettes" },
+        { sub_department: 5, sub_department_description: "Tobacco" },
+        { sub_department: 30, sub_department_description: "Beer" },
+        { sub_department: 30, sub_department_description: "Money Orders" },
+        { sub_department: 45, sub_department_description: "Soft Drinks" },
+      ],
+      vendors: [
+        { vendor_id: "50", vendor_name: "AWG" },
+        { vendor_id: "50", vendor_name: "Associated Wholesale" },
+        { vendor_id: "148", vendor_name: null },
+        // A name with no id: nothing can filter on it.
+        { vendor_id: null, vendor_name: "DSD RETURNS" },
+      ],
+      cashiers: [
+        { cashier_number: 7, cashier_name: "D HALL" },
+        { cashier_number: null, cashier_name: "TRAINING" },
+      ],
+    });
   const withDuplicates = () =>
-    reducer(
-      initialState,
-      setConfig({
-        stores: [],
-        saleTypes: [],
-        itemRingTypes: [],
-        // Real data: stores disagree about what a number is called, and the
-        // endpoint's DISTINCT is over the pair, so the number repeats.
-        subDepartments: [
-          { sub_department: 5, sub_department_description: "Cigarettes" },
-          { sub_department: 5, sub_department_description: "Tobacco" },
-          { sub_department: 30, sub_department_description: "Beer" },
-          { sub_department: 30, sub_department_description: "Money Orders" },
-          { sub_department: 45, sub_department_description: "Soft Drinks" },
-        ],
-        vendors: [
-          { vendor_id: "50", vendor_name: "AWG" },
-          { vendor_id: "50", vendor_name: "Associated Wholesale" },
-          { vendor_id: "148", vendor_name: null },
-          // A name with no id: nothing can filter on it.
-          { vendor_id: null, vendor_name: "DSD RETURNS" },
-        ],
-        cashiers: [
-          { cashier_number: 7, cashier_name: "D HALL" },
-          { cashier_number: null, cashier_name: "TRAINING" },
-        ],
-        priceTypes: [],
-        dateFormats: [],
-        saleDates: [],
-        columns,
-        rows: [],
-        hasData: true,
-        message: null,
-      }),
-    );
+    reducer(initialState, setConfig({ ...configPayload(), lists: lists() }));
 
   it("keeps one row per sub department number, naming both", () => {
     const s = withDuplicates();
-    expect(s.subDepartments).toEqual([
-      { sub_department: "5", sub_department_description: "Cigarettes / Tobacco" },
-      { sub_department: "30", sub_department_description: "Beer / Money Orders" },
-      { sub_department: "45", sub_department_description: "Soft Drinks" },
+    expect(s.lists.subDepartments).toEqual([
+      { value: "5", label: "Cigarettes / Tobacco" },
+      { value: "30", label: "Beer / Money Orders" },
+      { value: "45", label: "Soft Drinks" },
     ]);
     // One tick per number, not per name.
-    expect(s.selectedSubDepartments).toEqual(["5", "30", "45"]);
+    expect(s.picks.subDepartments).toEqual(["5", "30", "45"]);
   });
 
   it("keeps one row per vendor id, and leaves a nameless one nameless", () => {
     const s = withDuplicates();
-    expect(s.vendors).toEqual([
-      { vendor_id: "50", vendor_name: "AWG / Associated Wholesale" },
-      { vendor_id: "148", vendor_name: null },
+    expect(s.lists.vendorIds).toEqual([
+      { value: "50", label: "AWG / Associated Wholesale" },
+      { value: "148", label: "" },
     ]);
-    expect(s.selectedVendors).toEqual(["50", "148"]);
+    expect(s.picks.vendorIds).toEqual(["50", "148"]);
   });
 
   it("leaves out a vendor or cashier with no id, which no filter can pick", () => {
     const s = withDuplicates();
-    expect(s.vendors.map((v) => v.vendor_id)).not.toContain("null");
-    expect(s.cashiers).toEqual([{ cashier_number: 7, cashier_name: "D HALL" }]);
-    expect(s.selectedCashiers).toEqual([7]);
+    expect(s.lists.vendorIds.map((v) => v.value)).not.toContain("null");
+    expect(s.lists.cashierNumbers).toEqual([{ value: "7", label: "D HALL" }]);
+    expect(s.picks.cashierNumbers).toEqual(["7"]);
   });
 });
 
@@ -278,15 +284,18 @@ describe("the list of past builds", () => {
 describe("clearing the picks", () => {
   it("puts every list back to all of it and empties what was typed", () => {
     const narrowed = reducer(
-      reducer(reducer(loaded(), toggleSaleType("Sale")), setProductCodes(["12"])),
-      setFlag({ voidFlag: 1 }),
+      reducer(
+        reducer(loaded(), togglePick({ filter: "saleTypes", value: "Sale" })),
+        setProductCodes(["12"]),
+      ),
+      setRowFlag({ filter: "voidFlag", value: 1 }),
     );
-    expect(narrowed.selectedSaleTypes).toEqual(["Refunded"]);
+    expect(narrowed.picks.saleTypes).toEqual(["Refunded"]);
 
     const cleared = reducer(narrowed, clearSelections());
-    expect(cleared.selectedSaleTypes).toEqual(["Sale", "Refunded"]);
+    expect(cleared.picks.saleTypes).toEqual(["Sale", "Refunded"]);
     expect(cleared.productCodes).toEqual([]);
-    expect(cleared.flags.voidFlag).toBeNull();
+    expect(cleared.rowFlags.voidFlag ?? null).toBeNull();
     expect(cleared.groupBy).toEqual([]);
   });
 

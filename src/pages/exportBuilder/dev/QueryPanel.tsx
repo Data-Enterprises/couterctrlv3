@@ -41,11 +41,12 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
     () =>
       configToQuery(
         ctx.config,
+        ctx.source,
         ctx.aggregating,
         ctx.measureItems,
         ctx.orderedColumns.map((c) => c.name),
       ),
-    [ctx.config, ctx.aggregating, ctx.measureItems, ctx.orderedColumns],
+    [ctx.config, ctx.source, ctx.aggregating, ctx.measureItems, ctx.orderedColumns],
   );
 
   const [text, setText] = useState(generated);
@@ -130,7 +131,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
     try {
       const parsed: Query = parseQuery(sql);
       ctx.dispatch(rememberBeforeApply());
-      const next = planApply(parsed, ctx.config);
+      const next = planApply(parsed, ctx.config, ctx.source);
       justApplied.current = true;
       next.actions.forEach((action) => ctx.dispatch(action));
       setPlan(next);
