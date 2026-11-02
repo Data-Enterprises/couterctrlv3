@@ -71,7 +71,6 @@ const ExportBuilder = () => {
     return (
       <SearchCard
         title="Data Export"
-        description="Pick what to export, a store or group, and a date range. What comes back is the thing you configure: the stores it covers, the lists it holds and every column of the table."
         buttonLabel="Load config"
         loadingMessage="Reading the range..."
         loading={ctx.loadingConfig}

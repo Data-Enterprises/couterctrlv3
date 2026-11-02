@@ -9,6 +9,10 @@ import { SOURCES } from "./sources";
  * click away while configuring (Change, in the Configuration panel). Sales is
  * the default, so somebody who only exports sales sees one more row and
  * nothing else.
+ *
+ * One line per choice, the blurb beside the name rather than under it: the
+ * card is centred, and two-line rows pushed its calendars off the bottom of
+ * the window.
  */
 const SourcePicker = () => {
   const dispatch = useAppDispatch();
@@ -21,7 +25,7 @@ const SourcePicker = () => {
         return (
           <label
             key={source.key}
-            className={`flex items-start gap-2 rounded-lg border px-2.5 py-1.5 cursor-pointer transition-colors ${
+            className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 cursor-pointer transition-colors ${
               on
                 ? "bg-row_selected border-row_selected_border"
                 : "border-brand_line hover:border-brand_slate"
@@ -32,13 +36,15 @@ const SourcePicker = () => {
               name="export-source"
               checked={on}
               onChange={() => dispatch(setSearchSource(source.key))}
-              className="accent-brand_navy h-3.5 w-3.5 mt-0.5 flex-shrink-0"
+              className="accent-brand_navy h-3.5 w-3.5 flex-shrink-0"
             />
-            <span className="flex flex-col min-w-0">
-              <span className="text-[12.5px] font-semibold text-content">
+            <span className="flex items-baseline gap-2 min-w-0">
+              <span className="text-[12.5px] font-semibold text-content flex-shrink-0">
                 {source.label}
               </span>
-              <span className="text-[11px] text-content/85">{source.blurb}</span>
+              <span className="text-[11px] text-content/85 truncate" title={source.blurb}>
+                {source.blurb}
+              </span>
             </span>
           </label>
         );

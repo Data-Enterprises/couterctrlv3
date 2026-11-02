@@ -10,7 +10,10 @@ import { isGroupSearch } from "../features/searchSlice";
 
 interface SearchCardProps {
   title: string;
-  description: string;
+  /** Left out where the card's own controls already say it, and the height
+   *  is needed -- Data Export's four choices push its calendars off the
+   *  bottom of the window. */
+  description?: string;
   buttonLabel?: string;
   singleDate?: boolean;
   /** Suppress the card's own date control entirely, for a page that owns its
@@ -117,7 +120,9 @@ const SearchCard = ({
       >
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
-          <p className="text-[12px] text-content/50 mt-1">{description}</p>
+          {description && (
+            <p className="text-[12px] text-content/50 mt-1">{description}</p>
+          )}
         </div>
 
         {/* A disabled button alone reads as a frozen form on slow group

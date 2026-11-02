@@ -1398,3 +1398,9 @@ category needs an "Export" row in the help desk's ticket categories before
 this reaches anyone (the SQL is in docs/ticket-categories-2026-10-29.md);
 until then a ticket from the page arrives with no category rather than a wrong
 one.
+
+**The Data Export search card is shorter, so its calendars fit.** With the
+four Data choices on it, the card had grown tall enough that the date pickers
+opened off the bottom of the window. The description under the title is gone,
+and each choice is one line, its description beside the name instead of under
+it.
