@@ -8,7 +8,8 @@ const hour = (sale_date: string, hr: number, net: number) =>
     hour: hr,
     total_sales: net + 1,
     total_tax: 1,
-    transactions: 1,
+    transactions: 2,
+    qty: 3,
   }) as HourlySale;
 
 describe("a day's shape by hour", () => {
@@ -30,12 +31,17 @@ describe("a day's shape by hour", () => {
   });
 
   it("names the busiest hour by net sales, net of tax", () => {
-    expect(hoursForDay(day, "2026-10-30").peak).toEqual({ hour: 18, net: 410 });
+    expect(hoursForDay(day, "2026-10-30").peak).toMatchObject({ hour: 18, net: 410 });
+  });
+
+  it("carries each hour's baskets and qty for its tooltip", () => {
+    const s = hoursForDay([...day, hour("2026-10-30", 18, 90)], "2026-10-30");
+    expect(s.peak).toEqual({ hour: 18, net: 500, transactions: 4, qty: 6 });
   });
 
   it("never calls the opening or closing part-hour the slowest", () => {
     // 11 PM ($22) and 6 AM ($40) are part-hours; 8 AM sold nothing in between.
-    expect(hoursForDay(day, "2026-10-30").slowest).toEqual({ hour: 8, net: 0 });
+    expect(hoursForDay(day, "2026-10-30").slowest).toMatchObject({ hour: 8, net: 0 });
   });
 
   it("has no shape on a day with no hourly rows", () => {

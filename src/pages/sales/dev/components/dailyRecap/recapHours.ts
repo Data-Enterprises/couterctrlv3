@@ -14,12 +14,16 @@ import type { RecapDayHours, RecapHour } from "./recapTypes";
  * would be true every day and say nothing.
  */
 export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours => {
-  const byHour = new Map<number, number>();
+  const byHour = new Map<number, RecapHour>();
   for (const h of hourly) {
     if (h.sale_date.split("T")[0] !== date) continue;
-    byHour.set(h.hour, (byHour.get(h.hour) ?? 0) + h.total_sales - h.total_tax);
+    const held = byHour.get(h.hour) ?? { hour: h.hour, net: 0, transactions: 0, qty: 0 };
+    held.net += h.total_sales - h.total_tax;
+    held.transactions += h.transactions || 0;
+    held.qty += h.qty || 0;
+    byHour.set(h.hour, held);
   }
-  const traded = [...byHour].filter(([, net]) => net !== 0).map(([hour]) => hour);
+  const traded = [...byHour.values()].filter((h) => h.net !== 0).map((h) => h.hour);
   if (!traded.length) {
     return { hours: [], peak: null, slowest: null, first: null, last: null };
   }
@@ -27,7 +31,7 @@ export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours =
   const last = Math.max(...traded);
   const hours: RecapHour[] = [];
   for (let hour = first; hour <= last; hour++) {
-    hours.push({ hour, net: byHour.get(hour) ?? 0 });
+    hours.push(byHour.get(hour) ?? { hour, net: 0, transactions: 0, qty: 0 });
   }
 
   let peak: RecapHour | null = null;

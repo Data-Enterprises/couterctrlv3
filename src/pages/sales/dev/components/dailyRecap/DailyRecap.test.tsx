@@ -75,7 +75,7 @@ const setup = (selectedDate: string | null = null) => {
     </Provider>
   );
   const r = render(view());
-  return { store, rerender: () => r.rerender(view()) };
+  return { store, container: r.container, rerender: () => r.rerender(view()) };
 };
 
 describe("Daily recap", () => {
@@ -136,6 +136,19 @@ describe("Daily recap", () => {
     await waitFor(() => expect(within(mix).getByText("Not reported.")).toBeTruthy());
     expect(within(mix).getByText("$6.00")).toBeTruthy();
     expect(fetchRows.mock.calls[0][3]).toBe("2026-10-30");
+  });
+
+  it("shows an hour's figures in a tip that follows the mouse", () => {
+    const { container } = setup("2026-10-30");
+    const bar = container.querySelector('[data-hour="12"]') as HTMLElement;
+    fireEvent.mouseMove(bar, { clientX: 100, clientY: 120 });
+    const tip = screen.getByRole("tooltip");
+    expect(within(tip).getByText("12 PM – 1 PM")).toBeTruthy();
+    expect(within(tip).getByText("$550.00")).toBeTruthy();
+    expect(within(tip).getByText("52.4%")).toBeTruthy();
+    expect(within(tip).getByText("50")).toBeTruthy();
+    fireEvent.mouseLeave(bar.parentElement as HTMLElement);
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
   it("goes back to the week when the day is cleared", () => {

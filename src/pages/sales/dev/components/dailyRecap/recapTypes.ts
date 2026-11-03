@@ -10,6 +10,8 @@
 export interface RecapHour {
   hour: number;
   net: number;
+  transactions: number;
+  qty: number;
 }
 
 /** A day's hours, from the first that traded to the last, gaps filled at 0. */

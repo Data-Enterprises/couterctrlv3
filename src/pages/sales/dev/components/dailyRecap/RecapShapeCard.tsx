@@ -1,6 +1,8 @@
+import RecapHourTip from "./RecapHourTip";
 import { CARD, CARD_TITLE } from "./recapGrid";
 import { dayLabel, hourLabel, hourRange, money0 } from "./recapFormat";
 import type { RecapDayHours } from "./recapTypes";
+import { useCursorTip } from "./useCursorTip";
 
 /** One fact beside (or under) the chart. */
 const fact = (label: string, value: string, sub: string | null, big = false) => (
@@ -21,7 +23,9 @@ const fact = (label: string, value: string, sub: string | null, big = false) => 
  * wide panel and in a row under it on a narrow one.
  *
  * Every bar is navy; the busiest is full strength and carries its figure, the
- * rest at 60%. That marks the peak, it does not grade the others.
+ * rest at 60%. That marks the peak, it does not grade the others. Hovering an
+ * hour shows its figures in a tip that follows the mouse; the facts panel sits
+ * on the theme's grey ground to set it apart from the chart.
  */
 const RecapShapeCard = ({
   date,
@@ -35,6 +39,9 @@ const RecapShapeCard = ({
   short: boolean;
 }) => {
   const top = shape.peak?.net ?? 0;
+  const dayNet = shape.hours.reduce((t, h) => t + h.net, 0);
+  const { tip, track, clear } = useCursorTip<number>();
+  const tipHour = tip ? shape.hours.find((h) => h.hour === tip.key) : undefined;
   const facts = [
     fact(
       "Busiest",
@@ -77,6 +84,7 @@ const RecapShapeCard = ({
                 shape.peak ? `, busiest ${hourRange(shape.peak.hour)}` : ""
               }`}
               className={`flex-1 ${short ? "min-h-[90px] mt-3" : "min-h-[110px] mt-4"} flex items-end gap-1`}
+              onMouseLeave={clear}
             >
               {shape.hours.map((h) => {
                 const isPeak = h.hour === shape.peak?.hour;
@@ -84,7 +92,9 @@ const RecapShapeCard = ({
                 return (
                   <span
                     key={h.hour}
-                    className="relative flex-1 min-w-0 h-full flex flex-col justify-end items-center"
+                    data-hour={h.hour}
+                    onMouseMove={track(h.hour)}
+                    className="relative flex-1 min-w-0 h-full flex flex-col justify-end items-center cursor-default"
                   >
                     {isPeak && (
                       <span
@@ -95,7 +105,9 @@ const RecapShapeCard = ({
                       </span>
                     )}
                     <span
-                      className={`w-full rounded-t-[3px] ${isPeak ? "bg-brand_navy" : "bg-brand_navy/60"}`}
+                      className={`w-full rounded-t-[3px] transition-colors ${
+                        isPeak ? "bg-brand_navy" : tip?.key === h.hour ? "bg-brand_navy/80" : "bg-brand_navy/60"
+                      }`}
                       style={{ height: `${height}%` }}
                     />
                   </span>
@@ -116,14 +128,17 @@ const RecapShapeCard = ({
         )}
       </div>
       <div
-        className={
+        className={`rounded-lg bg-bkg/60 ${
           narrow
-            ? "flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-gray-200 pt-2.5"
-            : "flex flex-col justify-center gap-3 border-l border-gray-200 pl-5"
-        }
+            ? "flex flex-wrap justify-between gap-x-6 gap-y-2 px-4 py-2.5"
+            : "flex flex-col justify-center gap-3 px-5 py-3"
+        }`}
       >
         {facts}
       </div>
+      {tip && tipHour && (
+        <RecapHourTip hour={tipHour} dayNet={dayNet} x={tip.x} y={tip.y} />
+      )}
     </section>
   );
 };

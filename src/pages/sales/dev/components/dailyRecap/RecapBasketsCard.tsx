@@ -18,8 +18,8 @@ const figure = (value: string, label: string, short: boolean) => (
  *
  * Transactions as Hourly counts them; qty and net sales are the day card's;
  * items (how many different ones sold) comes from the day's item rows.
- * A store that weighs things also gets its pounds per basket. Three across, so
- * the card stays two rows tall beside Money and the mix.
+ * A store that weighs things also gets its pounds per basket, and goes four
+ * across for it, so the card stays two rows tall beside Money and the mix.
  */
 const RecapBasketsCard = ({
   day,
@@ -37,7 +37,11 @@ const RecapBasketsCard = ({
   const itemPrice = avgItemPrice(day.net, day.units);
   return (
     <RecapCard title="Baskets" compact={short}>
-      <div className={`grid grid-cols-3 gap-x-3 ${short ? "gap-y-2 mt-1.5" : "gap-y-3 mt-2.5"}`}>
+      <div
+        className={`grid ${withPounds ? "grid-cols-4" : "grid-cols-3"} gap-x-3 ${
+          short ? "gap-y-2 mt-1.5" : "gap-y-3 mt-2.5"
+        }`}
+      >
         {figure(day.transactions > 0 ? count(day.transactions) : "—", "transactions", short)}
         {figure(basket === null ? "—" : money(basket), "avg basket", short)}
         {figure(

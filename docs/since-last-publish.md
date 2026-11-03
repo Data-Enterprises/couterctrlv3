@@ -1839,3 +1839,13 @@ Both views fit the panel at any zoom: the days share the list's height
 evenly, a short panel tightens everything, and a narrow one drops the hour
 strips, puts the chart's facts under it and wraps the cards. Nothing spills
 sideways, and only a panel too small for the minimums scrolls.
+
+### Daily recap: hour tooltips, a grey facts panel, and stripes
+
+Hovering an hour on a day's chart shows a tip that follows the mouse: the
+hour's net sales, its share of the day, transactions, average basket and qty.
+It stays on screen at any panel size or zoom, flipping away from the edges.
+The busiest / slowest / trading facts beside the chart now sit on the theme's
+grey to set them apart, and the week's day rows are striped like the other
+grids. A store that weighs things gets Baskets four across so it stays two
+rows tall.
