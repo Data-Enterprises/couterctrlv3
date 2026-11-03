@@ -4,6 +4,7 @@ import reducer, {
   resetUserInfo,
   setSelectedUserInfo,
   setSelectedUserStores,
+  setUsersLoad,
   setUserInfo,
 } from "./devUsersSlice";
 import type { User } from "../../interfaces";
@@ -52,5 +53,16 @@ describe("opening another person", () => {
     );
     s = reducer(s, setSelectedUserInfo(bob));
     expect(s.selectedUserStores.assigned).toEqual([]);
+  });
+});
+
+describe("the users list read", () => {
+  it("is loading, then fine, or says why not", () => {
+    let s = reducer(undefined, setUsersLoad(null));
+    expect([s.usersLoading, s.usersError]).toEqual([true, null]);
+    s = reducer(s, setUsersLoad(""));
+    expect([s.usersLoading, s.usersError]).toEqual([false, null]);
+    s = reducer(s, setUsersLoad("The users could not be read."));
+    expect([s.usersLoading, s.usersError]).toEqual([false, "The users could not be read."]);
   });
 });

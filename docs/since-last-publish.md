@@ -1606,3 +1606,8 @@ rules on its side.
 User Management header did nothing while Add user or Edit was open. It now
 opens the users export from any screen on the Users tab, with the list's
 filters applied as before.
+
+**The users list says when it's loading, or that it failed.** While the users
+were still loading, or when loading them failed, the list said "No users
+found", and the company filter read "No company (0)". It now says "Loading
+users…", or shows what went wrong with a Retry button.

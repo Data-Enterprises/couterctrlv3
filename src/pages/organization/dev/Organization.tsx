@@ -43,6 +43,7 @@ import {
   setRefresh as setUsersRefresh,
   setUserLevels,
   setUsers,
+  setUsersLoad,
 } from "../../../features/dev/devUsersSlice";
 import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 import UsersExportModal from "./users/UsersExportModal";
@@ -114,44 +115,49 @@ const Organization = () => {
   // The users list only loads for people who get the Users tab.
   useEffect(() => {
     if (!ctx.refresh || !canSeeUsers) return;
+    ctx.dispatch(setUsersLoad(null));
     getAllUsers(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          const companyIds = ctx.companies.map((c) => c.company);
-          const scopeToOwnCompanies = (list: User[]) =>
-            list.filter((u: User) => {
-              const isDcrUser = u.companies.find(
-                (c) => c.company === 5 && c.name === "DCR",
-              );
-              if (isDcrUser) return false;
-              return u.companies.some((c) => companyIds.includes(c.company));
-            });
-          const isDcrUser = ctx.companies.find(
-            (c) => c.company === 5 && c.name === "DCR",
-          );
-          // Inactive users seeded for testing carry an @example.com email —
-          // strip those out so the Inactive list only shows real accounts.
-          const realInactiveUsers = j.inactive_users.filter(
-            (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
-          );
-          // in place to double check the api is working so we don't mess with live users
-          // const realInactiveUsers = j.inactive_users;
-          ctx.dispatch(
-            setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
-          );
-          ctx.dispatch(
-            setInactiveUsers(
-              isDcrUser
-                ? realInactiveUsers
-                : scopeToOwnCompanies(realInactiveUsers),
-            ),
-          );
+        if (j.error !== 0) {
+          ctx.dispatch(setUsersLoad(j.msg || "The users could not be read."));
+          return;
         }
+        ctx.dispatch(setUsersLoad(""));
+        const companyIds = ctx.companies.map((c) => c.company);
+        const scopeToOwnCompanies = (list: User[]) =>
+          list.filter((u: User) => {
+            const isDcrUser = u.companies.find(
+              (c) => c.company === 5 && c.name === "DCR",
+            );
+            if (isDcrUser) return false;
+            return u.companies.some((c) => companyIds.includes(c.company));
+          });
+        const isDcrUser = ctx.companies.find(
+          (c) => c.company === 5 && c.name === "DCR",
+        );
+        // Inactive users seeded for testing carry an @example.com email —
+        // strip those out so the Inactive list only shows real accounts.
+        const realInactiveUsers = j.inactive_users.filter(
+          (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
+        );
+        // in place to double check the api is working so we don't mess with live users
+        // const realInactiveUsers = j.inactive_users;
+        ctx.dispatch(
+          setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
+        );
+        ctx.dispatch(
+          setInactiveUsers(
+            isDcrUser
+              ? realInactiveUsers
+              : scopeToOwnCompanies(realInactiveUsers),
+          ),
+        );
       })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching users " + err.message),
-      );
+      .catch((err: JsonError) => {
+        ctx.dispatch(setUsersLoad("The users could not be read: " + err.message));
+        toast.error("Error fetching users " + err.message);
+      });
     getUserLevels(ctx.url, ctx.token)
       .then((resp) => {
         const j: UserLevelJsonResp = resp.data;

@@ -13,6 +13,8 @@ export const useOrganizationCtx = () => {
   const {
     users,
     inactiveUsers,
+    usersLoading,
+    usersError,
     userInfo,
     userInfoBefore,
     refresh,
@@ -49,6 +51,8 @@ export const useOrganizationCtx = () => {
     isProgrammer: userLevel === PROGRAMMER_LEVEL,
     users,
     inactiveUsers,
+    usersLoading,
+    usersError,
     userInfo,
     userInfoBefore,
     refresh,

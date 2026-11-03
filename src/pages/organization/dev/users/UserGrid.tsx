@@ -654,8 +654,22 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               );
             })}
             {filtered.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                No users found
+              <div className="flex items-center justify-center gap-3 py-8 text-[12px] text-content">
+                {ctx.usersError ? (
+                  <>
+                    <span>{ctx.usersError}</span>
+                    <button
+                      onClick={() => ctx.dispatch(setRefresh(true))}
+                      className="text-[12px] font-medium px-3 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85"
+                    >
+                      Retry
+                    </button>
+                  </>
+                ) : ctx.usersLoading ? (
+                  "Loading users…"
+                ) : (
+                  "No users found"
+                )}
               </div>
             )}
           </div>

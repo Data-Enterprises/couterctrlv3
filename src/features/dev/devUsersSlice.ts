@@ -82,6 +82,13 @@ export interface DuplicateSource {
 interface UsersState {
   users: User[];
   inactiveUsers: User[];
+  /**
+   * The users list read: running, or what went wrong. The grid said "No
+   * users found" while it loaded and when it failed, and a 200 carrying an
+   * error was dropped without a word.
+   */
+  usersLoading: boolean;
+  usersError: string | null;
   userInfo: UserData;
   /**
    * The person's details as they were when opened for Edit, or as last
@@ -130,6 +137,8 @@ interface UsersState {
 const initialState: UsersState = {
   users: [],
   inactiveUsers: [],
+  usersLoading: false,
+  usersError: null,
   userInfo: defaultInfo,
   userInfoBefore: null,
   baseGroups: [],
@@ -172,6 +181,11 @@ export const usersSlice = createSlice({
     },
     setInactiveUsers: (state, action: PayloadAction<User[]>) => {
       state.inactiveUsers = action.payload;
+    },
+    /** The users read started (null), or finished: "" for fine, else why not. */
+    setUsersLoad: (state, action: PayloadAction<string | null>) => {
+      state.usersLoading = action.payload === null;
+      state.usersError = action.payload ? action.payload : null;
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
@@ -371,6 +385,7 @@ export const usersSlice = createSlice({
 export const {
   setUsers,
   setInactiveUsers,
+  setUsersLoad,
   setUserInfo,
   setSelectedUserInfo,
   markUserInfoSaved,
