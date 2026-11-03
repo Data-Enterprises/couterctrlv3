@@ -130,7 +130,11 @@ export function computePriceOptRowSummary(
     points,
     bestPrice: row.price,
     bestUnits,
-    bestRevenue: row.total_revenue,
+    // From the same price point as the volume: the best row alone is one of
+    // possibly several at that price (an item rung under two descriptions),
+    // so its revenue sat beside a volume summed over all of them -- $120
+    // next to 61.50 lb at $3.99/lb.
+    bestRevenue: bestPoint ? bestPoint.revenue : row.total_revenue,
     weighted,
     elasticity,
   };

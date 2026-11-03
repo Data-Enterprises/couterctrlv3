@@ -1676,3 +1676,9 @@ B's late answer overwrite A's, leaving the tab on "Loading associations…" with
 nothing asking again. And after one set failed, the next set showed the old
 set's error while it loaded, in the export too. An answer or error now only
 counts for the set of UPCs still ticked.
+
+**Price Opt's best revenue matches its volume.** For an item rung under two
+descriptions, "Volume at best" added up every sale at the best price, but
+"Best revenue" took only one of them, so the two figures side by side
+described different sales ($120 beside 61.50 lb at $3.99/lb). Both now come
+from the same sales, on screen and in the export.

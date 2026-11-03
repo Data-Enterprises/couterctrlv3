@@ -199,7 +199,7 @@ const UpcExportModal = ({ onClose }: Props) => {
             row.product_code,
             row.product_description,
             String(row.price),
-            String(row.total_revenue),
+            String(ctx.fixes ? s.bestRevenue : row.total_revenue),
             String(ctx.fixes ? s.bestUnits : row.total_qty),
             ...(ctx.fixes ? [s.weighted ? "lb" : "ea"] : []),
             s.elasticity !== null ? s.elasticity.toFixed(2) : "",

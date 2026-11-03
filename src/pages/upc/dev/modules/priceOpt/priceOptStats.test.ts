@@ -41,6 +41,13 @@ describe("volume at the best price", () => {
     expect(s.bestUnits).toBeCloseTo(61.5);
   });
 
+  it("pairs it with the revenue of those same rows", () => {
+    // It read $120 (the best row alone) beside 61.50 lb (both rows).
+    const rows = [point(3.99, 12, 0, 120), point(3.99, 30, 61.5, 245.39), point(4.49, 20, 40, 179.6)];
+    const s = computePriceOptRowSummary(rows[0], rows, true);
+    expect(s.bestRevenue).toBeCloseTo(365.39);
+  });
+
   it("shows pounds even at zero, and a bare count otherwise", () => {
     expect(formatBestUnits(0, true)).toBe("0.00 lb");
     expect(formatBestUnits(61.5, true)).toBe("61.50 lb");
