@@ -1,3 +1,4 @@
+import RecapAveragesCard from "./RecapAveragesCard";
 import RecapBasketsCard from "./RecapBasketsCard";
 import RecapMixCard from "./RecapMixCard";
 import RecapMoneyCard from "./RecapMoneyCard";
@@ -9,14 +10,15 @@ import type { DayMixState, RecapDay, RecapMoney } from "./recapTypes";
 /**
  * One day's full recap, picked from its day card.
  *
- * One line of heading (the day, its net sales, the way back), then the day's
- * cards on a recessed tray, which is what gives them their edges: the day's
- * shape taking the spare height, then Baskets, Money and Refunds and price
- * mix. Nothing repeats another tab or itself. A panel too short for the
- * minimums scrolls inside the tray; nothing is clipped and nothing pushes
- * sideways. On a narrow panel the three cards go two across, the last
- * spanning; on a short one everything tightens and the chart gives up height
- * first.
+ * One line of heading (the day, its net sales, the way back), then a three
+ * column grid: Money, Baskets and Refunds and price mix across the first row;
+ * Averages and the hour chart (two columns wide) across the second, which
+ * takes the rest of the height. On a narrow panel it is two columns: Money and
+ * Baskets, the mix and Averages, then the chart across both.
+ *
+ * No card has a fixed height it can be squeezed below: the last row's floor is
+ * its own content, so when the panel is too short the tray scrolls and nothing
+ * is cut off, and nothing pushes sideways.
  */
 const RecapDayView = ({
   day,
@@ -49,19 +51,22 @@ const RecapDayView = ({
     </div>
     <div
       className={`${TRAY} flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col px-3.5 ${
-        short ? "py-2 gap-2" : "pt-3 pb-3.5 gap-3"
+        short ? "py-2" : "pt-3 pb-3.5"
       }`}
     >
-      <RecapShapeCard date={day.date} shape={day.hours} narrow={narrow} short={short} />
       <div
-        className={`grid flex-shrink-0 ${short ? "gap-2" : "gap-3"} ${
-          narrow ? "grid-cols-2" : "grid-cols-[1.15fr_1fr_1fr]"
+        className={`grid flex-1 ${short ? "gap-2" : "gap-3"} ${
+          narrow
+            ? "grid-cols-2 grid-rows-[auto_auto_minmax(min-content,1fr)]"
+            : "grid-cols-3 grid-rows-[auto_minmax(min-content,1fr)]"
         }`}
       >
-        <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} narrow={narrow} short={short} />
         <RecapMoneyCard money={m} short={short} />
-        <div className={narrow ? "col-span-2" : ""}>
-          <RecapMixCard state={mix} short={short} />
+        <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
+        <RecapMixCard state={mix} short={short} />
+        <RecapAveragesCard day={day} withPounds={withPounds} short={short} />
+        <div className="col-span-2 min-w-0">
+          <RecapShapeCard date={day.date} shape={day.hours} narrow={narrow} short={short} />
         </div>
       </div>
     </div>

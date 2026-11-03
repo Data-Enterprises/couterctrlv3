@@ -1,23 +1,15 @@
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import RecapCard from "./RecapCard";
-import { avgBasket, avgItemPrice, itemsPerBasket } from "./recapDays";
-import { count, money, one, pounds } from "./recapFormat";
+import { count, pounds } from "./recapFormat";
 import type { DayMixState, RecapDay } from "./recapTypes";
 
-/**
- * One figure as a small tile. The lead three (transactions, avg basket,
- * items) sit on a deeper tint and a larger figure; the rest follow from them.
- */
-const tile = (value: string, label: string, lead: boolean, short: boolean) => (
+/** One count as a small tile: the figure, then what it counts. */
+const tile = (value: string, label: string, short: boolean) => (
   <div
     key={label}
-    className={`min-w-0 rounded-lg border border-brand_line px-2.5 ${short ? "py-1.5" : "py-2"} ${
-      lead ? "bg-bkg/50" : "bg-bkg/20"
-    }`}
+    className={`min-w-0 rounded-lg border border-brand_line bg-bkg/40 px-2.5 ${short ? "py-1.5" : "py-2"}`}
   >
-    <div
-      className={`${lead ? (short ? "text-[17px]" : "text-[19px]") : short ? "text-[15px]" : "text-[16px]"} font-bold text-content tabular-nums truncate`}
-    >
+    <div className={`${short ? "text-[17px]" : "text-[19px]"} font-bold text-content tabular-nums truncate`}>
       {value}
     </div>
     <div className="text-[12px] text-content truncate">{label}</div>
@@ -25,52 +17,33 @@ const tile = (value: string, label: string, lead: boolean, short: boolean) => (
 );
 
 /**
- * What a basket looked like that day.
+ * How much the day moved, as counts: transactions (as Hourly counts them),
+ * how many different items sold (from the day's item rows), qty (the day
+ * card's) and, at a store that weighs things, the weight.
  *
- * Transactions as Hourly counts them; qty and net sales are the day card's;
- * items (how many different ones sold) comes from the day's item rows. A
- * store that weighs things also gets its pounds per basket.
+ * Only counts: the per-basket and per-unit figures are their own Averages
+ * card, so neither card is a wall of numbers.
  */
 const RecapBasketsCard = ({
   day,
   mix,
   withPounds,
-  narrow,
   short,
 }: {
   day: RecapDay;
   mix: DayMixState;
   withPounds: boolean;
-  narrow: boolean;
   short: boolean;
 }) => {
-  const basket = avgBasket(day.net, day.transactions);
-  const perBasket = itemsPerBasket(day.units, day.transactions);
-  const itemPrice = avgItemPrice(day.net, day.units);
   const items =
     mix.status === "ready" ? count(mix.mix.items) : mix.status === "error" ? "—" : "…";
   return (
     <RecapCard title="Baskets" icon={ShoppingCartIcon} compact={short} bodyClassName="p-3">
-      {/* Four across when the store weighs things, so its seven tiles stay two
-          rows and the card does not stretch the row it shares. */}
-      <div
-        className={`grid ${withPounds && !narrow ? "grid-cols-4" : "grid-cols-3"} ${
-          short ? "gap-1.5" : "gap-2"
-        }`}
-      >
-        {tile(day.transactions > 0 ? count(day.transactions) : "—", "transactions", true, short)}
-        {tile(basket === null ? "—" : money(basket), "avg basket", true, short)}
-        {tile(items, "items", true, short)}
-        {tile(count(day.units), "qty", false, short)}
-        {tile(perBasket === null ? "—" : one(perBasket), "qty per basket", false, short)}
-        {tile(itemPrice === null ? "—" : money(itemPrice), "avg unit price", false, short)}
-        {withPounds &&
-          tile(
-            day.transactions > 0 ? pounds(day.pounds / day.transactions) : "—",
-            "lb per basket",
-            false,
-            short,
-          )}
+      <div className={`grid ${withPounds ? "grid-cols-2" : "grid-cols-3"} ${short ? "gap-1.5" : "gap-2"}`}>
+        {tile(day.transactions > 0 ? count(day.transactions) : "—", "transactions", short)}
+        {tile(items, "items", short)}
+        {tile(count(day.units), "qty", short)}
+        {withPounds && tile(`${pounds(day.pounds)} lb`, "weight", short)}
       </div>
     </RecapCard>
   );

@@ -6,8 +6,9 @@ import { CARD, CARD_BAR, CARD_TITLE } from "./recapGrid";
  *
  * The bar (a tint of the page ground, with an outline icon) is what gives each
  * block its own edge on the tray behind them, so four blocks of figures read
- * as four things rather than one flat sheet. `bodyClassName` lets a block lay
- * out its own body (the chart wants it full-bleed).
+ * as separate things rather than one flat sheet. `bodyClassName` lets a block
+ * lay out its own body. No overflow clipping: a card that cannot fit its
+ * content grows (and the view scrolls) rather than cutting it off.
  */
 const RecapCard = ({
   title,
@@ -27,9 +28,9 @@ const RecapCard = ({
 }) => (
   <section
     aria-label={title}
-    className={`${CARD} h-full min-w-0 flex flex-col overflow-hidden ${className}`}
+    className={`${CARD} h-full min-w-0 flex flex-col ${className}`}
   >
-    <div className={`${CARD_BAR} ${compact ? "py-1.5" : "py-2"}`}>
+    <div className={`${CARD_BAR} rounded-t-[10px] ${compact ? "py-1.5" : "py-2"}`}>
       <Icon className="h-4 w-4 flex-none text-brand_navy" aria-hidden="true" />
       <h4 className={CARD_TITLE}>{title}</h4>
     </div>

@@ -1874,3 +1874,13 @@ missing) when its facts rail was taller than the room it was given. It now
 never shrinks below its contents; a short panel scrolls instead. The cards
 sit on the panel's own white with the theme's medium shadow, and Baskets goes
 four across at a store that weighs things so it stays two rows.
+
+### Daily recap: a day's recap as a two-row grid
+
+A picked day now reads as a grid: Money, Baskets, and Refunds and price mix
+across the top; Averages and the hour chart (two columns wide) underneath,
+taking the rest of the height. Baskets is just the counts (transactions,
+items, qty, and weight where the store weighs things); the per-basket and
+per-unit figures moved to the new Averages card. The hour chart is back to
+its earlier look, with its hover tooltip kept. On a narrow panel the grid
+goes two across, and a short panel scrolls rather than cutting anything off.
