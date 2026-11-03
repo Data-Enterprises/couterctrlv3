@@ -40,3 +40,9 @@ html-s3-handoff.md
 trash/
 .history/
 .env
+
+# The dev-to-prod plan is a working document: it is rewritten from a fresh
+# audit each time a publish is prepared, and a tracked copy only ever goes
+# stale in the diff. The three that came before it were 263 commits out of
+# date by the time anyone looked.
+docs/dev-to-prod-plan.md
