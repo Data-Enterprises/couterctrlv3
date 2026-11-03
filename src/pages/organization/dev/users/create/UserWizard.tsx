@@ -665,6 +665,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             onGoTo={goTo}
             modeBefore={editing && !typeUnset ? existing.picks.mode : undefined}
             typeUnset={typeUnset}
+            heldGroups={held.heldGroups}
           />
         )}
       </div>

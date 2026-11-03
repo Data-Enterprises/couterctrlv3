@@ -1537,3 +1537,7 @@ name or email fixed, and the button was just grey. Now a details-only change
 needs only valid details, an access change needs Assignments to be complete,
 a name that was already blank may stay blank, and a greyed-out Save changes
 says why underneath ("Nothing has changed yet.", "Finish User info first.").
+
+**Edit's Review names every group.** Jumping straight to Review in Edit named
+groups by number ("Group 66") unless their company had been opened on
+Assignments. Review now names the groups the person holds either way.

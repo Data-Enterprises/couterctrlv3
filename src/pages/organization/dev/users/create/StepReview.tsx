@@ -5,6 +5,7 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/20/solid";
 import type {
+  BaseGroup,
   CompanyBaseGroup,
   GrantMode,
   Store,
@@ -37,6 +38,7 @@ const StepReview = ({
   onGoTo,
   modeBefore,
   typeUnset = false,
+  heldGroups = [],
 }: {
   picks: AccessPicks;
   /** The companies that will actually be written — ticked ones plus the one
@@ -55,6 +57,9 @@ const StepReview = ({
   modeBefore?: GrantMode;
   /** Edit only: the person had no access type on file, so this save sets it. */
   typeUnset?: boolean;
+  /** Edit: the groups the person already holds, so a group whose company was
+   *  never opened on Assignments is named rather than read "Group 66". */
+  heldGroups?: BaseGroup[];
 }) => {
   const ctx = useOrganizationCtx();
   const info = ctx.userInfo;
@@ -212,7 +217,7 @@ const StepReview = ({
           }
         >
           {held.map((id) => {
-            const group = groupsById[id];
+            const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
             const mode = picks.mode;
             const total = groupStores[id]?.length;
             const count = mode === "all" ? total : picksInGroup(picks, id).length;
