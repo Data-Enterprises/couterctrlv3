@@ -7,7 +7,12 @@ import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { openNew } from "../../../features/dev/devTicketsSlice";
-import type { TicketPriority } from "../../../api/tickets";
+import {
+  getTicketStoreOptions,
+  ticketFailed,
+  type TicketPriority,
+  type TicketStoreOption,
+} from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
 import { attachmentProblem, fileSize } from "./ticketsUtils";
 import {
@@ -26,7 +31,12 @@ import {
   suggestedTitle,
 } from "./ticketOrigin";
 import StoreChecklist from "./StoreChecklist";
-import { assignedAsOptions, initialStorePicks, optionsForGroup } from "./ticketStores";
+import {
+  assignedAsOptions,
+  cleanStoreOptions,
+  initialStorePicks,
+  optionsForGroup,
+} from "./ticketStores";
 import Checkbox from "../../../components-dev/Checkbox";
 
 /**
@@ -91,10 +101,17 @@ const NewTicketModal = ({
    * stores.
    *
    * The list is the signed-in person's own stores, already in the app from
-   * sign-in, so opening the form makes no store call. The page's search only
-   * decides where the list starts: a store search ticks that store, a group
-   * search lists the group's stores first, and a page with no search (User
-   * Management, Groups, the help desk) starts on all of theirs.
+   * sign-in, so opening the form makes no store call. **A tech is the
+   * exception:** they are support, filing for a client who phoned in, so they
+   * are offered every store (`store_options`, which for a tech is every store
+   * -- exactly what create accepts from them). Their own assigned stores are
+   * few or none, and limiting them to those left a tech unable to name the
+   * caller's store.
+   *
+   * The page's search only decides where the list starts: a store search
+   * ticks that store, a group search lists the group's stores first, and a
+   * page with no search (User Management, Groups, the help desk) starts on
+   * all of them.
    *
    * One answer is required: stores, or "Not about a store". Someone with only
    * one store is not asked; it is the answer. Someone with none is told, and
@@ -106,17 +123,58 @@ const NewTicketModal = ({
       : null;
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
   // Read once, like the evidence: the form is about the moment it opened.
-  const [options] = useState(() => assignedAsOptions(assignedStores));
-  const [start] = useState(() =>
-    initialStorePicks({ options, isTech: ctx.isTech, searchedStoreId }),
+  // Null while a tech's every-store list loads.
+  const [options, setOptions] = useState<TicketStoreOption[] | null>(() =>
+    ctx.isTech ? null : assignedAsOptions(assignedStores),
   );
-  const optionsError =
-    options.length === 0
-      ? "You have no stores of your own, so this ticket will be filed as not about a store."
-      : null;
+  const [start] = useState(() =>
+    ctx.isTech
+      ? { picked: [] as number[], ask: true }
+      : initialStorePicks({
+          options: assignedAsOptions(assignedStores),
+          isTech: false,
+          searchedStoreId,
+        }),
+  );
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [picked, setPicked] = useState<number[]>(start.picked);
   const [notAbout, setNotAbout] = useState(false);
   const askStores = start.ask;
+  const list = options ?? [];
+  const optionsError =
+    loadError ??
+    (options !== null && options.length === 0
+      ? "You have no stores of your own, so this ticket will be filed as not about a store."
+      : null);
+
+  useEffect(() => {
+    if (!ctx.isTech) return;
+    let live = true;
+    const unread =
+      "The stores could not be read, so this ticket will be filed as not about a store.";
+    getTicketStoreOptions(url, token)
+      .then((resp) => {
+        if (!live) return;
+        if (ticketFailed(resp.data)) {
+          setLoadError(unread);
+          setOptions([]);
+          return;
+        }
+        const stores = cleanStoreOptions(resp.data.stores ?? []);
+        setOptions(stores);
+        setPicked(
+          initialStorePicks({ options: stores, isTech: true, searchedStoreId }).picked,
+        );
+      })
+      .catch(() => {
+        if (!live) return;
+        setLoadError(unread);
+        setOptions([]);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
   const [showAllStores, setShowAllStores] = useState(false);
 
   /**
@@ -163,7 +221,7 @@ const NewTicketModal = ({
     };
   }, [groupId]);
 
-  const listed = !groupRead
+  const listed = !groupRead || options === null
     ? null
     : groupStores.length && !showAllStores
       ? optionsForGroup(
@@ -176,7 +234,7 @@ const NewTicketModal = ({
   // For a group search, the stores inside it they ticked, which the line at
   // the foot of the first message names as "seen on".
   const narrowedTo = groupStores.filter((s) => picked.includes(s.storeid));
-  const onlyStore = !askStores && options.length === 1 ? options[0] : null;
+  const onlyStore = !askStores && list.length === 1 ? list[0] : null;
   // Access problems are about a person, and a person works at a store.
   // Ticking it is what lets that store's manager see the ticket too.
   const accessPage =
@@ -393,17 +451,17 @@ const NewTicketModal = ({
             onPicked={setPicked}
             notAbout={notAbout}
             onNotAbout={setNotAbout}
-            searchable={options.length > 12}
+            searchable={list.length > 12}
             loadError={optionsError}
             extra={
               <>
-                {listed && listed.length < options.length && (
+                {listed && listed.length < list.length && (
                   <button
                     type="button"
                     onClick={() => setShowAllStores(true)}
                     className="self-start text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2"
                   >
-                    Showing the stores in this group. Show all {options.length}{" "}
+                    Showing the stores in this group. Show all {list.length}{" "}
                     of yours
                   </button>
                 )}

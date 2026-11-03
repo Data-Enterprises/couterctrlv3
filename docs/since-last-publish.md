@@ -951,11 +951,12 @@ company starts folded and shows as one line with its store count; a click
 opens it. A company with a ticked store starts open and says how many are
 ticked, and typing in the search box opens every company with a match.
 
-**Report an issue lists your own stores.** The picker no longer asks the
-server for a store list each time it opens. It uses the stores assigned to the
-person signed in, which the app already has from sign-in, so it opens straight
-away. Before, a tech was offered every store on the system (423); now it's only
-theirs, the same stores the server lets anyone file against. The page still
+**Report an issue lists your own stores, and every store for support.** The
+picker no longer asks the server for a store list each time it opens: it uses
+the stores assigned to the person signed in, which the app already has from
+sign-in, so it opens straight away. A tech is the exception (corrected 3 Nov):
+they are support, filing for a client who phoned in, so they are still offered
+every store, as the server allows. The page still
 decides where the list starts: a store search ticks that store, a group search
 lists the group's stores first, and pages with no search (User Management,
 Groups, the help desk) start on all of yours. Someone with no stores is told,
