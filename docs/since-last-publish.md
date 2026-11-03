@@ -1672,6 +1672,11 @@ one person left by a search, Assign all asked to add all 272. Each button now
 takes exactly the people its column is showing, search and company filter
 included.
 
+**Assign all and Unassign all show who will move.** The question before Assign
+all or Unassign all now lists everyone it would move, by name and email, so
+you can see the search narrowed it the way you meant before saying yes. On the
+Companies tab both buttons always ask, however few people it is.
+
 ## UPC List: pre-publish audit fixes (3 Nov)
 
 dev mode only

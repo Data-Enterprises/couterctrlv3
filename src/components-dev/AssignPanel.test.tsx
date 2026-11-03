@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AssignPanel from "./AssignPanel";
 
@@ -113,6 +113,9 @@ describe("Unassign all", () => {
     });
     await userEvent.click(screen.getByRole("button", { name: "Unassign all" }));
     expect(screen.getByText("Take it off 2 people?")).toBeTruthy();
+    // Who, by name, not just how many.
+    const moving = within(screen.getByRole("list", { name: "Being unassigned" }));
+    expect(moving.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["amy", "ben"]);
     expect(onUnassign).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(onUnassign).not.toHaveBeenCalled();

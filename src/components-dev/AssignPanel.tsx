@@ -133,10 +133,12 @@ const AssignPanel = ({
   confirmBulk,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
-  /** An Assign all / Unassign all waiting on its question. */
+  /** An Assign all / Unassign all waiting on its question, with the rows
+   *  it would move, so the question can show exactly who. */
   const [pending, setPending] = useState<{
     direction: "in" | "out";
     ids: number[];
+    rows: AssignPanelItem[];
     message: string;
     confirmLabel: string;
   } | null>(null);
@@ -213,7 +215,13 @@ const AssignPanel = ({
   const bulk = (direction: "in" | "out", ids: number[]) => {
     const ask = confirmBulk?.(direction, ids);
     if (ask) {
-      setPending({ direction, ids, ...ask });
+      const byId = new Map(
+        (direction === "in" ? leftItems : rightItems).map((i) => [i.id, i]),
+      );
+      const rows = ids
+        .map((id) => byId.get(id))
+        .filter((i): i is AssignPanelItem => i !== undefined);
+      setPending({ direction, ids, rows, ...ask });
       return;
     }
     if (direction === "in") handleAssign(ids);
@@ -234,7 +242,23 @@ const AssignPanel = ({
             else handleUnassign(ids);
           }}
           onCancel={() => setPending(null)}
-        />
+        >
+          {/* Who is about to move, by name: the count alone didn't say
+              whether the search had narrowed it the way you meant. */}
+          <ul
+            aria-label={pending.direction === "in" ? "Being assigned" : "Being unassigned"}
+            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-gray-100 rounded-md divide-y divide-gray-100 m-0 p-0 list-none"
+          >
+            {pending.rows.map((r) => (
+              <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
+                <div className="truncate">{r.label}</div>
+                {r.sublabel && (
+                  <div className="text-[10.5px] text-content/85 truncate">{r.sublabel}</div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </ConfirmModal>
       )}
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">

@@ -26,3 +26,11 @@ describe("Unassign all and Assign all", () => {
     expect(groupStoresConfirm({ direction: "in", count: 3, group: "East" })).toBeNull();
   });
 });
+
+describe("on the Companies tab", () => {
+  it("asks even for one person, so the list of who is moving always shows", () => {
+    expect(peopleConfirm({ direction: "in", ids: [7], me: 2, what: "Bruces Foodland", always: true })?.message).toBe(
+      "Give Bruces Foodland to 1 person?",
+    );
+  });
+});

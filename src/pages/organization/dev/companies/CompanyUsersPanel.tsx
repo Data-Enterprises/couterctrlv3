@@ -271,7 +271,7 @@ const CompanyUsersPanel = ({
         // parity choice), so one person left by a search still meant all 272.
         moving={moving}
         confirmBulk={(direction, ids) =>
-          peopleConfirm({ direction, ids, me: ctx.userid, what: company.name })
+          peopleConfirm({ direction, ids, me: ctx.userid, what: company.name, always: true })
         }
         leftPredicate={heldPredicate}
         searchHint={

@@ -238,7 +238,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
       issues: [
         {
           q: "What do Assign all and Unassign all take?",
-          a: "They take what that column is showing, so narrow it with the search and the company filter first and read the count in the heading. Unassign all always asks first and names the count, and you, if you're in it.",
+          a: "They take what that column is showing, so narrow it with the search and the company filter first. Both always ask first, listing everyone who will move (and saying so if you're one of them).",
         },
         {
           q: "Somebody isn't in Not in this company",
@@ -570,7 +570,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
     },
     {
       term: "Assign all and Unassign all",
-      def: "On a base group and on the Companies tab they take the rows the column is showing, so narrow it first. On the Stores tab they take everyone in the list, search or not. Unassign all always asks first, naming the count (and you, if you're in it); Assign all asks above five.",
+      def: "On a base group and on the Companies tab they take the rows the column is showing, so narrow it first. On the Stores tab they take everyone in the list, search or not. Unassign all always asks first, listing who will move (and saying so if you're one of them); Assign all asks above five, and on the Companies tab always.",
       anchor: "assign",
     },
     {
