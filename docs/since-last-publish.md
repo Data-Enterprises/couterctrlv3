@@ -1743,3 +1743,7 @@ Top 200 lists each sub department with its share bar and its sales, and
 nothing else: the Crit / Watch / OK chips, the vs LW / vs LY switch and the
 comparison column are gone, and the sales column is headed "Sales". Last week
 and last year are still in each item's own detail.
+
+**Top 200 lists every sub department.** The department list showed the
+biggest nine and folded the rest into one "8 more" line, with a count strip
+above it. Both are gone: every sub department is listed, biggest first.

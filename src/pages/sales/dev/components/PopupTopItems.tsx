@@ -148,17 +148,8 @@ const dayText = (iso: string | null | undefined) => {
  */
 const inFlight = new Set<string>();
 
-/** Name, the share bar, the week, and one comparison. */
+/** Name, the share bar, and the sales. */
 const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 96px";
-
-/**
- * Departments printed in full before the tail is rolled into one line.
- *
- * Nine is where the list stops being read: below it the rows are a few
- * hundred dollars each and the eye has already stopped. The money still
- * adds up, because the tail keeps its total.
- */
-const LANDING_SHOWN = 9;
 
 const PopupTopItems = ({
   storeId,
@@ -390,15 +381,13 @@ const PopupTopItems = ({
   );
   const landing = useMemo(() => {
     const byMoney = [...rollups].sort((a, b) => b.ty - a.ty);
-    const shown = byMoney.slice(0, LANDING_SHOWN);
-    const rest = byMoney.slice(LANDING_SHOWN);
+    // Every department, biggest first: the list is short enough to read
+    // whole, and a tail folded into "8 more" hid where the rest went.
     return {
-      shown,
-      rest,
-      restTotal: rest.reduce((n, d) => n + d.ty, 0),
+      shown: byMoney,
       // The bar runs against the biggest department, not against the whole
-      // list: scaled to the total, nine of the ten bars would be stubs.
-      top: shown.length ? shown[0].ty : 0,
+      // list: scaled to the total, most of the bars would be stubs.
+      top: byMoney.length ? byMoney[0].ty : 0,
       total: byMoney.reduce((n, d) => n + d.ty, 0),
     };
   }, [rollups]);
@@ -821,16 +810,6 @@ const PopupTopItems = ({
                 ))}
               </div>
 
-              {/* This period's sales only: no grade and no comparison. Last
-                  week and last year are in an item's own detail. */}
-              <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
-                <span className="flex-1" />
-                <span className="text-[10px] font-semibold text-content/85">
-                  {rollups.length} sub department
-                  {rollups.length === 1 ? "" : "s"}
-                </span>
-              </div>
-
               <div
                 className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/85"
                 style={{ gridTemplateColumns: LANDING_COLS }}
@@ -898,22 +877,6 @@ const PopupTopItems = ({
                     </button>
                   );
                 })}
-
-                {/* The tail as one line. Fifteen departments down to a few
-                    hundred dollars is a list nobody reads to the end of, and
-                    the money still has to add up. */}
-                {landing.rest.length > 0 && (
-                  <div
-                    className="grid items-center gap-2 px-3 py-2 border-b border-gray-100 text-[12px] text-content/85"
-                    style={{ gridTemplateColumns: LANDING_COLS }}
-                  >
-                    <span className="truncate">{landing.rest.length} more</span>
-                    <span />
-                    <span className="text-right tabular-nums">
-                      {money(landing.restTotal)}
-                    </span>
-                  </div>
-                )}
 
                 {landing.shown.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-[12px] text-content">
