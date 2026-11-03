@@ -1556,3 +1556,11 @@ left that group's stores in Effective stores marked Direct, "no group change
 can take it away", and the count didn't drop, though the save did remove
 them. Direct now means only stores held with no group behind them, so the
 column shows what the save will leave.
+
+**Add and Edit offer only the base groups you hold.** The Base Groups tab
+listed only the groups you hold, but the Assignments step of Add and Edit
+listed every group in the company, so a manager could hand out groups they
+couldn't see or manage. Below level 9 (and outside DCR support), Assignments
+now offers only your own groups. A group the person already holds that isn't
+yours still shows, marked "not yours to change", and can't be ticked off or
+cleared by Clear all.

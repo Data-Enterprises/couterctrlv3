@@ -145,3 +145,31 @@ export const visibleCompanyList = <T extends { id: number }>(
   withHeld: Set<number>,
 ): T[] =>
   canSeeAll ? companies : companies.filter((c) => withHeld.has(c.id));
+
+/**
+ * The groups the Add/Edit wizard lists for a company, by the same rule as the
+ * Base Groups tab: everything for someone who sees everything, otherwise the
+ * groups the editor holds. The wizard used to list every group in the
+ * company, so a level-5 manager could grant groups they could neither see nor
+ * manage on the Base Groups tab.
+ *
+ * A group the person being edited already holds is listed whoever the editor
+ * is, so it isn't silently dropped from the screen; `mayChange` says whether
+ * the editor may touch it, and the wizard shows it read-only when not.
+ */
+export const wizardGroups = <T extends { id: number }>(
+  groups: T[],
+  canSeeAll: boolean,
+  editorHeld: Set<number>,
+  personHeld: Set<number>,
+): T[] =>
+  canSeeAll
+    ? groups
+    : groups.filter((g) => editorHeld.has(g.id) || personHeld.has(g.id));
+
+/** Whether the editor may give or take this group. */
+export const mayChangeGroup = (
+  id: number,
+  canSeeAll: boolean,
+  editorHeld: Set<number>,
+): boolean => canSeeAll || editorHeld.has(id);

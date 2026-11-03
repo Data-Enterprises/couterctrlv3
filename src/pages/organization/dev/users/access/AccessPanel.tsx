@@ -13,6 +13,13 @@ import type {
 } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
 import { type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
+import { useBaseGroupsCtx } from "../../baseGroups/hooks";
+import {
+  heldGroupIds as editorHeldGroupIds,
+  mayChangeGroup,
+  wizardGroups,
+} from "../../scoping";
+import { getBaseGroupsAssignedToUser } from "../../../../../api/team";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../components-dev/Checkbox";
@@ -109,6 +116,31 @@ const AccessPanel = ({
 }: AccessPanelProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
+  const scope = useBaseGroupsCtx();
+
+  /**
+   * The groups the editor holds: below level 9 (and DCR support), the only
+   * ones they may hand out, by the Base Groups tab's rule (`../../scoping`).
+   * Null until read; until then nothing is changeable, which narrows.
+   */
+  const [editorHeld, setEditorHeld] = useState<Set<number> | null>(null);
+  useEffect(() => {
+    if (scope.canSeeAllCompanies) return;
+    getBaseGroupsAssignedToUser(ctx.url, ctx.token, scope.userid)
+      .then((resp) => {
+        const j = resp.data;
+        setEditorHeld(
+          editorHeldGroupIds(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []),
+        );
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching your base groups " + err.message),
+      );
+  }, [scope.canSeeAllCompanies, scope.userid, ctx.url, ctx.token]);
+  const mine = editorHeld ?? new Set<number>();
+  /** Groups the person already holds, listed even when not the editor's. */
+  const personHeld = useMemo(() => new Set(heldGroups.map((g) => g.id)), [heldGroups]);
+  const mayChange = (id: number) => mayChangeGroup(id, scope.canSeeAllCompanies, mine);
 
   /**
    * Who may be handed what. A programmer is setting up other people's
@@ -152,6 +184,7 @@ const AccessPanel = ({
    * which one is the next thing they pick.
    */
   const toggleGroupPick = (id: number) => {
+    if (!mayChange(id)) return;
     const held = picks.baseGroups.includes(id);
     const roster =
       !held && picks.mode === "selected" && !singleStoreOnly
@@ -322,7 +355,12 @@ const AccessPanel = ({
   }, [selectedStores]);
 
   const groupsInActiveCompany = activeCompany
-    ? (companyGroups[activeCompany] ?? [])
+    ? wizardGroups(
+        companyGroups[activeCompany] ?? [],
+        scope.canSeeAllCompanies,
+        mine,
+        personHeld,
+      )
     : [];
   const filteredGroups = groupsInActiveCompany.filter((g) =>
     g.name.toLowerCase().includes(groupSearch.toLowerCase()),
@@ -450,6 +488,7 @@ const AccessPanel = ({
                   <div className="flex items-start gap-2">
                     <Checkbox
                       checked={held}
+                      disabled={!mayChange(group.id)}
                       onChange={() => toggleGroupPick(group.id)}
                       ariaLabel={`Give ${group.name} to this person`}
                       className="mt-1"
@@ -469,6 +508,7 @@ const AccessPanel = ({
                             : inGroup > 0
                               ? `${inGroup} of ${total} picked`
                               : `${total} stores`}
+                        {!mayChange(group.id) && " · not yours to change"}
                       </div>
                     </button>
                   </div>
@@ -566,7 +606,7 @@ const AccessPanel = ({
                     </span>
                     {/* No Select all on a preview: there is nothing to select,
                         and the whole group is already the answer. */}
-                    {!preview && !singleStoreOnly && (
+                    {!preview && !singleStoreOnly && mayChange(group.id) && (
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
@@ -621,6 +661,7 @@ const AccessPanel = ({
                           >
                             <Checkbox
                               checked={isSelected}
+                              disabled={!mayChange(group.id)}
                               onChange={() => toggleStore(s, group)}
                               ariaLabel={`Pick ${s.store_name}`}
                             />
@@ -675,7 +716,16 @@ const AccessPanel = ({
           <button
             // Clears the picks, not the answer: the access type was chosen
             // on its own step and stays chosen.
-            onClick={() => onPicksChange({ ...NO_PICKS, mode: picks.mode })}
+            // Clears what the editor may change; a group that isn't theirs
+            // stays as the person holds it.
+            onClick={() =>
+              onPicksChange({
+                ...NO_PICKS,
+                mode: picks.mode,
+                baseGroups: picks.baseGroups.filter((id) => !mayChange(id)),
+                stores: picks.stores.filter((s) => !mayChange(s.base_group)),
+              })
+            }
             className="text-[10.5px] text-brand_navy font-semibold hover:underline"
           >
             Clear all

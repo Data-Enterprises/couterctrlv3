@@ -9,6 +9,8 @@ import {
   visibleCompanyList,
   visibleGroups,
   type CompanyRef,
+  mayChangeGroup,
+  wizardGroups,
 } from "./scoping";
 import type { BaseGroup } from "../../../interfaces";
 
@@ -246,5 +248,25 @@ describe("canAdministerUser", () => {
   it("gives a programmer or DCR support everyone", () => {
     expect(canAdministerUser(cos(HOUCHENS), bruces, true)).toBe(true);
     expect(canAdministerUser(cos(BT, ACE), companyReach([]), true)).toBe(true);
+  });
+});
+
+describe("the groups the Add/Edit wizard offers", () => {
+  const groups = [{ id: 10 }, { id: 11 }, { id: 12 }];
+  const mine = new Set([10]);
+
+  it("is only the editor's own below level 9, as on the Base Groups tab", () => {
+    expect(wizardGroups(groups, false, mine, new Set()).map((g) => g.id)).toEqual([10]);
+  });
+
+  it("still lists a group the person holds, but the editor may not change it", () => {
+    expect(wizardGroups(groups, false, mine, new Set([12])).map((g) => g.id)).toEqual([10, 12]);
+    expect(mayChangeGroup(12, false, mine)).toBe(false);
+    expect(mayChangeGroup(10, false, mine)).toBe(true);
+  });
+
+  it("is everything for someone who sees everything", () => {
+    expect(wizardGroups(groups, true, new Set(), new Set())).toHaveLength(3);
+    expect(mayChangeGroup(12, true, new Set())).toBe(true);
   });
 });
