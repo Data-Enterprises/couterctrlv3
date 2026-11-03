@@ -1451,3 +1451,9 @@ Saved list, and a "could not delete" or "could not read" message from one
 table could show on another. Each answer now goes only to its own table. A
 table left while its saved list was still loading reads it again the next
 time Saved is opened.
+
+**A slow build that times out gives the right advice.** When a big build ran
+past the usual wait and the connection then gave up with an error code, the
+page said "The export failed" and people built again. It now says the
+connection gave up before the file was ready and to look in Previous builds
+in a minute, because the file is usually still being written.

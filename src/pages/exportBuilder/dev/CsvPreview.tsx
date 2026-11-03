@@ -7,19 +7,6 @@ import { isPii } from "./piiColumns";
 import { useColumnDrag } from "./useColumnDrag";
 import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
 
-/**
- * The right panel: the file, not a report.
- *
- * Same columns in the same order the export writes them, so ticking one on the
- * left adds a column here and to the CSV at once, and dragging a header
- * changes both. The rows are the two hundred the preview returned —
- * unordered, so they show the file's shape accurately but not its variety: two
- * hundred rows from one scan position is often a handful of stores and a
- * couple of values from each list.
- *
- * Personal columns are shaded in the heading and show their values, the same
- * as the file does.
- */
 const CsvPreview = () => {
   const ctx = useExportBuilderCtx();
   const scroller = useRef<HTMLDivElement>(null);

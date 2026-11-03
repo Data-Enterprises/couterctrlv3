@@ -88,7 +88,7 @@ import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
-const SLOW_AFTER_MS = 120_000;
+export const SLOW_AFTER_MS = 120_000;
 
 /**
  * A day list is only offered for a range someone could reasonably tick
@@ -976,10 +976,13 @@ export const useExportBuilderCtx = () => {
 
   const build = () => {
     dispatch(startExport());
-    const slowTimer = window.setTimeout(
-      () => dispatch(markExportSlow()),
-      SLOW_AFTER_MS,
-    );
+    // This build's own, not `config.slow`: the callbacks below close over
+    // the page as it was when Build was pressed, which is never slow yet.
+    let wentSlow = false;
+    const slowTimer = window.setTimeout(() => {
+      wentSlow = true;
+      dispatch(markExportSlow());
+    }, SLOW_AFTER_MS);
 
     // The same object that was sent, so the card can tell later whether it
     // still describes what is on screen.
@@ -1039,7 +1042,7 @@ export const useExportBuilderCtx = () => {
                 ? (detail ?? "The endpoint refused this configuration.")
                 : status === 404
                   ? "That saved configuration is gone. Save this one again before building."
-                  : !status || config.slow
+                  : !status || wentSlow
                     ? "The connection gave up before the file was ready — the load balancer stops waiting at 150 seconds. The file is probably still being written: look in Previous builds in a minute, or try a shorter range."
                     : "The export failed: " + reasonOf(err),
           ),
