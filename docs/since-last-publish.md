@@ -1620,3 +1620,8 @@ asks when nothing has changed.
 **Internal: an Edit save no longer resets two account fields.** Saving
 someone's details also wrote two account fields (template and security) back
 as 0 every time. Each save now sends back the values the person already had.
+
+**User Management says "no access" below level 5 instead of breaking.** The
+menu hides User Management below level 5, but the page could still be
+reached by its address, and then it looked for a tab that no longer exists.
+It now says "You don't have access to User Management."

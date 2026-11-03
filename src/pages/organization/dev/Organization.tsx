@@ -63,13 +63,10 @@ type Tab = "users" | "companies" | "baseGroups" | "stores";
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
  *
  * - Users: managers and up.
- * - User Groups: everyone — their own store groups plus any shared group they
- *   have (created or shared with them, read-only). The Store Groups page,
- *   moved in; its own menu entry is hidden in dev mode.
- * - Shared Groups: owners and up — every shared group in their companies, to
- *   create, share and manage. The router enforces the same level.
- * - Base Groups: owners and up. Access only.
- * - Stores: everyone, and only the stores they're assigned to.
+ * - Companies, Base Groups and Stores: owners and up.
+ *
+ * Below level 5 there is no tab at all, and the page says so (the nav hides
+ * it, but `/team` and a typed address still reach it).
  */
 const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
@@ -89,7 +86,7 @@ const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
-  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
+  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "users");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
   /** A tab asked for while Add or Edit has unsaved changes. */
   const [pendingTab, setPendingTab] = useState<Tab | null>(null);
@@ -208,6 +205,18 @@ const Organization = () => {
 
   /** What the open view asked for, else what the tab is worth. */
   const size = fit ?? TAB_FIT[tab];
+
+  // No tab to show. This fell back to a "userGroups" tab that no longer
+  // exists and then read a size it doesn't have.
+  if (tabs.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 flex justify-center">
+        <div className="self-start bg-custom-white rounded-xl shadow-lg px-6 py-5 text-[13px] text-content">
+          You don’t have access to User Management.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
