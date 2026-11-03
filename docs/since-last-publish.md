@@ -1665,3 +1665,14 @@ Store note, Retry when something doesn't load, the "Discard your changes?"
 question, "not yours to change", Assign it to me after creating a base group,
 how a group's Users sub-tab now grants in each person's own type, and column
 sorting.
+
+## UPC List: pre-publish audit fixes (3 Nov)
+
+dev mode only
+
+**Association no longer sticks on "Loading associations…" or shows the wrong
+error.** Changing the ticked UPCs quickly (A, then B, then back to A) could let
+B's late answer overwrite A's, leaving the tab on "Loading associations…" with
+nothing asking again. And after one set failed, the next set showed the old
+set's error while it loaded, in the export too. An answer or error now only
+counts for the set of UPCs still ticked.

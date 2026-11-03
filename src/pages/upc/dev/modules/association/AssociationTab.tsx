@@ -120,12 +120,10 @@ const AssociationTab = () => {
         const error = res.data.msg || "the association lookup failed";
         dispatch(setDevAssociationSeedResult({ key, result: null, error }));
       }
-      dispatch(setDevAssociationSeedLoading(false));
-      dispatch(setDevAssociationSeedLoaded(true));
+      // The result settles loading and loaded itself, and only for the seed
+      // set on screen: an answer for a set since left is dropped.
     } catch (err) {
       dispatch(setDevAssociationSeedResult({ key, result: null, error: failureReason(err) }));
-      dispatch(setDevAssociationSeedLoading(false));
-      dispatch(setDevAssociationSeedLoaded(true));
     }
   };
 

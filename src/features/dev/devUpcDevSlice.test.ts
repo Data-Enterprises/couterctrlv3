@@ -3,6 +3,7 @@ import reducer, {
   clearDevUpcData,
   dropDevAssociationReroot,
   setDevAssociationRerootUpc,
+  setDevAssociationSeedKey,
   setDevAssociationSeedResult,
   setDevSearchSnapshot,
   type UpcSearchedScope,
@@ -37,12 +38,16 @@ describe("the searched scope", () => {
 
 describe("the association seed answer", () => {
   const result = { totalBaskets: 120, items: [] };
+  /** The tab sets the key, then the answer lands for it. */
+  const asked = (key: string, state = reducer(undefined, { type: "init" })) =>
+    reducer(state, setDevAssociationSeedKey(key));
 
   it("is only read for the seed set it answers", () => {
     const state = reducer(
-      undefined,
+      asked("4011,4046"),
       setDevAssociationSeedResult({ key: "4011,4046", result, error: null }),
     );
+    expect(state.associationSeedData).toBe(result);
     // Same set ticked in another order: the same seed.
     expect(seedDataFor(["4046", "4011"], state.associationSeedData, state.associationSeedDataKey)).toBe(
       state.associationSeedData,
@@ -53,15 +58,38 @@ describe("the association seed answer", () => {
 
   it("is dropped by a failed load, which keeps its reason", () => {
     let state = reducer(
-      undefined,
+      asked("4011"),
       setDevAssociationSeedResult({ key: "4011", result, error: null }),
     );
+    state = asked("4011,4046", state);
     state = reducer(
       state,
       setDevAssociationSeedResult({ key: "4011,4046", result: null, error: "error 500" }),
     );
     expect(state.associationSeedData).toBeNull();
     expect(state.associationSeedError).toBe("error 500");
+  });
+
+  it("from a set since left is dropped, so the tab can't stick on Loading", () => {
+    // A, then B, then A again; A answers, then B's answer lands last.
+    let state = asked("4011");
+    state = asked("4046", state);
+    state = asked("4011", state);
+    state = reducer(state, setDevAssociationSeedResult({ key: "4011", result, error: null }));
+    const other = { totalBaskets: 9, items: [] };
+    state = reducer(state, setDevAssociationSeedResult({ key: "4046", result: other, error: null }));
+    expect(seedDataFor(["4011"], state.associationSeedData, state.associationSeedDataKey)).toBe(result);
+    expect(state.associationSeedLoaded).toBe(true);
+  });
+
+  it("doesn't carry one set's error to the next", () => {
+    let state = asked("4011");
+    state = reducer(state, setDevAssociationSeedResult({ key: "4011", result: null, error: "error 500" }));
+    state = asked("4046", state);
+    expect(state.associationSeedError).toBeNull();
+    // Nor does a late failure for the old set land on the new one.
+    state = reducer(state, setDevAssociationSeedResult({ key: "4011", result: null, error: "late" }));
+    expect(state.associationSeedError).toBeNull();
   });
 });
 

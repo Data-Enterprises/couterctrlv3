@@ -429,7 +429,11 @@ const upcDevSlice = createSlice({
       state.trendCoverage = extendCoverage(state.trendCoverage, action.payload.codes);
     },
     // Association
+    /** The seed set being asked about. A new set lets go of the last one's
+     *  error: it used to stay, so set B showed set A's failure (and the
+     *  export gave A's reason) while B was still loading. */
     setDevAssociationSeedKey(state, action: PayloadAction<string>) {
+      if (action.payload !== state.associationSeedKey) state.associationSeedError = null;
       state.associationSeedKey = action.payload;
     },
     setDevAssociationSeedLoaded(state, action: PayloadAction<boolean>) {
@@ -438,15 +442,27 @@ const upcDevSlice = createSlice({
     setDevAssociationSeedLoading(state, action: PayloadAction<boolean>) {
       state.associationSeedLoading = action.payload;
     },
-    /** A finished seed load: its answer for `key`, or why it failed. A failure
-     *  clears the previous answer rather than leaving it under the new key. */
+    /**
+     * A finished seed load: its answer for `key`, or why it failed. A failure
+     * clears the previous answer rather than leaving it under the new key.
+     *
+     * Only for the seed set on screen. Tick A, then B, then A again before A
+     * answers: A's call is shared by the second A, B's answers last, and it
+     * used to overwrite A's and mark the seed loaded. The tab then wanted A,
+     * held B, showed "Loading associations…" and never asked again. An
+     * answer for another set is dropped here, and only the current set's
+     * answer settles the loading and loaded flags.
+     */
     setDevAssociationSeedResult(
       state,
       action: PayloadAction<{ key: string; result: AssociationResult | null; error: string | null }>,
     ) {
+      if (action.payload.key !== state.associationSeedKey) return;
       state.associationSeedData = action.payload.result;
       state.associationSeedDataKey = action.payload.result ? action.payload.key : "";
       state.associationSeedError = action.payload.error;
+      state.associationSeedLoading = false;
+      state.associationSeedLoaded = true;
     },
     clearDevAssociationSeedError(state) {
       state.associationSeedError = null;
