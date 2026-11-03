@@ -29,6 +29,9 @@ export interface ParsedUpload {
    *  partly understood instead of dropping the rest in silence, which is what
    *  a space- or semicolon-separated list used to do. */
   skippedLines: number;
+  /** Values on a pasted list too short to be a code ("697"), set aside and
+   *  named so the card can say so. */
+  tooShort: string[];
 }
 
 /** A UPC is all digits. Everything in these files that isn't — headers, section
@@ -94,6 +97,7 @@ export const parseUpload = (text: string): ParsedUpload => {
 
   const upcs: string[] = [];
   let skippedLines = 0;
+  const tooShort: string[] = [];
   const seenUpc = new Set<string>();
   const departments: string[] = [];
   const seenDept = new Set<string>();
@@ -130,19 +134,29 @@ export const parseUpload = (text: string): ParsedUpload => {
     // description or a decimal figure, and either one fails the test. The
     // length floor covers the rest, since quantity columns are one or two
     // digits.
+    //
+    // The length test used to apply to every cell, so one short value in a
+    // pasted list ("…, 4400002734, 697, 5100026977, …") made the whole line a
+    // report row: 1,963 UPCs went in and one came out. Now a line of numbers
+    // only is a list when at least two of them are code-length; the short ones
+    // are set aside and named (`tooShort`). An all-number report row
+    // ("1200000088,10,5") still has a single code, so it stays a report row.
     const filled = cells.filter((c) => c.length > 0);
-    const everyCellIsCode =
-      filled.length > 1 &&
-      filled.every(
-        (c) =>
-          (isUpc(c) || isFloatUpc(c)) && digitCount(c) >= MIN_CODE_DIGITS,
-      );
+    const allNumbers =
+      filled.length > 1 && filled.every((c) => isUpc(c) || isFloatUpc(c));
+    const codeLength = filled.filter((c) => digitCount(c) >= MIN_CODE_DIGITS);
+    const isList = allNumbers && codeLength.length > 1;
+    if (isList) {
+      filled
+        .filter((c) => digitCount(c) < MIN_CODE_DIGITS)
+        .forEach((c) => tooShort.push(c));
+    }
 
     // Scanning rather than assuming a column keeps the bare list and the graded
     // report on the same path, and it survives someone reordering columns in
     // Excel before uploading.
-    const raws = everyCellIsCode
-      ? filled
+    const raws = isList
+      ? codeLength
       : cells.filter((c) => isUpc(c) || isFloatUpc(c)).slice(0, 1);
     if (raws.length === 0) {
       skippedLines += 1;
@@ -168,5 +182,5 @@ export const parseUpload = (text: string): ParsedUpload => {
     }
   }
 
-  return { upcs, departments, skippedLines };
+  return { upcs, departments, skippedLines, tooShort };
 };

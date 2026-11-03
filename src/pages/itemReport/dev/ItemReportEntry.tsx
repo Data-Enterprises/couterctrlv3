@@ -77,6 +77,13 @@ const ItemReportEntry = ({
         `Added ${parsed.upcs.length}, skipped ${n} line${n === 1 ? "" : "s"} — separate codes with commas`,
       );
     }
+    if (parsed.tooShort.length > 0) {
+      const shown = parsed.tooShort.slice(0, 5).join(", ");
+      const more = parsed.tooShort.length > 5 ? ` and ${parsed.tooShort.length - 5} more` : "";
+      toast.warn(
+        `Added ${parsed.upcs.length}; left out ${shown}${more} — too short to be a UPC`,
+      );
+    }
 
     dispatch(addPendingUpcs(parsed.upcs));
     dispatch(setPendingUpcText(""));

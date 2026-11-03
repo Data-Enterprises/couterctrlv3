@@ -1705,3 +1705,13 @@ dev mode only
 **A slightly different page background.** The grey behind the cards and
 panels (the `bkg` theme colour) is a touch darker and less blue, `#dee5e8` in
 place of `#e4e9ef`, on every screen.
+
+## Item Actions: pasted UPC lists (3 Nov)
+
+dev mode only
+
+**Item Actions reads a whole pasted list even with a short value in it.**
+Pasting a long comma-separated list and pressing Add kept only the first UPC
+when the list held one value too short to be a code (a stray "697" among 1,963
+UPCs). Every code is now added, and a note says which values were left out as
+too short.
