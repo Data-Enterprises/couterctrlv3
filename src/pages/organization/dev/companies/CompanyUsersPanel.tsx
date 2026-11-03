@@ -266,7 +266,9 @@ const CompanyUsersPanel = ({
         rightItems={assigned.map(toItem)}
         onAssign={handleAssign}
         onUnassign={handleUnassign}
-        assignAllScope="global"
+        // Assign all and Unassign all take what each column is showing,
+        // search included. They used to take the whole list (a legacy
+        // parity choice), so one person left by a search still meant all 272.
         moving={moving}
         confirmBulk={(direction, ids) =>
           peopleConfirm({ direction, ids, me: ctx.userid, what: company.name })

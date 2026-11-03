@@ -1666,6 +1666,12 @@ question, "not yours to change", Assign it to me after creating a base group,
 how a group's Users sub-tab now grants in each person's own type, and column
 sorting.
 
+**Companies tab: Assign all and Unassign all take only what the column shows.**
+They used to take everyone in the list whatever the search box said, so with
+one person left by a search, Assign all asked to add all 272. Each button now
+takes exactly the people its column is showing, search and company filter
+included.
+
 ## UPC List: pre-publish audit fixes (3 Nov)
 
 dev mode only

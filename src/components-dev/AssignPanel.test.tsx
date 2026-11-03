@@ -134,3 +134,22 @@ describe("Unassign all", () => {
     expect(button.disabled).toBe(true);
   });
 });
+
+describe("Unassign all, following the search", () => {
+  it("takes only what the right column is showing", async () => {
+    const onUnassign = vi.fn();
+    render(
+      <AssignPanel
+        leftTitle="Not in this company"
+        rightTitle="In this company"
+        leftItems={[]}
+        rightItems={ITEMS}
+        onAssign={vi.fn()}
+        onUnassign={onUnassign}
+      />,
+    );
+    await userEvent.type(screen.getByPlaceholderText("Search name or email…"), "bob");
+    await userEvent.click(screen.getByRole("button", { name: "Unassign all" }));
+    expect(onUnassign).toHaveBeenCalledWith([2]);
+  });
+});
