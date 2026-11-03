@@ -12,7 +12,12 @@ import type {
   Store,
 } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import { type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
+import {
+  type AccessPicks,
+  NO_PICKS,
+  heldGroupIds,
+  toggleGroup,
+} from "./accessSets";
 import { useBaseGroupsCtx } from "../../baseGroups/hooks";
 import {
   heldGroupIds as editorHeldGroupIds,
@@ -155,6 +160,8 @@ const AccessPanel = ({
   // Ticked groups plus any a ticked store implies: what Create saves.
 
   const held = heldGroupIds(picks);
+  /** Held either way: ticked, or implied by a picked store. */
+  const heldSet = new Set(held);
 
   const selectedStores = picks.stores;
   const onChange = (stores: SelectableStore[]) =>
@@ -185,18 +192,11 @@ const AccessPanel = ({
    */
   const toggleGroupPick = (id: number) => {
     if (!mayChange(id)) return;
-    const held = picks.baseGroups.includes(id);
     const roster =
-      !held && picks.mode === "selected" && !singleStoreOnly
+      picks.mode === "selected" && !singleStoreOnly
         ? (groupStores[id] ?? []).map((s) => ({ ...s, base_group: id }))
         : [];
-    onPicksChange({
-      ...picks,
-      baseGroups: toggleIn(picks.baseGroups, id),
-      stores: held
-        ? picks.stores.filter((s) => s.base_group !== id)
-        : [...picks.stores, ...roster],
-    });
+    onPicksChange(toggleGroup(picks, id, roster));
   };
 
   const [activeCompany, setActiveCompany] = useState<number | null>(null);
@@ -464,7 +464,7 @@ const AccessPanel = ({
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filteredGroups.map((group) => {
               const isOpen = expandedGroups.has(group.id);
-              const held = picks.baseGroups.includes(group.id);
+              const held = heldSet.has(group.id);
               const mode = picks.mode;
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
@@ -561,7 +561,7 @@ const AccessPanel = ({
               </div>
             )}
             {openGroups.map((group) => {
-              const held = picks.baseGroups.includes(group.id);
+              const held = heldSet.has(group.id);
               const mode = picks.mode;
               // By group means no store is ever picked one at a time, so no
               // group's stores get checkboxes: a held group shows them all

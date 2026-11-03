@@ -1571,3 +1571,10 @@ set up By store came out Mixed, and their next Edit showed the group with no
 stores and wouldn't save until stores were picked. People are now given the
 group in their own access type: By store people get it with all of its
 current stores picked. The lists show each person's type beside their name.
+
+**A group's box shows it's held, and ticking it never counts a store twice.**
+On Assignments, a group someone held through one of its picked stores showed
+an empty box, and ticking it added its whole store list again, so the count
+read "11 of 10 picked" (the save removed the duplicates). The box now shows
+the group as held, and ticking a group merges its stores with any already
+picked.

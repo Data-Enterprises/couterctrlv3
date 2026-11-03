@@ -189,6 +189,37 @@ export const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
 
 /**
+ * Tick or untick a group in its own column.
+ *
+ * Held means held either way, ticked or implied by a picked store, which is
+ * what the box shows. Unticking drops the group and its picked stores.
+ * Ticking adds the roster given (empty By group, or for a single-store
+ * person) **merged** with what is already picked under the group: it was
+ * appended, so a group with one store already picked showed "11 of 10".
+ */
+export const toggleGroup = (
+  picks: AccessPicks,
+  id: number,
+  roster: SelectableStore[],
+): AccessPicks => {
+  if (heldGroupIds(picks).includes(id)) {
+    return {
+      ...picks,
+      baseGroups: picks.baseGroups.filter((g) => g !== id),
+      stores: picks.stores.filter((s) => s.base_group !== id),
+    };
+  }
+  const already = new Set(
+    picks.stores.filter((s) => s.base_group === id).map((s) => s.storeid),
+  );
+  return {
+    ...picks,
+    baseGroups: [...picks.baseGroups, id],
+    stores: [...picks.stores, ...roster.filter((s) => !already.has(s.storeid))],
+  };
+};
+
+/**
  * The same picks, held the other way.
  *
  * **To `all`:** nothing but the mode changes. Ticks are left exactly where
