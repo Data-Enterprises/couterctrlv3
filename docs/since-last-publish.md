@@ -1630,3 +1630,7 @@ It now says "You don't have access to User Management."
 With nothing granted, Effective stores said "pick some, or set a group to
 Auto", a control that no longer exists. It now says "tick a group, or pick its
 stores By store".
+
+**Reset security asks first.** On a user's security screen, Reset security
+acted on the first click. It now asks, and says the person will have to set
+a new security question the next time they sign in.
