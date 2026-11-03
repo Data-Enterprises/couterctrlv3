@@ -1529,3 +1529,11 @@ page no longer counted it as a change: Save changes stayed grey, or a save of
 their access said "saved" and the name went back. The details as they were
 opened are now kept with the person, so the change still counts after a tab
 switch.
+
+**Edit can save a name or email change for anyone, and says why when it
+can't.** Save changes needed every step to be complete, so someone with no
+company or group, or with a blank first or last name, couldn't have their
+name or email fixed, and the button was just grey. Now a details-only change
+needs only valid details, an access change needs Assignments to be complete,
+a name that was already blank may stay blank, and a greyed-out Save changes
+says why underneath ("Nothing has changed yet.", "Finish User info first.").

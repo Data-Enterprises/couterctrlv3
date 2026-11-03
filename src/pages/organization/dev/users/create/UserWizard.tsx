@@ -30,6 +30,7 @@ import { useSeededPicks } from "./useSeededPicks";
 import {
   createBlockReason,
   duplicateCompanies,
+  editBlockReason,
   needsSingleStoreTrim,
   reachableLimit,
   readiness,
@@ -354,15 +355,20 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
   const at = STEP_ORDER.indexOf(step);
   const isLast = step === "review";
-  const canAdvance = stepReady[step];
-  /** Edit saves when every step is ready and something moved; there is no
+  /** In Edit, a step whose half hasn't changed can be passed as it is: a
+   *  person with no access can still get to Review to fix their name. */
+  const canAdvance =
+    editing && step === "identity"
+      ? !identityDirty || stepReady.identity
+      : editing && step === "assignments"
+        ? !accessDirty || stepReady.assignments
+        : stepReady[step];
+  /** Edit saves when something moved and what moved is ready; there is no
    *  point sending an unchanged person back to the server. */
-  const canSave = editing
-    ? stepReady.identity &&
-      stepReady.assignments &&
-      !switching &&
-      (identityDirty || accessDirty)
-    : canAdvance;
+  const editReason = editing
+    ? editBlockReason({ ready: stepReady, identityDirty, accessDirty, hasAccess })
+    : null;
+  const canSave = editing ? editReason === null : canAdvance;
 
   const goTo = (next: WizardStep) => {
     if (STEP_ORDER.indexOf(next) > limit) return;
@@ -496,10 +502,12 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       ? canSave && !saving
       : canAdvance && !saving && stranded === null
     : canAdvance && !saving && stranded === null;
-  /** Under a greyed-out Create user, the reason. */
+  /** Under a greyed-out Create user or Save changes, the reason. */
   const blockReason =
-    !editing && isLast && !saving && stranded === null
-      ? createBlockReason(stepReady, { hasAccess })
+    isLast && !saving && stranded === null
+      ? editing
+        ? editReason
+        : createBlockReason(stepReady, { hasAccess })
       : null;
 
   return (
@@ -595,7 +603,14 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             onValidityChange={setIdentityValid}
             editing={
               editing
-                ? { userid: editUserId, email: emailBefore }
+                ? {
+                    userid: editUserId,
+                    email: emailBefore,
+                    blankNames: {
+                      first: !ctx.userInfoBefore?.first_name.trim(),
+                      last: !ctx.userInfoBefore?.last_name.trim(),
+                    },
+                  }
                 : undefined
             }
           />

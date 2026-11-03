@@ -31,8 +31,14 @@ interface UserFieldsProps {
    *   the users list does, with its own rules and its own confirmation.
    * - **Their own email is not "taken".** It is checked like any other
    *   address, but an unchanged one says so instead of reporting itself.
+   * - **A name that was blank may stay blank.** Some people were made with
+   *   no first or last name; requiring one blocked fixing their email.
    */
-  editing?: { userid: number; email: string };
+  editing?: {
+    userid: number;
+    email: string;
+    blankNames?: { first: boolean; last: boolean };
+  };
 }
 
 /**
@@ -155,8 +161,8 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
   const canContinue =
     ctx.userInfo.username.trim() !== "" &&
     ctx.userInfo.email.trim() !== "" &&
-    ctx.userInfo.first_name.trim() !== "" &&
-    ctx.userInfo.last_name.trim() !== "" &&
+    (ctx.userInfo.first_name.trim() !== "" || !!editing?.blankNames?.first) &&
+    (ctx.userInfo.last_name.trim() !== "" || !!editing?.blankNames?.last) &&
     (editing !== undefined ||
       (ctx.userInfo.password.length > 0 &&
         ctx.userInfo.password === ctx.userInfo.confirm_password)) &&

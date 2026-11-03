@@ -65,6 +65,36 @@ export const createBlockReason = (
 };
 
 /**
+ * Why Save changes is off in Edit, or null when it can save.
+ *
+ * Each half of an Edit answers for itself: a details-only change needs only
+ * valid details, and an access change needs Assignments ready. Save used to
+ * need both whatever had changed, so someone with no company or group could
+ * not have their name or email fixed, and the button was just grey.
+ */
+export const editBlockReason = ({
+  ready,
+  identityDirty,
+  accessDirty,
+  hasAccess,
+}: {
+  ready: StepReadiness;
+  identityDirty: boolean;
+  accessDirty: boolean;
+  hasAccess: boolean;
+}): string | null => {
+  if (!ready.type) return "Wait for the access type to finish switching.";
+  if (!identityDirty && !accessDirty) return "Nothing has changed yet.";
+  if (identityDirty && !ready.identity) return "Finish User info first.";
+  if (accessDirty && !ready.assignments) {
+    return hasAccess
+      ? "A group on Assignments has no stores picked."
+      : "Give them at least one company or group on Assignments.";
+  }
+  return null;
+};
+
+/**
  * The companies a duplicate starts with: every company the source holds, then
  * any its groups imply. Companies used to come from the groups alone, so a
  * company the source held with no group in it didn't carry over.

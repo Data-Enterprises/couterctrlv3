@@ -4,6 +4,7 @@ import { NO_PICKS, type AccessPicks } from "../access/accessSets";
 import {
   createBlockReason,
   duplicateCompanies,
+  editBlockReason,
   needsSingleStoreTrim,
   reachableLimit,
   readiness,
@@ -107,5 +108,42 @@ describe("Single Store", () => {
   it("leaves one store By store alone", () => {
     expect(needsSingleStoreTrim({ ...byStore, stores: byStore.stores.slice(0, 1) })).toBe(false);
     expect(needsSingleStoreTrim(byStore)).toBe(true);
+  });
+});
+
+describe("Save changes in Edit", () => {
+  const base = { identity: true, switching: false, hasAccess: true, emptyGroups: 0 };
+  const reason = (
+    over: Partial<typeof base>,
+    dirty: { identityDirty: boolean; accessDirty: boolean },
+  ) =>
+    editBlockReason({
+      ready: readiness({ ...base, ...over }),
+      hasAccess: over.hasAccess ?? true,
+      ...dirty,
+    });
+
+  it("saves a name or email change for someone with no access", () => {
+    expect(reason({ hasAccess: false }, { identityDirty: true, accessDirty: false })).toBeNull();
+  });
+
+  it("needs Assignments ready only when access changed", () => {
+    expect(reason({ hasAccess: false }, { identityDirty: false, accessDirty: true })).toMatch(
+      /at least one company or group/,
+    );
+    expect(reason({ emptyGroups: 1 }, { identityDirty: false, accessDirty: true })).toMatch(
+      /no stores picked/,
+    );
+  });
+
+  it("needs valid details only when the details changed", () => {
+    expect(reason({ identity: false }, { identityDirty: true, accessDirty: false })).toBe(
+      "Finish User info first.",
+    );
+    expect(reason({ identity: false }, { identityDirty: false, accessDirty: true })).toBeNull();
+  });
+
+  it("says so when nothing has changed", () => {
+    expect(reason({}, { identityDirty: false, accessDirty: false })).toBe("Nothing has changed yet.");
   });
 });
