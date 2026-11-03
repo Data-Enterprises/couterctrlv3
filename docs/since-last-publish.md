@@ -1601,3 +1601,8 @@ accepted anything, "a" included, and a username or email marked "Not
 available" didn't stop you continuing. Continue now waits until every rule
 is met and neither is marked Not available. The server still needs the same
 rules on its side.
+
+**Export works while adding or editing someone.** The Export button in the
+User Management header did nothing while Add user or Edit was open. It now
+opens the users export from any screen on the Users tab, with the list's
+filters applied as before.

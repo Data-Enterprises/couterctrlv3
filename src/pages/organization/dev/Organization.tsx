@@ -45,6 +45,8 @@ import {
   setUsers,
 } from "../../../features/dev/devUsersSlice";
 import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
+import UsersExportModal from "./users/UsersExportModal";
+import { filterUsers, showsInactive } from "./users/userFilters";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
@@ -104,6 +106,8 @@ const Organization = () => {
   // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
   useEffect(() => {
     if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
+    // An export window left open on a previous visit stays shut until asked.
+    ctx.dispatch(setUsersExportOpen(false));
   }, []);
 
 
@@ -177,6 +181,14 @@ const Organization = () => {
 
   const exportable = tab === "users" || tab === "stores";
 
+  /**
+   * The users export, from here rather than inside the grid: the grid isn't
+   * mounted while Add or Edit is open, so the header's Export did nothing
+   * then. Same list and filters the grid shows, from the slice.
+   */
+  const exportInactive = showsInactive(ctx.usersGridFilters);
+  const exportSource = exportInactive ? ctx.inactiveUsers : ctx.users;
+
   /** What the open view asked for, else what the tab is worth. */
   const size = fit ?? TAB_FIT[tab];
 
@@ -232,6 +244,15 @@ const Organization = () => {
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <PanelFitContext.Provider value={setFit}>
           {tab === "users" && canSeeUsers && <Users />}
+          {tab === "users" && canSeeUsers && ctx.usersExportOpen && (
+            <UsersExportModal
+              onClose={() => ctx.dispatch(setUsersExportOpen(false))}
+              allUsers={exportSource}
+              filteredUsers={filterUsers(exportSource, ctx.usersGridFilters)}
+              userLevels={ctx.userLevels}
+              scopeLabel={exportInactive ? "Inactive users" : "Active users"}
+            />
+          )}
           {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}
           {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && <BaseGroups />}
           {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (

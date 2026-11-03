@@ -20,7 +20,6 @@ import {
   clearDuplicateSource,
 } from "../../../../features/dev/devUsersSlice";
 import {
-  setUsersExportOpen,
   setUsersGridFilter,
 } from "../../../../features/dev/devOrganizationSlice";
 import {
@@ -42,7 +41,7 @@ import IconButton from "../../../../components-dev/IconButton";
 import Checkbox from "../../../../components-dev/Checkbox";
 import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
-import UsersExportModal from "./UsersExportModal";
+import { filterUsers, NO_COMPANY_VALUE } from "./userFilters";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
@@ -50,7 +49,6 @@ interface UserGridProps {
   onOpenCreate: () => void;
 }
 
-const NO_COMPANY_VALUE = "none";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "N/A";
@@ -122,14 +120,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [draftEmailFilter, setDraftEmailFilter] = useState(emailFilter);
   const showInactive = statusFilter === "inactive";
 
-  // The Users tab's grid/create/detail sub-views aren't visible to
-  // Organization.tsx's header, so a stale usersExportOpen flag left set from
-  // a prior visit (e.g. header click while viewing Create/Detail) would
-  // otherwise pop the modal open the instant this grid remounts.
-  useEffect(() => {
-    ctx.dispatch(setUsersExportOpen(false));
-  }, []);
-
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
 
   /** Nobody may tick themselves or anyone above them — the server refuses
@@ -144,61 +134,10 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   const sourceUsers = showInactive ? ctx.inactiveUsers : ctx.users;
 
-  const filtered = useMemo(() => {
-    return sourceUsers.filter((u) => {
-      const companyCheck =
-        companyFilter === NO_COMPANY_VALUE
-          ? u.companies.length === 0
-          : companyFilter
-            ? u.companies.some((c) => c.company === Number(companyFilter))
-            : true;
-      const levelCheck = levelFilter
-        ? u.user_level === Number(levelFilter)
-        : true;
-      const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
-      // Mixed and no-groups people match neither choice, only All: they are
-      // not By group or By store, and the column says so.
-      const accessCheck = !accessFilter
-        ? true
-        : accessFilter === "none"
-          ? u.access_mode === null
-          : u.access_mode === accessFilter;
-      const lowerText = searchText.toLowerCase();
-      const firstName = (u.first_name ?? "").toLowerCase();
-      const lastName = (u.last_name ?? "").toLowerCase();
-      const fullName = `${firstName} ${lastName}`;
-      const textCheck =
-        searchText.trim() === ""
-          ? true
-          : firstName.includes(lowerText) ||
-            lastName.includes(lowerText) ||
-            fullName.includes(lowerText);
-      const usernameCheck = usernameFilter.trim()
-        ? u.username.toLowerCase().includes(usernameFilter.trim().toLowerCase())
-        : true;
-      const emailCheck = emailFilter.trim()
-        ? (u.email ?? "").toLowerCase().includes(emailFilter.trim().toLowerCase())
-        : true;
-      return (
-        companyCheck &&
-        levelCheck &&
-        roleCheck &&
-        accessCheck &&
-        textCheck &&
-        usernameCheck &&
-        emailCheck
-      );
-    });
-  }, [
-    sourceUsers,
-    companyFilter,
-    levelFilter,
-    roleFilter,
-    accessFilter,
-    searchText,
-    usernameFilter,
-    emailFilter,
-  ]);
+  const filtered = useMemo(
+    () => filterUsers(sourceUsers, ctx.usersGridFilters),
+    [sourceUsers, ctx.usersGridFilters],
+  );
 
   // Active and inactive are different lists with opposite actions. A
   // selection made in one means nothing in the other.
@@ -544,16 +483,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             {showInactive ? "Reactivate" : "Deactivate"} {selectedShown.length}
           </button>
         </div>
-      )}
-
-      {ctx.usersExportOpen && (
-        <UsersExportModal
-          onClose={() => ctx.dispatch(setUsersExportOpen(false))}
-          allUsers={sourceUsers}
-          filteredUsers={filtered}
-          userLevels={ctx.userLevels}
-          scopeLabel={showInactive ? "Inactive users" : "Active users"}
-        />
       )}
 
       <div className="border border-gray-100 rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
