@@ -135,6 +135,20 @@ const SOURCE_KEYS = [
 
 export type SourceSnapshot = Pick<ExportBuilderState, (typeof SOURCE_KEYS)[number]>;
 
+/**
+ * The page as it was when a search started over it: what a failed search
+ * puts back. Everything a search can let go of, so nothing is lost before
+ * the new answer has actually arrived.
+ */
+export interface PriorPage {
+  snapshot: SourceSnapshot;
+  source: ExportTableKey;
+  cacheScope: string | null;
+  rangeStart: string;
+  rangeEnd: string;
+  cache: Partial<Record<ExportTableKey, SourceSnapshot>>;
+}
+
 const snapshotOf = (state: ExportBuilderState): SourceSnapshot =>
   Object.fromEntries(SOURCE_KEYS.map((k) => [k, state[k]])) as SourceSnapshot;
 
@@ -162,6 +176,8 @@ export interface ExportBuilderState {
    */
   rangeStart: string;
   rangeEnd: string;
+  /** The page a search in flight replaced, until its answer lands. */
+  prior: PriorPage | null;
   /** The other sources already loaded for `cacheScope`, as they were left. */
   cache: Partial<Record<ExportTableKey, SourceSnapshot>>;
   /**
@@ -359,6 +375,7 @@ export const initialState: ExportBuilderState = {
   cacheScope: null,
   rangeStart: "",
   rangeEnd: "",
+  prior: null,
   cache: {},
   routerFilters: null,
   stores: [],
@@ -465,7 +482,8 @@ const devExportBuilderSlice = createSlice({
      * its shape, as a new search always has.
      *
      * The page goes back to the search card, spinning, until the answer
-     * lands: what was on screen answered another question.
+     * lands: what was on screen answered another question. It is kept whole
+     * in `prior` until then, so a search that fails puts it back.
      */
     startConfigLoad: (
       state,
@@ -477,6 +495,17 @@ const devExportBuilderSlice = createSlice({
       }>,
     ) => {
       const { source, scope, startDate, endDate } = action.payload;
+      if (state.loaded) {
+        const now = current(state);
+        state.prior = {
+          snapshot: snapshotOf(now),
+          source: now.source,
+          cacheScope: now.cacheScope,
+          rangeStart: now.rangeStart,
+          rangeEnd: now.rangeEnd,
+          cache: now.cache,
+        };
+      }
       if (scope !== state.cacheScope) {
         state.cache = {};
         state.cacheScope = scope;
@@ -527,6 +556,7 @@ const devExportBuilderSlice = createSlice({
         action.payload;
       state.loadingConfig = false;
       state.loaded = true;
+      state.prior = null;
       state.source = source;
       state.stores = stores;
       state.lists = lists;
@@ -556,8 +586,31 @@ const devExportBuilderSlice = createSlice({
     setRouterFilters: (state, action: PayloadAction<Record<string, string[]>>) => {
       state.routerFilters = action.payload;
     },
+    /**
+     * The search failed. A page that was on screen before it comes back as it
+     * was, its kept sources with it; on the first search there is nothing to
+     * go back to, and the card stays.
+     */
     failConfigLoad: (state) => {
       state.loadingConfig = false;
+      const prior = state.prior;
+      if (!prior) return;
+      Object.assign(state, prior.snapshot);
+      state.source = prior.source;
+      state.searchSource = prior.source;
+      state.cacheScope = prior.cacheScope;
+      state.rangeStart = prior.rangeStart;
+      state.rangeEnd = prior.rangeEnd;
+      state.cache = prior.cache;
+      // On screen, not kept: it was stashed on its way out.
+      delete state.cache[prior.source];
+      state.prior = null;
+      state.loaded = true;
+      // The failed search's own reads are dropped when they land, so
+      // nothing else would clear these.
+      state.savedBusy = false;
+      state.buildsLoading = false;
+      state.configStamp += 1;
     },
     toggleStore: (state, action: PayloadAction<number>) => {
       const id = action.payload;

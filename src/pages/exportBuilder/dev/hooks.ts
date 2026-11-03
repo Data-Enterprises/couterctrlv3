@@ -474,6 +474,8 @@ export const useExportBuilderCtx = () => {
     if (config.loaded && scope === config.cacheScope && chosen.key === config.source) return;
     // Kept before anything replaces it: the same search may come back to it.
     if (config.loaded) dispatch(stashSource());
+    // A failed search puts that page back (failConfigLoad), and says so.
+    const kept = config.loaded ? " The page is as it was." : "";
     if (scope === config.cacheScope && config.cache[chosen.key]) {
       // Its queries were still on their way when it was left, and that
       // answer was dropped: ask again.
@@ -501,7 +503,7 @@ export const useExportBuilderCtx = () => {
         const j = resp.data as ExportPreviewResp;
         if (j.error !== 0) {
           dispatch(failConfigLoad());
-          toast.error("Could not load the export config");
+          toast.error(`Could not load ${chosen.label}.${kept}`);
           return;
         }
         const facets = j.facets ?? {};
@@ -526,7 +528,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(failConfigLoad());
-        toast.error("Could not load the export config: " + reasonOf(err));
+        toast.error(`Could not load ${chosen.label}: ${reasonOf(err).replace(/\.$/, "")}.${kept}`);
       });
   };
 

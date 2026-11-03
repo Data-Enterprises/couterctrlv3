@@ -15,6 +15,7 @@ import reducer, {
   initialState,
   moveColumn,
   setConfig,
+  failConfigLoad,
   setFlag,
   setProductCodes,
   setRowFlag,
@@ -407,6 +408,51 @@ describe("switching sources", () => {
     s = reducer(s, stashSource());
     s = reducer(s, startConfigLoad({ source: "sales", scope: "store:1:2026-09-21:2026-09-22", startDate: "2026-09-14", endDate: "2026-09-15" }));
     expect(s.flags.ordered).toBe(true);
+  });
+
+  it("puts the page back when a search for new dates fails", () => {
+    let s = reducer(salesOnScreen(), setFlag({ ordered: true }));
+    s = reducer(s, stashSource());
+    s = reducer(s, startConfigLoad({ source: "sales", scope: "store:1:2026-09-21:2026-09-22", startDate: "2026-09-21", endDate: "2026-09-22" }));
+    expect(s.loaded).toBe(false);
+    s = reducer(s, failConfigLoad());
+    expect(s.loaded).toBe(true);
+    expect(s.source).toBe("sales");
+    expect(s.picks.vendorIds).toEqual([]);
+    expect(s.flags.ordered).toBe(true);
+    expect([s.cacheScope, s.rangeStart, s.rangeEnd]).toEqual([SCOPE, "2026-09-14", "2026-09-15"]);
+    expect(s.cache.sales).toBeUndefined();
+    expect(s.prior).toBeNull();
+  });
+
+  it("puts the page back, and keeps the others, when another table fails", () => {
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, stashSource());
+    s = reducer(s, setSearchSource("markdowns"));
+    s = reducer(s, startConfigLoad({ source: "markdowns", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, failConfigLoad());
+    expect(s.source).toBe("orders");
+    expect(s.searchSource).toBe("orders");
+    expect(s.picks.orderTypes).toEqual(["INV"]);
+    expect(s.cache.sales?.picks.vendorIds).toEqual([]);
+    expect(s.cache.orders).toBeUndefined();
+  });
+
+  it("leaves the card up when the first search fails", () => {
+    let s = reducer(initialState, startConfigLoad({ source: "sales", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, failConfigLoad());
+    expect(s.loaded).toBe(false);
+    expect(s.loadingConfig).toBe(false);
+  });
+
+  it("lets go of the old page once the new answer lands", () => {
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    expect(s.prior?.source).toBe("sales");
+    s = reducer(s, setConfig(orders()));
+    expect(s.prior).toBeNull();
   });
 
   it("drops a list that answers for a source no longer on screen", () => {

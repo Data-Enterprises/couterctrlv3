@@ -1432,3 +1432,10 @@ Orders and stopped at its first Sales column. Each table now has its own list,
 like saved exports. Every query saved before today was written for Sales and
 stays in the Sales list. Switching tables and back keeps each table's list
 without reading it again.
+
+**A search from Change that fails no longer throws the page away.** If the
+new search failed (a server error, or the connection dropping), the page fell
+back to the bare search card, and with new dates everything configured was
+gone. Now nothing is let go until the new answer has arrived: if it fails, the
+page comes back exactly as it was, every other table kept with it, and the
+message says "The page is as it was."
