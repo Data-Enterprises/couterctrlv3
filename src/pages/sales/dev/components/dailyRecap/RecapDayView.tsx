@@ -58,7 +58,7 @@ const RecapDayView = ({
           narrow ? "grid-cols-2" : "grid-cols-[1.15fr_1fr_1fr]"
         }`}
       >
-        <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
+        <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} narrow={narrow} short={short} />
         <RecapMoneyCard money={m} short={short} />
         <div className={narrow ? "col-span-2" : ""}>
           <RecapMixCard state={mix} short={short} />

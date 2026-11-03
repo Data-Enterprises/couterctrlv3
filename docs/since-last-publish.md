@@ -1866,3 +1866,11 @@ The picked day's heading is back to one line above the cards (the day, its
 net sales, and the way back), and the Export Daily Recap button is gone from
 the tab strip: the recap downloads from the Daily Recap preset in Export CSV,
 beside the other Sales exports.
+
+### Daily recap: the hour chart is whole again; cards on white
+
+The day's hour chart was cut off at the bottom (the $0 line and hour labels
+missing) when its facts rail was taller than the room it was given. It now
+never shrinks below its contents; a short panel scrolls instead. The cards
+sit on the panel's own white with the theme's medium shadow, and Baskets goes
+four across at a store that weighs things so it stays two rows.

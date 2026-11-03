@@ -35,11 +35,13 @@ const RecapBasketsCard = ({
   day,
   mix,
   withPounds,
+  narrow,
   short,
 }: {
   day: RecapDay;
   mix: DayMixState;
   withPounds: boolean;
+  narrow: boolean;
   short: boolean;
 }) => {
   const basket = avgBasket(day.net, day.transactions);
@@ -49,7 +51,13 @@ const RecapBasketsCard = ({
     mix.status === "ready" ? count(mix.mix.items) : mix.status === "error" ? "—" : "…";
   return (
     <RecapCard title="Baskets" icon={ShoppingCartIcon} compact={short} bodyClassName="p-3">
-      <div className={`grid grid-cols-3 ${short ? "gap-1.5" : "gap-2"}`}>
+      {/* Four across when the store weighs things, so its seven tiles stay two
+          rows and the card does not stretch the row it shares. */}
+      <div
+        className={`grid ${withPounds && !narrow ? "grid-cols-4" : "grid-cols-3"} ${
+          short ? "gap-1.5" : "gap-2"
+        }`}
+      >
         {tile(day.transactions > 0 ? count(day.transactions) : "—", "transactions", true, short)}
         {tile(basket === null ? "—" : money(basket), "avg basket", true, short)}
         {tile(items, "items", true, short)}

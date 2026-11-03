@@ -8,7 +8,7 @@ import { useCursorTip } from "./useCursorTip";
 
 /** One fact on the rail: a small capital label, the value, a line under it. */
 const fact = (label: string, value: string, sub: string | null, big: boolean, rule: boolean) => (
-  <div key={label} className={`min-w-0 flex-1 px-[18px] py-3 ${rule ? "border-b border-brand_line" : ""}`}>
+  <div key={label} className={`min-w-0 flex-1 px-[18px] py-2.5 ${rule ? "border-b border-brand_line" : ""}`}>
     <div className="text-[11px] font-bold uppercase tracking-wide text-content">{label}</div>
     <div className={`mt-0.5 ${big ? "text-[20px]" : "text-[17px]"} font-bold text-content whitespace-nowrap`}>
       {value}
@@ -81,7 +81,12 @@ const RecapShapeCard = ({
       title="The day's shape · net sales by hour"
       icon={ChartBarIcon}
       compact={short}
-      className={`flex-1 ${narrow ? (short ? "min-h-[260px]" : "min-h-[300px]") : short ? "min-h-[200px]" : "min-h-[240px]"}`}
+      // No fixed minimum: as a flex item the card may not shrink below its own
+      // content (the rail's three facts, or the chart's floor), so nothing in
+      // it is ever cut off. A fixed min-height smaller than the rail clipped
+      // the bottom of the chart, axis and hour labels with it. When the panel
+      // is shorter than that, the tray scrolls instead.
+      className="flex-1"
       bodyClassName={`grid h-full ${
         narrow ? "grid-cols-1 grid-rows-[minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_240px]"
       }`}
