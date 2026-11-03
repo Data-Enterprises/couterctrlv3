@@ -1470,3 +1470,8 @@ nothing, so there was no way to pick up rows that had arrived since (after the
 nightly import, say) short of changing the dates and back. It now reads the
 table again: Group By, Aggregates, the sort and Output stay, and the lists
 start full again from the new answer. The help says so.
+
+**The Data choice works as one choice from the keyboard.** The four Data rows
+on the search card look the same, but now act as a single choice: Tab lands
+on the picked one, the arrow keys move the pick, and a screen reader announces
+it as one of four rather than four separate checkboxes.
