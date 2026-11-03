@@ -735,7 +735,15 @@ export const useExportBuilderCtx = () => {
   const deleteSaved = (id: number) => {
     dispatch(startSavedWork());
     deleteSavedConfig(url, token, id)
-      .then(() => dispatch(removeSaved(id)))
+      .then((resp) => {
+        // The house 200 with `error: 1` inside: the row is still there, so
+        // it stays in the list.
+        if (failed(resp.data as DeletedQueryResp)) {
+          dispatch(failSavedWork("That did not delete."));
+          return;
+        }
+        dispatch(removeSaved(id));
+      })
       .catch((err: JsonError) =>
         dispatch(failSavedWork("That did not delete: " + reasonOf(err))),
       );

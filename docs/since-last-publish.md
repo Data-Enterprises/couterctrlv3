@@ -1439,3 +1439,8 @@ back to the bare search card, and with new dates everything configured was
 gone. Now nothing is let go until the new answer has arrived: if it fails, the
 page comes back exactly as it was, every other table kept with it, and the
 message says "The page is as it was."
+
+**Deleting a saved export checks that it really went.** When the server
+failed the delete but still answered "OK" with an error inside, the export
+disappeared from the Saved list and came back the next time the list was
+read. It now stays in the list, and the window says "That did not delete."
