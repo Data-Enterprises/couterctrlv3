@@ -1616,3 +1616,7 @@ users…", or shows what went wrong with a Retry button.
 and clicking another tab all dropped a half-filled Add user or an unsaved
 Edit without a word. They now ask "Discard your changes to …?" first. Nothing
 asks when nothing has changed.
+
+**Internal: an Edit save no longer resets two account fields.** Saving
+someone's details also wrote two account fields (template and security) back
+as 0 every time. Each save now sends back the values the person already had.

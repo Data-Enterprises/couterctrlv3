@@ -488,7 +488,18 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
     if (identityDirty) {
       try {
-        const resp = await updateUser(ctx.url, ctx.token, ctx.userInfo, 0, 0);
+        // update_user writes `security` and `template` on every call, so
+        // the row's own values go back: sending 0 cleared both on each Edit
+        // (create sets template to 1). Both are required ints there, so a
+        // row holding null sends 0, as before.
+        const row = ctx.users.find((x) => x.id === editUserId);
+        const resp = await updateUser(
+          ctx.url,
+          ctx.token,
+          ctx.userInfo,
+          row?.security ?? 0,
+          row?.template ?? 0,
+        );
         if (resp.data.error !== 0) {
           toast.error(resp.data.msg ?? "Their details could not be saved");
           setStep("identity");
