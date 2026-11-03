@@ -234,6 +234,17 @@ active ticket_techs row, at any level.
 That is a door, not a key: every call the page makes is still answered against
 the row server-side.
 
+### A ticket names the store the page was about
+
+Filing a ticket from a page with its own store picker (Item Actions, Item
+Lookup, Categories, Vendors, Sub Dept Margins, both Price Optimization pages
+and Receivers) showed whichever store was last searched on Sales in the box at
+the top of the form, ticked that store in the store list, and sent it with the
+ticket. Found in testing: a ticket from Item Actions read "002 - IGA IRVINGTON
+KY 2" because that store was open on Sales. The form now reads the store the
+page itself picked, and where the page ran a date range, that range goes with
+the ticket too. With nothing picked on the page, the box names no store rather
+than a wrong one. Made after the `f251f251` publish commit.
 
 ## From the test-user agent run
 

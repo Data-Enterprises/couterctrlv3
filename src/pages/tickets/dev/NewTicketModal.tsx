@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { shallowEqual } from "react-redux";
 import { useAppSelector } from "../../../hooks";
 import { useDevApi } from "../../../hooks/useDevApi";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
@@ -30,6 +31,7 @@ import {
   searchSummary,
   suggestedTitle,
 } from "./ticketOrigin";
+import { pageStoreOf, searchForPage } from "./pageStore";
 import StoreChecklist from "./StoreChecklist";
 import {
   assignedAsOptions,
@@ -68,12 +70,24 @@ const NewTicketModal = ({
    *  queue, so the caller says what closing means. */
   onClose?: () => void;
 }) => {
-  const search = useAppSelector((state) => state.search);
   const { url, token } = useDevApi();
 
   const origin = from?.from
     ? originOf({ reportFrom: from.from, page: from.page, area: from.area })
     : null;
+  const shared = useAppSelector((state) => state.search);
+  const assignedStores = useAppSelector((state) => state.user.assignedStores);
+  // A page with its own store picker is about its own store, not the last one
+  // searched on Sales. Everything below reads `search`, so the header, the
+  // ticked store and the record sent with the ticket all follow it.
+  const own = useAppSelector(
+    (state) => (origin ? pageStoreOf(state, origin.href) : undefined),
+    shallowEqual,
+  );
+  const search = useMemo(
+    () => searchForPage(shared, own, assignedStores),
+    [shared, own, assignedStores],
+  );
   const summary = origin ? searchSummary(search, origin.href) : null;
   /**
    * Everything the page fetched, one entry per endpoint, read once at mount.
@@ -121,7 +135,6 @@ const NewTicketModal = ({
     origin && pageUsesSearch(origin.href) && search.type === "Store"
       ? (search.selectedStore?.storeid ?? null)
       : null;
-  const assignedStores = useAppSelector((state) => state.user.assignedStores);
   // Read once, like the evidence: the form is about the moment it opened.
   // Null while a tech's every-store list loads.
   const [options, setOptions] = useState<TicketStoreOption[] | null>(() =>
