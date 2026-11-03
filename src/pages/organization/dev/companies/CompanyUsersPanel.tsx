@@ -225,7 +225,7 @@ const CompanyUsersPanel = ({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-help="companies">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div>
           <span className="text-[15px] font-semibold text-content">

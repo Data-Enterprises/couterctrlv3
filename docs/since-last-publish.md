@@ -1652,3 +1652,15 @@ sent them. Clicking First name, Last name, Role, Level, Access or Last visited
 now sorts by that column; a second click reverses it and a third goes back to
 the original order. People with no value (never signed in, say) stay at the
 bottom either way.
+
+**User Management's "?" help matches the page again.** It promised Effective
+stores in Add user (it's only in Edit, on a wide window), had nothing on the
+Companies tab, the Stores tab or Export CSV, gave one reason for a greyed-out
+Save changes where there are several, and said a part-saved Edit showed only
+what saved. It now has guides for Companies, Stores and Export CSV (with the
+warning that Assign all and Unassign all there take everyone in the list),
+explains the reason line beside Create user and Save changes, the Single
+Store note, Retry when something doesn't load, the "Discard your changes?"
+question, "not yours to change", Assign it to me after creating a base group,
+how a group's Users sub-tab now grants in each person's own type, and column
+sorting.

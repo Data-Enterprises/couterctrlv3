@@ -15,10 +15,14 @@ import type { HelpContent } from "../helpTypes";
  * rule here is that every `chip` is a label as the screen carries it and every
  * `anchor` is a `data-help` on this page.
  *
- * The one thing the workflow hides, and the reason three entries below keep
- * coming back to it: **a base group you create is not yours until you hold
- * it.** The groups list only shows the groups the signed-in person holds, so a
- * freshly created group vanishes until its creator grants it to themselves.
+ * The one thing the workflow used to hide: **a base group you create is not
+ * yours until you hold it.** The groups list shows only the groups you hold
+ * (everything at level 9), so a new group vanished. The page now says so as
+ * soon as it is created and offers "Assign it to me"; the entries below
+ * follow that.
+ *
+ * Checked against the page after the 3 Nov fixes (the fix plan in
+ * Documents\ccc-dev-plans).
  */
 export const USER_MANAGEMENT_HELP: HelpContent = {
   screen: "User Management",
@@ -40,10 +44,10 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           title: "User info",
-          pre: "Role and level first — the level list stops at your own — then the name, username, email and a password typed twice. Username and email are not checked on their own: press",
+          pre: "Role and level first — the level list stops at your own — then the name, username, email and a password typed twice that meets every rule listed beside it. Username and email are not checked on their own: press",
           chip: "Check Availability",
           post: "beside either label, or Enter in the box.",
-          see: "Available or Not available next to the label. The username can never be changed afterwards.",
+          see: "Available or Not available next to the label; Continue waits while either is Not available, and until every password rule is ticked. The username can never be changed afterwards.",
           anchor: "wizard",
         },
         {
@@ -56,12 +60,12 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           title: "Assignments",
-          pre: "Tick the base groups they should hold. By store also wants the individual stores inside each group.",
-          see: "The strip under the columns counts what you have picked, and Effective stores adds it up.",
+          pre: "Tick a company in its own right if they should hold it with no group, and the base groups they should hold. By store also wants the individual stores inside each group; By group shows a group's stores read only.",
+          see: "The strip under the columns counts what you have picked. Below level 9 only the groups you hold are offered.",
           anchor: "wizard",
         },
         {
-          title: "Review and create",
+          title: "Review",
           pre: "Check the four counts, then press",
           chip: "Create user",
           post: ". This is the first moment anything is sent.",
@@ -78,6 +82,14 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           a: "A group is held By store with no stores picked, and the notice under the columns names it. Pick at least one store in that group, or untick the group.",
         },
         {
+          q: "Create user is greyed out, or a step can't be clicked",
+          a: "An earlier step isn't finished. On Review, the line beside Create user says which; the step bar won't jump past a step that isn't ready.",
+        },
+        {
+          q: "Choosing Single Store changed their stores",
+          a: "Single Store holds one store, By store, so the rest are unpicked and a note says what was kept. Change the role back and they return.",
+        },
+        {
           q: "It says the user was created but their access didn't finish saving",
           a: "The account exists and the access does not, so they would sign in to nothing. Press Retry access. If you leave it for now, open them from the users list and save again — do not leave somebody in that state.",
         },
@@ -91,7 +103,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         {
           title: "Open them",
           pre: "Press the pencil icon on their row.",
-          see: "The same four steps, every one reachable from the first click. The username is fixed and there is no password box.",
+          see: "The same four steps, every one reachable from the first click. The username is fixed and there is no password box. On a wide window (1280px or more) Assignments also shows Effective stores, adding up what they would hold.",
           anchor: "grid",
         },
         {
@@ -111,7 +123,15 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
       issues: [
         {
           q: "Save changes stays greyed out",
-          a: "Nothing has moved yet. The button lights up when a field or an assignment is different from how you found it.",
+          a: "The line beside it says why: nothing has changed yet, User info isn't finished, Assignments isn't (only when you changed access), or what they hold is still loading.",
+        },
+        {
+          q: "It says it couldn't read their groups, stores or picks",
+          a: "What they hold didn't load, so the screen may be missing some of it and Save changes is off. Press Retry.",
+        },
+        {
+          q: "It asks whether to discard my changes",
+          a: "Cancel, Back to users and another tab all ask when something hasn't been saved. Nothing asks when nothing changed.",
         },
         {
           q: "Their Access column says Mixed or Not set",
@@ -131,7 +151,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         {
           title: "Duplicate them",
           pre: "Press the duplicate icon on a user's row.",
-          see: "Role, level, companies, base groups, the access type and any picked stores carried into a new user. Name, username, email and password stay blank. A store granted directly does not copy — it has no group to travel in.",
+          see: "Role, level, every company they hold, base groups, the access type and any picked stores carried into a new user. Name, username, email and password stay blank. A store granted directly does not copy — it has no group to travel in. The next Add user starts blank again.",
           anchor: "grid",
         },
       ],
@@ -145,19 +165,21 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           title: "Open Base Groups",
           pre: "The",
           chip: "Base Groups",
-          post: "tab. The list shows your companies, each opening to the groups you hold.",
+          post: "tab. The list shows your companies, each opening to the groups you hold (every group, at level 9).",
           anchor: "tabs",
         },
         {
           title: "Create it",
-          pre: "Press the + beside the search box, then give it a name and a company.",
+          pre: "Press the + beside the search box (New base group), then give it a name and a company.",
           anchor: "base-groups",
         },
         {
           title: "Give it to yourself",
-          pre: "Go to Users, open your own row, and tick the new group on Assignments.",
-          see: "The group appears in the Base Groups list. Until you hold it, it is not listed and cannot be filled.",
-          anchor: "grid",
+          pre: "Below level 9 a note appears once it's created: press",
+          chip: "Assign it to me",
+          post: ".",
+          see: "The group appears in the Base Groups list, held By group. Until you hold it, it is not listed and cannot be filled.",
+          anchor: "base-groups",
         },
         {
           title: "Put the stores in",
@@ -171,14 +193,14 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           title: "Put the people in",
           pre: "The",
           chip: "Users",
-          post: "sub-tab, the same way. Everyone added here gets the whole group, including stores added to it later.",
+          post: "sub-tab, the same way. Each person gets the group in their own access type, shown beside their name: By group gets the whole group and stores added later; By store gets every store it holds today, picked.",
           anchor: "group-tabs",
         },
       ],
       issues: [
         {
           q: "The group I just created is not in the list",
-          a: "You do not hold it yet. Users → your own row → Edit → Assignments → tick it → save.",
+          a: "You do not hold it yet. Press Assign it to me on the note, or Users → your own row → Edit → Assignments → tick it → save.",
         },
         {
           q: "A store would not move into the group",
@@ -191,6 +213,85 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         {
           q: "It says nobody holds this group automatically",
           a: "Everyone holding the group is By store, so a new store in it reaches none of them. Either tick the store for them individually, or move them to By group.",
+        },
+      ],
+    },
+    {
+      id: "companies",
+      title: "Put people in a company",
+      desc: "The Companies tab: the outer boundary of what someone sees",
+      steps: [
+        {
+          title: "Open Companies",
+          pre: "The",
+          chip: "Companies",
+          post: "tab, then pick a company on the left.",
+          anchor: "tabs",
+        },
+        {
+          title: "Move people",
+          pre: "Pick people in Not in this company and press Assign, or pick them in In this company and press Unassign.",
+          see: "A person only reaches a base group inside a company they hold, so taking a company away hides their groups in it and the stores those gave.",
+          anchor: "companies",
+        },
+      ],
+      issues: [
+        {
+          q: "Assign all or Unassign all took more than the search showed",
+          a: "On this tab they take everyone in the list, search or not. Unassign all always asks first and names the count, and you, if you're in it.",
+        },
+        {
+          q: "Somebody isn't in Not in this company",
+          a: "You can add people from your own companies and people who hold no company yet. Somebody elsewhere has to be added by an administrator there.",
+        },
+      ],
+    },
+    {
+      id: "stores",
+      title: "Give one person one store",
+      desc: "The Stores tab: a grant no group can take back",
+      steps: [
+        {
+          title: "Open Stores",
+          pre: "The",
+          chip: "Stores",
+          post: "tab, then pick a store on the left.",
+          anchor: "tabs",
+        },
+        {
+          title: "Move people",
+          pre: "Pick people in Not assigned and press Assign, or in Assigned and press Unassign.",
+          see: "A grant made here is fixed: no group stands behind it, so no group change takes it away, and Edit shows it as Direct.",
+          anchor: "stores",
+        },
+      ],
+      issues: [
+        {
+          q: "Somebody won't come off a store",
+          a: "They hold it through a base group, and the message names it. Take them out of that group, or the store out of the group, instead.",
+        },
+        {
+          q: "Assign all or Unassign all took more than the search showed",
+          a: "On this tab they take everyone in the list, search or not. Unassign all always asks first and names the count.",
+        },
+      ],
+    },
+    {
+      id: "export",
+      title: "Export a list",
+      desc: "Users or stores, as a CSV file",
+      steps: [
+        {
+          title: "Press Export CSV",
+          pre: "The download icon in the dark header, on the Users or Stores tab.",
+          anchor: "export",
+        },
+        {
+          title: "Choose what goes in",
+          pre: "On Users: All users, Current filter results, or both, then",
+          chip: "Download CSV",
+          post: ".",
+          see: "The users file has username, names, email, role, level, access type and last visit. Current filter results can only be ticked while a filter is set.",
         },
       ],
     },
@@ -240,7 +341,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         {
           title: "Open the row's key icon",
           pre: "Type the temporary password twice, then press Reset password.",
-          see: "Reset security, beside it, makes them set a new security question at their next sign-in.",
+          see: "Reset security, beside it, asks first, then makes them set a new security question at their next sign-in.",
           anchor: "grid",
         },
       ],
@@ -364,8 +465,8 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           title: "You have to hold a group before you can fill it",
           why: "The list shows the groups you hold, not every group in the company. A group you have just created belongs to nobody, including you.",
           todo: [
-            "Users → your own row → Edit → Assignments.",
-            "Tick the new group and save, then go back to Base Groups.",
+            "Press Assign it to me on the note that appears after creating it.",
+            "If you closed it: Users → your own row → Edit → Assignments, tick the new group and save.",
           ],
         },
         {
@@ -411,7 +512,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           tone: "warn",
           badge: "Try again",
           title: "Part of it saved",
-          why: "The lists have been re-read, so what is on screen is what actually saved rather than what was asked for.",
+          why: "What did save has been re-read, and your changes are still on screen, so what didn't save is still different.",
           todo: ["Press Save changes again to send the rest."],
         },
       ],
@@ -440,12 +541,17 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
     },
     {
       term: "Effective stores",
-      def: "On the Assignments step of Edit: every store the picks add up to, with what accounts for each one — a group's name, or Direct. Read only, and it follows unsaved picks, so it shows what a change will do before you save it.",
+      def: "On the Assignments step of Edit, on a window 1280px wide or more: every store the picks add up to, with what accounts for each one — a group's name, or Direct. Read only, and it follows unsaved picks, so it shows what a change will do before you save it.",
       anchor: "wizard",
     },
     {
       term: "Direct",
       def: "A store granted on the Stores tab rather than through a base group. It belongs to the person, so no group change can take it back, and only the Stores tab can remove it.",
+    },
+    {
+      term: "Not yours to change",
+      def: "On Assignments, a group the person holds that you don't. It's shown so an edit can't drop it by accident, and it can't be ticked, unticked or cleared. Someone who holds the group (or level 9) can change it.",
+      anchor: "wizard",
     },
     {
       term: "Unauthorized",
@@ -454,7 +560,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
     },
     {
       term: "Finding a user",
-      def: "The filters above the list narrow by company, active or inactive, level, role and access type, and Search name matches the name. The Username and Email columns filter from their own headings.",
+      def: "The filters above the list narrow by company, active or inactive, level, role and access type, and Search name matches the name. The Username and Email columns filter from their own headings. Click First name, Last name, Role, Level, Access or Last visited to sort by it; click again to reverse, a third time for the original order.",
       anchor: "filters",
     },
     {
@@ -463,8 +569,8 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
       anchor: "wizard",
     },
     {
-      term: "Assign all",
-      def: "In a dual list, takes every row the column is currently showing. On a base group it respects the search box, so narrow the list first and read the count in the heading before pressing it.",
+      term: "Assign all and Unassign all",
+      def: "On a base group they take the rows the column is showing, so narrow it first. On the Companies and Stores tabs they take everyone in the list, search or not. Unassign all always asks first, naming the count (and you, if you're in it); Assign all asks above five.",
       anchor: "assign",
     },
     {

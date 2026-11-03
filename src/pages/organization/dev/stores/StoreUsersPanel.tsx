@@ -173,7 +173,7 @@ const StoreUsersPanel = ({
   const viaGroup = assigned.filter((r) => r.via !== null && r.via !== "").length;
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-help="stores">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div className="min-w-0">
           <span className="text-[15px] font-semibold text-content">
