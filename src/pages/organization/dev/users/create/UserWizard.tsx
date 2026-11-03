@@ -5,6 +5,7 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { createUser, updateUser } from "../../../../../api/team";
 import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 import {
+  clearDuplicateSource,
   resetUserInfo,
   setRefresh,
   setUserCompanyIds,
@@ -223,12 +224,20 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   usePanelFit(STEP_FIT[step]);
 
   // ── Add: start clean, or from the person being duplicated ─────────────
+  /**
+   * The Duplicate this Add was opened for, taken once. The slice copy is
+   * cleared as soon as it is read: it used to stay set until sign-out, so
+   * every later Add user, Cancel or not, opened as a copy of the same person.
+   * Held in state rather than read in the effect, because StrictMode runs the
+   * effect twice and the second run would find it already cleared.
+   */
+  const [source] = useState(() => (editing ? null : ctx.duplicateSource));
   useEffect(() => {
     if (editing) return;
     ctx.dispatch(resetUserInfo());
 
-    const source = ctx.duplicateSource;
     if (!source) return;
+    ctx.dispatch(clearDuplicateSource());
     // Access copies, identity never does — a duplicate that half-becomes the
     // person it was copied from is worse than one that copies nothing.
     ctx.dispatch(setUserInfo({ key: "role", value: source.role }));

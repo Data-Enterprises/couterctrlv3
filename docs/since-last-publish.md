@@ -1479,3 +1479,12 @@ it as one of four rather than four separate checkboxes.
 **Internal: leftover state from the old query window removed.** Nothing on
 screen changes; two unused fields and their two actions came out of the Data
 Export page's state.
+
+## User Management fix plan (2 Nov sweep)
+
+dev mode only
+
+**Add user opens blank after a Duplicate.** Duplicating someone filled in the
+Add user form, but the copy was never let go: every later Add user, even after
+Cancel, opened as a copy of that same person until you signed out. The copy
+is now used once, and Add user from the list always opens blank.

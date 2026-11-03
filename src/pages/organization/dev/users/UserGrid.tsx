@@ -17,6 +17,7 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
   setDuplicateSource,
+  clearDuplicateSource,
 } from "../../../../features/dev/devUsersSlice";
 import {
   setUsersExportOpen,
@@ -483,7 +484,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           </button>
         )}
         <button
-          onClick={onOpenCreate}
+          onClick={() => {
+            // Add user is a blank form; only Duplicate fills one in.
+            ctx.dispatch(clearDuplicateSource());
+            onOpenCreate();
+          }}
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
