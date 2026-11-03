@@ -31,8 +31,6 @@ import {
   deptName,
   deptOptions,
   deptRollups,
-  deptSeverity,
-  deptSeverityCounts,
   amountOf,
   amountText,
   contributionGap,
@@ -151,7 +149,7 @@ const dayText = (iso: string | null | undefined) => {
 const inFlight = new Set<string>();
 
 /** Name, the share bar, the week, and one comparison. */
-const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 86px 64px";
+const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 96px";
 
 /**
  * Departments printed in full before the tail is rolled into one line.
@@ -215,11 +213,6 @@ const PopupTopItems = ({
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
   const [dept, setDept] = useState("");
-  /** The landing report's own chip filter, over departments. */
-  const [deptSev, setDeptSev] = useState<Severity | "all">("all");
-  /** Which comparison the landing report's one delta column shows. Last week
-   *  by default: it is the one every store has. */
-  const [landingBasis, setLandingBasis] = useState<"LW" | "LY">("LW");
   /** One picked day or the week, as the headings name it. */
   const oneDay = start === end;
   const periodLabel = oneDay ? dayText(start) : "This week";
@@ -338,7 +331,6 @@ const PopupTopItems = ({
     setSelectedCode(null);
     setDetail(null);
     setDept("");
-    setDeptSev("all");
   }, [key]);
 
   useEffect(() => {
@@ -396,16 +388,8 @@ const PopupTopItems = ({
     }),
     [totals, netSales],
   );
-  const sevCounts = useMemo(
-    () => deptSeverityCounts(rollups, threshold),
-    [rollups, threshold],
-  );
   const landing = useMemo(() => {
-    const kept =
-      deptSev === "all"
-        ? rollups
-        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev);
-    const byMoney = [...kept].sort((a, b) => b.ty - a.ty);
+    const byMoney = [...rollups].sort((a, b) => b.ty - a.ty);
     const shown = byMoney.slice(0, LANDING_SHOWN);
     const rest = byMoney.slice(LANDING_SHOWN);
     return {
@@ -417,7 +401,7 @@ const PopupTopItems = ({
       top: shown.length ? shown[0].ty : 0,
       total: byMoney.reduce((n, d) => n + d.ty, 0),
     };
-  }, [rollups, deptSev, threshold]);
+  }, [rollups]);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -837,61 +821,9 @@ const PopupTopItems = ({
                 ))}
               </div>
 
-              {/* Chips count DEPARTMENTS, not items. This report is about
-                  where the money sat; each department's grade is the colour
-                  of its vs LW / vs LY pill, and these filter by it. */}
+              {/* This period's sales only: no grade and no comparison. Last
+                  week and last year are in an item's own detail. */}
               <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
-                {(
-                  [
-                    [
-                      "critical",
-                      "Crit",
-                      "bg-severity_critical_bg text-severity_critical_text",
-                      "ring-severity_critical_text/40",
-                    ],
-                    [
-                      "watch",
-                      "Watch",
-                      "bg-severity_watch_bg text-severity_watch_text",
-                      "ring-severity_watch_text/40",
-                    ],
-                    [
-                      "healthy",
-                      "OK",
-                      "bg-severity_healthy_bg text-severity_healthy_text",
-                      "ring-severity_healthy_text/40",
-                    ],
-                  ] as const
-                ).map(([sev, label, cls, ring]) => (
-                  <button
-                    key={sev}
-                    onClick={() => setDeptSev((f) => (f === sev ? "all" : sev))}
-                    className={`text-[10px] font-semibold px-2 py-1 rounded-full transition-shadow ${cls} ${
-                      deptSev === sev ? `ring-2 ${ring} shadow-sm` : ""
-                    }`}
-                  >
-                    {label} ({sevCounts[sev]})
-                  </button>
-                ))}
-                <span className="flex-1" />
-                {/* One comparison column, and a switch for which. Two columns
-                    of percentages beside a bar and a dollar figure was four
-                    numbers a row, and the eye reads none of them. */}
-                <span className="flex rounded-md border border-brand_navy/15 overflow-hidden flex-shrink-0">
-                  {(["LW", "LY"] as const).map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setLandingBasis(b)}
-                      className={`px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${
-                        landingBasis === b
-                          ? "bg-brand_navy text-custom-white"
-                          : "bg-custom-white text-content/85 hover:bg-gray-50"
-                      }`}
-                    >
-                      vs {b}
-                    </button>
-                  ))}
-                </span>
                 <span className="flex-1" />
                 <span className="text-[10px] font-semibold text-content/85">
                   {rollups.length} sub department
@@ -905,8 +837,7 @@ const PopupTopItems = ({
               >
                 <span>Sub dept</span>
                 <span>Share of top 200</span>
-                <span className="text-right">{periodLabel}</span>
-                <span className="text-right">vs {landingBasis}</span>
+                <span className="text-right">Sales</span>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
@@ -945,8 +876,7 @@ const PopupTopItems = ({
 
                       {/* The bar measures this period's sales and nothing
                           else, so it is navy and ungraded: a bar's length is
-                          not a verdict. The grade is the pill at the end of
-                          the row, against whichever basis is chosen. */}
+                          not a verdict. */}
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="flex-1 h-3 rounded bg-bkg min-w-0">
                           <span
@@ -965,16 +895,6 @@ const PopupTopItems = ({
                         {money(d.ty)}
                       </span>
 
-                      <span className="flex justify-end">
-                        <span
-                          className={`text-[12px] font-semibold px-1.5 py-0.5 rounded text-center whitespace-nowrap tabular-nums ${pillClass(
-                            landingBasis === "LW" ? d.vsLW : d.vsLY,
-                            threshold,
-                          )}`}
-                        >
-                          {pctText(landingBasis === "LW" ? d.vsLW : d.vsLY)}
-                        </span>
-                      </span>
                     </button>
                   );
                 })}
@@ -992,19 +912,18 @@ const PopupTopItems = ({
                     <span className="text-right tabular-nums">
                       {money(landing.restTotal)}
                     </span>
-                    <span />
                   </div>
                 )}
 
                 {landing.shown.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                    No departments at that grade
+                    No departments
                   </div>
                 )}
               </div>
 
               <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/85">
-                Click a sub department for last week, last year and its items.
+                Click a sub department to see its items.
               </p>
             </div>
           ) : (

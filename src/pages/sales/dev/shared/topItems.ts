@@ -4,7 +4,6 @@ import {
   pricedUnits,
 } from "../../../../utils/pricedUnits";
 import type { TopItemRow, TopItemPricePoint } from "../../../../api/topItems";
-import { gradeSeverity, type Severity } from "../../../../utils/severity";
 
 /**
  * Top items — the arithmetic, with no React in it.
@@ -517,40 +516,6 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
       offRegular: a.knownUnits > 0 ? a.offUnits / a.knownUnits : 0,
     }))
     .sort((x, y) => y.ty - x.ty);
-};
-
-/**
- * How a department grades.
- *
- * Last year first, last week second. A year is the longer view and the one
- * that catches a seasonal collapse last week would call normal; last week is
- * the fallback for a department with no history, not a second opinion. Null
- * when neither baseline exists — ungraded is not healthy, and a department
- * nobody can compare has earned no verdict.
- */
-export const deptSeverity = (
-  d: DeptRollup,
-  threshold: number,
-): Severity | null => {
-  const basis = d.vsLY ?? d.vsLW;
-  return basis === null ? null : gradeSeverity(basis, threshold);
-};
-
-/** How many departments sit at each grade, for the chips. */
-export const deptSeverityCounts = (
-  depts: DeptRollup[],
-  threshold: number,
-): Record<Severity, number> => {
-  const out: Record<Severity, number> = {
-    critical: 0,
-    watch: 0,
-    healthy: 0,
-  };
-  depts.forEach((d) => {
-    const sev = deptSeverity(d, threshold);
-    if (sev) out[sev] += 1;
-  });
-  return out;
 };
 
 /** The three figures over the whole top-200 set, for the KPI strip. */

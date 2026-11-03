@@ -16,10 +16,7 @@ import {
   contributionOf,
   avgPrice,
   deptRollups,
-  deptSeverity,
-  deptSeverityCounts,
   topItemsTotals,
-  type DeptRollup,
   deptName,
   deptOptions,
   DEFAULT_TOP_ITEM_SORT,
@@ -396,45 +393,6 @@ describe("deptRollups", () => {
       cmp("Meat", 100, 10, null, null, 0, 10),
     ]);
     expect(got[0].offRegular).toBeCloseTo(6 / 20, 5);
-  });
-});
-
-describe("deptSeverity", () => {
-  const dept = (vsLW: number | null, vsLY: number | null): DeptRollup => ({
-    name: "Meat",
-    items: 1,
-    ty: 100,
-    tyUnits: 10,
-    tyWeight: 0,
-    lw: vsLW === null ? null : 90,
-    lwUnits: null,
-    ly: vsLY === null ? null : 90,
-    lyUnits: null,
-    vsLW,
-    vsLY,
-    offRegular: 0,
-  });
-
-  it("grades on last year when there is one", () => {
-    // LY is the longer view and catches a seasonal collapse LW calls normal.
-    expect(deptSeverity(dept(5, -30), 9)).toBe("critical");
-  });
-
-  it("falls back to last week when there is no last year", () => {
-    expect(deptSeverity(dept(-30, null), 9)).toBe("critical");
-  });
-
-  it("refuses a verdict when neither baseline exists", () => {
-    // Ungraded is not healthy: nobody can compare it.
-    expect(deptSeverity(dept(null, null), 9)).toBeNull();
-  });
-
-  it("counts only the graded ones in the chips", () => {
-    const counts = deptSeverityCounts(
-      [dept(null, -30), dept(null, -2), dept(null, 10), dept(null, null)],
-      9,
-    );
-    expect(counts).toEqual({ critical: 1, watch: 1, healthy: 1 });
   });
 });
 

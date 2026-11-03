@@ -1737,3 +1737,9 @@ grade, which made a bar's length read as a verdict. They are now plain navy
 and show only how much of the money each department took; the grade stays on
 the vs LW / vs LY pill at the end of each row, and the Crit, Watch and OK chips
 still filter by it.
+
+**Top 200's department list shows sales only.** Before an item is picked, the
+Top 200 lists each sub department with its share bar and its sales, and
+nothing else: the Crit / Watch / OK chips, the vs LW / vs LY switch and the
+comparison column are gone, and the sales column is headed "Sales". Last week
+and last year are still in each item's own detail.
