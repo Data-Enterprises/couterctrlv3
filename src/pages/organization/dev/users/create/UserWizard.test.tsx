@@ -7,6 +7,7 @@ import {
   type DuplicateSource,
 } from "../../../../../features/dev/devUsersSlice";
 import UserWizard from "./UserWizard";
+import Stepper from "./Stepper";
 
 vi.mock("../../../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
@@ -46,5 +47,30 @@ describe("Add user after a Duplicate", () => {
   it("opens blank when nothing was duplicated", () => {
     const store = openAdd();
     expect(store.getState().dev.users.userInfo.role).toBe(0);
+  });
+});
+
+describe("the step bar", () => {
+  const steps = () =>
+    ["User info", "Access type", "Assignments", "Review"].map(
+      (name) => screen.getByRole("button", { name: new RegExp(`${name}$`) }) as HTMLButtonElement,
+    );
+
+  it("stops at the first step that isn't ready, even one visited before", () => {
+    render(<Stepper current="identity" furthest="review" limit={2} onGoTo={vi.fn()} />);
+    expect(steps().map((b) => b.disabled)).toEqual([false, false, false, true]);
+  });
+
+  it("reaches every visited step when nothing is unready", () => {
+    render(<Stepper current="identity" furthest="review" onGoTo={vi.fn()} />);
+    expect(steps().map((b) => b.disabled)).toEqual([false, false, false, false]);
+  });
+});
+
+describe("Create user", () => {
+  it("can't be reached from a blank form", () => {
+    openAdd();
+    const review = screen.getByRole("button", { name: /Review$/ }) as HTMLButtonElement;
+    expect(review.disabled).toBe(true);
   });
 });

@@ -1488,3 +1488,11 @@ dev mode only
 Add user form, but the copy was never let go: every later Add user, even after
 Cancel, opened as a copy of that same person until you signed out. The copy
 is now used once, and Add user from the list always opens blank.
+
+**Add user can't create someone with no access.** In Add user, the step bar
+let you jump to Review after going back and emptying an earlier step (Clear
+all on Assignments, or blanking a field on User info), and Create user then
+made the person with nothing. Review is now ready only when User info, Access
+type and Assignments all are, the step bar won't jump past a step that isn't,
+and a greyed-out Create user says why underneath ("Finish User info first.",
+"Give them at least one company or group on Assignments.").

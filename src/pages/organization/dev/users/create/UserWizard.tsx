@@ -25,6 +25,7 @@ import { STEP_ORDER, type WizardStep } from "./wizardSteps";
 import { usePanelFit, type PanelFit } from "../../panelFit";
 import StepAccessType from "./StepAccessType";
 import StepReview from "./StepReview";
+import { createBlockReason, reachableLimit, readiness } from "./wizardRules";
 import {
   accessSets,
   emptySelectedGroupIds,
@@ -313,12 +314,16 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     editing && identityBefore.current !== identityOf(ctx.userInfo);
   const accessDirty = editing && hasChanges(sets, before);
 
-  const stepReady: Record<WizardStep, boolean> = {
+  const stepReady = readiness({
     identity: identityValid,
-    type: !switching,
-    assignments: hasAccess && emptyGroups.length === 0,
-    review: true,
-  };
+    switching,
+    hasAccess,
+    emptyGroups: emptyGroups.length,
+  });
+  /** Add only: the step bar stops at the first step that isn't ready, so
+   *  Review can't be reached past one that was emptied after visiting it.
+   *  Edit keeps every step reachable; its Save checks them all. */
+  const limit = editing ? STEP_ORDER.length - 1 : reachableLimit(stepReady);
 
   const at = STEP_ORDER.indexOf(step);
   const isLast = step === "review";
@@ -333,6 +338,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     : canAdvance;
 
   const goTo = (next: WizardStep) => {
+    if (STEP_ORDER.indexOf(next) > limit) return;
     setStep(next);
     if (STEP_ORDER.indexOf(next) > STEP_ORDER.indexOf(furthest)) {
       setFurthest(next);
@@ -461,6 +467,11 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       ? canSave && !saving
       : canAdvance && !saving && stranded === null
     : canAdvance && !saving && stranded === null;
+  /** Under a greyed-out Create user, the reason. */
+  const blockReason =
+    !editing && isLast && !saving && stranded === null
+      ? createBlockReason(stepReady, { hasAccess })
+      : null;
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-0">
@@ -485,7 +496,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       </h2>
 
       <div data-help="wizard" className="flex-shrink-0 mb-4">
-        <Stepper current={step} furthest={furthest} onGoTo={goTo} />
+        <Stepper current={step} furthest={furthest} limit={limit} onGoTo={goTo} />
       </div>
 
       {/* Danger, not severity: the severity family grades data against a
@@ -607,6 +618,11 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           Cancel
         </button>
         <div className="flex items-center gap-2.5">
+          {blockReason && (
+            <span className="text-[11.5px] font-semibold text-content" role="status">
+              {blockReason}
+            </span>
+          )}
           <span className="text-[11.5px] text-content/95">
             {editing && !isLast && (identityDirty || accessDirty)
               ? "Unsaved changes · "

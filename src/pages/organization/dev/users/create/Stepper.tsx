@@ -11,21 +11,25 @@ import { STEP_ORDER, STEP_TITLE, type WizardStep } from "./wizardSteps";
  *
  * A finished step is clickable and an unreached one is not. Going back to
  * change an answer is normal; skipping ahead past a step that gates the next
- * one is not.
+ * one is not -- including a step reached earlier and emptied since, which is
+ * what `limit` stops.
  */
 const Stepper = ({
   current,
   furthest,
+  limit = STEP_ORDER.length - 1,
   onGoTo,
 }: {
   current: WizardStep;
   /** The furthest step reached, so a visited step stays reachable after
    *  stepping back from it. */
   furthest: WizardStep;
+  /** The last step that may be jumped to: the first one not ready. */
+  limit?: number;
   onGoTo: (step: WizardStep) => void;
 }) => {
   const currentAt = STEP_ORDER.indexOf(current);
-  const furthestAt = STEP_ORDER.indexOf(furthest);
+  const furthestAt = Math.min(STEP_ORDER.indexOf(furthest), limit);
 
   return (
     <ol className="flex flex-wrap items-center gap-3 bg-custom-white rounded-lg shadow-card px-5 py-3 list-none m-0">
