@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { setupStore } from "../../../../../store";
 import {
@@ -72,5 +73,35 @@ describe("Create user", () => {
     openAdd();
     const review = screen.getByRole("button", { name: /Review$/ }) as HTMLButtonElement;
     expect(review.disabled).toBe(true);
+  });
+});
+
+describe("choosing Single Store", () => {
+  const byStore: DuplicateSource = {
+    ...source,
+    role: 2,
+    mode: "selected",
+    stores: [301, 302, 303].map((id) => ({
+      storeid: id,
+      store_number: String(id),
+      store_name: `Store ${id}`,
+      company: 1,
+      company_name: "Houchens",
+      base_group: 10,
+    })),
+  };
+
+  it("says what it trimmed, and the role back takes the note away", async () => {
+    const store = setupStore();
+    store.dispatch(setDuplicateSource(byStore));
+    openAdd(store);
+    // Role is the first select on User info.
+    const select = document.querySelector("select") as HTMLSelectElement;
+    await userEvent.selectOptions(select, "1");
+    expect(screen.getByRole("status").textContent).toMatch(
+      /Single Store keeps only 301 · Store 301; the other 2 stores are unpicked/,
+    );
+    await userEvent.selectOptions(select, "2");
+    expect(screen.queryByText(/Single Store keeps only/)).toBeNull();
   });
 });

@@ -28,8 +28,11 @@ import StepReview from "./StepReview";
 import {
   createBlockReason,
   duplicateCompanies,
+  needsSingleStoreTrim,
   reachableLimit,
   readiness,
+  singleStoreNote,
+  trimToSingleStore,
 } from "./wizardRules";
 import {
   accessSets,
@@ -271,15 +274,34 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     // Runs once, on open. A duplicate is a starting point, not a binding.
   }, []);
 
-  // A role change after the fact has to drag the access with it, or the form
-  // holds a combination the server will refuse.
+  /**
+   * A role change after the fact has to drag the access with it, or the form
+   * holds a combination the server will refuse: Single Store is one store,
+   * By store.
+   *
+   * It used to trim silently, and changing the role back didn't put the
+   * picks back, so a By group person came out By store with nothing picked.
+   * Now the picks as they were are kept, the note says what changed, and the
+   * role back restores them. Only a change of role does this: a Single Store
+   * person opened in Edit is shown as they are.
+   */
+  const wasSingle = useRef(singleStoreOnly);
+  const beforeSingle = useRef<AccessPicks | null>(null);
+  const [singleNote, setSingleNote] = useState<string | null>(null);
   useEffect(() => {
-    if (!singleStoreOnly) return;
-    setPicks((prev) =>
-      prev.mode === "selected" && prev.stores.length <= 1
-        ? prev
-        : { ...prev, mode: "selected", stores: prev.stores.slice(0, 1) },
-    );
+    if (singleStoreOnly === wasSingle.current) return;
+    wasSingle.current = singleStoreOnly;
+    if (singleStoreOnly) {
+      if (!needsSingleStoreTrim(picks)) return;
+      const next = trimToSingleStore(picks);
+      beforeSingle.current = picks;
+      setPicks(next);
+      setSingleNote(singleStoreNote(picks, next));
+    } else if (beforeSingle.current) {
+      setPicks(beforeSingle.current);
+      beforeSingle.current = null;
+      setSingleNote(null);
+    }
   }, [singleStoreOnly]);
 
   const handleModeChange = async (mode: GrantMode) => {
@@ -547,6 +569,23 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             re-read, so what you see is what saved. Press Save changes to try
             the rest.
           </div>
+        </div>
+      )}
+
+      {singleNote && (
+        <div
+          role="status"
+          className="flex items-start gap-3 mb-3 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border flex-shrink-0"
+        >
+          <div className="flex-1 text-[11.5px] text-content leading-snug">
+            {singleNote}
+          </div>
+          <button
+            onClick={() => setSingleNote(null)}
+            className="text-[11.5px] font-medium text-content/95 hover:underline flex-shrink-0"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 

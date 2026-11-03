@@ -1500,3 +1500,11 @@ and a greyed-out Create user says why underneath ("Finish User info first.",
 **Duplicate copies every company.** A duplicate only copied the companies its
 groups were in, so a company the source held with no group in it was left
 behind. It now starts from every company the source holds.
+
+**Choosing Single Store says what it changes, and choosing another role puts
+it back.** Picking the Single Store role cut the store picks down to one
+without a word, and switching the role back didn't restore them; someone
+granted By group came out By store with nothing picked. Now a note says what
+Single Store kept ("Single Store keeps only 301 · Food Giant; the other 2
+stores are unpicked"), and changing the role back puts the picks back as they
+were.
