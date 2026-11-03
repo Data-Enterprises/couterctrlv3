@@ -653,7 +653,7 @@ const CSV_HEADERS = [
   "cost_gap",
   "mine_margin",
   "theirs_margin",
-  "margin_difference",
+  "margin_dollar_gap",
   "units_ratio",
   "dollars_ratio",
   "price_ratio",
@@ -757,7 +757,9 @@ const COLUMNS: ColumnDef[] = [
   },
   {
     key: "marginDiff",
-    label: "Margin diff",
+    // Dollars between the two stores, not a margin rate: "diff" read as a
+    // percentage.
+    label: "Margin $ Gap",
     width: 104,
     right: true,
     sort: "marginDiff",

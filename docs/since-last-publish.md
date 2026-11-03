@@ -1715,3 +1715,12 @@ Pasting a long comma-separated list and pressing Add kept only the first UPC
 when the list held one value too short to be a code (a stray "697" among 1,963
 UPCs). Every code is now added, and a note says which values were left out as
 too short.
+
+## Sales: final clean-ups (3 Nov)
+
+dev mode only
+
+**Sales investigate: "Margin diff" is now "Margin $ Gap".** The items grid's
+column is the gross-profit difference in dollars between the two stores, not a
+margin percentage, and the new name says so. The export's column is renamed
+to match (margin_dollar_gap).
