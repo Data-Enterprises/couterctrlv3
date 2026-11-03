@@ -6,7 +6,9 @@ import {
   buildRecapDays,
   buildRecapWeek,
   itemsPerBasket,
+  perTradingHour,
   sellsByWeight,
+  tradingHours,
 } from "./recapDays";
 
 const dot = (sale_date: string, twNet: number, twQty: number): DayDot => ({
@@ -93,6 +95,15 @@ describe("per-basket figures", () => {
     expect(itemsPerBasket(18, 0)).toBeNull();
     expect(avgItemPrice(30, 12)).toBe(2.5);
     expect(avgItemPrice(30, 0)).toBeNull();
+  });
+
+  it("spread a figure over the hours the day traded, first to last", () => {
+    const hourly = [hour("2026-10-30", 7, 10, 1), hour("2026-10-30", 19, 10, 1)];
+    const [fri] = buildRecapDays(["2026-10-30"], [dot("2026-10-30", 1300, 10)], [], hourly);
+    expect(tradingHours(fri)).toBe(13);
+    expect(perTradingHour(1300, fri)).toBe(100);
+    const [quiet] = buildRecapDays(["2026-10-28"], [], [], []);
+    expect(perTradingHour(1300, quiet)).toBeNull();
   });
 
   it("shows Pounds only for a store that weighs a counted sub dept", () => {

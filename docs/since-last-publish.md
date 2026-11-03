@@ -1891,3 +1891,10 @@ The figure printed over the busiest hour's bar is gone (it ran into the
 chart's title on a tall day); the facts panel beside the chart already gives
 it, and its amounts under Busiest and Slowest are now semibold. Averages is
 laid out as tiles, the same as Baskets beside it.
+
+### Daily recap: two more averages, and tiles that fill their card
+
+Averages adds sales per hour and baskets per hour, over the hours the day
+traded (first sale's hour to last). Its tiles and Baskets' now stretch to
+share their card's height, so Averages fills down beside the hour chart; at a
+store with an odd number of averages the last tile takes the whole row.

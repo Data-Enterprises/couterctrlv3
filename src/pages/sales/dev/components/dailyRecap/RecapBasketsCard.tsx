@@ -27,7 +27,11 @@ const RecapBasketsCard = ({
     mix.status === "ready" ? count(mix.mix.items) : mix.status === "error" ? "—" : "…";
   return (
     <RecapCard title="Baskets" icon={ShoppingCartIcon} compact={short} bodyClassName="p-3">
-      <div className={`grid ${withPounds ? "grid-cols-2" : "grid-cols-3"} ${short ? "gap-1.5" : "gap-2"}`}>
+      <div
+        className={`grid h-full auto-rows-fr ${withPounds ? "grid-cols-2" : "grid-cols-3"} ${
+          short ? "gap-1.5" : "gap-2"
+        }`}
+      >
         <RecapTile
           value={day.transactions > 0 ? count(day.transactions) : "—"}
           label="transactions"

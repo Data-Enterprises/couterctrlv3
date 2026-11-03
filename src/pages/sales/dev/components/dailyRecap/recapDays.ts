@@ -73,6 +73,18 @@ export const itemsPerBasket = (units: number, transactions: number) =>
 export const avgItemPrice = (net: number, units: number) =>
   units !== 0 ? net / units : null;
 
+/** How many hours the day traded, first sale's hour to last, or 0. */
+export const tradingHours = (day: RecapDay) =>
+  day.hours.first !== null && day.hours.last !== null
+    ? day.hours.last - day.hours.first + 1
+    : 0;
+
+/** A figure spread over the hours the day traded, or null with none. */
+export const perTradingHour = (value: number, day: RecapDay) => {
+  const hours = tradingHours(day);
+  return hours > 0 ? value / hours : null;
+};
+
 /**
  * Whether the store sells anything by weight this week.
  *

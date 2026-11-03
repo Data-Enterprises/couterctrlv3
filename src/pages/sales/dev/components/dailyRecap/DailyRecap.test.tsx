@@ -135,6 +135,8 @@ describe("Daily recap", () => {
     const averages = screen.getByRole("region", { name: "Averages" });
     expect(within(averages).getByText("avg basket")).toBeTruthy();
     expect(within(averages).getByText("$10.00")).toBeTruthy();
+    expect(within(averages).getByText("$333.33")).toBeTruthy();
+    expect(within(averages).getByText("33.3")).toBeTruthy();
 
     expect(screen.getByRole("img", { name: /busiest 12 PM – 1 PM/ })).toBeTruthy();
     const mix = screen.getByRole("region", { name: "Refunds and price mix" });
