@@ -1508,3 +1508,11 @@ granted By group came out By store with nothing picked. Now a note says what
 Single Store kept ("Single Store keeps only 301 · Food Giant; the other 2
 stores are unpicked"), and changing the role back puts the picks back as they
 were.
+
+**An Edit save no longer undoes a change made on the Companies tab.** Adding
+someone to a company on the Companies tab didn't reach the Users list, and
+Edit started from that old list. Its company save sends the whole list, so
+saving an Edit afterwards quietly took the new company back off (or put back
+one that had just been removed). Edit now reads the person's companies from
+the server when it opens, and every change on the Companies, Base Groups and
+Stores tabs refreshes the Users list.

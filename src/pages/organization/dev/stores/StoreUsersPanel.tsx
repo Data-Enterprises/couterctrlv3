@@ -10,6 +10,7 @@ import {
 } from "../../../../api/storeAccess";
 import type { JsonError, Store, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import { useMarkUsersStale } from "../usersStale";
 import CompanyFilterSelect from "../users/CompanyFilterSelect";
 import {
   useCompanyFilterOptions,
@@ -50,6 +51,7 @@ const StoreUsersPanel = ({
 }) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
 
   const [assigned, setAssigned] = useState<StoreUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<StoreCandidateRow[]>([]);
@@ -137,6 +139,7 @@ const StoreUsersPanel = ({
     } finally {
       setMoving(false);
       load();
+      markUsersStale();
     }
   };
 

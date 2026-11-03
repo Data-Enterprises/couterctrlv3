@@ -24,6 +24,7 @@ import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import BaseGroupExportModal from "./BaseGroupExportModal";
+import { useMarkUsersStale } from "../usersStale";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -46,6 +47,7 @@ const BaseGroupDetail = ({
 }: Props) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -89,6 +91,7 @@ const BaseGroupDetail = ({
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Base group deleted");
+          markUsersStale();
           onDeleted();
         } else {
           toast.error(j.msg || "Could not delete base group");
@@ -153,6 +156,7 @@ const BaseGroupDetail = ({
 
     setMoving(false);
     onRefetchStores();
+    markUsersStale();
     if (summary.tone === "success") toast.success(summary.text);
     else toast.error(summary.text);
   };

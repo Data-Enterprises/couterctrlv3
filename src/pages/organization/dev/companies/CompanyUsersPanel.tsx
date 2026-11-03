@@ -3,6 +3,7 @@ import { useBaseGroupsCtx } from "../baseGroups/hooks";
 import { canAdministerUser, companyReach } from "../scoping";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { assignUserToCompany } from "../../../../api/user";
+import { useMarkUsersStale } from "../usersStale";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../users/CompanyFilterSelect";
@@ -46,6 +47,7 @@ const CompanyUsersPanel = ({
 }) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
   const [moving, setMoving] = useState(false);
   /** Narrows the left column to people who already hold another company —
    *  empty means no narrowing. See `companyOptions`. */
@@ -169,6 +171,7 @@ const CompanyUsersPanel = ({
     const summary = summarize(outcomes, company.name, direction);
     setMoving(false);
     onChanged();
+    markUsersStale();
     if (summary.tone === "success") toast.success(summary.text);
     else toast.error(summary.text);
   };

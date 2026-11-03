@@ -2,11 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../../../api/user";
+import { getCompaniesAssignedToUser } from "../../../../../api/company";
 import {
   getBaseGroupsAssignedToUser,
   getUserGroupPicks,
 } from "../../../../../api/team";
-import { setSelectedUserStores } from "../../../../../features/dev/devUsersSlice";
+import {
+  setSelectedUserStores,
+  setUserCompanyIds,
+} from "../../../../../features/dev/devUsersSlice";
 import type {
   BaseGroup,
   JsonError,
@@ -61,6 +65,24 @@ export const useHeldAccess = (userid: number) => {
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching stores " + err.message),
+      );
+
+    // The companies from the server, not the grid row the Edit was opened
+    // from: the company save replaces the whole list, so it has to start from
+    // what is really stored. A row read before a change on the Companies tab
+    // would otherwise undo that change.
+    getCompaniesAssignedToUser(ctx.url, ctx.token, userid)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) return;
+        ctx.dispatch(
+          setUserCompanyIds(
+            ((j.companies ?? []) as { company: number }[]).map((c) => c.company),
+          ),
+        );
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching companies " + err.message),
       );
 
     getUserGroupPicks(ctx.url, ctx.token, userid)

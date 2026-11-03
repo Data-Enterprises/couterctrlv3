@@ -21,6 +21,7 @@ import {
 } from "../users/companyFilter";
 import { callReason } from "./storeMembership";
 import { withinReachOf } from "./userReach";
+import { useMarkUsersStale } from "../usersStale";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -38,6 +39,7 @@ interface Props {
 const BaseGroupUsersTab = ({ group, users }: Props) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
   const [assigned, setAssigned] = useState<BaseGroupUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<BaseGroupUserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,6 +122,7 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
 
     const done = ids.length - failures.length;
     load();
+    markUsersStale();
 
     if (failures.length === 0) {
       toast.success(`${done} user${done === 1 ? "" : "s"} ${verb}`);
