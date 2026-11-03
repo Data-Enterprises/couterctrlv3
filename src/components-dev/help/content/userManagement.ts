@@ -271,8 +271,8 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           a: "They hold it through a base group, and the message names it. Take them out of that group, or the store out of the group, instead.",
         },
         {
-          q: "Assign all or Unassign all took more than the search showed",
-          a: "On this tab they take everyone in the list, search or not. Unassign all always asks first and names the count.",
+          q: "What do Assign all and Unassign all take?",
+          a: "They take what that column is showing, so narrow it with the search first. Unassign all always asks first, listing everyone who will move; Assign all asks above five.",
         },
       ],
     },
@@ -570,7 +570,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
     },
     {
       term: "Assign all and Unassign all",
-      def: "On a base group and on the Companies tab they take the rows the column is showing, so narrow it first. On the Stores tab they take everyone in the list, search or not. Unassign all always asks first, listing who will move (and saying so if you're one of them); Assign all asks above five, and on the Companies tab always.",
+      def: "They take the rows the column is showing, search included, so narrow it first. Unassign all always asks first, listing who will move (and saying so if you're one of them); Assign all asks above five, and on the Companies tab always.",
       anchor: "assign",
     },
     {

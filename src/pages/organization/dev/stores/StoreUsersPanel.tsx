@@ -215,7 +215,8 @@ const StoreUsersPanel = ({
         rightItems={assignedItems}
         onAssign={(ids) => void run(ids, "in")}
         onUnassign={(ids) => void run(ids, "out")}
-        assignAllScope="global"
+        // Assign all and Unassign all take what each column is showing,
+        // search included, as on the Companies tab.
         moving={moving}
         confirmBulk={(direction, ids) =>
           peopleConfirm({

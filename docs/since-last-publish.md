@@ -1677,6 +1677,10 @@ all or Unassign all now lists everyone it would move, by name and email, so
 you can see the search narrowed it the way you meant before saying yes. On the
 Companies tab both buttons always ask, however few people it is.
 
+**Stores tab: Assign all and Unassign all take only what the column shows.** As
+on the Companies tab, each button now takes exactly the people its column is
+showing, search included, instead of everyone in the list.
+
 ## UPC List: pre-publish audit fixes (3 Nov)
 
 dev mode only
