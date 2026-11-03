@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -10,7 +10,10 @@ import type {
   User,
 } from "../../../../interfaces";
 import { getAllUsers } from "../../../../api/user";
-import { getBaseGroupsAssignedToUser } from "../../../../api/team";
+import {
+  assignBaseGroupToUser,
+  getBaseGroupsAssignedToUser,
+} from "../../../../api/team";
 import {
   companiesWithHeldGroups,
   heldGroupIds,
@@ -30,10 +33,13 @@ const NewGroupModal = ({
   companies,
   onCreate,
   onClose,
+  busy = false,
 }: {
   companies: { id: number; name: string }[];
   onCreate: (name: string, companyId: number) => void;
   onClose: () => void;
+  /** A create is running: Create waits, so a double-click makes one group. */
+  busy?: boolean;
 }) => {
   const [name, setName] = useState("");
   const [companyId, setCompanyId] = useState("");
@@ -79,9 +85,10 @@ const NewGroupModal = ({
           </button>
           <button
             onClick={() => onCreate(name, Number(companyId))}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85"
+            disabled={busy}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create
+            {busy ? "Creating…" : "Create"}
           </button>
         </div>
       </div>
@@ -130,7 +137,7 @@ const BaseGroups = () => {
    * anything, and asking for it would make the page wait on a call it is
    * going to ignore.
    */
-  useEffect(() => {
+  const loadMyGroups = useCallback(() => {
     if (ctx.canSeeAllCompanies) return;
     getBaseGroupsAssignedToUser(ctx.url, ctx.token, ctx.userid)
       .then((resp) => {
@@ -142,6 +149,41 @@ const BaseGroups = () => {
         toast.error("Error fetching your base groups " + err.message),
       );
   }, [ctx.canSeeAllCompanies, ctx.url, ctx.token, ctx.userid]);
+  useEffect(loadMyGroups, [loadMyGroups]);
+
+  /** A create is running: the modal's Create waits for it. */
+  const [creating, setCreating] = useState(false);
+  /**
+   * A group just created by someone who doesn't see everything. The list
+   * shows only groups you hold, so the new one vanished with nothing on
+   * screen to say why; this says so, and offers to hold it in one step.
+   */
+  const [created, setCreated] = useState<{
+    id: number;
+    name: string;
+    company: number;
+  } | null>(null);
+  const [claiming, setClaiming] = useState(false);
+
+  /** Hold the group just created, By group, so it is listed and fillable. */
+  const claimCreated = () => {
+    if (!created || claiming) return;
+    setClaiming(true);
+    assignBaseGroupToUser(ctx.url, ctx.token, ctx.userid, [created.id], "all")
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) {
+          toast.error(j.msg || "Could not assign it to you");
+          return;
+        }
+        toast.success(`${created.name} is yours to fill`);
+        setCreated(null);
+        loadMyGroups();
+        fetchGroups(created.company);
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => setClaiming(false));
+  };
 
   const held = useMemo(() => heldGroupIds(myGroups), [myGroups]);
   const heldCompanies = useMemo(
@@ -248,6 +290,7 @@ const BaseGroups = () => {
   };
 
   const handleCreateGroup = (name: string, companyId: number) => {
+    if (creating) return;
     if (!name.trim()) {
       toast.error("Base group name is required");
       return;
@@ -263,6 +306,9 @@ const BaseGroups = () => {
       toast.error("A base group with that name already exists");
       return;
     }
+    // The server refuses a name the company already has ("Group already
+    // exists"), so a company whose groups aren't loaded here is still checked.
+    setCreating(true);
     createBaseGroup(ctx.url, ctx.token, name, companyId)
       .then((resp) => {
         const j = resp.data;
@@ -271,11 +317,15 @@ const BaseGroups = () => {
           setShowNewGroupModal(false);
           fetchGroups(companyId);
           setExpandedCompanies((prev) => new Set(prev).add(companyId));
+          if (!ctx.canSeeAllCompanies && typeof j.id === "number") {
+            setCreated({ id: j.id, name: name.trim(), company: companyId });
+          }
         } else {
           toast.error(j.msg || "Could not create base group");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => setCreating(false));
   };
 
   const searching = search.trim().length > 0;
@@ -322,6 +372,32 @@ const BaseGroups = () => {
             <PlusIcon className="w-4 h-4" />
           </button>
         </div>
+
+        {created && (
+          <div
+            role="status"
+            className="m-2 mb-0 px-2.5 py-2 rounded-lg bg-filter_active border border-filter_active_border text-[11.5px] text-content leading-snug flex-shrink-0"
+          >
+            <span className="font-semibold">{created.name}</span> was created.
+            You don’t hold it yet, so it isn’t listed for you and you can’t
+            fill it. Hold it to fill it:
+            <div className="flex items-center gap-2 mt-1.5">
+              <button
+                onClick={claimCreated}
+                disabled={claiming}
+                className="text-[11.5px] font-medium px-2.5 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 disabled:opacity-50"
+              >
+                {claiming ? "Assigning…" : "Assign it to me"}
+              </button>
+              <button
+                onClick={() => setCreated(null)}
+                className="text-[11.5px] font-medium text-content/95 hover:underline"
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 thin-scrollbar">
           {visibleCompanies.length === 0 && (
@@ -416,6 +492,7 @@ const BaseGroups = () => {
           companies={visibleCompanies}
           onCreate={handleCreateGroup}
           onClose={() => setShowNewGroupModal(false)}
+          busy={creating}
         />
       )}
     </div>

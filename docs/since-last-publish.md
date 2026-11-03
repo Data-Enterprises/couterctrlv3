@@ -1587,3 +1587,10 @@ asks ("Take Food Giant off 38 people, including you?"), Assign all asks when
 it's more than five, and the buttons wait while a change is saving. The
 Companies tab also re-reads everyone's companies at the moment of the change,
 so it can't undo a change made elsewhere since the list was loaded.
+
+**New base group: one click makes one group, and you're told how to fill it.**
+Create could be clicked twice and make two groups. And for an owner below
+level 9, the new group disappeared from the list (it only lists groups you
+hold) with nothing on screen to say why. Create now waits while it's saving,
+and after creating, a note says you don't hold the new group yet, with an
+"Assign it to me" button that gives it to you By group so you can fill it.
