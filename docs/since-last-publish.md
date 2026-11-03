@@ -1724,3 +1724,9 @@ dev mode only
 column is the gross-profit difference in dollars between the two stores, not a
 margin percentage, and the new name says so. The export's column is renamed
 to match (margin_dollar_gap).
+
+**Top 200 follows the day cards.** With one store open, picking a day in the
+day cards narrowed the other tabs but the Top 200 stayed on the whole week. It
+now shows that day's top 200, against the same weekday last week and last
+year, with its share taken of that day's net sales, and its headings name the
+day instead of "This week".

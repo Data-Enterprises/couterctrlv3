@@ -187,7 +187,9 @@ const PopupTopItems = ({
    * moved.
    */
   netSales: { ty: number; lw: number | null; ly: number | null };
-  /** yyyy-mm-dd. The week the popup is showing, and its two baselines. */
+  /** yyyy-mm-dd. The week the popup is showing, and its two baselines; or
+   *  one picked day (start === end), against the same weekday last week and
+   *  last year. */
   start: string;
   end: string;
   lwStart: string;
@@ -218,6 +220,9 @@ const PopupTopItems = ({
   /** Which comparison the landing report's one delta column shows. Last week
    *  by default: it is the one every store has. */
   const [landingBasis, setLandingBasis] = useState<"LW" | "LY">("LW");
+  /** One picked day or the week, as the headings name it. */
+  const oneDay = start === end;
+  const periodLabel = oneDay ? dayText(start) : "This week";
   /**
    * The CTA strip's open state, and nothing else now that the report has no
    * folding sections.
@@ -761,7 +766,7 @@ const PopupTopItems = ({
                     Top 200 Sales
                   </div>
                   <div className="text-[10px] font-bold text-content mb-0.5">
-                    {dayText(start)} &ndash; {dayText(end)}
+                    {oneDay ? dayText(start) : <>{dayText(start)} &ndash; {dayText(end)}</>}
                   </div>
                   <div className="text-[14px] font-bold text-content tabular-nums">
                     {money(totals.ty)}
@@ -901,7 +906,7 @@ const PopupTopItems = ({
               >
                 <span>Sub dept</span>
                 <span>Share of top 200</span>
-                <span className="text-right">This week</span>
+                <span className="text-right">{periodLabel}</span>
                 <span className="text-right">vs {landingBasis}</span>
               </div>
 
@@ -1442,7 +1447,7 @@ const PopupTopItems = ({
                       [
                         ["Last year", history.ly],
                         ["Last week", history.lw],
-                        ["This week", history.ty],
+                        [periodLabel, history.ty],
                       ] as const
                     ).map(([label, at], i) => (
                       <div
@@ -1461,7 +1466,7 @@ const PopupTopItems = ({
 
                   <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
                     <span />
-                    <span className="text-right">This week</span>
+                    <span className="text-right">{periodLabel}</span>
                     <span className="text-right">vs LW</span>
                     <span className="text-right">vs LY</span>
                   </div>

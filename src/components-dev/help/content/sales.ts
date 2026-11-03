@@ -84,7 +84,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the landing report",
-          pre: "Before you pick anything, the right side shows where the week's money came from: each sub department the top 200 sits in, graded, with this week against last week and last year.",
+          pre: "Before you pick anything, the right side shows where the money came from: each sub department the top 200 sits in, graded, with this week against last week and last year. Pick a day in the day cards and it is that day instead, against the same weekday last week and last year.",
           see: "Click a department to narrow the list to it. Its total will not match the Sub depts tab — that one is the whole week, this is the top 200's share of it.",
         },
         {
@@ -113,7 +113,7 @@ export const SALES_HELP: HelpContent = {
       issues: [
         {
           q: "An item I expected is not in the list",
-          a: "The list is the top 200 by sales for that store and week. An item that sold very little will not be there. Excluded sub departments — lottery, money orders, stamps — are left out entirely, the same as everywhere else on this page.",
+          a: "The list is the top 200 by sales for that store and week, or the day picked in the day cards. An item that sold very little will not be there. Excluded sub departments — lottery, money orders, stamps — are left out entirely, the same as everywhere else on this page.",
         },
         {
           q: "A margin shows a dash",
