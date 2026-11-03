@@ -5,7 +5,11 @@ import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
 } from "../../../../api/team";
-import { getBaseGroupUsers } from "../../../../api/baseGroups";
+import {
+  getAllStoresInBaseGroup,
+  getBaseGroupUsers,
+} from "../../../../api/baseGroups";
+import { accessTypeLabel, grantFor } from "./grantFor";
 import type {
   BaseGroupUserRow,
   BaseGroupUsersResp,
@@ -138,18 +142,52 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     );
   };
 
-  const handleAssign = (ids: number[]) =>
+  /**
+   * Each person gets the group in their own access type (grantFor): By group
+   * as before, or By store with every store the group holds today picked.
+   * Always By group made a By store person Mixed. The roster is read once,
+   * fresh, at the moment of assigning.
+   */
+  const handleAssign = async (ids: number[]) => {
+    const anyByStore = ids.some(
+      (id) => users.find((u) => u.id === id)?.access_mode === "selected",
+    );
+    let groupStoreIds: number[] = [];
+    if (anyByStore) {
+      try {
+        const resp = await getAllStoresInBaseGroup(ctx.url, ctx.token, group.id);
+        const j = resp.data;
+        if (j.error !== 0) {
+          toast.error(j.msg || "Could not read this group's stores");
+          return;
+        }
+        groupStoreIds = (j.assigned_stores as { storeid: number }[]).map(
+          (s) => s.storeid,
+        );
+      } catch (err) {
+        toast.error((err as JsonError).message);
+        return;
+      }
+    }
     void run(
       ids,
-      // "all": the whole group, and whatever is added to it later. That is
-      // what this screen means — it assigns a GROUP to people, and has no
-      // store picker, so a "selected" grant would have nothing to name.
-      // Explicit because the argument is required: the server defaults to
-      // "selected" and then refuses it for having no storeids.
-      (userid) =>
-        assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id], "all"),
+      (userid) => {
+        const grant = grantFor(
+          users.find((u) => u.id === userid),
+          groupStoreIds,
+        );
+        return assignBaseGroupToUser(
+          ctx.url,
+          ctx.token,
+          userid,
+          [group.id],
+          grant.mode,
+          grant.storeids,
+        );
+      },
       "assigned",
     );
+  };
 
   const handleUnassign = (ids: number[]) =>
     void run(
@@ -158,10 +196,14 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
       "unassigned",
     );
 
+  /** The access type beside each name, so it's clear which grant they'll
+   *  get: By store people get the group's stores picked. */
   const toItem = (r: BaseGroupUserRow) => ({
     id: r.userid,
     label: r.username,
-    sublabel: r.email ?? undefined,
+    sublabel: [r.email, accessTypeLabel(users.find((u) => u.id === r.userid))]
+      .filter(Boolean)
+      .join(" · "),
   });
 
   // A base group belongs to one company, and the people who should be in it
@@ -187,7 +229,7 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
         rightTitle="Assigned"
         leftItems={unassigned.filter(withinReach).map(toItem)}
         rightItems={assigned.filter(withinReach).map(toItem)}
-        onAssign={handleAssign}
+        onAssign={(ids) => void handleAssign(ids)}
         onUnassign={handleUnassign}
         leftPredicate={heldPredicate}
         leftFilters={

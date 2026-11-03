@@ -1564,3 +1564,10 @@ couldn't see or manage. Below level 9 (and outside DCR support), Assignments
 now offers only your own groups. A group the person already holds that isn't
 yours still shows, marked "not yours to change", and can't be ticked off or
 cleared by Clear all.
+
+**Adding someone to a base group no longer makes them Mixed.** On a base
+group's Users sub-tab, Assign always granted the group By group, so a person
+set up By store came out Mixed, and their next Edit showed the group with no
+stores and wouldn't save until stores were picked. People are now given the
+group in their own access type: By store people get it with all of its
+current stores picked. The lists show each person's type beside their name.
