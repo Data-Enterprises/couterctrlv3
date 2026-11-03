@@ -87,3 +87,52 @@ export const filtersApplied = (f: UsersGridFilters) =>
     f.usernameFilter.trim(),
     f.emailFilter.trim(),
   ].some((v) => v !== "");
+
+/** The users grid's sortable columns. */
+export type UserSortKey = "first" | "last" | "role" | "level" | "access" | "visited";
+export interface UserSort {
+  key: UserSortKey;
+  desc: boolean;
+}
+
+/**
+ * The grid in a column's order. Rows came in API order with no way to sort.
+ * Text compares as words; a missing value (no last visit, no role) goes last
+ * either way, so the people who have never signed in don't lead a list
+ * sorted by last visit.
+ */
+export const sortUsers = (
+  users: User[],
+  sort: UserSort | null,
+  roleName: (role: number | null) => string,
+): User[] => {
+  if (!sort) return users;
+  const value = (u: User): string | number | null => {
+    switch (sort.key) {
+      case "first":
+        return (u.first_name ?? "").trim().toLowerCase() || null;
+      case "last":
+        return (u.last_name ?? "").trim().toLowerCase() || null;
+      case "role":
+        return roleName(u.role).toLowerCase() || null;
+      case "level":
+        return u.user_level;
+      case "access":
+        return accessLabel(u.access_mode).toLowerCase();
+      case "visited":
+        return u.last_visit;
+    }
+  };
+  return [...users].sort((a, b) => {
+    const va = value(a);
+    const vb = value(b);
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;
+    if (vb === null) return -1;
+    const order =
+      typeof va === "number" && typeof vb === "number"
+        ? va - vb
+        : String(va).localeCompare(String(vb));
+    return sort.desc ? -order : order;
+  });
+};

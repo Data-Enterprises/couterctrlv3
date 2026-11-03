@@ -1646,3 +1646,9 @@ export decided whether the list was filtered by comparing counts, so a filter
 that happened to match everyone read as "No filters currently applied". It
 now goes by whether any filter is set. The file also gains an Access column
 (By group, By store, Mixed, Not set), as the list shows.
+
+**The users list sorts by column.** Rows came in whatever order the server
+sent them. Clicking First name, Last name, Role, Level, Access or Last visited
+now sorts by that column; a second click reverses it and a third goes back to
+the original order. People with no value (never signed in, say) stay at the
+bottom either way.

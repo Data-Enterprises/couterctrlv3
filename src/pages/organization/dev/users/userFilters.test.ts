@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { User } from "../../../../interfaces";
-import { accessLabel, filterUsers, filtersApplied, NO_COMPANY_VALUE } from "./userFilters";
+import {
+  accessLabel,
+  filterUsers,
+  filtersApplied,
+  NO_COMPANY_VALUE,
+  sortUsers,
+} from "./userFilters";
 
 const none = {
   companyFilter: "",
@@ -42,5 +48,28 @@ describe("the users export", () => {
   it("names the access type as the grid does", () => {
     expect(accessLabel("selected")).toBe("By store");
     expect(accessLabel(null)).toBe("Not set");
+  });
+});
+
+describe("sorting the users grid", () => {
+  const people = [
+    u(1, { last_name: "Smith", user_level: 5, last_visit: "2026-10-01" }),
+    u(2, { last_name: "adams", user_level: 2, last_visit: null }),
+    u(3, { last_name: "Jones", user_level: 7, last_visit: "2026-11-02" }),
+  ];
+  const role = () => "";
+
+  it("orders a column either way, case aside", () => {
+    expect(sortUsers(people, { key: "last", desc: false }, role).map((x) => x.id)).toEqual([2, 3, 1]);
+    expect(sortUsers(people, { key: "level", desc: true }, role).map((x) => x.id)).toEqual([3, 1, 2]);
+  });
+
+  it("puts a missing value last either way", () => {
+    expect(sortUsers(people, { key: "visited", desc: false }, role).map((x) => x.id)).toEqual([1, 3, 2]);
+    expect(sortUsers(people, { key: "visited", desc: true }, role).map((x) => x.id)).toEqual([3, 1, 2]);
+  });
+
+  it("leaves the list as it came with no sort", () => {
+    expect(sortUsers(people, null, role)).toBe(people);
   });
 });

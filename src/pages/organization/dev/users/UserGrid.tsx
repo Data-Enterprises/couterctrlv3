@@ -41,7 +41,14 @@ import IconButton from "../../../../components-dev/IconButton";
 import Checkbox from "../../../../components-dev/Checkbox";
 import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
-import { accessLabel, filterUsers, NO_COMPANY_VALUE } from "./userFilters";
+import {
+  accessLabel,
+  filterUsers,
+  NO_COMPANY_VALUE,
+  sortUsers,
+  type UserSort,
+  type UserSortKey,
+} from "./userFilters";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
@@ -134,9 +141,29 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   const sourceUsers = showInactive ? ctx.inactiveUsers : ctx.users;
 
+  /** A click sorts by a column, a second click turns it round, a third goes
+   *  back to the order the list arrived in. */
+  const [sort, setSort] = useState<UserSort | null>(null);
+  const toggleSort = (key: UserSortKey) =>
+    setSort((prev) =>
+      prev?.key !== key ? { key, desc: false } : prev.desc ? null : { key, desc: true },
+    );
+  const SortHead = ({ label, k }: { label: string; k: UserSortKey }) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(k)}
+      aria-label={`Sort by ${label.toLowerCase()}`}
+      className="flex items-center gap-1 text-left uppercase tracking-wide font-semibold hover:text-brand_navy"
+    >
+      {label}
+      {sort?.key === k && <span aria-hidden="true">{sort.desc ? "↓" : "↑"}</span>}
+    </button>
+  );
+
   const filtered = useMemo(
-    () => filterUsers(sourceUsers, ctx.usersGridFilters),
-    [sourceUsers, ctx.usersGridFilters],
+    () =>
+      sortUsers(filterUsers(sourceUsers, ctx.usersGridFilters), sort, renderRoleText),
+    [sourceUsers, ctx.usersGridFilters, sort],
   );
 
   // Active and inactive are different lists with opposite actions. A
@@ -507,8 +534,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftUsernameFilter(e.target.value)}
               />
             </ColFilter>
-            <div>First name</div>
-            <div>Last name</div>
+            <SortHead label="First name" k="first" />
+            <SortHead label="Last name" k="last" />
             <ColFilter
               label="Email"
               active={!!emailFilter}
@@ -527,12 +554,12 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftEmailFilter(e.target.value)}
               />
             </ColFilter>
-            <div>Role</div>
-            <div>Level</div>
+            <SortHead label="Role" k="role" />
+            <SortHead label="Level" k="level" />
             {/* By group or by store, rolled up by the users list itself so the
                 column costs no call per row. */}
-            <div>Access</div>
-            <div>Last visited</div>
+            <SortHead label="Access" k="access" />
+            <SortHead label="Last visited" k="visited" />
             <div></div>
           </div>
           <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
