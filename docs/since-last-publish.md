@@ -1634,3 +1634,9 @@ stores By store".
 **Reset security asks first.** On a user's security screen, Reset security
 acted on the first click. It now asks, and says the person will have to set
 a new security question the next time they sign in.
+
+**Renaming and deleting a base group behave.** Renaming saved twice (once on
+Enter and again when the box lost focus), had no way to back out, and jumped
+back to the Stores tab. Enter now saves once, Escape cancels, and you stay on
+the tab you were on. Deleting a group now says that everyone who holds it
+loses its stores, and a double-click on the confirmation deletes it once.

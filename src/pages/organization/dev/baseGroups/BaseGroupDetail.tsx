@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDownTrayIcon,
   PencilIcon,
@@ -55,15 +55,33 @@ const BaseGroupDetail = ({
   const [exportOpen, setExportOpen] = useState(false);
   const [subTab, setSubTab] = useState<"stores" | "users">("stores");
 
+  // Another group opened: start it fresh. A rename is the same group, so it
+  // keeps its sub-tab (it used to jump back to Stores).
   useEffect(() => {
     setEditing(false);
-    setNameDraft(group.name);
     setConfirmDelete(false);
     setSubTab("stores");
     setExportOpen(false);
-  }, [group.id, group.name]);
+  }, [group.id]);
+  useEffect(() => {
+    setNameDraft(group.name);
+  }, [group.name]);
+
+  /** Escape: leave the name as it was. Read by the blur that follows. */
+  const cancelRename = useRef(false);
+  /** A rename on its way, so a second trigger doesn't send it again. */
+  const renaming = useRef(false);
+  /** A delete on its way, so a double-click on Confirm deletes once. */
+  const deleting = useRef(false);
 
   const handleSave = () => {
+    if (cancelRename.current) {
+      cancelRename.current = false;
+      setNameDraft(group.name);
+      setEditing(false);
+      return;
+    }
+    if (renaming.current) return;
     if (nameDraft.trim() === group.name.trim()) {
       setEditing(false);
       return;
@@ -72,6 +90,7 @@ const BaseGroupDetail = ({
       toast.error("Group name is required");
       return;
     }
+    renaming.current = true;
     updateBaseGroup(ctx.url, ctx.token, group.id, nameDraft, group.company)
       .then((resp) => {
         const j = resp.data;
@@ -83,10 +102,16 @@ const BaseGroupDetail = ({
           toast.error(j.msg || "Could not update base group");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => {
+        renaming.current = false;
+      });
   };
 
   const handleDelete = () => {
+    if (deleting.current) return;
+    deleting.current = true;
+    setConfirmDelete(false);
     deleteBaseGroup(ctx.url, ctx.token, group.id)
       .then((resp) => {
         const j = resp.data;
@@ -98,7 +123,10 @@ const BaseGroupDetail = ({
           toast.error(j.msg || "Could not delete base group");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => {
+        deleting.current = false;
+      });
   };
 
   const [moving, setMoving] = useState(false);
@@ -176,8 +204,16 @@ const BaseGroupDetail = ({
             autoFocus
             value={nameDraft}
             onChange={(e) => setNameDraft(e.target.value)}
+            // Saved once, on blur: Enter blurs (it used to save as well,
+            // so a rename went out twice) and Escape blurs without saving.
             onBlur={handleSave}
-            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") {
+                cancelRename.current = true;
+                e.currentTarget.blur();
+              }
+            }}
             className="basic-input bg-custom-white py-0.5 px-2 text-[15px] font-medium"
           />
         ) : (
@@ -274,7 +310,7 @@ const BaseGroupDetail = ({
       {confirmDelete && (
         <ConfirmModal
           title={`Delete ${group.name}?`}
-          message="This removes the group and its store assignments. This can't be undone."
+          message="This removes the group and its store assignments. Everyone who holds it loses its stores, unless another group gives them. This can't be undone."
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />
