@@ -1549,3 +1549,10 @@ someone's groups, stores or picks also looked like they held nothing. Opening
 a person now clears the last one's stores, a failed load shows "Couldn't read
 their …" with a Retry button, and Save changes stays off until everything
 they hold has loaded.
+
+**Effective stores stops listing removed stores as Direct.** Unticking a group
+someone held By group (or switching them to By store and unticking a store)
+left that group's stores in Effective stores marked Direct, "no group change
+can take it away", and the count didn't drop, though the save did remove
+them. Direct now means only stores held with no group behind them, so the
+column shows what the save will leave.

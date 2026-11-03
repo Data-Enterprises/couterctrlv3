@@ -81,6 +81,28 @@ export const NO_CARRY: CarriedAccess = {
 };
 
 /**
+ * The stores held with no group behind them at all: granted on the Stores
+ * tab, or from before groups granted anything. Effective stores labels these
+ * Direct ("no group change can take it away").
+ *
+ * `carried.stores` is wider than that: it also holds the rosters of groups
+ * held By group, which have no pick behind them either. Labelling those
+ * Direct meant unticking the group (or switching to By store and unticking
+ * a store) left them listed and counted, though the save does remove them.
+ * So any store in a held group's roster is left out here.
+ */
+export const directStoreIds = (
+  carried: CarriedAccess,
+  heldGroupIds: number[],
+  groupStores: Record<number, { storeid: number }[]>,
+): number[] => {
+  const viaHeld = new Set(
+    heldGroupIds.flatMap((id) => (groupStores[id] ?? []).map((s) => s.storeid)),
+  );
+  return carried.stores.filter((id) => !viaHeld.has(id));
+};
+
+/**
  * Holding nothing.
  *
  * `selected` rather than `all` because it is the narrower claim, and this is

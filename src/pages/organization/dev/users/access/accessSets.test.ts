@@ -3,6 +3,7 @@ import {
   accessSets,
   changedGrants,
   changedSets,
+  directStoreIds,
   effectiveStores,
   emptySelectedGroupIds,
   groupCompanies,
@@ -442,5 +443,19 @@ describe("heldGroupIds", () => {
   it("counts a group once when it is both ticked and implied", () => {
     const p = picks({ baseGroups: [54], stores: [store(695, 54, 3)] });
     expect(heldGroupIds(p)).toEqual([54]);
+  });
+});
+
+describe("which held stores are Direct", () => {
+  const carried = { companies: [], stores: [301, 302, 900] };
+  // 301 and 302 come through East, held By group; 900 was granted on Stores.
+  const rosters = { 10: [{ storeid: 301 }, { storeid: 302 }] };
+
+  it("is only the stores no held group's roster explains", () => {
+    expect(directStoreIds(carried, [10], rosters)).toEqual([900]);
+  });
+
+  it("drops a roster store as soon as the roster is known", () => {
+    expect(directStoreIds(carried, [10], {})).toEqual([301, 302, 900]);
   });
 });

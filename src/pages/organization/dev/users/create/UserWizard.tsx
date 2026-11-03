@@ -39,6 +39,7 @@ import {
 } from "./wizardRules";
 import {
   accessSets,
+  directStoreIds,
   emptySelectedGroupIds,
   groupCompanies,
   hasChanges,
@@ -673,7 +674,11 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
                     heldGroups={held.heldGroups}
                     companyGroups={companyGroups}
                     groupStores={groupStores}
-                    directStoreIds={existing.carried.stores}
+                    directStoreIds={directStoreIds(
+                      existing.carried,
+                      held.heldGroups.map((g) => g.id),
+                      groupStores,
+                    )}
                     assignedStores={ctx.selectedUserStores.assigned}
                   />
                 ) : undefined
