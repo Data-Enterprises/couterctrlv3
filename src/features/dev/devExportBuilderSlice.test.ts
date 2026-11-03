@@ -26,6 +26,8 @@ import reducer, {
   failSavedWork,
   failQueriesLoad,
   startSavedWork,
+  startBuildsLoad,
+  failBuildsLoad,
 } from "./devExportBuilderSlice";
 import type { ExportBuild } from "../../api/exportBuilds";
 import type { SavedConfig } from "../../api/savedConfigs";
@@ -497,6 +499,20 @@ describe("switching sources", () => {
     s = reducer(s, restoreSource("sales"));
     expect(s.savedBusy).toBe(false);
     expect(s.savedLoaded).toBe(false);
+  });
+
+  it("does not leave Previous builds reading for another table's re-read", () => {
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, setBuilds({ source: "orders", builds: [], expireMinutes: 60 }));
+    // A Sales delete answering now re-reads Sales.
+    s = reducer(s, startBuildsLoad({ source: "sales" }));
+    expect(s.buildsLoading).toBe(false);
+    s = reducer(s, failBuildsLoad({ source: "sales", message: "That build could not be deleted." }));
+    expect(s.buildsError).toBeNull();
+    s = reducer(s, startBuildsLoad({ source: "orders" }));
+    expect(s.buildsLoading).toBe(true);
   });
 
   it("drops a list that answers for a source no longer on screen", () => {

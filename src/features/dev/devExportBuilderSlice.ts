@@ -1019,7 +1019,13 @@ const devExportBuilderSlice = createSlice({
       state.builtQueryName = action.payload.userQueryName;
       state.manifestWritten = action.payload.manifestWritten;
     },
-    startBuildsLoad: (state) => {
+    /**
+     * A read of one table's builds. A delete or a label finishing after a
+     * switch re-reads the table it was for; marking this one as loading for
+     * it would leave "Reading..." up, since that answer is dropped.
+     */
+    startBuildsLoad: (state, action: PayloadAction<{ source: ExportTableKey }>) => {
+      if (action.payload.source !== state.source) return;
       state.buildsLoading = true;
       state.buildsError = null;
     },
@@ -1037,9 +1043,14 @@ const devExportBuilderSlice = createSlice({
       state.builds = action.payload.builds;
       state.buildsExpireMinutes = action.payload.expireMinutes;
     },
-    failBuildsLoad: (state, action: PayloadAction<string>) => {
+    /** As setSaved: one table's failure is not shown on another. */
+    failBuildsLoad: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; message: string }>,
+    ) => {
+      if (action.payload.source !== state.source) return;
       state.buildsLoading = false;
-      state.buildsError = action.payload;
+      state.buildsError = action.payload.message;
     },
     openBuilds: (state, action: PayloadAction<boolean>) => {
       state.buildsOpen = action.payload;

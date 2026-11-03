@@ -1457,3 +1457,9 @@ past the usual wait and the connection then gave up with an error code, the
 page said "The export failed" and people built again. It now says the
 connection gave up before the file was ready and to look in Previous builds
 in a minute, because the file is usually still being written.
+
+**Previous builds no longer gets stuck on "Reading your builds...".** Deleting
+or labelling a build and switching tables before it answered could leave the
+other table's Previous builds saying "Reading your builds..." with Refresh
+greyed out. Each table's list now only shows its own loading and its own
+errors.

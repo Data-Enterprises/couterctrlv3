@@ -135,6 +135,8 @@ const queriesFailed = (source: ExportTableKey, message: string) =>
   failQueriesLoad({ source, message });
 const savedFailed = (source: ExportTableKey, message: string) =>
   failSavedWork({ source, message });
+const buildsFailed = (source: ExportTableKey, message: string) =>
+  failBuildsLoad({ source, message });
 
 export const useExportBuilderCtx = () => {
   const dispatch = useAppDispatch();
@@ -774,12 +776,12 @@ export const useExportBuilderCtx = () => {
     j.error !== 0 || j.success === false;
 
   const loadBuilds = (table: ExportTableKey = TABLE) => {
-    dispatch(startBuildsLoad());
+    dispatch(startBuildsLoad({ source: table }));
     listExportBuilds(url, token, table)
       .then((resp) => {
         const j = resp.data as ExportBuildsResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("Could not read your past builds."));
+          dispatch(buildsFailed(table, "Could not read your past builds."));
           return;
         }
         dispatch(
@@ -791,7 +793,7 @@ export const useExportBuilderCtx = () => {
         );
       })
       .catch((err: JsonError) =>
-        dispatch(failBuildsLoad("Could not read your past builds: " + reasonOf(err))),
+        dispatch(buildsFailed(table, "Could not read your past builds: " + reasonOf(err))),
       );
   };
 
@@ -806,7 +808,7 @@ export const useExportBuilderCtx = () => {
       .then((resp) => {
         const j = resp.data as BuildLinkResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("Could not label that build."));
+          dispatch(buildsFailed(TABLE, "Could not label that build."));
           return;
         }
         dispatch(
@@ -820,7 +822,7 @@ export const useExportBuilderCtx = () => {
       .catch((err: JsonError) => {
         const status = serverStatus(err);
         dispatch(
-          failBuildsLoad(
+          buildsFailed(TABLE,
             status === 409
               ? "That build was changed somewhere else. Reload the list and try again."
               : "Could not label that build: " + reasonOf(err),
@@ -932,12 +934,12 @@ export const useExportBuilderCtx = () => {
    * what is actually left.
    */
   const removeBuild = (buildId: string) => {
-    dispatch(startBuildsLoad());
+    dispatch(startBuildsLoad({ source: TABLE }));
     deleteExportBuild(url, token, TABLE, buildId)
       .then((resp) => {
         const j = resp.data as DeleteBuildResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("That build could not be deleted."));
+          dispatch(buildsFailed(TABLE, "That build could not be deleted."));
           loadBuilds();
           return;
         }
@@ -952,7 +954,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(
-          failBuildsLoad(
+          buildsFailed(TABLE,
             "That build could not be deleted: " +
               reasonOf(err) +
               " — anything already removed stays removed, so trying again is safe.",
