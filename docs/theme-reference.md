@@ -55,7 +55,7 @@ authenticated shell can diverge without one restyling the other.
 
 | Token | Value | Job |
 | --- | --- | --- |
-| `bkg` | `#e4e9ef` | The page ground. Also the empty half of a bar track. |
+| `bkg` | `#dee5e8` | The page ground. Also the empty half of a bar track. (Was `#e4e9ef` until 3 Nov 2026.) |
 | `custom-white` | `#f4f7f8` | Cards, panels, bars, headers. |
 | `brand_paper` | `#fafcfe` | A lighter fill inside a card. |
 | `row_selected` + `row_selected_border` | `#eff1f2` / `#8a9bb0` | Row selection. Always the pair. |

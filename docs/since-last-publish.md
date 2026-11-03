@@ -1697,3 +1697,11 @@ descriptions, "Volume at best" added up every sale at the best price, but
 "Best revenue" took only one of them, so the two figures side by side
 described different sales ($120 beside 61.50 lb at $3.99/lb). Both now come
 from the same sales, on screen and in the export.
+
+## The page background
+
+dev mode only
+
+**A slightly different page background.** The grey behind the cards and
+panels (the `bkg` theme colour) is a touch darker and less blue, `#dee5e8` in
+place of `#e4e9ef`, on every screen.
