@@ -21,8 +21,14 @@ import reducer, {
   setRowFlag,
   toggleColumn,
   togglePick,
+  upsertSaved,
+  removeSaved,
+  failSavedWork,
+  failQueriesLoad,
+  startSavedWork,
 } from "./devExportBuilderSlice";
 import type { ExportBuild } from "../../api/exportBuilds";
+import type { SavedConfig } from "../../api/savedConfigs";
 import { SALES } from "../../pages/exportBuilder/dev/sources";
 
 /** A preview's facets, turned into the slice's lists the way the page does. */
@@ -453,6 +459,44 @@ describe("switching sources", () => {
     expect(s.prior?.source).toBe("sales");
     s = reducer(s, setConfig(orders()));
     expect(s.prior).toBeNull();
+  });
+
+  /** A saved export, as the list holds one. */
+  const savedFor = (source: "sales" | "orders", id: number) =>
+    ({ id, name: `#${id}`, payload: { source } }) as SavedConfig;
+
+  it("files a save that lands after a switch nowhere but its own table", () => {
+    let s = reducer(salesOnScreen(), stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, upsertSaved(savedFor("sales", 3)));
+    expect(s.saved).toEqual([]);
+    expect(s.savedCurrentId).toBeNull();
+    s = reducer(s, upsertSaved(savedFor("orders", 4)));
+    expect(s.saved.map((c) => c.id)).toEqual([4]);
+  });
+
+  it("does not show one table's delete or failure on another", () => {
+    let s = reducer(salesOnScreen(), setSaved({ source: "sales", saved: [savedFor("sales", 3)] }));
+    s = reducer(s, removeSaved({ source: "orders", id: 3 }));
+    expect(s.saved.map((c) => c.id)).toEqual([3]);
+    s = reducer(s, failSavedWork({ source: "orders", message: "That did not delete." }));
+    s = reducer(s, failQueriesLoad({ source: "orders", message: "That did not save." }));
+    expect([s.savedError, s.queriesError]).toEqual([null, null]);
+    s = reducer(s, removeSaved({ source: "sales", id: 3 }));
+    expect(s.saved).toEqual([]);
+  });
+
+  it("reads a table's saved list again if it was left mid-call", () => {
+    let s = reducer(salesOnScreen(), setSaved({ source: "sales", saved: [] }));
+    s = reducer(s, startSavedWork());
+    s = reducer(s, stashSource());
+    s = reducer(s, startConfigLoad({ source: "orders", scope: SCOPE, startDate: "2026-09-14", endDate: "2026-09-15" }));
+    s = reducer(s, setConfig(orders()));
+    s = reducer(s, stashSource());
+    s = reducer(s, restoreSource("sales"));
+    expect(s.savedBusy).toBe(false);
+    expect(s.savedLoaded).toBe(false);
   });
 
   it("drops a list that answers for a source no longer on screen", () => {

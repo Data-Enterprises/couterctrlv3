@@ -130,6 +130,12 @@ export const scopeKey = (
   endDate: string,
 ) => `${group ? "group" : "store"}:${id}:${startDate}:${endDate}`;
 
+/** A saved-query or saved-export failure, for the table it happened on. */
+const queriesFailed = (source: ExportTableKey, message: string) =>
+  failQueriesLoad({ source, message });
+const savedFailed = (source: ExportTableKey, message: string) =>
+  failSavedWork({ source, message });
+
 export const useExportBuilderCtx = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -327,14 +333,14 @@ export const useExportBuilderCtx = () => {
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
-          dispatch(failQueriesLoad("Could not read your saved queries."));
+          dispatch(queriesFailed(table, "Could not read your saved queries."));
           return;
         }
         dispatch(setQueries({ source: table, queries: j.queries ?? [] }));
       })
       .catch((err: JsonError) =>
         dispatch(
-          failQueriesLoad("Could not read your saved queries: " + reasonOf(err)),
+          queriesFailed(table, "Could not read your saved queries: " + reasonOf(err)),
         ),
       );
   };
@@ -363,7 +369,7 @@ export const useExportBuilderCtx = () => {
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       if (j.error !== 0 || !j.query) {
-        dispatch(failQueriesLoad("That did not save."));
+        dispatch(queriesFailed(TABLE, "That did not save."));
         return;
       }
       // The write returns the whole row, so there is nothing to refetch.
@@ -371,7 +377,7 @@ export const useExportBuilderCtx = () => {
       toast.success(`Saved "${j.query.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failQueriesLoad("That did not save: " + reasonOf(err)));
+      dispatch(queriesFailed(TABLE, "That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedQuery(url, token, {
@@ -406,14 +412,14 @@ export const useExportBuilderCtx = () => {
       .then((resp) => {
         const j = resp.data as SavedQueryResp;
         if (j.error !== 0 || !j.query) {
-          dispatch(failQueriesLoad("That did not rename."));
+          dispatch(queriesFailed(TABLE, "That did not rename."));
           return;
         }
         dispatch(upsertQuery(j.query));
         toast.success(`Renamed to "${j.query.name}"`);
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("That did not rename: " + reasonOf(err))),
+        dispatch(queriesFailed(TABLE, "That did not rename: " + reasonOf(err))),
       );
   };
 
@@ -427,13 +433,13 @@ export const useExportBuilderCtx = () => {
         if (j.error !== 0) {
           dispatch(upsertQuery(query));
           dispatch(clearDeletedQuery());
-          dispatch(failQueriesLoad("That did not delete."));
+          dispatch(queriesFailed(TABLE, "That did not delete."));
         }
       })
       .catch((err: JsonError) => {
         dispatch(upsertQuery(query));
         dispatch(clearDeletedQuery());
-        dispatch(failQueriesLoad("That did not delete: " + reasonOf(err)));
+        dispatch(queriesFailed(TABLE, "That did not delete: " + reasonOf(err)));
       });
   };
 
@@ -455,7 +461,7 @@ export const useExportBuilderCtx = () => {
         if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("Could not put it back: " + reasonOf(err))),
+        dispatch(queriesFailed(TABLE, "Could not put it back: " + reasonOf(err))),
       );
   };
 
@@ -664,7 +670,7 @@ export const useExportBuilderCtx = () => {
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
-          dispatch(failSavedWork("Could not read your saved configurations."));
+          dispatch(savedFailed(table, "Could not read your saved configurations."));
           return;
         }
         // A row that will not parse is skipped rather than shown: the table
@@ -681,7 +687,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) =>
         dispatch(
-          failSavedWork(
+          savedFailed(table,
             "Could not read your saved configurations: " + reasonOf(err),
           ),
         ),
@@ -708,14 +714,14 @@ export const useExportBuilderCtx = () => {
       const j = resp.data as SavedQueryResp;
       const saved = j.error === 0 && j.query ? parseConfigRow(j.query) : null;
       if (!saved) {
-        dispatch(failSavedWork("That did not save."));
+        dispatch(savedFailed(TABLE, "That did not save."));
         return;
       }
       dispatch(upsertSaved(saved));
       toast.success(`Saved "${saved.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failSavedWork("That did not save: " + reasonOf(err)));
+      dispatch(savedFailed(TABLE, "That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedConfig(url, token, {
@@ -739,13 +745,13 @@ export const useExportBuilderCtx = () => {
         // The house 200 with `error: 1` inside: the row is still there, so
         // it stays in the list.
         if (failed(resp.data as DeletedQueryResp)) {
-          dispatch(failSavedWork("That did not delete."));
+          dispatch(savedFailed(TABLE, "That did not delete."));
           return;
         }
-        dispatch(removeSaved(id));
+        dispatch(removeSaved({ source: TABLE, id }));
       })
       .catch((err: JsonError) =>
-        dispatch(failSavedWork("That did not delete: " + reasonOf(err))),
+        dispatch(savedFailed(TABLE, "That did not delete: " + reasonOf(err))),
       );
   };
 

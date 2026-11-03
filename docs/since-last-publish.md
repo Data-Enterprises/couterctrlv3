@@ -1444,3 +1444,10 @@ message says "The page is as it was."
 failed the delete but still answered "OK" with an error inside, the export
 disappeared from the Saved list and came back the next time the list was
 read. It now stays in the list, and the window says "That did not delete."
+
+**Saves and errors stay with the table they were for.** A saved export that
+finished saving after you had switched tables showed up in the other table's
+Saved list, and a "could not delete" or "could not read" message from one
+table could show on another. Each answer now goes only to its own table. A
+table left while its saved list was still loading reads it again the next
+time Saved is opened.

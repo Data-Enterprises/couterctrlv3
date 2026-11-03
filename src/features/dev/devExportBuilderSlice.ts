@@ -111,6 +111,8 @@ const SOURCE_KEYS = [
   "preApply",
   "saved",
   "savedLoaded",
+  "savedBusy",
+  "savedError",
   "savedCurrentId",
   "savedNotes",
   "queries",
@@ -540,6 +542,12 @@ const devExportBuilderSlice = createSlice({
       const kept = state.cache[action.payload];
       if (!kept) return;
       Object.assign(state, kept);
+      // Left mid-call: that answer was dropped when it landed, so the list
+      // is read again the next time the Saved window opens.
+      if (kept.savedBusy) {
+        state.savedBusy = false;
+        state.savedLoaded = false;
+      }
       delete state.cache[action.payload];
       state.source = action.payload;
       state.searchSource = action.payload;
@@ -817,8 +825,10 @@ const devExportBuilderSlice = createSlice({
     },
     /** One saved configuration back from a save: new or replacing its twin. */
     upsertSaved: (state, action: PayloadAction<SavedConfig>) => {
-      state.savedBusy = false;
       const next = action.payload;
+      // A save that lands after a switch belongs to the other table's list.
+      if (next.payload.source !== state.source) return;
+      state.savedBusy = false;
       const at = state.saved.findIndex((s) => s.id === next.id);
       state.saved =
         at === -1
@@ -826,14 +836,24 @@ const devExportBuilderSlice = createSlice({
           : state.saved.map((s) => (s.id === next.id ? next : s));
       state.savedCurrentId = next.id;
     },
-    removeSaved: (state, action: PayloadAction<number>) => {
+    removeSaved: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; id: number }>,
+    ) => {
+      const { source, id } = action.payload;
+      if (source !== state.source) return;
       state.savedBusy = false;
-      state.saved = state.saved.filter((s) => s.id !== action.payload);
-      if (state.savedCurrentId === action.payload) state.savedCurrentId = null;
+      state.saved = state.saved.filter((s) => s.id !== id);
+      if (state.savedCurrentId === id) state.savedCurrentId = null;
     },
-    failSavedWork: (state, action: PayloadAction<string>) => {
+    /** As setSaved: one table's failure is not shown on another. */
+    failSavedWork: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; message: string }>,
+    ) => {
+      if (action.payload.source !== state.source) return;
       state.savedBusy = false;
-      state.savedError = action.payload;
+      state.savedError = action.payload.message;
     },
     /** A saved configuration has just been applied, with what it could not do. */
     /**
@@ -874,9 +894,13 @@ const devExportBuilderSlice = createSlice({
       state.queriesLoading = false;
       state.queries = action.payload.queries;
     },
-    failQueriesLoad: (state, action: PayloadAction<string>) => {
+    failQueriesLoad: (
+      state,
+      action: PayloadAction<{ source: ExportTableKey; message: string }>,
+    ) => {
+      if (action.payload.source !== state.source) return;
       state.queriesLoading = false;
-      state.queriesError = action.payload;
+      state.queriesError = action.payload.message;
     },
     /** A row back from a create or an update: new ones go on top, an edited
      *  one stays where it was. */
