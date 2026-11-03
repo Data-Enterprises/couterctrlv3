@@ -120,7 +120,7 @@ describe("Daily recap", () => {
     expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Thu 10\/29/ })).toBeNull();
     expect(screen.getByRole("heading", { name: "Friday 10/30" })).toBeTruthy();
-    expect(screen.getByText(/All week in the cards above/)).toBeTruthy();
+    expect(screen.getByText(/All week, in the cards above/)).toBeTruthy();
 
     const money = screen.getByRole("region", { name: "Money" });
     expect(within(money).getByText("$1,080.00")).toBeTruthy();

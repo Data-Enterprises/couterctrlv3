@@ -22,7 +22,14 @@ export const HEAD =
 export const ROW =
   "w-full h-full min-h-0 grid items-center gap-3 px-3.5 py-1 text-[13px] text-content border-b border-gray-100 even:bg-row_stripe";
 
-export const CARD = "rounded-[10px] border border-gray-200 bg-brand_paper";
+export const CARD = "rounded-[10px] border border-brand_line bg-brand_paper shadow-card-sm";
+
+/** A card's title bar: a tint of the page ground, a hairline under it. */
+export const CARD_BAR =
+  "flex flex-none items-center gap-2 px-4 bg-bkg/40 border-b border-brand_line";
+
+/** The recessed ground the day's cards sit on. */
+export const TRAY = "bg-bkg/60";
 
 export const CARD_TITLE = "text-[11px] font-bold uppercase tracking-wide text-content";
 

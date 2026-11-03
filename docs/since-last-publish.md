@@ -1849,3 +1849,13 @@ The busiest / slowest / trading facts beside the chart now sit on the theme's
 grey to set them apart, and the week's day rows are striped like the other
 grids. A store that weighs things gets Baskets four across so it stays two
 rows tall.
+
+### Daily recap: a day's cards get their own edges
+
+A picked day's recap now sits on a slightly deeper tray, with the day shown
+as a small date block beside its net sales. Each card has a titled bar with
+an icon. The hour chart has dollar gridlines and a firm baseline, its busiest,
+slowest and trading facts sit on their own tinted rail (trading now says how
+many hours), Baskets shows its figures as tiles with the lead three
+emphasised, Money sets net sales on its own band under the sum, and the price
+mix is a labelled two-part bar with a legend.
