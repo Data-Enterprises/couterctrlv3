@@ -159,7 +159,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Download it",
-          pre: "The download button saves a CSV with one row per item per day, the day and sub department on every row. It covers the whole week, or just the picked day.",
+          pre: "Open Export CSV from the panel's header and tick Daily Recap. It saves one row per item per day for the week on screen, with the day and sub department on every row.",
         },
       ],
       issues: [

@@ -60,7 +60,6 @@ const setup = (selectedDate: string | null = null) => {
       <DailyRecap
         storeId={942}
         storeNumber="942"
-        storeName="942 - SONIC COLUMBIA KY"
         dates={dates}
         days={[dot("2026-10-29", 500, 30), dot("2026-10-30", 1000, 60)]}
         selectedDate={selectedDate}

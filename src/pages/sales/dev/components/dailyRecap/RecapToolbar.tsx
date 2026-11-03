@@ -1,10 +1,9 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-
 /**
- * Search, open-or-close-all and the download, inside the tab they act on.
+ * Search and open-or-close-all, inside the tab they act on.
  *
- * The download is the whole week (or the picked day), one row per item per
- * day, whatever is open or searched on screen.
+ * The download is not here: it is the Daily Recap option in the panel's
+ * Export CSV, beside the other Sales exports, so there is one place to export
+ * from.
  */
 const RecapToolbar = ({
   search,
@@ -12,8 +11,6 @@ const RecapToolbar = ({
   allOpen,
   onToggleAll,
   showToggleAll,
-  onDownload,
-  downloading,
   note,
 }: {
   search: string;
@@ -22,8 +19,6 @@ const RecapToolbar = ({
   onToggleAll: () => void;
   /** Off for a picked day, which is already open. */
   showToggleAll: boolean;
-  onDownload: () => void;
-  downloading: boolean;
   /** A line beside the search saying what is in view. */
   note?: string;
 }) => (
@@ -47,16 +42,6 @@ const RecapToolbar = ({
         {allOpen ? "Collapse all" : "Expand all"}
       </button>
     )}
-    <button
-      type="button"
-      onClick={onDownload}
-      disabled={downloading}
-      title="Download CSV: one row per item per day"
-      aria-label="Download CSV, one row per item per day"
-      className="h-7 w-8 inline-flex items-center justify-center rounded-md border border-gray-200 text-content hover:bg-gray-50 transition-colors disabled:opacity-50"
-    >
-      <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
-    </button>
   </div>
 );
 

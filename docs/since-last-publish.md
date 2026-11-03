@@ -1791,3 +1791,12 @@ chosen. Fuel, lottery and cash are left out of the sub department list, as on
 the day cards, and their amount is shown under it. The items are read when a
 day is opened, so a day's item counts take a moment to appear. Built on branch
 `daily_recap`, not yet merged into master_publish.
+
+### The Daily recap download moves into Export CSV
+
+The recap's CSV is now the Daily Recap option in the store panel's Export CSV,
+beside Weekly Summary, Sub Department and the rest, instead of a button on the
+tab. It reads the week's items a day at a time when you download, and if a day
+cannot be read the section's title says which day is missing. The button on
+the export modal now says "Reading the data…" while any option is fetching,
+not only Financials.

@@ -19,6 +19,9 @@ import {
 } from "../../../../api/financials";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppSelector } from "../../../../hooks";
+import { recapCsv } from "./dailyRecap/recapCsv";
+import { sellsByWeight } from "./dailyRecap/recapDays";
+import { loadWeekItems } from "./dailyRecap/recapLoad";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,6 +42,10 @@ interface SalesExportModalProps {
    *  option is the only one that fetches, so it is the only one that needs
    *  them. */
   storeId: number;
+  /** The location within `storeId`, and the week's seven dates: Daily Recap
+   *  reads that location's items a day at a time. */
+  storeNumber: string;
+  weekDates: string[];
   startDate: string;
   endDate: string;
   /** The group the ledger searched, when it searched one. Lets Financials
@@ -55,6 +62,7 @@ type ExportDataset =
   | "hourly"
   | "summary"
   | "items"
+  | "dailyrecap"
   | "financials";
 
 
@@ -379,6 +387,8 @@ const SalesExportModal = ({
   subDeptItems,
   subDeptName,
   storeId,
+  storeNumber,
+  weekDates,
   startDate,
   endDate,
   group,
@@ -649,6 +659,24 @@ const SalesExportModal = ({
       const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
       sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
     }
+    // Daily Recap reads its items here, a day at a time, for the week on
+    // screen. A day that fails is named in the section's title and left out
+    // rather than losing the file.
+    if (selected.has("dailyrecap")) {
+      setFetching(true);
+      const week = await loadWeekItems(url, token, storeId, storeNumber, weekDates);
+      setFetching(false);
+      const missing = week.filter((d) => d.failed).map((d) => d.date);
+      const note = missing.length
+        ? ` — INCOMPLETE: ${missing.join(", ")} could not be read`
+        : "";
+      sections.push(
+        `Daily Recap — one row per item per day${note}\n${recapCsv(week, sellsByWeight(rawSubs))}`,
+      );
+      if (missing.length) {
+        toast.warn("Some days' items could not be read — the recap is incomplete");
+      }
+    }
     // Last, and the only one that goes to the network. A failure here must
     // not lose the sections already built, so a null answer simply leaves
     // Financials out of a file that still carries everything else.
@@ -725,6 +753,12 @@ const SalesExportModal = ({
       label: "Hourly Breakdown",
       description:
         "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
+    },
+    {
+      id: "dailyrecap",
+      label: "Daily Recap",
+      description:
+        "Every item sold each day this week — units, pounds where weighed, and net sales, one row per item per day",
     },
     // Offered only once the router is deployed — see FINANCIALS_READY. The
     // code around it stays, so turning it on is one constant.
@@ -1031,7 +1065,7 @@ const SalesExportModal = ({
               className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
             >
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              {fetching ? "Fetching financials…" : "Download CSV"}
+              {fetching ? "Reading the data…" : "Download CSV"}
             </button>
           </div>
         </>

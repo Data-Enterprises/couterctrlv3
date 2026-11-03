@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
 import type { DayDot } from "../../../../../interfaces";
-import { downloadCsv } from "../../../../../utils/csvExport";
 import RecapDayBand from "./RecapDayBand";
 import RecapDayBody from "./RecapDayBody";
 import RecapDayHead from "./RecapDayHead";
 import RecapDayRow from "./RecapDayRow";
 import RecapToolbar from "./RecapToolbar";
 import RecapWeekRow from "./RecapWeekRow";
-import { recapCsv } from "./recapCsv";
 import { buildRecapDays, buildRecapWeek, sellsByWeight } from "./recapDays";
 import { dayLabel } from "./recapFormat";
 import { matchesSearch } from "./recapItems";
@@ -30,18 +28,17 @@ const subKey = (date: string, id: number) => `${date}|${id}`;
  *
  * The day rows come from what the popup already loaded for Sub depts and
  * Hourly. The one new read is each day's item rows, made when the day opens.
+ * Its download is the Daily Recap option in the panel's Export CSV.
  */
 const DailyRecap = ({
   storeId,
   storeNumber,
-  storeName,
   dates,
   days: dayDots,
   selectedDate,
 }: {
   storeId: number;
   storeNumber: string;
-  storeName: string;
   /** The week's seven dates, yyyy-mm-dd, oldest first. */
   dates: string[];
   /** The day cards' rows: their net sales and units are the day rows'. */
@@ -49,13 +46,11 @@ const DailyRecap = ({
   selectedDate: string | null;
 }) => {
   const { rawSubs, rawHourly } = useAppSelector((s) => s.dev.salesLedger);
-  const { stateOf, request, loadAll } = useDayItems(storeId, storeNumber);
+  const { stateOf, request } = useDayItems(storeId, storeNumber);
 
   const [openDays, setOpenDays] = useState<Set<string>>(new Set());
   const [openSubs, setOpenSubs] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
-  const [downloading, setDownloading] = useState(false);
-  const [downloadNote, setDownloadNote] = useState<string | null>(null);
 
   const recapDays = useMemo(
     () => buildRecapDays(dates, dayDots, rawSubs, rawHourly),
@@ -99,23 +94,6 @@ const DailyRecap = ({
     if (allOpen) setOpenSubs(new Set());
   };
 
-  const download = async () => {
-    setDownloading(true);
-    setDownloadNote(null);
-    try {
-      const loaded = await loadAll(inView);
-      const failed = loaded.filter((d) => "failed" in d).map((d) => dayLabel(d.date));
-      const span = inView.length === 1 ? inView[0] : `${inView[0]}_${inView[inView.length - 1]}`;
-      const safe = storeName.replace(/[^\w-]+/g, "_").replace(/^_+|_+$/g, "");
-      downloadCsv(recapCsv(loaded, withPounds), `${safe}_daily_recap_${span}.csv`);
-      if (failed.length) {
-        setDownloadNote(`Downloaded without ${failed.join(", ")}: those days' items could not be read.`);
-      }
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   const bodyFor = (date: string, showTotal: boolean) => {
     const { rows, leftOut } = subDeptsForDay(rawSubs, date);
     return (
@@ -145,13 +123,10 @@ const DailyRecap = ({
       allOpen={allOpen}
       onToggleAll={toggleAll}
       showToggleAll={!selectedDate && !searching}
-      onDownload={download}
-      downloading={downloading}
       note={
-        downloadNote ??
-        (selectedDate
+        selectedDate
           ? `${dayLabel(selectedDate)} only. All week on the day cards brings every day back.`
-          : undefined)
+          : undefined
       }
     />
   );

@@ -86,17 +86,4 @@ describe("a day's items", () => {
     await act(async () => finish([row("369", "a")]));
     expect(result.current.stateOf("2026-10-30").status).toBe("idle");
   });
-
-  it("hands the download every day, a failed one empty", async () => {
-    fetchRows.mockResolvedValueOnce([row("369", "a")]).mockRejectedValueOnce(new Error("x"));
-    const { result } = setup();
-    let all: { date: string; items: unknown[] }[] = [];
-    await act(async () => {
-      all = await result.current.loadAll(["2026-10-29", "2026-10-30"]);
-    });
-    expect(all.map((d) => [d.date, d.items.length, "failed" in d])).toEqual([
-      ["2026-10-29", 1, false],
-      ["2026-10-30", 0, true],
-    ]);
-  });
 });
