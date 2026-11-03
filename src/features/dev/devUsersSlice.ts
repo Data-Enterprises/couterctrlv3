@@ -83,6 +83,14 @@ interface UsersState {
   users: User[];
   inactiveUsers: User[];
   userInfo: UserData;
+  /**
+   * The person's details as they were when opened for Edit, or as last
+   * saved; null in Add. Kept here rather than in the wizard: switching tabs
+   * unmounts the wizard while `userInfo` keeps the edits, and a wizard that
+   * captured "before" on mount took the edited name as its starting point,
+   * so the change no longer counted and Save went grey.
+   */
+  userInfoBefore: UserData | null;
   baseGroups: BaseGroup[];
   refresh: boolean;
   selectedUserId: number;
@@ -123,6 +131,7 @@ const initialState: UsersState = {
   users: [],
   inactiveUsers: [],
   userInfo: defaultInfo,
+  userInfoBefore: null,
   baseGroups: [],
   refresh: true,
   selectedUserId: 0,
@@ -207,6 +216,11 @@ export const usersSlice = createSlice({
         confirm_password: "",
       };
       state.userCompanyIds = companies.map((c) => c.company);
+      state.userInfoBefore = state.userInfo;
+    },
+    /** The details on screen have been saved: they are the new "before". */
+    markUserInfoSaved: (state) => {
+      state.userInfoBefore = state.userInfo;
     },
     setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
@@ -215,6 +229,7 @@ export const usersSlice = createSlice({
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
+      state.userInfoBefore = null;
       state.userCompanyIds = [];
       state.selectedUserId = 0;
       state.usernameTextColor = "";
@@ -354,6 +369,7 @@ export const {
   setInactiveUsers,
   setUserInfo,
   setSelectedUserInfo,
+  markUserInfoSaved,
   resetUserInfo,
   setRefresh,
   setSelectedUserId,

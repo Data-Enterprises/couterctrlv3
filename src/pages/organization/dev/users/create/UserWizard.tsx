@@ -6,6 +6,7 @@ import { createUser, updateUser } from "../../../../../api/team";
 import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 import {
   clearDuplicateSource,
+  markUserInfoSaved,
   resetUserInfo,
   setRefresh,
   setUserCompanyIds,
@@ -185,16 +186,13 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   );
 
   /**
-   * The identity as it was opened, for "did any of it change". Captured once,
-   * on the first render that has a username — the grid fills `userInfo`
-   * before this mounts, so that is the first render.
+   * The identity as it was opened, for "did any of it change". From the
+   * slice, which records it when the person is opened from the grid: a copy
+   * taken when the wizard mounted was taken again after a tab switch, from
+   * the edited details, and the change stopped counting.
    */
-  const identityBefore = useRef<string | null>(null);
-  const emailBefore = useRef("");
-  if (editing && identityBefore.current === null && ctx.userInfo.username) {
-    identityBefore.current = identityOf(ctx.userInfo);
-    emailBefore.current = ctx.userInfo.email;
-  }
+  const identityBefore = ctx.userInfoBefore ? identityOf(ctx.userInfoBefore) : null;
+  const emailBefore = ctx.userInfoBefore?.email ?? "";
 
   /**
    * Edit: every held group's stores, as soon as the groups are known.
@@ -340,7 +338,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const hasAccess = sets.companyIds.length > 0 || sets.grants.length > 0;
 
   const identityDirty =
-    editing && identityBefore.current !== identityOf(ctx.userInfo);
+    editing && identityBefore !== null && identityBefore !== identityOf(ctx.userInfo);
   const accessDirty = editing && hasChanges(sets, before);
 
   const stepReady = readiness({
@@ -453,8 +451,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           setSaving(false);
           return;
         }
-        identityBefore.current = identityOf(ctx.userInfo);
-        emailBefore.current = ctx.userInfo.email;
+        ctx.dispatch(markUserInfoSaved());
       } catch (err) {
         toast.error((err as JsonError).message);
         setSaving(false);
@@ -598,7 +595,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             onValidityChange={setIdentityValid}
             editing={
               editing
-                ? { userid: editUserId, email: emailBefore.current }
+                ? { userid: editUserId, email: emailBefore }
                 : undefined
             }
           />

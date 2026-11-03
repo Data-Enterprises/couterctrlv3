@@ -1522,3 +1522,10 @@ of an Edit's access save failed, the page re-read what had saved and then
 replaced your changes with it, so nothing was left to save and Save changes
 went grey while the message said to press it. Your changes now stay on
 screen, only what saved is re-read, and Save changes sends what's left.
+
+**A name change survives switching tabs.** Changing someone's name in Edit,
+clicking another tab and coming back left the new name on screen, but the
+page no longer counted it as a change: Save changes stayed grey, or a save of
+their access said "saved" and the name went back. The details as they were
+opened are now kept with the person, so the change still counts after a tab
+switch.
