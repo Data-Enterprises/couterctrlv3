@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import TextFilter from "./filters/TextFilter";
+import ConfirmModal from "./ConfirmModal";
 
 interface AssignPanelItem {
   id: number;
@@ -53,6 +54,18 @@ interface AssignPanelProps {
   // email DOMAIN pulls back a whole company at once, which is the thing
   // nobody guesses and the thing that saves the most work.
   searchHint?: ReactNode;
+  /** A write is running: every button is off until it finishes, so a second
+   *  click can't fire against a list that is about to change. */
+  moving?: boolean;
+  /**
+   * What Assign all / Unassign all ask first, or null to go straight ahead.
+   * The caller words it, since only it knows what is being given and who is
+   * pressing. Leaving it out keeps the old no-question behaviour.
+   */
+  confirmBulk?: (
+    direction: "in" | "out",
+    ids: number[],
+  ) => { message: string; confirmLabel: string } | null;
 }
 
 /**
@@ -116,8 +129,17 @@ const AssignPanel = ({
   leftFilters,
   leftPredicate,
   searchHint,
+  moving = false,
+  confirmBulk,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
+  /** An Assign all / Unassign all waiting on its question. */
+  const [pending, setPending] = useState<{
+    direction: "in" | "out";
+    ids: number[];
+    message: string;
+    confirmLabel: string;
+  } | null>(null);
   const [rightFilter, setRightFilter] = useState("");
   const [staged, setStaged] = useState<Set<number>>(new Set());
   const [unstaged, setUnstaged] = useState<Set<number>>(new Set());
@@ -187,8 +209,33 @@ const AssignPanel = ({
     setUnstaged(new Set());
   };
 
+  /** Assign all and Unassign all: asked first when the caller says so. */
+  const bulk = (direction: "in" | "out", ids: number[]) => {
+    const ask = confirmBulk?.(direction, ids);
+    if (ask) {
+      setPending({ direction, ids, ...ask });
+      return;
+    }
+    if (direction === "in") handleAssign(ids);
+    else handleUnassign(ids);
+  };
+
   return (
     <div className="flex gap-3">
+      {pending && (
+        <ConfirmModal
+          title={pending.direction === "in" ? `${verbs.assign} all?` : `${verbs.unassign} all?`}
+          message={pending.message}
+          confirmLabel={pending.confirmLabel}
+          onConfirm={() => {
+            const { direction, ids } = pending;
+            setPending(null);
+            if (direction === "in") handleAssign(ids);
+            else handleUnassign(ids);
+          }}
+          onCancel={() => setPending(null)}
+        />
+      )}
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
@@ -250,14 +297,14 @@ const AssignPanel = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => handleAssign(Array.from(staged))}
-            disabled={staged.size === 0}
+            disabled={moving || staged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.assign}
           </button>
           <button
-            onClick={() => handleAssign(assignAllLeft.map((i) => i.id))}
-            disabled={assignAllLeft.length === 0}
+            onClick={() => bulk("in", assignAllLeft.map((i) => i.id))}
+            disabled={moving || assignAllLeft.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.assign} all
@@ -319,20 +366,21 @@ const AssignPanel = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => handleUnassign(Array.from(unstaged))}
-            disabled={unstaged.size === 0}
+            disabled={moving || unstaged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.unassign}
           </button>
           <button
             onClick={() =>
-              handleUnassign(
+              bulk(
+                "out",
                 (assignAllScope === "global" ? rightItems : filteredRight).map(
                   (i) => i.id,
                 ),
               )
             }
-            disabled={rightItems.length === 0}
+            disabled={moving || rightItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.unassign} all

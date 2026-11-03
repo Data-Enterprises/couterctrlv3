@@ -11,6 +11,7 @@ import {
 import type { JsonError, Store, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import { useMarkUsersStale } from "../usersStale";
+import { peopleConfirm } from "../bulkConfirm";
 import CompanyFilterSelect from "../users/CompanyFilterSelect";
 import {
   useCompanyFilterOptions,
@@ -215,6 +216,15 @@ const StoreUsersPanel = ({
         onAssign={(ids) => void run(ids, "in")}
         onUnassign={(ids) => void run(ids, "out")}
         assignAllScope="global"
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({
+            direction,
+            ids,
+            me: ctx.userid,
+            what: `store ${store.store_number}`,
+          })
+        }
         leftPredicate={heldPredicate}
         leftFilters={
           <CompanyFilterSelect

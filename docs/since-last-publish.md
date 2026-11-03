@@ -1578,3 +1578,12 @@ an empty box, and ticking it added its whole store list again, so the count
 read "11 of 10 picked" (the save removed the duplicates). The box now shows
 the group as held, and ticking a group merges its stores with any already
 picked.
+
+**Assign all and Unassign all ask first, and wait for each other.** On the
+Companies and Stores tabs and a base group's Stores and Users, Unassign all
+took everyone off in one click, the person pressing it included, and a second
+click could fire while the first was still saving. Unassign all now always
+asks ("Take Food Giant off 38 people, including you?"), Assign all asks when
+it's more than five, and the buttons wait while a change is saving. The
+Companies tab also re-reads everyone's companies at the moment of the change,
+so it can't undo a change made elsewhere since the list was loaded.

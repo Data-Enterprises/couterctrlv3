@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useBaseGroupsCtx } from "../baseGroups/hooks";
 import { canAdministerUser, companyReach } from "../scoping";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { assignUserToCompany } from "../../../../api/user";
+import { assignUserToCompany, getAllUsers } from "../../../../api/user";
+import { peopleConfirm } from "../bulkConfirm";
 import { useMarkUsersStale } from "../usersStale";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
@@ -176,14 +177,46 @@ const CompanyUsersPanel = ({
     else toast.error(summary.text);
   };
 
-  const pick = (ids: number[]) =>
-    ids.map((id) => byId.get(id)).filter((u): u is User => u !== undefined);
+  /**
+   * The people as the server holds them now, for the plan. `assign_user_to_
+   * company` replaces a person's whole list, so a plan built from the rows on
+   * screen would undo a change made since they were read (in another tab, by
+   * someone else). Read fresh at the moment of the write.
+   */
+  const freshMembers = async (ids: number[]) => {
+    const resp = await getAllUsers(ctx.url, ctx.token);
+    const j = resp.data;
+    if (j.error !== 0) throw new Error(j.msg || "Could not re-read the users");
+    const fresh = new Map(((j.users ?? []) as User[]).map((u) => [u.id, u]));
+    // Only people this viewer may administer, as the columns are.
+    return ids
+      .filter((id) => byId.has(id))
+      .map((id) => fresh.get(id))
+      .filter((u): u is User => u !== undefined)
+      .map(asMember);
+  };
+
+  const planFresh = async (
+    ids: number[],
+    plan: (members: MemberUser[]) => CompanyPlan[],
+    direction: "in" | "out",
+  ) => {
+    setMoving(true);
+    try {
+      await run(plan(await freshMembers(ids)), direction);
+    } catch (err) {
+      toast.error((err as JsonError).message);
+    } finally {
+      // run() returns early on an empty plan without clearing it.
+      setMoving(false);
+    }
+  };
 
   const handleAssign = (ids: number[]) =>
-    void run(planAdd(pick(ids).map(asMember), company.id), "in");
+    void planFresh(ids, (m) => planAdd(m, company.id), "in");
 
   const handleUnassign = (ids: number[]) =>
-    void run(planRemove(pick(ids).map(asMember), company.id), "out");
+    void planFresh(ids, (m) => planRemove(m, company.id), "out");
 
   const toItem = (u: User) => ({
     id: u.id,
@@ -234,6 +267,10 @@ const CompanyUsersPanel = ({
         onAssign={handleAssign}
         onUnassign={handleUnassign}
         assignAllScope="global"
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({ direction, ids, me: ctx.userid, what: company.name })
+        }
         leftPredicate={heldPredicate}
         searchHint={
           <>

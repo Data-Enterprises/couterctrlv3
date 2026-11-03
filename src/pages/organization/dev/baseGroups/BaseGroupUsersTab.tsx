@@ -26,6 +26,7 @@ import {
 import { callReason } from "./storeMembership";
 import { withinReachOf } from "./userReach";
 import { useMarkUsersStale } from "../usersStale";
+import { peopleConfirm } from "../bulkConfirm";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -47,6 +48,8 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
   const [assigned, setAssigned] = useState<BaseGroupUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<BaseGroupUserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  /** A write is running; the panel's buttons wait for it. */
+  const [moving, setMoving] = useState(false);
 
   // A response for a group the reader has already left must not land here.
   const activeGroupId = useRef(group.id);
@@ -108,7 +111,9 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     call: (userid: number) => Promise<{ data: { error: number; msg?: string } }>,
     verb: string,
   ) => {
+    setMoving(true);
     const settled = await Promise.allSettled(ids.map((userid) => call(userid)));
+    setMoving(false);
 
     const failures = settled
       .map((res, i) => {
@@ -230,6 +235,10 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
         leftItems={unassigned.filter(withinReach).map(toItem)}
         rightItems={assigned.filter(withinReach).map(toItem)}
         onAssign={(ids) => void handleAssign(ids)}
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({ direction, ids, me: ctx.userid, what: group.name })
+        }
         onUnassign={handleUnassign}
         leftPredicate={heldPredicate}
         leftFilters={

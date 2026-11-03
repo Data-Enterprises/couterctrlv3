@@ -25,6 +25,7 @@ import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import BaseGroupExportModal from "./BaseGroupExportModal";
 import { useMarkUsersStale } from "../usersStale";
+import { groupStoresConfirm } from "../bulkConfirm";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -249,6 +250,10 @@ const BaseGroupDetail = ({
               }))}
               onAssign={handleAssign}
               onUnassign={handleUnassign}
+              moving={moving}
+              confirmBulk={(direction, ids) =>
+                groupStoresConfirm({ direction, count: ids.length, group: group.name })
+              }
             />
           </div>
         ))}
