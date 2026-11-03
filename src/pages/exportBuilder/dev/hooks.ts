@@ -478,10 +478,10 @@ export const useExportBuilderCtx = () => {
    */
   const loadConfig = () => {
     const chosen = sourceFor(config.searchSource);
-    // The popup over a loaded page, asked the question already on screen.
-    if (config.loaded && scope === config.cacheScope && chosen.key === config.source) return;
-    // Kept before anything replaces it: the same search may come back to it.
-    if (config.loaded) dispatch(stashSource());
+    // Kept before another table replaces it: the same search may come back
+    // to it. The same table asked again is a re-read (rows that arrived
+    // since), which keeps its shape as a new range does.
+    if (config.loaded && chosen.key !== config.source) dispatch(stashSource());
     // A failed search puts that page back (failConfigLoad), and says so.
     const kept = config.loaded ? " The page is as it was." : "";
     if (scope === config.cacheScope && config.cache[chosen.key]) {

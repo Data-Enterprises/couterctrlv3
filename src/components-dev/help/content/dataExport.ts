@@ -80,6 +80,10 @@ export const DATA_EXPORT_HELP: HelpContent = {
           title: "Or search a different store or dates",
           pre: "That is a new search. The table is read again for it, and every table kept from the last search is let go. Group By, Aggregates, the sort and Output stay as they were; the lists, days, columns and products start full again from the new range.",
         },
+        {
+          title: "Or read the same one again",
+          pre: "Load config with the table, store and dates unchanged reads it again, for rows that have arrived since. It keeps what a new search keeps, and the lists start full again.",
+        },
       ],
     },
     {

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { setupStore } from "../../../store";
-import { setConfig } from "../../../features/dev/devExportBuilderSlice";
+import { setConfig, setGroupBy } from "../../../features/dev/devExportBuilderSlice";
 import { SLOW_AFTER_MS, useExportBuilderCtx } from "./hooks";
 
 /**
@@ -22,9 +22,27 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
 }));
 
 const runExport = vi.fn();
+const getExportPreview = vi.fn();
 vi.mock("../../../api/salesExport", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../../api/salesExport")>()),
   runExport: (...args: unknown[]) => runExport(...args),
+  getExportPreview: (...args: unknown[]) => getExportPreview(...args),
+  getExportTables: () => Promise.resolve({ data: { error: 0, tables: [] } }),
+}));
+
+// The lists a search reads beside the preview: empty, and answered.
+const empty = () => Promise.resolve({ data: { error: 0, queries: [], builds: [] } });
+vi.mock("../../../api/savedQueries", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../api/savedQueries")>()),
+  listSavedQueries: () => empty(),
+}));
+vi.mock("../../../api/savedConfigs", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../api/savedConfigs")>()),
+  listSavedConfigs: () => empty(),
+}));
+vi.mock("../../../api/exportBuilds", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../api/exportBuilds")>()),
+  listExportBuilds: () => empty(),
 }));
 
 const setup = () => {
@@ -87,5 +105,40 @@ describe("a build that fails", () => {
     reject({ response: { status: 500 }, message: "Request failed" });
     await settle();
     expect(store.getState().dev.exportBuilder.exportError).toMatch(/^The export failed/);
+  });
+});
+
+describe("Load config on the same table and dates", () => {
+  it("reads the table again, keeping its shape", async () => {
+    getExportPreview.mockReset();
+    getExportPreview.mockResolvedValue({
+      data: {
+        error: 0,
+        stores: [{ storeid: 1, store_number: "001", store_name: "001 - IGA" }],
+        facets: {},
+        columns: [{ name: "storeid", data_type: "integer" }],
+        rows: [],
+        hasData: true,
+        message: null,
+      },
+    });
+    const store = setupStore();
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <Provider store={store}>{children}</Provider>
+    );
+    const { result } = renderHook(() => useExportBuilderCtx(), { wrapper });
+    const page = () => store.getState().dev.exportBuilder;
+
+    act(() => result.current.loadConfig());
+    await waitFor(() => expect(page().loaded).toBe(true));
+    act(() => {
+      store.dispatch(setGroupBy(["storeid"]));
+    });
+
+    // Change, then Load config with nothing changed on the card.
+    act(() => result.current.loadConfig());
+    await waitFor(() => expect(page().loaded).toBe(true));
+    expect(getExportPreview).toHaveBeenCalledTimes(2);
+    expect(page().groupBy).toEqual(["storeid"]);
   });
 });

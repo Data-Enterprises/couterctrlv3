@@ -1463,3 +1463,10 @@ or labelling a build and switching tables before it answered could leave the
 other table's Previous builds saying "Reading your builds..." with Refresh
 greyed out. Each table's list now only shows its own loading and its own
 errors.
+
+**Load config on the same table and dates reads it again.** Pressing Load
+config in the Change popup without changing anything closed the popup and did
+nothing, so there was no way to pick up rows that had arrived since (after the
+nightly import, say) short of changing the dates and back. It now reads the
+table again: Group By, Aggregates, the sort and Output stay, and the lists
+start full again from the new answer. The help says so.
