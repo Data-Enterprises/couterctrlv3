@@ -931,6 +931,13 @@ the list. Sales already counts those as critical in its Inactive list. They
 come through now, including ones from a department that sold nothing this
 week.
 
+### Build actions sits at the bottom of the card
+
+The UPC box and its Add / Upload CSV buttons now come before the navy Build
+actions button instead of under it, so the card reads top to bottom: store,
+date, UPCs, then build. The button used to say "Add a UPC list" above the box
+it was asking for. Made after the `f251f251` publish commit.
+
 ## Coupons (Data → Coupons), on a phone
 
 ### The phone screens read like the other mobile pages

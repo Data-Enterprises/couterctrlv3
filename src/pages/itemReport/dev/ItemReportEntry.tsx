@@ -145,92 +145,93 @@ const ItemReportEntry = ({
           </span>
         </div>
       }
-    >
-      <div data-help="upc-input">
-        <div className="flex items-baseline justify-between gap-2">
-          <label className="text-[11px] font-medium text-content/85 ml-0.5">
-            UPCs
-          </label>
-          <span className="text-[10.5px] text-content/85">
-            Separate by comma or new lines
-          </span>
-        </div>
-        <textarea
-          value={upcText}
-          onChange={(e) => dispatch(setPendingUpcText(e.target.value))}
-          placeholder="Paste UPCs, comma or newline separated…"
-          rows={4}
-          className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
-          style={{ outline: "none", boxShadow: "none" }}
-        />
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <button
-            onClick={handleParseText}
-            className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
-          >
-            Add
-          </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
-          >
-            Upload CSV
-          </button>
-          {upcs.length > 0 && (
-            <button
-              onClick={() => dispatch(clearPendingUpload())}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
-            >
-              Clear all
-            </button>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv,.txt"
-            className="hidden"
-            onChange={handleCsvUpload}
+      fields={
+        <div data-help="upc-input">
+          <div className="flex items-baseline justify-between gap-2">
+            <label className="text-[11px] font-medium text-content/85 ml-0.5">
+              UPCs
+            </label>
+            <span className="text-[10.5px] text-content/85">
+              Separate by comma or new lines
+            </span>
+          </div>
+          <textarea
+            value={upcText}
+            onChange={(e) => dispatch(setPendingUpcText(e.target.value))}
+            placeholder="Paste UPCs, comma or newline separated…"
+            rows={4}
+            className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
+            style={{ outline: "none", boxShadow: "none" }}
           />
-        </div>
-
-        {/* Worth saying out loud: a file with a department column is the
-            difference between reading a dozen departments and reading all of
-            them. */}
-        {upcs.length > 0 && (
-          <div className="text-[10.5px] text-content/85 mt-1.5">
-            {fileName && `${fileName} · `}
-            {upcs.length} UPC{upcs.length === 1 ? "" : "s"}
-            {departments.length > 0
-              ? ` · ${departments.length} departments named, so only those are read`
-              : " · no department column, so every department is read"}
-            {carried && (
-              <span className="block mt-0.5 font-medium text-content">
-                Includes the list from your last build. Clear all to start a new one.
-              </span>
-            )}
-          </div>
-        )}
-
-        {upcs.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar">
-            {upcs.map((upc) => (
-              <span
-                key={upc}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <button
+              onClick={handleParseText}
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+            >
+              Add
+            </button>
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+            >
+              Upload CSV
+            </button>
+            {upcs.length > 0 && (
+              <button
+                onClick={() => dispatch(clearPendingUpload())}
+                className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
               >
-                {upc}
-                <button
-                  onClick={() => dispatch(removePendingUpc(upc))}
-                  className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
+                Clear all
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,.txt"
+              className="hidden"
+              onChange={handleCsvUpload}
+            />
           </div>
-        )}
-      </div>
-    </SingleStoreSearchCard>
+
+          {/* Worth saying out loud: a file with a department column is the
+              difference between reading a dozen departments and reading all of
+              them. */}
+          {upcs.length > 0 && (
+            <div className="text-[10.5px] text-content/85 mt-1.5">
+              {fileName && `${fileName} · `}
+              {upcs.length} UPC{upcs.length === 1 ? "" : "s"}
+              {departments.length > 0
+                ? ` · ${departments.length} departments named, so only those are read`
+                : " · no department column, so every department is read"}
+              {carried && (
+                <span className="block mt-0.5 font-medium text-content">
+                  Includes the list from your last build. Clear all to start a new one.
+                </span>
+              )}
+            </div>
+          )}
+
+          {upcs.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar">
+              {upcs.map((upc) => (
+                <span
+                  key={upc}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
+                >
+                  {upc}
+                  <button
+                    onClick={() => dispatch(removePendingUpc(upc))}
+                    className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      }
+    />
   );
 };
 
