@@ -59,16 +59,16 @@ const RecapHourTip = ({
     <div
       ref={ref}
       role="tooltip"
-      className="fixed z-50 pointer-events-none rounded border border-gray-200 bg-custom-white shadow-lg px-2.5 py-2 min-w-[168px]"
+      className="fixed z-50 pointer-events-none rounded border border-gray-200 bg-custom-white shadow-lg px-3 py-2.5 min-w-[200px]"
       style={{ left: pos.left, top: pos.top }}
     >
-      <div className="text-[12px] font-bold text-content mb-1 whitespace-nowrap">
+      <div className="text-[14px] font-bold text-content mb-1.5 whitespace-nowrap">
         {hourRange(hour.hour)}
       </div>
       {rows.map(([label, value]) => (
-        <div key={label} className="flex items-baseline justify-between gap-4 whitespace-nowrap">
-          <span className="text-[11.5px] text-content">{label}</span>
-          <span className="text-[11.5px] font-semibold text-content tabular-nums">{value}</span>
+        <div key={label} className="flex items-baseline justify-between gap-5 leading-relaxed whitespace-nowrap">
+          <span className="text-[13px] text-content">{label}</span>
+          <span className="text-[13px] font-semibold text-content tabular-nums">{value}</span>
         </div>
       ))}
     </div>
