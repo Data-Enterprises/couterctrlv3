@@ -1800,3 +1800,20 @@ tab. It reads the week's items a day at a time when you download, and if a day
 cannot be read the section's title says which day is missing. The button on
 the export modal now says "Reading the data…" while any option is fetching,
 not only Financials.
+
+### Daily recap shows the rest of each day, not its items
+
+Reworked after review: opening a day used to list its sub departments and
+items, which Top 200 and Sub depts already show. The tab now leads with four
+figures for the week (transactions, average basket, units, busiest hour) and
+lists the days with a net sales bar and a small strip of each day's hours.
+Opening a day shows its net sales hour by hour with the busiest hour, the
+slowest full hour and the hours it traded; its baskets (transactions, average
+basket, items per basket, average item price); its money as a sum you can
+check (sales with tax, less tax, is the day card's net sales, with fuel and
+lottery named as left out); and its refunds and the share of sales at regular
+price against on sale. A store that sends no price type, like Sonic, shows
+the price mix as Not reported. There is no coupon figure, because the register
+already nets coupons into sales and the coupon columns repeat that money.
+An Export Daily Recap button at the end of the tabs opens Export CSV with
+Daily Recap already ticked.

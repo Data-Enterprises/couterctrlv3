@@ -127,8 +127,8 @@ export const SALES_HELP: HelpContent = {
     },
     {
       id: "daily-recap",
-      title: "See what sold each day",
-      desc: "Every item sold, with its sales and units, a day at a time",
+      title: "Recap the week, a day at a time",
+      desc: "Each day's baskets, busiest hours, money and refunds",
       steps: [
         {
           title: "Open Daily recap",
@@ -136,44 +136,43 @@ export const SALES_HELP: HelpContent = {
           chip: "Daily recap",
           post: "tab.",
           anchor: "store-tabs",
-          see: "One row per day: net sales, transactions, the average basket, units and the busiest hour, with the week's totals underneath. Net sales is the day card's figure. A store that sells by weight also gets a Pounds column.",
+          see: "Four figures for the week across the top: transactions, the average basket, units and the busiest hour. Under them, one row per day with its net sales as a bar, its transactions, average basket, units and a small strip of its hours. A store that sells by weight also gets pounds.",
         },
         {
           title: "Open a day",
-          pre: "Click a day. Its sub departments open under it, biggest sales first, each with its share of the day as a bar.",
-          see: "How many different items sold that day, and how many in each sub department. The items are read when you open the day, so the counts take a moment.",
+          pre: "Click a day to see the rest of it: its net sales hour by hour with the busiest, the slowest full hour and the hours it traded; its baskets; its money; and its refunds and price mix.",
+          see: "Money is a sum you can check: sales with tax, less tax, is the day's net sales, the same figure as its day card. The items themselves are on Top 200 and Sub depts.",
         },
         {
-          title: "Open a sub department",
-          pre: "Click a sub department to list every item it sold that day, with its units, sales and average price.",
-          see: "A weighed item shows its pounds beside its units, and its average price is per pound.",
+          title: "Read the price mix",
+          pre: "Price mix is the share of the day's sales at regular price against on sale or TPR. It and the refunds are read when you open the day, so they take a moment.",
+          see: "A store that sends no price type, such as Sonic, shows an empty bar marked Not reported rather than a full one that would claim everything sold at regular.",
         },
         {
           title: "Look at one day on its own",
-          pre: "Pick a day in the day cards. The tab shows that day only, with its figures across the top and its sub departments ready to open. All week brings every day back.",
-        },
-        {
-          title: "Find an item",
-          pre: "Type a name or UPC in the search. Only the days and sub departments that sold a match stay listed, already open.",
-          see: "The day and sub department figures stay whole: the search narrows what is listed, not what was sold.",
+          pre: "Pick a day in the day cards. The tab shows that day alone, already open. All week brings every day back.",
         },
         {
           title: "Download it",
-          pre: "Open Export CSV from the panel's header and tick Daily Recap. It saves one row per item per day for the week on screen, with the day and sub department on every row.",
+          pre: "Click Export Daily Recap at the end of the tabs, or open Export CSV from the panel's header and tick Daily Recap. It saves one row per item per day for the week on screen, with the day and sub department on every row.",
         },
       ],
       issues: [
         {
           q: "Where are last week and last year?",
-          a: "Not here, on purpose. A recap is a summary of what sold, so it has no comparisons and no grades. Sub depts, Hourly and Top 200 carry the comparisons.",
+          a: "Not here, on purpose. A recap is a summary of what happened, so it has no comparisons and no grades. Sub depts, Hourly and Top 200 carry the comparisons.",
         },
         {
-          q: "Fuel or lottery is missing from the sub departments",
-          a: "The store leaves them out of its net sales, so they are left out here too and the list adds up to the day card. Their amount is shown under the list.",
+          q: "Why is there no coupon figure?",
+          a: "The register already takes coupons out of the sales, and the coupon columns repeat that money (sometimes twice, on the item and on its discount line). Any coupon total shown here would be counted twice.",
         },
         {
-          q: "A day says its items could not be read",
-          a: "The sub department figures are unaffected. Close the day and open it again to try the items once more.",
+          q: "Fuel or lottery shows under Money as left out",
+          a: "The store leaves them out of its net sales, so they are out of the day's figures too, the same as on the day cards. Their amount is listed so it is not lost.",
+        },
+        {
+          q: "Refunds and price mix say the items could not be read",
+          a: "Everything else for the day is unaffected. Close the day and open it again to try once more.",
         },
       ],
     },

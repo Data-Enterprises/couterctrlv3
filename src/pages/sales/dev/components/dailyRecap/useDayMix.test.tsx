@@ -4,56 +4,57 @@ import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { setupStore } from "../../../../../store";
 import type { SubDeptMargin } from "../../../../../interfaces";
-import { useDayItems } from "./useDayItems";
+import { useDayMix } from "./useDayMix";
 
 const fetchRows = vi.fn();
 vi.mock("../../../../../utils/marginRows", () => ({
   fetchSubDeptRowsOrEmpty: (...args: unknown[]) => fetchRows(...args),
 }));
 
-const row = (store_number: string, product_code: string) =>
+const row = (store_number: string, over: Partial<SubDeptMargin> = {}) =>
   ({
     store_number,
-    product_code,
-    product_description: `Item ${product_code}`,
-    sub_department: 1,
-    sub_department_description: "Drinks",
+    product_code: "a",
+    sale_type: "Sale",
+    price_type: "REG",
     total_sales: 10,
     total_tax: 0,
     qty: 1,
     weight: 0,
+    ...over,
   }) as SubDeptMargin;
 
-const setup = (storeId = 685, storeNumber = "369") => {
+const setup = () => {
   const store = setupStore();
   const wrapper = ({ children }: { children: ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   );
-  return renderHook(
-    ({ id, num }) => useDayItems(id, num),
-    { wrapper, initialProps: { id: storeId, num: storeNumber } },
-  );
+  return renderHook(({ id, num }) => useDayMix(id, num), {
+    wrapper,
+    initialProps: { id: 685, num: "369" },
+  });
 };
 
-describe("a day's items", () => {
+describe("a day's mix", () => {
   beforeEach(() => fetchRows.mockReset());
 
   it("reads one store and one day, every sub dept, and only this location", async () => {
-    fetchRows.mockResolvedValue([row("369", "a"), row("370", "b")]);
+    fetchRows.mockResolvedValue([row("369"), row("370", { total_sales: 500 })]);
     const { result } = setup();
     act(() => result.current.request("2026-10-30"));
     await waitFor(() => expect(result.current.stateOf("2026-10-30").status).toBe("ready"));
-    // After url and token: every sub dept, that one day, single store 685.
-    expect(fetchRows.mock.calls[0].slice(2)).toEqual([
-      0,
-      "2026-10-30",
-      "2026-10-30",
-      0,
-      685,
-      1,
-    ]);
+    expect(fetchRows.mock.calls[0].slice(2)).toEqual([0, "2026-10-30", "2026-10-30", 0, 685, 1]);
     const st = result.current.stateOf("2026-10-30");
-    expect(st.status === "ready" && st.items.map((i) => i.code)).toEqual(["a"]);
+    expect(st.status === "ready" && st.mix.regular).toBe(10);
+  });
+
+  it("leaves excluded sub depts out of the mix", async () => {
+    fetchRows.mockResolvedValue([row("369"), row("369", { is_hash: true, total_sales: 900 })]);
+    const { result } = setup();
+    act(() => result.current.request("2026-10-30"));
+    await waitFor(() => expect(result.current.stateOf("2026-10-30").status).toBe("ready"));
+    const st = result.current.stateOf("2026-10-30");
+    expect(st.status === "ready" && st.mix.regular).toBe(10);
   });
 
   it("reads a day once however often it is asked for", async () => {
@@ -83,7 +84,7 @@ describe("a day's items", () => {
     const { result, rerender } = setup();
     act(() => result.current.request("2026-10-30"));
     rerender({ id: 700, num: "12" });
-    await act(async () => finish([row("369", "a")]));
+    await act(async () => finish([row("369")]));
     expect(result.current.stateOf("2026-10-30").status).toBe("idle");
   });
 });

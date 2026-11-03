@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { DayDot, HourlySale, SubSale } from "../../../../../interfaces";
-import { avgBasket, buildRecapDays, buildRecapWeek, sellsByWeight } from "./recapDays";
+import {
+  avgBasket,
+  avgItemPrice,
+  buildRecapDays,
+  buildRecapWeek,
+  itemsPerBasket,
+  sellsByWeight,
+} from "./recapDays";
 
 const dot = (sale_date: string, twNet: number, twQty: number): DayDot => ({
   sale_date: `${sale_date}T00:00:00`,
@@ -45,14 +52,15 @@ describe("the day rows", () => {
 
   it("keep a day the card list has no row for, at zero", () => {
     const [thu] = buildRecapDays(dates, [dot("2026-10-30", 1, 1)], [], []);
-    expect(thu).toMatchObject({ date: "2026-10-29", net: 0, hasSales: false, peakHour: null });
+    expect(thu).toMatchObject({ date: "2026-10-29", net: 0, hasSales: false });
+    expect(thu.hours.peak).toBeNull();
   });
 
   it("count transactions across the day's hours", () => {
     const hourly = [hour("2026-10-30", 12, 500, 60), hour("2026-10-30", 18, 900, 80)];
     const [, fri] = buildRecapDays(dates, [], [], hourly);
     expect(fri.transactions).toBe(140);
-    expect(fri.peakHour).toBe(18);
+    expect(fri.hours.peak?.hour).toBe(18);
   });
 
   it("weigh only the counted sub depts", () => {
@@ -62,25 +70,29 @@ describe("the day rows", () => {
   });
 });
 
-describe("the week row", () => {
-  it("sums the days and names the week's single busiest hour", () => {
+describe("the week", () => {
+  it("sums the days, counts trading days and names the single busiest hour", () => {
     const hourly = [hour("2026-10-29", 12, 300, 30), hour("2026-10-30", 13, 700, 50)];
     const days = buildRecapDays(
-      ["2026-10-29", "2026-10-30"],
+      ["2026-10-28", "2026-10-29", "2026-10-30"],
       [dot("2026-10-29", 100, 10), dot("2026-10-30", 200, 20)],
       [],
       hourly,
     );
-    const week = buildRecapWeek(days, hourly);
-    expect(week).toMatchObject({ net: 300, units: 30, transactions: 80 });
+    const week = buildRecapWeek(days);
+    expect(week).toMatchObject({ net: 300, units: 30, transactions: 80, tradingDays: 2 });
     expect(week.peak).toEqual({ date: "2026-10-30", hour: 13 });
   });
 });
 
-describe("helpers", () => {
-  it("has no basket without transactions", () => {
-    expect(avgBasket(100, 0)).toBeNull();
+describe("per-basket figures", () => {
+  it("divide by baskets or units, and are absent with nothing to divide by", () => {
     expect(avgBasket(100, 4)).toBe(25);
+    expect(avgBasket(100, 0)).toBeNull();
+    expect(itemsPerBasket(18, 4)).toBe(4.5);
+    expect(itemsPerBasket(18, 0)).toBeNull();
+    expect(avgItemPrice(30, 12)).toBe(2.5);
+    expect(avgItemPrice(30, 0)).toBeNull();
   });
 
   it("shows Pounds only for a store that weighs a counted sub dept", () => {

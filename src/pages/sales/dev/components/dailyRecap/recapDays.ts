@@ -1,27 +1,9 @@
 import type { DayDot, HourlySale, SubSale } from "../../../../../interfaces";
 import { countedRows } from "../../../../../utils/hashSubs";
+import { hoursForDay } from "./recapHours";
 import type { RecapDay, RecapWeek } from "./recapTypes";
 
 const dayOf = (saleDate: string) => saleDate.split("T")[0];
-
-/** Net sales by hour for one day, from the Hourly rows. */
-const netByHour = (hourly: HourlySale[], date: string) => {
-  const byHour = new Map<number, number>();
-  for (const h of hourly) {
-    if (dayOf(h.sale_date) !== date) continue;
-    byHour.set(h.hour, (byHour.get(h.hour) ?? 0) + h.total_sales - h.total_tax);
-  }
-  return byHour;
-};
-
-/** The hour with the most net sales; the earlier hour wins a tie. */
-const busiest = (byHour: Map<number, number>) => {
-  let best: { hour: number; net: number } | null = null;
-  for (const [hour, net] of [...byHour].sort((a, b) => a[0] - b[0])) {
-    if (!best || net > best.net) best = { hour, net };
-  }
-  return best;
-};
 
 /**
  * One row per day of the week, all seven of them.
@@ -56,29 +38,25 @@ export const buildRecapDays = (
       units: dot?.twQty ?? 0,
       pounds,
       transactions,
-      peakHour: busiest(netByHour(hourly, date))?.hour ?? null,
+      hours: hoursForDay(hourly, date),
       hasSales: !!dot,
     };
   });
 };
 
-/** The week row: the days summed, and the week's single busiest hour. */
-export const buildRecapWeek = (
-  days: RecapDay[],
-  hourly: HourlySale[],
-): RecapWeek => {
+/** The week's headline figures: the days summed, and its single busiest hour. */
+export const buildRecapWeek = (days: RecapDay[]): RecapWeek => {
   let peak: { date: string; hour: number; net: number } | null = null;
   for (const d of days) {
-    const best = busiest(netByHour(hourly, d.date));
-    if (best && (!peak || best.net > peak.net)) {
-      peak = { date: d.date, hour: best.hour, net: best.net };
-    }
+    const p = d.hours.peak;
+    if (p && (!peak || p.net > peak.net)) peak = { date: d.date, hour: p.hour, net: p.net };
   }
   return {
     net: days.reduce((t, d) => t + d.net, 0),
     units: days.reduce((t, d) => t + d.units, 0),
     pounds: days.reduce((t, d) => t + d.pounds, 0),
     transactions: days.reduce((t, d) => t + d.transactions, 0),
+    tradingDays: days.filter((d) => d.hasSales).length,
     peak: peak && { date: peak.date, hour: peak.hour },
   };
 };
@@ -87,11 +65,19 @@ export const buildRecapWeek = (
 export const avgBasket = (net: number, transactions: number) =>
   transactions > 0 ? net / transactions : null;
 
+/** Units per basket, or null with no baskets. */
+export const itemsPerBasket = (units: number, transactions: number) =>
+  transactions > 0 ? units / transactions : null;
+
+/** Net sales per unit, or null with no units. */
+export const avgItemPrice = (net: number, units: number) =>
+  units !== 0 ? net / units : null;
+
 /**
  * Whether the store sells anything by weight this week.
  *
- * The Pounds column is shown only when it is, so a store with no scale does
- * not carry a column of zeros.
+ * Pounds is shown only when it does, so a store with no scale does not carry
+ * a column of zeros.
  */
 export const sellsByWeight = (subs: SubSale[]) =>
   countedRows(subs).some((s) => (s.weight || 0) > 0);

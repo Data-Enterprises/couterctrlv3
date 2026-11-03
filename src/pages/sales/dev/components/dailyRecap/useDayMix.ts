@@ -1,0 +1,62 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAppSelector } from "../../../../../hooks";
+import { loadDayRows } from "./recapLoad";
+import { mixForDay } from "./recapMix";
+import type { DayMixState } from "./recapTypes";
+
+/**
+ * A day's refunds and price mix, read when the day is opened and kept while
+ * the store is.
+ *
+ * Everything else on the tab comes from what the popup already holds; only
+ * these two need the day's item rows, which carry a sale type and a price
+ * type. One store, one day, every sub dept at once: a seventh of a week's
+ * rows, which is what makes reading it on demand affordable for a big store.
+ *
+ * Kept in the hook, not in Redux: it belongs to this tab for this store, and
+ * nothing needs it after the popup closes, so there is nothing for sign-out to
+ * have to clear. A change of store starts again from empty, and an answer for
+ * the previous store that lands late is dropped.
+ */
+export const useDayMix = (storeId: number, storeNumber: string) => {
+  const { url, token } = useAppSelector((s) => s.app);
+  const [byDate, setByDate] = useState<Record<string, DayMixState>>({});
+  const asked = useRef(new Set<string>());
+  const storeKey = `${storeId}__${storeNumber}`;
+  const current = useRef(storeKey);
+
+  useEffect(() => {
+    current.current = storeKey;
+    asked.current = new Set();
+    setByDate({});
+  }, [storeKey]);
+
+  /** Start a day's read. Once per day; a failed day is forgotten so asking
+   *  again retries. The outcome lands in `stateOf`. */
+  const request = useCallback(
+    (date: string) => {
+      if (asked.current.has(date)) return;
+      asked.current.add(date);
+      const key = storeKey;
+      setByDate((s) => ({ ...s, [date]: { status: "loading" } }));
+      loadDayRows(url, token, storeId, storeNumber, date)
+        .then((rows) => {
+          if (current.current !== key) return;
+          setByDate((s) => ({ ...s, [date]: { status: "ready", mix: mixForDay(rows) } }));
+        })
+        .catch(() => {
+          if (current.current !== key) return;
+          asked.current.delete(date);
+          setByDate((s) => ({ ...s, [date]: { status: "error" } }));
+        });
+    },
+    [url, token, storeId, storeNumber, storeKey],
+  );
+
+  const stateOf = useCallback(
+    (date: string): DayMixState => byDate[date] ?? { status: "idle" },
+    [byDate],
+  );
+
+  return { stateOf, request };
+};
