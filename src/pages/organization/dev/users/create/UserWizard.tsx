@@ -25,6 +25,7 @@ import { STEP_ORDER, type WizardStep } from "./wizardSteps";
 import { usePanelFit, type PanelFit } from "../../panelFit";
 import StepAccessType from "./StepAccessType";
 import StepReview from "./StepReview";
+import { useSeededPicks } from "./useSeededPicks";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -142,7 +143,6 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const [furthest, setFurthest] = useState<WizardStep>(
     editing ? "review" : "identity",
   );
-  const [picks, setPicks] = useState<AccessPicks>({ ...NO_PICKS, mode: "all" });
   const [companyGroups, setCompanyGroups] = useState<
     Record<number, CompanyBaseGroup[]>
   >({});
@@ -176,6 +176,13 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const typeUnset =
     editing && ctx.users.find((u) => u.id === editUserId)?.access_mode === null;
   const existing = useExistingAccess(held.heldGroups, held.groupPicks);
+  /** Seeded from what they hold as the reads land, except after a save that
+   *  stopped part way: see useSeededPicks. */
+  const { picks, setPicks, keepPicks } = useSeededPicks(
+    editing,
+    existing.picks,
+    { ...NO_PICKS, mode: "all" },
+  );
 
   /**
    * The identity as it was opened, for "did any of it change". Captured once,
@@ -188,13 +195,6 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     identityBefore.current = identityOf(ctx.userInfo);
     emailBefore.current = ctx.userInfo.email;
   }
-
-  /** Re-seed whenever what they hold arrives or changes under us — the three
-   *  reads land a moment apart, and a save re-reads all three. */
-  useEffect(() => {
-    if (!editing) return;
-    setPicks(existing.picks);
-  }, [editing, existing.picks]);
 
   /**
    * Edit: every held group's stores, as soon as the groups are known.
@@ -468,8 +468,11 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         setSaving(false);
         setFailure(outcome);
         ctx.dispatch(setRefresh(true));
-        // Re-read anyway: a save that stopped part way has written some of
-        // it, and the screen must show which rather than its own guess.
+        // Re-read: a save that stopped part way has written some of it. The
+        // re-read moves the "before" side only; the picks stay as the admin
+        // left them, so what didn't save is still different and Save changes
+        // sends just that.
+        keepPicks();
         held.reload();
         return;
       }
@@ -565,9 +568,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           </div>
           <div className="text-[11.5px] text-content/95">
             {outcomeSentence(failure)}
-            {failure.reason ? ` ${failure.reason}` : ""} The lists have been
-            re-read, so what you see is what saved. Press Save changes to try
-            the rest.
+            {failure.reason ? ` ${failure.reason}` : ""} What did save has
+            been re-read, and your changes are still on screen. Press Save
+            changes to send the rest.
           </div>
         </div>
       )}

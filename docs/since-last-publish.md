@@ -1516,3 +1516,9 @@ saving an Edit afterwards quietly took the new company back off (or put back
 one that had just been removed). Edit now reads the person's companies from
 the server when it opens, and every change on the Companies, Base Groups and
 Stores tabs refreshes the Users list.
+
+**"Press Save changes to try the rest" works after a partial save.** When part
+of an Edit's access save failed, the page re-read what had saved and then
+replaced your changes with it, so nothing was left to save and Save changes
+went grey while the message said to press it. Your changes now stay on
+screen, only what saved is re-read, and Save changes sends what's left.
