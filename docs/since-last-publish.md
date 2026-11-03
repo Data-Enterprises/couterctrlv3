@@ -1496,3 +1496,7 @@ made the person with nothing. Review is now ready only when User info, Access
 type and Assignments all are, the step bar won't jump past a step that isn't,
 and a greyed-out Create user says why underneath ("Finish User info first.",
 "Give them at least one company or group on Assignments.").
+
+**Duplicate copies every company.** A duplicate only copied the companies its
+groups were in, so a company the source held with no group in it was left
+behind. It now starts from every company the source holds.

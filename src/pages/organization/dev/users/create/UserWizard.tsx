@@ -25,7 +25,12 @@ import { STEP_ORDER, type WizardStep } from "./wizardSteps";
 import { usePanelFit, type PanelFit } from "../../panelFit";
 import StepAccessType from "./StepAccessType";
 import StepReview from "./StepReview";
-import { createBlockReason, reachableLimit, readiness } from "./wizardRules";
+import {
+  createBlockReason,
+  duplicateCompanies,
+  reachableLimit,
+  readiness,
+} from "./wizardRules";
 import {
   accessSets,
   emptySelectedGroupIds,
@@ -251,12 +256,14 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     );
     // The source's companies and groups are picked in their own right rather
     // than re-derived from its stores: a group whose stores are all unticked
-    // still has to survive the copy.
+    // still has to survive the copy. Companies are every company the source
+    // holds, not only those its groups imply: one held with no group in it
+    // used to be left behind.
     //
     // The access type copies too. It is one answer per person now, read back
     // from what the source actually holds, so there is nothing to guess.
     setPicks({
-      companies: Array.from(new Set(source.groups.map((g) => g.company))),
+      companies: duplicateCompanies(source),
       baseGroups: source.groups.map((g) => g.id),
       mode: source.mode,
       stores: source.stores,
