@@ -1817,3 +1817,9 @@ the price mix as Not reported. There is no coupon figure, because the register
 already nets coupons into sales and the coupon columns repeat that money.
 An Export Daily Recap button at the end of the tabs opens Export CSV with
 Daily Recap already ticked.
+
+### Daily recap no longer crashes on a store that sends a numeric price type
+
+Opening a day crashed the whole panel ("price_type.trim is not a function")
+when the store's POS sends its price type as a number rather than text. The
+recap now reads the type either way. Found in testing on daily_recap.

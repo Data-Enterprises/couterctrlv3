@@ -1,7 +1,13 @@
 import type { SubDeptMargin } from "../../../../../interfaces";
 import type { RecapMix } from "./recapTypes";
 
-const isRefund = (r: SubDeptMargin) => /^refund/i.test((r.sale_type ?? "").trim());
+/**
+ * A row's type as text. The columns are typed as strings but not every POS
+ * sends one: a numeric price type took the whole panel down on `.trim()`.
+ */
+const text = (v: unknown) => (v === null || v === undefined ? "" : String(v)).trim();
+
+const isRefund = (r: SubDeptMargin) => /^refund/i.test(text(r.sale_type));
 
 /**
  * Regular price or not, by the same rule /sales/topitems uses: REG, or
@@ -11,7 +17,7 @@ const isRefund = (r: SubDeptMargin) => /^refund/i.test((r.sale_type ?? "").trim(
  * that regular would report every Sonic item as full price.
  */
 const priceKind = (r: SubDeptMargin): "regular" | "promo" | "unknown" => {
-  const t = (r.price_type ?? "").trim().toUpperCase();
+  const t = text(r.price_type).toUpperCase();
   if (!t) return "unknown";
   return t === "REG" || t === "REGULAR" ? "regular" : "promo";
 };

@@ -42,6 +42,14 @@ describe("a day's refunds and price mix", () => {
     expect(shares?.unreported).toBeCloseTo(20);
   });
 
+  it("reads a price type sent as a number instead of falling over", () => {
+    const mix = mixForDay([
+      row({ price_type: 1 as unknown as string, total_sales: 10 }),
+      row({ sale_type: 7 as unknown as string, price_type: null as unknown as string }),
+    ]);
+    expect(mix).toMatchObject({ promo: 10, unknown: 10 });
+  });
+
   it("has no mix at all when no row carries a price type", () => {
     const mix = mixForDay([row({ price_type: "" }), row({ price_type: undefined })]);
     expect(priceShares(mix)).toBeNull();
