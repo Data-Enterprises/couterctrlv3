@@ -1730,3 +1730,10 @@ day cards narrowed the other tabs but the Top 200 stayed on the whole week. It
 now shows that day's top 200, against the same weekday last week and last
 year, with its share taken of that day's net sales, and its headings name the
 day instead of "This week".
+
+**Top 200's department bars are plain navy.** Before an item is picked, the
+Top 200 shows each sub department's share as a bar. The bars were coloured by
+grade, which made a bar's length read as a verdict. They are now plain navy
+and show only how much of the money each department took; the grade stays on
+the vs LW / vs LY pill at the end of each row, and the Crit, Watch and OK chips
+still filter by it.

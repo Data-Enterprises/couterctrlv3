@@ -84,7 +84,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the landing report",
-          pre: "Before you pick anything, the right side shows where the money came from: each sub department the top 200 sits in, graded, with this week against last week and last year. Pick a day in the day cards and it is that day instead, against the same weekday last week and last year.",
+          pre: "Before you pick anything, the right side shows where the money came from: each sub department the top 200 sits in, its share as a plain bar, and a graded pill for its change against last week or last year (switch with vs LW / vs LY). Pick a day in the day cards and it is that day instead, against the same weekday last week and last year.",
           see: "Click a department to narrow the list to it. Its total will not match the Sub depts tab — that one is the whole week, this is the top 200's share of it.",
         },
         {

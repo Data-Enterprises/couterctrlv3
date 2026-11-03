@@ -838,9 +838,8 @@ const PopupTopItems = ({
               </div>
 
               {/* Chips count DEPARTMENTS, not items. This report is about
-                  where the money sat, and each department's grade is the
-                  colour of its own bar below -- a dot beside a coloured bar
-                  was one fact drawn twice. */}
+                  where the money sat; each department's grade is the colour
+                  of its vs LW / vs LY pill, and these filter by it. */}
               <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
                 {(
                   [
@@ -912,7 +911,6 @@ const PopupTopItems = ({
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
                 {landing.shown.map((d) => {
-                  const sev = deptSeverity(d, threshold);
                   const pct =
                     landing.top > 0 ? (d.ty / landing.total) * 100 : 0;
                   return (
@@ -945,15 +943,14 @@ const PopupTopItems = ({
                         {d.name}
                       </span>
 
-                      {/* The bar carries the grade, which is what the dot
-                          beside it used to do twice over -- a coloured dot
-                          and a coloured bar saying one thing. */}
+                      {/* The bar measures this period's sales and nothing
+                          else, so it is navy and ungraded: a bar's length is
+                          not a verdict. The grade is the pill at the end of
+                          the row, against whichever basis is chosen. */}
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="flex-1 h-3 rounded bg-bkg min-w-0">
                           <span
-                            className={`block h-full rounded ${
-                              sev ? severityDotClass[sev] : "bg-gray-300"
-                            }`}
+                            className="block h-full rounded bg-brand_navy"
                             style={{
                               width: `${landing.top > 0 ? Math.max(2, (d.ty / landing.top) * 100) : 0}%`,
                             }}
