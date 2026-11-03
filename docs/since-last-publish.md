@@ -1594,3 +1594,10 @@ level 9, the new group disappeared from the list (it only lists groups you
 hold) with nothing on screen to say why. Create now waits while it's saving,
 and after creating, a note says you don't hold the new group yet, with an
 "Assign it to me" button that gives it to you By group so you can fill it.
+
+**Add user enforces the password rules it shows.** The form listed the
+password rules (12 characters, upper and lower case, a number, a symbol) but
+accepted anything, "a" included, and a username or email marked "Not
+available" didn't stop you continuing. Continue now waits until every rule
+is met and neither is marked Not available. The server still needs the same
+rules on its side.
