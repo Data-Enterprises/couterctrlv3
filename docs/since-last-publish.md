@@ -1884,3 +1884,10 @@ items, qty, and weight where the store weighs things); the per-basket and
 per-unit figures moved to the new Averages card. The hour chart is back to
 its earlier look, with its hover tooltip kept. On a narrow panel the grid
 goes two across, and a short panel scrolls rather than cutting anything off.
+
+### Daily recap: cleaner hour chart; Averages matches Baskets
+
+The figure printed over the busiest hour's bar is gone (it ran into the
+chart's title on a tall day); the facts panel beside the chart already gives
+it, and its amounts under Busiest and Slowest are now semibold. Averages is
+laid out as tiles, the same as Baskets beside it.

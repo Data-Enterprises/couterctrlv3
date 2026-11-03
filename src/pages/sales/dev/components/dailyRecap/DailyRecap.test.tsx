@@ -133,7 +133,7 @@ describe("Daily recap", () => {
     expect(within(baskets).queryByText("avg basket")).toBeNull();
 
     const averages = screen.getByRole("region", { name: "Averages" });
-    expect(within(averages).getByText("Avg basket")).toBeTruthy();
+    expect(within(averages).getByText("avg basket")).toBeTruthy();
     expect(within(averages).getByText("$10.00")).toBeTruthy();
 
     expect(screen.getByRole("img", { name: /busiest 12 PM – 1 PM/ })).toBeTruthy();

@@ -11,7 +11,7 @@ const fact = (label: string, value: string, sub: string | null, big = false) => 
     <div className={`${big ? "text-[18px]" : "text-[16px]"} font-bold text-content whitespace-nowrap`}>
       {value}
     </div>
-    {sub && <div className="text-[12px] text-content tabular-nums">{sub}</div>}
+    {sub && <div className="text-[12.5px] font-semibold text-content tabular-nums">{sub}</div>}
   </div>
 );
 
@@ -24,8 +24,9 @@ const fact = (label: string, value: string, sub: string | null, big = false) => 
  * its facts and cut the hour labels off. Its facts sit beside it on a wide
  * panel and in a row under it on a narrow one.
  *
- * Every bar is navy; the busiest is full strength and carries its figure, the
- * rest at 60%. That marks the peak, it does not grade the others. Hovering an
+ * Every bar is navy; the busiest is full strength, the rest at 60%. Its figure
+ * is not printed over the bar (it collided with the title on a tall day): the
+ * facts panel beside the chart already gives it. That marks the peak, it does not grade the others. Hovering an
  * hour shows its figures in a tip that follows the mouse; the facts panel sits
  * on the theme's grey ground to set it apart from the chart.
  */
@@ -96,14 +97,6 @@ const RecapShapeCard = ({
                     onMouseMove={track(h.hour)}
                     className="relative flex-1 min-w-0 h-full flex flex-col justify-end items-center cursor-default"
                   >
-                    {isPeak && (
-                      <span
-                        className="absolute text-[11px] font-bold text-content whitespace-nowrap tabular-nums"
-                        style={{ bottom: `calc(${height}% + 4px)` }}
-                      >
-                        {money0(h.net)}
-                      </span>
-                    )}
                     <span
                       className={`w-full rounded-t-[3px] transition-colors ${
                         isPeak ? "bg-brand_navy" : tip?.key === h.hour ? "bg-brand_navy/80" : "bg-brand_navy/60"
