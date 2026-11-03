@@ -52,7 +52,7 @@ import {
   type AccessOutcome,
 } from "../access/useAccessSave";
 import { useAccessMode } from "../access/useAccessMode";
-import { useHeldAccess } from "../access/useHeldAccess";
+import { failedReadsText, useHeldAccess } from "../access/useHeldAccess";
 import { useExistingAccess } from "../access/useExistingAccess";
 
 interface UserWizardProps {
@@ -366,7 +366,13 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   /** Edit saves when something moved and what moved is ready; there is no
    *  point sending an unchanged person back to the server. */
   const editReason = editing
-    ? editBlockReason({ ready: stepReady, identityDirty, accessDirty, hasAccess })
+    ? editBlockReason({
+        ready: stepReady,
+        identityDirty,
+        accessDirty,
+        hasAccess,
+        held: held.failed.length > 0 ? "failed" : held.loaded ? "loaded" : "loading",
+      })
     : null;
   const canSave = editing ? editReason === null : canAdvance;
 
@@ -562,6 +568,26 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             className="text-[11.5px] font-medium text-content/95 flex-shrink-0 hover:underline"
           >
             Leave it for now
+          </button>
+        </div>
+      )}
+
+      {/* A read that failed used to become an empty list, so the person
+          looked as though they held nothing. */}
+      {editing && held.failed.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
+          <div className="flex-1 min-w-[260px] text-[11.5px] text-content leading-snug">
+            <span className="font-semibold">
+              Couldn’t read their {failedReadsText(held.failed)}.
+            </span>{" "}
+            What they hold may be missing below, so Save changes is off until
+            it loads.
+          </div>
+          <button
+            onClick={held.reload}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+          >
+            Retry
           </button>
         </div>
       )}

@@ -3,6 +3,7 @@ import reducer, {
   markUserInfoSaved,
   resetUserInfo,
   setSelectedUserInfo,
+  setSelectedUserStores,
   setUserInfo,
 } from "./devUsersSlice";
 import type { User } from "../../interfaces";
@@ -37,5 +38,19 @@ describe("Edit's details as opened", () => {
   it("go when the form is reset, so Add has none", () => {
     const s = reducer(opened(), resetUserInfo());
     expect(s.userInfoBefore).toBeNull();
+  });
+});
+
+describe("opening another person", () => {
+  it("lets go of the last person's stores", () => {
+    let s = reducer(
+      undefined,
+      setSelectedUserStores({
+        assigned: [{ storeid: 301, store_number: "301", store_name: "A's store" }],
+        unassigned: [],
+      } as never),
+    );
+    s = reducer(s, setSelectedUserInfo(bob));
+    expect(s.selectedUserStores.assigned).toEqual([]);
   });
 });

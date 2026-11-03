@@ -1541,3 +1541,11 @@ says why underneath ("Nothing has changed yet.", "Finish User info first.").
 **Edit's Review names every group.** Jumping straight to Review in Edit named
 groups by number ("Group 66") unless their company had been opened on
 Assignments. Review now names the groups the person holds either way.
+
+**Edit shows the right person's stores, and a failed load says so.** Opening
+one person after another could briefly show the first person's stores, and
+kept them if the second person's stores didn't load. A failed load of
+someone's groups, stores or picks also looked like they held nothing. Opening
+a person now clears the last one's stores, a failed load shows "Couldn't read
+their …" with a Retry button, and Save changes stays off until everything
+they hold has loaded.

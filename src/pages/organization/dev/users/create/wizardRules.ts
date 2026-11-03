@@ -77,12 +77,18 @@ export const editBlockReason = ({
   identityDirty,
   accessDirty,
   hasAccess,
+  held = "loaded",
 }: {
   ready: StepReadiness;
   identityDirty: boolean;
   accessDirty: boolean;
   hasAccess: boolean;
+  /** Whether what the person holds has been read. A save from a screen
+   *  missing some of it would act on what isn't there. */
+  held?: "loaded" | "loading" | "failed";
 }): string | null => {
+  if (held === "loading") return "Still reading what they hold.";
+  if (held === "failed") return "What they hold didn't load. Retry above.";
   if (!ready.type) return "Wait for the access type to finish switching.";
   if (!identityDirty && !accessDirty) return "Nothing has changed yet.";
   if (identityDirty && !ready.identity) return "Finish User info first.";

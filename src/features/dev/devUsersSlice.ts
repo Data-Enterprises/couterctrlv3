@@ -217,6 +217,10 @@ export const usersSlice = createSlice({
       };
       state.userCompanyIds = companies.map((c) => c.company);
       state.userInfoBefore = state.userInfo;
+      // The last person's stores go with them: B used to show A's direct
+      // stores until B's read landed, and kept them if it failed.
+      state.selectedUserStores = { assigned: [], unassigned: [] };
+      state.allStores = [];
     },
     /** The details on screen have been saved: they are the new "before". */
     markUserInfoSaved: (state) => {

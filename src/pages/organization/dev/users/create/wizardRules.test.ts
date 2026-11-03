@@ -147,3 +147,16 @@ describe("Save changes in Edit", () => {
     expect(reason({}, { identityDirty: false, accessDirty: false })).toBe("Nothing has changed yet.");
   });
 });
+
+describe("Save changes before what they hold has loaded", () => {
+  const ready = readiness({ identity: true, switching: false, hasAccess: true, emptyGroups: 0 });
+  const dirty = { identityDirty: true, accessDirty: false, hasAccess: true, ready };
+
+  it("waits while it is read, and says so", () => {
+    expect(editBlockReason({ ...dirty, held: "loading" })).toBe("Still reading what they hold.");
+  });
+
+  it("stays off after a failed read", () => {
+    expect(editBlockReason({ ...dirty, held: "failed" })).toMatch(/didn't load/);
+  });
+});
