@@ -22,7 +22,7 @@ import TextFilter from "../../../../../components-dev/filters/TextFilter";
  * ### Unsaved grants are included
  *
  * It reads from the picks as they stand, not from what is saved, so switching
- * a group to Auto shows the stores that arrive the moment Save is pressed. A
+ * to By group shows the stores that arrive the moment Save is pressed. A
  * preview that only caught up afterwards would make the mode control feel
  * like it had done nothing.
  */
@@ -98,7 +98,7 @@ const EffectiveStoresPanel = ({
     [viaGroups, directStoreIds, groupsById, granted],
   );
 
-  /** An Auto group whose roster has not arrived would make the count read
+  /** A group held By group whose roster has not arrived would make the count read
    *  low, and low is worse than honest. */
   const pending = picks.baseGroups.some(
     (id) => picks.mode === "all" && groupStores[id] === undefined,
@@ -175,7 +175,7 @@ const EffectiveStoresPanel = ({
           <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/85 text-center">
             {picks.baseGroups.length === 0
               ? "No base groups held, so no stores."
-              : "No stores yet — pick some, or set a group to Auto."}
+              : "No stores yet — tick a group, or pick its stores By store."}
           </div>
         )}
       </div>

@@ -12,7 +12,8 @@ export type StoreSplit = { assigned: Store[]; unassigned: Store[] };
  *
  * Base groups are access only: a group is a set of stores, and assigning a
  * user to it grants them those stores. Nothing is shared or copied into the
- * user's own store groups — that is Shared Groups, its own tab and router.
+ * user's own store groups — that is Shared Groups, a tab on the Groups page
+ * with its own router.
  */
 export const useBaseGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);

@@ -49,8 +49,8 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   const [unassignedFilter, setUnassignedFilter] = useState("");
   const [assignedFilter, setAssignedFilter] = useState("");
 
-  // A shared group is managed on User Management's Shared Groups tab (owners
-  // and up), so here it's shown but never edited. Its stores come from
+  // A shared group is managed on this page's Shared Groups tab (owners and
+  // up), so here it's shown but never edited. Its stores come from
   // stores_assigned_to_user_group as this user, so only the group's stores
   // they're assigned to appear.
   const readOnly = group.is_shared;

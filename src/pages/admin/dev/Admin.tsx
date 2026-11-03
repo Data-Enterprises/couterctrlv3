@@ -70,8 +70,8 @@ const Admin = () => {
   // programmer used the same session would otherwise land on a tab that is no
   // longer in their strip — visible content under an invisible tab.
   //
-  // The same goes for a tab that no longer exists at all (Base groups and
-  // Shared groups moved to User Management).
+  // The same goes for a tab that no longer exists at all (Base groups moved
+  // to User Management, Shared groups to the Groups page).
   useEffect(() => {
     if (!tabs.some((t) => t.id === context.adminForm)) {
       dispatch(setAdminForm("store_activity"));

@@ -1625,3 +1625,8 @@ as 0 every time. Each save now sends back the values the person already had.
 menu hides User Management below level 5, but the page could still be
 reached by its address, and then it looked for a tab that no longer exists.
 It now says "You don't have access to User Management."
+
+**Effective stores' empty message no longer mentions a setting that's gone.**
+With nothing granted, Effective stores said "pick some, or set a group to
+Auto", a control that no longer exists. It now says "tick a group, or pick its
+stores By store".
