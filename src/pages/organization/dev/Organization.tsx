@@ -51,7 +51,11 @@ import {
 } from "../../../features/dev/devOrganizationSlice";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
 import UsersExportModal from "./users/UsersExportModal";
-import { filterUsers, showsInactive } from "./users/userFilters";
+import {
+  filterUsers,
+  filtersApplied,
+  showsInactive,
+} from "./users/userFilters";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
@@ -291,6 +295,7 @@ const Organization = () => {
               filteredUsers={filterUsers(exportSource, ctx.usersGridFilters)}
               userLevels={ctx.userLevels}
               scopeLabel={exportInactive ? "Inactive users" : "Active users"}
+              filtersActive={filtersApplied(ctx.usersGridFilters)}
             />
           )}
           {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}

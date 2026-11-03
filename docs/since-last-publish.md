@@ -1640,3 +1640,9 @@ Enter and again when the box lost focus), had no way to back out, and jumped
 back to the Stores tab. Enter now saves once, Escape cancels, and you stay on
 the tab you were on. Deleting a group now says that everyone who holds it
 loses its stores, and a double-click on the confirmation deletes it once.
+
+**The users export knows when the list is filtered, and includes Access.** The
+export decided whether the list was filtered by comparing counts, so a filter
+that happened to match everyone read as "No filters currently applied". It
+now goes by whether any filter is set. The file also gains an Access column
+(By group, By store, Mixed, Not set), as the list shows.

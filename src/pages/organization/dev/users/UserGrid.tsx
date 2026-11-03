@@ -41,7 +41,7 @@ import IconButton from "../../../../components-dev/IconButton";
 import Checkbox from "../../../../components-dev/Checkbox";
 import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
-import { filterUsers, NO_COMPANY_VALUE } from "./userFilters";
+import { accessLabel, filterUsers, NO_COMPANY_VALUE } from "./userFilters";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
@@ -193,16 +193,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       return next;
     });
 
-  const accessLabel = (mode: User["access_mode"]) =>
-    mode === "all"
-      ? "By group"
-      : mode === "selected"
-        ? "By store"
-        : mode === "mixed"
-          ? "Mixed"
-          : mode === null
-            ? "Not set"
-            : "—";
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,

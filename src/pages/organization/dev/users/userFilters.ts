@@ -58,3 +58,32 @@ export const filterUsers = (users: User[], f: UsersGridFilters): User[] => {
     );
   });
 };
+
+/** A person's access type, as the grid's Access column and the export say it. */
+export const accessLabel = (mode: User["access_mode"]) =>
+  mode === "all"
+    ? "By group"
+    : mode === "selected"
+      ? "By store"
+      : mode === "mixed"
+        ? "Mixed"
+        : mode === null
+          ? "Not set"
+          : "—";
+
+/**
+ * Whether any of the grid's filters narrows the list. The status filter picks
+ * the list itself (active or inactive), so it doesn't count. The export used
+ * to compare counts instead, so a filter that happened to match everyone read
+ * as "No filters currently applied".
+ */
+export const filtersApplied = (f: UsersGridFilters) =>
+  [
+    f.companyFilter,
+    f.levelFilter,
+    f.roleFilter,
+    f.accessFilter,
+    f.searchText.trim(),
+    f.usernameFilter.trim(),
+    f.emailFilter.trim(),
+  ].some((v) => v !== "");

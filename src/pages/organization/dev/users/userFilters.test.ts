@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { User } from "../../../../interfaces";
-import { filterUsers, NO_COMPANY_VALUE } from "./userFilters";
+import { accessLabel, filterUsers, filtersApplied, NO_COMPANY_VALUE } from "./userFilters";
 
 const none = {
   companyFilter: "",
@@ -29,5 +29,18 @@ describe("the users grid's filters, outside the grid", () => {
 
   it("leave everyone when nothing is set", () => {
     expect(filterUsers(users, none)).toHaveLength(2);
+  });
+});
+
+describe("the users export", () => {
+  it("calls the list filtered when a filter is set, even if it matches everyone", () => {
+    expect(filtersApplied(none)).toBe(false);
+    expect(filtersApplied({ ...none, statusFilter: "inactive" })).toBe(false);
+    expect(filtersApplied({ ...none, roleFilter: "2" })).toBe(true);
+  });
+
+  it("names the access type as the grid does", () => {
+    expect(accessLabel("selected")).toBe("By store");
+    expect(accessLabel(null)).toBe("Not set");
   });
 });
