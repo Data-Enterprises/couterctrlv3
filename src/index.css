@@ -181,7 +181,7 @@ body {
   :root {
     /* The main theme for now... */
     --color-bkg: 222 229 232;
-    --color-custom-white: 243 246 247;
+    --color-custom-white: 244 247 248;
     /* Row selection — the neutral highlight used by grids and lists app-wide. */
     --color-row-selected: 239 241 242;
     --color-row-selected-border: 138 155 176;

@@ -1475,3 +1475,7 @@ start full again from the new answer. The help says so.
 on the search card look the same, but now act as a single choice: Tab lands
 on the picked one, the arrow keys move the pick, and a screen reader announces
 it as one of four rather than four separate checkboxes.
+
+**Internal: leftover state from the old query window removed.** Nothing on
+screen changes; two unused fields and their two actions came out of the Data
+Export page's state.

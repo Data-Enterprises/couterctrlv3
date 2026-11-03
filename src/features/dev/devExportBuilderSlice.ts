@@ -276,9 +276,6 @@ export interface ExportBuilderState {
 
   flags: ExportFlags;
 
-  /** The query scratchpad: open, and the last thing typed into it. */
-  queryOpen: boolean;
-  querySql: string;
   /**
    * The user's saved queries, fetched beside the preview.
    *
@@ -411,8 +408,6 @@ export const initialState: ExportBuilderState = {
     ordered: false,
   },
 
-  queryOpen: false,
-  querySql: "",
   queries: [],
   queriesLoading: false,
   queriesError: null,
@@ -798,9 +793,6 @@ const devExportBuilderSlice = createSlice({
     ) => {
       state.rowFlags[action.payload.filter] = action.payload.value;
     },
-    openQuery: (state, action: PayloadAction<boolean>) => {
-      state.queryOpen = action.payload;
-    },
     openDownloads: (state, action: PayloadAction<boolean>) => {
       state.downloadsOpen = action.payload;
     },
@@ -875,10 +867,6 @@ const devExportBuilderSlice = createSlice({
     /** The load notes, read and put away. */
     clearSavedNotes: (state) => {
       state.savedNotes = [];
-    },
-    /** Kept so closing the window is not the same as losing the query. */
-    setQuerySql: (state, action: PayloadAction<string>) => {
-      state.querySql = action.payload;
     },
     startQueriesLoad: (state) => {
       state.queriesLoading = true;
@@ -1153,7 +1141,6 @@ export const {
   toggleSortKey,
   removeAggregate,
   setColumnOrder,
-  openQuery,
   openDownloads,
   openSaved,
   startQueriesLoad,
@@ -1172,7 +1159,6 @@ export const {
   removeSaved,
   failSavedWork,
   markSavedLoaded,
-  setQuerySql,
   setFlag,
   setRowFlag,
   startSqlLoad,
