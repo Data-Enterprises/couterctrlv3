@@ -11,13 +11,13 @@ import type { DayMixState } from "./recapTypes";
  * no price type (Sonic sends none) gets an empty dashed bar and says so,
  * rather than a full one that would claim everything sold at regular.
  */
-const RecapMixCard = ({ state }: { state: DayMixState }) => {
+const RecapMixCard = ({ state, short }: { state: DayMixState; short: boolean }) => {
   if (state.status !== "ready") {
     return (
-      <RecapCard title="Refunds and price mix">
+      <RecapCard title="Refunds and price mix" compact={short}>
         <div className="mt-2.5 text-[12px] text-content">
           {state.status === "error"
-            ? "This day's items could not be read. Close the day and open it again to retry."
+            ? "This day's items could not be read. Pick All week, then this day again, to retry."
             : "Reading this day's items…"}
         </div>
       </RecapCard>
@@ -26,15 +26,15 @@ const RecapMixCard = ({ state }: { state: DayMixState }) => {
   const { mix } = state;
   const shares = priceShares(mix);
   return (
-    <RecapCard title="Refunds and price mix">
-      <div className="flex items-baseline gap-2 mt-2.5 text-content">
+    <RecapCard title="Refunds and price mix" compact={short}>
+      <div className={`flex flex-wrap items-baseline gap-2 ${short ? "mt-1.5" : "mt-2.5"} text-content`}>
         <span className="text-[18px] font-bold tabular-nums">{count(mix.refunds.units)}</span>
         <span className="text-[13px]">
           {mix.refunds.units === 1 ? "unit" : "units"} refunded ·{" "}
           <b className="tabular-nums">{money(mix.refunds.net)}</b>
         </span>
       </div>
-      <div className="mt-3 text-[12px] font-semibold text-content">Price mix</div>
+      <div className={`${short ? "mt-2" : "mt-3"} text-[12px] font-semibold text-content`}>Price mix</div>
       {shares ? (
         <>
           <div

@@ -5,13 +5,15 @@ import { mixForDay } from "./recapMix";
 import type { DayMixState } from "./recapTypes";
 
 /**
- * A day's refunds and price mix, read when the day is opened and kept while
- * the store is.
+ * Each day's item count, refunds and price mix, read a day at a time and kept
+ * while the store is.
  *
  * Everything else on the tab comes from what the popup already holds; only
- * these two need the day's item rows, which carry a sale type and a price
- * type. One store, one day, every sub dept at once: a seventh of a week's
- * rows, which is what makes reading it on demand affordable for a big store.
+ * these need the day's item rows, which carry a product code, a sale type
+ * and a price type. The week view asks for all seven days so its Items column
+ * fills in day by day; the day view then finds its day already read. One
+ * store, one day, every sub dept per read: seven modest reads rather than one
+ * week-sized one, the same load as the Daily Recap export.
  *
  * Kept in the hook, not in Redux: it belongs to this tab for this store, and
  * nothing needs it after the popup closes, so there is nothing for sign-out to
@@ -53,10 +55,18 @@ export const useDayMix = (storeId: number, storeNumber: string) => {
     [url, token, storeId, storeNumber, storeKey],
   );
 
+  /** Every day not yet asked for. */
+  const requestAll = useCallback(
+    (dates: string[]) => {
+      for (const d of dates) request(d);
+    },
+    [request],
+  );
+
   const stateOf = useCallback(
     (date: string): DayMixState => byDate[date] ?? { status: "idle" },
     [byDate],
   );
 
-  return { stateOf, request };
+  return { stateOf, request, requestAll };
 };

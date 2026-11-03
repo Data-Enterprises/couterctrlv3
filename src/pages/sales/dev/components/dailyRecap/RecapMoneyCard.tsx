@@ -10,9 +10,13 @@ import type { RecapMoney } from "./recapTypes";
  * so a coupon total here would be counted twice. Fuel, lottery and cash are
  * out of net, as on the day cards, and named so their money is not lost.
  */
-const RecapMoneyCard = ({ money: m }: { money: RecapMoney }) => (
-  <RecapCard title="Money">
-    <div className="grid grid-cols-[1fr_auto] gap-x-2.5 gap-y-1.5 mt-2.5 text-[13px] text-content tabular-nums">
+const RecapMoneyCard = ({ money: m, short }: { money: RecapMoney; short: boolean }) => (
+  <RecapCard title="Money" compact={short}>
+    <div
+      className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-2.5 ${
+        short ? "gap-y-1 mt-1.5" : "gap-y-1.5 mt-2.5"
+      } text-[13px] text-content tabular-nums`}
+    >
       <span>Sales with tax</span>
       <span className="text-right font-semibold">{money(m.withTax)}</span>
       <span>− Tax</span>

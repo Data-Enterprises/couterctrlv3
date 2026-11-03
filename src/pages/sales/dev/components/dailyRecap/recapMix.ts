@@ -23,17 +23,20 @@ const priceKind = (r: SubDeptMargin): "regular" | "promo" | "unknown" => {
 };
 
 /**
- * What a day's item rows add to the recap: its refunds and its price mix.
+ * What a day's item rows add to the recap: how many different items sold,
+ * its refunds and its price mix.
  *
- * Both need the item rows: the sub dept and hourly figures carry neither a
- * sale type nor a price type. The endpoint already signs refunds negative, so
+ * All three need the item rows: the sub dept and hourly figures carry no
+ * product code, sale type or price type. The endpoint already signs refunds negative, so
  * a refund's units and money come back below zero and are reported here as
  * the amounts given back.
  *
  * Takes rows already cut to the counted sub depts and to the location.
  */
 export const mixForDay = (rows: SubDeptMargin[]): RecapMix => {
+  const codes = new Set<string>();
   const mix: RecapMix = {
+    items: 0,
     refunds: { units: 0, net: 0 },
     regular: 0,
     promo: 0,
@@ -46,8 +49,10 @@ export const mixForDay = (rows: SubDeptMargin[]): RecapMix => {
       mix.refunds.net += Math.abs(net);
       continue;
     }
+    codes.add(String(r.product_code));
     mix[priceKind(r)] += net;
   }
+  mix.items = codes.size;
   return mix;
 };
 

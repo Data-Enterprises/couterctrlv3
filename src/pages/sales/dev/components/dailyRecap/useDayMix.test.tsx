@@ -68,6 +68,15 @@ describe("a day's mix", () => {
     expect(fetchRows).toHaveBeenCalledTimes(1);
   });
 
+  it("reads every day of the week when asked, once each", async () => {
+    fetchRows.mockResolvedValue([]);
+    const { result } = setup();
+    act(() => result.current.requestAll(["2026-10-29", "2026-10-30"]));
+    await waitFor(() => expect(result.current.stateOf("2026-10-30").status).toBe("ready"));
+    act(() => result.current.request("2026-10-30"));
+    expect(fetchRows).toHaveBeenCalledTimes(2);
+  });
+
   it("says when a day failed, and tries again when asked again", async () => {
     fetchRows.mockRejectedValueOnce(new Error("502")).mockResolvedValue([]);
     const { result } = setup();

@@ -1,93 +1,130 @@
-import RecapCard from "./RecapCard";
+import { CARD, CARD_TITLE } from "./recapGrid";
 import { dayLabel, hourLabel, hourRange, money0 } from "./recapFormat";
 import type { RecapDayHours } from "./recapTypes";
 
+/** One fact beside (or under) the chart. */
+const fact = (label: string, value: string, sub: string | null, big = false) => (
+  <div key={label} className="min-w-0">
+    <div className="text-[12px] text-content">{label}</div>
+    <div className={`${big ? "text-[18px]" : "text-[16px]"} font-bold text-content whitespace-nowrap`}>
+      {value}
+    </div>
+    {sub && <div className="text-[12px] text-content tabular-nums">{sub}</div>}
+  </div>
+);
+
 /**
- * The day's shape: net sales by hour, with the facts a reader looks for.
+ * The day's shape: net sales by hour, filling the height the view gives it.
+ *
+ * The chart grows into whatever height is spare and shrinks to a floor; below
+ * that the view scrolls rather than clipping it. Its facts sit beside it on a
+ * wide panel and in a row under it on a narrow one.
  *
  * Every bar is navy; the busiest is full strength and carries its figure, the
- * rest at 60%. That marks the peak, it does not grade the others. The hour
- * ticks are every third hour, written the way Hourly writes them.
+ * rest at 60%. That marks the peak, it does not grade the others.
  */
-const RecapShapeCard = ({ date, shape }: { date: string; shape: RecapDayHours }) => {
+const RecapShapeCard = ({
+  date,
+  shape,
+  narrow,
+  short,
+}: {
+  date: string;
+  shape: RecapDayHours;
+  narrow: boolean;
+  short: boolean;
+}) => {
   const top = shape.peak?.net ?? 0;
-  if (!shape.hours.length) {
-    return (
-      <RecapCard title="The day's shape · net sales by hour">
-        <div className="mt-2 text-[12px] text-content">No hourly sales for this day.</div>
-      </RecapCard>
-    );
-  }
+  const facts = [
+    fact(
+      "Busiest",
+      shape.peak ? hourRange(shape.peak.hour) : "—",
+      shape.peak ? `${money0(shape.peak.net)} in net sales` : null,
+      true,
+    ),
+    fact(
+      "Slowest full hour",
+      shape.slowest ? hourRange(shape.slowest.hour) : "—",
+      shape.slowest ? money0(shape.slowest.net) : null,
+    ),
+    fact(
+      "Trading",
+      shape.first !== null && shape.last !== null
+        ? `${hourLabel(shape.first)} – ${hourLabel(shape.last + 1)}`
+        : "—",
+      null,
+    ),
+  ];
+
   return (
-    <RecapCard title="The day's shape · net sales by hour" className="grid grid-cols-[minmax(0,1fr)_220px] gap-5">
-      <div className="col-start-1 row-start-2 min-w-0">
-        <div
-          role="img"
-          aria-label={`Net sales by hour on ${dayLabel(date)}${
-            shape.peak ? `, busiest ${hourRange(shape.peak.hour)}` : ""
-          }`}
-          className="flex items-end gap-1 h-[110px] mt-4"
-        >
-          {shape.hours.map((h) => {
-            const isPeak = h.hour === shape.peak?.hour;
-            const height = top > 0 ? Math.max(3, (Math.max(0, h.net) / top) * 100) : 3;
-            return (
-              <span key={h.hour} className="relative flex-1 h-full flex flex-col justify-end items-center">
-                {isPeak && (
+    <section
+      aria-label="The day's shape"
+      className={`${CARD} flex-1 px-4 ${short ? "py-2" : "py-3"} grid gap-5 ${
+        narrow
+          ? `grid-cols-1 grid-rows-[minmax(0,1fr)_auto] gap-y-3 ${short ? "min-h-[220px]" : "min-h-[260px]"}`
+          : `grid-cols-[minmax(0,1fr)_220px] ${short ? "min-h-[180px]" : "min-h-[220px]"}`
+      }`}
+    >
+      <div className="flex flex-col min-w-0 min-h-0">
+        <div className={CARD_TITLE}>The day's shape · net sales by hour</div>
+        {shape.hours.length === 0 ? (
+          <div className="mt-2 text-[12px] text-content">No hourly sales for this day.</div>
+        ) : (
+          <>
+            <div
+              role="img"
+              aria-label={`Net sales by hour on ${dayLabel(date)}${
+                shape.peak ? `, busiest ${hourRange(shape.peak.hour)}` : ""
+              }`}
+              className={`flex-1 ${short ? "min-h-[90px] mt-3" : "min-h-[110px] mt-4"} flex items-end gap-1`}
+            >
+              {shape.hours.map((h) => {
+                const isPeak = h.hour === shape.peak?.hour;
+                const height = top > 0 ? Math.max(3, (Math.max(0, h.net) / top) * 100) : 3;
+                return (
                   <span
-                    className="absolute text-[11px] font-bold text-content whitespace-nowrap tabular-nums"
-                    style={{ bottom: `calc(${height}% + 4px)` }}
+                    key={h.hour}
+                    className="relative flex-1 min-w-0 h-full flex flex-col justify-end items-center"
                   >
-                    {money0(h.net)}
+                    {isPeak && (
+                      <span
+                        className="absolute text-[11px] font-bold text-content whitespace-nowrap tabular-nums"
+                        style={{ bottom: `calc(${height}% + 4px)` }}
+                      >
+                        {money0(h.net)}
+                      </span>
+                    )}
+                    <span
+                      className={`w-full rounded-t-[3px] ${isPeak ? "bg-brand_navy" : "bg-brand_navy/60"}`}
+                      style={{ height: `${height}%` }}
+                    />
                   </span>
-                )}
-                <span
-                  className={`w-full rounded-t-[3px] ${isPeak ? "bg-brand_navy" : "bg-brand_navy/60"}`}
-                  style={{ height: `${height}%` }}
-                />
-              </span>
-            );
-          })}
-        </div>
-        <div className="flex gap-1 mt-1 pt-1 border-t border-brand_line_2">
-          {shape.hours.map((h, i) => (
-            <span key={h.hour} className="flex-1 text-center text-[10px] font-semibold text-content whitespace-nowrap">
-              {i % 3 === 0 ? hourLabel(h.hour) : ""}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="col-start-2 row-start-1 row-span-2 flex flex-col justify-center gap-3 border-l border-gray-200 pl-5">
-        <div>
-          <div className="text-[12px] text-content">Busiest</div>
-          <div className="text-[18px] font-bold text-content">
-            {shape.peak ? hourRange(shape.peak.hour) : "—"}
-          </div>
-          {shape.peak && (
-            <div className="text-[12px] text-content tabular-nums">
-              {money0(shape.peak.net)} in net sales
+                );
+              })}
             </div>
-          )}
-        </div>
-        <div>
-          <div className="text-[12px] text-content">Slowest full hour</div>
-          <div className="text-[16px] font-bold text-content">
-            {shape.slowest ? hourRange(shape.slowest.hour) : "—"}
-          </div>
-          {shape.slowest && (
-            <div className="text-[12px] text-content tabular-nums">{money0(shape.slowest.net)}</div>
-          )}
-        </div>
-        <div>
-          <div className="text-[12px] text-content">Trading</div>
-          <div className="text-[16px] font-bold text-content">
-            {shape.first !== null && shape.last !== null
-              ? `${hourLabel(shape.first)} – ${hourLabel(shape.last + 1)}`
-              : "—"}
-          </div>
-        </div>
+            <div className="flex gap-1 mt-1 pt-1 border-t border-brand_line_2 flex-shrink-0">
+              {shape.hours.map((h, i) => (
+                <span
+                  key={h.hour}
+                  className="flex-1 min-w-0 text-center text-[10px] font-semibold text-content whitespace-nowrap"
+                >
+                  {i % 3 === 0 ? hourLabel(h.hour) : ""}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    </RecapCard>
+      <div
+        className={
+          narrow
+            ? "flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-gray-200 pt-2.5"
+            : "flex flex-col justify-center gap-3 border-l border-gray-200 pl-5"
+        }
+      >
+        {facts}
+      </div>
+    </section>
   );
 };
 

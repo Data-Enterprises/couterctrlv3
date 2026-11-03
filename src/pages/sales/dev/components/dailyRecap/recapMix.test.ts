@@ -36,7 +36,7 @@ describe("a day's refunds and price mix", () => {
   });
 
   it("shares the mix out of the sales whose type is known", () => {
-    const shares = priceShares({ refunds: { units: 0, net: 0 }, regular: 70, promo: 30, unknown: 25 });
+    const shares = priceShares({ items: 0, refunds: { units: 0, net: 0 }, regular: 70, promo: 30, unknown: 25 });
     expect(shares?.regular).toBeCloseTo(70);
     expect(shares?.promo).toBeCloseTo(30);
     expect(shares?.unreported).toBeCloseTo(20);
@@ -48,6 +48,16 @@ describe("a day's refunds and price mix", () => {
       row({ sale_type: 7 as unknown as string, price_type: null as unknown as string }),
     ]);
     expect(mix).toMatchObject({ promo: 10, unknown: 10 });
+  });
+
+  it("counts the different items sold, leaving refunds out", () => {
+    const mix = mixForDay([
+      row({ product_code: "1" }),
+      row({ product_code: "1", price_type: "TPR" }),
+      row({ product_code: "2" }),
+      row({ product_code: "3", sale_type: "Refund", total_sales: -4, qty: -1 }),
+    ]);
+    expect(mix.items).toBe(2);
   });
 
   it("has no mix at all when no row carries a price type", () => {

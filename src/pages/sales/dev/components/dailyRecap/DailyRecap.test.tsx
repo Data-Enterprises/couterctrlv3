@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { setupStore } from "../../../../../store";
-import { setRawHourly, setRawSubs } from "../../../../../features/dev/devSalesLedgerSlice";
+import {
+  setLedgerSelectedDate,
+  setRawHourly,
+  setRawSubs,
+} from "../../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot, HourlySale, SubDeptMargin, SubSale } from "../../../../../interfaces";
 import DailyRecap from "./DailyRecap";
 
@@ -45,6 +49,8 @@ const hour = (d: string, h: number, net: number, transactions: number) =>
     transactions,
   }) as HourlySale;
 
+/** Renders the tab against a store, re-rendering as the picked day changes,
+ *  the way the popup passes `selectedDate` down from the slice. */
 const setup = (selectedDate: string | null = null) => {
   const store = setupStore();
   store.dispatch(setRawSubs([sub("2026-10-30", "Burgers", 1080, 80), sub("2026-10-29", "Burgers", 540, 40)]));
@@ -56,17 +62,20 @@ const setup = (selectedDate: string | null = null) => {
       hour("2026-10-29", 12, 500, 50),
     ]),
   );
-  render(
+  store.dispatch(setLedgerSelectedDate(selectedDate));
+  const view = () => (
     <Provider store={store}>
       <DailyRecap
         storeId={942}
         storeNumber="942"
         dates={dates}
         days={[dot("2026-10-29", 500, 30), dot("2026-10-30", 1000, 60)]}
-        selectedDate={selectedDate}
+        selectedDate={store.getState().dev.salesLedger.selectedDate}
       />
-    </Provider>,
+    </Provider>
   );
+  const r = render(view());
+  return { store, rerender: () => r.rerender(view()) };
 };
 
 describe("Daily recap", () => {
@@ -86,21 +95,42 @@ describe("Daily recap", () => {
     expect(within(band).queryByText(/Net sales/)).toBeNull();
   });
 
-  it("lists every day and reads nothing until one is opened", () => {
+  it("lists every day and points to the day cards to pick one", () => {
     setup();
-    expect(screen.getByRole("button", { name: /Thu 10\/29/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Fri 10\/30/ })).toBeTruthy();
-    expect(fetchRows).not.toHaveBeenCalled();
+    expect(screen.getByText("Thu")).toBeTruthy();
+    expect(screen.getByText("Fri")).toBeTruthy();
+    expect(screen.getByText(/Pick a day in the cards above/)).toBeTruthy();
   });
 
-  it("opens a day to its shape, baskets, money and mix, not its items", async () => {
+  it("leaves picking to the day cards: a row is not a control", () => {
+    const { store } = setup();
+    expect(screen.queryByRole("button")).toBeNull();
+    fireEvent.click(screen.getByText("Fri"));
+    expect(store.getState().dev.salesLedger.selectedDate).toBeNull();
+  });
+
+  it("reads every day's items so the Items column fills in", async () => {
     setup();
-    fireEvent.click(screen.getByRole("button", { name: /Fri 10\/30/ }));
+    await waitFor(() => expect(fetchRows).toHaveBeenCalledTimes(2));
+    expect(fetchRows.mock.calls.map((c) => c[3]).sort()).toEqual(dates);
+  });
+
+  it("shows a picked day's full recap in place of the week", async () => {
+    setup("2026-10-30");
+    expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Thu 10\/29/ })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Friday 10/30" })).toBeTruthy();
+    expect(screen.getByText(/All week in the cards above/)).toBeTruthy();
+
     const money = screen.getByRole("region", { name: "Money" });
     expect(within(money).getByText("$1,080.00")).toBeTruthy();
     expect(within(money).getByText("$80.00")).toBeTruthy();
-    expect(within(money).getByText("$1,000.00")).toBeTruthy();
     expect(within(money).queryByText(/Coupon/)).toBeNull();
+
+    const baskets = screen.getByRole("region", { name: "Baskets" });
+    expect(within(baskets).getByText("qty")).toBeTruthy();
+    expect(within(baskets).getByText("items")).toBeTruthy();
+
     expect(screen.getByRole("img", { name: /busiest 12 PM – 1 PM/ })).toBeTruthy();
     const mix = screen.getByRole("region", { name: "Refunds and price mix" });
     await waitFor(() => expect(within(mix).getByText("Not reported.")).toBeTruthy());
@@ -108,17 +138,15 @@ describe("Daily recap", () => {
     expect(fetchRows.mock.calls[0][3]).toBe("2026-10-30");
   });
 
-  it("shows a picked day alone and open, with no week band", async () => {
-    setup("2026-10-30");
-    expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
-    expect(screen.queryByText("Thu")).toBeNull();
-    expect(screen.getByRole("region", { name: "Baskets" })).toBeTruthy();
-    await waitFor(() => expect(fetchRows).toHaveBeenCalledTimes(1));
+  it("goes back to the week when the day is cleared", () => {
+    const { store, rerender } = setup("2026-10-30");
+    store.dispatch(setLedgerSelectedDate(null));
+    rerender();
+    expect(screen.getByRole("region", { name: "This week" })).toBeTruthy();
   });
 
   it("grades nothing and compares to nothing", () => {
-    setup();
-    fireEvent.click(screen.getByRole("button", { name: /Fri 10\/30/ }));
+    setup("2026-10-30");
     expect(screen.queryByText(/Crit|Watch|vs LW|vs LY|Last week|Last year/)).toBeNull();
   });
 });

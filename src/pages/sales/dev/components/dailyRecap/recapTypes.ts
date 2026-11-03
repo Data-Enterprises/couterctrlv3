@@ -73,6 +73,8 @@ export interface RecapMoney {
 
 /** What the day's item rows say that nothing else in the panel does. */
 export interface RecapMix {
+  /** How many different items sold that day (product codes, refunds aside). */
+  items: number;
   refunds: { units: number; net: number };
   /** Net sales by price type. `unknown` is a row with no price type at all,
    *  which is never counted as regular. */

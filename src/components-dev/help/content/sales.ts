@@ -136,21 +136,21 @@ export const SALES_HELP: HelpContent = {
           chip: "Daily recap",
           post: "tab.",
           anchor: "store-tabs",
-          see: "Four figures for the week across the top: transactions, the average basket, units and the busiest hour. Under them, one row per day with its net sales as a bar, its transactions, average basket, units and a small strip of its hours. A store that sells by weight also gets pounds.",
+          see: "Four figures for the week across the top: transactions, the average basket, qty and the busiest hour. Under them, one row per day with its net sales, transactions, average basket, how many different items sold, qty, and a small strip of its hours beside the busiest one. A store that sells by weight also gets its weight. Items fills in a day at a time, as each day's items are read.",
         },
         {
-          title: "Open a day",
-          pre: "Click a day to see the rest of it: its net sales hour by hour with the busiest, the slowest full hour and the hours it traded; its baskets; its money; and its refunds and price mix.",
-          see: "Money is a sum you can check: sales with tax, less tax, is the day's net sales, the same figure as its day card. The items themselves are on Top 200 and Sub depts.",
+          title: "Pick a day",
+          pre: "Click the day's card above the tabs, the same cards every tab uses. The tab turns to that day's full recap. The rows in the week list are figures only; they do not open anything.",
+          see: "The day's net sales hour by hour with the busiest hour, the slowest full hour and the hours it traded; its baskets; its money; and its refunds and price mix. All week in the cards goes back to the week.",
+        },
+        {
+          title: "Read the money",
+          pre: "Money is a sum you can check: sales with tax, less tax, is the day's net sales, the same figure as its day card. Fuel and lottery, which the store leaves out of net sales, are listed underneath.",
         },
         {
           title: "Read the price mix",
-          pre: "Price mix is the share of the day's sales at regular price against on sale or TPR. It and the refunds are read when you open the day, so they take a moment.",
+          pre: "Price mix is the share of the day's sales at regular price against on sale or TPR. It and the refunds are read when you pick the day, so they take a moment.",
           see: "A store that sends no price type, such as Sonic, shows an empty bar marked Not reported rather than a full one that would claim everything sold at regular.",
-        },
-        {
-          title: "Look at one day on its own",
-          pre: "Pick a day in the day cards. The tab shows that day alone, already open. All week brings every day back.",
         },
         {
           title: "Download it",
@@ -172,7 +172,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           q: "Refunds and price mix say the items could not be read",
-          a: "Everything else for the day is unaffected. Close the day and open it again to try once more.",
+          a: "Everything else for the day is unaffected. Pick All week and then the day again to try once more.",
         },
       ],
     },

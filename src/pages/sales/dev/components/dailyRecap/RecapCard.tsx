@@ -6,12 +6,18 @@ const RecapCard = ({
   title,
   children,
   className = "",
+  compact = false,
 }: {
   title: string;
   children: ReactNode;
   className?: string;
+  /** Tighter padding, for a short panel. */
+  compact?: boolean;
 }) => (
-  <section aria-label={title} className={`${CARD} px-4 py-3 ${className}`}>
+  <section
+    aria-label={title}
+    className={`${CARD} h-full min-w-0 px-4 ${compact ? "py-2" : "py-3"} ${className}`}
+  >
     <div className={CARD_TITLE}>{title}</div>
     {children}
   </section>

@@ -1823,3 +1823,19 @@ Daily Recap already ticked.
 Opening a day crashed the whole panel ("price_type.trim is not a function")
 when the store's POS sends its price type as a number rather than text. The
 recap now reads the type either way. Found in testing on daily_recap.
+
+### Daily recap: the day cards pick the day, and it fits the panel
+
+The tab now has two views. The week shows four figures (transactions, average
+basket, qty, busiest) and one striped row per day: net sales, transactions,
+average basket, how many different items sold, qty, weight where the store
+weighs things, and the busiest hour with a small strip of the day's hours.
+The rows are figures only. A day is picked from the day cards above the tabs,
+as on every other tab, and the tab turns to that day's full recap: its hours
+as a chart that fills the space, then Baskets, Money, and Refunds and price
+mix. All week goes back.
+
+Both views fit the panel at any zoom: the days share the list's height
+evenly, a short panel tightens everything, and a narrow one drops the hour
+strips, puts the chart's facts under it and wraps the cards. Nothing spills
+sideways, and only a panel too small for the minimums scrolls.

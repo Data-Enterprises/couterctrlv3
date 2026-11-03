@@ -16,6 +16,13 @@ export const dayLabel = (date: string) => {
   return `${weekday} ${d.getMonth() + 1}/${d.getDate()}`;
 };
 
+/** "Friday 10/30", for a heading. */
+export const dayName = (date: string) => {
+  const d = new Date(`${date}T12:00:00`);
+  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+  return `${weekday} ${d.getMonth() + 1}/${d.getDate()}`;
+};
+
 export const money = (n: number) => formatCurrency2(n);
 
 /** Whole dollars, for a figure beside a chart. */
