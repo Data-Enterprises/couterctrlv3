@@ -1765,3 +1765,29 @@ and last year are still in each item's own detail.
 **Top 200 lists every sub department.** The department list showed the
 biggest nine and folded the rest into one "8 more" line, with a count strip
 above it. Both are gone: every sub department is listed, biggest first.
+
+## Sales: Daily recap
+
+dev mode only
+
+### A Daily recap tab in the store panel
+
+Asked for by the boss: every item sold, with its sales and units, by the day.
+The store panel gains a fifth tab, Daily recap, beside Top 200. It lists the
+week one row per day: net sales (the day card's own figure), transactions, the
+average basket, units and the busiest hour, with the week's totals underneath.
+A store that sells by weight also gets a Pounds column.
+
+Click a day to open its sub departments, biggest sales first, each with its
+share of the day as a navy bar; click a sub department for every item it sold
+that day, with units, sales and average price (per pound for a weighed item).
+Picking a day card shows that day alone, with its figures across the top. A
+search by name or UPC keeps only the days and sub departments that sold a
+match. The download is a CSV with one row per item per day.
+
+It is a summary, so nothing on it is graded and nothing compares to last week
+or last year. It always shows the open store, even with a comparison store
+chosen. Fuel, lottery and cash are left out of the sub department list, as on
+the day cards, and their amount is shown under it. The items are read when a
+day is opened, so a day's item counts take a moment to appear. Built on branch
+`daily_recap`, not yet merged into master_publish.

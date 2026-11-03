@@ -10,6 +10,7 @@ import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import PopupTopItems from "./PopupTopItems";
 import TopItemsReport from "./TopItemsReport";
+import DailyRecap from "./dailyRecap/DailyRecap";
 import {
   setSubSales,
   setHourlySales,
@@ -75,7 +76,11 @@ interface StoreDetailPopupProps {
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
 type PopupTab =
-  "subdept" | "hourly" | "comparison" | "topitems" /* | "category" */;
+  | "subdept"
+  | "hourly"
+  | "comparison"
+  | "topitems"
+  | "dailyrecap" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -808,8 +813,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             offered rather than opening on an empty one. */}
         {(
           (hasGroup
-            ? ["subdept", "comparison", "hourly", "topitems"]
-            : ["subdept", "hourly", "topitems"]) as PopupTab[]
+            ? ["subdept", "comparison", "hourly", "topitems", "dailyrecap"]
+            : ["subdept", "hourly", "topitems", "dailyrecap"]) as PopupTab[]
         ).map((t) => (
           <button
             key={t}
@@ -826,7 +831,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 ? "Hourly"
                 : t === "topitems"
                   ? "Top 200"
-                  : "Compare"}
+                  : t === "dailyrecap"
+                    ? "Daily recap"
+                    : "Compare"}
           </button>
         ))}
       </div>
@@ -849,6 +856,19 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               openStoreName={headerStoreName}
             />
           ) : null
+        ) : tab === "dailyrecap" ? (
+          /* Always the open store, counterpart or not: a recap is a summary
+             of one store's week, not a comparison. Keyed on the store so its
+             open rows and its read items start again with a new one. */
+          <DailyRecap
+            key={`${selection.storeId}__${selection.storeNumber}`}
+            storeId={selection.storeId}
+            storeNumber={selection.storeNumber}
+            storeName={headerStoreName}
+            dates={twRealDates}
+            days={selection.days}
+            selectedDate={selectedDate}
+          />
         ) : tab === "topitems" ? (
           /* Same rule as Sub depts above: with a counterpart chosen in
              Stores, this tab IS the comparison. Without one it is the

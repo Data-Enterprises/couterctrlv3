@@ -28,7 +28,8 @@ export type LedgerTab =
   | "hourly"
   | "comparison"
   | "category"
-  | "topitems";
+  | "topitems"
+  | "dailyrecap";
 
 /**
  * The store the open one is being measured against.

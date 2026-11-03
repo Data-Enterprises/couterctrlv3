@@ -126,6 +126,58 @@ export const SALES_HELP: HelpContent = {
       ],
     },
     {
+      id: "daily-recap",
+      title: "See what sold each day",
+      desc: "Every item sold, with its sales and units, a day at a time",
+      steps: [
+        {
+          title: "Open Daily recap",
+          pre: "With a store open, choose the",
+          chip: "Daily recap",
+          post: "tab.",
+          anchor: "store-tabs",
+          see: "One row per day: net sales, transactions, the average basket, units and the busiest hour, with the week's totals underneath. Net sales is the day card's figure. A store that sells by weight also gets a Pounds column.",
+        },
+        {
+          title: "Open a day",
+          pre: "Click a day. Its sub departments open under it, biggest sales first, each with its share of the day as a bar.",
+          see: "How many different items sold that day, and how many in each sub department. The items are read when you open the day, so the counts take a moment.",
+        },
+        {
+          title: "Open a sub department",
+          pre: "Click a sub department to list every item it sold that day, with its units, sales and average price.",
+          see: "A weighed item shows its pounds beside its units, and its average price is per pound.",
+        },
+        {
+          title: "Look at one day on its own",
+          pre: "Pick a day in the day cards. The tab shows that day only, with its figures across the top and its sub departments ready to open. All week brings every day back.",
+        },
+        {
+          title: "Find an item",
+          pre: "Type a name or UPC in the search. Only the days and sub departments that sold a match stay listed, already open.",
+          see: "The day and sub department figures stay whole: the search narrows what is listed, not what was sold.",
+        },
+        {
+          title: "Download it",
+          pre: "The download button saves a CSV with one row per item per day, the day and sub department on every row. It covers the whole week, or just the picked day.",
+        },
+      ],
+      issues: [
+        {
+          q: "Where are last week and last year?",
+          a: "Not here, on purpose. A recap is a summary of what sold, so it has no comparisons and no grades. Sub depts, Hourly and Top 200 carry the comparisons.",
+        },
+        {
+          q: "Fuel or lottery is missing from the sub departments",
+          a: "The store leaves them out of its net sales, so they are left out here too and the list adds up to the day card. Their amount is shown under the list.",
+        },
+        {
+          q: "A day says its items could not be read",
+          a: "The sub department figures are unaffected. Close the day and open it again to try the items once more.",
+        },
+      ],
+    },
+    {
       id: "top-items-compare",
       title: "Compare one store's top 200 with another's",
       desc: "What both sell, what only one does, and where the two really differ",
