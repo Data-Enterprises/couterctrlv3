@@ -129,9 +129,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
 
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  /** What Export CSV opens with ticked: Daily recap's own button opens it on
-   *  Daily Recap, the header's opens it with nothing chosen. */
-  const [exportPreset, setExportPreset] = useState<"dailyrecap" | null>(null);
   // const [gapReportOpen, setGapReportOpen] = useState(false);
   const openCriticalReport = useCriticalReport();
   // The same item threshold the sub-dept list grades against, so the button's
@@ -641,10 +638,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           )}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
-              onClick={() => {
-                setExportPreset(null);
-                setExportOpen(true);
-              }}
+              onClick={() => setExportOpen(true)}
               title="Export CSV"
               className="text-custom-white transition-colors"
             >
@@ -666,7 +660,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
       {exportOpen && (
         <SalesExportModal
           onClose={() => setExportOpen(false)}
-          preselect={exportPreset ?? undefined}
           storeName={selection.storeName}
           dateLabel={staticTwDate}
           rawSubs={rawSubs}
@@ -845,23 +838,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                     : "Compare"}
           </button>
         ))}
-        {/* Daily recap's download is the Daily Recap option in Export CSV,
-            one export path for the whole panel. This only opens it with that
-            option already ticked. */}
-        {tab === "dailyrecap" && !loading && (
-          <button
-            type="button"
-            onClick={() => {
-              setExportPreset("dailyrecap");
-              setExportOpen(true);
-            }}
-            title="Opens Export CSV with Daily Recap ticked"
-            className="ml-auto my-1 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-gray-200 bg-custom-white text-[11.5px] font-semibold text-content hover:bg-gray-50 transition-colors"
-          >
-            <ArrowDownTrayIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            Export Daily Recap
-          </button>
-        )}
       </div>
 
       {/* Content — fills remaining height */}

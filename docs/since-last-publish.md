@@ -1859,3 +1859,10 @@ slowest and trading facts sit on their own tinted rail (trading now says how
 many hours), Baskets shows its figures as tiles with the lead three
 emphasised, Money sets net sales on its own band under the sum, and the price
 mix is a labelled two-part bar with a legend.
+
+### Daily recap: one-line day heading; the export is Export CSV only
+
+The picked day's heading is back to one line above the cards (the day, its
+net sales, and the way back), and the Export Daily Recap button is gone from
+the tab strip: the recap downloads from the Daily Recap preset in Export CSV,
+beside the other Sales exports.

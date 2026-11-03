@@ -27,9 +27,6 @@ import { loadWeekItems } from "./dailyRecap/recapLoad";
 
 interface SalesExportModalProps {
   onClose: () => void;
-  /** An option to open with already ticked: Daily recap's own export button
-   *  opens the modal on Daily Recap. */
-  preselect?: "dailyrecap";
   storeName: string;
   dateLabel: string;
   rawSubs: SubSale[];
@@ -378,7 +375,6 @@ const PREVIEW_ROWS = 5;
 
 const SalesExportModal = ({
   onClose,
-  preselect,
   storeName,
   dateLabel,
   rawSubs,
@@ -411,9 +407,7 @@ const SalesExportModal = ({
 
   // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportDataset>>(
-    () => new Set(preselect ? [preselect] : []),
-  );
+  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set());
   const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set());
   // Defaults to the store being looked at, even when a group was searched:
   // this popup is about one store, and the wider answer should be asked for
