@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
+import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { createUser, updateUser } from "../../../../../api/team";
@@ -392,6 +394,35 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     `${ctx.userInfo.first_name} ${ctx.userInfo.last_name}`.trim() ||
     ctx.userInfo.username;
 
+  /**
+   * Unsaved work, and whose. Cancel, Back to users and the tab bar used to
+   * throw a half-filled form away without asking; they ask now, and only
+   * when something would be lost. Add counts anything filled in (a Duplicate
+   * included); Edit counts a change from what was opened.
+   */
+  const u = ctx.userInfo;
+  const addDirty =
+    !editing &&
+    (u.username !== "" ||
+      u.email !== "" ||
+      u.first_name !== "" ||
+      u.last_name !== "" ||
+      u.password !== "" ||
+      u.role > 0 ||
+      u.user_level > 0 ||
+      picks.companies.length > 0 ||
+      picks.baseGroups.length > 0 ||
+      picks.stores.length > 0);
+  const unsaved = editing ? identityDirty || accessDirty : addDirty;
+  const unsavedFor = editing ? displayName || "this user" : "the new user";
+  const [leaving, setLeaving] = useState(false);
+  const leave = () => (unsaved && !saving ? setLeaving(true) : onCancel());
+
+  useEffect(() => {
+    ctx.dispatch(setUnsavedWizard(unsaved && !saving ? unsavedFor : null));
+  }, [unsaved, saving, unsavedFor]);
+  useEffect(() => () => void ctx.dispatch(setUnsavedWizard(null)), []);
+
   // ── Add ───────────────────────────────────────────────────────────────
   const finishCreate = (name: string) => {
     toast.success(`${name} created`);
@@ -521,7 +552,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-0">
       <div className="flex items-center gap-2 mb-2 flex-shrink-0">
         <button
-          onClick={onCancel}
+          onClick={leave}
           className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
@@ -534,6 +565,19 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           {editing ? displayName : "Add user"}
         </span>
       </div>
+
+      {leaving && (
+        <ConfirmModal
+          title="Discard changes?"
+          message={`Discard your changes to ${unsavedFor}? Nothing has been saved.`}
+          confirmLabel="Discard"
+          onConfirm={() => {
+            setLeaving(false);
+            onCancel();
+          }}
+          onCancel={() => setLeaving(false)}
+        />
+      )}
 
       <h2 className="text-[17px] font-bold text-content mb-2.5 flex-shrink-0">
         {editing ? `Edit ${displayName}` : "Add user"}
@@ -705,7 +749,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           the way forward should not be below the fold of a scroll area. */}
       <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-gray-100 flex-shrink-0">
         <button
-          onClick={onCancel}
+          onClick={leave}
           className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-gray-50"
         >
           Cancel

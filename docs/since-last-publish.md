@@ -1611,3 +1611,8 @@ filters applied as before.
 were still loading, or when loading them failed, the list said "No users
 found", and the company filter read "No company (0)". It now says "Loading
 users…", or shows what went wrong with a Retry button.
+
+**Add and Edit ask before throwing away your changes.** Cancel, Back to users
+and clicking another tab all dropped a half-filled Add user or an unsaved
+Edit without a word. They now ask "Discard your changes to …?" first. Nothing
+asks when nothing has changed.

@@ -105,3 +105,34 @@ describe("choosing Single Store", () => {
     expect(screen.queryByText(/Single Store keeps only/)).toBeNull();
   });
 });
+
+describe("leaving Add user", () => {
+  const open = () => {
+    const onCancel = vi.fn();
+    const store = setupStore();
+    render(
+      <Provider store={store}>
+        <UserWizard onComplete={vi.fn()} onCancel={onCancel} />
+      </Provider>,
+    );
+    return { onCancel, store };
+  };
+
+  it("leaves straight away when nothing was filled in", async () => {
+    const { onCancel } = open();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it("asks first when something was, and tells the tab bar", async () => {
+    const { onCancel, store } = open();
+    const select = document.querySelector("select") as HTMLSelectElement;
+    await userEvent.selectOptions(select, "2");
+    expect(store.getState().dev.organization.unsavedWizard).toBe("the new user");
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(screen.getByText(/Discard your changes to the new user/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+});

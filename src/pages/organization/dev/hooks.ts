@@ -36,6 +36,7 @@ export const useOrganizationCtx = () => {
   const {
     usersExportOpen,
     usersGridFilters,
+    unsavedWizard,
   } = useAppSelector((state) => state.dev.organization);
 
   return {
@@ -71,5 +72,6 @@ export const useOrganizationCtx = () => {
     userCompany,
     usersExportOpen,
     usersGridFilters,
+    unsavedWizard,
   };
 };

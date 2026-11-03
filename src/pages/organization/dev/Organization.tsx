@@ -45,7 +45,11 @@ import {
   setUsers,
   setUsersLoad,
 } from "../../../features/dev/devUsersSlice";
-import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
+import {
+  setUnsavedWizard,
+  setUsersExportOpen,
+} from "../../../features/dev/devOrganizationSlice";
+import ConfirmModal from "../../../components-dev/ConfirmModal";
 import UsersExportModal from "./users/UsersExportModal";
 import { filterUsers, showsInactive } from "./users/userFilters";
 import Users from "./users/Users";
@@ -87,6 +91,13 @@ const Organization = () => {
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
+  /** A tab asked for while Add or Edit has unsaved changes. */
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
+  const chooseTab = (next: Tab) => {
+    if (next === tab) return;
+    if (ctx.unsavedWizard) setPendingTab(next);
+    else setTab(next);
+  };
   /**
    * The size the open view asks for.
    *
@@ -234,7 +245,7 @@ const Organization = () => {
           {tabs.map((t) => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => chooseTab(t.id)}
               className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
                 tab === t.id
                   ? "border-brand_navy text-brand_navy"
@@ -246,6 +257,20 @@ const Organization = () => {
           ))}
         </div>
 
+
+        {pendingTab && ctx.unsavedWizard && (
+          <ConfirmModal
+            title="Discard changes?"
+            message={`Discard your changes to ${ctx.unsavedWizard}? Nothing has been saved.`}
+            confirmLabel="Discard"
+            onConfirm={() => {
+              ctx.dispatch(setUnsavedWizard(null));
+              setTab(pendingTab);
+              setPendingTab(null);
+            }}
+            onCancel={() => setPendingTab(null)}
+          />
+        )}
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <PanelFitContext.Provider value={setFit}>
