@@ -21,7 +21,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppSelector } from "../../../../hooks";
 import { recapCsv } from "./dailyRecap/recapCsv";
 import { sellsByWeight } from "./dailyRecap/recapDays";
-import { loadWeekItems } from "./dailyRecap/recapLoad";
+import { useRecapWeekItems } from "./dailyRecap/useRecapWeekItems";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -397,6 +397,7 @@ const SalesExportModal = ({
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
   const toast = useToast();
   const { url, token } = useAppSelector((state) => state.app);
+  const loadRecapWeek = useRecapWeekItems(storeId, storeNumber);
   /** Fetched with the search — see SalesLedger's fetchLedger. */
   const {
     financials: searchedRows,
@@ -659,12 +660,13 @@ const SalesExportModal = ({
       const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
       sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
     }
-    // Daily Recap reads its items here, a day at a time, for the week on
-    // screen. A day that fails is named in the section's title and left out
+    // Daily Recap takes the days Summary already read from the cache and
+    // reads only the rest (usually just today, which is never kept), a day at
+    // a time, for the week on screen. A day that fails is named in the section's title and left out
     // rather than losing the file.
     if (selected.has("dailyrecap")) {
       setFetching(true);
-      const week = await loadWeekItems(url, token, storeId, storeNumber, weekDates);
+      const week = await loadRecapWeek(weekDates);
       setFetching(false);
       const missing = week.filter((d) => d.failed).map((d) => d.date);
       const note = missing.length

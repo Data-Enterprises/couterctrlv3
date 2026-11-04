@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { setupStore } from "../../../../../store";
 import type { SubDeptMargin } from "../../../../../interfaces";
 import { useDayMix } from "./useDayMix";
+import { dayKey, localIsoToday } from "./recapKeys";
 
 const fetchRows = vi.fn();
 vi.mock("../../../../../utils/marginRows", () => ({
@@ -131,5 +132,21 @@ describe("a day's mix", () => {
     await waitFor(() => expect(result.current.stateOf("2026-11-01").status).toBe("error"));
     act(() => result.current.requestAll(["2026-11-01"]));
     expect(fetchRows).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a finished day's folded items for the export, but not today's", async () => {
+    fetchRows.mockResolvedValue([row("369")]);
+    const store = setupStore();
+    const today = localIsoToday();
+    const { result } = setup(store);
+    act(() => {
+      result.current.request("2026-10-28");
+      result.current.request(today);
+    });
+    await waitFor(() => expect(result.current.stateOf(today).status).toBe("ready"));
+    await waitFor(() => expect(result.current.stateOf("2026-10-28").status).toBe("ready"));
+    const held = store.getState().dev.salesLedger.recapItems;
+    expect(held[dayKey(685, "369", "2026-10-28")]?.map((i) => i.code)).toEqual(["a"]);
+    expect(held[dayKey(685, "369", today)]).toBeUndefined();
   });
 });

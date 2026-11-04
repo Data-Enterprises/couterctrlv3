@@ -22,8 +22,10 @@ import type {
 } from "../../interfaces";
 import type {
   RecapExceptions,
+  RecapItem,
   RecapMix,
 } from "../../pages/sales/dev/components/dailyRecap/recapTypes";
+import { RECAP_ITEMS_MAX } from "../../pages/sales/dev/components/dailyRecap/recapKeys";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -211,6 +213,19 @@ interface SalesLedgerState {
   /** The week's exceptions, rolled up by day, per store location and week
    *  (`storeid__number__start__end`). Same reasons as `recapMix`. */
   recapExceptions: Record<string, Record<string, RecapExceptions>>;
+  /**
+   * Each finished day's item rows, folded to one row per item, for the Daily
+   * Recap export: the rows Summary already read for its item count and price
+   * mix, kept instead of read again on download.
+   *
+   * Folded, not raw: one row per item rather than one per item, price type
+   * and vendor, which is the difference between a few hundred KB a day and
+   * many MB a week at a big store. Never today, which is still changing.
+   * Bounded to RECAP_ITEMS_MAX store-days, most recently used kept, and
+   * cleared on sign-out with the rest of the dev namespace.
+   */
+  recapItems: Record<string, RecapItem[]>;
+  recapItemsOrder: string[];
 
   /**
    * Financials — the daily per-bin POS records, for the export.
@@ -330,6 +345,8 @@ const initialState: SalesLedgerState = {
   storeCacheOrder: [],
   recapMix: {},
   recapExceptions: {},
+  recapItems: {},
+  recapItemsOrder: [],
   topItems: [],
   topItemPoints: [],
   topItemsLW: [],
@@ -536,6 +553,17 @@ const salesLedgerSlice = createSlice({
      *  use, so it goes to the front of the queue too. */
     cacheRecapMix: (state, action: PayloadAction<{ key: string; mix: RecapMix }>) => {
       state.recapMix[action.payload.key] = action.payload.mix;
+    },
+    cacheRecapItems: (state, action: PayloadAction<{ key: string; items: RecapItem[] }>) => {
+      const { key, items } = action.payload;
+      state.recapItems[key] = items;
+      const put = lruPut(state.recapItemsOrder, key, RECAP_ITEMS_MAX);
+      put.evicted.forEach((k) => delete state.recapItems[k]);
+      state.recapItemsOrder = put.order;
+    },
+    /** A held day was used: keep it from being the next one dropped. */
+    touchRecapItems: (state, action: PayloadAction<string>) => {
+      state.recapItemsOrder = lruTouch(state.recapItemsOrder, action.payload);
     },
     cacheRecapExceptions: (
       state,
@@ -752,6 +780,8 @@ export const {
   restoreStoreData,
   cacheRecapMix,
   cacheRecapExceptions,
+  cacheRecapItems,
+  touchRecapItems,
   setLastFetchedStoreKey,
   setRawSubs,
   setRawLWSubs,

@@ -1929,3 +1929,11 @@ Summary used to read a store's seven days again every time you came back to
 it, from another tab or another store. It now keeps what it read for the
 session (cleared on sign-out), shares a read already on its way instead of
 sending a second, and no longer retries a failing read over and over.
+
+### The Daily Recap export reuses what Summary already read
+
+Downloading the Daily Recap preset no longer reads the week's items again for
+every day Summary has already shown: it keeps each finished day's items from
+Summary's own read and only reads what it does not have, usually just today.
+Today is always read fresh, since it is still changing. The kept items are
+limited to about two store-weeks and cleared on sign-out.

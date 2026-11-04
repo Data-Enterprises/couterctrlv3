@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { cacheRecapMix } from "../../../../../features/dev/devSalesLedgerSlice";
+import { cacheRecapItems, cacheRecapMix } from "../../../../../features/dev/devSalesLedgerSlice";
+import { foldItems } from "./recapItems";
+import { dayKey as mixKey, isCacheableDay } from "./recapKeys";
 import { loadDayRows } from "./recapLoad";
 import { mixForDay } from "./recapMix";
 import type { DayMixState } from "./recapTypes";
@@ -12,9 +14,6 @@ import type { DayMixState } from "./recapTypes";
  */
 const inFlight = new Set<string>();
 
-const mixKey = (storeId: number, storeNumber: string, date: string) =>
-  `${storeId}__${storeNumber}__${date}`;
-
 /**
  * Each day's item count and price mix, from that day's item rows.
  *
@@ -22,6 +21,10 @@ const mixKey = (storeId: number, storeNumber: string, date: string) =>
  * once per store location however often Summary is opened, switched away
  * from or come back to; sign-out clears it with the rest of the dev
  * namespace. One store, one day, every sub dept per read.
+ *
+ * The same read also keeps the day's items, folded one row per item, for the
+ * Daily Recap export (`recapItems`), so downloading needs no second read of
+ * a day Summary has seen. Not today, which is still changing.
  *
  * A day that fails is not retried by itself: `requestAll` passes over it, so
  * a failing endpoint cannot loop. Asking for that one day (`request`, which
@@ -56,6 +59,7 @@ export const useDayMix = (storeId: number, storeNumber: string) => {
       loadDayRows(url, token, storeId, storeNumber, date)
         .then((rows) => {
           dispatch(cacheRecapMix({ key, mix: mixForDay(rows) }));
+          if (isCacheableDay(date)) dispatch(cacheRecapItems({ key, items: foldItems(rows) }));
         })
         .catch(() => {
           setFailed((f) => new Set(f).add(key));
