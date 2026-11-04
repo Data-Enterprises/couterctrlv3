@@ -1986,3 +1986,9 @@ Right-clicking an item in the Summary item view opens the app's UPC menu: Copy U
 dev mode only
 
 Single-store Top 200 with a day picked: the vs Last Week and vs Last Year headers now show that one day's date (e.g. 10/22/2026), as Top 200 Sales does, instead of the date written as a range to itself.
+
+## Platform: tooltips
+
+dev mode only
+
+Every hover tooltip in dev mode is now the app's own light tip that follows the mouse, instead of the browser's small dark box: icon buttons, truncated names, column heads and the rest, on every dev page and the shared menus. Not in Legacy and not on phones. Production screens are unchanged.

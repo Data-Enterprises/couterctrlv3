@@ -269,8 +269,11 @@ per-day delta row, which was the thing the grid existed to show.
   tracks the pointer, `CursorTip` draws a line or a few of words, and
   `CursorTipBox` is the frame for a laid-out readout (Summary's hour chart).
   Light box, `bg-custom-white`, follows the mouse, kept on screen, never takes
-  the pointer. Not the browser's `title` box: give an icon-only button an
-  `aria-label` for its name and a `CursorTip` for the hover.
+  the pointer. A plain `title` attribute gets it too: `TitleTips`, mounted
+  once in `App` on the dev API, draws any hovered `title` as a `CursorTip`
+  and holds the browser's box off, so `title` stays fine for a simple hover
+  label and stays the accessible name of an icon-only button. Wire
+  `useCursorTip` yourself only for a tip with its own content or layout.
 
 ---
 

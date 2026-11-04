@@ -13,6 +13,7 @@ import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 // Neither tree: the title bar raises the flag from prod and the form lives in
 // dev, and App is the one place that may hold both.
 import ReportIssueModal from "./pages/tickets/dev/ReportIssueModal";
+import TitleTips from "./components-dev/tooltip/TitleTips";
 import { clearPageCalls } from "./utils/pageCalls";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
@@ -145,6 +146,11 @@ const App = () => {
                 only on the dev API — the help desk it files into is a dev
                 tree page. */}
             {context.apiEnv === "dev" && <ReportIssueModal />}
+            {/* Dev only: every `title` tooltip drawn as the app's CursorTip
+                instead of the browser's box. Not in Legacy (the pages as
+                they were), and not on a phone, where a tap fires mouse
+                events and would leave a tip standing. */}
+            {context.apiEnv === "dev" && !legacy && !context.isMobile && <TitleTips />}
             <Outlet />
           </div>
         </div>

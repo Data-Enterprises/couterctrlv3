@@ -23,10 +23,10 @@ const CursorTip = ({
   y: number;
 }) => (
   <CursorTipBox x={x} y={y}>
-    {lines.map((l) => (
+    {lines.map((l, i) => (
       <div
-        key={l}
-        className="text-[13px] leading-relaxed font-medium text-content whitespace-nowrap"
+        key={i}
+        className="text-[13px] leading-relaxed font-medium text-content max-w-[340px]"
       >
         {l}
       </div>
