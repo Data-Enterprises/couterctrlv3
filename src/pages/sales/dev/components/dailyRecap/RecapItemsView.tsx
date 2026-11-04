@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import MultiSelectFilter from "../../../../../components-dev/filters/MultiSelectFilter";
+import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import RecapItemsTable from "./RecapItemsTable";
 import RecapPager from "./RecapPager";
 import { dayLabel } from "./recapFormat";
@@ -120,13 +121,13 @@ const RecapItemsView = ({
           Back to summary
         </button>
         <span className="w-px h-[22px] bg-brand_line mx-1" aria-hidden="true" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search item or UPC…"
-          aria-label="Search items"
-          className={`${narrow ? "w-[180px]" : "w-[260px]"} text-[12.5px] px-2.5 py-1.5 rounded-md border border-gray-200 bg-custom-white text-content`}
-        />
+        <div className={`flex ${narrow ? "w-[180px]" : "w-[260px]"}`}>
+          <TextFilter
+            value={search}
+            onChange={setSearch}
+            placeholder="Search item or UPC…"
+          />
+        </div>
         <MultiSelectFilter
           options={deptOptions}
           values={subDepts}

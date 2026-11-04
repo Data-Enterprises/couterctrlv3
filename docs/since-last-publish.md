@@ -1965,6 +1965,8 @@ Units, Weight and Net sales sit a little closer together in the item view, their
 
 The item view's Units column is now headed Qty. The Daily Recap export follows the item view: a vendor column (every vendor that sold the item that day, biggest first; blank for none) after the description, and units renamed qty. The preset's description and the help text say so.
 
+The item view's search is now the app's standard TextFilter: magnifier, a clear X, and the filter-active highlight while it is narrowing the list.
+
 ## Sales: Top 200
 
 dev mode only
