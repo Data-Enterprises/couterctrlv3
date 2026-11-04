@@ -1957,6 +1957,8 @@ Summary can now list every item sold. A View items button at the top right of th
 
 The Summary item view has a Clear all button after the Vendors filter. It shows only while a search or filter is narrowing the list, and empties the search, Sub depts and Vendors in one click; the sort stays as it was.
 
+The Summary item view now sits straight in the panel, filling it edge to edge like Top 200's list, instead of a bordered card on a padded tray.
+
 ## Sales: Top 200
 
 dev mode only

@@ -121,7 +121,6 @@ const DailyRecap = ({
           periodKey={periodDates.join(",")}
           withPounds={withPounds}
           narrow={narrow}
-          short={short}
           onBack={() => setView("cards")}
         />
       ) : (
