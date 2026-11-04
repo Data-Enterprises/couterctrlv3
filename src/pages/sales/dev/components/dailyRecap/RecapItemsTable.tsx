@@ -1,9 +1,9 @@
 import RecapSortHead from "./RecapSortHead";
-import RecapTextTip from "./RecapTextTip";
 import { count, money, weight3 } from "./recapFormat";
 import { NO_VENDOR } from "./recapItems";
 import type { ItemSort, ItemSortCol, RecapItemRow } from "./recapTypes";
-import { useCursorTip } from "./useCursorTip";
+import CursorTip from "../../../../../components-dev/tooltip/CursorTip";
+import { useCursorTip } from "../../../../../components-dev/tooltip/useCursorTip";
 
 /**
  * UPC, Description, Sub dept, Vendor, Sales (net), Qty, [Weight]. Fixed
@@ -120,7 +120,7 @@ const RecapItemsTable = ({
         {withPounds && <span className="text-right tabular-nums">{lb(totals.pounds)}</span>}
       </div>
 
-      {tip && tipRow && <RecapTextTip lines={tipRow.vendors} x={tip.x} y={tip.y} />}
+      {tip && tipRow && <CursorTip lines={tipRow.vendors} x={tip.x} y={tip.y} />}
     </>
   );
 };

@@ -10,6 +10,7 @@ import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import PopupTopItems from "./PopupTopItems";
 import TopItemsReport from "./TopItemsReport";
+import PopupTipButton from "./PopupTipButton";
 import DailyRecap from "./dailyRecap/DailyRecap";
 import {
   setSubSales,
@@ -615,7 +616,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               handoff and the report resolves it on its own loading screen,
               using the fan-out it was going to run anyway. */}
           {canSeeComingSoon && !loading && rawSubs.length > 0 && (
-            <button
+            <PopupTipButton
+              label="See item actions"
               onClick={() =>
                 openCriticalReport({
                   storeId: selection.storeId,
@@ -630,20 +632,14 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                   basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
                 })
               }
-              title="See item actions"
-              className="text-custom-white transition-colors"
             >
               <ClipboardDocumentListIcon className="w-4 h-4" />
-            </button>
+            </PopupTipButton>
           )}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
-            <button
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-              className="text-custom-white transition-colors"
-            >
+            <PopupTipButton label="Export CSV" onClick={() => setExportOpen(true)}>
               <ArrowDownTrayIcon className="w-4 h-4" />
-            </button>
+            </PopupTipButton>
           )}
         </div>
       </div>

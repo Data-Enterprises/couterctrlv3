@@ -1,5 +1,5 @@
-import RecapTextTip from "./RecapTextTip";
-import { useCursorTip } from "./useCursorTip";
+import CursorTip from "../../../../../components-dev/tooltip/CursorTip";
+import { useCursorTip } from "../../../../../components-dev/tooltip/useCursorTip";
 
 /**
  * View items, top right of the Baskets card (board 17): switches Summary to
@@ -19,7 +19,7 @@ const RecapViewItemsButton = ({ tip: text, onClick }: { tip: string; onClick: ()
       >
         View items
       </button>
-      {tip && <RecapTextTip lines={[text]} x={tip.x} y={tip.y} />}
+      {tip && <CursorTip lines={[text]} x={tip.x} y={tip.y} />}
     </>
   );
 };

@@ -265,6 +265,12 @@ per-day delta row, which was the thing the grid existed to show.
 - A graded row pairs `bg-row_selected` with `border-row_selected_border`.
 - The header `?` is `src/components/InfoButton.tsx`. Hand-rolled
   `QuestionMarkCircleIcon` buttons drift in variant and opacity.
+- Tooltips are the app's own, in `src/components-dev/tooltip/`: `useCursorTip`
+  tracks the pointer, `CursorTip` draws a line or a few of words, and
+  `CursorTipBox` is the frame for a laid-out readout (Summary's hour chart).
+  Light box, `bg-custom-white`, follows the mouse, kept on screen, never takes
+  the pointer. Not the browser's `title` box: give an icon-only button an
+  `aria-label` for its name and a `CursorTip` for the hover.
 
 ---
 

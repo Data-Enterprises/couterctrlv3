@@ -9,7 +9,9 @@ export interface CursorTip<K> {
 }
 
 /**
- * A tooltip that follows the mouse across a set of targets.
+ * A tooltip that follows the mouse across a set of targets: the state half of
+ * the app's tooltip, drawn by `CursorTip` (words) or `CursorTipBox` (a laid
+ * out readout).
  *
  * Screen coordinates (clientX/Y), not offsets inside the chart: the tip is
  * drawn fixed to the viewport so no overflow-hidden card or scrolling panel

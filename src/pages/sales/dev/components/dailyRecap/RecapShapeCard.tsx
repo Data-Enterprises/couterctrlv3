@@ -12,7 +12,7 @@ import {
 } from "./recapFormat";
 import { DAY_CARD } from "./recapGrid";
 import type { RecapDay } from "./recapTypes";
-import { useCursorTip } from "./useCursorTip";
+import { useCursorTip } from "../../../../../components-dev/tooltip/useCursorTip";
 
 /** One fact in the column: its label, then its figure with an aside at the right. */
 const fact = (label: string, value: string, sub: string, first: boolean) => (

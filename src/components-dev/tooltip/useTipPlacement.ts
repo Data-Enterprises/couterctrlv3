@@ -10,7 +10,10 @@ const EDGE = 8;
  * fits whatever the panel's size or the browser's zoom. Screen coordinates,
  * for a tip drawn fixed to the viewport where no card can clip it.
  */
-export const useTipPlacement = <E extends HTMLElement>(x: number, y: number) => {
+export const useTipPlacement = <E extends HTMLElement>(
+  x: number,
+  y: number,
+) => {
   const ref = useRef<E>(null);
   const [pos, setPos] = useState({ left: x + GAP, top: y + GAP });
 
