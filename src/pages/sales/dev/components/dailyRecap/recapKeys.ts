@@ -14,6 +14,13 @@ export const dayKey = (storeId: number, storeNumber: string, date: string) =>
  */
 export const RECAP_ITEMS_MAX = 14;
 
+/**
+ * How many store-days of item count and price mix to keep: eight store-weeks.
+ * Each holds the day's item codes (so a week's distinct count can merge
+ * them), a few thousand short strings at a big store.
+ */
+export const RECAP_MIX_MAX = 56;
+
 /** Today as yyyy-mm-dd, in the reader's own time zone. */
 export const localIsoToday = (now: Date = new Date()) => {
   const p = (n: number) => String(n).padStart(2, "0");

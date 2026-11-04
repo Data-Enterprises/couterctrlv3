@@ -22,6 +22,10 @@ const rank = (t: string) => {
   return i === -1 ? TYPE_ORDER.length : i;
 };
 
+/** The card's order for exception types: the usual ones first, the rest by name. */
+export const byTypeOrder = (a: { type: string }, b: { type: string }) =>
+  rank(a.type) - rank(b.type) || a.type.localeCompare(b.type);
+
 /**
  * A week's exception lines, rolled up per day and per type.
  *
@@ -70,7 +74,7 @@ export const exceptionsByDay = (lines: ExceptionLine[]): Map<string, RecapExcept
       amount: d.amount,
       types: [...d.types.values()]
         .map(({ ids, ...t }) => ({ ...t, transactions: ids.size }))
-        .sort((a, b) => rank(a.type) - rank(b.type) || a.type.localeCompare(b.type)),
+        .sort(byTypeOrder),
     });
   }
   return out;

@@ -3,9 +3,10 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { setupStore } from "../../../../../store";
+import { cacheRecapMix } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { SubDeptMargin } from "../../../../../interfaces";
 import { useDayMix } from "./useDayMix";
-import { dayKey, localIsoToday } from "./recapKeys";
+import { RECAP_MIX_MAX, dayKey, localIsoToday } from "./recapKeys";
 
 const fetchRows = vi.fn();
 vi.mock("../../../../../utils/marginRows", () => ({
@@ -148,5 +149,17 @@ describe("a day's mix", () => {
     const held = store.getState().dev.salesLedger.recapItems;
     expect(held[dayKey(685, "369", "2026-10-28")]?.map((i) => i.code)).toEqual(["a"]);
     expect(held[dayKey(685, "369", today)]).toBeUndefined();
+  });
+});
+
+describe("the kept mixes", () => {
+  it("hold no more than their cap of store-days, dropping the oldest", () => {
+    const store = setupStore();
+    const mix = { items: 1, codes: ["a"], refunds: { units: 0, net: 0 }, regular: 1, promo: 0, unknown: 0 };
+    for (let i = 0; i <= RECAP_MIX_MAX; i++) store.dispatch(cacheRecapMix({ key: `k${i}`, mix }));
+    const { recapMix, recapMixOrder } = store.getState().dev.salesLedger;
+    expect(recapMixOrder).toHaveLength(RECAP_MIX_MAX);
+    expect(recapMix.k0).toBeUndefined();
+    expect(Object.keys(recapMix)).toHaveLength(RECAP_MIX_MAX);
   });
 });

@@ -1,8 +1,8 @@
 /**
- * The shapes the Daily recap tab passes between its pieces.
+ * The shapes the Summary tab passes between its pieces.
  *
- * A recap is a summary, not a verdict: nothing here carries a grade, a
- * threshold or a comparison period. Every figure is this week's, for one
+ * A summary, not a verdict: nothing here carries a grade, a threshold or a
+ * comparison period. Every figure is this week's, or one day of it, for one
  * store location.
  */
 
@@ -28,9 +28,15 @@ export interface RecapDayHours {
   last: number | null;
 }
 
-/** One day's row: the day card's own figures plus what Hourly adds. */
+/**
+ * One day, or the whole week: the period Summary is showing.
+ *
+ * A day is the day card's own figures plus what Hourly adds; the week is the
+ * seven of them combined (see recapDays.weekOf), so every card reads either
+ * the same way.
+ */
 export interface RecapDay {
-  /** yyyy-mm-dd */
+  /** yyyy-mm-dd: the day, or the week's first day. */
   date: string;
   /** The day card's net sales. Fuel, lottery and cash are already out. */
   net: number;
@@ -41,20 +47,12 @@ export interface RecapDay {
   /** Baskets, as the Hourly tab counts them: summed across the day's hours. */
   transactions: number;
   hours: RecapDayHours;
-  /** False for a day the store has no sales row for at all. */
+  /** Hours traded, first sale's hour to last: for the week, every day's added
+   *  up, so "per hour" means per hour the store was actually trading. */
+  tradedHours: number;
+  /** False for a day the store has no sales row for at all (for the week,
+   *  false only if no day has one). */
   hasSales: boolean;
-}
-
-/** The week's headline figures. Every one is the day rows summed. */
-export interface RecapWeek {
-  net: number;
-  units: number;
-  pounds: number;
-  transactions: number;
-  /** Days with a sales row. */
-  tradingDays: number;
-  /** The single busiest day-and-hour of the week. */
-  peak: { date: string; hour: number } | null;
 }
 
 /** A day's money: net sales and the tax on top of it. */
@@ -70,6 +68,9 @@ export interface RecapMoney {
 export interface RecapMix {
   /** How many different items sold that day (product codes, refunds aside). */
   items: number;
+  /** Those items' codes, so a week's distinct count can be the days merged:
+   *  an item sold on five days is one item for the week, not five. */
+  codes: string[];
   refunds: { units: number; net: number };
   /** Net sales by price type. `unknown` is a row with no price type at all,
    *  which is never counted as regular. */

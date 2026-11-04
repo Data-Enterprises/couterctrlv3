@@ -4,11 +4,11 @@ import {
   avgBasket,
   avgItemPrice,
   buildRecapDays,
-  buildRecapWeek,
   itemsPerBasket,
   perTradingHour,
   sellsByWeight,
   tradingHours,
+  weekOf,
 } from "./recapDays";
 
 const dot = (sale_date: string, twNet: number, twQty: number): DayDot => ({
@@ -72,18 +72,47 @@ describe("the day rows", () => {
   });
 });
 
-describe("the week", () => {
-  it("sums the days, counts trading days and names the single busiest hour", () => {
-    const hourly = [hour("2026-10-29", 12, 300, 30), hour("2026-10-30", 13, 700, 50)];
-    const days = buildRecapDays(
-      ["2026-10-28", "2026-10-29", "2026-10-30"],
-      [dot("2026-10-29", 100, 10), dot("2026-10-30", 200, 20)],
-      [],
-      hourly,
-    );
-    const week = buildRecapWeek(days);
-    expect(week).toMatchObject({ net: 300, units: 30, transactions: 80, tradingDays: 2 });
-    expect(week.peak).toEqual({ date: "2026-10-30", hour: 13 });
+describe("the week as one period", () => {
+  const hourly = [
+    hour("2026-10-29", 12, 300, 30),
+    hour("2026-10-29", 13, 100, 10),
+    hour("2026-10-30", 12, 200, 20),
+    hour("2026-10-30", 14, 700, 50),
+  ];
+  const days = buildRecapDays(
+    ["2026-10-28", "2026-10-29", "2026-10-30"],
+    [dot("2026-10-29", 400, 10), dot("2026-10-30", 900, 20)],
+    [sub("2026-10-29", 2), sub("2026-10-30", 3)],
+    hourly,
+  );
+  const week = weekOf(days, hourly);
+
+  it("sums the days' figures, the way All week's card does", () => {
+    expect(week).toMatchObject({
+      net: 1300,
+      units: 30,
+      pounds: 5,
+      transactions: 110,
+      hasSales: true,
+    });
+  });
+
+  it("sums each hour across the days, so the busiest is the week's usual one", () => {
+    expect(week.hours.hours.map((h) => [h.hour, h.net])).toEqual([
+      [12, 500],
+      [13, 100],
+      [14, 700],
+    ]);
+    expect(week.hours.peak?.hour).toBe(14);
+  });
+
+  it("adds up the hours each day traded, so per hour is per hour open", () => {
+    expect(tradingHours(week)).toBe(2 + 3);
+    expect(perTradingHour(week.net, week)).toBe(260);
+  });
+
+  it("has no sales only when no day does", () => {
+    expect(weekOf(buildRecapDays(["2026-10-28"], [], [], []), []).hasSales).toBe(false);
   });
 });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HourlySale } from "../../../../../interfaces";
-import { hoursForDay } from "./recapHours";
+import { hoursForDates, hoursForDay } from "./recapHours";
 
 const hour = (sale_date: string, hr: number, net: number) =>
   ({
@@ -52,5 +52,30 @@ describe("a day's shape by hour", () => {
       first: null,
       last: null,
     });
+  });
+});
+
+describe("several days' shape by hour", () => {
+  it("sums each hour across the days and spans the widest of them", () => {
+    const s = hoursForDates(
+      [hour("2026-10-29", 9, 50), hour("2026-10-29", 12, 100), hour("2026-10-30", 12, 300), hour("2026-10-30", 15, 20)],
+      ["2026-10-29", "2026-10-30"],
+    );
+    expect(s.hours.map((h) => [h.hour, h.net, h.transactions])).toEqual([
+      [9, 50, 2],
+      [10, 0, 0],
+      [11, 0, 0],
+      [12, 400, 4],
+      [13, 0, 0],
+      [14, 0, 0],
+      [15, 20, 2],
+    ]);
+    expect(s.peak?.hour).toBe(12);
+    expect([s.first, s.last]).toEqual([9, 15]);
+  });
+
+  it("leaves out a day it was not asked for", () => {
+    const s = hoursForDates([hour("2026-10-29", 9, 50), hour("2026-10-28", 9, 70)], ["2026-10-29"]);
+    expect(s.peak?.net).toBe(50);
   });
 });

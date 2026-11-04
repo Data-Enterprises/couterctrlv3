@@ -3,7 +3,6 @@ import { niceTicks } from "./recapAxis";
 import { perTradingHour } from "./recapDays";
 import {
   count,
-  dayLabel,
   hourRange,
   hourSpan,
   hourTick,
@@ -32,11 +31,15 @@ const fact = (label: string, value: string, sub: string, first: boolean) => (
 const HEADROOM_PX = 20;
 
 /**
- * Net sales by hour, across the whole second row (board 15).
+ * Net sales by hour, across the whole second row (boards 15 and 16).
  *
- * The day's hour facts sit in a column on the left, behind a navy divider:
+ * For the week each hour is that hour summed across the seven days: hourly
+ * still, never by day, which the day cards above already give.
+ *
+ * The hour facts sit in a column on the left, behind a navy divider:
  * busiest, slowest (full hour), sales per hour, baskets per hour (an hour is
- * one the day traded, its first sale's hour to its last).
+ * one the store traded, a day's first sale's hour to its last, the week's
+ * days added up).
  * The chart sits on the right, against round dollar gridlines, its bars light
  * and the busiest in navy with its figure above it. A measure, not a grade.
  * Hovering an hour shows its figures in a tip that follows the mouse. On a
@@ -47,10 +50,14 @@ const HEADROOM_PX = 20;
  */
 const RecapShapeCard = ({
   day,
+  period,
   narrow,
   short,
 }: {
   day: RecapDay;
+  /** Says which period, for the chart's spoken label: "on Thu Oct 30",
+   *  "across the week". */
+  period: string;
   narrow: boolean;
   short: boolean;
 }) => {
@@ -113,12 +120,12 @@ const RecapShapeCard = ({
 
       <div className={`flex-1 min-w-0 flex flex-col pl-2.5 pr-[18px] ${short ? "py-2.5" : "pt-3.5 pb-3"}`}>
         {shape.hours.length === 0 ? (
-          <div className="pl-2 text-[13px] text-content">No hourly sales for this day.</div>
+          <div className="pl-2 text-[13px] text-content">No hourly sales {period}.</div>
         ) : (
           <>
             <div
               role="img"
-              aria-label={`Net sales by hour on ${dayLabel(day.date)}${
+              aria-label={`Net sales by hour ${period}${
                 shape.peak ? `, busiest ${hourRange(shape.peak.hour)}` : ""
               }`}
               className={`flex-1 ${short ? "min-h-[110px]" : "min-h-[140px]"} grid grid-cols-[48px_minmax(0,1fr)]`}

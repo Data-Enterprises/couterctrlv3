@@ -136,21 +136,21 @@ export const SALES_HELP: HelpContent = {
           chip: "Summary",
           post: "tab, the first one.",
           anchor: "store-tabs",
-          see: "Four figures for the week across the top: transactions, the average basket, qty and the busiest hour. Under them, one row per day with its net sales, transactions, average basket, how many different items sold, qty, and a small strip of its hours beside the busiest one. A store that sells by weight also gets its weight. Items fills in a day at a time, as each day's items are read.",
+          see: "The week: Money, Baskets and Exceptions across the top, then Hourly, each hour's net sales added up across the seven days, with the busiest and slowest hours, sales per hour and baskets per hour beside the chart. Items counts each different item once, however many days it sold on. A store that sells by weight also gets its weight. Items and the price mix fill in once every day's items are read.",
         },
         {
           title: "Pick a day",
-          pre: "Click the day's card above the tabs, the same cards every tab uses. The tab turns to that day's full recap. The rows in the week list are figures only; they do not open anything.",
-          see: "Money, Baskets and Exceptions across the top, then the day's net sales hour by hour with its busiest and slowest hours, sales per hour and baskets per hour beside the chart. All week in the cards goes back to the week.",
+          pre: "Click the day's card above the tabs, the same cards every tab uses. Nothing on the tab itself picks a day.",
+          see: "The same cards in the same places, with that day's figures. All week in the cards goes back to the week's.",
         },
         {
           title: "Read the money",
-          pre: "Money leads with the day's net sales, the same figure as its day card, and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
+          pre: "Money leads with net sales, the same figure as the day card picked (All week for the week), and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
           see: "A store that sends no price type, such as Sonic, shows an empty bar marked not reported rather than a full one that would claim everything sold at regular.",
         },
         {
           title: "Read the exceptions",
-          pre: "Exceptions counts the day's transactions that had a void, cancel, refund or no sale, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
+          pre: "Exceptions counts the transactions that had a void, cancel, refund or no sale, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
         },
         {
           title: "Download it",
@@ -172,7 +172,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           q: "The price mix or the exceptions could not be read",
-          a: "Everything else for the day is unaffected. Pick All week and then the day again to read the price mix once more; closing and reopening the store reads the exceptions again.",
+          a: "Everything else is unaffected. Pick a day to read its price mix once more; the week's fills in once every day has been read. Closing and reopening the store reads the exceptions again.",
         },
       ],
     },

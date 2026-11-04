@@ -108,44 +108,68 @@ describe("Daily recap", () => {
       },
     });
     fetchRows.mockReset();
-    fetchRows.mockResolvedValue([
-      { store_number: "942", sale_type: "Refund", price_type: "", total_sales: -6, total_tax: 0, qty: -2 } as SubDeptMargin,
-    ]);
+    // Thu sold a and b, Fri b and c: two items each day, three in the week.
+    fetchRows.mockImplementation((...args: unknown[]) =>
+      Promise.resolve(
+        (args[3] === "2026-10-29" ? ["a", "b"] : ["b", "c"]).map(
+          (product_code) =>
+            ({
+              store_number: "942",
+              product_code,
+              sale_type: "Sale",
+              price_type: "",
+              total_sales: 5,
+              total_tax: 0,
+              qty: 1,
+            }) as SubDeptMargin,
+        ),
+      ),
+    );
   });
 
-  it("heads the week with what the panel does not already show", () => {
+  it("shows the week in the same cards as a day, with the week's figures (board 16)", async () => {
     setup();
-    const band = screen.getByRole("region", { name: "This week" });
-    expect(within(band).getByText("150")).toBeTruthy();
-    expect(within(band).getByText("$10.00")).toBeTruthy();
-    expect(within(band).getByText("Fri 10/30")).toBeTruthy();
-    expect(within(band).queryByText(/Net sales/)).toBeNull();
+    const money = screen.getByRole("region", { name: "Money" });
+    expect(within(money).getByText("$1,500.00")).toBeTruthy();
+    expect(within(money).getByText("$1,620.00")).toBeTruthy();
+    expect(within(money).getByText("$120.00")).toBeTruthy();
+
+    const baskets = screen.getByRole("region", { name: "Baskets" });
+    expect(within(baskets).getByText("150")).toBeTruthy();
+    expect(within(baskets).getByText(/\$10\.00 avg basket/)).toBeTruthy();
+    // Items is distinct across the week: a, b and c, not two days of two.
+    await waitFor(() => expect(within(baskets).getByText("3")).toBeTruthy());
+
+    // Each hour summed across the week; per hour over the 3 + 1 hours traded.
+    const hours = screen.getByRole("region", { name: "Hourly" });
+    expect(within(hours).getByText("$375.00")).toBeTruthy();
+    expect(within(hours).getByText("37.5")).toBeTruthy();
+    expect(within(hours).getByText("150 total")).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: /Net sales by hour across the week, busiest 12 PM – 1 PM/ }),
+    ).toBeTruthy();
+
+    const exceptions = screen.getByRole("region", { name: "Exceptions" });
+    await waitFor(() => expect(within(exceptions).getByText("Voided")).toBeTruthy());
+    expect(within(exceptions).getByText("transactions | $17.50")).toBeTruthy();
   });
 
-  it("lists every day and points to the day cards to pick one", () => {
+  it("has no day table and no By day: hourly stays hourly", () => {
     setup();
-    expect(screen.getByText("Thu")).toBeTruthy();
-    expect(screen.getByText("Fri")).toBeTruthy();
-    expect(screen.getByText(/Pick a day in the cards above/)).toBeTruthy();
-  });
-
-  it("leaves picking to the day cards: a row is not a control", () => {
-    const { store } = setup();
+    expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
+    expect(screen.queryByText("Thu")).toBeNull();
+    expect(screen.queryByText(/By day|Busiest day/)).toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
-    fireEvent.click(screen.getByText("Fri"));
-    expect(store.getState().dev.salesLedger.selectedDate).toBeNull();
   });
 
-  it("reads every day's items so the Items column fills in", async () => {
+  it("reads every day's items so the week's Items and price mix fill in", async () => {
     setup();
     await waitFor(() => expect(fetchRows).toHaveBeenCalledTimes(2));
     expect(fetchRows.mock.calls.map((c) => c[3]).sort()).toEqual(dates);
   });
 
-  it("shows a picked day's full recap in place of the week, as board 15 lays it out", async () => {
+  it("filters the same view to a picked day, as board 15 lays it out", async () => {
     setup("2026-10-30");
-    expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
-    expect(screen.queryByText(/Thu/)).toBeNull();
     // No heading line: the day card and Money already say it.
     expect(screen.queryByText(/All week in the cards above/)).toBeNull();
 
@@ -159,12 +183,12 @@ describe("Daily recap", () => {
     const baskets = screen.getByRole("region", { name: "Baskets" });
     expect(within(baskets).getByText("100")).toBeTruthy();
     expect(within(baskets).getByText(/\$10\.00 avg basket/)).toBeTruthy();
-    expect(within(baskets).getByText("Items")).toBeTruthy();
+    expect(within(baskets).getByText("2")).toBeTruthy();
 
     const hours = screen.getByRole("region", { name: "Hourly" });
     expect(within(hours).getByText("$333.33")).toBeTruthy();
     expect(within(hours).getByText("33.3")).toBeTruthy();
-    expect(screen.getByRole("img", { name: /busiest 12 PM – 1 PM/ })).toBeTruthy();
+    expect(screen.getByRole("img", { name: /on Fri .*busiest 12 PM – 1 PM/ })).toBeTruthy();
 
     const exceptions = screen.getByRole("region", { name: "Exceptions" });
     await waitFor(() => expect(within(exceptions).getByText("Voided")).toBeTruthy());
@@ -187,11 +211,13 @@ describe("Daily recap", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
-  it("goes back to the week when the day is cleared", () => {
+  it("goes back to the week's figures when the day is cleared", () => {
     const { store, rerender } = setup("2026-10-30");
+    const money = () => screen.getByRole("region", { name: "Money" });
+    expect(within(money()).getByText("$1,000.00")).toBeTruthy();
     store.dispatch(setLedgerSelectedDate(null));
     rerender();
-    expect(screen.getByRole("region", { name: "This week" })).toBeTruthy();
+    expect(within(money()).getByText("$1,500.00")).toBeTruthy();
   });
 
   it("grades nothing and compares to nothing", () => {

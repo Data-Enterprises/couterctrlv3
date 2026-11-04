@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SubSale } from "../../../../../interfaces";
-import { moneyForDay } from "./recapMoney";
+import { moneyForDates } from "./recapMoney";
 
 const row = (sale_date: string, name: string, total: number, tax: number, is_hash = false) =>
   ({
@@ -14,7 +14,7 @@ const row = (sale_date: string, name: string, total: number, tax: number, is_has
     is_hash,
   }) as SubSale;
 
-describe("a day's money", () => {
+describe("a period's money", () => {
   const subs = [
     row("2026-10-30", "Grocery", 1080, 80),
     row("2026-10-30", "Deli", 540, 40),
@@ -24,7 +24,12 @@ describe("a day's money", () => {
   ];
 
   it("adds the counted tax to the day card's net, so the sum is exact", () => {
-    const m = moneyForDay(subs, "2026-10-30", 1500);
+    const m = moneyForDates(subs, ["2026-10-30"], 1500);
     expect(m).toMatchObject({ net: 1500, tax: 120, withTax: 1620 });
+  });
+
+  it("takes every day's counted tax for the week", () => {
+    const m = moneyForDates(subs, ["2026-10-29", "2026-10-30"], 6000);
+    expect(m).toMatchObject({ net: 6000, tax: 520, withTax: 6520 });
   });
 });

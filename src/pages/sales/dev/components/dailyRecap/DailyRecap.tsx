@@ -2,19 +2,20 @@ import { useEffect, useMemo } from "react";
 import { useAppSelector } from "../../../../../hooks";
 import type { DayDot } from "../../../../../interfaces";
 import RecapDayView from "./RecapDayView";
-import RecapWeekView from "./RecapWeekView";
-import { buildRecapDays, buildRecapWeek, sellsByWeight } from "./recapDays";
-import { moneyForDay } from "./recapMoney";
+import { buildRecapDays, sellsByWeight, weekOf } from "./recapDays";
+import { dayLabel } from "./recapFormat";
+import { moneyForDates } from "./recapMoney";
+import { combineMix } from "./recapPeriod";
 import { useDayMix } from "./useDayMix";
 import { usePanelSize } from "./usePanelSize";
 import { useWeekExceptions } from "./useWeekExceptions";
 
 /**
- * Daily recap: the week, or one day of it.
+ * Summary: the week, or one day of it, in one view.
  *
- * Two views and one way to move between them: the day cards above the tabs,
- * the only day picker, as on every other tab. A day's card shows its full
- * recap; All week goes back. The week's rows are figures, not controls.
+ * The day cards above the tabs are the filter, as on every other tab: All
+ * week shows the week's figures, a day's card the same cards with that day's.
+ * Nothing on the tab picks a day itself.
  *
  * A summary, not a verdict: no grades, no thresholds and no last week or last
  * year anywhere on it. Always the open store, even with a comparison store
@@ -62,12 +63,24 @@ const DailyRecap = ({
     () => buildRecapDays(dates, dayDots, rawSubs, rawHourly),
     [dates, dayDots, rawSubs, rawHourly],
   );
-  const week = useMemo(() => buildRecapWeek(recapDays), [recapDays]);
   const withPounds = useMemo(() => sellsByWeight(rawSubs), [rawSubs]);
-  const day = selectedDate ? recapDays.find((d) => d.date === selectedDate) : undefined;
+  const picked = selectedDate ? recapDays.find((d) => d.date === selectedDate) : undefined;
+  const period = useMemo(
+    () => (picked ? picked : weekOf(recapDays, rawHourly)),
+    [picked, recapDays, rawHourly],
+  );
+  const periodDates = useMemo(() => (picked ? [picked.date] : dates), [picked, dates]);
+  const mix = useMemo(
+    () => (picked ? stateOf(picked.date) : combineMix(dates.map(stateOf))),
+    [picked, dates, stateOf],
+  );
+  const money = useMemo(
+    () => moneyForDates(rawSubs, periodDates, period.net),
+    [rawSubs, periodDates, period.net],
+  );
 
-  // Item rows: the week reads every day for its Items column; a picked day
-  // reads just itself (and is usually already in hand from the week).
+  // Item rows: the week reads every day, for its items and price mix; a
+  // picked day reads just itself (and is usually already in hand).
   useEffect(() => {
     if (selectedDate) request(selectedDate);
     else requestAll(dates);
@@ -75,26 +88,17 @@ const DailyRecap = ({
 
   return (
     <div ref={ref} className="h-full min-h-0 min-w-0">
-      {day ? (
-        <RecapDayView
-          day={day}
-          money={moneyForDay(rawSubs, day.date, day.net)}
-          mix={stateOf(day.date)}
-          exceptions={exceptions}
-          withPounds={withPounds}
-          narrow={narrow}
-          short={short}
-        />
-      ) : (
-        <RecapWeekView
-          week={week}
-          days={recapDays}
-          mixOf={stateOf}
-          withPounds={withPounds}
-          narrow={narrow}
-          short={short}
-        />
-      )}
+      <RecapDayView
+        day={period}
+        dates={periodDates}
+        period={picked ? `on ${dayLabel(picked.date)}` : "across the week"}
+        money={money}
+        mix={mix}
+        exceptions={exceptions}
+        withPounds={withPounds}
+        narrow={narrow}
+        short={short}
+      />
     </div>
   );
 };

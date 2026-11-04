@@ -4,12 +4,13 @@ import { count, money, one, pounds } from "./recapFormat";
 import type { DayMixState, RecapDay } from "./recapTypes";
 
 /**
- * The day's baskets: how many, and what an average one came to, then each
- * count beside what it averages to per basket.
+ * The period's baskets, a day or the week: how many, and what an average one
+ * came to, then each count beside what it averages to per basket.
  *
  * Transactions as Hourly counts them; qty and net sales are the day card's;
- * items (how many different ones sold) comes from the day's item rows. Weight only at a store
- * that weighs things.
+ * items (how many different ones sold) comes from the item rows, an item
+ * once however many days it sold on. Weight only at a store that weighs
+ * things.
  */
 const RecapBasketsCard = ({
   day,

@@ -3,10 +3,12 @@ import { countedRows } from "../../../../../utils/hashSubs";
 import type { RecapMoney } from "./recapTypes";
 
 /**
- * A day's money, as a sum the reader can check: with tax, less tax, is net.
+ * A day's or the week's money, as a sum the reader can check: with tax, less
+ * tax, is net.
  *
- * Net is the day card's figure, so the sum lands on the number above it. The
- * tax is the counted sub depts' tax for the day (fuel, lottery and cash are
+ * Net is the day card's figure (All week's for the week), so the sum lands on
+ * the number above it. The tax is the counted sub depts' tax for those days
+ * (fuel, lottery and cash are
  * out, as they are out of the net), and "with tax" is the two added, which
  * keeps the arithmetic exact rather than two figures from two sources that
  * nearly agree.
@@ -16,8 +18,9 @@ import type { RecapMoney } from "./recapTypes";
  * on both the item row and its discount row), so any coupon total would be
  * counted twice or wrong.
  */
-export const moneyForDay = (subs: SubSale[], date: string, net: number): RecapMoney => {
-  const tax = countedRows(subs.filter((s) => s.sale_date.split("T")[0] === date)).reduce(
+export const moneyForDates = (subs: SubSale[], dates: string[], net: number): RecapMoney => {
+  const wanted = new Set(dates);
+  const tax = countedRows(subs.filter((s) => wanted.has(s.sale_date.split("T")[0]))).reduce(
     (t, s) => t + (s.total_tax || 0),
     0,
   );

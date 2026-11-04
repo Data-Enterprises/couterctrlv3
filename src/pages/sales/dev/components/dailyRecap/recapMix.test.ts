@@ -14,6 +14,17 @@ const row = (over: Partial<SubDeptMargin>) =>
   }) as SubDeptMargin;
 
 describe("a day's refunds and price mix", () => {
+  it("keeps the codes it counted, refunds aside, so a week can merge them", () => {
+    const mix = mixForDay([
+      row({ product_code: "a" }),
+      row({ product_code: "a" }),
+      row({ product_code: "b" }),
+      row({ product_code: "c", sale_type: "Refund", total_sales: -1 }),
+    ]);
+    expect(mix.items).toBe(2);
+    expect([...mix.codes].sort()).toEqual(["a", "b"]);
+  });
+
   it("reports refunds as the units and money given back", () => {
     const mix = mixForDay([
       row({}),
@@ -36,7 +47,14 @@ describe("a day's refunds and price mix", () => {
   });
 
   it("shares the mix out of the sales whose type is known", () => {
-    const shares = priceShares({ items: 0, refunds: { units: 0, net: 0 }, regular: 70, promo: 30, unknown: 25 });
+    const shares = priceShares({
+      items: 0,
+      codes: [],
+      refunds: { units: 0, net: 0 },
+      regular: 70,
+      promo: 30,
+      unknown: 25,
+    });
     expect(shares?.regular).toBeCloseTo(70);
     expect(shares?.promo).toBeCloseTo(30);
     expect(shares?.unreported).toBeCloseTo(20);

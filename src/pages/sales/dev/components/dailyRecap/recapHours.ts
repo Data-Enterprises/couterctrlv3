@@ -2,7 +2,9 @@ import type { HourlySale } from "../../../../../interfaces";
 import type { RecapDayHours, RecapHour } from "./recapTypes";
 
 /**
- * One day's shape by hour, from the Hourly rows the popup already holds.
+ * The shape by hour of one day or several, from the Hourly rows the popup
+ * already holds. Over several days each hour is summed across them, so the
+ * week's chart is the store's usual day.
  *
  * The hours run from the first that took money to the last, with any hour in
  * between that sold nothing filled in at zero, so the chart has no holes that
@@ -13,10 +15,11 @@ import type { RecapDayHours, RecapHour } from "./recapTypes";
  * are opening and closing part-hours, and naming one of them as the slowest
  * would be true every day and say nothing.
  */
-export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours => {
+export const hoursForDates = (hourly: HourlySale[], dates: string[]): RecapDayHours => {
+  const wanted = new Set(dates);
   const byHour = new Map<number, RecapHour>();
   for (const h of hourly) {
-    if (h.sale_date.split("T")[0] !== date) continue;
+    if (!wanted.has(h.sale_date.split("T")[0])) continue;
     const held = byHour.get(h.hour) ?? { hour: h.hour, net: 0, transactions: 0, qty: 0 };
     held.net += h.total_sales - h.total_tax;
     held.transactions += h.transactions || 0;
@@ -42,3 +45,7 @@ export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours =
 
   return { hours, peak, slowest, first, last };
 };
+
+/** One day's shape by hour. */
+export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours =>
+  hoursForDates(hourly, [date]);

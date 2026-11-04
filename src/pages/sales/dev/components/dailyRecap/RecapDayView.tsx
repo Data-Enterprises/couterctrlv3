@@ -6,9 +6,11 @@ import { TRAY } from "./recapGrid";
 import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "./recapTypes";
 
 /**
- * One day's full recap, picked from its day card (board 15).
+ * Summary for one period: the week (board 16), or a day picked from its day
+ * card (board 15). The same cards in the same places either way, so a day
+ * card is a filter on one view rather than a door to another.
  *
- * No heading: the highlighted day card already says which day, and Money
+ * No heading: the highlighted day card already says which period, and Money
  * gives its net sales. A three column grid: Money, Baskets and Exceptions
  * across the first row; net sales by hour across the whole second, taking
  * the rest of the height. On a narrow panel the first row goes two across
@@ -20,6 +22,8 @@ import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "./r
  */
 const RecapDayView = ({
   day,
+  dates,
+  period,
   money: m,
   mix,
   exceptions,
@@ -27,7 +31,12 @@ const RecapDayView = ({
   narrow,
   short,
 }: {
+  /** The period's figures: one day's, or the week's combined. */
   day: RecapDay;
+  /** The day, or the week's seven. */
+  dates: string[];
+  /** "on Thu Oct 30" or "across the week", for spoken labels. */
+  period: string;
   money: RecapMoney;
   mix: DayMixState;
   exceptions: WeekExceptionsState;
@@ -50,10 +59,10 @@ const RecapDayView = ({
       <RecapMoneyCard money={m} mix={mix} short={short} />
       <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
       <div className={narrow ? "col-span-2 min-w-0" : "min-w-0"}>
-        <RecapExceptionsCard date={day.date} state={exceptions} short={short} />
+        <RecapExceptionsCard dates={dates} state={exceptions} short={short} />
       </div>
       <div className={`${narrow ? "col-span-2" : "col-span-3"} min-w-0`}>
-        <RecapShapeCard day={day} narrow={narrow} short={short} />
+        <RecapShapeCard day={day} period={period} narrow={narrow} short={short} />
       </div>
     </div>
   </div>

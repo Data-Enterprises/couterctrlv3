@@ -37,6 +37,7 @@ export const mixForDay = (rows: SubDeptMargin[]): RecapMix => {
   const codes = new Set<string>();
   const mix: RecapMix = {
     items: 0,
+    codes: [],
     refunds: { units: 0, net: 0 },
     regular: 0,
     promo: 0,
@@ -52,6 +53,7 @@ export const mixForDay = (rows: SubDeptMargin[]): RecapMix => {
     codes.add(String(r.product_code));
     mix[priceKind(r)] += net;
   }
+  mix.codes = [...codes];
   mix.items = codes.size;
   return mix;
 };

@@ -1948,3 +1948,5 @@ that day is part of the comparison being looked at.
 ### Summary's hour card is titled Hourly
 
 The card with the hour chart in a picked day's Summary is now titled Hourly.
+
+Summary's All week view is now the same view as a picked day (board 16): Money, Baskets and Exceptions across the top and Hourly across the bottom, with the week's figures. The day cards filter it. The seven-row day table and the week tiles are gone. For the week, Items counts each different item once however many days it sold on, Hourly adds each hour up across the seven days (hourly only, no by-day view), and sales and baskets per hour divide by the hours the store actually traded across the week. Help text updated to match.

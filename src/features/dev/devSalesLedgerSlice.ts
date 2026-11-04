@@ -25,7 +25,10 @@ import type {
   RecapItem,
   RecapMix,
 } from "../../pages/sales/dev/components/dailyRecap/recapTypes";
-import { RECAP_ITEMS_MAX } from "../../pages/sales/dev/components/dailyRecap/recapKeys";
+import {
+  RECAP_ITEMS_MAX,
+  RECAP_MIX_MAX,
+} from "../../pages/sales/dev/components/dailyRecap/recapKeys";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -202,14 +205,16 @@ interface SalesLedgerState {
    * Summary (Daily recap): what each day's item rows came to, per store
    * location and date (`storeid__number__date`).
    *
-   * The rolled-up answer only (an item count, refunds and the price mix), not
-   * the rows, so it stays small. Kept here rather than in the tab because the
+   * The rolled-up answer only (the item codes, refunds and the price mix),
+   * not the rows, so it stays small; bounded to RECAP_MIX_MAX store-days all
+   * the same, most recent kept. Kept here rather than in the tab because the
    * tab unmounts on every tab switch and store hop, and Summary is the tab
    * every store opens on: held in the tab, a store's seven day reads ran
    * again every time it was looked at. Cleared on sign-out with the rest of
    * the dev namespace.
    */
   recapMix: Record<string, RecapMix>;
+  recapMixOrder: string[];
   /** The week's exceptions, rolled up by day, per store location and week
    *  (`storeid__number__start__end`). Same reasons as `recapMix`. */
   recapExceptions: Record<string, Record<string, RecapExceptions>>;
@@ -344,6 +349,7 @@ const initialState: SalesLedgerState = {
   storeCache: {},
   storeCacheOrder: [],
   recapMix: {},
+  recapMixOrder: [],
   recapExceptions: {},
   recapItems: {},
   recapItemsOrder: [],
@@ -552,7 +558,11 @@ const salesLedgerSlice = createSlice({
     /** Serve a store already held, without going to the network. A read is a
      *  use, so it goes to the front of the queue too. */
     cacheRecapMix: (state, action: PayloadAction<{ key: string; mix: RecapMix }>) => {
-      state.recapMix[action.payload.key] = action.payload.mix;
+      const { key, mix } = action.payload;
+      state.recapMix[key] = mix;
+      const put = lruPut(state.recapMixOrder, key, RECAP_MIX_MAX);
+      put.evicted.forEach((k) => delete state.recapMix[k]);
+      state.recapMixOrder = put.order;
     },
     cacheRecapItems: (state, action: PayloadAction<{ key: string; items: RecapItem[] }>) => {
       const { key, items } = action.payload;
