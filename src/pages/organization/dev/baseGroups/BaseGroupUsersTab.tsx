@@ -5,7 +5,11 @@ import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
 } from "../../../../api/team";
-import { getBaseGroupUsers } from "../../../../api/baseGroups";
+import {
+  getAllStoresInBaseGroup,
+  getBaseGroupUsers,
+} from "../../../../api/baseGroups";
+import { accessTypeLabel, grantFor } from "./grantFor";
 import type {
   BaseGroupUserRow,
   BaseGroupUsersResp,
@@ -20,6 +24,9 @@ import {
   useCompanyFilterPredicate,
 } from "../users/companyFilter";
 import { callReason } from "./storeMembership";
+import { withinReachOf } from "./userReach";
+import { useMarkUsersStale } from "../usersStale";
+import { peopleConfirm } from "../bulkConfirm";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -37,9 +44,12 @@ interface Props {
 const BaseGroupUsersTab = ({ group, users }: Props) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
   const [assigned, setAssigned] = useState<BaseGroupUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<BaseGroupUserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  /** A write is running; the panel's buttons wait for it. */
+  const [moving, setMoving] = useState(false);
 
   // A response for a group the reader has already left must not land here.
   const activeGroupId = useRef(group.id);
@@ -71,25 +81,14 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     load();
   }, [group.id]);
 
-  const levelOf = useMemo(
-    () => new Map(users.map((u) => [u.id, u.user_level])),
-    [users],
-  );
-
   /**
-   * Whether this person is the viewer's to see and change.
-   *
-   * **Fails closed.** This used to read `?? 0`, so a userid with no level
-   * behind it counted as level 0 and was shown — and until the user list
-   * lands that is every row. `assign_base_group_to_user` takes a bare userid
-   * and checks no levels, so this is the only thing between a level 7 and a
-   * level 9's access, and one that defaults to "probably fine" is not a
-   * guard.
+   * Whether this person is the viewer's to see and change. Fails closed;
+   * the rule and why are in userReach.ts, which the export reads too.
    */
-  const withinReach = (r: BaseGroupUserRow) => {
-    const level = levelOf.get(r.userid);
-    return level !== undefined && level <= ctx.userLevel;
-  };
+  const withinReach = useMemo(
+    () => withinReachOf(users, ctx.userLevel),
+    [users, ctx.userLevel],
+  );
 
   /** Until the levels arrive every row is hidden, which reads as "this group
    *  has nobody" rather than "still loading". Say the second one. */
@@ -112,7 +111,9 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     call: (userid: number) => Promise<{ data: { error: number; msg?: string } }>,
     verb: string,
   ) => {
+    setMoving(true);
     const settled = await Promise.allSettled(ids.map((userid) => call(userid)));
+    setMoving(false);
 
     const failures = settled
       .map((res, i) => {
@@ -130,6 +131,7 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
 
     const done = ids.length - failures.length;
     load();
+    markUsersStale();
 
     if (failures.length === 0) {
       toast.success(`${done} user${done === 1 ? "" : "s"} ${verb}`);
@@ -145,18 +147,52 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     );
   };
 
-  const handleAssign = (ids: number[]) =>
+  /**
+   * Each person gets the group in their own access type (grantFor): By group
+   * as before, or By store with every store the group holds today picked.
+   * Always By group made a By store person Mixed. The roster is read once,
+   * fresh, at the moment of assigning.
+   */
+  const handleAssign = async (ids: number[]) => {
+    const anyByStore = ids.some(
+      (id) => users.find((u) => u.id === id)?.access_mode === "selected",
+    );
+    let groupStoreIds: number[] = [];
+    if (anyByStore) {
+      try {
+        const resp = await getAllStoresInBaseGroup(ctx.url, ctx.token, group.id);
+        const j = resp.data;
+        if (j.error !== 0) {
+          toast.error(j.msg || "Could not read this group's stores");
+          return;
+        }
+        groupStoreIds = (j.assigned_stores as { storeid: number }[]).map(
+          (s) => s.storeid,
+        );
+      } catch (err) {
+        toast.error((err as JsonError).message);
+        return;
+      }
+    }
     void run(
       ids,
-      // "all": the whole group, and whatever is added to it later. That is
-      // what this screen means — it assigns a GROUP to people, and has no
-      // store picker, so a "selected" grant would have nothing to name.
-      // Explicit because the argument is required: the server defaults to
-      // "selected" and then refuses it for having no storeids.
-      (userid) =>
-        assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id], "all"),
+      (userid) => {
+        const grant = grantFor(
+          users.find((u) => u.id === userid),
+          groupStoreIds,
+        );
+        return assignBaseGroupToUser(
+          ctx.url,
+          ctx.token,
+          userid,
+          [group.id],
+          grant.mode,
+          grant.storeids,
+        );
+      },
       "assigned",
     );
+  };
 
   const handleUnassign = (ids: number[]) =>
     void run(
@@ -165,10 +201,14 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
       "unassigned",
     );
 
+  /** The access type beside each name, so it's clear which grant they'll
+   *  get: By store people get the group's stores picked. */
   const toItem = (r: BaseGroupUserRow) => ({
     id: r.userid,
     label: r.username,
-    sublabel: r.email ?? undefined,
+    sublabel: [r.email, accessTypeLabel(users.find((u) => u.id === r.userid))]
+      .filter(Boolean)
+      .join(" · "),
   });
 
   // A base group belongs to one company, and the people who should be in it
@@ -194,7 +234,11 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
         rightTitle="Assigned"
         leftItems={unassigned.filter(withinReach).map(toItem)}
         rightItems={assigned.filter(withinReach).map(toItem)}
-        onAssign={handleAssign}
+        onAssign={(ids) => void handleAssign(ids)}
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({ direction, ids, me: ctx.userid, what: group.name })
+        }
         onUnassign={handleUnassign}
         leftPredicate={heldPredicate}
         leftFilters={

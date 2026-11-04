@@ -41,11 +41,12 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
     () =>
       configToQuery(
         ctx.config,
+        ctx.source,
         ctx.aggregating,
         ctx.measureItems,
         ctx.orderedColumns.map((c) => c.name),
       ),
-    [ctx.config, ctx.aggregating, ctx.measureItems, ctx.orderedColumns],
+    [ctx.config, ctx.source, ctx.aggregating, ctx.measureItems, ctx.orderedColumns],
   );
 
   const [text, setText] = useState(generated);
@@ -54,7 +55,8 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
     null,
   );
   const [plan, setPlan] = useState<ApplyPlan | null>(null);
-  const [saving, setSaving] = useState(false);
+  /** Which of the two the name box is for: a new row, or renaming the open one. */
+  const [saving, setSaving] = useState<"new" | "rename" | false>(false);
   const [deleting, setDeleting] = useState(false);
   const [library, setLibrary] = useState(false);
   const [name, setName] = useState("");
@@ -129,7 +131,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
     try {
       const parsed: Query = parseQuery(sql);
       ctx.dispatch(rememberBeforeApply());
-      const next = planApply(parsed, ctx.config);
+      const next = planApply(parsed, ctx.config, ctx.source);
       justApplied.current = true;
       next.actions.forEach((action) => ctx.dispatch(action));
       setPlan(next);
@@ -221,7 +223,10 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
   };
 
   return (
-    <div className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
+    <div
+      data-help="query"
+      className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden"
+    >
       {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
         <div className="bg-amber-100 border-b border-amber-300 px-3 py-2">
           <span className="text-[12.5px] font-semibold text-amber-900">
@@ -309,7 +314,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
           onClick={() => {
             setName("");
             setNote(current?.description ?? "");
-            setSaving(true);
+            setSaving("new");
           }}
           disabled={!somethingNew}
           title={
@@ -329,7 +334,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
             if (!current) return;
             setName(current.name);
             setNote(current.description ?? "");
-            setSaving(true);
+            setSaving("rename");
           }}
           disabled={!current}
           title={current ? undefined : "Nothing open to rename"}
@@ -444,7 +449,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
         >
           <div className="flex flex-col gap-3 p-4">
             <h2 className="text-[15px] font-semibold">
-              {current && name === current.name
+              {saving === "rename" && current
                 ? `Rename "${current.name}"`
                 : "Save this query"}
             </h2>
@@ -471,17 +476,20 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
               <button
                 type="button"
                 onClick={() => {
-                  // A name that is still the one it had means a rename; a new
-                  // one, or none loaded, means another row.
-                  const keeping =
-                    current && name.trim() === current.name ? current.id : null;
-                  ctx.saveQuery(name, text, keeping, note);
+                  // The button that opened this decides it, not the name:
+                  // Rename changes the open row's name and description and
+                  // leaves its query alone; Save as new is always a new row.
+                  if (saving === "rename" && current) {
+                    ctx.renameQuery(current.id, name, note);
+                  } else {
+                    ctx.saveQuery(name, text, null, note);
+                  }
                   setSaving(false);
                 }}
                 disabled={!name.trim()}
                 className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
-                {current && name.trim() === current.name ? "Save changes" : "Save"}
+                {saving === "rename" ? "Rename" : "Save"}
               </button>
             </div>
           </div>

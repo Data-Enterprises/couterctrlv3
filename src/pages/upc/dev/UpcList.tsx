@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -31,12 +31,33 @@ const buildScopeKey = (
   endDate: string,
 ) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
 
+/** Whether two comma-joined store lists hold the same stores, in any order. */
+const sameStores = (a: string, b: string) => {
+  const norm = (s: string) =>
+    s
+      .split(",")
+      .map(Number)
+      .filter((n) => Number.isFinite(n) && n > 0)
+      .sort((x, y) => x - y)
+      .join(",");
+  return norm(a) === norm(b);
+};
+
 const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
   const searchState = useAppSelector((s) => s.search);
   const [reSearchOpen, setReSearchOpen] = useState(false);
+  /**
+   * Which search is the newest. A group search waits on the group's store
+   * lookup, and two pressed in quick succession could finish in either order:
+   * the older one landing last put its stores under the newer one's header.
+   * Each search takes a number, and one whose lookup returns after a newer
+   * search has started is dropped.
+   */
+  const searchSeq = useRef(0);
+  const [lookingUp, setLookingUp] = useState(false);
 
   useEffect(() => {
     if (!reSearchOpen) return;
@@ -84,13 +105,17 @@ const UpcList = () => {
       toast.warn("Add at least one UPC before running");
       return;
     }
+    const seq = ++searchSeq.current;
 
+    // The live search, not ctx: ctx serves the tabs the search their data
+    // answers, and this is the one place that has to read what is about to be
+    // asked.
     const scopeKey = buildScopeKey(
       searchState.type,
       searchState.selectedStore?.storeid,
       searchState.selectedGroup?.id,
-      ctx.startDate,
-      ctx.endDate,
+      searchState.startDate,
+      searchState.endDate,
     );
     const removed = ctx.searchedUpcs.filter((u) => !ctx.upcs.includes(u));
     const added = ctx.upcs.filter((u) => !ctx.searchedUpcs.includes(u));
@@ -112,6 +137,9 @@ const UpcList = () => {
       // sends it back for the reduced set when the user next looks at it.
       upcQueue.startRun();
       dispatch(removeDevUpcs(removed));
+      // No lookup here, but an older search's may still be pending; it was
+      // just superseded and won't clear the busy state itself.
+      setLookingUp(false);
       setReSearchOpen(false);
       toast.success(
         `Removed ${removed.length} UPC${removed.length === 1 ? "" : "s"}`,
@@ -119,7 +147,12 @@ const UpcList = () => {
       return;
     }
 
+    setLookingUp(true);
     const storeids = await resolveStoreids();
+    // A newer search has started while this one looked its stores up: that
+    // one owns the page now, and its own lookup clears the busy state.
+    if (seq !== searchSeq.current) return;
+    setLookingUp(false);
     if (!storeids) return;
 
     setReSearchOpen(false);
@@ -143,7 +176,13 @@ const UpcList = () => {
     //
     //  - Anything else (different store, different dates, first search): the
     //    loaded rows answer a different question, so everything goes.
-    const incremental = ctx.dataLoaded && scopeKey === ctx.searchedScopeKey;
+    //
+    // The same group can hold different stores than it did last time: one
+    // deactivated or added since. The scope key names the group, not its
+    // stores, so the stores just looked up are compared too; without that the
+    // new list was thrown away and every fetch kept asking for the old one.
+    const incremental =
+      ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && sameStores(storeids, ctx.storeids);
     if (incremental) {
       if (removed.length) dispatch(removeDevUpcs(removed));
     } else {
@@ -155,7 +194,19 @@ const UpcList = () => {
     // so the left panel is complete and stable from the moment the search
     // commits. Descriptions arrive as modules respond.
     dispatch(seedDevUpcItems(ctx.upcs));
-    dispatch(setDevSearchSnapshot({ upcs: ctx.upcs, scopeKey }));
+    dispatch(
+      setDevSearchSnapshot({
+        upcs: ctx.upcs,
+        scopeKey,
+        scope: {
+          type: searchState.type,
+          startDate: searchState.startDate,
+          endDate: searchState.endDate,
+          selectedStore: searchState.selectedStore,
+          selectedGroup: searchState.selectedGroup,
+        },
+      }),
+    );
     dispatch(setDevDataLoaded(true));
     // No fetch here. Every module — Sales Comp included — asks for its own
     // delta when the user actually opens it. A search costs zero calls on its
@@ -163,7 +214,7 @@ const UpcList = () => {
   };
 
   if (!ctx.dataLoaded) {
-    return <UpcSearchCard onSearch={handleSearch} />;
+    return <UpcSearchCard onSearch={handleSearch} busy={lookingUp} />;
   }
 
   return (
@@ -185,6 +236,7 @@ const UpcList = () => {
             <UpcSearchCard
               onSearch={handleSearch}
               onClose={() => setReSearchOpen(false)}
+              busy={lookingUp}
             />
           </div>
         </div>

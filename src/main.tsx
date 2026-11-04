@@ -83,7 +83,13 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
-                <Route path="sales-export" element={<ExportBuilder />} />
+                <Route path="data-export" element={<ExportBuilder />} />
+                {/* Its name until it took the other tables; kept so a
+                    bookmark or a saved last_route still lands on it. */}
+                <Route
+                  path="sales-export"
+                  element={<Navigate to="/data-export" replace />}
+                />
                 <Route path="upc-scanner" element={<UpcScanner />} />
                 {/* <Route path="suggested-weight" element={<Suggested />} /> */}
                 <Route path="forecasting" element={<ForecastPage />} />

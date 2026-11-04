@@ -89,7 +89,7 @@ const DownloadsModal = () => {
           <div className="flex-1" />
           <button
             type="button"
-            onClick={ctx.loadBuilds}
+            onClick={() => ctx.loadBuilds()}
             disabled={ctx.buildsLoading}
             className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
           >
@@ -306,7 +306,7 @@ const DownloadsModal = () => {
                     key={`${build.buildId}-query`}
                     className="bg-custom-white border border-brand_line rounded-lg px-3 py-2 text-[11.5px] font-mono whitespace-pre-wrap break-words text-content"
                   >
-                    {requestToQuery(build.request)}
+                    {requestToQuery(build.request, ctx.source)}
                   </pre>
                 ))}
             </div>

@@ -17,9 +17,9 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
   setDuplicateSource,
+  clearDuplicateSource,
 } from "../../../../features/dev/devUsersSlice";
 import {
-  setUsersExportOpen,
   setUsersGridFilter,
 } from "../../../../features/dev/devOrganizationSlice";
 import {
@@ -41,7 +41,14 @@ import IconButton from "../../../../components-dev/IconButton";
 import Checkbox from "../../../../components-dev/Checkbox";
 import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
-import UsersExportModal from "./UsersExportModal";
+import {
+  accessLabel,
+  filterUsers,
+  NO_COMPANY_VALUE,
+  sortUsers,
+  type UserSort,
+  type UserSortKey,
+} from "./userFilters";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
@@ -49,7 +56,6 @@ interface UserGridProps {
   onOpenCreate: () => void;
 }
 
-const NO_COMPANY_VALUE = "none";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "N/A";
@@ -121,14 +127,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [draftEmailFilter, setDraftEmailFilter] = useState(emailFilter);
   const showInactive = statusFilter === "inactive";
 
-  // The Users tab's grid/create/detail sub-views aren't visible to
-  // Organization.tsx's header, so a stale usersExportOpen flag left set from
-  // a prior visit (e.g. header click while viewing Create/Detail) would
-  // otherwise pop the modal open the instant this grid remounts.
-  useEffect(() => {
-    ctx.dispatch(setUsersExportOpen(false));
-  }, []);
-
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
 
   /** Nobody may tick themselves or anyone above them — the server refuses
@@ -143,61 +141,30 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   const sourceUsers = showInactive ? ctx.inactiveUsers : ctx.users;
 
-  const filtered = useMemo(() => {
-    return sourceUsers.filter((u) => {
-      const companyCheck =
-        companyFilter === NO_COMPANY_VALUE
-          ? u.companies.length === 0
-          : companyFilter
-            ? u.companies.some((c) => c.company === Number(companyFilter))
-            : true;
-      const levelCheck = levelFilter
-        ? u.user_level === Number(levelFilter)
-        : true;
-      const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
-      // Mixed and no-groups people match neither choice, only All: they are
-      // not By group or By store, and the column says so.
-      const accessCheck = !accessFilter
-        ? true
-        : accessFilter === "none"
-          ? u.access_mode === null
-          : u.access_mode === accessFilter;
-      const lowerText = searchText.toLowerCase();
-      const firstName = (u.first_name ?? "").toLowerCase();
-      const lastName = (u.last_name ?? "").toLowerCase();
-      const fullName = `${firstName} ${lastName}`;
-      const textCheck =
-        searchText.trim() === ""
-          ? true
-          : firstName.includes(lowerText) ||
-            lastName.includes(lowerText) ||
-            fullName.includes(lowerText);
-      const usernameCheck = usernameFilter.trim()
-        ? u.username.toLowerCase().includes(usernameFilter.trim().toLowerCase())
-        : true;
-      const emailCheck = emailFilter.trim()
-        ? (u.email ?? "").toLowerCase().includes(emailFilter.trim().toLowerCase())
-        : true;
-      return (
-        companyCheck &&
-        levelCheck &&
-        roleCheck &&
-        accessCheck &&
-        textCheck &&
-        usernameCheck &&
-        emailCheck
-      );
-    });
-  }, [
-    sourceUsers,
-    companyFilter,
-    levelFilter,
-    roleFilter,
-    accessFilter,
-    searchText,
-    usernameFilter,
-    emailFilter,
-  ]);
+  /** A click sorts by a column, a second click turns it round, a third goes
+   *  back to the order the list arrived in. */
+  const [sort, setSort] = useState<UserSort | null>(null);
+  const toggleSort = (key: UserSortKey) =>
+    setSort((prev) =>
+      prev?.key !== key ? { key, desc: false } : prev.desc ? null : { key, desc: true },
+    );
+  const SortHead = ({ label, k }: { label: string; k: UserSortKey }) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(k)}
+      aria-label={`Sort by ${label.toLowerCase()}`}
+      className="flex items-center gap-1 text-left uppercase tracking-wide font-semibold hover:text-brand_navy"
+    >
+      {label}
+      {sort?.key === k && <span aria-hidden="true">{sort.desc ? "↓" : "↑"}</span>}
+    </button>
+  );
+
+  const filtered = useMemo(
+    () =>
+      sortUsers(filterUsers(sourceUsers, ctx.usersGridFilters), sort, renderRoleText),
+    [sourceUsers, ctx.usersGridFilters, sort],
+  );
 
   // Active and inactive are different lists with opposite actions. A
   // selection made in one means nothing in the other.
@@ -253,16 +220,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       return next;
     });
 
-  const accessLabel = (mode: User["access_mode"]) =>
-    mode === "all"
-      ? "By group"
-      : mode === "selected"
-        ? "By store"
-        : mode === "mixed"
-          ? "Mixed"
-          : mode === null
-            ? "Not set"
-            : "—";
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,
@@ -483,7 +440,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           </button>
         )}
         <button
-          onClick={onOpenCreate}
+          onClick={() => {
+            // Add user is a blank form; only Duplicate fills one in.
+            ctx.dispatch(clearDuplicateSource());
+            onOpenCreate();
+          }}
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
@@ -541,16 +502,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </div>
       )}
 
-      {ctx.usersExportOpen && (
-        <UsersExportModal
-          onClose={() => ctx.dispatch(setUsersExportOpen(false))}
-          allUsers={sourceUsers}
-          filteredUsers={filtered}
-          userLevels={ctx.userLevels}
-          scopeLabel={showInactive ? "Inactive users" : "Active users"}
-        />
-      )}
-
       <div className="border border-gray-100 rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
         {/* min-w floors the columns: narrower than this the card scrolls
             rather than crushing cells into each other. Header and rows are
@@ -583,8 +534,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftUsernameFilter(e.target.value)}
               />
             </ColFilter>
-            <div>First name</div>
-            <div>Last name</div>
+            <SortHead label="First name" k="first" />
+            <SortHead label="Last name" k="last" />
             <ColFilter
               label="Email"
               active={!!emailFilter}
@@ -603,12 +554,12 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftEmailFilter(e.target.value)}
               />
             </ColFilter>
-            <div>Role</div>
-            <div>Level</div>
+            <SortHead label="Role" k="role" />
+            <SortHead label="Level" k="level" />
             {/* By group or by store, rolled up by the users list itself so the
                 column costs no call per row. */}
-            <div>Access</div>
-            <div>Last visited</div>
+            <SortHead label="Access" k="access" />
+            <SortHead label="Last visited" k="visited" />
             <div></div>
           </div>
           <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
@@ -720,8 +671,22 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               );
             })}
             {filtered.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                No users found
+              <div className="flex items-center justify-center gap-3 py-8 text-[12px] text-content">
+                {ctx.usersError ? (
+                  <>
+                    <span>{ctx.usersError}</span>
+                    <button
+                      onClick={() => ctx.dispatch(setRefresh(true))}
+                      className="text-[12px] font-medium px-3 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85"
+                    >
+                      Retry
+                    </button>
+                  </>
+                ) : ctx.usersLoading ? (
+                  "Loading users…"
+                ) : (
+                  "No users found"
+                )}
               </div>
             )}
           </div>

@@ -653,7 +653,7 @@ const CSV_HEADERS = [
   "cost_gap",
   "mine_margin",
   "theirs_margin",
-  "margin_difference",
+  "margin_dollar_gap",
   "units_ratio",
   "dollars_ratio",
   "price_ratio",
@@ -757,7 +757,9 @@ const COLUMNS: ColumnDef[] = [
   },
   {
     key: "marginDiff",
-    label: "Margin diff",
+    // Dollars between the two stores, not a margin rate: "diff" read as a
+    // percentage.
+    label: "Margin $ Gap",
     width: 104,
     right: true,
     sort: "marginDiff",
@@ -3041,7 +3043,7 @@ const DeptInvestigation = ({
               scroll position and the active filter — which matters, because
               step 5's "Show in grid" lands the reader in it.
 
-              The Sales Export preview's grid: one real table, every cell
+              The Data Export preview's grid: one real table, every cell
               ruled, mono at 11px, a sticky heading row and a sticky row
               number. Dense is the point — a department is hundreds of items
               and an airy list shows eight of them. */}

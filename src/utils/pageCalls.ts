@@ -73,7 +73,7 @@ const LABELS: Record<string, string> = {
   "sales/weekly": "Weekly sales",
   "sales/storedepts": "Store departments",
   "sales/topten": "Top ten items",
-  "sales/export_builds": "Export builds",
+  "export/sales/builds": "Export builds",
   "hourly/hourly": "Hourly sales",
   "subs/sub_sales": "Sub department sales",
   "subs/subs": "Sub departments",
@@ -126,7 +126,7 @@ const NEVER = [
   /\/tickets\b/i,
 ];
 
-/** Per call. `/sales/export_preview` comes back around 520 KB. */
+/** Per call. `/export/sales/preview` comes back around 520 KB. */
 const CAP = 256 * 1024;
 
 /** The request line is there to tell two calls apart, not to be read whole. */

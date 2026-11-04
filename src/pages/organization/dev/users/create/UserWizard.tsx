@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
+import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { createUser, updateUser } from "../../../../../api/team";
+import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 import {
+  clearDuplicateSource,
+  markUserInfoSaved,
   resetUserInfo,
   setRefresh,
   setUserCompanyIds,
@@ -23,8 +28,20 @@ import { STEP_ORDER, type WizardStep } from "./wizardSteps";
 import { usePanelFit, type PanelFit } from "../../panelFit";
 import StepAccessType from "./StepAccessType";
 import StepReview from "./StepReview";
+import { useSeededPicks } from "./useSeededPicks";
+import {
+  createBlockReason,
+  duplicateCompanies,
+  editBlockReason,
+  needsSingleStoreTrim,
+  reachableLimit,
+  readiness,
+  singleStoreNote,
+  trimToSingleStore,
+} from "./wizardRules";
 import {
   accessSets,
+  directStoreIds,
   emptySelectedGroupIds,
   groupCompanies,
   hasChanges,
@@ -38,7 +55,7 @@ import {
   type AccessOutcome,
 } from "../access/useAccessSave";
 import { useAccessMode } from "../access/useAccessMode";
-import { useHeldAccess } from "../access/useHeldAccess";
+import { failedReadsText, useHeldAccess } from "../access/useHeldAccess";
 import { useExistingAccess } from "../access/useExistingAccess";
 
 interface UserWizardProps {
@@ -131,7 +148,6 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const [furthest, setFurthest] = useState<WizardStep>(
     editing ? "review" : "identity",
   );
-  const [picks, setPicks] = useState<AccessPicks>({ ...NO_PICKS, mode: "all" });
   const [companyGroups, setCompanyGroups] = useState<
     Record<number, CompanyBaseGroup[]>
   >({});
@@ -165,37 +181,74 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const typeUnset =
     editing && ctx.users.find((u) => u.id === editUserId)?.access_mode === null;
   const existing = useExistingAccess(held.heldGroups, held.groupPicks);
+  /** Seeded from what they hold as the reads land, except after a save that
+   *  stopped part way: see useSeededPicks. */
+  const { picks, setPicks, keepPicks } = useSeededPicks(
+    editing,
+    existing.picks,
+    { ...NO_PICKS, mode: "all" },
+  );
 
   /**
-   * The identity as it was opened, for "did any of it change". Captured once,
-   * on the first render that has a username — the grid fills `userInfo`
-   * before this mounts, so that is the first render.
+   * The identity as it was opened, for "did any of it change". From the
+   * slice, which records it when the person is opened from the grid: a copy
+   * taken when the wizard mounted was taken again after a tab switch, from
+   * the edited details, and the change stopped counting.
    */
-  const identityBefore = useRef<string | null>(null);
-  const emailBefore = useRef("");
-  if (editing && identityBefore.current === null && ctx.userInfo.username) {
-    identityBefore.current = identityOf(ctx.userInfo);
-    emailBefore.current = ctx.userInfo.email;
-  }
+  const identityBefore = ctx.userInfoBefore ? identityOf(ctx.userInfoBefore) : null;
+  const emailBefore = ctx.userInfoBefore?.email ?? "";
 
-  /** Re-seed whenever what they hold arrives or changes under us — the three
-   *  reads land a moment apart, and a save re-reads all three. */
+  /**
+   * Edit: every held group's stores, as soon as the groups are known.
+   *
+   * Effective stores counts the held groups' stores, and the access panel
+   * only fetches a group's stores when its company is opened, so the count
+   * sat at "counting…" until somebody clicked a company. A list that will not
+   * load counts as empty, as the mode switch treats it, rather than leaving
+   * the count waiting for ever.
+   */
+  const rosterAsked = useRef(new Set<number>());
   useEffect(() => {
     if (!editing) return;
-    setPicks(existing.picks);
-  }, [editing, existing.picks]);
+    held.heldGroups.forEach((g) => {
+      if (groupStores[g.id] !== undefined || rosterAsked.current.has(g.id)) return;
+      rosterAsked.current.add(g.id);
+      const land = (stores: Store[]) =>
+        setGroupStores((prev) =>
+          prev[g.id] !== undefined ? prev : { ...prev, [g.id]: stores },
+        );
+      getAllStoresInBaseGroup(ctx.url, ctx.token, g.id)
+        .then((resp) => {
+          const j = resp.data;
+          land(
+            j.error === 0
+              ? (j.assigned_stores as Store[]).filter((s) => s.store_name != null)
+              : [],
+          );
+        })
+        .catch(() => land([]));
+    });
+  }, [editing, held.heldGroups]);
 
   const singleStoreOnly = isSingleStoreRole(ctx.userInfo.role);
 
   usePanelFit(STEP_FIT[step]);
 
   // ── Add: start clean, or from the person being duplicated ─────────────
+  /**
+   * The Duplicate this Add was opened for, taken once. The slice copy is
+   * cleared as soon as it is read: it used to stay set until sign-out, so
+   * every later Add user, Cancel or not, opened as a copy of the same person.
+   * Held in state rather than read in the effect, because StrictMode runs the
+   * effect twice and the second run would find it already cleared.
+   */
+  const [source] = useState(() => (editing ? null : ctx.duplicateSource));
   useEffect(() => {
     if (editing) return;
     ctx.dispatch(resetUserInfo());
 
-    const source = ctx.duplicateSource;
     if (!source) return;
+    ctx.dispatch(clearDuplicateSource());
     // Access copies, identity never does — a duplicate that half-becomes the
     // person it was copied from is worse than one that copies nothing.
     ctx.dispatch(setUserInfo({ key: "role", value: source.role }));
@@ -208,12 +261,14 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     );
     // The source's companies and groups are picked in their own right rather
     // than re-derived from its stores: a group whose stores are all unticked
-    // still has to survive the copy.
+    // still has to survive the copy. Companies are every company the source
+    // holds, not only those its groups imply: one held with no group in it
+    // used to be left behind.
     //
     // The access type copies too. It is one answer per person now, read back
     // from what the source actually holds, so there is nothing to guess.
     setPicks({
-      companies: Array.from(new Set(source.groups.map((g) => g.company))),
+      companies: duplicateCompanies(source),
       baseGroups: source.groups.map((g) => g.id),
       mode: source.mode,
       stores: source.stores,
@@ -221,15 +276,34 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     // Runs once, on open. A duplicate is a starting point, not a binding.
   }, []);
 
-  // A role change after the fact has to drag the access with it, or the form
-  // holds a combination the server will refuse.
+  /**
+   * A role change after the fact has to drag the access with it, or the form
+   * holds a combination the server will refuse: Single Store is one store,
+   * By store.
+   *
+   * It used to trim silently, and changing the role back didn't put the
+   * picks back, so a By group person came out By store with nothing picked.
+   * Now the picks as they were are kept, the note says what changed, and the
+   * role back restores them. Only a change of role does this: a Single Store
+   * person opened in Edit is shown as they are.
+   */
+  const wasSingle = useRef(singleStoreOnly);
+  const beforeSingle = useRef<AccessPicks | null>(null);
+  const [singleNote, setSingleNote] = useState<string | null>(null);
   useEffect(() => {
-    if (!singleStoreOnly) return;
-    setPicks((prev) =>
-      prev.mode === "selected" && prev.stores.length <= 1
-        ? prev
-        : { ...prev, mode: "selected", stores: prev.stores.slice(0, 1) },
-    );
+    if (singleStoreOnly === wasSingle.current) return;
+    wasSingle.current = singleStoreOnly;
+    if (singleStoreOnly) {
+      if (!needsSingleStoreTrim(picks)) return;
+      const next = trimToSingleStore(picks);
+      beforeSingle.current = picks;
+      setPicks(next);
+      setSingleNote(singleStoreNote(picks, next));
+    } else if (beforeSingle.current) {
+      setPicks(beforeSingle.current);
+      beforeSingle.current = null;
+      setSingleNote(null);
+    }
   }, [singleStoreOnly]);
 
   const handleModeChange = async (mode: GrantMode) => {
@@ -268,29 +342,45 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const hasAccess = sets.companyIds.length > 0 || sets.grants.length > 0;
 
   const identityDirty =
-    editing && identityBefore.current !== identityOf(ctx.userInfo);
+    editing && identityBefore !== null && identityBefore !== identityOf(ctx.userInfo);
   const accessDirty = editing && hasChanges(sets, before);
 
-  const stepReady: Record<WizardStep, boolean> = {
+  const stepReady = readiness({
     identity: identityValid,
-    type: !switching,
-    assignments: hasAccess && emptyGroups.length === 0,
-    review: true,
-  };
+    switching,
+    hasAccess,
+    emptyGroups: emptyGroups.length,
+  });
+  /** Add only: the step bar stops at the first step that isn't ready, so
+   *  Review can't be reached past one that was emptied after visiting it.
+   *  Edit keeps every step reachable; its Save checks them all. */
+  const limit = editing ? STEP_ORDER.length - 1 : reachableLimit(stepReady);
 
   const at = STEP_ORDER.indexOf(step);
   const isLast = step === "review";
-  const canAdvance = stepReady[step];
-  /** Edit saves when every step is ready and something moved; there is no
+  /** In Edit, a step whose half hasn't changed can be passed as it is: a
+   *  person with no access can still get to Review to fix their name. */
+  const canAdvance =
+    editing && step === "identity"
+      ? !identityDirty || stepReady.identity
+      : editing && step === "assignments"
+        ? !accessDirty || stepReady.assignments
+        : stepReady[step];
+  /** Edit saves when something moved and what moved is ready; there is no
    *  point sending an unchanged person back to the server. */
-  const canSave = editing
-    ? stepReady.identity &&
-      stepReady.assignments &&
-      !switching &&
-      (identityDirty || accessDirty)
-    : canAdvance;
+  const editReason = editing
+    ? editBlockReason({
+        ready: stepReady,
+        identityDirty,
+        accessDirty,
+        hasAccess,
+        held: held.failed.length > 0 ? "failed" : held.loaded ? "loaded" : "loading",
+      })
+    : null;
+  const canSave = editing ? editReason === null : canAdvance;
 
   const goTo = (next: WizardStep) => {
+    if (STEP_ORDER.indexOf(next) > limit) return;
     setStep(next);
     if (STEP_ORDER.indexOf(next) > STEP_ORDER.indexOf(furthest)) {
       setFurthest(next);
@@ -303,6 +393,35 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const displayName =
     `${ctx.userInfo.first_name} ${ctx.userInfo.last_name}`.trim() ||
     ctx.userInfo.username;
+
+  /**
+   * Unsaved work, and whose. Cancel, Back to users and the tab bar used to
+   * throw a half-filled form away without asking; they ask now, and only
+   * when something would be lost. Add counts anything filled in (a Duplicate
+   * included); Edit counts a change from what was opened.
+   */
+  const u = ctx.userInfo;
+  const addDirty =
+    !editing &&
+    (u.username !== "" ||
+      u.email !== "" ||
+      u.first_name !== "" ||
+      u.last_name !== "" ||
+      u.password !== "" ||
+      u.role > 0 ||
+      u.user_level > 0 ||
+      picks.companies.length > 0 ||
+      picks.baseGroups.length > 0 ||
+      picks.stores.length > 0);
+  const unsaved = editing ? identityDirty || accessDirty : addDirty;
+  const unsavedFor = editing ? displayName || "this user" : "the new user";
+  const [leaving, setLeaving] = useState(false);
+  const leave = () => (unsaved && !saving ? setLeaving(true) : onCancel());
+
+  useEffect(() => {
+    ctx.dispatch(setUnsavedWizard(unsaved && !saving ? unsavedFor : null));
+  }, [unsaved, saving, unsavedFor]);
+  useEffect(() => () => void ctx.dispatch(setUnsavedWizard(null)), []);
 
   // ── Add ───────────────────────────────────────────────────────────────
   const finishCreate = (name: string) => {
@@ -369,15 +488,25 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
     if (identityDirty) {
       try {
-        const resp = await updateUser(ctx.url, ctx.token, ctx.userInfo, 0, 0);
+        // update_user writes `security` and `template` on every call, so
+        // the row's own values go back: sending 0 cleared both on each Edit
+        // (create sets template to 1). Both are required ints there, so a
+        // row holding null sends 0, as before.
+        const row = ctx.users.find((x) => x.id === editUserId);
+        const resp = await updateUser(
+          ctx.url,
+          ctx.token,
+          ctx.userInfo,
+          row?.security ?? 0,
+          row?.template ?? 0,
+        );
         if (resp.data.error !== 0) {
           toast.error(resp.data.msg ?? "Their details could not be saved");
           setStep("identity");
           setSaving(false);
           return;
         }
-        identityBefore.current = identityOf(ctx.userInfo);
-        emailBefore.current = ctx.userInfo.email;
+        ctx.dispatch(markUserInfoSaved());
       } catch (err) {
         toast.error((err as JsonError).message);
         setSaving(false);
@@ -391,8 +520,11 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         setSaving(false);
         setFailure(outcome);
         ctx.dispatch(setRefresh(true));
-        // Re-read anyway: a save that stopped part way has written some of
-        // it, and the screen must show which rather than its own guess.
+        // Re-read: a save that stopped part way has written some of it. The
+        // re-read moves the "before" side only; the picks stay as the admin
+        // left them, so what didn't save is still different and Save changes
+        // sends just that.
+        keepPicks();
         held.reload();
         return;
       }
@@ -419,12 +551,19 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       ? canSave && !saving
       : canAdvance && !saving && stranded === null
     : canAdvance && !saving && stranded === null;
+  /** Under a greyed-out Create user or Save changes, the reason. */
+  const blockReason =
+    isLast && !saving && stranded === null
+      ? editing
+        ? editReason
+        : createBlockReason(stepReady, { hasAccess })
+      : null;
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-0">
       <div className="flex items-center gap-2 mb-2 flex-shrink-0">
         <button
-          onClick={onCancel}
+          onClick={leave}
           className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
@@ -438,12 +577,25 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </span>
       </div>
 
+      {leaving && (
+        <ConfirmModal
+          title="Discard changes?"
+          message={`Discard your changes to ${unsavedFor}? Nothing has been saved.`}
+          confirmLabel="Discard"
+          onConfirm={() => {
+            setLeaving(false);
+            onCancel();
+          }}
+          onCancel={() => setLeaving(false)}
+        />
+      )}
+
       <h2 className="text-[17px] font-bold text-content mb-2.5 flex-shrink-0">
         {editing ? `Edit ${displayName}` : "Add user"}
       </h2>
 
       <div data-help="wizard" className="flex-shrink-0 mb-4">
-        <Stepper current={step} furthest={furthest} onGoTo={goTo} />
+        <Stepper current={step} furthest={furthest} limit={limit} onGoTo={goTo} />
       </div>
 
       {/* Danger, not severity: the severity family grades data against a
@@ -476,6 +628,26 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </div>
       )}
 
+      {/* A read that failed used to become an empty list, so the person
+          looked as though they held nothing. */}
+      {editing && held.failed.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
+          <div className="flex-1 min-w-[260px] text-[11.5px] text-content leading-snug">
+            <span className="font-semibold">
+              Couldn’t read their {failedReadsText(held.failed)}.
+            </span>{" "}
+            What they hold may be missing below, so Save changes is off until
+            it loads.
+          </div>
+          <button
+            onClick={held.reload}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {failure && (
         <div className="mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
           <div className="text-[12.5px] font-semibold text-content">
@@ -483,10 +655,27 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           </div>
           <div className="text-[11.5px] text-content/95">
             {outcomeSentence(failure)}
-            {failure.reason ? ` ${failure.reason}` : ""} The lists have been
-            re-read, so what you see is what saved. Press Save changes to try
-            the rest.
+            {failure.reason ? ` ${failure.reason}` : ""} What did save has
+            been re-read, and your changes are still on screen. Press Save
+            changes to send the rest.
           </div>
+        </div>
+      )}
+
+      {singleNote && (
+        <div
+          role="status"
+          className="flex items-start gap-3 mb-3 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border flex-shrink-0"
+        >
+          <div className="flex-1 text-[11.5px] text-content leading-snug">
+            {singleNote}
+          </div>
+          <button
+            onClick={() => setSingleNote(null)}
+            className="text-[11.5px] font-medium text-content/95 hover:underline flex-shrink-0"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -496,7 +685,14 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             onValidityChange={setIdentityValid}
             editing={
               editing
-                ? { userid: editUserId, email: emailBefore.current }
+                ? {
+                    userid: editUserId,
+                    email: emailBefore,
+                    blankNames: {
+                      first: !ctx.userInfoBefore?.first_name.trim(),
+                      last: !ctx.userInfoBefore?.last_name.trim(),
+                    },
+                  }
                 : undefined
             }
           />
@@ -517,6 +713,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           <div className="flex-1 min-h-0 flex flex-col">
             <AccessPanel
               picks={picks}
+              heldGroups={held.heldGroups}
               onPicksChange={setPicks}
               companyGroups={companyGroups}
               onCompanyGroupsChange={setCompanyGroups}
@@ -529,9 +726,14 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
                 editing ? (
                   <EffectiveStoresPanel
                     picks={picks}
+                    heldGroups={held.heldGroups}
                     companyGroups={companyGroups}
                     groupStores={groupStores}
-                    directStoreIds={existing.carried.stores}
+                    directStoreIds={directStoreIds(
+                      existing.carried,
+                      held.heldGroups.map((g) => g.id),
+                      groupStores,
+                    )}
                     assignedStores={ctx.selectedUserStores.assigned}
                   />
                 ) : undefined
@@ -549,6 +751,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             onGoTo={goTo}
             modeBefore={editing && !typeUnset ? existing.picks.mode : undefined}
             typeUnset={typeUnset}
+            heldGroups={held.heldGroups}
           />
         )}
       </div>
@@ -557,12 +760,17 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           the way forward should not be below the fold of a scroll area. */}
       <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-gray-100 flex-shrink-0">
         <button
-          onClick={onCancel}
+          onClick={leave}
           className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-gray-50"
         >
           Cancel
         </button>
         <div className="flex items-center gap-2.5">
+          {blockReason && (
+            <span className="text-[11.5px] font-semibold text-content" role="status">
+              {blockReason}
+            </span>
+          )}
           <span className="text-[11.5px] text-content/95">
             {editing && !isLast && (identityDirty || accessDirty)
               ? "Unsaved changes · "

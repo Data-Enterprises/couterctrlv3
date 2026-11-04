@@ -3,7 +3,7 @@ import type { SelectFilterOption } from "../../../components-dev/filters/SelectF
 /**
  * PARKED, 2026-09-24. The endpoint does not take a date format.
  *
- * The final contract for /sales/export lists fileFormat, filePrefix,
+ * The final contract for /sales/export (now export/sales) lists fileFormat, filePrefix,
  * userQueryId and dryRun, and nothing about dates — so a page that formatted
  * them would show 09/14/2026 in the preview and hand back a file holding
  * 2026-09-14T00:00:00. Everything here is kept and switched off rather than

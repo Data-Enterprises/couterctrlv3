@@ -1,6 +1,8 @@
 import type { UnknownAction } from "@reduxjs/toolkit";
 import type { ExportExpr } from "../../../api/salesExport";
 import type { SavedConfigPayload } from "../../../api/savedConfigs";
+import { aliasFor } from "./aggregates";
+import type { ExportSource } from "./sources";
 
 import {
   setAggregates,
@@ -9,16 +11,12 @@ import {
   setOrderBy,
   setFlag,
   setGroupBy,
+  setPicks,
   setProductCodes,
   setProductDescriptions,
-  setSelectedCashiers,
-  setSelectedPriceTypes,
+  setRowFlag,
   setSelectedColumns,
-  setSelectedRingTypes,
-  setSelectedSaleTypes,
   setSelectedStoreIds,
-  setSelectedSubDepartments,
-  setSelectedVendors,
   type ExportBuilderState,
 } from "../../../features/dev/devExportBuilderSlice";
 
@@ -51,34 +49,39 @@ const columnsUnder = (expr: ExportExpr): string[] => {
 const narrowedOr = <T>(picked: T[], available: unknown[]): T[] | null =>
   picked.length === available.length ? null : picked;
 
-/** The configuration, in the shape that goes to S3. */
+/** The configuration, in the shape that is saved. */
 export const toPayload = (
   config: ExportBuilderState,
-): SavedConfigPayload => ({
-  v: 1,
-  // Kept in the payload for rows written before the shape was read off the
-  // configuration; nothing loads it.
-  mode: config.groupBy.length > 0 ? "summary" : "lines",
-  columns: config.columnOrder.filter((n) => config.selectedColumns.includes(n)),
-  columnOrder: config.columnOrder,
-  groupBy: config.groupBy,
-  aggregates: config.aggregates,
-  computed: config.computed,
-  orderBy: config.orderBy,
-  storeIds: narrowedOr(config.selectedStoreIds, config.stores),
-  saleTypes: narrowedOr(config.selectedSaleTypes, config.saleTypes),
-  ringTypes: narrowedOr(config.selectedRingTypes, config.itemRingTypes),
-  subDepartments: narrowedOr(
-    config.selectedSubDepartments,
-    config.subDepartments,
-  ),
-  vendors: narrowedOr(config.selectedVendors, config.vendors),
-  cashiers: narrowedOr(config.selectedCashiers, config.cashiers),
-  priceTypes: narrowedOr(config.selectedPriceTypes, config.priceTypes),
-  productCodes: config.productCodes,
-  productDescriptions: config.productDescriptions,
-  flags: { ...config.flags },
-});
+  source: ExportSource,
+): SavedConfigPayload => {
+  const { dateFormat, fileFormat, filePrefix, ordered } = config.flags;
+  return {
+    v: 2,
+    source: source.key,
+    // Kept in the payload for rows written before the shape was read off the
+    // configuration; nothing loads it.
+    mode: config.groupBy.length > 0 ? "summary" : "lines",
+    columns: config.columnOrder.filter((n) => config.selectedColumns.includes(n)),
+    columnOrder: config.columnOrder,
+    groupBy: config.groupBy,
+    aggregates: config.aggregates,
+    computed: config.computed,
+    orderBy: config.orderBy,
+    storeIds: narrowedOr(config.selectedStoreIds, config.stores),
+    filters: Object.fromEntries(
+      source.lists.map((l) => [
+        l.filter,
+        narrowedOr(config.picks[l.filter] ?? [], config.lists[l.filter] ?? []),
+      ]),
+    ),
+    productCodes: config.productCodes,
+    productDescriptions: config.productDescriptions,
+    rowFlags: Object.fromEntries(
+      source.flags.map((f) => [f.filter, config.rowFlags[f.filter] ?? null]),
+    ),
+    output: { dateFormat, fileFormat, filePrefix, ordered },
+  };
+};
 
 export interface LoadPlan {
   actions: UnknownAction[];
@@ -97,6 +100,7 @@ export interface LoadPlan {
 export const planLoad = (
   payload: SavedConfigPayload,
   config: ExportBuilderState,
+  source: ExportSource,
 ): LoadPlan => {
   const actions: UnknownAction[] = [];
   const missing: string[] = [];
@@ -139,14 +143,14 @@ export const planLoad = (
   // A computed measure is only as good as the columns underneath it: one
   // built on a column this table no longer has would be an error at build
   // time rather than a missing column in the file.
-  const computed = (payload.computed).filter((m) =>
+  const computed = payload.computed.filter((m) =>
     columnsUnder(m.expr).every((name) =>
       config.columns.some((c) => c.name === name),
     ),
   );
-  if (computed.length < (payload.computed).length) {
+  if (computed.length < payload.computed.length) {
     missing.push(
-      `${(payload.computed).length - computed.length} computed measure(s) built on columns this table does not have`,
+      `${payload.computed.length - computed.length} computed measure(s) built on columns this table does not have`,
     );
   }
   actions.push(setComputed(computed));
@@ -168,71 +172,42 @@ export const planLoad = (
       ),
     ),
   );
-  actions.push(
-    setSelectedSaleTypes(resolve(payload.saleTypes, config.saleTypes, "sale types")),
-  );
-  actions.push(
-    setSelectedRingTypes(
-      resolve(payload.ringTypes, config.itemRingTypes, "ring types"),
-    ),
-  );
-  actions.push(
-    setSelectedSubDepartments(
-      resolve(
-        payload.subDepartments,
-        config.subDepartments.map((s) => String(s.sub_department)),
-        "sub departments",
-      ),
-    ),
-  );
-  actions.push(
-    setSelectedVendors(
-      resolve(
-        payload.vendors,
-        config.vendors.map((v) => v.vendor_id),
-        "vendors",
-      ),
-    ),
-  );
-  actions.push(
-    setSelectedCashiers(
-      resolve(
-        payload.cashiers,
-        config.cashiers.map((c) => c.cashier_number),
-        "cashiers",
-      ),
-    ),
-  );
 
   /**
-   * Price type is a per-company vocabulary, so a miss here is not a value
-   * that has gone — it is a word another company does not use.
+   * Every list, intersected with what this range holds.
    *
-   * A configuration saved against Food Giant carries "Regular"; reopened
-   * against a company that says "REG", it would match nothing and write an
-   * empty file without a word. The endpoint deliberately does not check this
-   * — it would cost a scan and fire late — so it is checked where the list
-   * for these stores is already in hand.
+   * Price types are the case this matters most for: a per-company
+   * vocabulary, so a miss there is not a value that has gone but a word
+   * another company does not use. A configuration saved against Food Giant
+   * carries "Regular"; reopened against a company that says "REG", it would
+   * match nothing and write an empty file without a word. The router does not
+   * check this -- it would cost a scan and fire late -- so it is checked here,
+   * where the list for these stores is already in hand.
    */
-  actions.push(
-    setSelectedPriceTypes(
-      resolve(
-        payload.priceTypes ?? null,
-        config.priceTypes.map((p) => p.value),
-        "price types",
-        (value) => (String(value) === "" ? "(none)" : String(value)),
-      ),
-    ),
-  );
+  for (const list of source.lists) {
+    actions.push(
+      setPicks({
+        filter: list.filter,
+        values: resolve(
+          payload.filters[list.filter] ?? null,
+          (config.lists[list.filter] ?? []).map((i) => i.value),
+          list.noun,
+          (value) => (String(value) === "" ? "(none)" : String(value)),
+        ),
+      }),
+    );
+  }
 
   // A sort key is a column of the file, so it survives only as long as the
-  // measure or key it names does.
+  // measure or key it names does. Named by aliasFor, the endpoint's own rule:
+  // count(*) is `row_count`, and spelling it `*_count` here dropped every
+  // saved sort on a row count.
   const sortable = new Set(
     payload.mode === "summary"
       ? [
           ...payload.groupBy,
-          ...payload.aggregates.map((m) => m.alias ?? `${m.column}_${m.fn}`),
-          ...(payload.computed).map((m) => m.alias),
+          ...payload.aggregates.map((m) => m.alias || aliasFor(m.column, m.fn)),
+          ...payload.computed.map((m) => m.alias),
         ]
       : payload.columns,
   );
@@ -246,11 +221,16 @@ export const planLoad = (
 
   actions.push(setProductCodes(payload.productCodes));
   actions.push(setProductDescriptions(payload.productDescriptions));
-  actions.push(setFlag({ ...payload.flags }));
+  for (const flag of source.flags) {
+    actions.push(
+      setRowFlag({ filter: flag.filter, value: payload.rowFlags[flag.filter] ?? null }),
+    );
+  }
+  actions.push(setFlag({ ...payload.output }));
 
   // The days are the one thing a saved export never carries: they are
   // absolute, and September's Saturdays are not October's.
-  if (config.saleDates.length > 1) {
+  if (config.days.length > 1) {
     missing.push(
       "Days are not saved — this loaded with every day of the open range ticked",
     );
@@ -260,26 +240,29 @@ export const planLoad = (
 };
 
 /** One line saying what a saved configuration is, for the list. */
-export const describePayload = (payload: SavedConfigPayload) => {
+export const describePayload = (payload: SavedConfigPayload, source: ExportSource) => {
+  const flagWords = source.flags.flatMap((f) => {
+    const value = payload.rowFlags[f.filter];
+    return value === 0 ? [`no ${f.plural}`] : value === 1 ? [`${f.plural} only`] : [];
+  });
   const bits = [
     payload.mode === "summary"
       ? `Summary by ${payload.groupBy.join(", ") || "nothing"}`
       : `${payload.columns.length} columns`,
     payload.mode === "summary" &&
-      (payload.computed.length) > 0 &&
+      payload.computed.length > 0 &&
       `${payload.computed.length} computed`,
-    payload.saleTypes && `${payload.saleTypes.length} sale types`,
-    payload.subDepartments && `${payload.subDepartments.length} sub departments`,
-    payload.vendors && `${payload.vendors.length} vendors`,
-    payload.cashiers && `${payload.cashiers.length} cashiers`,
+    ...source.lists
+      .filter((l) => l.inSummary)
+      .map((l) => {
+        const values = payload.filters[l.filter];
+        return values ? `${values.length} ${l.noun}` : false;
+      }),
     payload.storeIds && `${payload.storeIds.length} stores`,
     payload.productCodes.length > 0 && `${payload.productCodes.length} codes`,
     payload.productDescriptions.length > 0 &&
       `"${payload.productDescriptions.join('", "')}"`,
-    payload.flags.voidFlag === 0 && "no voids",
-    payload.flags.voidFlag === 1 && "voids only",
-    payload.flags.refundFlag === 0 && "no refunds",
-    payload.flags.refundFlag === 1 && "refunds only",
+    ...flagWords,
   ].filter(Boolean) as string[];
   return bits.join(" · ");
 };

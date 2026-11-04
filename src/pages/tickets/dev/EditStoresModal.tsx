@@ -8,7 +8,7 @@ import {
   type TicketStoreOption,
 } from "../../../api/tickets";
 import StoreChecklist from "./StoreChecklist";
-import { storesOf } from "./ticketStores";
+import { cleanStoreOptions, storesOf } from "./ticketStores";
 
 interface Props {
   ticket: Ticket;
@@ -49,7 +49,7 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
           setLoadError("The stores for this ticket could not be read.");
           return;
         }
-        const list: TicketStoreOption[] = resp.data.stores ?? [];
+        const list: TicketStoreOption[] = cleanStoreOptions(resp.data.stores ?? []);
         setOptions(list);
         // The server's `selected` is the newer answer than the row in hand.
         const on = list.filter((o) => o.selected).map((o) => o.storeid);

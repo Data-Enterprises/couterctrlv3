@@ -116,3 +116,19 @@ describe("parseUpload — skipped lines", () => {
     expect(parseUpload(csv).skippedLines).toBe(0);
   });
 });
+
+describe("parseUpload — a short value in a pasted list", () => {
+  it("keeps every code and sets the short one aside", () => {
+    // From a real paste: one 3-digit value used to drop all but the first code.
+    const out = parseUpload("7003862195, 27000100000, 4400002734, 697, 5100026977");
+    expect(out.upcs).toEqual(["7003862195", "27000100000", "4400002734", "5100026977"]);
+    expect(out.tooShort).toEqual(["697"]);
+    expect(out.skippedLines).toBe(0);
+  });
+
+  it("still reads an all-number report row as one code, quietly", () => {
+    const out = parseUpload("1200000088,10,5");
+    expect(out.upcs).toEqual(["1200000088"]);
+    expect(out.tooShort).toEqual([]);
+  });
+});

@@ -265,7 +265,9 @@ export const createTicket = (
 
 /** A store a picker may offer: exactly the set the server will accept. */
 export interface TicketStoreOption extends TicketStore {
-  company: number;
+  /** Null for a store not assigned to any company (Crossroads 782 and 785,
+   *  ACE 316 and 399, Houchens Corp and Sonic 0 on 29 Oct). */
+  company: number | null;
   company_name: string;
   deactivated: boolean;
   /** With `ticket_id` only: on that ticket now. */

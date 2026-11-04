@@ -14,16 +14,63 @@ import type {
   UpcPriceOpt,
   UpcTrend,
 } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+import type { Group } from "../groupSlice";
+import type { Store } from "../../interfaces";
 
-export type UpcDevTab = "salesComp" | "forecast" | "priceOpt" | "trend" | "association";
+export type UpcDevTab =
+  | "salesComp"
+  | "movement"
+  | "forecast"
+  | "priceOpt"
+  | "trend"
+  | "association";
 
 // Forecast excluded — still inert, not a selectable landing tab.
 export const UPC_DEV_TABS: { id: UpcDevTab; label: string }[] = [
   { id: "salesComp", label: "Sales Comp" },
+  { id: "movement", label: "Movement" },
   { id: "priceOpt", label: "Price Opt" },
   { id: "trend", label: "Trend" },
   { id: "association", label: "Association" },
 ];
+
+/** One item's movement at one store for one week ending: units, and pounds
+ *  for a weighed item, refunds already taken off. See modules/movement. */
+export type MovementRow = {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+  product_code: string;
+  description: string;
+  /** yyyy-mm-dd */
+  week_ending: string;
+  qty: number;
+  weight: number;
+};
+
+/** The search the data on screen answers: what it was asked for, as it was
+ *  when Search was pressed. The search card edits the app-wide search live,
+ *  so reading that instead would let a date picked and then abandoned in the
+ *  re-search window steer every later fetch. */
+export type UpcSearchedScope = {
+  type: SEARCH_TYPE;
+  startDate: string;
+  endDate: string;
+  selectedStore: Store;
+  selectedGroup: Group;
+};
+
+/** The before and after windows a Trend answer describes, as asked for; see
+ *  trendRequest in modules/trend/trendWindow. Kept with the rows, not in the
+ *  tab, so coming back to the page doesn't lose them. */
+export type UpcTrendWindow = {
+  /** The search's start date, m/d/yyyy: where before ends and after begins. */
+  pivot: string;
+  beforeDays: number;
+  /** From the pivot through the day before the call. */
+  afterDays: number;
+};
 
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
@@ -69,6 +116,8 @@ interface UpcDevState {
   // instead of re-fetching every module.
   searchedUpcs: string[];
   searchedScopeKey: string;
+  /** Null until the first search. See UpcSearchedScope. */
+  searchedScope: UpcSearchedScope | null;
   upcItems: UpcItem[];
   selectedUpcs: string[];
   filterText: string;
@@ -92,6 +141,18 @@ interface UpcDevState {
   salesCompLY: UpcSalesComp[];
   salesCompLYCoverage: string[];
   salesCompLYLoading: boolean;
+  // Movement. Its own window of weeks, ending on the search's end date, so
+  // changing how many weeks it shows never re-runs another tab. Null weeks
+  // means "what the search's range covers". Coverage is for the current
+  // window only: changing the weeks empties it along with the rows.
+  movementWeeks: number | null;
+  movementCoverage: string[];
+  movementLoading: boolean;
+  movementRows: MovementRow[];
+  /** The one item the tab is showing. Movement is read an item at a time, and
+   *  the strip above it describes that item, so both read it from here. Null
+   *  falls back to the first item in the list. */
+  movementSelected: string | null;
   // Forecast
   forecastLoaded: boolean;
   forecastLoading: boolean;
@@ -108,6 +169,7 @@ interface UpcDevState {
   trendCoverage: string[];
   trendLoading: boolean;
   upcTrends: UpcTrend[];
+  trendWindow: UpcTrendWindow | null;
   // Association — one re-rootable panel over the seed UPC set (upcs/
   // selectedUpcs), keyed on the seed set itself so revisiting a re-rooted
   // item under an unchanged seed set never refetches. associationSeedKey is
@@ -116,6 +178,10 @@ interface UpcDevState {
   associationSeedLoaded: boolean;
   associationSeedLoading: boolean;
   associationSeedData: AssociationResult | null;
+  /** The seed key `associationSeedData` answers. See seedDataFor. */
+  associationSeedDataKey: string;
+  /** Why the last seed load failed, for the seed set in associationSeedKey. */
+  associationSeedError: string | null;
   associationRerootUpc: string | null;
   associationRerootCache: Record<string, AssociationResult>;
   associationRerootLoading: boolean;
@@ -156,6 +222,7 @@ const initialState: UpcDevState = {
   searchVersion: 0,
   searchedUpcs: [],
   searchedScopeKey: "",
+  searchedScope: null,
   upcItems: [],
   selectedUpcs: [],
   filterText: "",
@@ -168,6 +235,12 @@ const initialState: UpcDevState = {
   salesCompLY: [],
   salesCompLYCoverage: [],
   salesCompLYLoading: false,
+  // Movement
+  movementWeeks: null,
+  movementCoverage: [],
+  movementLoading: false,
+  movementRows: [],
+  movementSelected: null,
   // Forecast
   forecastLoaded: false,
   forecastLoading: false,
@@ -184,11 +257,14 @@ const initialState: UpcDevState = {
   trendCoverage: [],
   trendLoading: false,
   upcTrends: [],
+  trendWindow: null,
   // Association
   associationSeedKey: "",
   associationSeedLoaded: false,
   associationSeedLoading: false,
   associationSeedData: null,
+  associationSeedDataKey: "",
+  associationSeedError: null,
   associationRerootUpc: null,
   associationRerootCache: {},
   associationRerootLoading: false,
@@ -322,16 +398,42 @@ const upcDevSlice = createSlice({
       state.optBestPricesByUpc = mergeRows(state.optBestPricesByUpc, { rows: byUpc, codes });
       state.priceOptCoverage = extendCoverage(state.priceOptCoverage, codes);
     },
+    // Movement
+    /** A different number of weeks is a different question: the rows and
+     *  their coverage go, and the tab asks again for every UPC. */
+    setDevMovementWeeks(state, action: PayloadAction<number>) {
+      if (state.movementWeeks === action.payload) return;
+      state.movementWeeks = action.payload;
+      state.movementRows = [];
+      state.movementCoverage = [];
+    },
+    setDevMovementLoading(state, action: PayloadAction<boolean>) {
+      state.movementLoading = action.payload;
+    },
+    setDevMovementSelected(state, action: PayloadAction<string | null>) {
+      state.movementSelected = action.payload;
+    },
+    mergeDevMovement(state, action: PayloadAction<MergePayload<MovementRow>>) {
+      state.movementRows = mergeRows(state.movementRows, action.payload);
+      state.movementCoverage = extendCoverage(state.movementCoverage, action.payload.codes);
+    },
     // Trend
     setDevTrendLoading(state, action: PayloadAction<boolean>) {
       state.trendLoading = action.payload;
+    },
+    setDevTrendWindow(state, action: PayloadAction<UpcTrendWindow>) {
+      state.trendWindow = action.payload;
     },
     mergeDevTrends(state, action: PayloadAction<MergePayload<UpcTrend>>) {
       state.upcTrends = mergeRows(state.upcTrends, action.payload);
       state.trendCoverage = extendCoverage(state.trendCoverage, action.payload.codes);
     },
     // Association
+    /** The seed set being asked about. A new set lets go of the last one's
+     *  error: it used to stay, so set B showed set A's failure (and the
+     *  export gave A's reason) while B was still loading. */
     setDevAssociationSeedKey(state, action: PayloadAction<string>) {
+      if (action.payload !== state.associationSeedKey) state.associationSeedError = null;
       state.associationSeedKey = action.payload;
     },
     setDevAssociationSeedLoaded(state, action: PayloadAction<boolean>) {
@@ -340,11 +442,39 @@ const upcDevSlice = createSlice({
     setDevAssociationSeedLoading(state, action: PayloadAction<boolean>) {
       state.associationSeedLoading = action.payload;
     },
-    setDevAssociationSeedData(state, action: PayloadAction<AssociationResult | null>) {
-      state.associationSeedData = action.payload;
+    /**
+     * A finished seed load: its answer for `key`, or why it failed. A failure
+     * clears the previous answer rather than leaving it under the new key.
+     *
+     * Only for the seed set on screen. Tick A, then B, then A again before A
+     * answers: A's call is shared by the second A, B's answers last, and it
+     * used to overwrite A's and mark the seed loaded. The tab then wanted A,
+     * held B, showed "Loading associations…" and never asked again. An
+     * answer for another set is dropped here, and only the current set's
+     * answer settles the loading and loaded flags.
+     */
+    setDevAssociationSeedResult(
+      state,
+      action: PayloadAction<{ key: string; result: AssociationResult | null; error: string | null }>,
+    ) {
+      if (action.payload.key !== state.associationSeedKey) return;
+      state.associationSeedData = action.payload.result;
+      state.associationSeedDataKey = action.payload.result ? action.payload.key : "";
+      state.associationSeedError = action.payload.error;
+      state.associationSeedLoading = false;
+      state.associationSeedLoaded = true;
+    },
+    clearDevAssociationSeedError(state) {
+      state.associationSeedError = null;
     },
     setDevAssociationRerootUpc(state, action: PayloadAction<string | null>) {
       state.associationRerootUpc = action.payload;
+    },
+    /** Back to the seed view, but only if `upc` is still the item on screen:
+     *  a re-root that failed or was cancelled may have been overtaken by
+     *  another one, which keeps its place. */
+    dropDevAssociationReroot(state, action: PayloadAction<string>) {
+      if (state.associationRerootUpc === action.payload) state.associationRerootUpc = null;
     },
     setDevAssociationRerootLoading(state, action: PayloadAction<boolean>) {
       state.associationRerootLoading = action.payload;
@@ -363,6 +493,8 @@ const upcDevSlice = createSlice({
       state.associationSeedLoaded = false;
       state.associationSeedLoading = false;
       state.associationSeedData = null;
+      state.associationSeedDataKey = "";
+      state.associationSeedError = null;
       state.associationRerootUpc = null;
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
@@ -371,10 +503,11 @@ const upcDevSlice = createSlice({
      *  completed search, once, so the next search can diff against it. */
     setDevSearchSnapshot(
       state,
-      action: PayloadAction<{ upcs: string[]; scopeKey: string }>,
+      action: PayloadAction<{ upcs: string[]; scopeKey: string; scope: UpcSearchedScope }>,
     ) {
       state.searchedUpcs = action.payload.upcs;
       state.searchedScopeKey = action.payload.scopeKey;
+      state.searchedScope = action.payload.scope;
     },
 
     /** Drop UPCs from every place their data lives, without re-fetching.
@@ -419,6 +552,10 @@ const upcDevSlice = createSlice({
       state.optBestPrices = keepRows(state.optBestPrices);
       state.optBestPricesByUpc = keepRows(state.optBestPricesByUpc);
       state.upcTrends = keepRows(state.upcTrends);
+      state.movementRows = keepRows(state.movementRows);
+      if (state.movementSelected && drop.has(state.movementSelected)) {
+        state.movementSelected = null;
+      }
 
       // Coverage has to shrink with the data. A removed UPC that stayed in a
       // coverage list would be treated as already-fetched if the user added it
@@ -428,6 +565,7 @@ const upcDevSlice = createSlice({
       state.salesCompLYCoverage = keepCodes(state.salesCompLYCoverage);
       state.priceOptCoverage = keepCodes(state.priceOptCoverage);
       state.trendCoverage = keepCodes(state.trendCoverage);
+      state.movementCoverage = keepCodes(state.movementCoverage);
 
       // Forecast is parked rather than dead — the export modal still reads
       // these two — so it gets pruned like everything else.
@@ -454,6 +592,8 @@ const upcDevSlice = createSlice({
         state.associationSeedKey = "";
         state.associationSeedLoaded = false;
         state.associationSeedData = null;
+        state.associationSeedDataKey = "";
+        state.associationSeedError = null;
         state.associationRerootUpc = null;
         state.associationRerootCache = {};
       }
@@ -464,9 +604,15 @@ const upcDevSlice = createSlice({
       state.dataLoaded = false;
       state.searchedUpcs = [];
       state.searchedScopeKey = "";
+      state.searchedScope = null;
       state.upcItems = [];
       state.selectedUpcs = [];
       state.filterText = "";
+      state.movementWeeks = null;
+      state.movementCoverage = [];
+      state.movementLoading = false;
+      state.movementRows = [];
+      state.movementSelected = null;
       state.salesCompCoverage = [];
       state.salesCompLoading = false;
       state.salesComp = [];
@@ -486,10 +632,13 @@ const upcDevSlice = createSlice({
       state.trendCoverage = [];
       state.trendLoading = false;
       state.upcTrends = [];
+      state.trendWindow = null;
       state.associationSeedKey = "";
       state.associationSeedLoaded = false;
       state.associationSeedLoading = false;
       state.associationSeedData = null;
+      state.associationSeedDataKey = "";
+      state.associationSeedError = null;
       state.associationRerootUpc = null;
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
@@ -531,12 +680,19 @@ export const {
   mergeDevPriceOpt,
   setDevTrendLoading,
   mergeDevTrends,
+  setDevTrendWindow,
+  setDevMovementWeeks,
+  setDevMovementLoading,
+  setDevMovementSelected,
+  mergeDevMovement,
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
-  setDevAssociationSeedData,
+  setDevAssociationSeedResult,
+  clearDevAssociationSeedError,
   setDevAssociationRerootUpc,
   setDevAssociationRerootLoading,
+  dropDevAssociationReroot,
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   resetDevAssociations,

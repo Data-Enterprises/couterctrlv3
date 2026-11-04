@@ -559,8 +559,8 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Sales Export",
-        href: "sales-export",
+        name: "Data Export",
+        href: "data-export",
         icon: DocumentArrowUpIcon,
         // Desktop only — a two-panel builder with a 102-column file in it has
         // no phone form.
@@ -585,7 +585,7 @@ export const categories: NavCategory[] = [
         children: [],
         childOpen: false,
         // Level 9 while the file format is open: a send writes a real file a
-        // client's tag printer picks up. Same reasoning as Sales Export.
+        // client's tag printer picks up. Same reasoning as Data Export.
         userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,

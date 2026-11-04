@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowPathIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
-import InfoModal from "../../../components-dev/InfoModal";
+import HelpPanel from "../../../components-dev/help/HelpPanel";
+import { HELP_CONTENT } from "../../../components-dev/help/content";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter, {
@@ -17,6 +17,7 @@ import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
 import { sketchExpr } from "./query/sketchExpr";
 
 import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
+import type { FlagFilter, ListFilter } from "./sources";
 import {
   setFlag,
   clearSelections,
@@ -30,43 +31,22 @@ import {
   removeComputed,
   setOrderBy,
   toggleSortKey,
-  resetExportBuilder,
   setSelectedColumns,
-  setSelectedRingTypes,
-  setSelectedSaleTypes,
   setSelectedStoreIds,
-  setSelectedSubDepartments,
-  setSelectedVendors,
-  setSelectedCashiers,
-  setSelectedPriceTypes,
-  setSelectedSaleDates,
+  setSelectedDays,
+  setPicks,
   setProductCodes,
   setProductDescriptions,
+  setRowFlag,
   toggleColumn,
-  toggleRingType,
-  toggleSaleType,
+  toggleDay,
+  togglePick,
   toggleStore,
-  toggleSubDepartment,
-  toggleVendor,
-  toggleCashier,
-  togglePriceType,
-  toggleSaleDate,
+  type ExportListItem,
 } from "../../../features/dev/devExportBuilderSlice";
 
-type Section =
-  | "stores"
-  | "groupBy"
-  | "aggregates"
-  | "saleDates"
-  | "cashiers"
-  | "priceTypes"
-  | "productCodes"
-  | "saleTypes"
-  | "ringTypes"
-  | "subDepartments"
-  | "vendors"
-  | "columns"
-  | "output";
+/** Which row is open: one of the fixed rows, or a list by its filter name. */
+type Section = string;
 
 /**
  * One collapsible row.
@@ -171,17 +151,47 @@ const storeLabel = ({
  * rather than equality, so "only refunds" catches every marker that column
  * uses rather than the literal 1.
  */
-const VOID_CHOICES: SelectFilterOption[] = [
+const flagChoices = (flag: FlagFilter): SelectFilterOption[] => [
   { value: "all", label: "All lines" },
-  { value: "exclude", label: "Exclude voids" },
-  { value: "only", label: "Only voids" },
+  { value: "exclude", label: `Exclude ${flag.plural}` },
+  { value: "only", label: `Only ${flag.plural}` },
 ];
 
-const REFUND_CHOICES: SelectFilterOption[] = [
-  { value: "all", label: "All lines" },
-  { value: "exclude", label: "Exclude refunds" },
-  { value: "only", label: "Only refunds" },
-];
+/**
+ * How one choice in a list reads, by the list's look.
+ *
+ * At module scope for the same reason as Row: it builds JSX for a list that
+ * re-renders on every tick.
+ */
+const choiceLabel = (list: ListFilter, item: ExportListItem): ReactNode => {
+  switch (list.look) {
+    case "idName":
+      return (
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="font-medium">{item.value}</span>
+          <span className="truncate text-content/85">{item.label}</span>
+        </span>
+      );
+    case "name":
+      return <span className="truncate">{item.label || item.value}</span>;
+    case "codeName":
+      return (
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="font-mono text-[11.5px] text-content/85">{item.value}</span>
+          <span className="truncate">{item.label || "—"}</span>
+        </span>
+      );
+    default:
+      return list.blankHint && item.value === "" ? (
+        <span className="flex items-center gap-1.5">
+          {item.label}
+          <span className="text-[11px] text-content/85">{list.blankHint}</span>
+        </span>
+      ) : (
+        item.label
+      );
+  }
+};
 
 /**
  * What the endpoint will take as a file name.
@@ -287,7 +297,12 @@ const ListSearch = ({
   </div>
 );
 
-const ConfigPanel = () => {
+interface ConfigPanelProps {
+  /** Change on the Data line: the search card, over the page. */
+  onChangeSearch: () => void;
+}
+
+const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
   const [help, setHelp] = useState(false);
@@ -302,10 +317,9 @@ const ConfigPanel = () => {
    * panel, so none of it goes through the store.
    */
   const [columnQuery, setColumnQuery] = useState("");
-  const [vendorQueryText, setVendorQueryText] = useState("");
-  const [cashierQueryText, setCashierQueryText] = useState("");
+  /** What is typed in each long list's search box, by filter name. */
+  const [listQuery, setListQuery] = useState<Record<string, string>>({});
   const [groupQuery, setGroupQuery] = useState("");
-  const [subDeptQueryText, setSubDeptQueryText] = useState("");
   const [codeText, setCodeText] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
   const [fileName, setFileName] = useState(ctx.flags.filePrefix);
@@ -313,9 +327,7 @@ const ConfigPanel = () => {
   // A new config is a new scope; last question's typing does not belong to it.
   useEffect(() => {
     setColumnQuery("");
-    setVendorQueryText("");
-    setSubDeptQueryText("");
-    setCashierQueryText("");
+    setListQuery({});
     setGroupQuery("");
     setCodeText("");
     setDescriptionText("");
@@ -349,6 +361,7 @@ const ConfigPanel = () => {
     setDescriptionText(value);
     window.clearTimeout(termTimer.current);
     termTimer.current = window.setTimeout(() => {
+      termTimer.current = undefined;
       ctx.dispatch(setProductDescriptions(parseDescriptionTerms(value)));
     }, 250);
   };
@@ -359,6 +372,7 @@ const ConfigPanel = () => {
     setFileName(value);
     window.clearTimeout(nameTimer.current);
     nameTimer.current = window.setTimeout(() => {
+      nameTimer.current = undefined;
       ctx.dispatch(setFlag({ filePrefix: value }));
     }, 250);
   };
@@ -366,9 +380,40 @@ const ConfigPanel = () => {
     setCodeText(value);
     window.clearTimeout(parseTimer.current);
     parseTimer.current = window.setTimeout(() => {
+      parseTimer.current = undefined;
       ctx.dispatch(setProductCodes(parseProductCodes(value)));
     }, 250);
   };
+
+  /**
+   * The three boxes follow the store when something else writes to it.
+   *
+   * Loading a saved configuration, reloading a build or applying the query
+   * all set the codes, the description terms and the file name in the store,
+   * and the boxes kept showing what had been typed before -- so the filter in
+   * force and the text on screen disagreed. Each box is rewritten from the
+   * store only when the two no longer mean the same thing, so someone's own
+   * spacing survives, and never while their typing is still waiting to
+   * settle: the store is a beat behind the box then, by design.
+   */
+  const codesKey = ctx.productCodes.join("\n");
+  useEffect(() => {
+    if (parseTimer.current !== undefined) return;
+    if (parseProductCodes(codeText).join("\n") === codesKey) return;
+    setCodeText(codesKey);
+  }, [codesKey]);
+
+  const termsKey = ctx.productDescriptions.join("\n");
+  useEffect(() => {
+    if (termTimer.current !== undefined) return;
+    if (parseDescriptionTerms(descriptionText).join("\n") === termsKey) return;
+    setDescriptionText(termsKey);
+  }, [termsKey]);
+
+  useEffect(() => {
+    if (nameTimer.current !== undefined) return;
+    if (fileName !== ctx.flags.filePrefix) setFileName(ctx.flags.filePrefix);
+  }, [ctx.flags.filePrefix]);
 
   const shown = useMemo(() => {
     const q = columnQuery.trim().toLowerCase();
@@ -378,43 +423,10 @@ const ConfigPanel = () => {
       .filter((c) => c.name.toLowerCase().includes(q));
   }, [ctx.columnOrder, ctx.columns, columnQuery]);
 
-  // Both match on what is on screen: a sub department by its number or its
-  // description, a vendor by name or id, since people have only one of the two.
-  const shownSubDepartments = useMemo(() => {
-    const q = subDeptQueryText.trim().toLowerCase();
-    return ctx.subDepartments.filter(
-      (s) =>
-        String(s.sub_department).toLowerCase().includes(q) ||
-        String(s.sub_department_description ?? "")
-          .toLowerCase()
-          .includes(q),
-    );
-  }, [ctx.subDepartments, subDeptQueryText]);
-
   const shownGroupColumns = useMemo(() => {
     const q = groupQuery.trim().toLowerCase();
     return ctx.columns.filter((c) => c.name.toLowerCase().includes(q));
   }, [ctx.columns, groupQuery]);
-
-  const shownCashiers = useMemo(() => {
-    const q = cashierQueryText.trim().toLowerCase();
-    return ctx.cashiers.filter(
-      (c) =>
-        String(c.cashier_name ?? "")
-          .toLowerCase()
-          .includes(q) || String(c.cashier_number).includes(q),
-    );
-  }, [ctx.cashiers, cashierQueryText]);
-
-  const shownVendors = useMemo(() => {
-    const q = vendorQueryText.trim().toLowerCase();
-    return ctx.vendors.filter(
-      (v) =>
-        String(v.vendor_name ?? "")
-          .toLowerCase()
-          .includes(q) || String(v.vendor_id).toLowerCase().includes(q),
-    );
-  }, [ctx.vendors, vendorQueryText]);
 
   /**
    * The personal columns, on or off together.
@@ -472,7 +484,6 @@ const ConfigPanel = () => {
   const needsKey = ctx.measureItems.length > 0 && ctx.groupBy.length === 0;
 
   const allStores = ctx.stores.length;
-  const allTypes = ctx.saleTypes.length;
 
   return (
     // Width belongs to the shell now, which animates it. This keeps its own
@@ -505,15 +516,34 @@ const ConfigPanel = () => {
         >
           <ArrowPathIcon className="w-3.5 h-3.5" />
         </button>
-        <button data-help="search"
-          type="button"
-          onClick={() => ctx.dispatch(resetExportBuilder())}
-          title="New search — clears this configuration"
-          aria-label="New search, clears this configuration"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
-        >
-          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-        </button>
+      </div>
+      {/*
+        * Which table this is, and the way to another search. Change opens
+        * the search card over the page with this table, store and dates on
+        * it: another table keeps this one as it is, and coming back to it is
+        * not a second fetch. Not while a build is running, whose answer
+        * belongs to this source.
+        */}
+      <div className="px-2.5 pb-1.5 flex-shrink-0" data-help="source">
+        <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+            Data
+          </span>
+          <span className="text-[12px] font-semibold flex-1">{ctx.source.label}</span>
+          <button
+            type="button"
+            onClick={onChangeSearch}
+            disabled={ctx.building}
+            title={
+              ctx.building
+                ? "Wait for the build to finish"
+                : "Search another table, store or dates"
+            }
+            className="text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2 disabled:opacity-50 disabled:no-underline"
+          >
+            Change
+          </button>
+        </div>
       </div>
       {/*
         * What the file is, read off the configuration rather than switched.
@@ -572,31 +602,31 @@ const ConfigPanel = () => {
         </div>
       </Row>
 
-      {ctx.saleDates.length > 1 && (
+      {ctx.days.length > 1 && (
         <Row
           label="Days"
-          isOpen={open === "saleDates"}
-          onToggle={() => setOpen(open === "saleDates" ? null : "saleDates")}
+          isOpen={open === "days"}
+          onToggle={() => setOpen(open === "days" ? null : "days")}
           summary={
-            ctx.selectedSaleDates.length === ctx.saleDates.length
-              ? `all ${ctx.saleDates.length}`
-              : `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length}`
+            ctx.selectedDays.length === ctx.days.length
+              ? `all ${ctx.days.length}`
+              : `${ctx.selectedDays.length} of ${ctx.days.length}`
           }
         >
           <div className="px-3 pb-3 flex flex-col gap-1.5">
             <AllNone
-              onAll={() => ctx.dispatch(setSelectedSaleDates(ctx.saleDates))}
-              onNone={() => ctx.dispatch(setSelectedSaleDates([]))}
+              onAll={() => ctx.dispatch(setSelectedDays(ctx.days))}
+              onNone={() => ctx.dispatch(setSelectedDays([]))}
             />
             <span className="text-[11px] text-content/85">
               Particular days inside the range, not a second range.
             </span>
             <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-              {ctx.saleDates.map((d) => (
+              {ctx.days.map((d) => (
                 <Checkbox
                   key={d}
-                  checked={ctx.selectedSaleDates.includes(d)}
-                  onChange={() => ctx.dispatch(toggleSaleDate(d))}
+                  checked={ctx.selectedDays.includes(d)}
+                  onChange={() => ctx.dispatch(toggleDay(d))}
                   className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
                   label={
                     <span className="font-mono text-[11.5px]">
@@ -610,263 +640,88 @@ const ConfigPanel = () => {
         </Row>
       )}
 
-      <Row
-        label="Sale Types"
-        isOpen={open === "saleTypes"}
-        onToggle={() => setOpen(open === "saleTypes" ? null : "saleTypes")}
-        summary={
-          ctx.selectedSaleTypes.length === allTypes
-            ? `all ${allTypes}`
-            : `${ctx.selectedSaleTypes.length} of ${allTypes}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() => ctx.dispatch(setSelectedSaleTypes(ctx.saleTypes))}
-            onNone={() => ctx.dispatch(setSelectedSaleTypes([]))}
-          />
-          {ctx.saleTypes.map((t) => (
-            <Checkbox
-              key={t}
-              checked={ctx.selectedSaleTypes.includes(t)}
-              onChange={() => ctx.dispatch(toggleSaleType(t))}
-              label={t}
-              className="text-[12.5px]"
-            />
-          ))}
-          {allTypes === 0 && (
-            <span className="text-[12px] text-content/85">
-              No sale types in this range.
-            </span>
-          )}
-        </div>
-      </Row>
-
-      <Row
-        label="Ring Types"
-        isOpen={open === "ringTypes"}
-        onToggle={() => setOpen(open === "ringTypes" ? null : "ringTypes")}
-        summary={
-          ctx.selectedRingTypes.length === ctx.itemRingTypes.length
-            ? `all ${ctx.itemRingTypes.length}`
-            : `${ctx.selectedRingTypes.length} of ${ctx.itemRingTypes.length}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() =>
-              ctx.dispatch(setSelectedRingTypes(ctx.itemRingTypes))
+      {/*
+        * The source's lists, in its order. Each reads the same way: all or
+        * none, a line of explanation where the source has one, a search box
+        * for a long list, and the choices as the list's look draws them.
+        */}
+      {ctx.source.lists.map((list) => {
+        const items = ctx.lists[list.filter] ?? [];
+        const picked = ctx.picks[list.filter] ?? [];
+        // A long list matches on what is on screen, the id or the name,
+        // since people have only one of the two.
+        const query = (listQuery[list.filter] ?? "").trim().toLowerCase();
+        const shownItems = list.search
+          ? items.filter(
+              (i) =>
+                i.value.toLowerCase().includes(query) ||
+                i.label.toLowerCase().includes(query),
+            )
+          : items;
+        const choice = (item: ExportListItem) => (
+          <Checkbox
+            key={item.value}
+            checked={picked.includes(item.value)}
+            onChange={() =>
+              ctx.dispatch(togglePick({ filter: list.filter, value: item.value }))
             }
-            onNone={() => ctx.dispatch(setSelectedRingTypes([]))}
-          />
-          {ctx.itemRingTypes.map((r) => (
-            <Checkbox
-              key={r}
-              checked={ctx.selectedRingTypes.includes(r)}
-              onChange={() => ctx.dispatch(toggleRingType(r))}
-              label={r}
-              className="text-[12.5px]"
-            />
-          ))}
-        </div>
-      </Row>
-
-      <Row
-        label="Sub Departments"
-        isOpen={open === "subDepartments"}
-        onToggle={() =>
-          setOpen(open === "subDepartments" ? null : "subDepartments")
-        }
-        summary={
-          ctx.selectedSubDepartments.length === ctx.subDepartments.length
-            ? `all ${ctx.subDepartments.length}`
-            : `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() =>
-              ctx.dispatch(
-                setSelectedSubDepartments(
-                  ctx.subDepartments.map((s) => String(s.sub_department)),
-                ),
-              )
+            className={
+              list.search
+                ? "py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                : "text-[12.5px]"
             }
-            onNone={() => ctx.dispatch(setSelectedSubDepartments([]))}
+            label={choiceLabel(list, item)}
           />
-          <ListSearch
-            label="Find a sub department..."
-            value={subDeptQueryText}
-            onChange={setSubDeptQueryText}
-            shown={shownSubDepartments.length}
-            total={ctx.subDepartments.length}
-          />
-          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-            {shownSubDepartments.map((s) => (
-              <Checkbox
-                key={String(s.sub_department)}
-                checked={ctx.selectedSubDepartments.includes(
-                  String(s.sub_department),
-                )}
-                onChange={() =>
-                  ctx.dispatch(toggleSubDepartment(String(s.sub_department)))
+        );
+        return (
+          <Row
+            key={list.filter}
+            label={list.label}
+            isOpen={open === list.filter}
+            onToggle={() => setOpen(open === list.filter ? null : list.filter)}
+            summary={
+              picked.length === items.length
+                ? `all ${items.length}`
+                : `${picked.length} of ${items.length}`
+            }
+          >
+            <div className="px-3 pb-3 flex flex-col gap-1.5">
+              <AllNone
+                onAll={() =>
+                  ctx.dispatch(
+                    setPicks({ filter: list.filter, values: items.map((i) => i.value) }),
+                  )
                 }
-                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
-                label={
-                  <span className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium">{s.sub_department}</span>
-                    <span className="truncate text-content/85">
-                      {s.sub_department_description}
-                    </span>
-                  </span>
-                }
+                onNone={() => ctx.dispatch(setPicks({ filter: list.filter, values: [] }))}
               />
-            ))}
-          </div>
-        </div>
-      </Row>
-
-      <Row
-        label="Vendors"
-        isOpen={open === "vendors"}
-        onToggle={() => setOpen(open === "vendors" ? null : "vendors")}
-        summary={
-          ctx.selectedVendors.length === ctx.vendors.length
-            ? `all ${ctx.vendors.length}`
-            : `${ctx.selectedVendors.length} of ${ctx.vendors.length}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() =>
-              ctx.dispatch(
-                setSelectedVendors(ctx.vendors.map((v) => v.vendor_id)),
-              )
-            }
-            onNone={() => ctx.dispatch(setSelectedVendors([]))}
-          />
-          <ListSearch
-            label="Find a vendor..."
-            value={vendorQueryText}
-            onChange={setVendorQueryText}
-            shown={shownVendors.length}
-            total={ctx.vendors.length}
-          />
-          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-            {shownVendors.map((v) => (
-              <Checkbox
-                key={v.vendor_id}
-                checked={ctx.selectedVendors.includes(v.vendor_id)}
-                onChange={() => ctx.dispatch(toggleVendor(v.vendor_id))}
-                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
-                label={
-                  <span className="truncate">
-                    {v.vendor_name || v.vendor_id}
-                  </span>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      </Row>
-
-      <Row
-        label="Cashiers"
-        isOpen={open === "cashiers"}
-        onToggle={() => setOpen(open === "cashiers" ? null : "cashiers")}
-        summary={
-          ctx.selectedCashiers.length === ctx.cashiers.length
-            ? `all ${ctx.cashiers.length}`
-            : `${ctx.selectedCashiers.length} of ${ctx.cashiers.length}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() =>
-              ctx.dispatch(
-                setSelectedCashiers(ctx.cashiers.map((c) => c.cashier_number)),
-              )
-            }
-            onNone={() => ctx.dispatch(setSelectedCashiers([]))}
-          />
-          <ListSearch
-            label="Find a cashier..."
-            value={cashierQueryText}
-            onChange={setCashierQueryText}
-            shown={shownCashiers.length}
-            total={ctx.cashiers.length}
-          />
-          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-            {shownCashiers.map((c) => (
-              <Checkbox
-                key={c.cashier_number}
-                checked={ctx.selectedCashiers.includes(c.cashier_number)}
-                onChange={() => ctx.dispatch(toggleCashier(c.cashier_number))}
-                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
-                label={
-                  <span className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-[11.5px] text-content/85">
-                      {c.cashier_number}
-                    </span>
-                    <span className="truncate">{c.cashier_name || "—"}</span>
-                  </span>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      </Row>
-
-      <Row
-        label="Price Types"
-        isOpen={open === "priceTypes"}
-        onToggle={() => setOpen(open === "priceTypes" ? null : "priceTypes")}
-        summary={
-          ctx.selectedPriceTypes.length === ctx.priceTypes.length
-            ? `all ${ctx.priceTypes.length}`
-            : `${ctx.selectedPriceTypes.length} of ${ctx.priceTypes.length}`
-        }
-      >
-        <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <AllNone
-            onAll={() =>
-              ctx.dispatch(
-                setSelectedPriceTypes(ctx.priceTypes.map((p) => p.value)),
-              )
-            }
-            onNone={() => ctx.dispatch(setSelectedPriceTypes([]))}
-          />
-          <span className="text-[11px] text-content/85">
-            These words are the company's, not the table's — one company says
-            Regular, another says REG. This list is what these stores use.
-          </span>
-          {ctx.priceTypes.map((price) => (
-            <Checkbox
-              key={price.value}
-              checked={ctx.selectedPriceTypes.includes(price.value)}
-              onChange={() => ctx.dispatch(togglePriceType(price.value))}
-              className="text-[12.5px]"
-              label={
-                price.value === "" ? (
-                  <span className="flex items-center gap-1.5">
-                    {price.label}
-                    <span className="text-[11px] text-content/85">
-                      lines with no price type
-                    </span>
-                  </span>
-                ) : (
-                  price.label
-                )
-              }
-            />
-          ))}
-          {ctx.priceTypes.length === 0 && (
-            <span className="text-[12px] text-content/85">
-              No price types in this range.
-            </span>
-          )}
-        </div>
-      </Row>
+              {list.note && (
+                <span className="text-[11px] text-content/85">{list.note}</span>
+              )}
+              {list.search ? (
+                <>
+                  <ListSearch
+                    label={list.search}
+                    value={listQuery[list.filter] ?? ""}
+                    onChange={(value) =>
+                      setListQuery((q) => ({ ...q, [list.filter]: value }))
+                    }
+                    shown={shownItems.length}
+                    total={items.length}
+                  />
+                  <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+                    {shownItems.map(choice)}
+                  </div>
+                </>
+              ) : (
+                items.map(choice)
+              )}
+              {list.empty && items.length === 0 && (
+                <span className="text-[12px] text-content/85">{list.empty}</span>
+              )}
+            </div>
+          </Row>
+        );
+      })}
 
       <Row
         label="Products"
@@ -1324,7 +1179,7 @@ const ConfigPanel = () => {
           <TextField
             label="File name"
             value={fileName}
-            placeholder="sales"
+            placeholder={ctx.source.filePrefix}
             hint={
               fileName && !PREFIX_OK.test(fileName) ? (
                 <span className="text-amber-900">
@@ -1332,41 +1187,29 @@ const ConfigPanel = () => {
                   folder, so a dot is refused rather than cleaned up.
                 </span>
               ) : (
-                `${fileName || "sales"}.${
+                `${fileName || ctx.source.filePrefix}.${
                   ctx.flags.fileFormat === "csv" ? "csv" : "txt"
                 }`
               )
             }
             onChange={onFileName}
           />
-          <label className="flex flex-col gap-1">
-            <span className="text-[12px] font-medium text-content">
-              Voided lines
-            </span>
-            <SelectFilter
-              plain
-              options={VOID_CHOICES}
-              value={flagToChoice(ctx.flags.voidFlag)}
-              onChange={(value) =>
-                ctx.dispatch(setFlag({ voidFlag: choiceToFlag(value) }))
-              }
-              className="w-full"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-[12px] font-medium text-content">
-              Refunds
-            </span>
-            <SelectFilter
-              plain
-              options={REFUND_CHOICES}
-              value={flagToChoice(ctx.flags.refundFlag)}
-              onChange={(value) =>
-                ctx.dispatch(setFlag({ refundFlag: choiceToFlag(value) }))
-              }
-              className="w-full"
-            />
-          </label>
+          {ctx.source.flags.map((flag) => (
+            <label key={flag.filter} className="flex flex-col gap-1">
+              <span className="text-[12px] font-medium text-content">
+                {flag.label}
+              </span>
+              <SelectFilter
+                plain
+                options={flagChoices(flag)}
+                value={flagToChoice(ctx.rowFlags[flag.filter] ?? null)}
+                onChange={(value) =>
+                  ctx.dispatch(setRowFlag({ filter: flag.filter, value: choiceToFlag(value) }))
+                }
+                className="w-full"
+              />
+            </label>
+          ))}
           {/*
             * The sort is the file's own columns, in the order they are
             * clicked: ascending, descending, gone. Sorting by something the
@@ -1445,11 +1288,9 @@ const ConfigPanel = () => {
       </Row>
       </div>
 
-      <InfoModal
-        page="sales-export"
-        isOpen={help}
-        onClose={() => setHelp(false)}
-      />
+      {help && (
+        <HelpPanel content={HELP_CONTENT["data-export"]} onClose={() => setHelp(false)} />
+      )}
     </div>
   );
 };

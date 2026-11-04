@@ -7,6 +7,7 @@ import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/dev/devUpcDe
 import UpcKpiStrip from "./UpcKpiStrip";
 import UpcExportModal from "./UpcExportModal";
 import SalesCompTab from "../modules/salesComp/SalesCompTab";
+import MovementTab from "../modules/movement/MovementTab";
 
 import PriceOptTab from "../modules/priceOpt/PriceOptTab";
 import TrendTab from "../modules/trend/TrendTab";
@@ -79,6 +80,15 @@ const UpcRightPanel = () => {
             }
           >
             <SalesCompTab />
+          </div>
+          <div
+            className={
+              ctx.activeTab === "movement"
+                ? "flex flex-col flex-1 min-h-0"
+                : "hidden"
+            }
+          >
+            <MovementTab />
           </div>
 
           <div

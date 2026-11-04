@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import TextFilter from "./filters/TextFilter";
+import ConfirmModal from "./ConfirmModal";
 
 interface AssignPanelItem {
   id: number;
@@ -53,6 +54,18 @@ interface AssignPanelProps {
   // email DOMAIN pulls back a whole company at once, which is the thing
   // nobody guesses and the thing that saves the most work.
   searchHint?: ReactNode;
+  /** A write is running: every button is off until it finishes, so a second
+   *  click can't fire against a list that is about to change. */
+  moving?: boolean;
+  /**
+   * What Assign all / Unassign all ask first, or null to go straight ahead.
+   * The caller words it, since only it knows what is being given and who is
+   * pressing. Leaving it out keeps the old no-question behaviour.
+   */
+  confirmBulk?: (
+    direction: "in" | "out",
+    ids: number[],
+  ) => { message: string; confirmLabel: string } | null;
 }
 
 /**
@@ -116,8 +129,19 @@ const AssignPanel = ({
   leftFilters,
   leftPredicate,
   searchHint,
+  moving = false,
+  confirmBulk,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
+  /** An Assign all / Unassign all waiting on its question, with the rows
+   *  it would move, so the question can show exactly who. */
+  const [pending, setPending] = useState<{
+    direction: "in" | "out";
+    ids: number[];
+    rows: AssignPanelItem[];
+    message: string;
+    confirmLabel: string;
+  } | null>(null);
   const [rightFilter, setRightFilter] = useState("");
   const [staged, setStaged] = useState<Set<number>>(new Set());
   const [unstaged, setUnstaged] = useState<Set<number>>(new Set());
@@ -187,8 +211,55 @@ const AssignPanel = ({
     setUnstaged(new Set());
   };
 
+  /** Assign all and Unassign all: asked first when the caller says so. */
+  const bulk = (direction: "in" | "out", ids: number[]) => {
+    const ask = confirmBulk?.(direction, ids);
+    if (ask) {
+      const byId = new Map(
+        (direction === "in" ? leftItems : rightItems).map((i) => [i.id, i]),
+      );
+      const rows = ids
+        .map((id) => byId.get(id))
+        .filter((i): i is AssignPanelItem => i !== undefined);
+      setPending({ direction, ids, rows, ...ask });
+      return;
+    }
+    if (direction === "in") handleAssign(ids);
+    else handleUnassign(ids);
+  };
+
   return (
     <div className="flex gap-3">
+      {pending && (
+        <ConfirmModal
+          title={pending.direction === "in" ? `${verbs.assign} all?` : `${verbs.unassign} all?`}
+          message={pending.message}
+          confirmLabel={pending.confirmLabel}
+          onConfirm={() => {
+            const { direction, ids } = pending;
+            setPending(null);
+            if (direction === "in") handleAssign(ids);
+            else handleUnassign(ids);
+          }}
+          onCancel={() => setPending(null)}
+        >
+          {/* Who is about to move, by name: the count alone didn't say
+              whether the search had narrowed it the way you meant. */}
+          <ul
+            aria-label={pending.direction === "in" ? "Being assigned" : "Being unassigned"}
+            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-gray-100 rounded-md divide-y divide-gray-100 m-0 p-0 list-none"
+          >
+            {pending.rows.map((r) => (
+              <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
+                <div className="truncate">{r.label}</div>
+                {r.sublabel && (
+                  <div className="text-[10.5px] text-content/85 truncate">{r.sublabel}</div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </ConfirmModal>
+      )}
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
@@ -250,14 +321,14 @@ const AssignPanel = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => handleAssign(Array.from(staged))}
-            disabled={staged.size === 0}
+            disabled={moving || staged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.assign}
           </button>
           <button
-            onClick={() => handleAssign(assignAllLeft.map((i) => i.id))}
-            disabled={assignAllLeft.length === 0}
+            onClick={() => bulk("in", assignAllLeft.map((i) => i.id))}
+            disabled={moving || assignAllLeft.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.assign} all
@@ -319,20 +390,21 @@ const AssignPanel = ({
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => handleUnassign(Array.from(unstaged))}
-            disabled={unstaged.size === 0}
+            disabled={moving || unstaged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.unassign}
           </button>
           <button
             onClick={() =>
-              handleUnassign(
+              bulk(
+                "out",
                 (assignAllScope === "global" ? rightItems : filteredRight).map(
                   (i) => i.id,
                 ),
               )
             }
-            disabled={rightItems.length === 0}
+            disabled={moving || rightItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.unassign} all

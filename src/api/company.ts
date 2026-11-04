@@ -14,6 +14,26 @@ export const getCompanies = async (url: string, token: string) => {
 };
 
 /**
+ * The companies one person holds, read from `company_link` rather than from
+ * the users list. Edit starts from this, so a company added or removed on the
+ * Companies tab since the list was read is what Edit sees and saves around.
+ */
+export const getCompaniesAssignedToUser = async (
+  url: string,
+  token: string,
+  userid: number,
+) =>
+  axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "company/companies_assigned_to_user",
+    params: { userid },
+  });
+
+/**
  * The company a company belongs under, as create and update send it.
  *
  * `undefined` sends nothing, which is what the prod form does: it has no such

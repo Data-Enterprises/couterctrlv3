@@ -10,6 +10,8 @@ import {
 } from "../../../../api/storeAccess";
 import type { JsonError, Store, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import { useMarkUsersStale } from "../usersStale";
+import { peopleConfirm } from "../bulkConfirm";
 import CompanyFilterSelect from "../users/CompanyFilterSelect";
 import {
   useCompanyFilterOptions,
@@ -50,6 +52,7 @@ const StoreUsersPanel = ({
 }) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
 
   const [assigned, setAssigned] = useState<StoreUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<StoreCandidateRow[]>([]);
@@ -137,6 +140,7 @@ const StoreUsersPanel = ({
     } finally {
       setMoving(false);
       load();
+      markUsersStale();
     }
   };
 
@@ -169,7 +173,7 @@ const StoreUsersPanel = ({
   const viaGroup = assigned.filter((r) => r.via !== null && r.via !== "").length;
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-help="stores">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div className="min-w-0">
           <span className="text-[15px] font-semibold text-content">
@@ -211,7 +215,17 @@ const StoreUsersPanel = ({
         rightItems={assignedItems}
         onAssign={(ids) => void run(ids, "in")}
         onUnassign={(ids) => void run(ids, "out")}
-        assignAllScope="global"
+        // Assign all and Unassign all take what each column is showing,
+        // search included, as on the Companies tab.
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({
+            direction,
+            ids,
+            me: ctx.userid,
+            what: `store ${store.store_number}`,
+          })
+        }
         leftPredicate={heldPredicate}
         leftFilters={
           <CompanyFilterSelect

@@ -42,6 +42,9 @@ interface SearchCardProps {
    *  window length, for one. Hidden by the loading mask with the rest of the
    *  form. */
   extraControls?: ReactNode;
+  /** Inputs above the store picker, for a choice the store and dates
+   *  depend on -- which table Data Export reads, for one. */
+  leadingControls?: ReactNode;
 }
 
 const SearchCard = ({
@@ -59,6 +62,7 @@ const SearchCard = ({
   blocked = null,
   loadingMessage = "Loading...",
   extraControls,
+  leadingControls,
 }: SearchCardProps) => {
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
@@ -130,6 +134,8 @@ const SearchCard = ({
                 {notice}
               </div>
             )}
+
+            {leadingControls}
 
             <StorePicker />
 

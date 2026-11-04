@@ -1,4 +1,5 @@
 import type { UpcTrend } from "../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 import CtaInsightStrip from "../../components/CtaInsightStrip";
 import KpiTileGrid from "../../components/KpiTileGrid";
 import BeforeAfterBar from "../../components/BeforeAfterBar";
@@ -7,43 +8,41 @@ import type { KpiCell } from "../../types";
 import type { TrendStatus } from "./trendStats";
 import { accelerationFactor, impactUnits } from "./trendStats";
 import { getTrendPhrase, getTrendInsight } from "./trendPhrase";
-import { getWindowDays, activeRatePct, isWeakBaseline, isSmallSample } from "./trendWindow";
+import { activeRatePct, isWeakBaseline, isSmallSample } from "./trendWindow";
 import TrendBeforeAfterTile from "./TrendBeforeAfterTile";
 
 interface Props {
   trend: UpcTrend;
   status: TrendStatus;
-  periods: number;
-  trendStartDate: string | null;
-  /** The window's own far end, echoed back by the endpoint. */
-  trendEndDate: string | null;
+  /** The windows the answer describes. Null only before the first answer. */
+  window: UpcTrendWindow | null;
   fixes: boolean;
 }
 
 const TrendDetailPanel = ({
   trend: t,
   status,
-  periods,
-  trendStartDate,
-  trendEndDate,
+  window,
   fixes,
 }: Props) => {
   const phrase = getTrendPhrase(status);
-  const insight = getTrendInsight(t, status, fixes);
+  const insight = getTrendInsight(t, status, fixes, window);
   const factor = status === "accelerating" ? accelerationFactor(t, fixes) : null;
-  const impact = Math.round(impactUnits(t, fixes));
+  const impact = Math.round(impactUnits(t, fixes, window));
   const noBaseline = status === "new";
 
-  const { beforeWindowDays, afterWindowDays } = trendStartDate
-    ? getWindowDays(trendStartDate, trendEndDate, periods, fixes)
-    : { beforeWindowDays: periods, afterWindowDays: 0 };
+  const beforeWindowDays = window?.beforeDays ?? 0;
+  const afterWindowDays = window?.afterDays ?? 0;
+  // "8/1", for the window's own label. Trend runs from the start date to
+  // date whatever the search's end date says; the tile says so.
+  const pivotShort = window ? window.pivot.split("/").slice(0, 2).join("/") : "";
 
-  const activeRateBefore = activeRatePct(t.active_days_before, beforeWindowDays);
-  const activeRateAfter = activeRatePct(t.active_days_after, afterWindowDays);
+  const activeRateBefore = beforeWindowDays ? activeRatePct(t.active_days_before, beforeWindowDays) : 0;
+  const activeRateAfter = afterWindowDays ? activeRatePct(t.active_days_after, afterWindowDays) : 0;
   const r2BeforePct = Math.round(t["r2-before"] * 100);
   const r2AfterPct = Math.round(t["r2-after"] * 100);
   const weakBaseline = isWeakBaseline(t["r2-before"]);
-  const smallSample = isSmallSample(afterWindowDays);
+  const smallSample = window !== null && isSmallSample(afterWindowDays);
 
   const kpis: KpiCell[] = [
     {
@@ -59,7 +58,11 @@ const TrendDetailPanel = ({
       ? [{ label: "Acceleration", value: `${factor.toFixed(1)}× faster`, variant: "down" as const }]
       : []),
     { label: "Confidence", value: `${r2AfterPct}%` },
-    { label: "Since pivot", value: `${afterWindowDays}d` },
+    {
+      label: "Since pivot",
+      value: window ? `${afterWindowDays}d` : "—",
+      sub: window ? `from ${pivotShort}, to date` : undefined,
+    },
   ];
 
   return (

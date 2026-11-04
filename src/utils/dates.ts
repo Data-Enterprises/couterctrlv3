@@ -46,3 +46,18 @@ export const clockOf = (saleDate: string, startTime?: unknown): string => {
   if (digits.length < 3 || digits.length > 6) return "";
   return (digits.length % 2 === 1 ? `0${digits}` : digits).padEnd(6, "0");
 };
+
+/**
+ * A "YYYY-MM-DD" day moved by whole days, as "YYYY-MM-DD", in local time.
+ *
+ * Parsed at local noon and written from local fields, never through
+ * toISOString: a bare date parses as UTC midnight, setDate then works in local
+ * time, and across a clock change the two disagree by a day (the week after
+ * the clocks go back, "2026-11-02" minus 7 came out "2026-10-25").
+ */
+export const shiftIsoDay = (iso: string, days: number): string => {
+  const d = new Date(iso.slice(0, 10) + "T12:00:00");
+  d.setDate(d.getDate() + days);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};

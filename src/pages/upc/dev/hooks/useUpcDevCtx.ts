@@ -3,9 +3,20 @@ import { useAppSelector } from "../../../../hooks";
 export const useUpcDevCtx = () => {
   const { url, token, apiEnv } = useAppSelector((s) => s.app);
   const { userid, assignedStores } = useAppSelector((s) => s.user);
-  const { startDate, endDate, selectedStore, selectedGroup, type: searchType } = useAppSelector((s) => s.search);
+  const live = useAppSelector((s) => s.search);
   const groups = useAppSelector((s) => s.group.groups);
   const dev = useAppSelector((s) => s.dev.upcDev);
+  // The search the loaded data answers, not the one being edited: the search
+  // card writes the app-wide dates, store and group as they're picked, and a
+  // tab that read those would fetch new dates for the old store list. Before
+  // the first search there is nothing saved, and the live search is the one
+  // about to run.
+  const searched = dev.searchedScope;
+  const startDate = searched?.startDate ?? live.startDate;
+  const endDate = searched?.endDate ?? live.endDate;
+  const selectedStore = searched?.selectedStore ?? live.selectedStore;
+  const selectedGroup = searched?.selectedGroup ?? live.selectedGroup;
+  const searchType = searched?.type ?? live.type;
 
   return {
     url,

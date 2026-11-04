@@ -4,6 +4,7 @@ import type {
   TicketStore,
   TicketStoreOption,
 } from "../../../api/tickets";
+import type { Store } from "../../../interfaces";
 
 /**
  * The stores a ticket is about, and who that lets see it.
@@ -64,13 +65,57 @@ export const SCOPE_HEADING: Record<TicketScope, string> = {
   all: "Queue",
 };
 
-/** Store numbers sort as numbers: 2, 5, 27, 136 rather than 136, 2, 27. */
-const byNumber = (a: { store_number: string }, b: { store_number: string }) =>
-  (parseInt(a.store_number, 10) || 0) - (parseInt(b.store_number, 10) || 0) ||
-  a.store_number.localeCompare(b.store_number);
+/** Store numbers sort as numbers: 2, 5, 27, 136 rather than 136, 2, 27.
+ *  A store with no number sorts first rather than throwing. */
+const byNumber = (a: { store_number: string }, b: { store_number: string }) => {
+  const na = a.store_number ?? "";
+  const nb = b.store_number ?? "";
+  return (parseInt(na, 10) || 0) - (parseInt(nb, 10) || 0) || na.localeCompare(nb);
+};
+
+/**
+ * The signed-in person's own stores, as the New Ticket picker's options.
+ *
+ * Their `assigned` stores, which the app already holds from sign-in
+ * (`user.assignedStores`), so filing a ticket costs no store call. It is the
+ * same set the server files against: `_has_store` in tickets.py is a row in
+ * `assigned`, and `assigned_stores` is read from it too. A tech's
+ * `store_options` was every store on the system (423); this is only theirs.
+ */
+export const assignedAsOptions = (stores: Store[]): TicketStoreOption[] =>
+  cleanStoreOptions(
+    stores.map((s) => ({
+      storeid: s.storeid,
+      store_number: s.store_number,
+      store_name: s.store_name,
+      company: s.company ?? null,
+      company_name: s.company_name,
+      deactivated: Boolean(s.deactivated_at),
+      selected: false,
+    })),
+  );
+
+/**
+ * The server's options with every text field a string.
+ *
+ * `store_options` left-joins companies, so a store with no company comes
+ * back with `company` and `company_name` null, and nothing in the table stops a
+ * store's number or name being null. The picker sorts and searches on all
+ * three, and one null among a tech's every-store list took the whole page
+ * down ("Cannot read properties of null (reading 'localeCompare')").
+ */
+export const cleanStoreOptions = (
+  raw: TicketStoreOption[],
+): TicketStoreOption[] =>
+  raw.map((o) => ({
+    ...o,
+    store_number: String(o.store_number ?? ""),
+    store_name: o.store_name ?? "",
+    company_name: o.company_name ?? "",
+  }));
 
 export interface StoreCompanyGroup {
-  company: number;
+  company: number | null;
   company_name: string;
   stores: TicketStoreOption[];
 }
@@ -86,7 +131,7 @@ export interface StoreCompanyGroup {
 export const groupByCompany = (
   options: TicketStoreOption[],
 ): StoreCompanyGroup[] => {
-  const groups = new Map<number, StoreCompanyGroup>();
+  const groups = new Map<number | null, StoreCompanyGroup>();
   for (const o of options) {
     const g = groups.get(o.company) ?? {
       company: o.company,
@@ -103,7 +148,12 @@ export const groupByCompany = (
         (a, b) => Number(a.deactivated) - Number(b.deactivated) || byNumber(a, b),
       ),
     }))
-    .sort((a, b) => a.company_name.localeCompare(b.company_name));
+    // Stores with no company go last, as the server orders them.
+    .sort(
+      (a, b) =>
+        Number(!a.company_name) - Number(!b.company_name) ||
+        a.company_name.localeCompare(b.company_name),
+    );
 };
 
 /** Whether a store answers what was typed in the picker's search box. */

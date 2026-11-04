@@ -36,6 +36,7 @@ import {
   formatCurrency2,
   formatBigNumber,
 } from "../../../../utils";
+import { shiftIsoDay } from "../../../../utils/dates";
 import {
   computeDayMatchedTotals,
   describeLyWindow,
@@ -867,21 +868,30 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           <PopupTopItems
             storeId={selection.storeId}
             locations={selection.storeNumbersForId}
-            /* The whole week at this store, never the day-scoped header
-               figures: the Top 200 is always the week, so a share worked out
-               against one selected day would be a fraction of the wrong
-               denominator. */
-            netSales={{
-              ty: weekTotals.twTotal,
-              lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
-              ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
-            }}
-            start={twStart}
-            end={twEnd}
-            lwStart={lwStart}
-            lwEnd={lwEnd}
-            lyStart={lyStart}
-            lyEnd={lyEnd}
+            /* The Top 200 follows the day cards, like the other tabs: a
+               picked day is that day, against the same weekday last week and
+               last year, and its share is of that day's net sales. It used to
+               stay on the week whatever was picked. Dollars always, whatever
+               the Sales/Qty toggle: a share of net sales is a share of money. */
+            netSales={
+              activeDay
+                ? {
+                    ty: activeDay.twNet,
+                    lw: activeDay.lwNet !== null && activeDay.lwNet > 0 ? activeDay.lwNet : null,
+                    ly: activeDay.lyNet !== null && activeDay.lyNet > 0 ? activeDay.lyNet : null,
+                  }
+                : {
+                    ty: weekTotals.twTotal,
+                    lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
+                    ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
+                  }
+            }
+            start={selectedDate ?? twStart}
+            end={selectedDate ?? twEnd}
+            lwStart={selectedDate ? shiftIsoDay(selectedDate, -7) : lwStart}
+            lwEnd={selectedDate ? shiftIsoDay(selectedDate, -7) : lwEnd}
+            lyStart={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart}
+            lyEnd={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd}
             threshold={itemThreshold}
           />
           )
@@ -909,6 +919,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               lwEnd={lwEnd}
               lyStart={lyStart}
               lyEnd={lyEnd}
+              lwWeekDates={lwWeekDates}
+              lyWeekDates={lyWeekDates}
+              selectedDate={selectedDate}
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (

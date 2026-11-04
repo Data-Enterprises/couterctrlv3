@@ -19,11 +19,14 @@ const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
     dispatch(setSingleDate(date));
   };
 
+  /** `8/16 · Sun`. The weekday is there because most searches want a
+   *  week-ending day, and a date is only right if it lands on the right one. */
   const formatShortDate = (date: string) => {
     const dte = new Date(date);
     const month = dte.getMonth() + 1;
     const day = dte.getDate();
-    return month + "/" + day;
+    const weekday = dte.toLocaleDateString("en-US", { weekday: "short" });
+    return `${month}/${day} · ${weekday}`;
   };
 
   const formatDisplay = () => {

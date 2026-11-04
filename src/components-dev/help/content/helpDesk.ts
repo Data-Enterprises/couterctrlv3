@@ -51,7 +51,7 @@ export const HELP_DESK_HELP: HelpContent = {
         },
         {
           q: "I cannot find the store in the list",
-          a: "The picker offers the stores you have access to. If one is missing, that is an access question rather than a ticket one — raise a ticket about it and say which store.",
+          a: "The picker offers the stores you have access to (support is offered every store, to file for a client who phoned in). If one is missing, that is an access question rather than a ticket one — raise a ticket about it and say which store.",
         },
         {
           q: "Who will see my ticket?",

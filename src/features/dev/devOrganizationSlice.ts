@@ -39,11 +39,18 @@ const defaultUsersGridFilters: UsersGridFilters = {
 interface OrganizationState {
   usersExportOpen: boolean;
   usersGridFilters: UsersGridFilters;
+  /**
+   * Who an open Add or Edit has unsaved changes for ("Bob Smith", "the new
+   * user"), or null. The tab bar reads it to ask before a tab switch throws
+   * the form away.
+   */
+  unsavedWizard: string | null;
 }
 
 const initialState: OrganizationState = {
   usersExportOpen: false,
   usersGridFilters: defaultUsersGridFilters,
+  unsavedWizard: null,
 };
 
 const organizationSlice = createSlice({
@@ -61,6 +68,9 @@ const organizationSlice = createSlice({
     ) => {
       state.usersGridFilters = { ...state.usersGridFilters, ...action.payload };
     },
+    setUnsavedWizard: (state, action: PayloadAction<string | null>) => {
+      state.unsavedWizard = action.payload;
+    },
     resetOrganizationState: () => initialState,
   },
 });
@@ -68,6 +78,7 @@ const organizationSlice = createSlice({
 export const {
   setUsersExportOpen,
   setUsersGridFilter,
+  setUnsavedWizard,
   resetOrganizationState,
 } = organizationSlice.actions;
 export default organizationSlice.reducer;

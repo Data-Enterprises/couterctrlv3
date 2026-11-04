@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { useBaseGroupsCtx } from "../baseGroups/hooks";
 import { canAdministerUser, companyReach } from "../scoping";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { assignUserToCompany } from "../../../../api/user";
+import { assignUserToCompany, getAllUsers } from "../../../../api/user";
+import { peopleConfirm } from "../bulkConfirm";
+import { useMarkUsersStale } from "../usersStale";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../users/CompanyFilterSelect";
@@ -46,6 +48,7 @@ const CompanyUsersPanel = ({
 }) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
+  const markUsersStale = useMarkUsersStale();
   const [moving, setMoving] = useState(false);
   /** Narrows the left column to people who already hold another company —
    *  empty means no narrowing. See `companyOptions`. */
@@ -169,18 +172,51 @@ const CompanyUsersPanel = ({
     const summary = summarize(outcomes, company.name, direction);
     setMoving(false);
     onChanged();
+    markUsersStale();
     if (summary.tone === "success") toast.success(summary.text);
     else toast.error(summary.text);
   };
 
-  const pick = (ids: number[]) =>
-    ids.map((id) => byId.get(id)).filter((u): u is User => u !== undefined);
+  /**
+   * The people as the server holds them now, for the plan. `assign_user_to_
+   * company` replaces a person's whole list, so a plan built from the rows on
+   * screen would undo a change made since they were read (in another tab, by
+   * someone else). Read fresh at the moment of the write.
+   */
+  const freshMembers = async (ids: number[]) => {
+    const resp = await getAllUsers(ctx.url, ctx.token);
+    const j = resp.data;
+    if (j.error !== 0) throw new Error(j.msg || "Could not re-read the users");
+    const fresh = new Map(((j.users ?? []) as User[]).map((u) => [u.id, u]));
+    // Only people this viewer may administer, as the columns are.
+    return ids
+      .filter((id) => byId.has(id))
+      .map((id) => fresh.get(id))
+      .filter((u): u is User => u !== undefined)
+      .map(asMember);
+  };
+
+  const planFresh = async (
+    ids: number[],
+    plan: (members: MemberUser[]) => CompanyPlan[],
+    direction: "in" | "out",
+  ) => {
+    setMoving(true);
+    try {
+      await run(plan(await freshMembers(ids)), direction);
+    } catch (err) {
+      toast.error((err as JsonError).message);
+    } finally {
+      // run() returns early on an empty plan without clearing it.
+      setMoving(false);
+    }
+  };
 
   const handleAssign = (ids: number[]) =>
-    void run(planAdd(pick(ids).map(asMember), company.id), "in");
+    void planFresh(ids, (m) => planAdd(m, company.id), "in");
 
   const handleUnassign = (ids: number[]) =>
-    void run(planRemove(pick(ids).map(asMember), company.id), "out");
+    void planFresh(ids, (m) => planRemove(m, company.id), "out");
 
   const toItem = (u: User) => ({
     id: u.id,
@@ -189,7 +225,7 @@ const CompanyUsersPanel = ({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-help="companies">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div>
           <span className="text-[15px] font-semibold text-content">
@@ -230,7 +266,13 @@ const CompanyUsersPanel = ({
         rightItems={assigned.map(toItem)}
         onAssign={handleAssign}
         onUnassign={handleUnassign}
-        assignAllScope="global"
+        // Assign all and Unassign all take what each column is showing,
+        // search included. They used to take the whole list (a legacy
+        // parity choice), so one person left by a search still meant all 272.
+        moving={moving}
+        confirmBulk={(direction, ids) =>
+          peopleConfirm({ direction, ids, me: ctx.userid, what: company.name, always: true })
+        }
         leftPredicate={heldPredicate}
         searchHint={
           <>

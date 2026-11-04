@@ -1,8 +1,7 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import type { KpiCell } from "../../types";
-import { isWeighted } from "../../../../../utils/pricedUnits";
-import { pricePoints, elasticityFromPoints, pointUnits } from "./priceOptStats";
+import { computePriceOptRowSummary } from "./priceOptStats";
 
 // No current price or cost anywhere in this data, so there's nothing to
 // compare a price against — only what price history alone can answer:
@@ -26,11 +25,9 @@ export function getPriceOptKpis(
   const pointCounts: number[] = [];
 
   for (const row of bestByUpc) {
-    const all = pricePoints(bestPrices, row.product_code);
-    // A scale item can ring a pound with a qty of 0 or the other way about,
-    // so "did this price move anything" has to ask in the item's own unit.
-    const weighted = fixes && (isWeighted(row.total_weight) || all.some((p) => p.weight > 0));
-    const points = all.filter((p) => pointUnits(p, weighted) > 0);
+    // The same summary the panel and the export read, so with one UPC
+    // selected the strip and the panel give the same points and elasticity.
+    const { points, weighted, elasticity } = computePriceOptRowSummary(row, bestPrices, fixes);
     pointCounts.push(points.length);
     if (points.length >= 2) withPriceData++;
 
@@ -46,7 +43,6 @@ export function getPriceOptKpis(
       if (!largestGap || gap > largestGap.gap) {
         largestGap = { desc: row.product_description, gap };
       }
-      const elasticity = elasticityFromPoints(points, weighted);
       if (elasticity !== null) elasticities.push(elasticity);
     }
   }

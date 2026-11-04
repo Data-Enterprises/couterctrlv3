@@ -6,6 +6,7 @@ import { resetUserSecurityQuestion } from "../../../../../api/team";
 import { setRefresh } from "../../../../../features/dev/devUsersSlice";
 import type { JsonError, User } from "../../../../../interfaces";
 import PasswordInput from "../../../../../components-dev/inputs/PasswordInput";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 
 interface SecurityTabProps {
   user: User;
@@ -20,6 +21,9 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
   const ctx = useOrganizationCtx();
   const [pw, setPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
+  /** Reset security asks first: it can't be undone from here, and the
+   *  person has to set a new question at their next sign-in. */
+  const [confirmingSecurity, setConfirmingSecurity] = useState(false);
 
   const canResetPW = pw.length > 0 && confirmPw.length > 0 && pw === confirmPw;
 
@@ -102,12 +106,25 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
           Reset password
         </button>
         <button
-          onClick={resetSecurity}
+          onClick={() => setConfirmingSecurity(true)}
           className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy/85 text-custom-white"
         >
           Reset security
         </button>
       </div>
+
+      {confirmingSecurity && (
+        <ConfirmModal
+          title="Reset security?"
+          message={`${user.username} will have to set a new security question the next time they sign in.`}
+          confirmLabel="Yes, reset it"
+          onConfirm={() => {
+            setConfirmingSecurity(false);
+            resetSecurity();
+          }}
+          onCancel={() => setConfirmingSecurity(false)}
+        />
+      )}
     </div>
   );
 };

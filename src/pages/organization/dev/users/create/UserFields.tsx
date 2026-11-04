@@ -10,6 +10,7 @@ import {
 import { checkEmail, checkUsername } from "../../../../../api/team";
 import type { JsonError } from "../../../../../interfaces";
 import { roles } from "../../constants";
+import { NOT_AVAILABLE, passwordOk, passwordRules } from "./wizardRules";
 import Input from "../../../../../components-dev/inputs/Input";
 import PasswordInput from "../../../../../components-dev/inputs/PasswordInput";
 
@@ -31,8 +32,14 @@ interface UserFieldsProps {
    *   the users list does, with its own rules and its own confirmation.
    * - **Their own email is not "taken".** It is checked like any other
    *   address, but an unchanged one says so instead of reporting itself.
+   * - **A name that was blank may stay blank.** Some people were made with
+   *   no first or last name; requiring one blocked fixing their email.
    */
-  editing?: { userid: number; email: string };
+  editing?: {
+    userid: number;
+    email: string;
+    blankNames?: { first: boolean; last: boolean };
+  };
 }
 
 /**
@@ -152,14 +159,21 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  /**
+   * User info is complete. In Add the password has to meet the rules listed
+   * beside it, and a username or email the check called Not available holds
+   * Continue: both used to be displayed and not enforced.
+   */
   const canContinue =
     ctx.userInfo.username.trim() !== "" &&
     ctx.userInfo.email.trim() !== "" &&
-    ctx.userInfo.first_name.trim() !== "" &&
-    ctx.userInfo.last_name.trim() !== "" &&
+    (ctx.userInfo.first_name.trim() !== "" || !!editing?.blankNames?.first) &&
+    (ctx.userInfo.last_name.trim() !== "" || !!editing?.blankNames?.last) &&
     (editing !== undefined ||
-      (ctx.userInfo.password.length > 0 &&
+      (passwordOk(ctx.userInfo.password) &&
         ctx.userInfo.password === ctx.userInfo.confirm_password)) &&
+    (editing !== undefined || ctx.availableUsernameText !== NOT_AVAILABLE) &&
+    ctx.availableEmailText !== NOT_AVAILABLE &&
     ctx.userInfo.role > 0 &&
     ctx.userInfo.user_level > 0;
 
@@ -167,16 +181,7 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
     onValidityChange?.(canContinue);
   }, [canContinue, onValidityChange]);
 
-  const pw = ctx.userInfo.password;
-  const rules = [
-    { met: pw.length >= 12, label: "At least 12 characters" },
-    {
-      met: /[a-z]/.test(pw) && /[A-Z]/.test(pw),
-      label: "Upper and lower case",
-    },
-    { met: /[0-9]/.test(pw), label: "At least one number" },
-    { met: /[^A-Za-z0-9]/.test(pw), label: "At least one symbol" },
-  ];
+  const rules = passwordRules(ctx.userInfo.password);
 
   return (
     <div className="flex flex-wrap gap-5 items-start">

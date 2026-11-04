@@ -6,12 +6,25 @@ import {
   getAllStoresInBaseGroup,
 } from "../../../../../api/baseGroups";
 import type {
+  BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
 } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import { type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
+import {
+  type AccessPicks,
+  NO_PICKS,
+  heldGroupIds,
+  toggleGroup,
+} from "./accessSets";
+import { useBaseGroupsCtx } from "../../baseGroups/hooks";
+import {
+  heldGroupIds as editorHeldGroupIds,
+  mayChangeGroup,
+  wizardGroups,
+} from "../../scoping";
+import { getBaseGroupsAssignedToUser } from "../../../../../api/team";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../components-dev/Checkbox";
@@ -57,6 +70,9 @@ interface AccessPanelProps {
   /** Hide the empty-picks notice, for a caller placing its own higher up the
    *  screen where a warning is read before the thing it warns about. */
   hideEmptyNotice?: boolean;
+  /** Edit: the groups the person already holds, so the summary can name them
+   *  before their company is opened ("#66 (all)" otherwise). */
+  heldGroups?: BaseGroup[];
 }
 
 /**
@@ -101,9 +117,35 @@ const AccessPanel = ({
   rightColumn,
   hideFooter = false,
   hideEmptyNotice = false,
+  heldGroups = [],
 }: AccessPanelProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
+  const scope = useBaseGroupsCtx();
+
+  /**
+   * The groups the editor holds: below level 9 (and DCR support), the only
+   * ones they may hand out, by the Base Groups tab's rule (`../../scoping`).
+   * Null until read; until then nothing is changeable, which narrows.
+   */
+  const [editorHeld, setEditorHeld] = useState<Set<number> | null>(null);
+  useEffect(() => {
+    if (scope.canSeeAllCompanies) return;
+    getBaseGroupsAssignedToUser(ctx.url, ctx.token, scope.userid)
+      .then((resp) => {
+        const j = resp.data;
+        setEditorHeld(
+          editorHeldGroupIds(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []),
+        );
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching your base groups " + err.message),
+      );
+  }, [scope.canSeeAllCompanies, scope.userid, ctx.url, ctx.token]);
+  const mine = editorHeld ?? new Set<number>();
+  /** Groups the person already holds, listed even when not the editor's. */
+  const personHeld = useMemo(() => new Set(heldGroups.map((g) => g.id)), [heldGroups]);
+  const mayChange = (id: number) => mayChangeGroup(id, scope.canSeeAllCompanies, mine);
 
   /**
    * Who may be handed what. A programmer is setting up other people's
@@ -118,6 +160,8 @@ const AccessPanel = ({
   // Ticked groups plus any a ticked store implies: what Create saves.
 
   const held = heldGroupIds(picks);
+  /** Held either way: ticked, or implied by a picked store. */
+  const heldSet = new Set(held);
 
   const selectedStores = picks.stores;
   const onChange = (stores: SelectableStore[]) =>
@@ -147,18 +191,12 @@ const AccessPanel = ({
    * which one is the next thing they pick.
    */
   const toggleGroupPick = (id: number) => {
-    const held = picks.baseGroups.includes(id);
+    if (!mayChange(id)) return;
     const roster =
-      !held && picks.mode === "selected" && !singleStoreOnly
+      picks.mode === "selected" && !singleStoreOnly
         ? (groupStores[id] ?? []).map((s) => ({ ...s, base_group: id }))
         : [];
-    onPicksChange({
-      ...picks,
-      baseGroups: toggleIn(picks.baseGroups, id),
-      stores: held
-        ? picks.stores.filter((s) => s.base_group !== id)
-        : [...picks.stores, ...roster],
-    });
+    onPicksChange(toggleGroup(picks, id, roster));
   };
 
   const [activeCompany, setActiveCompany] = useState<number | null>(null);
@@ -317,7 +355,12 @@ const AccessPanel = ({
   }, [selectedStores]);
 
   const groupsInActiveCompany = activeCompany
-    ? (companyGroups[activeCompany] ?? [])
+    ? wizardGroups(
+        companyGroups[activeCompany] ?? [],
+        scope.canSeeAllCompanies,
+        mine,
+        personHeld,
+      )
     : [];
   const filteredGroups = groupsInActiveCompany.filter((g) =>
     g.name.toLowerCase().includes(groupSearch.toLowerCase()),
@@ -421,7 +464,7 @@ const AccessPanel = ({
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filteredGroups.map((group) => {
               const isOpen = expandedGroups.has(group.id);
-              const held = picks.baseGroups.includes(group.id);
+              const held = heldSet.has(group.id);
               const mode = picks.mode;
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
@@ -445,6 +488,7 @@ const AccessPanel = ({
                   <div className="flex items-start gap-2">
                     <Checkbox
                       checked={held}
+                      disabled={!mayChange(group.id)}
                       onChange={() => toggleGroupPick(group.id)}
                       ariaLabel={`Give ${group.name} to this person`}
                       className="mt-1"
@@ -464,6 +508,7 @@ const AccessPanel = ({
                             : inGroup > 0
                               ? `${inGroup} of ${total} picked`
                               : `${total} stores`}
+                        {!mayChange(group.id) && " · not yours to change"}
                       </div>
                     </button>
                   </div>
@@ -516,9 +561,13 @@ const AccessPanel = ({
               </div>
             )}
             {openGroups.map((group) => {
-              const held = picks.baseGroups.includes(group.id);
+              const held = heldSet.has(group.id);
               const mode = picks.mode;
-              const preview = held && mode === "all";
+              // By group means no store is ever picked one at a time, so no
+              // group's stores get checkboxes: a held group shows them all
+              // ticked, and one opened only to look shows a plain list. A live
+              // box there used to hold the whole group from one tick.
+              const preview = mode === "all";
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
               );
@@ -545,7 +594,9 @@ const AccessPanel = ({
                         {group.name}
                         {preview
                           ? total !== undefined
-                            ? ` — all ${total}`
+                            ? held
+                              ? ` — all ${total}`
+                              : ` — ${total} store${total === 1 ? "" : "s"}`
                             : ""
                           : ` — ${inGroup.length}${
                               total !== undefined ? ` of ${total}` : ""
@@ -555,7 +606,7 @@ const AccessPanel = ({
                     </span>
                     {/* No Select all on a preview: there is nothing to select,
                         and the whole group is already the answer. */}
-                    {!preview && !singleStoreOnly && (
+                    {!preview && !singleStoreOnly && mayChange(group.id) && (
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
@@ -571,8 +622,9 @@ const AccessPanel = ({
                     <div className="px-2 divide-y divide-brand_navy/15">
                       {preview && (
                         <p className="text-[10.5px] text-content/85 leading-snug px-1 py-1.5">
-                          Read only — this person has the whole group. Stores
-                          added to it later will appear for them automatically.
+                          {held
+                            ? "Read only — this person has the whole group. Stores added to it later will appear for them automatically."
+                            : "Viewing only. Tick the group to give them every store in it, or choose By store on the Access type step to pick stores one at a time."}
                         </p>
                       )}
                       {stores.map((s) => {
@@ -580,20 +632,23 @@ const AccessPanel = ({
                           (sel) => sel.storeid === s.storeid,
                         );
                         return preview ? (
-                          // Ticked and disabled, not plain text. Every store
-                          // here IS included — an unticked row beside a held
-                          // group reads as "not granted", which is the
-                          // opposite of what Auto means.
+                          // Held: ticked and disabled, not plain text. Every
+                          // store here IS included, and an unticked row beside
+                          // a held group reads as "not granted", the opposite
+                          // of what Auto means. Not held: no box at all, since
+                          // there is nothing to tick in By group.
                           <div
                             key={s.storeid}
                             className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
                           >
-                            <Checkbox
-                              checked
-                              disabled
-                              onChange={() => undefined}
-                              ariaLabel={`${s.store_name} is included automatically`}
-                            />
+                            {held && (
+                              <Checkbox
+                                checked
+                                disabled
+                                onChange={() => undefined}
+                                ariaLabel={`${s.store_name} is included automatically`}
+                              />
+                            )}
                             <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
                               {s.store_number}
                             </span>
@@ -606,6 +661,7 @@ const AccessPanel = ({
                           >
                             <Checkbox
                               checked={isSelected}
+                              disabled={!mayChange(group.id)}
                               onChange={() => toggleStore(s, group)}
                               ariaLabel={`Pick ${s.store_name}`}
                             />
@@ -660,7 +716,16 @@ const AccessPanel = ({
           <button
             // Clears the picks, not the answer: the access type was chosen
             // on its own step and stays chosen.
-            onClick={() => onPicksChange({ ...NO_PICKS, mode: picks.mode })}
+            // Clears what the editor may change; a group that isn't theirs
+            // stays as the person holds it.
+            onClick={() =>
+              onPicksChange({
+                ...NO_PICKS,
+                mode: picks.mode,
+                baseGroups: picks.baseGroups.filter((id) => !mayChange(id)),
+                stores: picks.stores.filter((s) => !mayChange(s.base_group)),
+              })
+            }
             className="text-[10.5px] text-brand_navy font-semibold hover:underline"
           >
             Clear all
@@ -673,7 +738,7 @@ const AccessPanel = ({
         ) : (
           <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
             {held.map((id, i) => {
-              const group = groupsById[id];
+              const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
               const mode = picks.mode;
               const count = selectedStores.filter(
                 (s) => s.base_group === id,

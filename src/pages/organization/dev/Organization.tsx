@@ -43,8 +43,19 @@ import {
   setRefresh as setUsersRefresh,
   setUserLevels,
   setUsers,
+  setUsersLoad,
 } from "../../../features/dev/devUsersSlice";
-import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
+import {
+  setUnsavedWizard,
+  setUsersExportOpen,
+} from "../../../features/dev/devOrganizationSlice";
+import ConfirmModal from "../../../components-dev/ConfirmModal";
+import UsersExportModal from "./users/UsersExportModal";
+import {
+  filterUsers,
+  filtersApplied,
+  showsInactive,
+} from "./users/userFilters";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
@@ -56,13 +67,10 @@ type Tab = "users" | "companies" | "baseGroups" | "stores";
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
  *
  * - Users: managers and up.
- * - User Groups: everyone — their own store groups plus any shared group they
- *   have (created or shared with them, read-only). The Store Groups page,
- *   moved in; its own menu entry is hidden in dev mode.
- * - Shared Groups: owners and up — every shared group in their companies, to
- *   create, share and manage. The router enforces the same level.
- * - Base Groups: owners and up. Access only.
- * - Stores: everyone, and only the stores they're assigned to.
+ * - Companies, Base Groups and Stores: owners and up.
+ *
+ * Below level 5 there is no tab at all, and the page says so (the nav hides
+ * it, but `/team` and a typed address still reach it).
  */
 const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
@@ -82,8 +90,15 @@ const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
-  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
+  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "users");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
+  /** A tab asked for while Add or Edit has unsaved changes. */
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
+  const chooseTab = (next: Tab) => {
+    if (next === tab) return;
+    if (ctx.unsavedWizard) setPendingTab(next);
+    else setTab(next);
+  };
   /**
    * The size the open view asks for.
    *
@@ -104,50 +119,57 @@ const Organization = () => {
   // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
   useEffect(() => {
     if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
+    // An export window left open on a previous visit stays shut until asked.
+    ctx.dispatch(setUsersExportOpen(false));
   }, []);
 
 
   // The users list only loads for people who get the Users tab.
   useEffect(() => {
     if (!ctx.refresh || !canSeeUsers) return;
+    ctx.dispatch(setUsersLoad(null));
     getAllUsers(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          const companyIds = ctx.companies.map((c) => c.company);
-          const scopeToOwnCompanies = (list: User[]) =>
-            list.filter((u: User) => {
-              const isDcrUser = u.companies.find(
-                (c) => c.company === 5 && c.name === "DCR",
-              );
-              if (isDcrUser) return false;
-              return u.companies.some((c) => companyIds.includes(c.company));
-            });
-          const isDcrUser = ctx.companies.find(
-            (c) => c.company === 5 && c.name === "DCR",
-          );
-          // Inactive users seeded for testing carry an @example.com email —
-          // strip those out so the Inactive list only shows real accounts.
-          const realInactiveUsers = j.inactive_users.filter(
-            (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
-          );
-          // in place to double check the api is working so we don't mess with live users
-          // const realInactiveUsers = j.inactive_users;
-          ctx.dispatch(
-            setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
-          );
-          ctx.dispatch(
-            setInactiveUsers(
-              isDcrUser
-                ? realInactiveUsers
-                : scopeToOwnCompanies(realInactiveUsers),
-            ),
-          );
+        if (j.error !== 0) {
+          ctx.dispatch(setUsersLoad(j.msg || "The users could not be read."));
+          return;
         }
+        ctx.dispatch(setUsersLoad(""));
+        const companyIds = ctx.companies.map((c) => c.company);
+        const scopeToOwnCompanies = (list: User[]) =>
+          list.filter((u: User) => {
+            const isDcrUser = u.companies.find(
+              (c) => c.company === 5 && c.name === "DCR",
+            );
+            if (isDcrUser) return false;
+            return u.companies.some((c) => companyIds.includes(c.company));
+          });
+        const isDcrUser = ctx.companies.find(
+          (c) => c.company === 5 && c.name === "DCR",
+        );
+        // Inactive users seeded for testing carry an @example.com email —
+        // strip those out so the Inactive list only shows real accounts.
+        const realInactiveUsers = j.inactive_users.filter(
+          (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
+        );
+        // in place to double check the api is working so we don't mess with live users
+        // const realInactiveUsers = j.inactive_users;
+        ctx.dispatch(
+          setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
+        );
+        ctx.dispatch(
+          setInactiveUsers(
+            isDcrUser
+              ? realInactiveUsers
+              : scopeToOwnCompanies(realInactiveUsers),
+          ),
+        );
       })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching users " + err.message),
-      );
+      .catch((err: JsonError) => {
+        ctx.dispatch(setUsersLoad("The users could not be read: " + err.message));
+        toast.error("Error fetching users " + err.message);
+      });
     getUserLevels(ctx.url, ctx.token)
       .then((resp) => {
         const j: UserLevelJsonResp = resp.data;
@@ -177,8 +199,28 @@ const Organization = () => {
 
   const exportable = tab === "users" || tab === "stores";
 
+  /**
+   * The users export, from here rather than inside the grid: the grid isn't
+   * mounted while Add or Edit is open, so the header's Export did nothing
+   * then. Same list and filters the grid shows, from the slice.
+   */
+  const exportInactive = showsInactive(ctx.usersGridFilters);
+  const exportSource = exportInactive ? ctx.inactiveUsers : ctx.users;
+
   /** What the open view asked for, else what the tab is worth. */
   const size = fit ?? TAB_FIT[tab];
+
+  // No tab to show. This fell back to a "userGroups" tab that no longer
+  // exists and then read a size it doesn't have.
+  if (tabs.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 flex justify-center">
+        <div className="self-start bg-custom-white rounded-xl shadow-lg px-6 py-5 text-[13px] text-content">
+          You don’t have access to User Management.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -204,6 +246,7 @@ const Organization = () => {
                   : setStoresExportOpen(true)
               }
               title="Export CSV"
+              data-help="export"
               className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
@@ -212,11 +255,11 @@ const Organization = () => {
           <PageInfoButton page="user-management" title="About this page" />
         </div>
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
+        <div data-help="tabs" className="flex border-b border-gray-100 flex-shrink-0">
           {tabs.map((t) => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => chooseTab(t.id)}
               className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
                 tab === t.id
                   ? "border-brand_navy text-brand_navy"
@@ -229,9 +272,33 @@ const Organization = () => {
         </div>
 
 
+        {pendingTab && ctx.unsavedWizard && (
+          <ConfirmModal
+            title="Discard changes?"
+            message={`Discard your changes to ${ctx.unsavedWizard}? Nothing has been saved.`}
+            confirmLabel="Discard"
+            onConfirm={() => {
+              ctx.dispatch(setUnsavedWizard(null));
+              setTab(pendingTab);
+              setPendingTab(null);
+            }}
+            onCancel={() => setPendingTab(null)}
+          />
+        )}
+
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <PanelFitContext.Provider value={setFit}>
           {tab === "users" && canSeeUsers && <Users />}
+          {tab === "users" && canSeeUsers && ctx.usersExportOpen && (
+            <UsersExportModal
+              onClose={() => ctx.dispatch(setUsersExportOpen(false))}
+              allUsers={exportSource}
+              filteredUsers={filterUsers(exportSource, ctx.usersGridFilters)}
+              userLevels={ctx.userLevels}
+              scopeLabel={exportInactive ? "Inactive users" : "Active users"}
+              filtersActive={filtersApplied(ctx.usersGridFilters)}
+            />
+          )}
           {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}
           {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && <BaseGroups />}
           {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (

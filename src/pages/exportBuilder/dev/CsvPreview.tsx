@@ -1,25 +1,12 @@
 import { useCallback, useRef } from "react";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
-import { isPii, maskValue } from "./piiColumns";
+import { isPii } from "./piiColumns";
 // PARKED with the Dates control — see dateFormats.ts.
 // import { formatDateValue, isDateColumn } from "./dateFormats";
 import { useColumnDrag } from "./useColumnDrag";
 import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
 
-/**
- * The right panel: the file, not a report.
- *
- * Same columns in the same order the export writes them, so ticking one on the
- * left adds a column here and to the CSV at once, and dragging a header
- * changes both. The rows are the two hundred the preview returned —
- * unordered, so they show the file's shape accurately but not its variety: two
- * hundred rows from one scan position is often a handful of stores and a
- * couple of sale types.
- *
- * Personal columns show a mask rather than the value. The file carries the
- * real thing; this is a screen someone else can be standing behind.
- */
 const CsvPreview = () => {
   const ctx = useExportBuilderCtx();
   const scroller = useRef<HTMLDivElement>(null);
@@ -54,7 +41,7 @@ const CsvPreview = () => {
       ? "none"
       : "transform 180ms cubic-bezier(.2,.8,.3,1)";
 
-  const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
+  const name = `${ctx.flags.filePrefix || ctx.source.filePrefix}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
 
@@ -158,7 +145,6 @@ const CsvPreview = () => {
                     //   ? formatDateValue(row[c.name], ctx.flags.dateFormat)
                     //   : row[c.name];
                     const raw = row[c.name];
-                    const masked = isPii(c.name);
                     return (
                       <td
                         key={c.name}
@@ -168,13 +154,9 @@ const CsvPreview = () => {
                         }}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${
                           drag.isDragging(i) ? "bg-filter_active/40" : ""
-                        } ${masked ? "text-amber-900" : ""}`}
+                        }`}
                       >
-                        {masked
-                          ? maskValue(raw)
-                          : raw === null || raw === undefined
-                            ? ""
-                            : String(raw)}
+                        {raw === null || raw === undefined ? "" : String(raw)}
                       </td>
                     );
                   })}
@@ -189,13 +171,15 @@ const CsvPreview = () => {
         <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/85 flex-shrink-0">
           None of the sample lines match what you have kept. The file can still
           hold plenty: the sample is two hundred lines taken where the scan
-          landed, often a handful of stores and a couple of sale types.
+          landed, often a handful of stores and a couple of{" "}
+          {ctx.source.lists[0]?.noun ?? "values"}.
         </div>
       )}
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
         <span className="text-[11.5px] text-content/85">
-          Personal values are hidden here and written to the file.
+          Personal columns are shaded. Their values are shown here and written
+          to the file.
         </span>
       </div>
     </div>

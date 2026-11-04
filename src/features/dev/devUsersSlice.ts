@@ -82,7 +82,22 @@ export interface DuplicateSource {
 interface UsersState {
   users: User[];
   inactiveUsers: User[];
+  /**
+   * The users list read: running, or what went wrong. The grid said "No
+   * users found" while it loaded and when it failed, and a 200 carrying an
+   * error was dropped without a word.
+   */
+  usersLoading: boolean;
+  usersError: string | null;
   userInfo: UserData;
+  /**
+   * The person's details as they were when opened for Edit, or as last
+   * saved; null in Add. Kept here rather than in the wizard: switching tabs
+   * unmounts the wizard while `userInfo` keeps the edits, and a wizard that
+   * captured "before" on mount took the edited name as its starting point,
+   * so the change no longer counted and Save went grey.
+   */
+  userInfoBefore: UserData | null;
   baseGroups: BaseGroup[];
   refresh: boolean;
   selectedUserId: number;
@@ -122,7 +137,10 @@ interface UsersState {
 const initialState: UsersState = {
   users: [],
   inactiveUsers: [],
+  usersLoading: false,
+  usersError: null,
   userInfo: defaultInfo,
+  userInfoBefore: null,
   baseGroups: [],
   refresh: true,
   selectedUserId: 0,
@@ -163,6 +181,11 @@ export const usersSlice = createSlice({
     },
     setInactiveUsers: (state, action: PayloadAction<User[]>) => {
       state.inactiveUsers = action.payload;
+    },
+    /** The users read started (null), or finished: "" for fine, else why not. */
+    setUsersLoad: (state, action: PayloadAction<string | null>) => {
+      state.usersLoading = action.payload === null;
+      state.usersError = action.payload ? action.payload : null;
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
@@ -207,6 +230,15 @@ export const usersSlice = createSlice({
         confirm_password: "",
       };
       state.userCompanyIds = companies.map((c) => c.company);
+      state.userInfoBefore = state.userInfo;
+      // The last person's stores go with them: B used to show A's direct
+      // stores until B's read landed, and kept them if it failed.
+      state.selectedUserStores = { assigned: [], unassigned: [] };
+      state.allStores = [];
+    },
+    /** The details on screen have been saved: they are the new "before". */
+    markUserInfoSaved: (state) => {
+      state.userInfoBefore = state.userInfo;
     },
     setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
@@ -215,6 +247,7 @@ export const usersSlice = createSlice({
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
+      state.userInfoBefore = null;
       state.userCompanyIds = [];
       state.selectedUserId = 0;
       state.usernameTextColor = "";
@@ -352,8 +385,10 @@ export const usersSlice = createSlice({
 export const {
   setUsers,
   setInactiveUsers,
+  setUsersLoad,
   setUserInfo,
   setSelectedUserInfo,
+  markUserInfoSaved,
   resetUserInfo,
   setRefresh,
   setSelectedUserId,

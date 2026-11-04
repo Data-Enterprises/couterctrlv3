@@ -18,7 +18,7 @@ export const COMING_SOON_HELP_SECTIONS: Readonly<Record<string, string>> = {
   "item-report": "item-actions",
   "sales-tracker": "sales-tracker",
   tickets: "help-desk",
-  "sales-export": "sales-export",
+  "data-export": "data-export",
   "inventory-sub-department": "price-opt",
   "inventory-vendor": "price-opt",
   invoices: "invoices",

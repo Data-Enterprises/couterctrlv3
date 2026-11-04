@@ -13,7 +13,7 @@ import { buildTagFile, tagFileName } from "./tagFile";
  * thing that makes the format reviewable. You can walk an aisle, scan fifty
  * tags and come back holding the actual file, which beats describing it.
  *
- * When the endpoint lands, the shape to copy is Sales Export: client posts,
+ * When the endpoint lands, the shape to copy is Data Export: client posts,
  * the backend writes to S3 under a prefix taken from the caller's own token,
  * and the response carries bucket, path, row count and a presigned link (see
  * `api/salesExport` and the note at the top of `api/exportBuilds`). Only the

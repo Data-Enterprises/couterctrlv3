@@ -31,8 +31,6 @@ import {
   deptName,
   deptOptions,
   deptRollups,
-  deptSeverity,
-  deptSeverityCounts,
   amountOf,
   amountText,
   contributionGap,
@@ -150,17 +148,8 @@ const dayText = (iso: string | null | undefined) => {
  */
 const inFlight = new Set<string>();
 
-/** Name, the share bar, the week, and one comparison. */
-const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 86px 64px";
-
-/**
- * Departments printed in full before the tail is rolled into one line.
- *
- * Nine is where the list stops being read: below it the rows are a few
- * hundred dollars each and the eye has already stopped. The money still
- * adds up, because the tail keeps its total.
- */
-const LANDING_SHOWN = 9;
+/** Name, the share bar, and the sales. */
+const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 96px";
 
 const PopupTopItems = ({
   storeId,
@@ -187,7 +176,9 @@ const PopupTopItems = ({
    * moved.
    */
   netSales: { ty: number; lw: number | null; ly: number | null };
-  /** yyyy-mm-dd. The week the popup is showing, and its two baselines. */
+  /** yyyy-mm-dd. The week the popup is showing, and its two baselines; or
+   *  one picked day (start === end), against the same weekday last week and
+   *  last year. */
   start: string;
   end: string;
   lwStart: string;
@@ -213,11 +204,9 @@ const PopupTopItems = ({
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
   const [dept, setDept] = useState("");
-  /** The landing report's own chip filter, over departments. */
-  const [deptSev, setDeptSev] = useState<Severity | "all">("all");
-  /** Which comparison the landing report's one delta column shows. Last week
-   *  by default: it is the one every store has. */
-  const [landingBasis, setLandingBasis] = useState<"LW" | "LY">("LW");
+  /** One picked day or the week, as the headings name it. */
+  const oneDay = start === end;
+  const periodLabel = oneDay ? dayText(start) : "This week";
   /**
    * The CTA strip's open state, and nothing else now that the report has no
    * folding sections.
@@ -333,7 +322,6 @@ const PopupTopItems = ({
     setSelectedCode(null);
     setDetail(null);
     setDept("");
-    setDeptSev("all");
   }, [key]);
 
   useEffect(() => {
@@ -391,28 +379,18 @@ const PopupTopItems = ({
     }),
     [totals, netSales],
   );
-  const sevCounts = useMemo(
-    () => deptSeverityCounts(rollups, threshold),
-    [rollups, threshold],
-  );
   const landing = useMemo(() => {
-    const kept =
-      deptSev === "all"
-        ? rollups
-        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev);
-    const byMoney = [...kept].sort((a, b) => b.ty - a.ty);
-    const shown = byMoney.slice(0, LANDING_SHOWN);
-    const rest = byMoney.slice(LANDING_SHOWN);
+    const byMoney = [...rollups].sort((a, b) => b.ty - a.ty);
+    // Every department, biggest first: the list is short enough to read
+    // whole, and a tail folded into "8 more" hid where the rest went.
     return {
-      shown,
-      rest,
-      restTotal: rest.reduce((n, d) => n + d.ty, 0),
+      shown: byMoney,
       // The bar runs against the biggest department, not against the whole
-      // list: scaled to the total, nine of the ten bars would be stubs.
-      top: shown.length ? shown[0].ty : 0,
+      // list: scaled to the total, most of the bars would be stubs.
+      top: byMoney.length ? byMoney[0].ty : 0,
       total: byMoney.reduce((n, d) => n + d.ty, 0),
     };
-  }, [rollups, deptSev, threshold]);
+  }, [rollups]);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -761,7 +739,7 @@ const PopupTopItems = ({
                     Top 200 Sales
                   </div>
                   <div className="text-[10px] font-bold text-content mb-0.5">
-                    {dayText(start)} &ndash; {dayText(end)}
+                    {oneDay ? dayText(start) : <>{dayText(start)} &ndash; {dayText(end)}</>}
                   </div>
                   <div className="text-[14px] font-bold text-content tabular-nums">
                     {money(totals.ty)}
@@ -832,82 +810,17 @@ const PopupTopItems = ({
                 ))}
               </div>
 
-              {/* Chips count DEPARTMENTS, not items. This report is about
-                  where the money sat, and each department's grade is the
-                  colour of its own bar below -- a dot beside a coloured bar
-                  was one fact drawn twice. */}
-              <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
-                {(
-                  [
-                    [
-                      "critical",
-                      "Crit",
-                      "bg-severity_critical_bg text-severity_critical_text",
-                      "ring-severity_critical_text/40",
-                    ],
-                    [
-                      "watch",
-                      "Watch",
-                      "bg-severity_watch_bg text-severity_watch_text",
-                      "ring-severity_watch_text/40",
-                    ],
-                    [
-                      "healthy",
-                      "OK",
-                      "bg-severity_healthy_bg text-severity_healthy_text",
-                      "ring-severity_healthy_text/40",
-                    ],
-                  ] as const
-                ).map(([sev, label, cls, ring]) => (
-                  <button
-                    key={sev}
-                    onClick={() => setDeptSev((f) => (f === sev ? "all" : sev))}
-                    className={`text-[10px] font-semibold px-2 py-1 rounded-full transition-shadow ${cls} ${
-                      deptSev === sev ? `ring-2 ${ring} shadow-sm` : ""
-                    }`}
-                  >
-                    {label} ({sevCounts[sev]})
-                  </button>
-                ))}
-                <span className="flex-1" />
-                {/* One comparison column, and a switch for which. Two columns
-                    of percentages beside a bar and a dollar figure was four
-                    numbers a row, and the eye reads none of them. */}
-                <span className="flex rounded-md border border-brand_navy/15 overflow-hidden flex-shrink-0">
-                  {(["LW", "LY"] as const).map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setLandingBasis(b)}
-                      className={`px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${
-                        landingBasis === b
-                          ? "bg-brand_navy text-custom-white"
-                          : "bg-custom-white text-content/85 hover:bg-gray-50"
-                      }`}
-                    >
-                      vs {b}
-                    </button>
-                  ))}
-                </span>
-                <span className="flex-1" />
-                <span className="text-[10px] font-semibold text-content/85">
-                  {rollups.length} sub department
-                  {rollups.length === 1 ? "" : "s"}
-                </span>
-              </div>
-
               <div
                 className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/85"
                 style={{ gridTemplateColumns: LANDING_COLS }}
               >
                 <span>Sub dept</span>
                 <span>Share of top 200</span>
-                <span className="text-right">This week</span>
-                <span className="text-right">vs {landingBasis}</span>
+                <span className="text-right">Sales</span>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
                 {landing.shown.map((d) => {
-                  const sev = deptSeverity(d, threshold);
                   const pct =
                     landing.top > 0 ? (d.ty / landing.total) * 100 : 0;
                   return (
@@ -940,15 +853,13 @@ const PopupTopItems = ({
                         {d.name}
                       </span>
 
-                      {/* The bar carries the grade, which is what the dot
-                          beside it used to do twice over -- a coloured dot
-                          and a coloured bar saying one thing. */}
+                      {/* The bar measures this period's sales and nothing
+                          else, so it is navy and ungraded: a bar's length is
+                          not a verdict. */}
                       <span className="flex items-center gap-2 min-w-0">
                         <span className="flex-1 h-3 rounded bg-bkg min-w-0">
                           <span
-                            className={`block h-full rounded ${
-                              sev ? severityDotClass[sev] : "bg-gray-300"
-                            }`}
+                            className="block h-full rounded bg-brand_navy"
                             style={{
                               width: `${landing.top > 0 ? Math.max(2, (d.ty / landing.top) * 100) : 0}%`,
                             }}
@@ -963,46 +874,19 @@ const PopupTopItems = ({
                         {money(d.ty)}
                       </span>
 
-                      <span className="flex justify-end">
-                        <span
-                          className={`text-[12px] font-semibold px-1.5 py-0.5 rounded text-center whitespace-nowrap tabular-nums ${pillClass(
-                            landingBasis === "LW" ? d.vsLW : d.vsLY,
-                            threshold,
-                          )}`}
-                        >
-                          {pctText(landingBasis === "LW" ? d.vsLW : d.vsLY)}
-                        </span>
-                      </span>
                     </button>
                   );
                 })}
 
-                {/* The tail as one line. Fifteen departments down to a few
-                    hundred dollars is a list nobody reads to the end of, and
-                    the money still has to add up. */}
-                {landing.rest.length > 0 && (
-                  <div
-                    className="grid items-center gap-2 px-3 py-2 border-b border-gray-100 text-[12px] text-content/85"
-                    style={{ gridTemplateColumns: LANDING_COLS }}
-                  >
-                    <span className="truncate">{landing.rest.length} more</span>
-                    <span />
-                    <span className="text-right tabular-nums">
-                      {money(landing.restTotal)}
-                    </span>
-                    <span />
-                  </div>
-                )}
-
                 {landing.shown.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                    No departments at that grade
+                    No departments
                   </div>
                 )}
               </div>
 
               <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/85">
-                Click a sub department for last week, last year and its items.
+                Click a sub department to see its items.
               </p>
             </div>
           ) : (
@@ -1442,7 +1326,7 @@ const PopupTopItems = ({
                       [
                         ["Last year", history.ly],
                         ["Last week", history.lw],
-                        ["This week", history.ty],
+                        [periodLabel, history.ty],
                       ] as const
                     ).map(([label, at], i) => (
                       <div
@@ -1461,7 +1345,7 @@ const PopupTopItems = ({
 
                   <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
                     <span />
-                    <span className="text-right">This week</span>
+                    <span className="text-right">{periodLabel}</span>
                     <span className="text-right">vs LW</span>
                     <span className="text-right">vs LY</span>
                   </div>

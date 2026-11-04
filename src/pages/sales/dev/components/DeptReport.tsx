@@ -12,7 +12,7 @@ import {
   type Severity,
 } from "../../../../utils/severity";
 import { getSubs } from "../../../../api/sales";
-import { formatCurrency2 } from "../../../../utils";
+import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../../utils";
 import { Block, Measure } from "./CompareBlocks";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
@@ -258,6 +258,7 @@ const Detail = ({
   row,
   us,
   them,
+  day: picked,
   onInvestigate,
 }: {
   row: ReportRow;
@@ -265,6 +266,9 @@ const Detail = ({
    *  anybody calls it. */
   us: string;
   them: string;
+  /** The day picked in the strip, or null for the week. The figures are
+   *  that day's, so the headings have to say so. */
+  day: string | null;
   onInvestigate: (row: ReportRow) => void;
 }) => {
   const ahead = row.gap >= 0;
@@ -405,8 +409,15 @@ const Detail = ({
                 it belongs with the rest of what is true of the gap rather
                 than in a card of its own beside the stores. */}
             <p className={`text-[11.5px] mt-2 ${cta.text}`}>
-              {againstWeek("last week", row.lwGap)} &middot;{" "}
-              {againstWeek("last year", row.lyGap)}
+              {againstWeek(
+                picked ? "the same day last week" : "last week",
+                row.lwGap,
+              )}{" "}
+              &middot;{" "}
+              {againstWeek(
+                picked ? "the same day last year" : "last year",
+                row.lyGap,
+              )}
             </p>
           </div>
         )}
@@ -443,7 +454,17 @@ const Detail = ({
           </div>
         </Block>
 
-        <Block title={`This week against ${them}`}>
+        <Block
+          title={`${
+            picked
+              ? new Date(picked + "T12:00:00").toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "This week"
+          } against ${them}`}
+        >
           <div className="flex flex-col gap-2.5">
             <Measure
               title="Sales"
@@ -489,8 +510,21 @@ interface Props {
   lwEnd: string;
   lyStart: string;
   lyEnd: string;
+  /**
+   * The exact days last week and last year that correspond to this week's.
+   * The open store's LW and LY are already narrowed to these on the way into
+   * the slice; the counterpart has to be narrowed to the same set.
+   */
+  lwWeekDates: string[];
+  lyWeekDates: string[];
+  /** A day picked in the strip above narrows both sides to that day. The
+   *  open store's departments arrive already narrowed; without this the
+   *  counterpart stayed a whole week, and one Friday was "behind" a week. */
+  selectedDate: string | null;
   onBack: () => void;
 }
+
+const day = (v: string) => (v ?? "").split("T")[0];
 
 /** Informational, not a grade. The strip under the split bar explains what
  *  the bar leaves out; nothing in it is a verdict on the store, so it takes
@@ -515,6 +549,9 @@ const DeptReport = ({
   lwEnd,
   lyStart,
   lyEnd,
+  lwWeekDates,
+  lyWeekDates,
+  selectedDate,
   onBack,
 }: Props) => {
   const dispatch = useAppDispatch();
@@ -535,16 +572,42 @@ const DeptReport = ({
     lyStart,
     lyEnd,
   ].join("|");
-  const theirs = useAppSelector(
+  const cached = useAppSelector(
     (state) => state.dev.salesCache.counterpart[cacheKey],
   );
+
+  /** The cache holds the counterpart's whole weeks; this narrows them exactly
+   *  as the open store's were narrowed, so picking a day costs no request. */
+  const lwKey = lwWeekDates.join(",");
+  const lyKey = lyWeekDates.join(",");
+  const theirs = useMemo(() => {
+    if (!cached) return undefined;
+    if (selectedDate) {
+      const lwDay = addDays(new Date(selectedDate), -7)
+        .toISOString()
+        .split("T")[0];
+      const lyDay = sameWeekDayLastYear(selectedDate).date;
+      return {
+        tw: cached.tw.filter((s) => day(s.sale_date) === selectedDate),
+        lw: cached.lw.filter((s) => day(s.sale_date) === lwDay),
+        ly: cached.ly.filter((s) => day(s.sale_date) === lyDay),
+      };
+    }
+    const lwSet = new Set(lwKey.split(","));
+    const lySet = new Set(lyKey.split(","));
+    return {
+      tw: cached.tw,
+      lw: cached.lw.filter((s) => lwSet.has(day(s.sale_date))),
+      ly: cached.ly.filter((s) => lySet.has(day(s.sale_date))),
+    };
+  }, [cached, selectedDate, lwKey, lyKey]);
   const [failed, setFailed] = useState(false);
   /** The department the panel is showing, by its matched key — not by a
    *  store's own number, which means different things at each store. */
   const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
-    if (theirs) return;
+    if (cached) return;
     let live = true;
     setFailed(false);
     const ask = (from: string, to: string) =>
@@ -583,7 +646,7 @@ const DeptReport = ({
     compareStoreId,
     compareStoreNumber,
     cacheKey,
-    theirs,
+    cached,
     dispatch,
   ]);
 
@@ -982,6 +1045,7 @@ const DeptReport = ({
             row={selected}
             us={openStoreName}
             them={compareStoreName}
+            day={selectedDate}
             onInvestigate={investigate}
           />
         ) : (

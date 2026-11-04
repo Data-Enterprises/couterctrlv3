@@ -76,7 +76,7 @@
       <a href="#upc-scanner">Upc Scanner</a>
       <a href="#sales-tracker">Sales Tracker</a>
       <a href="#help-desk">Client Help Desk</a>
-      <a href="#sales-export">Sales Export</a>
+      <a href="#data-export">Data Export</a>
       <a href="#price-opt">Price Opt</a>
       <a href="#invoices">AWG Invoices</a>
       <a href="#lp-actions">LP Actions</a>
@@ -288,54 +288,56 @@
     <span class="part-status">Internal</span>
   </div>
 
-  <section id="sales-export">
+  <section id="data-export">
     <div class="sec-head">
-      <h2>Sales Export</h2>
+      <h2>Data Export</h2>
       <span class="where">Desktop &middot; builds a file you download</span>
     </div>
     <div class="row">
       <span class="label">What it does</span>
-      <p>Builds a sales file to your own specification rather than to a report's. Pick the stores and dates, choose
-      which columns go in it and which lines to keep, and the file is written and handed back as a download. Either line
-      by line, or summarised &mdash; grouped by whatever you choose, with totals beside the groups.</p>
+      <p>Builds a file to your own specification rather than to a report's, from one of four tables:
+      <strong>sales</strong> lines, <strong>order</strong> lines (counts and damages among them), received
+      <strong>invoice</strong> lines, or <strong>markdowns</strong>. Pick the stores and dates, choose which columns go
+      in it and which lines to keep, and the file is written and handed back as a download. Either line by line, or
+      summarised &mdash; grouped by whatever you choose, with totals beside the groups.</p>
     </div>
     <div class="row">
       <span class="label">How you use it</span>
       <div>
-        <p>Search a store or group and a range. The page then <strong>describes your own data back to you</strong>:
-        which stores the search actually covered, which sale types occur in that window, every column available, and ten
+        <p>Pick what to export, then search a store or group and a range. The page then <strong>describes your own data
+        back to you</strong>: which stores the search actually covered, which values each list holds in that window
+        &mdash; sale types on sales, order types on orders, and so on &mdash; every column available, and two hundred
         sample rows. Every list you narrow by is built from that answer, so there is nothing to pick that is not really
         there.</p>
         <p>Narrowing happens on screen, so the sample redraws as you tick. When it looks right, build the file &mdash;
-        and save the setup as a <strong>named configuration</strong> you can reload later onto any range.
-        <strong>Previous Builds</strong> keeps every file you have made alongside the exact question that produced it:
-        the dates, the stores, the row count, and the download.</p>
+        and save the setup as a <strong>named configuration</strong> you can reload later onto any range. Switch to
+        another table and back, and the first comes back as you left it. <strong>Previous Builds</strong> keeps every
+        file you have made alongside the exact question that produced it: the dates, the stores, the row count, and the
+        download.</p>
       </div>
     </div>
     <div class="row">
       <span class="label">Where the numbers come from</span>
-      <p>The sales detail table itself &mdash; one row per register line, with about a hundred columns on it. This is
-      the layer underneath every sales report in the app, which is what makes the page useful and also what makes the
-      notes below necessary. The file is written straight from the database to secure storage and downloaded from there,
-      so the data never travels through the app. Saved configurations sit with your own saved work, and a configuration
-      that is not yours cannot be loaded.</p>
+      <p>The tables themselves, row for row. For sales that is the sales detail table &mdash; one row per register line,
+      with about a hundred columns on it, the layer underneath every sales report in the app &mdash; which is what makes
+      the page useful and also what makes the notes below necessary. The file is written straight from the database to
+      secure storage and downloaded from there, so the data never travels through the app. Saved configurations sit
+      with your own saved work, a list for each table, and a configuration that is not yours cannot be loaded.</p>
     </div>
     <div class="row">
       <span class="label">Why it works this way</span>
       <div>
-        <p><strong>A total from this file will not match a sales report, and that is correct.</strong> Raw register lines
-        include tender rows, voids, department transfers and untendered modifications, and refunds are stored as
+        <p><strong>A sales total from this file will not match a sales report, and that is correct.</strong> Raw register
+        lines include tender rows, voids, department transfers and untendered modifications, and refunds are stored as
         positive numbers &mdash; so a store total taken from here runs to roughly double what the weekly sales page
         reports for the same window. Each summarised column is named after the operation that produced it, so a file
         cannot quietly be read as a report. Anything that has to reconcile against a report should start from the
         report.</p>
-        <p><strong>Personal columns are marked, and their sample values stay off the screen.</strong> Customer name,
-        address, phone and the rest are flagged in the picker, and the preview shows the column without showing a real
-        person's details &mdash; a preview gets read over someone's shoulder far more often than a file gets opened. The
-        file you build contains the real values.</p>
+        <p><strong>Personal columns are marked.</strong> Customer name, address, phone and the rest are flagged in the
+        picker and can be turned on or off together. The sample shows their values, as the file does.</p>
         <p><strong>The preview is capped at 31 days; the export is not.</strong> Describing your data means reading every
-        line in the window, so the preview's cost follows the range while it hands back the same ten sample rows either
-        way. Get the setup right on a month, then run it on whatever range you need.</p>
+        line in the window, so the preview's cost follows the range while it hands back the same two hundred sample rows
+        either way. Get the setup right on a month, then run it on whatever range you need.</p>
         <p><strong>A build is a record, not a bookmark.</strong> Configurations are meant to be renamed and edited; a
         build is the question exactly as it was asked that day, written beside the file and never rewritten &mdash;
         which is what makes a file from six weeks ago explainable.</p>

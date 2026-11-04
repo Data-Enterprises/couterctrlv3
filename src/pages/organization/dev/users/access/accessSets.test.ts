@@ -3,6 +3,7 @@ import {
   accessSets,
   changedGrants,
   changedSets,
+  directStoreIds,
   effectiveStores,
   emptySelectedGroupIds,
   groupCompanies,
@@ -12,6 +13,7 @@ import {
   NO_PICKS,
   picksForMode,
   revokedGroupIds,
+  toggleGroup,
   type AccessPicks,
 } from "./accessSets";
 import type { SelectableStore } from "../../types";
@@ -442,5 +444,44 @@ describe("heldGroupIds", () => {
   it("counts a group once when it is both ticked and implied", () => {
     const p = picks({ baseGroups: [54], stores: [store(695, 54, 3)] });
     expect(heldGroupIds(p)).toEqual([54]);
+  });
+});
+
+describe("which held stores are Direct", () => {
+  const carried = { companies: [], stores: [301, 302, 900] };
+  // 301 and 302 come through East, held By group; 900 was granted on Stores.
+  const rosters = { 10: [{ storeid: 301 }, { storeid: 302 }] };
+
+  it("is only the stores no held group's roster explains", () => {
+    expect(directStoreIds(carried, [10], rosters)).toEqual([900]);
+  });
+
+  it("drops a roster store as soon as the roster is known", () => {
+    expect(directStoreIds(carried, [10], {})).toEqual([301, 302, 900]);
+  });
+});
+
+describe("ticking a group in its own column", () => {
+  const st = (storeid: number, base_group = 10) =>
+    ({ storeid, store_number: String(storeid), store_name: `S${storeid}`, company: 1, company_name: "H", base_group }) as SelectableStore;
+  const roster = Array.from({ length: 10 }, (_, i) => st(300 + i));
+
+  it("merges the roster with a store already picked, instead of adding it twice", () => {
+    const picks = { companies: [], baseGroups: [], mode: "selected" as const, stores: [st(300)] };
+    // The store already holds group 10, so the box is ticked and this unticks.
+    expect(toggleGroup(picks, 10, roster).baseGroups).toEqual([]);
+    const fresh = { ...picks, stores: [st(300, 99)] };
+    const after = toggleGroup(fresh, 10, roster);
+    expect(after.stores.filter((s) => s.base_group === 10)).toHaveLength(10);
+  });
+
+  it("doesn't double a store picked under the group it is ticking", () => {
+    const picks = { companies: [], baseGroups: [11], mode: "selected" as const, stores: [st(305, 10)] };
+    // Group 10 is held through 305; unticking drops it and the store.
+    const off = toggleGroup(picks, 10, roster);
+    expect(off.stores).toEqual([]);
+    const on = toggleGroup(off, 10, roster);
+    expect(on.stores).toHaveLength(10);
+    expect(new Set(on.stores.map((s) => s.storeid)).size).toBe(10);
   });
 });

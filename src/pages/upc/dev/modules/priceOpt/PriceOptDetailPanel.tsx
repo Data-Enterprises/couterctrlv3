@@ -1,9 +1,8 @@
 import { formatCurrency2 } from "../../../../../utils";
-import { formatPricedUnits } from "../../../../../utils/pricedUnits";
 import CtaInsightStrip from "../../components/CtaInsightStrip";
 import KpiTileGrid from "../../components/KpiTileGrid";
 import type { KpiCell } from "../../types";
-import type { PriceOptRowSummary } from "./priceOptStats";
+import { formatBestUnits, type PriceOptRowSummary } from "./priceOptStats";
 import { getPriceOptPhrase, getPriceOptInsight } from "./priceOptPhrase";
 import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
 
@@ -30,7 +29,7 @@ const PriceOptDetailPanel = ({ summary: r, fixes }: Props) => {
       ? [
           {
             label: r.weighted ? "Volume at best" : "Qty at best",
-            value: formatPricedUnits(r.bestUnits, r.weighted ? r.bestUnits : 0),
+            value: formatBestUnits(r.bestUnits, r.weighted),
           },
         ]
       : []),

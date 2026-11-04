@@ -1,6 +1,6 @@
 import { TableCellsIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
-import { isPii, maskValue } from "./piiColumns";
+import { isPii } from "./piiColumns";
 // PARKED with the Dates control — see dateFormats.ts.
 // import { formatDateValue, isDateColumn } from "./dateFormats";
 
@@ -22,7 +22,7 @@ const SummaryPreview = () => {
   const { columns, rows } = ctx.summary;
   const keys = ctx.groupBy;
 
-  const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
+  const name = `${ctx.flags.filePrefix || ctx.source.filePrefix}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
 
@@ -103,17 +103,14 @@ const SummaryPreview = () => {
                     //     ? formatDateValue(row[c], ctx.flags.dateFormat)
                     //     : row[c];
                     const raw = row[c];
-                    const masked = isPii(c);
                     return (
                       <td
                         key={c}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${
-                          masked ? "text-amber-900" : ""
-                        } ${keys.includes(c) ? "" : "text-right"}`}
+                          keys.includes(c) ? "" : "text-right"
+                        }`}
                       >
-                        {masked
-                          ? maskValue(raw)
-                          : raw === null || raw === undefined
+                        {raw === null || raw === undefined
                             ? // A group key that is null is its own row in the
                               // file — the tender lines land there — so it is
                               // named rather than left blank.

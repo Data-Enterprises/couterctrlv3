@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { ExportFile, ExportParams } from "./salesExport";
+import {
+  EXPORT_TOP_LEVEL_KEYS,
+  type ExportFile,
+  type ExportFilters,
+  type ExportParams,
+  type ExportTableKey,
+} from "./salesExport";
 
 /**
  * Past builds, and the label on one.
@@ -24,7 +30,7 @@ export interface ExportBuild {
    * Opaque. It reads as prefix, range and stamp, and splitting it on `_` is
    * wrong — the prefix may hold underscores and so does the stamp. Every
    * field in it is a field of this object already; this is a key to hand
-   * back to `export_build_link`, nothing more.
+   * back to `export/{table}/build_link`, nothing more.
    */
   buildId: string;
   /** ISO-8601 UTC, with microseconds. Convert for display or the list reads
@@ -61,13 +67,52 @@ export interface ExportBuildsResp {
   builds: ExportBuild[];
 }
 
-export const listExportBuilds = (url: string, token: string, limit = 50) =>
+/**
+ * A manifest's request, in the router's shape.
+ *
+ * One written by the export router carries its filters under `filters`; one
+ * written before the move carries them at the top level, beside the rest.
+ * Both come back in one list, because the S3 folder did not move, so the old
+ * ones are nested here: every top-level field the export takes stays where it
+ * is, and anything else is a filter. The page then reads both the same way,
+ * by the source's own filter names.
+ */
+export const nestRequest = (request: unknown): Partial<ExportParams> => {
+  if (!request || typeof request !== "object") return { filters: {} };
+  const { filters, ...rest } = request as Record<string, unknown> & {
+    filters?: ExportFilters;
+  };
+  const top = new Set<string>(EXPORT_TOP_LEVEL_KEYS);
+  const out: Record<string, unknown> = {};
+  const loose: ExportFilters = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (top.has(key)) out[key] = value;
+    else loose[key] = value as ExportFilters[string];
+  }
+  return { ...out, filters: filters ?? loose } as Partial<ExportParams>;
+};
+
+export const listExportBuilds = (
+  url: string,
+  token: string,
+  table: ExportTableKey,
+  limit = 50,
+) =>
   axios({
     method: "GET",
     headers: headers(token),
-    url: url + "sales/export_builds",
+    url: url + `export/${table}/builds`,
     params: { limit },
-  });
+  }).then((resp) => ({
+    ...resp,
+    data: {
+      ...resp.data,
+      builds: (resp.data?.builds ?? []).map((b: ExportBuild) => ({
+        ...b,
+        request: nestRequest(b.request),
+      })),
+    },
+  }));
 
 export interface BuildLinkResp {
   error: number;
@@ -82,7 +127,9 @@ export interface DeleteBuildResp {
   success: boolean;
   filesDeleted: number;
   bytesFreed: number;
-  keys: string[];
+  /** The S3 keys removed. The type said `keys`; the endpoint has always sent
+   *  `deleted`. */
+  deleted: string[];
 }
 
 /**
@@ -95,11 +142,16 @@ export interface DeleteBuildResp {
  * A 500 is a partial delete that names its counts, and retrying is safe —
  * whatever went is already gone.
  */
-export const deleteExportBuild = (url: string, token: string, buildId: string) =>
+export const deleteExportBuild = (
+  url: string,
+  token: string,
+  table: ExportTableKey,
+  buildId: string,
+) =>
   axios({
     method: "DELETE",
     headers: headers(token),
-    url: url + "sales/export_builds/" + encodeURIComponent(buildId),
+    url: url + `export/${table}/builds/` + encodeURIComponent(buildId),
   });
 
 /**
@@ -112,12 +164,13 @@ export const deleteExportBuild = (url: string, token: string, buildId: string) =
 export const linkExportBuild = (
   url: string,
   token: string,
+  table: ExportTableKey,
   buildId: string,
   userQueryId: number | null,
 ) =>
   axios({
     method: "POST",
     headers: headers(token),
-    url: url + "sales/export_build_link",
+    url: url + `export/${table}/build_link`,
     data: { buildId, userQueryId },
   });

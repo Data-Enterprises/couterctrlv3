@@ -3,12 +3,18 @@ import { useDevApi } from "../../../hooks/useDevApi";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { isGroupSearch } from "../../../features/searchSlice";
 import { formatGoliathDate } from "../../../utils";
+import { reasonOf, serverDetail, serverStatus } from "./serverError";
 import {
   getExportPreview,
+  getExportTables,
   runExport,
   type ExportDryRunResp,
+  type ExportFilters,
+  type ExportParams,
   type ExportPreviewResp,
   type ExportResp,
+  type ExportTableKey,
+  type ExportTablesResp,
 } from "../../../api/salesExport";
 import {
   clearDeletedQuery,
@@ -33,14 +39,18 @@ import {
   failExport,
   finishExport,
   markExportSlow,
+  restoreSource,
+  stashSource,
   setConfig,
+  setRouterFilters,
   setSql,
   startConfigLoad,
   startExport,
   startSqlLoad,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
-import { filterSampleRows } from "./sampleRows";
+import { filterSampleRows, rowFiltersFor } from "./sampleRows";
+import { filterNames, sourceFor } from "./sources";
 import { sortRows } from "./sortRows";
 import { rangeBlock } from "./rangeLimit";
 import { aliasFor } from "./aggregates";
@@ -67,6 +77,7 @@ import {
   createSavedQuery,
   deleteSavedQuery,
   listSavedQueries,
+  queryProject,
   updateSavedQuery,
   type DeletedQueryResp,
   type SavedQueriesResp,
@@ -77,7 +88,7 @@ import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
-const SLOW_AFTER_MS = 120_000;
+export const SLOW_AFTER_MS = 120_000;
 
 /**
  * A day list is only offered for a range someone could reasonably tick
@@ -107,6 +118,26 @@ export const daysInRange = (start: string, end: string) => {
   return days.length > MAX_DAYS ? [] : days;
 };
 
+/**
+ * The search a configuration answers, as one key: the store or the group, and
+ * the dates. Two sources loaded under the same key answered the same question
+ * of different tables, so either can come back without a fetch.
+ */
+export const scopeKey = (
+  group: boolean,
+  id: number,
+  startDate: string,
+  endDate: string,
+) => `${group ? "group" : "store"}:${id}:${startDate}:${endDate}`;
+
+/** A saved-query or saved-export failure, for the table it happened on. */
+const queriesFailed = (source: ExportTableKey, message: string) =>
+  failQueriesLoad({ source, message });
+const savedFailed = (source: ExportTableKey, message: string) =>
+  failSavedWork({ source, message });
+const buildsFailed = (source: ExportTableKey, message: string) =>
+  failBuildsLoad({ source, message });
+
 export const useExportBuilderCtx = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -115,12 +146,30 @@ export const useExportBuilderCtx = () => {
   const { url, token } = useDevApi();
   const search = useAppSelector((s) => s.search);
   const config = useAppSelector((s) => s.dev.exportBuilder);
+  /** What the page knows about the table it exports. */
+  const source = sourceFor(config.source);
+  const TABLE = source.key;
+  /** The filter names the request may carry: the source's, and only those. */
+  const names = filterNames(source);
 
   const startDate = formatGoliathDate(search.startDate);
   const endDate = formatGoliathDate(search.endDate);
 
   /** Why the search card cannot run this range, or null. */
   const searchBlocked = rangeBlock(startDate, endDate);
+
+  /** The search the card holds now, keyed the way the kept sources are. */
+  const searchingGroup = isGroupSearch(search.type);
+  const scope = scopeKey(
+    searchingGroup,
+    searchingGroup ? search.selectedGroup.id : search.selectedStore.storeid,
+    startDate,
+    endDate,
+  );
+
+  /** The dates the loaded search asked for, which the file is built over. */
+  const rangeStart = config.rangeStart || startDate;
+  const rangeEnd = config.rangeEnd || endDate;
 
   /**
    * The columns as the file will hold them: the user's order, narrowed to what
@@ -142,29 +191,23 @@ export const useExportBuilderCtx = () => {
    * be served, so the page refuses to send it.
    */
   const emptied = [
-    config.saleTypes.length > 0 && config.selectedSaleTypes.length === 0
-      ? "sale type"
-      : null,
-    config.itemRingTypes.length > 0 && config.selectedRingTypes.length === 0
-      ? "ring type"
-      : null,
-    config.subDepartments.length > 0 &&
-    config.selectedSubDepartments.length === 0
-      ? "sub department"
-      : null,
-    config.vendors.length > 0 && config.selectedVendors.length === 0
-      ? "vendor"
-      : null,
-    config.cashiers.length > 0 && config.selectedCashiers.length === 0
-      ? "cashier"
-      : null,
-    config.priceTypes.length > 0 && config.selectedPriceTypes.length === 0
-      ? "price type"
-      : null,
-    config.saleDates.length > 0 && config.selectedSaleDates.length === 0
-      ? "day"
-      : null,
+    ...source.lists.map((l) =>
+      (config.lists[l.filter] ?? []).length > 0 && (config.picks[l.filter] ?? []).length === 0
+        ? l.nounOne
+        : null,
+    ),
+    config.days.length > 0 && config.selectedDays.length === 0 ? "day" : null,
   ].filter(Boolean) as string[];
+
+  /**
+   * Filter names the router does not take for this table.
+   *
+   * The request is built from the source's own names, so this only fires if
+   * the description and the router have drifted apart -- and then the build
+   * stops here, with the names, instead of failing after the wait.
+   */
+  const routerNames = config.routerFilters?.[source.key];
+  const unknownNames = routerNames ? names.filter((n) => !routerNames.includes(n)) : [];
 
   /**
    * The file's shape, read off the configuration rather than switched.
@@ -225,7 +268,9 @@ export const useExportBuilderCtx = () => {
     config.flags.filePrefix !== "" &&
     !/^[A-Za-z0-9_-]{1,60}$/.test(config.flags.filePrefix);
 
-  const blocked = badPrefix
+  const blocked = unknownNames.length > 0
+    ? `The export doesn't take ${unknownNames.join(", ")} for ${source.label}. This page needs updating before it can build.`
+    : badPrefix
     ? "The file name takes letters, digits, - and _ only, up to 60 characters."
     : config.selectedStoreIds.length === 0
       ? "Pick at least one store."
@@ -235,19 +280,7 @@ export const useExportBuilderCtx = () => {
           : null));
 
   /** The sample rows the file would actually hold. */
-  const matchingRows = filterSampleRows(config.rows, {
-    saleTypes: config.selectedSaleTypes,
-    ringTypes: config.selectedRingTypes,
-    subDepartments: config.selectedSubDepartments,
-    vendors: config.selectedVendors,
-    cashiers: config.selectedCashiers,
-    priceTypes: config.selectedPriceTypes,
-    saleDates: config.selectedSaleDates,
-    productCodes: config.productCodes,
-    productDescriptions: config.productDescriptions,
-    voidFlag: config.flags.voidFlag,
-    refundFlag: config.flags.refundFlag,
-  });
+  const matchingRows = filterSampleRows(config.rows, rowFiltersFor(source, config));
 
   /**
    * Every column the finished file has, which is what a sort may name.
@@ -296,20 +329,20 @@ export const useExportBuilderCtx = () => {
    * a developer who also uses this page should not find those in their export
    * list.
    */
-  const loadQueries = () => {
+  const loadQueries = (table: ExportTableKey = TABLE) => {
     dispatch(startQueriesLoad());
-    listSavedQueries(url, token)
+    listSavedQueries(url, token, queryProject(table))
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
-          dispatch(failQueriesLoad("Could not read your saved queries."));
+          dispatch(queriesFailed(table, "Could not read your saved queries."));
           return;
         }
-        dispatch(setQueries(j.queries ?? []));
+        dispatch(setQueries({ source: table, queries: j.queries ?? [] }));
       })
       .catch((err: JsonError) =>
         dispatch(
-          failQueriesLoad("Could not read your saved queries: " + err.message),
+          queriesFailed(table, "Could not read your saved queries: " + reasonOf(err)),
         ),
       );
   };
@@ -329,13 +362,16 @@ export const useExportBuilderCtx = () => {
   ) => {
     const trimmed = name.trim();
     if (!trimmed || !sql.trim()) return;
-    // Blank is stored as null on that table, so blank is what is sent: an
-    // empty string would be a description someone has to notice and clear.
+    // A new row stores a blank description as null. An update cannot send
+    // null for that: the endpoint reads null as "leave it alone", so a
+    // description someone had emptied stayed on the row. An update sends the
+    // empty string instead, which every list here shows as no description.
     const note = description.trim() || null;
+    const noteOnUpdate = description.trim();
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       if (j.error !== 0 || !j.query) {
-        dispatch(failQueriesLoad("That did not save."));
+        dispatch(queriesFailed(TABLE, "That did not save."));
         return;
       }
       // The write returns the whole row, so there is nothing to refetch.
@@ -343,34 +379,49 @@ export const useExportBuilderCtx = () => {
       toast.success(`Saved "${j.query.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failQueriesLoad("That did not save: " + err.message));
+      dispatch(queriesFailed(TABLE, "That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedQuery(url, token, {
         name: trimmed,
         sql,
         description: note,
+        project: queryProject(TABLE),
       }).then(done, failed);
     } else {
       updateSavedQuery(url, token, id, {
         name: trimmed,
         sql,
-        description: note,
+        description: noteOnUpdate,
       }).then(done, failed);
     }
   };
 
-  /** A rename carries the name alone; the payload is not touched. */
-  const renameQuery = (id: number, name: string) => {
+  /**
+   * A rename carries the name and the description; the query text is not
+   * touched. Rename used to go through saveQuery with whatever was in the
+   * box, so renaming a query you had been editing also replaced what it
+   * said -- and a new name went out as a POST, leaving the old row behind.
+   */
+  const renameQuery = (id: number, name: string, description = "") => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    updateSavedQuery(url, token, id, { name: trimmed })
+    updateSavedQuery(url, token, id, {
+      name: trimmed,
+      // Empty, not null, so an emptied description is cleared (see saveQuery).
+      description: description.trim(),
+    })
       .then((resp) => {
         const j = resp.data as SavedQueryResp;
-        if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
+        if (j.error !== 0 || !j.query) {
+          dispatch(queriesFailed(TABLE, "That did not rename."));
+          return;
+        }
+        dispatch(upsertQuery(j.query));
+        toast.success(`Renamed to "${j.query.name}"`);
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("That did not rename: " + err.message)),
+        dispatch(queriesFailed(TABLE, "That did not rename: " + reasonOf(err))),
       );
   };
 
@@ -384,13 +435,13 @@ export const useExportBuilderCtx = () => {
         if (j.error !== 0) {
           dispatch(upsertQuery(query));
           dispatch(clearDeletedQuery());
-          dispatch(failQueriesLoad("That did not delete."));
+          dispatch(queriesFailed(TABLE, "That did not delete."));
         }
       })
       .catch((err: JsonError) => {
         dispatch(upsertQuery(query));
         dispatch(clearDeletedQuery());
-        dispatch(failQueriesLoad("That did not delete: " + err.message));
+        dispatch(queriesFailed(TABLE, "That did not delete: " + reasonOf(err)));
       });
   };
 
@@ -404,76 +455,110 @@ export const useExportBuilderCtx = () => {
       name: row.name,
       sql: row.sql,
       description: row.description,
+      // Back into the list it was deleted from.
+      project: row.project ?? queryProject(TABLE),
     })
       .then((resp) => {
         const j = resp.data as SavedQueryResp;
         if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
       })
       .catch((err: JsonError) =>
-        dispatch(failQueriesLoad("Could not put it back: " + err.message)),
+        dispatch(queriesFailed(TABLE, "Could not put it back: " + reasonOf(err))),
       );
   };
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
-   * scope resolved to, the sale types actually present, every column, and ten
-   * sample rows. Narrowing afterwards is local — nothing here is asked twice.
+   * scope resolved to, the lists actually present, every column, and the
+   * sample rows. Narrowing afterwards is local -- nothing here is asked twice.
+   *
+   * Nor is a source: one already loaded for this same search comes back from
+   * the store as it was left, and only its builds are read again, because
+   * their links expire.
    */
-  const loadConfig = (
-    range?: { start: string; end: string },
-    after?: () => void,
-  ) => {
-    const group = isGroupSearch(search.type);
-    dispatch(startConfigLoad());
-    // Alongside the preview rather than after it. None of the three waits on
+  const loadConfig = () => {
+    const chosen = sourceFor(config.searchSource);
+    // Kept before another table replaces it: the same search may come back
+    // to it. The same table asked again is a re-read (rows that arrived
+    // since), which keeps its shape as a new range does.
+    if (config.loaded && chosen.key !== config.source) dispatch(stashSource());
+    // A failed search puts that page back (failConfigLoad), and says so.
+    const kept = config.loaded ? " The page is as it was." : "";
+    if (scope === config.cacheScope && config.cache[chosen.key]) {
+      // Its queries were still on their way when it was left, and that
+      // answer was dropped: ask again.
+      const unanswered = config.cache[chosen.key]?.queriesLoading;
+      dispatch(restoreSource(chosen.key));
+      loadBuilds(chosen.key);
+      if (unanswered) loadQueries(chosen.key);
+      return;
+    }
+    dispatch(startConfigLoad({ source: chosen.key, scope, startDate, endDate }));
+    // Alongside the preview rather than after it. None of these waits on
     // another, and the lists are ready by the time anyone looks for them.
-    loadQueries();
-    loadSaved();
-    loadBuilds();
-    getExportPreview(url, token, {
-      startDate: range?.start ?? startDate,
-      endDate: range?.end ?? endDate,
-      singleStore: group ? 0 : 1,
-      useGroups: group ? 1 : 0,
-      searchValue: group ? search.selectedGroup.id : search.selectedStore.storeid,
+    loadQueries(chosen.key);
+    loadSaved(chosen.key);
+    loadBuilds(chosen.key);
+    loadRouterFilters();
+    getExportPreview(url, token, chosen.key, {
+      startDate,
+      endDate,
+      singleStore: searchingGroup ? 0 : 1,
+      useGroups: searchingGroup ? 1 : 0,
+      searchValue: searchingGroup ? search.selectedGroup.id : search.selectedStore.storeid,
     })
       .then((resp) => {
         const j = resp.data as ExportPreviewResp;
         if (j.error !== 0) {
           dispatch(failConfigLoad());
-          toast.error("Could not load the export config");
+          toast.error(`Could not load ${chosen.label}.${kept}`);
           return;
         }
+        const facets = j.facets ?? {};
         dispatch(
           setConfig({
+            source: chosen.key,
             stores: j.stores ?? [],
-            saleTypes: j.saleTypes ?? [],
-            itemRingTypes: j.itemRingTypes ?? [],
-            subDepartments: j.subDepartments ?? [],
-            vendors: j.vendors ?? [],
-            cashiers: j.cashiers ?? [],
-            priceTypes: j.priceTypes ?? [],
+            // Each list turned into choices by the source's description.
+            lists: Object.fromEntries(
+              chosen.lists.map((l) => [l.filter, l.toItems(facets[l.facet])]),
+            ),
             dateFormats: j.dateFormats ?? [],
             // Not from the response: the endpoint returns no day list, and a
-            // day with no sales is still a day someone can ask to exclude.
-            saleDates: daysInRange(
-              range?.start ?? startDate,
-              range?.end ?? endDate,
-            ),
+            // day with no rows is still a day someone can ask to exclude.
+            days: daysInRange(startDate, endDate),
             columns: j.columns ?? [],
             rows: j.rows ?? [],
             hasData: j.hasData,
             message: j.message,
           }),
         );
-        // setConfig has just put every list back to all of it, so anything
-        // that means to narrow them has to land after it, not before.
-        after?.();
       })
       .catch((err: JsonError) => {
         dispatch(failConfigLoad());
-        toast.error("Could not load the export config: " + err.message);
+        toast.error(`Could not load ${chosen.label}: ${reasonOf(err).replace(/\.$/, "")}.${kept}`);
       });
+  };
+
+  /**
+   * The filter names each table takes, from the router. Read once a session:
+   * it is static on the router's side. A failure leaves the check off rather
+   * than blocking every build -- the request is built from the source's own
+   * names either way.
+   */
+  const loadRouterFilters = () => {
+    if (config.routerFilters) return;
+    getExportTables(url, token)
+      .then((resp) => {
+        const j = resp.data as ExportTablesResp;
+        if (j.error !== 0 || !Array.isArray(j.tables)) return;
+        dispatch(
+          setRouterFilters(
+            Object.fromEntries(j.tables.map((t) => [t.key, t.filters.map((x) => x.name)])),
+          ),
+        );
+      })
+      .catch(() => undefined);
   };
 
   /**
@@ -488,20 +573,44 @@ export const useExportBuilderCtx = () => {
    * writing and answers with the statement instead. So what comes back is the
    * query this configuration would actually run, not an approximation of it.
    */
-  const params = () => {
+  const params = (): ExportParams => {
     // Null means "every one" to the endpoint, so a list that has not been
     // narrowed is sent as null rather than as every value — same result, and
     // it keeps the condition out of the SQL entirely.
     const all = (picked: unknown[], available: unknown[]) =>
       picked.length === available.length;
+    const filters: ExportFilters = {};
+    for (const list of source.lists) {
+      const picked = config.picks[list.filter] ?? [];
+      filters[list.filter] = all(picked, config.lists[list.filter] ?? [])
+        ? null
+        : list.numeric
+          ? picked.map(Number)
+          : picked;
+    }
+    // Every day ticked is the range itself, which startDate and endDate
+    // already say — sending the list as well would add a predicate that
+    // cannot exclude anything.
+    filters[source.days.filter] = all(config.selectedDays, config.days)
+      ? null
+      : config.selectedDays;
+    // Empty means no filter here, which is the endpoint's own reading of an
+    // empty list — and the right one, since nothing typed is nothing asked.
+    filters[source.codes.filter] = config.productCodes.length ? config.productCodes : null;
+    filters[source.descriptions.filter] = config.productDescriptions.length
+      ? config.productDescriptions
+      : null;
+    for (const flag of source.flags) {
+      filters[flag.filter] = config.rowFlags[flag.filter] ?? null;
+    }
     return {
-      startDate,
-      endDate,
+      startDate: rangeStart,
+      endDate: rangeEnd,
       storeids: config.selectedStoreIds,
       // Always the explicit list, never null — null means "every column" to
-      // the endpoint, which is 102, including the three provenance columns the
-      // preview withholds, and in the endpoint's own order. Either would hand
-      // back a file that is not the one on screen.
+      // the endpoint, including the provenance columns the preview withholds,
+      // and in the endpoint's own order. Either would hand back a file that
+      // is not the one on screen.
       //
       // Except when aggregating, where the endpoint refuses a column list
       // outright: the output is the group keys and the measures, so a list of
@@ -513,42 +622,7 @@ export const useExportBuilderCtx = () => {
       // sends nothing rather than sending emptiness.
       computed:
         aggregating && config.computed.length > 0 ? config.computed : null,
-      saleTypes: all(config.selectedSaleTypes, config.saleTypes)
-        ? null
-        : config.selectedSaleTypes,
-      itemRingTypes: all(config.selectedRingTypes, config.itemRingTypes)
-        ? null
-        : config.selectedRingTypes,
-      subDepartments: all(config.selectedSubDepartments, config.subDepartments)
-        ? null
-        : config.selectedSubDepartments.map(Number),
-      vendorIds: all(config.selectedVendors, config.vendors)
-        ? null
-        : config.selectedVendors,
-      cashierNumbers: all(config.selectedCashiers, config.cashiers)
-        ? null
-        : config.selectedCashiers,
-      priceTypes: all(config.selectedPriceTypes, config.priceTypes)
-        ? null
-        : config.selectedPriceTypes,
-      // Every day ticked is the range itself, which startDate and endDate
-      // already say — sending the list as well would add a predicate that
-      // cannot exclude anything.
-      saleDates: all(config.selectedSaleDates, config.saleDates)
-        ? null
-        : config.selectedSaleDates,
-      // Empty means no filter here, which is the endpoint's own reading of an
-      // empty list — and the right one, since nothing typed is nothing asked.
-      productCodes: config.productCodes.length ? config.productCodes : null,
-      productDescriptions: config.productDescriptions.length
-        ? config.productDescriptions
-        : null,
-      // `excludeVoids` is not sent at all. It is the older spelling of
-      // `voidFlag: 0`, the endpoint lets voidFlag win when both arrive, and
-      // sending a switch this page no longer reads would only be one more
-      // thing to keep in step.
-      voidFlag: config.flags.voidFlag,
-      refundFlag: config.flags.refundFlag,
+      filters,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
       // A key from the preview's own list, not a pattern of ours.
       dateFormat: config.flags.dateFormat || null,
@@ -562,7 +636,7 @@ export const useExportBuilderCtx = () => {
 
   const showSql = () => {
     dispatch(startSqlLoad());
-    runExport(url, token, { ...params(), dryRun: true })
+    runExport(url, token, TABLE, { ...params(), dryRun: true }, names)
       .then((resp) => {
         const j = resp.data as ExportDryRunResp;
         if (j.error !== 0) {
@@ -581,7 +655,7 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(setSql(null));
-        toast.error("Could not read the query back: " + err.message);
+        toast.error("Could not read the query back: " + reasonOf(err));
       });
   };
 
@@ -592,29 +666,31 @@ export const useExportBuilderCtx = () => {
    * report someone set up on Monday is still there on Friday and on another
    * machine. The page holds the shape; the endpoint holds the file.
    */
-  const loadSaved = () => {
+  const loadSaved = (table: ExportTableKey = TABLE) => {
     dispatch(startSavedWork());
-    listSavedConfigs(url, token)
+    listSavedConfigs(url, token, table)
       .then((resp) => {
         const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
-          dispatch(failSavedWork("Could not read your saved configurations."));
+          dispatch(savedFailed(table, "Could not read your saved configurations."));
           return;
         }
         // A row that will not parse is skipped rather than shown: the table
-        // is shared, and one saved by hand is not ours to render.
+        // is shared, and one saved by hand is not ours to render. So is one
+        // that exports another table, whatever label it was filed under.
         dispatch(
-          setSaved(
-            (j.queries ?? [])
+          setSaved({
+            source: table,
+            saved: (j.queries ?? [])
               .map(parseConfigRow)
-              .filter((c): c is SavedConfig => c !== null),
-          ),
+              .filter((c): c is SavedConfig => c !== null && c.payload.source === table),
+          }),
         );
       })
       .catch((err: JsonError) =>
         dispatch(
-          failSavedWork(
-            "Could not read your saved configurations: " + err.message,
+          savedFailed(table,
+            "Could not read your saved configurations: " + reasonOf(err),
           ),
         ),
       );
@@ -635,19 +711,19 @@ export const useExportBuilderCtx = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
     dispatch(startSavedWork());
-    const payload = toPayload(config);
+    const payload = toPayload(config, source);
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       const saved = j.error === 0 && j.query ? parseConfigRow(j.query) : null;
       if (!saved) {
-        dispatch(failSavedWork("That did not save."));
+        dispatch(savedFailed(TABLE, "That did not save."));
         return;
       }
       dispatch(upsertSaved(saved));
       toast.success(`Saved "${saved.name}"`);
     };
     const failed = (err: JsonError) =>
-      dispatch(failSavedWork("That did not save: " + err.message));
+      dispatch(savedFailed(TABLE, "That did not save: " + reasonOf(err)));
 
     if (id === null) {
       createSavedConfig(url, token, {
@@ -667,9 +743,17 @@ export const useExportBuilderCtx = () => {
   const deleteSaved = (id: number) => {
     dispatch(startSavedWork());
     deleteSavedConfig(url, token, id)
-      .then(() => dispatch(removeSaved(id)))
+      .then((resp) => {
+        // The house 200 with `error: 1` inside: the row is still there, so
+        // it stays in the list.
+        if (failed(resp.data as DeletedQueryResp)) {
+          dispatch(savedFailed(TABLE, "That did not delete."));
+          return;
+        }
+        dispatch(removeSaved({ source: TABLE, id }));
+      })
       .catch((err: JsonError) =>
-        dispatch(failSavedWork("That did not delete: " + err.message)),
+        dispatch(savedFailed(TABLE, "That did not delete: " + reasonOf(err))),
       );
   };
 
@@ -691,24 +775,25 @@ export const useExportBuilderCtx = () => {
   const failed = (j: { error?: number; success?: boolean }) =>
     j.error !== 0 || j.success === false;
 
-  const loadBuilds = () => {
-    dispatch(startBuildsLoad());
-    listExportBuilds(url, token)
+  const loadBuilds = (table: ExportTableKey = TABLE) => {
+    dispatch(startBuildsLoad({ source: table }));
+    listExportBuilds(url, token, table)
       .then((resp) => {
         const j = resp.data as ExportBuildsResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("Could not read your past builds."));
+          dispatch(buildsFailed(table, "Could not read your past builds."));
           return;
         }
         dispatch(
           setBuilds({
+            source: table,
             builds: j.builds ?? [],
             expireMinutes: j.urlExpiresInMinutes ?? 60,
           }),
         );
       })
       .catch((err: JsonError) =>
-        dispatch(failBuildsLoad("Could not read your past builds: " + err.message)),
+        dispatch(buildsFailed(table, "Could not read your past builds: " + reasonOf(err))),
       );
   };
 
@@ -719,11 +804,11 @@ export const useExportBuilderCtx = () => {
    * list was read, which is a reload rather than a retry.
    */
   const labelBuild = (buildId: string, userQueryId: number | null) => {
-    linkExportBuild(url, token, buildId, userQueryId)
+    linkExportBuild(url, token, TABLE, buildId, userQueryId)
       .then((resp) => {
         const j = resp.data as BuildLinkResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("Could not label that build."));
+          dispatch(buildsFailed(TABLE, "Could not label that build."));
           return;
         }
         dispatch(
@@ -735,12 +820,12 @@ export const useExportBuilderCtx = () => {
         );
       })
       .catch((err: JsonError) => {
-        const status = (err as { status?: number }).status;
+        const status = serverStatus(err);
         dispatch(
-          failBuildsLoad(
+          buildsFailed(TABLE,
             status === 409
               ? "That build was changed somewhere else. Reload the list and try again."
-              : "Could not label that build: " + err.message,
+              : "Could not label that build: " + reasonOf(err),
           ),
         );
       });
@@ -754,7 +839,7 @@ export const useExportBuilderCtx = () => {
    * fell out is reported rather than quietly dropped.
    */
   const applySaved = (saved: SavedConfig) => {
-    const plan = planLoad(saved.payload, config);
+    const plan = planLoad(saved.payload, config, source);
     plan.actions.forEach((action) => dispatch(action));
     dispatch(markSavedLoaded({ id: saved.id, notes: plan.missing }));
   };
@@ -788,8 +873,17 @@ export const useExportBuilderCtx = () => {
    */
   const reloadBuild = (build: ExportBuild) => {
     const request = build.request;
+    const filters = request.filters ?? {};
+    // A list filter's values as strings, the way the slice holds them. A
+    // number column came back from the manifest as numbers.
+    const listValues = (name: string) => {
+      const value = filters[name];
+      return Array.isArray(value) ? value.map(String) : null;
+    };
+    const typed = (name: string) => listValues(name) ?? [];
     const payload: SavedConfigPayload = {
-      v: 1,
+      v: 2,
+      source: source.key,
       mode: request.groupBy?.length ? "summary" : "lines",
       columns: request.columns ?? [],
       columnOrder: request.columns ?? [],
@@ -798,25 +892,25 @@ export const useExportBuilderCtx = () => {
       computed: request.computed ?? [],
       orderBy: request.orderBy ?? [],
       storeIds: request.storeids ?? null,
-      saleTypes: request.saleTypes ?? null,
-      ringTypes: request.itemRingTypes ?? null,
-      subDepartments: request.subDepartments?.map(String) ?? null,
-      vendors: request.vendorIds ?? null,
-      cashiers: request.cashierNumbers ?? null,
-      priceTypes: request.priceTypes ?? null,
-      productCodes: request.productCodes ?? [],
-      productDescriptions: request.productDescriptions ?? [],
-      flags: {
-        voidFlag: request.voidFlag ?? null,
-        refundFlag: request.refundFlag ?? null,
+      filters: Object.fromEntries(source.lists.map((l) => [l.filter, listValues(l.filter)])),
+      productCodes: typed(source.codes.filter),
+      productDescriptions: typed(source.descriptions.filter),
+      rowFlags: Object.fromEntries(
+        source.flags.map((f) => {
+          const value = filters[f.filter];
+          return [f.filter, typeof value === "number" ? value : null];
+        }),
+      ),
+      output: {
         dateFormat: request.dateFormat ?? "",
         fileFormat: request.fileFormat ?? "csv",
-        filePrefix: request.filePrefix ?? "sales",
+        // None is the table's own name, which is what "" means here.
+        filePrefix: request.filePrefix ?? "",
         ordered: request.ordered ?? false,
       },
     };
 
-    const plan = planLoad(payload, config);
+    const plan = planLoad(payload, config, source);
     plan.actions.forEach((action) => dispatch(action));
     dispatch(
       markSavedLoaded({
@@ -824,7 +918,7 @@ export const useExportBuilderCtx = () => {
         // claiming one would put the wrong name on the next build.
         id: build.userQueryId,
         notes: [
-          `Loaded from the build of ${build.startDate} to ${build.endDate}. The dates on the search card were left as they are.`,
+          `Loaded from the build of ${build.startDate} to ${build.endDate}. The dates you searched were left as they are.`,
           ...plan.missing,
         ],
       }),
@@ -840,12 +934,12 @@ export const useExportBuilderCtx = () => {
    * what is actually left.
    */
   const removeBuild = (buildId: string) => {
-    dispatch(startBuildsLoad());
-    deleteExportBuild(url, token, buildId)
+    dispatch(startBuildsLoad({ source: TABLE }));
+    deleteExportBuild(url, token, TABLE, buildId)
       .then((resp) => {
         const j = resp.data as DeleteBuildResp;
         if (failed(j)) {
-          dispatch(failBuildsLoad("That build could not be deleted."));
+          dispatch(buildsFailed(TABLE, "That build could not be deleted."));
           loadBuilds();
           return;
         }
@@ -860,9 +954,9 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         dispatch(
-          failBuildsLoad(
+          buildsFailed(TABLE,
             "That build could not be deleted: " +
-              err.message +
+              reasonOf(err) +
               " — anything already removed stays removed, so trying again is safe.",
           ),
         );
@@ -884,20 +978,30 @@ export const useExportBuilderCtx = () => {
 
   const build = () => {
     dispatch(startExport());
-    const slowTimer = window.setTimeout(
-      () => dispatch(markExportSlow()),
-      SLOW_AFTER_MS,
-    );
+    // This build's own, not `config.slow`: the callbacks below close over
+    // the page as it was when Build was pressed, which is never slow yet.
+    let wentSlow = false;
+    const slowTimer = window.setTimeout(() => {
+      wentSlow = true;
+      dispatch(markExportSlow());
+    }, SLOW_AFTER_MS);
 
     // The same object that was sent, so the card can tell later whether it
     // still describes what is on screen.
     const sent = params();
-    runExport(url, token, sent)
+    runExport(url, token, TABLE, sent, names)
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
         if (j.error !== 0 || j.success === false) {
-          dispatch(failExport("The export did not complete."));
+          // The house convention: a 200 carrying `error: 1` and the reason
+          // in `msg`. The reason is the useful half.
+          const msg = (j as { msg?: string }).msg;
+          dispatch(
+            failExport(
+              msg ? "The export did not complete: " + msg : "The export did not complete.",
+            ),
+          );
           return;
         }
         dispatch(
@@ -920,8 +1024,8 @@ export const useExportBuilderCtx = () => {
       })
       .catch((err: JsonError) => {
         window.clearTimeout(slowTimer);
-        const status = (err as { status?: number }).status;
-        const detail = (err as { data?: { detail?: string } }).data?.detail;
+        const status = serverStatus(err);
+        const detail = serverDetail(err);
 
         // Each of these is a different thing to do next, so each says so.
         //
@@ -940,9 +1044,9 @@ export const useExportBuilderCtx = () => {
                 ? (detail ?? "The endpoint refused this configuration.")
                 : status === 404
                   ? "That saved configuration is gone. Save this one again before building."
-                  : !status || config.slow
+                  : !status || wentSlow
                     ? "The connection gave up before the file was ready — the load balancer stops waiting at 150 seconds. The file is probably still being written: look in Previous builds in a minute, or try a shorter range."
-                    : "The export failed: " + err.message,
+                    : "The export failed: " + reasonOf(err),
           ),
         );
       });
@@ -952,10 +1056,14 @@ export const useExportBuilderCtx = () => {
     ...config,
     /** The whole slice, for the few callers that translate it wholesale. */
     config,
+    /** What the page knows about the table it exports. The slice's own
+     *  `source` is the key; this is the description. */
+    source,
     dispatch,
     search,
-    startDate,
-    endDate,
+    // The loaded search's, which is what the file is named and built by.
+    startDate: rangeStart,
+    endDate: rangeEnd,
     orderedColumns,
     visibleRows,
     measureItems,

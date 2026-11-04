@@ -2,6 +2,7 @@ import type { ExportBuilderState } from "../../../../features/dev/devExportBuild
 import type { ExportParams } from "../../../../api/salesExport";
 import type { MeasureItem } from "./evalQuery";
 import { sketchExpr } from "./sketchExpr";
+import type { ExportSource } from "../sources";
 
 /**
  * The configuration, written out as the query it is.
@@ -31,48 +32,46 @@ const asList = (column: string, values: string[], numeric = false) => {
 const whole = (picked: unknown[], available: unknown[]) =>
   picked.length === available.length;
 
-const whereLines = (config: ExportBuilderState) => {
+const whereLines = (config: ExportBuilderState, source: ExportSource) => {
   const lines: string[] = [];
 
-  if (!whole(config.selectedSaleTypes, config.saleTypes)) {
-    lines.push(asList("sale_type", config.selectedSaleTypes));
+  // Stores first, as the panel has them. Apply widens any filter the query
+  // does not mention back to all, so leaving a narrowed store pick out of
+  // the text meant every Apply quietly put every store back. Compared as a
+  // set: co-located stores share an id, so the two lists can differ in
+  // length and still pick the same stores.
+  const storeIds = [...new Set(config.stores.map((s) => s.storeid))];
+  const pickedIds = storeIds.filter((id) => config.selectedStoreIds.includes(id));
+  if (pickedIds.length > 0 && pickedIds.length < storeIds.length) {
+    lines.push(asList("storeid", pickedIds.map(String), true));
   }
-  if (!whole(config.selectedRingTypes, config.itemRingTypes)) {
-    lines.push(asList("item_ring_type", config.selectedRingTypes));
+
+  // The lists, in the panel's order: a line for each one narrowed.
+  for (const list of source.lists) {
+    const picked = config.picks[list.filter] ?? [];
+    if (!whole(picked, config.lists[list.filter] ?? [])) {
+      lines.push(asList(list.column, picked, list.numeric));
+    }
   }
-  if (!whole(config.selectedSubDepartments, config.subDepartments)) {
-    lines.push(asList("sub_department", config.selectedSubDepartments, true));
-  }
-  if (!whole(config.selectedVendors, config.vendors)) {
-    lines.push(asList("vendor_id", config.selectedVendors));
-  }
-  if (!whole(config.selectedCashiers, config.cashiers)) {
-    lines.push(
-      asList("cashier_number", config.selectedCashiers.map(String), true),
-    );
-  }
-  if (!whole(config.selectedPriceTypes, config.priceTypes)) {
-    lines.push(asList("price_type", config.selectedPriceTypes));
-  }
-  if (!whole(config.selectedSaleDates, config.saleDates)) {
-    lines.push(asList("sale_date", config.selectedSaleDates));
+  if (!whole(config.selectedDays, config.days)) {
+    lines.push(asList(source.days.column, config.selectedDays));
   }
   if (config.productCodes.length > 0) {
-    lines.push(asList("product_code", config.productCodes));
+    lines.push(asList(source.codes.column, config.productCodes));
   }
   if (config.productDescriptions.length > 0) {
     // A contains, any of — an OR that Apply reads back as the term list it
     // came from.
     const terms = config.productDescriptions.map(
-      (term) => `product_description ilike ${quote(`%${term}%`)}`,
+      (term) => `${source.descriptions.column} ilike ${quote(`%${term}%`)}`,
     );
     lines.push(terms.length === 1 ? terms[0] : `(${terms.join(" or ")})`);
   }
-  if (config.flags.voidFlag !== null) {
-    lines.push(config.flags.voidFlag ? "void_flag <> 0" : "void_flag = 0");
-  }
-  if (config.flags.refundFlag !== null) {
-    lines.push(config.flags.refundFlag ? "refund_flag <> 0" : "refund_flag = 0");
+  for (const flag of source.flags) {
+    const value = config.rowFlags[flag.filter] ?? null;
+    if (value !== null) {
+      lines.push(value ? `${flag.column} <> 0` : `${flag.column} = 0`);
+    }
   }
 
   return lines;
@@ -94,6 +93,7 @@ const measureText = (item: MeasureItem) => {
 
 export const configToQuery = (
   config: ExportBuilderState,
+  source: ExportSource,
   aggregating: boolean,
   measures: MeasureItem[],
   selectedColumns: string[],
@@ -109,7 +109,7 @@ export const configToQuery = (
     lines.push(`select ${selectedColumns.join(", ") || "*"}`);
   }
 
-  const where = whereLines(config);
+  const where = whereLines(config, source);
   if (where.length > 0) lines.push(`where ${where.join("\n  and ")}`);
 
   if (config.groupBy.length > 0) {
@@ -135,7 +135,7 @@ export const configToQuery = (
  * nothing to compare against. Used to show what a build actually ran, a month
  * after anyone remembers.
  */
-export const requestToQuery = (request: Partial<ExportParams>) => {
+export const requestToQuery = (request: Partial<ExportParams>, source: ExportSource) => {
   const lines: string[] = [];
   const list = (column: string, values: (string | number)[] | null | undefined, numeric = false) =>
     values && values.length > 0 ? asList(column, values.map(String), numeric) : null;
@@ -159,30 +159,21 @@ export const requestToQuery = (request: Partial<ExportParams>) => {
     lines.push("select *");
   }
 
+  const filters = request.filters ?? {};
+  const asValues = (value: unknown) =>
+    Array.isArray(value) ? (value as (string | number)[]) : null;
+  const flagLine = (column: string, value: unknown) =>
+    value === null || value === undefined ? null : value ? `${column} <> 0` : `${column} = 0`;
+  const terms = asValues(filters[source.descriptions.filter]);
+
   const where = [
-    list("sale_type", request.saleTypes),
-    list("item_ring_type", request.itemRingTypes),
-    list("sub_department", request.subDepartments, true),
-    list("vendor_id", request.vendorIds),
-    list("cashier_number", request.cashierNumbers, true),
-    list("price_type", request.priceTypes),
-    list("sale_date", request.saleDates),
-    list("product_code", request.productCodes),
-    request.productDescriptions?.length
-      ? request.productDescriptions
-          .map((term) => `product_description ilike '%${term}%'`)
-          .join(" or ")
+    ...source.lists.map((l) => list(l.column, asValues(filters[l.filter]), l.numeric)),
+    list(source.days.column, asValues(filters[source.days.filter])),
+    list(source.codes.column, asValues(filters[source.codes.filter])),
+    terms?.length
+      ? terms.map((term) => `${source.descriptions.column} ilike '%${term}%'`).join(" or ")
       : null,
-    request.voidFlag === null || request.voidFlag === undefined
-      ? null
-      : request.voidFlag
-        ? "void_flag <> 0"
-        : "void_flag = 0",
-    request.refundFlag === null || request.refundFlag === undefined
-      ? null
-      : request.refundFlag
-        ? "refund_flag <> 0"
-        : "refund_flag = 0",
+    ...source.flags.map((f) => flagLine(f.column, filters[f.filter])),
   ].filter(Boolean) as string[];
 
   if (where.length > 0) lines.push(`where ${where.join("\n  and ")}`);

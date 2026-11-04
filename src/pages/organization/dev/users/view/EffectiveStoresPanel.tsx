@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { CompanyBaseGroup, Store } from "../../../../../interfaces";
+import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../interfaces";
 import {
   effectiveStores,
   type AccessPicks,
@@ -22,7 +22,7 @@ import TextFilter from "../../../../../components-dev/filters/TextFilter";
  * ### Unsaved grants are included
  *
  * It reads from the picks as they stand, not from what is saved, so switching
- * a group to Auto shows the stores that arrive the moment Save is pressed. A
+ * to By group shows the stores that arrive the moment Save is pressed. A
  * preview that only caught up afterwards would make the mode control feel
  * like it had done nothing.
  */
@@ -32,6 +32,7 @@ const EffectiveStoresPanel = ({
   groupStores,
   directStoreIds,
   assignedStores,
+  heldGroups = [],
 }: {
   picks: AccessPicks;
   companyGroups: Record<number, CompanyBaseGroup[]>;
@@ -40,18 +41,23 @@ const EffectiveStoresPanel = ({
   directStoreIds: number[];
   /** Everything the person currently holds, for names the rosters lack. */
   assignedStores: Store[];
+  /** The groups they hold, for names before their company is opened. */
+  heldGroups?: BaseGroup[];
 }) => {
   const [filter, setFilter] = useState("");
 
   const groupsById = useMemo(() => {
-    const map: Record<number, CompanyBaseGroup> = {};
+    const map: Record<number, { name: string }> = {};
+    heldGroups.forEach((g) => {
+      map[g.id] = g;
+    });
     Object.values(companyGroups)
       .flat()
       .forEach((g) => {
         map[g.id] = g;
       });
     return map;
-  }, [companyGroups]);
+  }, [companyGroups, heldGroups]);
 
   /** Names come from whichever source has them: a group roster, the stores
    *  the person holds, or the picks themselves. */
@@ -92,7 +98,7 @@ const EffectiveStoresPanel = ({
     [viaGroups, directStoreIds, groupsById, granted],
   );
 
-  /** An Auto group whose roster has not arrived would make the count read
+  /** A group held By group whose roster has not arrived would make the count read
    *  low, and low is worse than honest. */
   const pending = picks.baseGroups.some(
     (id) => picks.mode === "all" && groupStores[id] === undefined,
@@ -169,7 +175,7 @@ const EffectiveStoresPanel = ({
           <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/85 text-center">
             {picks.baseGroups.length === 0
               ? "No base groups held, so no stores."
-              : "No stores yet — pick some, or set a group to Auto."}
+              : "No stores yet — tick a group, or pick its stores By store."}
           </div>
         )}
       </div>

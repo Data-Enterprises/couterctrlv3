@@ -505,7 +505,7 @@ export const parseQuery = (sql: string): Query => {
   if (isWord("FROM")) {
     take();
     const source = columnName("after FROM");
-    if (!["sample", "lines", "sales", "export"].includes(source)) {
+    if (!["sample", "lines", "export", "sales", "orders", "invoices", "markdowns"].includes(source)) {
       throw new QueryError(
         `There is only one table here, the sample rows — "${source}" is not it.`,
         "Leave FROM out, or write FROM sample.",

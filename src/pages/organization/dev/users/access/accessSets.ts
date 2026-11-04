@@ -81,6 +81,28 @@ export const NO_CARRY: CarriedAccess = {
 };
 
 /**
+ * The stores held with no group behind them at all: granted on the Stores
+ * tab, or from before groups granted anything. Effective stores labels these
+ * Direct ("no group change can take it away").
+ *
+ * `carried.stores` is wider than that: it also holds the rosters of groups
+ * held By group, which have no pick behind them either. Labelling those
+ * Direct meant unticking the group (or switching to By store and unticking
+ * a store) left them listed and counted, though the save does remove them.
+ * So any store in a held group's roster is left out here.
+ */
+export const directStoreIds = (
+  carried: CarriedAccess,
+  heldGroupIds: number[],
+  groupStores: Record<number, { storeid: number }[]>,
+): number[] => {
+  const viaHeld = new Set(
+    heldGroupIds.flatMap((id) => (groupStores[id] ?? []).map((s) => s.storeid)),
+  );
+  return carried.stores.filter((id) => !viaHeld.has(id));
+};
+
+/**
  * Holding nothing.
  *
  * `selected` rather than `all` because it is the narrower claim, and this is
@@ -165,6 +187,37 @@ export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
  */
 export const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
+
+/**
+ * Tick or untick a group in its own column.
+ *
+ * Held means held either way, ticked or implied by a picked store, which is
+ * what the box shows. Unticking drops the group and its picked stores.
+ * Ticking adds the roster given (empty By group, or for a single-store
+ * person) **merged** with what is already picked under the group: it was
+ * appended, so a group with one store already picked showed "11 of 10".
+ */
+export const toggleGroup = (
+  picks: AccessPicks,
+  id: number,
+  roster: SelectableStore[],
+): AccessPicks => {
+  if (heldGroupIds(picks).includes(id)) {
+    return {
+      ...picks,
+      baseGroups: picks.baseGroups.filter((g) => g !== id),
+      stores: picks.stores.filter((s) => s.base_group !== id),
+    };
+  }
+  const already = new Set(
+    picks.stores.filter((s) => s.base_group === id).map((s) => s.storeid),
+  );
+  return {
+    ...picks,
+    baseGroups: [...picks.baseGroups, id],
+    stores: [...picks.stores, ...roster.filter((s) => !already.has(s.storeid))],
+  };
+};
 
 /**
  * The same picks, held the other way.

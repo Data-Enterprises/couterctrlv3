@@ -13,7 +13,10 @@ export const useOrganizationCtx = () => {
   const {
     users,
     inactiveUsers,
+    usersLoading,
+    usersError,
     userInfo,
+    userInfoBefore,
     refresh,
     selectedUserId,
     selectedUserForm,
@@ -33,6 +36,7 @@ export const useOrganizationCtx = () => {
   const {
     usersExportOpen,
     usersGridFilters,
+    unsavedWizard,
   } = useAppSelector((state) => state.dev.organization);
 
   return {
@@ -48,7 +52,10 @@ export const useOrganizationCtx = () => {
     isProgrammer: userLevel === PROGRAMMER_LEVEL,
     users,
     inactiveUsers,
+    usersLoading,
+    usersError,
     userInfo,
+    userInfoBefore,
     refresh,
     selectedUserId,
     selectedUserForm,
@@ -65,5 +72,6 @@ export const useOrganizationCtx = () => {
     userCompany,
     usersExportOpen,
     usersGridFilters,
+    unsavedWizard,
   };
 };

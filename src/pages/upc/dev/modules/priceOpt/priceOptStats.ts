@@ -48,6 +48,20 @@ export function pricePoints(bestPrices: UpcPriceOpt[], code: string): PricePoint
 export const pointUnits = (p: PricePoint, weighted: boolean) =>
   weighted ? p.weight : p.qty;
 
+/**
+ * The price points that count: ones that moved anything, in the item's own
+ * unit.
+ *
+ * A price that rang and moved nothing (a sale and its refund, or a scale item
+ * rung at a price with no weight behind it) is no evidence of how the item
+ * sells at that price. The KPI strip already left those out while the panel
+ * and the export kept them, so one item could read 2 points and elasticity
+ * -1.7 in the strip and 3 points and "—" beside it. Every caller now goes
+ * through computePriceOptRowSummary, which applies this once.
+ */
+export const livePoints = (points: PricePoint[], weighted: boolean) =>
+  points.filter((p) => pointUnits(p, weighted) > 0);
+
 // No date field anywhere in this data, so there's no real "before/after" —
 // elasticity is taken between the highest and lowest observed price points,
 // which is well-defined regardless of how many price points exist.
@@ -91,21 +105,44 @@ export function computePriceOptRowSummary(
   ownBestPrices: UpcPriceOpt[],
   fixes = false,
 ): PriceOptRowSummary {
-  const points = pricePoints(ownBestPrices, row.product_code);
+  const all = pricePoints(ownBestPrices, row.product_code);
   // An item counts as weighted if weight ever landed on it — the best-price
   // row alone can be a week where the scale item happened to ring flat.
   const weighted =
-    fixes && (isWeighted(row.total_weight) || points.some((p) => p.weight > 0));
+    fixes && (isWeighted(row.total_weight) || all.some((p) => p.weight > 0));
+  const points = livePoints(all, weighted);
   const elasticity = elasticityFromPoints(points, weighted);
+  // The best price's volume from its price point -- every row at that price
+  // summed -- in the item's own unit. The best row alone can be one of
+  // several at that price, or a week the scale item rang with no weight: the
+  // tile then read "0" beside a per-pound price while the export wrote the
+  // ring count as "ea".
+  const bestPoint = all.find((p) => p.price === row.price);
+  const bestUnits = bestPoint
+    ? pointUnits(bestPoint, weighted)
+    : weighted
+      ? row.total_weight
+      : row.total_qty;
 
   return {
     code: row.product_code,
     desc: row.product_description,
     points,
     bestPrice: row.price,
-    bestUnits: weighted ? row.total_weight : row.total_qty,
-    bestRevenue: row.total_revenue,
+    bestUnits,
+    // From the same price point as the volume: the best row alone is one of
+    // possibly several at that price (an item rung under two descriptions),
+    // so its revenue sat beside a volume summed over all of them -- $120
+    // next to 61.50 lb at $3.99/lb.
+    bestRevenue: bestPoint ? bestPoint.revenue : row.total_revenue,
     weighted,
     elasticity,
   };
 }
+
+/** A best-price volume with its unit: pounds to two places for a weighed
+ *  item, even at 0, so the figure can't be read as a count. */
+export const formatBestUnits = (units: number, weighted: boolean) =>
+  weighted
+    ? `${units.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lb`
+    : Math.round(units).toLocaleString();

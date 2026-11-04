@@ -1,9 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { planLoad, toPayload } from "./savedExports";
+import { planLoad as planLoadFor, toPayload as toPayloadFor } from "./savedExports";
 import { parseConfigRow } from "../../../api/savedConfigs";
+import type { SavedConfigPayload } from "../../../api/savedConfigs";
 import type { SavedQuery } from "../../../api/savedQueries";
 import { initialState } from "../../../features/dev/devExportBuilderSlice";
 import type { ExportBuilderState } from "../../../features/dev/devExportBuilderSlice";
+import { SALES } from "./sources";
+
+const toPayload = (config: ExportBuilderState) => toPayloadFor(config, SALES);
+const planLoad = (payload: SavedConfigPayload, config: ExportBuilderState) =>
+  planLoadFor(payload, config, SALES);
+
+/** The sales lists these cases use, by the names they were first written in. */
+interface Over extends Partial<ExportBuilderState> {
+  saleTypes?: string[];
+  selectedSaleTypes?: string[];
+  vendors?: { vendor_id: string; vendor_name: string }[];
+  selectedVendors?: string[];
+  priceTypes?: { value: string; label: string }[];
+  selectedPriceTypes?: string[];
+  saleDates?: string[];
+}
 
 const columns = [
   { name: "storeid", data_type: "bigint" },
@@ -12,31 +29,60 @@ const columns = [
 ];
 
 /** September: four vendors, two stores. */
-const september = (over: Partial<ExportBuilderState> = {}): ExportBuilderState => ({
-  ...initialState,
-  loaded: true,
-  columns,
-  columnOrder: columns.map((c) => c.name),
-  selectedColumns: columns.map((c) => c.name),
-  stores: [
-    { storeid: 36, store_number: "036", store_name: "036 - IGA" },
-    { storeid: 41, store_number: "041", store_name: "041 - IGA" },
-  ],
-  selectedStoreIds: [36, 41],
-  saleTypes: ["Sale", "Tender"],
-  selectedSaleTypes: ["Sale", "Tender"],
-  vendors: [
-    { vendor_id: "50", vendor_name: "AWG" },
-    { vendor_id: "C0021", vendor_name: "Clark" },
-  ],
-  selectedVendors: ["50", "C0021"],
-  saleDates: ["2026-09-14", "2026-09-15"],
-  selectedSaleDates: ["2026-09-14", "2026-09-15"],
-  ...over,
-});
+const september = (over: Over = {}): ExportBuilderState => {
+  const {
+    saleTypes = ["Sale", "Tender"],
+    selectedSaleTypes = saleTypes,
+    vendors = [
+      { vendor_id: "50", vendor_name: "AWG" },
+      { vendor_id: "C0021", vendor_name: "Clark" },
+    ],
+    selectedVendors = vendors.map((v) => v.vendor_id),
+    priceTypes = [],
+    selectedPriceTypes = priceTypes.map((p) => p.value),
+    saleDates = ["2026-09-14", "2026-09-15"],
+    ...rest
+  } = over;
+  return {
+    ...initialState,
+    loaded: true,
+    columns,
+    columnOrder: columns.map((c) => c.name),
+    selectedColumns: columns.map((c) => c.name),
+    stores: [
+      { storeid: 36, store_number: "036", store_name: "036 - IGA" },
+      { storeid: 41, store_number: "041", store_name: "041 - IGA" },
+    ],
+    selectedStoreIds: [36, 41],
+    lists: {
+      saleTypes: saleTypes.map((t) => ({ value: t, label: t })),
+      vendorIds: vendors.map((v) => ({ value: v.vendor_id, label: v.vendor_name })),
+      priceTypes,
+    },
+    picks: {
+      saleTypes: selectedSaleTypes,
+      vendorIds: selectedVendors,
+      priceTypes: selectedPriceTypes,
+    },
+    days: saleDates,
+    selectedDays: saleDates,
+    ...rest,
+  };
+};
 
-const picks = (actions: { type: string; payload?: unknown }[], type: string) =>
-  actions.find((a) => a.type === `devExportBuilder/${type}`)?.payload;
+/** The values a load picks for one list. */
+const picks = (actions: { type: string; payload?: unknown }[], type: string) => {
+  const filter = { setSelectedVendors: "vendorIds", setSelectedPriceTypes: "priceTypes" }[type];
+  if (filter) {
+    const action = actions.find(
+      (a) =>
+        a.type === "devExportBuilder/setPicks" &&
+        (a.payload as { filter: string }).filter === filter,
+    );
+    return (action?.payload as { values: string[] } | undefined)?.values;
+  }
+  return actions.find((a) => a.type === `devExportBuilder/${type}`)?.payload;
+};
 
 describe("what a saved export holds", () => {
   it("saves a narrowed list by value and a whole one as every", () => {
@@ -45,8 +91,8 @@ describe("what a saved export holds", () => {
     const payload = toPayload(
       september({ selectedVendors: ["50"], selectedSaleTypes: ["Sale", "Tender"] }),
     );
-    expect(payload.vendors).toEqual(["50"]);
-    expect(payload.saleTypes).toBeNull();
+    expect(payload.filters.vendorIds).toEqual(["50"]);
+    expect(payload.filters.saleTypes).toBeNull();
   });
 
   it("never saves the dates", () => {
@@ -137,6 +183,19 @@ describe("loading one onto a different range", () => {
     ]);
   });
 
+  it("keeps a sort on a row count", () => {
+    const saved = toPayload(
+      september({
+        groupBy: ["storeid"],
+        aggregates: [{ column: "*", fn: "count" }],
+        orderBy: [{ key: "row_count", desc: true }],
+      }),
+    );
+    const plan = planLoad(saved, september());
+    expect(picks(plan.actions, "setOrderBy")).toEqual([{ key: "row_count", desc: true }]);
+    expect(plan.missing.join(" ")).not.toMatch(/sort/);
+  });
+
   it("says that the days came back ticked", () => {
     const plan = planLoad(toPayload(september()), september());
     expect(plan.missing.join(" ")).toMatch(/Days are not saved/);
@@ -161,6 +220,39 @@ describe("a row of a shared table", () => {
     const parsed = parseConfigRow(row(JSON.stringify(payload)));
     expect(parsed?.id).toBe(7);
     expect(parsed?.payload.groupBy).toEqual([]);
+  });
+
+  it("reads a configuration saved before there were sources, as a sales one", () => {
+    // Every configuration saved before 2 November 2026 has this shape.
+    const v1 = {
+      v: 1,
+      mode: "lines",
+      columns: ["storeid"],
+      columnOrder: ["storeid"],
+      groupBy: [],
+      aggregates: [],
+      computed: [],
+      orderBy: [],
+      storeIds: null,
+      saleTypes: ["Sale"],
+      ringTypes: null,
+      subDepartments: ["10"],
+      vendors: ["50"],
+      cashiers: [7],
+      priceTypes: null,
+      productCodes: ["4011"],
+      productDescriptions: [],
+      flags: { voidFlag: 0, refundFlag: null, dateFormat: "us", fileFormat: "csv", filePrefix: "weekly", ordered: false },
+    };
+    const parsed = parseConfigRow(row(JSON.stringify(v1)));
+    expect(parsed?.payload).toMatchObject({
+      v: 2,
+      source: "sales",
+      filters: { saleTypes: ["Sale"], subDepartments: ["10"], vendorIds: ["50"], cashierNumbers: ["7"] },
+      productCodes: ["4011"],
+      rowFlags: { voidFlag: 0, refundFlag: null },
+      output: { dateFormat: "us", fileFormat: "csv", filePrefix: "weekly", ordered: false },
+    });
   });
 
   it("skips anything that is not, rather than breaking the list", () => {

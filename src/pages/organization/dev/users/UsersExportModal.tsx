@@ -4,6 +4,7 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { User, UserLevel } from "../../../../interfaces";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { roles } from "../constants";
+import { accessLabel } from "./userFilters";
 
 interface UsersExportModalProps {
   onClose: () => void;
@@ -11,6 +12,8 @@ interface UsersExportModalProps {
   filteredUsers: User[];
   userLevels: UserLevel[];
   scopeLabel: string;
+  /** Any of the grid's filters is narrowing the list (see filtersApplied). */
+  filtersActive: boolean;
 }
 
 type ExportDataset = "all" | "filtered";
@@ -38,6 +41,7 @@ const buildUsersCsv = (
     "Email",
     "Role",
     "Level",
+    "Access",
     "Last visited",
   ];
   const rows = users.map((u) => [
@@ -47,6 +51,7 @@ const buildUsersCsv = (
     u.email ?? "",
     renderRoleText(u.role),
     renderLvlText(u.user_level),
+    accessLabel(u.access_mode),
     formatDate(u.last_visit),
   ]);
   return `${label}\n${rowsToCsv(headers, rows)}`;
@@ -58,9 +63,10 @@ const UsersExportModal = ({
   filteredUsers,
   userLevels,
   scopeLabel,
+  filtersActive,
 }: UsersExportModalProps) => {
   const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
-  const isFiltered = filteredUsers.length !== allUsers.length;
+  const isFiltered = filtersActive;
 
   const handleDownload = () => {
     const sections: string[] = [];
