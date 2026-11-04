@@ -1937,3 +1937,10 @@ every day Summary has already shown: it keeps each finished day's items from
 Summary's own read and only reads what it does not have, usually just today.
 Today is always read fresh, since it is still changing. The kept items are
 limited to about two store-weeks and cleared on sign-out.
+
+### Opening a store from the list starts on All week
+
+Clicking a different store in the left panel now opens it on Summary with the
+day cards back on All week, rather than keeping the day picked for the last
+store. Opening a store from the group comparison still keeps its day, since
+that day is part of the comparison being looked at.

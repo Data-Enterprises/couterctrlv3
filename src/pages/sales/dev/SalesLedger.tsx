@@ -108,21 +108,31 @@ const SalesLedger = () => {
   // Carrying the LAST tab over instead would answer whichever question the
   // reader happened to ask previously.
   const openStore = useCallback(
-    (s: Parameters<typeof setLedgerSelection>[0], tab: LedgerTab) => {
+    (
+      s: Parameters<typeof setLedgerSelection>[0],
+      tab: LedgerTab,
+      // Back to All week: a day picked for the last store says nothing about
+      // this one. The group comparison's way in keeps its day, because there
+      // the day is part of the comparison being carried into the store.
+      resetDay = false,
+    ) => {
       const closing =
         s &&
         selectionRef.current?.storeId === s.storeId &&
         selectionRef.current?.storeNumber === s.storeNumber;
-      if (!closing && s) dispatch(setLedgerTab(tab));
+      if (!closing && s) {
+        dispatch(setLedgerTab(tab));
+        if (resetDay) dispatch(setLedgerSelectedDate(null));
+      }
       dispatch(setLedgerSelection(closing ? null : s));
     },
     [dispatch],
   );
 
   const handleRowClick = useCallback(
-    // Summary, the first tab: the store's week at a glance before any
-    // drill-down. Sub depts and the rest are steps taken from there.
-    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "dailyrecap"),
+    // Summary, the first tab, on All week: the store's week at a glance
+    // before any drill-down. Sub depts and the rest are steps taken from there.
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "dailyrecap", true),
     [openStore],
   );
 
