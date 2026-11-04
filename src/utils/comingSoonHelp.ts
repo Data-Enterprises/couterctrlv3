@@ -22,6 +22,8 @@ export const COMING_SOON_HELP_SECTIONS: Readonly<Record<string, string>> = {
   "inventory-sub-department": "price-opt",
   "inventory-vendor": "price-opt",
   invoices: "invoices",
+  "scanned-invoices": "scanned-invoices",
+  vpn: "vpn",
   "lp-actions": "lp-actions",
   "upc-scanner": "upc-scanner",
 };

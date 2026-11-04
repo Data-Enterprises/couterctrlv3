@@ -41,6 +41,8 @@ import {
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
+import Vpn from "./pages/vpn/Vpn.tsx";
+import ScannedInvoices from "./pages/scannedInvoices/ScannedInvoices.tsx";
 import { armPageCalls } from "./utils/pageCalls.ts";
 
 // Before the first render, so nothing is missed — a ticket filed about the
@@ -77,6 +79,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="inventory-vendor" element={<InventoryVendor />} />
                 <Route path="item-report" element={<ItemReport />} />
                 <Route path="invoices" element={<Invoices />} />
+                <Route path="scanned-invoices" element={<ScannedInvoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
                 <Route path="sales-export" element={<ExportBuilder />} />
@@ -94,6 +97,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
+                <Route path="vpn" element={<Vpn />} />
                 {/* Release Notes was here. Unmounted until the help endpoints
                     are deployed: the page can neither list the notes nor sign
                     a link to one without them, and the bucket prefix they

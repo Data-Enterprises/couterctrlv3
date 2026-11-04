@@ -28,6 +28,7 @@ import devGroupsPageReducer from "../features/dev/devGroupsPageSlice";
 import devQsReducer from "../features/dev/devQsSlice";
 import devLpActionsReducer from "../features/dev/devLpActionsSlice";
 import devSalesTrackerReducer from "../features/dev/devSalesTrackerSlice";
+import devScannedInvoicesReducer from "../features/dev/devScannedInvoicesSlice";
 import devInvoicesReducer from "../features/dev/devInvoicesSlice";
 import devItemReportReducer from "../features/dev/devItemReportSlice";
 import devSuggestedReducer from "../features/dev/devSuggestedSlice";
@@ -82,6 +83,7 @@ export const devReducers = {
   lpActions: devLpActionsReducer,
   salesTracker: devSalesTrackerReducer,
   invoices: devInvoicesReducer,
+  scannedInvoices: devScannedInvoicesReducer,
   itemReport: devItemReportReducer,
   suggested: devSuggestedReducer,
   tickets: devTicketsReducer,

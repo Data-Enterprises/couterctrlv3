@@ -22,6 +22,7 @@ import {
   DocumentArrowUpIcon,
   TicketIcon,
   QrCodeIcon,
+  LockClosedIcon,
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
@@ -636,6 +637,19 @@ export const categories: NavCategory[] = [
         isHovering: false,
         isVisible: true,
       },
+      {
+        name: "Scanned Invoices",
+        href: "scanned-invoices",
+        icon: DocumentArrowUpIcon,
+        // Desktop only — a line table eight columns wide.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        // Level 9, like AWG Invoices: every read is a billed Bedrock run.
+        userLevels: PROGRAMMER_ONLY_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
       // Commented out for publish — `suggested/order_weight` is dev-API only.
       // Restore this entry, the ScaleIcon import and the route in main.tsx
       // together when the endpoint ships.
@@ -672,6 +686,22 @@ export const categories: NavCategory[] = [
         children: [],
         childOpen: false,
         userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "VPN",
+        href: "vpn",
+        icon: LockClosedIcon,
+        // Desktop only — the profile it issues is for a laptop.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        // Level 9 while it is being tested: an issue signs a real client
+        // certificate on a customer's VPN. Who sees which VPN is the server's
+        // call (company_link), not this gate's, so releasing it means opening
+        // this to ["*"] rather than picking a level.
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },

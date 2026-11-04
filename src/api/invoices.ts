@@ -91,6 +91,12 @@ export interface InvoiceFileReport {
   error: string | null;
   sourceKey: string | null;
   storageError: string | null;
+  /**
+   * Invoices the engine read that did not fit the schema — a missing totals
+   * object, or a total that is not on the scan. They are not in `invoices`,
+   * so a file that comes back one short says why here.
+   */
+  discarded?: { invoiceNumber: string | null; error: string }[];
   /** awg_edi only, below. */
   records?: number;
   recordsByType?: Record<string, number>;
@@ -165,6 +171,37 @@ export const parseEdiInvoices = (
     data: form,
   });
 };
+
+/**
+ * Read scanned invoices with Claude vision on Bedrock.
+ *
+ * PDFs and images, any layout, and a batch PDF is split into its invoices on
+ * the server. Slow — a long batch takes minutes — and billed per run, so the
+ * page holds on to what comes back rather than asking twice.
+ *
+ * The server drops nulls (`exclude_none`), so on this route the optional
+ * fields of `ParsedInvoice` and `InvoiceTotals` can be absent rather than
+ * null, and `pages` is the printed range ("3-5"), not a count.
+ */
+export const parseBedrockInvoices = (
+  url: string,
+  token: string,
+  storeid: number,
+  files: File[],
+) => {
+  const form = new FormData();
+  for (const file of files) form.append("files", file, file.name);
+  form.append("storeid", String(storeid));
+  return axios({
+    method: "POST",
+    headers: authHeader(token),
+    url: url + "invoices/parse_bedrock",
+    data: form,
+  });
+};
+
+/** Per file, for the OCR engines. The server's INVOICE_MAX_UPLOAD_BYTES. */
+export const MAX_SCANNED_FILE_BYTES = 20 * 1024 * 1024;
 
 export interface InvoiceHistoryResp {
   error: number;

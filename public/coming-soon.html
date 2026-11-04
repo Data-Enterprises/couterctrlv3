@@ -60,7 +60,7 @@
     <div class="eyebrow">CounterCtrl &middot; Coming Soon &middot; September 29, 2026</div>
     <h1>What's in the Coming Soon section</h1>
     <p class="lede">
-      Eight pages that are built and working, and not yet switched on for everyone. Each one below says what it
+      Ten pages that are built and working, and not yet switched on for everyone. Each one below says what it
       does, how you would use it, where its numbers come from, and why it behaves the way it does.
     </p>
     <p class="lede">
@@ -79,6 +79,8 @@
       <a href="#sales-export">Sales Export</a>
       <a href="#price-opt">Price Opt</a>
       <a href="#invoices">AWG Invoices</a>
+      <a href="#scanned-invoices">Scanned Invoices</a>
+      <a href="#vpn">VPN</a>
       <a href="#lp-actions">LP Actions</a>
       <a href="#next">Also in the works</a>
     </nav>
@@ -420,6 +422,75 @@
         <p><strong>Margin is worked out from the lines</strong>, not read from any reported field, because a margin that
         disagrees with the two numbers printed beside it would be worse than none. Fields the format does not carry are
         left blank rather than shown as zero.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="scanned-invoices">
+    <div class="sec-head">
+      <h2>Scanned Invoices</h2>
+      <span class="where">Desktop &middot; reads the paper invoices</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Reads scanned invoices from any vendor &mdash; route tickets, delivery receipts, credit slips &mdash; and shows
+      every invoice in the scan with its lines, its printed totals and whether the two agree. The result downloads in
+      the POS's own order or invoice layout, ready to import.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <p>Choose the store, drop in up to five PDFs or photos, and press Read. A long batch takes a few minutes. Each
+      invoice becomes a card that says <strong>Reconciled</strong> or <strong>To check</strong>; open one to see its
+      lines beside its totals, then use <strong>Export as orders</strong> or <strong>Export as invoices</strong>.</p>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p><strong>The scan, read by an AI model.</strong> Each document is sent to Claude on Amazon's Bedrock service,
+      which reads it the way a person would, whatever the vendor's layout. The scan and what was read from it are kept
+      together, so a disputed invoice can always be traced back to the image it came from.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>Every invoice is checked against itself.</strong> The lines are added up and compared to the
+        invoice's own printed subtotal and total, to the cent. A scan that does not add up usually means a line was
+        missed or misread, so the card says so and marks any line whose amount does not follow from its quantity and
+        price.</p>
+        <p><strong>Cost only, never retail.</strong> Many invoices print a suggested retail beside the cost. Only the
+        cost columns are read, so the export never carries a retail price nobody set. Columns a scan cannot know, like
+        pack size or your own categories, are left blank for the POS to fill in rather than guessed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vpn">
+    <div class="sec-head">
+      <h2>VPN</h2>
+      <span class="where">Desktop &middot; for companies with their own VPN</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Hands out the files that let a laptop connect to your company's VPN, lists every one issued along with when it
+      last connected, and switches off any that should no longer work.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <p>Press <strong>New certificate</strong> and a connection file downloads straight away; open it in the AWS VPN
+      Client or OpenVPN. To shut a laptop out, find its certificate in the list and press <strong>Revoke</strong>.</p>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p><strong>Your VPN itself.</strong> The list and the connection times are read from the VPN on Amazon's cloud as
+      the page opens. Only recent connections are kept there, so a blank &ldquo;last connected&rdquo; means &ldquo;not
+      lately&rdquo; rather than &ldquo;never&rdquo;.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>The file is the only copy.</strong> Each connection file holds its own private key, and that key is
+        not stored anywhere you could download it again. Lose the file and you issue a new one.</p>
+        <p><strong>Only your own company's VPN.</strong> The page shows a VPN only to people linked to the company it
+        belongs to, and revoking a certificate also drops any connection it has open right now.</p>
       </div>
     </div>
   </section>

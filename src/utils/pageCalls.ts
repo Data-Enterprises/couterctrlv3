@@ -112,9 +112,10 @@ export const labelFor = (path: string): string | null =>
  *
  * The first three hold or reset credentials — `/auth/token` and `/auth/login`
  * return the bearer token itself. The fourth is user creation and editing,
- * which carries whatever was typed into the form. The last is the help desk
+ * which carries whatever was typed into the form. The fifth is the help desk
  * itself: the report form fetches its own pickers, and a ticket about Sales
- * should not arrive carrying the ticket system's categories.
+ * should not arrive carrying the ticket system's categories. The last is VPN
+ * certificates — an issue answers a profile with the private key in it.
  *
  * This list is the weaker half of the protection — it only covers endpoints
  * somebody thought of. The size cap below is the half that fails safe.
@@ -124,6 +125,7 @@ const NEVER = [
   /\/forgot_password/i,
   /\/users\b/i,
   /\/tickets\b/i,
+  /\/vpn\b/i,
 ];
 
 /** Per call. `/sales/export_preview` comes back around 520 KB. */
