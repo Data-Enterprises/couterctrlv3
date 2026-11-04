@@ -89,7 +89,7 @@ const RecapShapeCard = ({
 
   return (
     <section
-      aria-label="Net sales by hour"
+      aria-label="Hourly"
       className={`${DAY_CARD} h-full min-w-0 flex ${narrow ? "flex-col" : "flex-row"} overflow-visible`}
     >
       <aside
@@ -99,7 +99,7 @@ const RecapShapeCard = ({
             : `flex-none w-[250px] my-3.5 px-[18px] border-r-2 border-brand_navy/85 flex flex-col`
         }
       >
-        <h4 className="mb-0.5 text-[14px] font-semibold text-content">Net sales by hour</h4>
+        <h4 className="mb-0.5 text-[14px] font-semibold text-content">Hourly</h4>
         <div
           className={
             narrow

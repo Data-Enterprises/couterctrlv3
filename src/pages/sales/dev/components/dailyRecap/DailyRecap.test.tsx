@@ -161,7 +161,7 @@ describe("Daily recap", () => {
     expect(within(baskets).getByText(/\$10\.00 avg basket/)).toBeTruthy();
     expect(within(baskets).getByText("Items")).toBeTruthy();
 
-    const hours = screen.getByRole("region", { name: "Net sales by hour" });
+    const hours = screen.getByRole("region", { name: "Hourly" });
     expect(within(hours).getByText("$333.33")).toBeTruthy();
     expect(within(hours).getByText("33.3")).toBeTruthy();
     expect(screen.getByRole("img", { name: /busiest 12 PM – 1 PM/ })).toBeTruthy();

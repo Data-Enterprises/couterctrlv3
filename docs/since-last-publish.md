@@ -1944,3 +1944,7 @@ Clicking a different store in the left panel now opens it on Summary with the
 day cards back on All week, rather than keeping the day picked for the last
 store. Opening a store from the group comparison still keeps its day, since
 that day is part of the comparison being looked at.
+
+### Summary's hour card is titled Hourly
+
+The card with the hour chart in a picked day's Summary is now titled Hourly.
