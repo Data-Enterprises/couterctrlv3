@@ -6,11 +6,11 @@ import type { RecapItem, RecapVendorPart } from "./recapTypes";
  *  option for them, and a dash in the Vendor column. */
 export const NO_VENDOR = "No Vendor";
 
-/** The row's vendor. Some POS feeds send 0 for "no vendor" rather than
- *  nothing, and it showed as a vendor called 0. */
+/** The row's vendor. Some POS feeds send 0 (or 00, 000) for "no vendor"
+ *  rather than nothing, and it showed as a vendor called 0. */
 const vendorOf = (r: SubDeptMargin) => {
   const name = String(r.vendor_name ?? "").trim();
-  return !name || name === "0" ? NO_VENDOR : name;
+  return !name || /^0+$/.test(name) ? NO_VENDOR : name;
 };
 
 /**

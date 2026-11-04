@@ -22,6 +22,11 @@ const lb = (n: number) => (n > 0 ? `${pounds(n)} lb` : "—");
  * striped, scrolling inside the card, and a totals row pinned under it for
  * everything the filters and search leave, not just the page.
  *
+ * The rows scroll and the head and totals do not, so all three keep the
+ * same scrollbar gutter: without it the rows' description column is a
+ * scrollbar narrower than the head's, and every column after it sits left
+ * of its heading.
+ *
  * Vendor names the one that sold the most of the item; "+1" when another
  * sold it too, and hovering that lists them all. Weight only at a store that
  * sells by weight, a dash on an item sold by the each.
@@ -53,7 +58,7 @@ const RecapItemsTable = ({
   return (
     <>
       <div
-        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-gray-50 border-b border-gray-100"
+        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-gray-50 border-b border-gray-100 overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
         style={{ gridTemplateColumns: cols }}
       >
         {head("code", "UPC")}
@@ -65,7 +70,7 @@ const RecapItemsTable = ({
         {head("net", "Net sales", true)}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar" role="rowgroup">
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar [scrollbar-gutter:stable]" role="rowgroup">
         {rows.map((r) => {
           const lead = r.vendors[0];
           return (
@@ -99,7 +104,7 @@ const RecapItemsTable = ({
       </div>
 
       <div
-        className="flex-none grid items-center gap-3 px-[18px] h-9 text-[13px] font-bold text-content bg-gray-50 border-t border-content"
+        className="flex-none grid items-center gap-3 px-[18px] h-9 text-[13px] font-bold text-content bg-gray-50 border-t border-content overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
         style={{ gridTemplateColumns: cols }}
       >
         <span>Total</span>
