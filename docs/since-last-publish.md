@@ -1969,6 +1969,8 @@ The item view's search is now the app's standard TextFilter: magnifier, a clear 
 
 Fixed in the item view: Sub dept, Vendor and the figure columns sat to the left of their headings by the width of the list's scrollbar (the rows scroll, the heading and totals did not, so Description was narrower in the rows). The heading and totals rows now keep the same scrollbar gutter, so every column lines up. A vendor sent as 00 or 000 is also treated as No Vendor, like 0.
 
+The item view's Net sales column is now headed Sales and sits left of Qty: UPC, Description, Sub dept, Vendor, Sales, Qty, Weight. It is still net sales and still the default sort, biggest first.
+
 ## Sales: Top 200
 
 dev mode only

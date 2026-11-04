@@ -6,14 +6,14 @@ import type { ItemSort, ItemSortCol, RecapItemRow } from "./recapTypes";
 import { useCursorTip } from "./useCursorTip";
 
 /**
- * UPC, Description, Sub dept, Vendor, Qty, [Weight], Net sales. Fixed
+ * UPC, Description, Sub dept, Vendor, Sales (net), Qty, [Weight]. Fixed
  * widths for the figures so each head sits over its own numbers, and the
  * description takes the rest; a narrow panel tightens them.
  */
 const colsOf = (withPounds: boolean, narrow: boolean) =>
   narrow
-    ? `100px minmax(0,1fr) 100px 100px 56px${withPounds ? " 68px" : ""} 86px`
-    : `125px minmax(0,1fr) 125px 130px 62px${withPounds ? " 82px" : ""} 96px`;
+    ? `100px minmax(0,1fr) 100px 100px 86px 56px${withPounds ? " 68px" : ""}`
+    : `125px minmax(0,1fr) 125px 130px 96px 62px${withPounds ? " 82px" : ""}`;
 
 const lb = (n: number) => (n > 0 ? `${pounds(n)} lb` : "—");
 
@@ -65,9 +65,9 @@ const RecapItemsTable = ({
         {head("name", "Description")}
         {head("dept", "Sub dept")}
         {head("vendor", "Vendor")}
+        {head("net", "Sales", true)}
         {head("units", "Qty", true)}
         {withPounds && head("pounds", "Weight", true)}
-        {head("net", "Net sales", true)}
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar [scrollbar-gutter:stable]" role="rowgroup">
@@ -95,9 +95,9 @@ const RecapItemsTable = ({
                   </span>
                 )}
               </span>
+              <span className="text-right font-semibold tabular-nums">{money(r.net)}</span>
               <span className="text-right tabular-nums">{count(r.units)}</span>
               {withPounds && <span className="text-right tabular-nums">{lb(r.pounds)}</span>}
-              <span className="text-right font-semibold tabular-nums">{money(r.net)}</span>
             </div>
           );
         })}
@@ -113,9 +113,9 @@ const RecapItemsTable = ({
         </span>
         <span />
         <span />
+        <span className="text-right tabular-nums">{money(totals.net)}</span>
         <span className="text-right tabular-nums">{count(totals.units)}</span>
         {withPounds && <span className="text-right tabular-nums">{lb(totals.pounds)}</span>}
-        <span className="text-right tabular-nums">{money(totals.net)}</span>
       </div>
 
       {tip && tipRow && <RecapTextTip lines={tipRow.vendors} x={tip.x} y={tip.y} />}

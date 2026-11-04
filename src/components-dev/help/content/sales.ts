@@ -154,7 +154,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "See every item",
-          pre: "Click View items at the top right of Baskets. Summary switches to a list of every item sold that week, or that day with a day card picked: UPC, description, sub department, vendor, qty, weight at a store that sells by weight, and net sales, biggest first. Click a column heading to sort by it.",
+          pre: "Click View items at the top right of Baskets. Summary switches to a list of every item sold that week, or that day with a day card picked: UPC, description, sub department, vendor, sales (net sales, biggest first), qty, and weight at a store that sells by weight. Click a column heading to sort by it.",
           see: "Search by name or UPC, or tick sub departments and vendors to narrow it. With a vendor ticked, an item shows only that vendor's qty and sales. The totals row at the bottom covers everything the search and filters leave, across every page. Picking another day card filters the list to that day; Back to summary returns to the cards for the day picked.",
         },
         {
