@@ -248,6 +248,21 @@ describe("Daily recap", () => {
     expect(screen.getByRole("region", { name: "Money" })).toBeTruthy();
   });
 
+  it("clears the search and filters with Clear all, there only while something narrows the list", async () => {
+    setup();
+    await waitFor(() =>
+      expect(within(screen.getByRole("region", { name: "Baskets" })).getByText("3")).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "View items" }));
+    const list = screen.getByRole("region", { name: "Items" });
+    expect(within(list).queryByRole("button", { name: "Clear all" })).toBeNull();
+    fireEvent.change(within(list).getByRole("textbox", { name: "Search items" }), { target: { value: "Item a" } });
+    expect(within(list).getAllByRole("row")).toHaveLength(1);
+    fireEvent.click(within(list).getByRole("button", { name: "Clear all" }));
+    expect(within(list).getAllByRole("row")).toHaveLength(3);
+    expect(within(list).queryByRole("button", { name: "Clear all" })).toBeNull();
+  });
+
   it("names the lead vendor, with +1 listing the others on hover", async () => {
     setup();
     await waitFor(() =>

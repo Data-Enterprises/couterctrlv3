@@ -28,6 +28,7 @@ import type { ItemSort, ItemSortCol } from "./recapTypes";
  *
  * Search by name or UPC, then Sub depts and Vendors (the shared multi-select:
  * empty means all, and an option the other filter leaves empty drops out).
+ * Clear all, there only while something is narrowing the list, empties them.
  * With vendors ticked, an item counts only their share of it. Sorted, as Top
  * 200 is, by net sales, biggest first. Sort, filters and search run over the
  * whole list; the totals row is the whole list too.
@@ -68,6 +69,14 @@ const RecapItemsView = ({
     pageSize,
   ].join("~");
   const [paged, setPaged] = useState({ key: listKey, page: 0 });
+
+  // Clear all empties the search and both filters; the sort is left as it is.
+  const filtering = search.trim() !== "" || subDepts.length > 0 || vendors.length > 0;
+  const clearFilters = () => {
+    setSearch("");
+    setSubDepts([]);
+    setVendors([]);
+  };
 
   const days = items.status === "ready" ? items.days : null;
   const all = useMemo(() => (days ? mergeItems(days, []) : []), [days]);
@@ -140,6 +149,15 @@ const RecapItemsView = ({
             noun="vendors"
             className={narrow ? "w-[140px]" : "w-[170px]"}
           />
+          {filtering && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[12px] font-medium text-content underline hover:text-brand_navy"
+            >
+              Clear all
+            </button>
+          )}
         </div>
 
         {items.status === "ready" ? (
