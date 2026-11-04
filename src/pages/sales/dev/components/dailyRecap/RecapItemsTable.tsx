@@ -12,8 +12,8 @@ import { useCursorTip } from "./useCursorTip";
  */
 const colsOf = (withPounds: boolean, narrow: boolean) =>
   narrow
-    ? `100px minmax(0,1fr) 100px 100px 60px${withPounds ? " 76px" : ""} 92px`
-    : `125px minmax(0,1fr) 125px 130px 70px${withPounds ? " 95px" : ""} 105px`;
+    ? `100px minmax(0,1fr) 100px 100px 56px${withPounds ? " 68px" : ""} 86px`
+    : `125px minmax(0,1fr) 125px 130px 62px${withPounds ? " 82px" : ""} 96px`;
 
 const lb = (n: number) => (n > 0 ? `${pounds(n)} lb` : "—");
 

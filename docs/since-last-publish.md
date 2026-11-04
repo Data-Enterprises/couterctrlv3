@@ -1961,6 +1961,8 @@ The Summary item view now sits straight in the panel, filling it edge to edge li
 
 The item view's Vendor column is narrower (130px, 100px on a narrow panel) and Description takes the difference, so more of each item name shows.
 
+Units, Weight and Net sales sit a little closer together in the item view, their spare width going to Description.
+
 ## Sales: Top 200
 
 dev mode only
