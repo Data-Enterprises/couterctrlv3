@@ -13,10 +13,10 @@ const vendorCell = (i: RecapItem) =>
  * The download: one row per item per day.
  *
  * The day and the sub dept ride on every row so the file sorts and pivots on
- * its own, without the screen's grouping. The columns follow the item view's:
- * vendor (every vendor that sold it that day, biggest first, "; " between
- * them; blank for none), qty, pounds only for a store that sells by weight,
- * net sales.
+ * its own, without the screen's grouping. After the date, the columns run in
+ * the item view's order: UPC, description, sub dept, vendor (every vendor
+ * that sold it that day, biggest first, "; " between them; blank for none),
+ * net sales, qty, and pounds only for a store that sells by weight.
  */
 export const recapCsv = (
   days: { date: string; items: RecapItem[] }[],
@@ -24,13 +24,13 @@ export const recapCsv = (
 ): string => {
   const headers = [
     "date",
-    "sub_department",
     "product_code",
     "description",
+    "sub_department",
     "vendor",
+    "net_sales",
     "qty",
     ...(withPounds ? ["pounds"] : []),
-    "net_sales",
   ];
   const rows = days.flatMap(({ date, items }) =>
     [...items]
@@ -40,13 +40,13 @@ export const recapCsv = (
       )
       .map((i) => [
         date,
-        i.subDeptName,
         i.code,
         i.name,
+        i.subDeptName,
         vendorCell(i),
+        i.net.toFixed(2),
         Math.round(i.units * 1000) / 1000,
         ...(withPounds ? [Math.round(i.pounds * 1000) / 1000] : []),
-        i.net.toFixed(2),
       ]),
   );
   return rowsToCsv(headers, rows);

@@ -29,11 +29,11 @@ describe("the recap download", () => {
       ],
       false,
     ).split("\n");
-    expect(csv[0]).toBe("date,sub_department,product_code,description,vendor,qty,net_sales");
+    expect(csv[0]).toBe("date,product_code,description,sub_department,vendor,net_sales,qty");
     expect(csv.slice(1)).toEqual([
-      "2026-10-29,Drinks,a,Cola,,1,2.50",
-      "2026-10-30,Drinks,c,Item,,1,3.00",
-      "2026-10-30,Snacks,b,Item,,1,1.00",
+      "2026-10-29,a,Cola,Drinks,,2.50,1",
+      "2026-10-30,c,Item,Drinks,,3.00,1",
+      "2026-10-30,b,Item,Snacks,,1.00,1",
     ]);
   });
 
@@ -51,8 +51,8 @@ describe("the recap download", () => {
       ],
       false,
     ).split("\n");
-    expect(both).toBe("2026-10-30,Drinks,a,Item,AWG; Pepsi,1,3.00");
-    expect(none).toBe("2026-10-30,Drinks,b,Item,,1,1.00");
+    expect(both).toBe("2026-10-30,a,Item,Drinks,AWG; Pepsi,3.00,1");
+    expect(none).toBe("2026-10-30,b,Item,Drinks,,1.00,1");
   });
 
   it("carries pounds only for a store that sells by weight", () => {
@@ -60,7 +60,7 @@ describe("the recap download", () => {
       [{ date: "2026-10-30", items: [item({ pounds: 1.25 })] }],
       true,
     ).split("\n");
-    expect(head).toContain(",pounds,");
-    expect(row).toBe("2026-10-30,Drinks,1,Item,,1,1.25,1.00");
+    expect(head.endsWith(",qty,pounds")).toBe(true);
+    expect(row).toBe("2026-10-30,1,Item,Drinks,,1.00,1,1.25");
   });
 });

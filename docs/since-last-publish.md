@@ -1975,6 +1975,8 @@ In the item view, the Qty and Weight figures are semibold like Sales.
 
 The item view's Weight column drops the lb and shows three decimal places (105.700), in the rows and the totals row.
 
+The Daily Recap export's columns follow the item view's order after the date: product_code, description, sub_department, vendor, net_sales, qty, then pounds at a store that sells by weight.
+
 ## Sales: Top 200
 
 dev mode only
