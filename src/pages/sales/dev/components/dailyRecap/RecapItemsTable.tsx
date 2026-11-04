@@ -1,3 +1,5 @@
+import { useState } from "react";
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import RecapSortHead from "./RecapSortHead";
 import { count, money, weight3 } from "./recapFormat";
 import { NO_VENDOR } from "./recapItems";
@@ -29,12 +31,16 @@ const lb = (n: number) => (n > 0 ? weight3(n) : "—");
  * scrollbar narrower than the head's, and every column after it sits left
  * of its heading.
  *
+ * Right-click a row for the app's UPC menu: copy that UPC, or every UPC the
+ * search and filters leave, across all the pages, in the list's order.
+ *
  * Vendor names the one that sold the most of the item; "+1" when another
  * sold it too, and hovering that lists them all. Weight only at a store that
  * sells by weight, a dash on an item sold by the each.
  */
 const RecapItemsTable = ({
   rows,
+  allUpcs,
   totals,
   sort,
   onSort,
@@ -42,6 +48,8 @@ const RecapItemsTable = ({
   narrow,
 }: {
   rows: RecapItemRow[];
+  /** Every UPC in the filtered, sorted list, not just this page's. */
+  allUpcs: string[];
   totals: { items: number; units: number; pounds: number; net: number };
   sort: ItemSort;
   onSort: (col: ItemSortCol) => void;
@@ -50,6 +58,7 @@ const RecapItemsTable = ({
 }) => {
   const cols = colsOf(withPounds, narrow);
   const { tip, track, clear } = useCursorTip<string>();
+  const [menu, setMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
   const tipRow = tip ? rows.find((r) => r.code === tip.key) : undefined;
   const head = (col: ItemSortCol, label: string, right = false) => (
     <RecapSortHead col={col} sort={sort} onSort={onSort} right={right}>
@@ -79,6 +88,10 @@ const RecapItemsTable = ({
             <div
               key={r.code}
               role="row"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setMenu({ x: e.clientX, y: e.clientY, upc: r.code });
+              }}
               className="grid items-center gap-3 px-[18px] h-[34px] text-[13px] text-content border-b border-gray-100 even:bg-row_stripe"
               style={{ gridTemplateColumns: cols }}
             >
@@ -120,6 +133,15 @@ const RecapItemsTable = ({
         {withPounds && <span className="text-right tabular-nums">{lb(totals.pounds)}</span>}
       </div>
 
+      {menu && (
+        <UpcContextMenu
+          x={menu.x}
+          y={menu.y}
+          upc={menu.upc}
+          allUpcs={allUpcs}
+          onClose={() => setMenu(null)}
+        />
+      )}
       {tip && tipRow && <CursorTip lines={tipRow.vendors} x={tip.x} y={tip.y} />}
     </>
   );

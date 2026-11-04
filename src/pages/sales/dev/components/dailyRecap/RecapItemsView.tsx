@@ -106,6 +106,7 @@ const RecapItemsView = ({
     pageSize,
   );
   const rows = sorted.slice(page * pageSize, page * pageSize + pageSize);
+  const allUpcs = useMemo(() => sorted.map((r) => r.code), [sorted]);
 
   return (
     <section
@@ -159,6 +160,7 @@ const RecapItemsView = ({
         <>
           <RecapItemsTable
             rows={rows}
+            allUpcs={allUpcs}
             totals={totals}
             sort={sort}
             onSort={(col: ItemSortCol) =>

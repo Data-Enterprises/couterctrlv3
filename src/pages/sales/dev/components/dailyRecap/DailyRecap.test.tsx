@@ -263,6 +263,23 @@ describe("Daily recap", () => {
     expect(within(list).queryByRole("button", { name: "Clear all" })).toBeNull();
   });
 
+  it("copies a UPC, or every UPC in the list, from a right-click on a row", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    setup();
+    await waitFor(() =>
+      expect(within(screen.getByRole("region", { name: "Baskets" })).getByText("3")).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "View items" }));
+    const [b] = within(screen.getByRole("region", { name: "Items" })).getAllByRole("row");
+    fireEvent.contextMenu(b, { clientX: 20, clientY: 20 });
+    fireEvent.click(screen.getByRole("button", { name: "Copy UPC" }));
+    expect(writeText).toHaveBeenLastCalledWith("b");
+    fireEvent.contextMenu(b, { clientX: 20, clientY: 20 });
+    fireEvent.click(screen.getByRole("button", { name: /Copy all UPCs/ }));
+    expect(writeText).toHaveBeenLastCalledWith("b, a, c");
+  });
+
   it("names the lead vendor, with +1 listing the others on hover", async () => {
     setup();
     await waitFor(() =>

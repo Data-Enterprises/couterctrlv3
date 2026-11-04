@@ -1979,6 +1979,8 @@ The Daily Recap export's columns follow the item view's order after the date: pr
 
 The tooltip that follows the mouse (Summary's hour chart, View items, an item's vendors) is now a global dev component in src/components-dev/tooltip: useCursorTip, CursorTip for words, CursorTipBox for a laid-out readout. The store panel's header icons, See item actions and Export CSV, use it in place of the browser's dark title box. docs/theme-reference.md now names it as the app's tooltip.
 
+Right-clicking an item in the Summary item view opens the app's UPC menu: Copy UPC for that item, or Copy all UPCs for every item the search and filters leave, across all pages, in the list's order.
+
 ## Sales: Top 200
 
 dev mode only
