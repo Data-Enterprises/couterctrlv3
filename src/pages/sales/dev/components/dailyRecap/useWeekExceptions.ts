@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { cacheRecapExceptions } from "../../../../../features/dev/devSalesLedgerSlice";
 import { exceptionsByDay } from "./recapExceptions";
 import { loadWeekExceptions } from "./recapExceptionsLoad";
 import type { WeekExceptionsState } from "./recapTypes";
 
 /**
- * The week's exceptions for the open store, read once when the tab opens.
+ * Weeks whose exception lines are on the wire right now, so a remount or
+ * StrictMode's double mount waits on the read already going rather than
+ * sending another. Keys only, emptied as each read lands.
+ */
+const inFlight = new Set<string>();
+
+/**
+ * The week's exceptions for the open store location, rolled up by day.
  *
- * One read covers every day, so picking a day finds its exceptions already in
- * hand. Kept in the hook, not in Redux: it belongs to this tab for this store,
- * and nothing needs it after the popup closes, so there is nothing for
- * sign-out to clear. A new store or week starts over, and an answer for the
- * one before it that lands late is dropped.
+ * Read once per store location and week, and kept in the Sales ledger slice
+ * (`recapExceptions`), so opening Summary again, switching tabs or coming
+ * back to a store reads nothing; sign-out clears it with the rest of the dev
+ * namespace. A failed read is not retried while the tab stays open (no loop);
+ * opening the store again tries once more.
  */
 export const useWeekExceptions = (
   storeId: number,
@@ -19,24 +27,31 @@ export const useWeekExceptions = (
   startDate: string,
   endDate: string,
 ): WeekExceptionsState => {
+  const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
-  const [state, setState] = useState<WeekExceptionsState>({ status: "idle" });
+  const key = `${storeId}__${storeNumber}__${startDate}__${endDate}`;
+  const byDay = useAppSelector((s) => s.dev.salesLedger.recapExceptions[key]);
+  const [failedKey, setFailedKey] = useState<string | null>(null);
+  const [, setPending] = useState(0);
 
   useEffect(() => {
-    if (!startDate || !endDate) return;
-    let live = true;
-    setState({ status: "loading" });
+    if (!startDate || !endDate || byDay || inFlight.has(key)) return;
+    inFlight.add(key);
+    setPending((n) => n + 1);
     loadWeekExceptions(url, token, storeId, storeNumber, startDate, endDate)
       .then((lines) => {
-        if (live) setState({ status: "ready", byDay: exceptionsByDay(lines) });
+        dispatch(
+          cacheRecapExceptions({ key, byDay: Object.fromEntries(exceptionsByDay(lines)) }),
+        );
       })
-      .catch(() => {
-        if (live) setState({ status: "error" });
+      .catch(() => setFailedKey(key))
+      .finally(() => {
+        inFlight.delete(key);
+        setPending((n) => n + 1);
       });
-    return () => {
-      live = false;
-    };
-  }, [url, token, storeId, storeNumber, startDate, endDate]);
+  }, [key, byDay, url, token, storeId, storeNumber, startDate, endDate, dispatch]);
 
-  return state;
+  if (byDay) return { status: "ready", byDay };
+  if (failedKey === key) return { status: "error" };
+  return inFlight.has(key) ? { status: "loading" } : { status: "idle" };
 };

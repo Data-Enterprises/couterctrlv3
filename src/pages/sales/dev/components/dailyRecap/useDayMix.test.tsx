@@ -24,8 +24,7 @@ const row = (store_number: string, over: Partial<SubDeptMargin> = {}) =>
     ...over,
   }) as SubDeptMargin;
 
-const setup = () => {
-  const store = setupStore();
+const setup = (store = setupStore()) => {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   );
@@ -95,5 +94,42 @@ describe("a day's mix", () => {
     rerender({ id: 700, num: "12" });
     await act(async () => finish([row("369")]));
     expect(result.current.stateOf("2026-10-30").status).toBe("idle");
+  });
+
+  it("keeps a day's answer across a remount, so coming back to Summary reads nothing", async () => {
+    fetchRows.mockResolvedValue([row("369")]);
+    const store = setupStore();
+    const first = setup(store);
+    act(() => first.result.current.request("2026-10-30"));
+    await waitFor(() => expect(first.result.current.stateOf("2026-10-30").status).toBe("ready"));
+    first.unmount();
+    const again = setup(store);
+    act(() => again.result.current.requestAll(["2026-10-30"]));
+    expect(again.result.current.stateOf("2026-10-30").status).toBe("ready");
+    expect(fetchRows).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not send a second read for a day already on the wire", async () => {
+    let finish: (rows: SubDeptMargin[]) => void = () => {};
+    fetchRows.mockReturnValueOnce(new Promise((r) => (finish = r)));
+    const store = setupStore();
+    const a = setup(store);
+    const b = setup(store);
+    act(() => {
+      a.result.current.request("2026-10-31");
+      b.result.current.request("2026-10-31");
+    });
+    await act(async () => finish([]));
+    await waitFor(() => expect(b.result.current.stateOf("2026-10-31").status).toBe("ready"));
+    expect(fetchRows).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry a failed day on its own when the week is asked for again", async () => {
+    fetchRows.mockRejectedValue(new Error("502"));
+    const { result } = setup();
+    act(() => result.current.requestAll(["2026-11-01"]));
+    await waitFor(() => expect(result.current.stateOf("2026-11-01").status).toBe("error"));
+    act(() => result.current.requestAll(["2026-11-01"]));
+    expect(fetchRows).toHaveBeenCalledTimes(1);
   });
 });

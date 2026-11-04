@@ -118,4 +118,4 @@ export type WeekExceptionsState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "error" }
-  | { status: "ready"; byDay: Map<string, RecapExceptions> };
+  | { status: "ready"; byDay: Record<string, RecapExceptions> };

@@ -20,6 +20,10 @@ import type {
   SubSale,
   ThresholdValue,
 } from "../../interfaces";
+import type {
+  RecapExceptions,
+  RecapMix,
+} from "../../pages/sales/dev/components/dailyRecap/recapTypes";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -192,6 +196,21 @@ interface SalesLedgerState {
    */
   storeCache: Record<string, PopupStoreData>;
   storeCacheOrder: string[];
+  /**
+   * Summary (Daily recap): what each day's item rows came to, per store
+   * location and date (`storeid__number__date`).
+   *
+   * The rolled-up answer only (an item count, refunds and the price mix), not
+   * the rows, so it stays small. Kept here rather than in the tab because the
+   * tab unmounts on every tab switch and store hop, and Summary is the tab
+   * every store opens on: held in the tab, a store's seven day reads ran
+   * again every time it was looked at. Cleared on sign-out with the rest of
+   * the dev namespace.
+   */
+  recapMix: Record<string, RecapMix>;
+  /** The week's exceptions, rolled up by day, per store location and week
+   *  (`storeid__number__start__end`). Same reasons as `recapMix`. */
+  recapExceptions: Record<string, Record<string, RecapExceptions>>;
 
   /**
    * Financials — the daily per-bin POS records, for the export.
@@ -309,6 +328,8 @@ const initialState: SalesLedgerState = {
   lastFetchedStoreKey: null,
   storeCache: {},
   storeCacheOrder: [],
+  recapMix: {},
+  recapExceptions: {},
   topItems: [],
   topItemPoints: [],
   topItemsLW: [],
@@ -513,6 +534,15 @@ const salesLedgerSlice = createSlice({
 
     /** Serve a store already held, without going to the network. A read is a
      *  use, so it goes to the front of the queue too. */
+    cacheRecapMix: (state, action: PayloadAction<{ key: string; mix: RecapMix }>) => {
+      state.recapMix[action.payload.key] = action.payload.mix;
+    },
+    cacheRecapExceptions: (
+      state,
+      action: PayloadAction<{ key: string; byDay: Record<string, RecapExceptions> }>,
+    ) => {
+      state.recapExceptions[action.payload.key] = action.payload.byDay;
+    },
     restoreStoreData: (state, action: PayloadAction<string>) => {
       const held = state.storeCache[action.payload];
       if (!held) return;
@@ -720,6 +750,8 @@ export const {
   setTop10Loading,
   cacheStoreData,
   restoreStoreData,
+  cacheRecapMix,
+  cacheRecapExceptions,
   setLastFetchedStoreKey,
   setRawSubs,
   setRawLWSubs,

@@ -1,71 +1,104 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { cacheRecapMix } from "../../../../../features/dev/devSalesLedgerSlice";
 import { loadDayRows } from "./recapLoad";
 import { mixForDay } from "./recapMix";
 import type { DayMixState } from "./recapTypes";
 
 /**
- * Each day's item count, refunds and price mix, read a day at a time and kept
- * while the store is.
+ * Days whose item rows are on the wire right now, so a second ask (a tab
+ * switch back, StrictMode's double mount) waits on the first instead of
+ * sending another. Keys only, emptied as each read lands.
+ */
+const inFlight = new Set<string>();
+
+const mixKey = (storeId: number, storeNumber: string, date: string) =>
+  `${storeId}__${storeNumber}__${date}`;
+
+/**
+ * Each day's item count and price mix, from that day's item rows.
  *
- * Everything else on the tab comes from what the popup already holds; only
- * these need the day's item rows, which carry a product code, a sale type
- * and a price type. The week view asks for all seven days so its Items column
- * fills in day by day; the day view then finds its day already read. One
- * store, one day, every sub dept per read: seven modest reads rather than one
- * week-sized one, the same load as the Daily Recap export.
+ * The answer is kept in the Sales ledger slice (`recapMix`), so a day is read
+ * once per store location however often Summary is opened, switched away
+ * from or come back to; sign-out clears it with the rest of the dev
+ * namespace. One store, one day, every sub dept per read.
  *
- * Kept in the hook, not in Redux: it belongs to this tab for this store, and
- * nothing needs it after the popup closes, so there is nothing for sign-out to
- * have to clear. A change of store starts again from empty, and an answer for
- * the previous store that lands late is dropped.
+ * A day that fails is not retried by itself: `requestAll` passes over it, so
+ * a failing endpoint cannot loop. Asking for that one day (`request`, which
+ * picking it does) tries again once.
  */
 export const useDayMix = (storeId: number, storeNumber: string) => {
+  const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
-  const [byDate, setByDate] = useState<Record<string, DayMixState>>({});
-  const asked = useRef(new Set<string>());
-  const storeKey = `${storeId}__${storeNumber}`;
-  const current = useRef(storeKey);
+  const cache = useAppSelector((s) => s.dev.salesLedger.recapMix);
+  const [failed, setFailed] = useState<Set<string>>(() => new Set());
+  const [, setPending] = useState(0);
 
-  useEffect(() => {
-    current.current = storeKey;
-    asked.current = new Set();
-    setByDate({});
-  }, [storeKey]);
+  // Read through refs so `request` keeps one identity: an effect that calls
+  // it must not re-run, and retry, every time the cache or a failure moves.
+  const cacheRef = useRef(cache);
+  cacheRef.current = cache;
+  const failedRef = useRef(failed);
+  failedRef.current = failed;
 
-  /** Start a day's read. Once per day; a failed day is forgotten so asking
-   *  again retries. The outcome lands in `stateOf`. */
-  const request = useCallback(
+  const start = useCallback(
     (date: string) => {
-      if (asked.current.has(date)) return;
-      asked.current.add(date);
-      const key = storeKey;
-      setByDate((s) => ({ ...s, [date]: { status: "loading" } }));
+      const key = mixKey(storeId, storeNumber, date);
+      if (cacheRef.current[key] || inFlight.has(key)) return;
+      inFlight.add(key);
+      setPending((n) => n + 1);
+      setFailed((f) => {
+        if (!f.has(key)) return f;
+        const next = new Set(f);
+        next.delete(key);
+        return next;
+      });
       loadDayRows(url, token, storeId, storeNumber, date)
         .then((rows) => {
-          if (current.current !== key) return;
-          setByDate((s) => ({ ...s, [date]: { status: "ready", mix: mixForDay(rows) } }));
+          dispatch(cacheRecapMix({ key, mix: mixForDay(rows) }));
         })
         .catch(() => {
-          if (current.current !== key) return;
-          asked.current.delete(date);
-          setByDate((s) => ({ ...s, [date]: { status: "error" } }));
+          setFailed((f) => new Set(f).add(key));
+        })
+        .finally(() => {
+          inFlight.delete(key);
+          setPending((n) => n + 1);
         });
     },
-    [url, token, storeId, storeNumber, storeKey],
+    [url, token, storeId, storeNumber, dispatch],
   );
 
-  /** Every day not yet asked for. */
+  /** One day, retrying it if it failed before. */
+  const request = useCallback((date: string) => start(date), [start]);
+
+  /** Every day not already held, in flight or failed. */
   const requestAll = useCallback(
     (dates: string[]) => {
-      for (const d of dates) request(d);
+      for (const d of dates) {
+        if (!failedRef.current.has(mixKey(storeId, storeNumber, d))) start(d);
+      }
     },
-    [request],
+    [start, storeId, storeNumber],
   );
 
+  // A new store or location starts with a clean failure list.
+  const storeKey = `${storeId}__${storeNumber}`;
+  const lastStore = useRef(storeKey);
+  useEffect(() => {
+    if (lastStore.current === storeKey) return;
+    lastStore.current = storeKey;
+    setFailed(new Set());
+  }, [storeKey]);
+
   const stateOf = useCallback(
-    (date: string): DayMixState => byDate[date] ?? { status: "idle" },
-    [byDate],
+    (date: string): DayMixState => {
+      const key = mixKey(storeId, storeNumber, date);
+      const mix = cache[key];
+      if (mix) return { status: "ready", mix };
+      if (failed.has(key)) return { status: "error" };
+      return inFlight.has(key) ? { status: "loading" } : { status: "idle" };
+    },
+    [cache, failed, storeId, storeNumber],
   );
 
   return { stateOf, request, requestAll };

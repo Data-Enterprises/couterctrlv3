@@ -32,7 +32,7 @@ const RecapExceptionsCard = ({
       />
     );
   }
-  const day = state.byDay.get(date) ?? NO_EXCEPTIONS;
+  const day = state.byDay[date] ?? NO_EXCEPTIONS;
   return (
     <RecapStatCard
       title="Exceptions"

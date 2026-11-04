@@ -1922,3 +1922,10 @@ The tab is renamed Summary and moved to the front of the store panel's tabs;
 clicking a store in the left panel now opens it on Summary rather than Sub
 depts. In the group view's store detail, the button that opens the store now
 reads Open Store Comparison.
+
+### Summary reads each day once
+
+Summary used to read a store's seven days again every time you came back to
+it, from another tab or another store. It now keeps what it read for the
+session (cleared on sign-out), shares a read already on its way instead of
+sending a second, and no longer retries a failing read over and over.

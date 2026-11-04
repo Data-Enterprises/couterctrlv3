@@ -32,7 +32,7 @@ import { useWeekExceptions } from "./useWeekExceptions";
 const DailyRecap = ({
   storeId,
   storeNumber,
-  dates,
+  dates: datesIn,
   days: dayDots,
   selectedDate,
 }: {
@@ -45,6 +45,10 @@ const DailyRecap = ({
   selectedDate: string | null;
 }) => {
   const { rawSubs, rawHourly } = useAppSelector((s) => s.dev.salesLedger);
+  // The popup rebuilds its date list on every render; key it on its content
+  // so nothing below re-runs (or re-asks) unless the week really changed.
+  const datesKey = datesIn.join(",");
+  const dates = useMemo(() => datesIn, [datesKey]);
   const { stateOf, request, requestAll } = useDayMix(storeId, storeNumber);
   const { ref, narrow, short } = usePanelSize();
   const exceptions = useWeekExceptions(
