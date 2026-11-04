@@ -159,7 +159,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Download it",
-          pre: "Open Export CSV from the panel's header and tick the Daily Recap preset. It saves one row per item per day for the week on screen, with the day, sub department and vendor on every row.",
+          pre: "Open Export CSV from the panel's header and tick Items Sold. It saves the item grid from View items: one row per UPC with its sub department, vendor, sales, qty and weight, totalled over the dates under it. For one day, set From and To to that date; for a range, set both ends (up to 31 days). It starts on the day picked in the day cards, or the week.",
         },
       ],
       issues: [

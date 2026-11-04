@@ -669,7 +669,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           subDeptName={exportSubDeptName}
           storeId={selection.storeId}
           storeNumber={selection.storeNumber}
-          weekDates={twRealDates}
+          selectedDate={selectedDate}
           startDate={twStart}
           endDate={twEnd}
           // Only when the ledger actually searched a group. Financials is the

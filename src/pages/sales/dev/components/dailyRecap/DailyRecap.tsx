@@ -26,7 +26,7 @@ import { useWeekExceptions } from "./useWeekExceptions";
  *
  * A summary, not a verdict: no grades, no thresholds and no last week or last
  * year anywhere on it. Always the open store, even with a comparison store
- * chosen in Stores. Its download is Daily Recap in Export CSV.
+ * chosen in Stores. Its download is Items Sold in Export CSV.
  *
  * Everything but a day's item count and price mix, and the week's exceptions,
  * comes from what the popup already loaded for Sub depts and Hourly. The item

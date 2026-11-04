@@ -1,29 +1,26 @@
 import { rowsToCsv } from "../../../../../utils/csvExport";
 import { NO_VENDOR } from "./recapItems";
-import type { RecapItem } from "./recapTypes";
+import { DEFAULT_ITEM_SORT, sortItemRows } from "./recapItemSort";
+import type { RecapItemRow } from "./recapTypes";
 
-/** The item's vendors that day, biggest first; blank where it had none. */
-const vendorCell = (i: RecapItem) =>
-  (i.vendors ?? [])
-    .map((v) => v.vendor)
-    .filter((v) => v !== NO_VENDOR)
-    .join("; ");
+/** Every vendor that sold the item, biggest first; blank where it had none. */
+const vendorCell = (r: RecapItemRow) => r.vendors.filter((v) => v !== NO_VENDOR).join("; ");
 
 /**
- * The download: one row per item per day.
+ * The Items Sold download (Export CSV): Summary's item grid as a file.
  *
- * The day and the sub dept ride on every row so the file sorts and pivots on
- * its own, without the screen's grouping. After the date, the columns run in
- * the item view's order: UPC, description, sub dept, vendor (every vendor
- * that sold it that day, biggest first, "; " between them; blank for none),
- * net sales, qty, and pounds only for a store that sells by weight.
+ * One row per UPC with its totals for the period (the week, or the day
+ * picked), exactly as the item view lists it before any search or filter:
+ * the same columns in the same order (UPC, description, sub dept, vendor,
+ * net sales, qty, and pounds only for a store that sells by weight), sorted
+ * the same way, biggest sales first. So the row count is the grid's item
+ * count and the columns add up to its totals row.
+ *
+ * Vendor names every vendor that sold the item, biggest first, "; " between
+ * them, where the grid shows the lead one and "+1".
  */
-export const recapCsv = (
-  days: { date: string; items: RecapItem[] }[],
-  withPounds: boolean,
-): string => {
+export const recapCsv = (rows: RecapItemRow[], withPounds: boolean): string => {
   const headers = [
-    "date",
     "product_code",
     "description",
     "sub_department",
@@ -32,22 +29,14 @@ export const recapCsv = (
     "qty",
     ...(withPounds ? ["pounds"] : []),
   ];
-  const rows = days.flatMap(({ date, items }) =>
-    [...items]
-      .sort(
-        (a, b) =>
-          a.subDeptName.localeCompare(b.subDeptName) || b.net - a.net,
-      )
-      .map((i) => [
-        date,
-        i.code,
-        i.name,
-        i.subDeptName,
-        vendorCell(i),
-        i.net.toFixed(2),
-        Math.round(i.units * 1000) / 1000,
-        ...(withPounds ? [Math.round(i.pounds * 1000) / 1000] : []),
-      ]),
-  );
-  return rowsToCsv(headers, rows);
+  const lines = sortItemRows(rows, DEFAULT_ITEM_SORT).map((r) => [
+    r.code,
+    r.name,
+    r.subDeptName,
+    vendorCell(r),
+    r.net.toFixed(2),
+    Math.round(r.units * 1000) / 1000,
+    ...(withPounds ? [(Math.round(r.pounds * 1000) / 1000).toFixed(3)] : []),
+  ]);
+  return rowsToCsv(headers, lines);
 };

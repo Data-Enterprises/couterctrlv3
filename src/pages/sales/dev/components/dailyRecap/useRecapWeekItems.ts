@@ -16,7 +16,7 @@ export interface WeekDayItems {
 }
 
 /**
- * The Daily Recap export's reader: a week of items, one row per item per day.
+ * The Items Sold export's reader: the ticked days' items, a day at a time.
  *
  * Takes every finished day Summary has already read from the cache and reads
  * only the rest, a day at a time, all at once. Usually that is just today,

@@ -35,7 +35,7 @@ import type { ItemSort, ItemSortCol } from "./recapTypes";
  * 200 is, by net sales, biggest first. Sort, filters and search run over the
  * whole list; the totals row is the whole list too.
  *
- * No grades, no last week or last year. The download is the Daily Recap
+ * No grades, no last week or last year. The download is the Items Sold
  * preset in Export CSV.
  */
 const RecapItemsView = ({

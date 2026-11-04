@@ -14,7 +14,7 @@ const vendorOf = (r: SubDeptMargin) => {
 };
 
 /**
- * One row per item for a day, for the Daily Recap export and the item view.
+ * One row per item for a day, for the Items Sold export and the item view.
  *
  * `subs/subs` splits an item's day by price type and vendor, so a can of soda
  * that rang at regular and on sale comes back as two rows. The export wants

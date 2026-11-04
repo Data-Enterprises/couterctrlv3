@@ -24,7 +24,7 @@ const inFlight = new Set<string>();
  * namespace. One store, one day, every sub dept per read.
  *
  * The same read keeps the day's items, folded one row per item, for the
- * Daily Recap export and the item view (`recapItems`), so neither reads a
+ * Items Sold export and the item view (`recapItems`), so neither reads a
  * day Summary has seen. Not today, which is still changing: today's items are
  * held here only while Summary is open, and read again next time.
  *

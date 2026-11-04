@@ -96,7 +96,7 @@ export interface RecapVendorPart {
 }
 
 /**
- * One item on one day, every row of it folded together: for the Daily Recap
+ * One item on one day, every row of it folded together: for the Items Sold
  * export, and for Summary's item view.
  */
 export interface RecapItem {

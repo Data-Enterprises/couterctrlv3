@@ -1981,6 +1981,8 @@ The tooltip that follows the mouse (Summary's hour chart, View items, an item's 
 
 Right-clicking an item in the Summary item view opens the app's UPC menu: Copy UPC for that item, or Copy all UPCs for every item the search and filters leave, across all pages, in the list's order.
 
+The Daily Recap export is now Items Sold: Summary's item grid as a file, one row per UPC with its totals (sub dept, vendor, sales, qty, weight), not one row per item per day. Under the preset, From and To pick one date (11/3) or a range (11/1 to 11/3), up to 31 days; they start on the day picked in the day cards, else the week, and This week resets them. For the week the file has the grid's row count and adds up to the All week card (checked on 020 IGA Owensboro: 7,047 UPCs, $166,410.16).
+
 ## Sales: Top 200
 
 dev mode only

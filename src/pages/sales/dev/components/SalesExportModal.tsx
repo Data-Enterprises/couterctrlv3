@@ -21,6 +21,9 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppSelector } from "../../../../hooks";
 import { recapCsv } from "./dailyRecap/recapCsv";
 import { sellsByWeight } from "./dailyRecap/recapDays";
+import { dayName } from "./dailyRecap/recapFormat";
+import { MAX_EXPORT_DAYS, datesBetween } from "./dailyRecap/recapRange";
+import { mergeItems } from "./dailyRecap/recapItemRows";
 import { useRecapWeekItems } from "./dailyRecap/useRecapWeekItems";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -42,10 +45,11 @@ interface SalesExportModalProps {
    *  option is the only one that fetches, so it is the only one that needs
    *  them. */
   storeId: number;
-  /** The location within `storeId`, and the week's seven dates: Daily Recap
-   *  reads that location's items a day at a time. */
+  /** The location within `storeId`: Items Sold reads that location's items
+   *  a day at a time. */
   storeNumber: string;
-  weekDates: string[];
+  /** The day picked in the day cards, if any: Items Sold starts on it. */
+  selectedDate?: string | null;
   startDate: string;
   endDate: string;
   /** The group the ledger searched, when it searched one. Lets Financials
@@ -64,7 +68,6 @@ type ExportDataset =
   | "items"
   | "dailyrecap"
   | "financials";
-
 
 type ItemSev = "critical" | "watch" | "healthy";
 type ModalMode = "presets" | "custom";
@@ -388,7 +391,7 @@ const SalesExportModal = ({
   subDeptName,
   storeId,
   storeNumber,
-  weekDates,
+  selectedDate = null,
   startDate,
   endDate,
   group,
@@ -417,6 +420,12 @@ const SalesExportModal = ({
   // Its own dates, defaulting to the week on screen. Financials is the only
   // export that can answer for a range the page is not showing, and a month
   // of records is the usual ask.
+  // Items Sold's dates: one day or a range. Starts on the day picked in the
+  // day cards, as Summary's item grid shows it, else the week.
+  const [itemsFrom, setItemsFrom] = useState(selectedDate ?? startDate);
+  const [itemsTo, setItemsTo] = useState(selectedDate ?? endDate);
+  const itemsDates = datesBetween(itemsFrom, itemsTo);
+  const itemsTooLong = itemsDates.length > MAX_EXPORT_DAYS;
   const [finFrom, setFinFrom] = useState(startDate);
   const [finTo, setFinTo] = useState(endDate);
   // Starts on the store being looked at. A whole group's records should be
@@ -660,23 +669,39 @@ const SalesExportModal = ({
       const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
       sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
     }
-    // Daily Recap takes the days Summary already read from the cache and
-    // reads only the rest (usually just today, which is never kept), a day at
-    // a time, for the week on screen. A day that fails is named in the section's title and left out
-    // rather than losing the file.
+    // Items Sold is Summary's item grid as a file: one row per UPC with its
+    // totals over one date or a range (the From and To under the preset),
+    // before any search or filter. It takes the days Summary already read
+    // from the cache and reads only the rest, a day at a time. A day that
+    // fails is named in the section's title and left out rather than losing
+    // the file.
     if (selected.has("dailyrecap")) {
       setFetching(true);
-      const week = await loadRecapWeek(weekDates);
+      const recapDates = itemsDates;
+      const week = await loadRecapWeek(recapDates);
       setFetching(false);
       const missing = week.filter((d) => d.failed).map((d) => d.date);
       const note = missing.length
         ? ` — INCOMPLETE: ${missing.join(", ")} could not be read`
         : "";
+      const period =
+        recapDates.length === 1
+          ? dayName(recapDates[0])
+          : `${recapDates[0]} to ${recapDates[recapDates.length - 1]}`;
+      const rows = mergeItems(
+        week.map((d) => d.items),
+        [],
+      );
       sections.push(
-        `Daily Recap — one row per item per day${note}\n${recapCsv(week, sellsByWeight(rawSubs))}`,
+        `Items Sold — ${period}${note}\n${recapCsv(
+          rows,
+          sellsByWeight(rawSubs) || rows.some((r) => r.pounds > 0),
+        )}`,
       );
       if (missing.length) {
-        toast.warn("Some days' items could not be read — the recap is incomplete");
+        toast.warn(
+          "Some days' items could not be read — the recap is incomplete",
+        );
       }
     }
     // Last, and the only one that goes to the network. A failure here must
@@ -699,9 +724,7 @@ const SalesExportModal = ({
           `Financials — ${scopeLabel}, ${finFrom} to ${finTo}${note}\n${buildFinancialsCsv(fin.data)}`,
         );
         if (fin.truncated) {
-          toast.warn(
-            "Financials hit the row cap — the file is incomplete",
-          );
+          toast.warn("Financials hit the row cap — the file is incomplete");
         }
         if (fin.data.length === 0) {
           toast.warn("No financials rows for those stores and dates");
@@ -758,9 +781,9 @@ const SalesExportModal = ({
     },
     {
       id: "dailyrecap",
-      label: "Daily Recap",
+      label: "Items Sold",
       description:
-        "Every item sold each day this week — sub dept, vendor, qty, pounds where weighed, and net sales, one row per item per day",
+        "Summary's item grid: one row per UPC with its totals for one date or a range",
     },
     // Offered only once the router is deployed — see FINANCIALS_READY. The
     // code around it stays, so turning it on is one constant.
@@ -845,26 +868,26 @@ const SalesExportModal = ({
             {presetDatasets.map(({ id, label, description }) => (
               <div key={id}>
                 <label className="flex items-start gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={selected.has(id)}
-                  onChange={() =>
-                    setSelected((prev) => {
-                      const n = new Set(prev);
-                      n.has(id) ? n.delete(id) : n.add(id);
-                      return n;
-                    })
-                  }
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                />
-                <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
-                    {label}
-                  </p>
-                  <p className="text-[11px] text-content mt-0.5">
-                    {description}
-                  </p>
-                </div>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(id)}
+                    onChange={() =>
+                      setSelected((prev) => {
+                        const n = new Set(prev);
+                        n.has(id) ? n.delete(id) : n.add(id);
+                        return n;
+                      })
+                    }
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
+                      {label}
+                    </p>
+                    <p className="text-[11px] text-content mt-0.5">
+                      {description}
+                    </p>
+                  </div>
                 </label>
 
                 {/* Financials is the only preset that fetches, so it is the
@@ -878,115 +901,164 @@ const SalesExportModal = ({
                       looking for a date range does not find it by checking a
                       box to see what happens, they decide the export cannot do
                       it and go back to asking for a query. */}
+
+                {/* Items Sold's dates, laid out as Financials' are: one
+                    date (From and To the same) or a range. */}
+                {id === "dailyrecap" && (
+                  <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
+                    <div className="flex items-end gap-2 flex-wrap">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+                          From
+                        </span>
+                        <input
+                          type="date"
+                          aria-label="Items Sold from"
+                          value={itemsFrom}
+                          max={itemsTo}
+                          onChange={(e) => setItemsFrom(e.target.value)}
+                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+                          To
+                        </span>
+                        <input
+                          type="date"
+                          aria-label="Items Sold to"
+                          value={itemsTo}
+                          min={itemsFrom}
+                          onChange={(e) => setItemsTo(e.target.value)}
+                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setItemsFrom(startDate);
+                          setItemsTo(endDate);
+                        }}
+                        className="text-[11px] font-semibold text-content hover:underline pb-1.5"
+                      >
+                        This week
+                      </button>
+                    </div>
+                    {itemsTooLong && (
+                      <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
+                        Pick {MAX_EXPORT_DAYS} days or fewer.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {id === "financials" && (
                   <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
-                      <p className="text-[10px] text-content/85 leading-snug mb-2">
-                        {financialsLoading
-                          ? "Reading the records for this search…"
-                          : searchedAnswers
-                            ? `${searchedRows.length.toLocaleString()} records in hand for this week${
-                                financialsTruncated ? " (capped)" : ""
-                              }`
-                            : "These dates are outside the search — they will be fetched on download."}
-                      </p>
-                      <div className="flex items-end gap-2 flex-wrap">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                            From
-                          </span>
-                          <input
-                            type="date"
-                            value={finFrom}
-                            max={finTo}
-                            onChange={(e) => setFinFrom(e.target.value)}
-                            className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                            To
-                          </span>
-                          <input
-                            type="date"
-                            value={finTo}
-                            min={finFrom}
-                            onChange={(e) => setFinTo(e.target.value)}
-                            className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            setFinFrom(startDate);
-                            setFinTo(endDate);
-                          }}
-                          className="text-[11px] font-semibold text-content/85 hover:underline pb-1.5"
-                        >
-                          This week
-                        </button>
+                    <p className="text-[10px] text-content/85 leading-snug mb-2">
+                      {financialsLoading
+                        ? "Reading the records for this search…"
+                        : searchedAnswers
+                          ? `${searchedRows.length.toLocaleString()} records in hand for this week${
+                              financialsTruncated ? " (capped)" : ""
+                            }`
+                          : "These dates are outside the search — they will be fetched on download."}
+                    </p>
+                    <div className="flex items-end gap-2 flex-wrap">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                          From
+                        </span>
+                        <input
+                          type="date"
+                          value={finFrom}
+                          max={finTo}
+                          onChange={(e) => setFinFrom(e.target.value)}
+                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                        />
                       </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                          To
+                        </span>
+                        <input
+                          type="date"
+                          value={finTo}
+                          min={finFrom}
+                          onChange={(e) => setFinTo(e.target.value)}
+                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          setFinFrom(startDate);
+                          setFinTo(endDate);
+                        }}
+                        className="text-[11px] font-semibold text-content/85 hover:underline pb-1.5"
+                      >
+                        This week
+                      </button>
+                    </div>
 
-                      {canFilterStores && (
-                        <div className="mt-2.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                              Stores
-                            </span>
-                            <span className="text-[10px] font-semibold text-content">
-                              {finTicked.length} of {stores!.length}
-                            </span>
-                            <button
-                              onClick={() =>
-                                setFinStores(
-                                  new Set(stores!.map((st) => st.storeid)),
-                                )
-                              }
-                              className="text-[10px] font-semibold text-content/85 hover:underline"
-                            >
-                              All
-                            </button>
-                            <button
-                              onClick={() => setFinStores(new Set([storeId]))}
-                              className="text-[10px] font-semibold text-content/85 hover:underline"
-                            >
-                              Just this one
-                            </button>
-                          </div>
-                          <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-gray-100 bg-custom-white">
-                            {stores!.map((st) => (
-                              <label
-                                key={st.storeid}
-                                className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-gray-50"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={finStores.has(st.storeid)}
-                                  onChange={() =>
-                                    setFinStores((prev) => {
-                                      const n = new Set(prev);
-                                      n.has(st.storeid)
-                                        ? n.delete(st.storeid)
-                                        : n.add(st.storeid);
-                                      return n;
-                                    })
-                                  }
-                                  className="h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                                />
-                                <span className="tabular-nums font-semibold w-[46px] flex-shrink-0">
-                                  {st.store_number}
-                                </span>
-                                <span className="truncate">
-                                  {st.store_name}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                          {finTicked.length === 0 && (
-                            <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
-                              Pick at least one store.
-                            </p>
-                          )}
+                    {canFilterStores && (
+                      <div className="mt-2.5">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                            Stores
+                          </span>
+                          <span className="text-[10px] font-semibold text-content">
+                            {finTicked.length} of {stores!.length}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setFinStores(
+                                new Set(stores!.map((st) => st.storeid)),
+                              )
+                            }
+                            className="text-[10px] font-semibold text-content/85 hover:underline"
+                          >
+                            All
+                          </button>
+                          <button
+                            onClick={() => setFinStores(new Set([storeId]))}
+                            className="text-[10px] font-semibold text-content/85 hover:underline"
+                          >
+                            Just this one
+                          </button>
                         </div>
-                      )}
+                        <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-gray-100 bg-custom-white">
+                          {stores!.map((st) => (
+                            <label
+                              key={st.storeid}
+                              className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-gray-50"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={finStores.has(st.storeid)}
+                                onChange={() =>
+                                  setFinStores((prev) => {
+                                    const n = new Set(prev);
+                                    n.has(st.storeid)
+                                      ? n.delete(st.storeid)
+                                      : n.add(st.storeid);
+                                    return n;
+                                  })
+                                }
+                                className="h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                              />
+                              <span className="tabular-nums font-semibold w-[46px] flex-shrink-0">
+                                {st.store_number}
+                              </span>
+                              <span className="truncate">{st.store_name}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {finTicked.length === 0 && (
+                          <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
+                            Pick at least one store.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1062,7 +1134,10 @@ const SalesExportModal = ({
                 // store, which is not what an empty list means.
                 (selected.has("financials") &&
                   canFilterStores &&
-                  finTicked.length === 0)
+                  finTicked.length === 0) ||
+                // Items Sold needs a date, and no more days than it reads.
+                (selected.has("dailyrecap") &&
+                  (itemsDates.length === 0 || itemsTooLong))
               }
               className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
             >
