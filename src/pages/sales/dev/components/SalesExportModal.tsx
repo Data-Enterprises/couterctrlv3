@@ -760,7 +760,7 @@ const SalesExportModal = ({
       id: "dailyrecap",
       label: "Daily Recap",
       description:
-        "Every item sold each day this week — units, pounds where weighed, and net sales, one row per item per day",
+        "Every item sold each day this week — sub dept, vendor, qty, pounds where weighed, and net sales, one row per item per day",
     },
     // Offered only once the router is deployed — see FINANCIALS_READY. The
     // code around it stays, so turning it on is one constant.

@@ -1,12 +1,22 @@
 import { rowsToCsv } from "../../../../../utils/csvExport";
+import { NO_VENDOR } from "./recapItems";
 import type { RecapItem } from "./recapTypes";
+
+/** The item's vendors that day, biggest first; blank where it had none. */
+const vendorCell = (i: RecapItem) =>
+  (i.vendors ?? [])
+    .map((v) => v.vendor)
+    .filter((v) => v !== NO_VENDOR)
+    .join("; ");
 
 /**
  * The download: one row per item per day.
  *
  * The day and the sub dept ride on every row so the file sorts and pivots on
- * its own, without the screen's grouping. Pounds is a column only for a store
- * that sells by weight, the same rule the screen follows.
+ * its own, without the screen's grouping. The columns follow the item view's:
+ * vendor (every vendor that sold it that day, biggest first, "; " between
+ * them; blank for none), qty, pounds only for a store that sells by weight,
+ * net sales.
  */
 export const recapCsv = (
   days: { date: string; items: RecapItem[] }[],
@@ -17,7 +27,8 @@ export const recapCsv = (
     "sub_department",
     "product_code",
     "description",
-    "units",
+    "vendor",
+    "qty",
     ...(withPounds ? ["pounds"] : []),
     "net_sales",
   ];
@@ -32,6 +43,7 @@ export const recapCsv = (
         i.subDeptName,
         i.code,
         i.name,
+        vendorCell(i),
         Math.round(i.units * 1000) / 1000,
         ...(withPounds ? [Math.round(i.pounds * 1000) / 1000] : []),
         i.net.toFixed(2),

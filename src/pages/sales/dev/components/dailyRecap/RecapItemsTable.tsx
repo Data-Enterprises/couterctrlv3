@@ -6,7 +6,7 @@ import type { ItemSort, ItemSortCol, RecapItemRow } from "./recapTypes";
 import { useCursorTip } from "./useCursorTip";
 
 /**
- * UPC, Description, Sub dept, Vendor, Units, [Weight], Net sales. Fixed
+ * UPC, Description, Sub dept, Vendor, Qty, [Weight], Net sales. Fixed
  * widths for the figures so each head sits over its own numbers, and the
  * description takes the rest; a narrow panel tightens them.
  */
@@ -60,7 +60,7 @@ const RecapItemsTable = ({
         {head("name", "Description")}
         {head("dept", "Sub dept")}
         {head("vendor", "Vendor")}
-        {head("units", "Units", true)}
+        {head("units", "Qty", true)}
         {withPounds && head("pounds", "Weight", true)}
         {head("net", "Net sales", true)}
       </div>
