@@ -141,16 +141,16 @@ export const SALES_HELP: HelpContent = {
         {
           title: "Pick a day",
           pre: "Click the day's card above the tabs, the same cards every tab uses. The tab turns to that day's full recap. The rows in the week list are figures only; they do not open anything.",
-          see: "The day's net sales hour by hour with the busiest hour, the slowest full hour and the hours it traded; its baskets; its money; and its refunds and price mix. All week in the cards goes back to the week.",
+          see: "Money, Baskets and Exceptions across the top, then the day's net sales hour by hour with its busiest and slowest hours, sales per hour and baskets per hour beside the chart. All week in the cards goes back to the week.",
         },
         {
           title: "Read the money",
-          pre: "Money is a sum you can check: sales with tax, less tax, is the day's net sales, the same figure as its day card. Fuel and lottery, which the store leaves out of net sales, are listed underneath.",
+          pre: "Money leads with the day's net sales, the same figure as its day card, and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
+          see: "A store that sends no price type, such as Sonic, shows an empty bar marked not reported rather than a full one that would claim everything sold at regular.",
         },
         {
-          title: "Read the price mix",
-          pre: "Price mix is the share of the day's sales at regular price against on sale or TPR. It and the refunds are read when you pick the day, so they take a moment.",
-          see: "A store that sends no price type, such as Sonic, shows an empty bar marked Not reported rather than a full one that would claim everything sold at regular.",
+          title: "Read the exceptions",
+          pre: "Exceptions counts the day's transactions that had a void, cancel, refund or no sale, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
         },
         {
           title: "Download it",
@@ -167,12 +167,12 @@ export const SALES_HELP: HelpContent = {
           a: "The register already takes coupons out of the sales, and the coupon columns repeat that money (sometimes twice, on the item and on its discount line). Any coupon total shown here would be counted twice.",
         },
         {
-          q: "Fuel or lottery shows under Money as left out",
-          a: "The store leaves them out of its net sales, so they are out of the day's figures too, the same as on the day cards. Their amount is listed so it is not lost.",
+          q: "Is fuel or lottery in these figures?",
+          a: "No. The store leaves its fuel, lottery and cash sub departments out of net sales, and so does the recap, the same as the day cards.",
         },
         {
-          q: "Refunds and price mix say the items could not be read",
-          a: "Everything else for the day is unaffected. Pick All week and then the day again to try once more.",
+          q: "The price mix or the exceptions could not be read",
+          a: "Everything else for the day is unaffected. Pick All week and then the day again to read the price mix once more; closing and reopening the store reads the exceptions again.",
         },
       ],
     },

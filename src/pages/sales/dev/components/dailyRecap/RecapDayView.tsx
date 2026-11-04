@@ -1,29 +1,28 @@
-import RecapAveragesCard from "./RecapAveragesCard";
 import RecapBasketsCard from "./RecapBasketsCard";
-import RecapMixCard from "./RecapMixCard";
+import RecapExceptionsCard from "./RecapExceptionsCard";
 import RecapMoneyCard from "./RecapMoneyCard";
 import RecapShapeCard from "./RecapShapeCard";
-import { dayName, money } from "./recapFormat";
 import { TRAY } from "./recapGrid";
-import type { DayMixState, RecapDay, RecapMoney } from "./recapTypes";
+import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "./recapTypes";
 
 /**
- * One day's full recap, picked from its day card.
+ * One day's full recap, picked from its day card (board 15).
  *
- * One line of heading (the day, its net sales, the way back), then a three
- * column grid: Money, Baskets and Refunds and price mix across the first row;
- * Averages and the hour chart (two columns wide) across the second, which
- * takes the rest of the height. On a narrow panel it is two columns: Money and
- * Baskets, the mix and Averages, then the chart across both.
+ * No heading: the highlighted day card already says which day, and Money
+ * gives its net sales. A three column grid: Money, Baskets and Exceptions
+ * across the first row; net sales by hour across the whole second, taking
+ * the rest of the height. On a narrow panel the first row goes two across
+ * with Exceptions under them.
  *
- * No card has a fixed height it can be squeezed below: the last row's floor is
- * its own content, so when the panel is too short the tray scrolls and nothing
- * is cut off, and nothing pushes sideways.
+ * Nothing has a fixed height it can be squeezed below: the last row's floor
+ * is its own content, so a panel too short scrolls instead of cutting
+ * anything off, and nothing pushes sideways.
  */
 const RecapDayView = ({
   day,
   money: m,
   mix,
+  exceptions,
   withPounds,
   narrow,
   short,
@@ -31,43 +30,30 @@ const RecapDayView = ({
   day: RecapDay;
   money: RecapMoney;
   mix: DayMixState;
+  exceptions: WeekExceptionsState;
   withPounds: boolean;
   narrow: boolean;
   short: boolean;
 }) => (
-  <div className="flex flex-col h-full min-h-0">
+  <div
+    className={`${TRAY} h-full min-h-0 overflow-y-auto thin-scrollbar flex flex-col ${
+      short ? "p-2.5" : "p-3.5"
+    }`}
+  >
     <div
-      className={`flex items-baseline gap-3 px-4 ${
-        short ? "py-1.5" : "py-2.5"
-      } min-w-0 flex-shrink-0 border-b border-brand_line`}
-    >
-      <h3 className="flex-none text-[15px] font-bold text-content">{dayName(day.date)}</h3>
-      <span className="flex-none text-[13px] font-semibold text-content tabular-nums">
-        {day.hasSales ? `${money(day.net)} net sales` : "No sales recorded"}
-      </span>
-      <span className="text-[12px] text-content truncate">
-        All week in the cards above goes back to the week.
-      </span>
-    </div>
-    <div
-      className={`${TRAY} flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col px-3.5 ${
-        short ? "py-2" : "pt-3 pb-3.5"
+      className={`grid flex-1 ${short ? "gap-2.5" : "gap-3.5"} ${
+        narrow
+          ? "grid-cols-2 grid-rows-[auto_auto_minmax(min-content,1fr)]"
+          : "grid-cols-3 grid-rows-[auto_minmax(min-content,1fr)]"
       }`}
     >
-      <div
-        className={`grid flex-1 ${short ? "gap-2" : "gap-3"} ${
-          narrow
-            ? "grid-cols-2 grid-rows-[auto_auto_minmax(min-content,1fr)]"
-            : "grid-cols-3 grid-rows-[auto_minmax(min-content,1fr)]"
-        }`}
-      >
-        <RecapMoneyCard money={m} short={short} />
-        <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
-        <RecapMixCard state={mix} short={short} />
-        <RecapAveragesCard day={day} withPounds={withPounds} short={short} />
-        <div className="col-span-2 min-w-0">
-          <RecapShapeCard date={day.date} shape={day.hours} narrow={narrow} short={short} />
-        </div>
+      <RecapMoneyCard money={m} mix={mix} short={short} />
+      <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
+      <div className={narrow ? "col-span-2 min-w-0" : "min-w-0"}>
+        <RecapExceptionsCard date={day.date} state={exceptions} short={short} />
+      </div>
+      <div className={`${narrow ? "col-span-2" : "col-span-3"} min-w-0`}>
+        <RecapShapeCard day={day} narrow={narrow} short={short} />
       </div>
     </div>
   </div>

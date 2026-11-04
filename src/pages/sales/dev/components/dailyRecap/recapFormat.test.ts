@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { dayLabel, hourRange, pounds } from "./recapFormat";
+import { dayLabel, hourRange, hourSpan, hourTick, pounds } from "./recapFormat";
 
 describe("recap labels", () => {
   it("writes an hour the way the Hourly tab does", () => {
     expect(hourRange(0)).toBe("12 AM – 1 AM");
     expect(hourRange(12)).toBe("12 PM – 1 PM");
     expect(hourRange(23)).toBe("11 PM – 12 AM");
+  });
+
+  it("writes the meridiem once when both ends of an hour share it", () => {
+    expect(hourSpan(12)).toBe("12 – 1 PM");
+    expect(hourSpan(8)).toBe("8 – 9 AM");
+    expect(hourSpan(11)).toBe("11 AM – 12 PM");
+    expect(hourTick(7)).toBe("7a");
+    expect(hourTick(13)).toBe("1p");
   });
 
   it("names a day without letting a time zone move it", () => {

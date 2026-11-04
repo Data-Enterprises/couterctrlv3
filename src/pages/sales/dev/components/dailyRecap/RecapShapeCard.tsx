@@ -1,137 +1,204 @@
 import RecapHourTip from "./RecapHourTip";
-import { CARD, CARD_TITLE } from "./recapGrid";
-import { dayLabel, hourLabel, hourRange, money0 } from "./recapFormat";
-import type { RecapDayHours } from "./recapTypes";
+import { niceTicks } from "./recapAxis";
+import { perTradingHour } from "./recapDays";
+import {
+  count,
+  dayLabel,
+  hourRange,
+  hourSpan,
+  hourTick,
+  money,
+  money0,
+  one,
+} from "./recapFormat";
+import { DAY_CARD } from "./recapGrid";
+import type { RecapDay } from "./recapTypes";
 import { useCursorTip } from "./useCursorTip";
 
-/** One fact beside (or under) the chart. */
-const fact = (label: string, value: string, sub: string | null, big = false) => (
-  <div key={label} className="min-w-0">
-    <div className="text-[12px] text-content">{label}</div>
-    <div className={`${big ? "text-[18px]" : "text-[16px]"} font-bold text-content whitespace-nowrap`}>
-      {value}
-    </div>
-    {sub && <div className="text-[12.5px] font-semibold text-content tabular-nums">{sub}</div>}
+/** One fact in the column: its label, then its figure with an aside at the right. */
+const fact = (label: string, value: string, sub: string, first: boolean) => (
+  <div key={label} className={`py-[5px] ${first ? "" : "border-t border-brand_line"}`}>
+    <span className="block text-[12px] text-content">{label}</span>
+    <span className="mt-px flex items-baseline justify-between gap-2">
+      <strong className="text-[16px] font-bold text-content tabular-nums whitespace-nowrap">
+        {value}
+      </strong>
+      <span className="text-[13px] text-content tabular-nums whitespace-nowrap">{sub}</span>
+    </span>
   </div>
 );
 
+/** Room above the bars for the busiest hour's figure, so it never meets the top. */
+const HEADROOM_PX = 20;
+
 /**
- * The day's shape: net sales by hour, filling the grid cell it is given (two
- * columns of the day's second row, beside Averages).
+ * Net sales by hour, across the whole second row (board 15).
  *
- * The chart grows into whatever height the cell has and keeps a floor; it
- * never takes a fixed minimum of its own, which once squeezed the card below
- * its facts and cut the hour labels off. Its facts sit beside it on a wide
- * panel and in a row under it on a narrow one.
+ * The day's hour facts sit in a column on the left, behind a navy divider:
+ * busiest, slowest (full hour), sales per hour, baskets per hour (an hour is
+ * one the day traded, its first sale's hour to its last).
+ * The chart sits on the right, against round dollar gridlines, its bars light
+ * and the busiest in navy with its figure above it. A measure, not a grade.
+ * Hovering an hour shows its figures in a tip that follows the mouse. On a
+ * narrow panel the facts run across the top instead.
  *
- * Every bar is navy; the busiest is full strength, the rest at 60%. Its figure
- * is not printed over the bar (it collided with the title on a tall day): the
- * facts panel beside the chart already gives it. That marks the peak, it does not grade the others. Hovering an
- * hour shows its figures in a tip that follows the mouse; the facts panel sits
- * on the theme's grey ground to set it apart from the chart.
+ * No fixed height of its own: it fills its grid row and keeps a floor, so it
+ * is never squeezed below its contents.
  */
 const RecapShapeCard = ({
-  date,
-  shape,
+  day,
   narrow,
   short,
 }: {
-  date: string;
-  shape: RecapDayHours;
+  day: RecapDay;
   narrow: boolean;
   short: boolean;
 }) => {
+  const shape = day.hours;
   const top = shape.peak?.net ?? 0;
+  const ticks = niceTicks(top);
+  const axisTop = ticks[ticks.length - 1] || 1;
   const dayNet = shape.hours.reduce((t, h) => t + h.net, 0);
+  const salesPerHour = perTradingHour(day.net, day);
+  const basketsPerHour = day.transactions > 0 ? perTradingHour(day.transactions, day) : null;
   const { tip, track, clear } = useCursorTip<number>();
   const tipHour = tip ? shape.hours.find((h) => h.hour === tip.key) : undefined;
+  const at = (v: number) => `calc((100% - ${HEADROOM_PX}px) * ${v / axisTop})`;
+
   const facts = [
     fact(
       "Busiest",
-      shape.peak ? hourRange(shape.peak.hour) : "—",
-      shape.peak ? `${money0(shape.peak.net)} in net sales` : null,
+      shape.peak ? hourSpan(shape.peak.hour) : "—",
+      shape.peak ? money0(shape.peak.net) : "",
       true,
     ),
     fact(
-      "Slowest full hour",
-      shape.slowest ? hourRange(shape.slowest.hour) : "—",
-      shape.slowest ? money0(shape.slowest.net) : null,
+      "Slowest",
+      shape.slowest ? hourSpan(shape.slowest.hour) : "—",
+      shape.slowest ? money0(shape.slowest.net) : "",
+      false,
     ),
+    fact("Sales per hour", salesPerHour === null ? "—" : money(salesPerHour), "", false),
     fact(
-      "Trading",
-      shape.first !== null && shape.last !== null
-        ? `${hourLabel(shape.first)} – ${hourLabel(shape.last + 1)}`
-        : "—",
-      null,
+      "Baskets per hour",
+      basketsPerHour === null ? "—" : one(basketsPerHour),
+      day.transactions > 0 ? `${count(day.transactions)} total` : "",
+      false,
     ),
   ];
 
   return (
     <section
-      aria-label="The day's shape"
-      className={`${CARD} h-full min-w-0 px-4 ${short ? "py-2" : "py-3"} grid gap-5 ${
-        narrow ? "grid-cols-1 grid-rows-[minmax(0,1fr)_auto] gap-y-3" : "grid-cols-[minmax(0,1fr)_210px]"
-      }`}
+      aria-label="Net sales by hour"
+      className={`${DAY_CARD} h-full min-w-0 flex ${narrow ? "flex-col" : "flex-row"} overflow-visible`}
     >
-      <div className="flex flex-col min-w-0 min-h-0">
-        <div className={CARD_TITLE}>The day's shape · net sales by hour</div>
+      <aside
+        className={
+          narrow
+            ? "flex-none mx-3.5 pt-3 pb-2 border-b-2 border-brand_navy/85"
+            : `flex-none w-[250px] my-3.5 px-[18px] border-r-2 border-brand_navy/85 flex flex-col`
+        }
+      >
+        <h4 className="mb-0.5 text-[14px] font-semibold text-content">Net sales by hour</h4>
+        <div
+          className={
+            narrow
+              ? "grid grid-cols-2 gap-x-5"
+              : `flex-1 flex flex-col ${short ? "justify-start" : "justify-between"}`
+          }
+        >
+          {facts}
+        </div>
+      </aside>
+
+      <div className={`flex-1 min-w-0 flex flex-col pl-2.5 pr-[18px] ${short ? "py-2.5" : "pt-3.5 pb-3"}`}>
         {shape.hours.length === 0 ? (
-          <div className="mt-2 text-[12px] text-content">No hourly sales for this day.</div>
+          <div className="pl-2 text-[13px] text-content">No hourly sales for this day.</div>
         ) : (
           <>
             <div
               role="img"
-              aria-label={`Net sales by hour on ${dayLabel(date)}${
+              aria-label={`Net sales by hour on ${dayLabel(day.date)}${
                 shape.peak ? `, busiest ${hourRange(shape.peak.hour)}` : ""
               }`}
-              className={`flex-1 ${short ? "min-h-[90px] mt-3" : "min-h-[110px] mt-4"} flex items-end gap-1`}
-              onMouseLeave={clear}
+              className={`flex-1 ${short ? "min-h-[110px]" : "min-h-[140px]"} grid grid-cols-[48px_minmax(0,1fr)]`}
             >
-              {shape.hours.map((h) => {
-                const isPeak = h.hour === shape.peak?.hour;
-                const height = top > 0 ? Math.max(3, (Math.max(0, h.net) / top) * 100) : 3;
-                return (
+              <div className="relative" aria-hidden="true">
+                {ticks.map((t) => (
+                  <span
+                    key={t}
+                    className="absolute right-2.5 text-[12px] text-content tabular-nums leading-none"
+                    style={{ bottom: `calc(${at(t)} - 6px)` }}
+                  >
+                    {money0(t)}
+                  </span>
+                ))}
+              </div>
+              <div className="relative min-w-0">
+                {ticks.slice(1).map((t) => (
+                  <span
+                    key={t}
+                    aria-hidden="true"
+                    className="absolute inset-x-0 border-t border-gray-100"
+                    style={{ bottom: at(t) }}
+                  />
+                ))}
+                <div
+                  className="absolute inset-x-0 bottom-0 flex items-end gap-[7px]"
+                  style={{ top: HEADROOM_PX }}
+                  onMouseLeave={clear}
+                >
+                  {shape.hours.map((h) => {
+                    const isPeak = h.hour === shape.peak?.hour;
+                    const height = `${Math.max(0.5, (Math.max(0, h.net) / axisTop) * 100)}%`;
+                    return (
+                      <span
+                        key={h.hour}
+                        data-hour={h.hour}
+                        onMouseMove={track(h.hour)}
+                        className="relative flex-1 min-w-0 h-full flex items-end cursor-default"
+                      >
+                        {isPeak && (
+                          <span
+                            className="absolute left-1/2 -translate-x-1/2 text-[13px] font-bold text-content whitespace-nowrap tabular-nums"
+                            style={{ bottom: `calc(${height} + 5px)` }}
+                          >
+                            {money0(h.net)}
+                          </span>
+                        )}
+                        <span
+                          className={`w-full rounded-t-[4px] transition-colors ${
+                            isPeak
+                              ? "bg-brand_navy"
+                              : tip?.key === h.hour
+                                ? "bg-brand_navy/50"
+                                : "bg-brand_navy/30"
+                          }`}
+                          style={{ height }}
+                        />
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-[48px_minmax(0,1fr)] flex-shrink-0">
+              <span />
+              <div className="flex gap-[7px] pt-1.5 border-t border-content">
+                {shape.hours.map((h, i) => (
                   <span
                     key={h.hour}
-                    data-hour={h.hour}
-                    onMouseMove={track(h.hour)}
-                    className="relative flex-1 min-w-0 h-full flex flex-col justify-end items-center cursor-default"
+                    className="flex-1 min-w-0 text-center text-[12px] text-content whitespace-nowrap"
                   >
-                    <span
-                      className={`w-full rounded-t-[3px] transition-colors ${
-                        isPeak ? "bg-brand_navy" : tip?.key === h.hour ? "bg-brand_navy/80" : "bg-brand_navy/60"
-                      }`}
-                      style={{ height: `${height}%` }}
-                    />
+                    {i % 2 === 0 ? hourTick(h.hour) : ""}
                   </span>
-                );
-              })}
-            </div>
-            <div className="flex gap-1 mt-1 pt-1 border-t border-brand_line_2 flex-shrink-0">
-              {shape.hours.map((h, i) => (
-                <span
-                  key={h.hour}
-                  className="flex-1 min-w-0 text-center text-[10px] font-semibold text-content whitespace-nowrap"
-                >
-                  {i % 3 === 0 ? hourLabel(h.hour) : ""}
-                </span>
-              ))}
+                ))}
+              </div>
             </div>
           </>
         )}
       </div>
-      <div
-        className={`rounded-lg bg-bkg/60 ${
-          narrow
-            ? "flex flex-wrap justify-between gap-x-6 gap-y-2 px-4 py-2.5"
-            : "flex flex-col justify-center gap-3 px-5 py-3"
-        }`}
-      >
-        {facts}
-      </div>
-      {tip && tipHour && (
-        <RecapHourTip hour={tipHour} dayNet={dayNet} x={tip.x} y={tip.y} />
-      )}
+      {tip && tipHour && <RecapHourTip hour={tipHour} dayNet={dayNet} x={tip.x} y={tip.y} />}
     </section>
   );
 };

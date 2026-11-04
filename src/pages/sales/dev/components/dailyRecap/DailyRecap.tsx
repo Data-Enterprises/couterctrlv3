@@ -7,6 +7,7 @@ import { buildRecapDays, buildRecapWeek, sellsByWeight } from "./recapDays";
 import { moneyForDay } from "./recapMoney";
 import { useDayMix } from "./useDayMix";
 import { usePanelSize } from "./usePanelSize";
+import { useWeekExceptions } from "./useWeekExceptions";
 
 /**
  * Daily recap: the week, or one day of it.
@@ -19,9 +20,10 @@ import { usePanelSize } from "./usePanelSize";
  * year anywhere on it. Always the open store, even with a comparison store
  * chosen in Stores. Its download is Daily Recap in Export CSV.
  *
- * Everything but a day's refunds and price mix comes from what the popup
- * already loaded for Sub depts and Hourly; those two read the day's item rows
- * when the day is picked.
+ * Everything but a day's item count and price mix, and the week's exceptions,
+ * comes from what the popup already loaded for Sub depts and Hourly. The item
+ * rows are read a day at a time; the exceptions once for the week, from
+ * /cashiers/exceptions.
  *
  * Laid out for the panel's own width and height, which the screen does not
  * decide: browser zoom and the panel's place beside the ledger both change
@@ -45,6 +47,12 @@ const DailyRecap = ({
   const { rawSubs, rawHourly } = useAppSelector((s) => s.dev.salesLedger);
   const { stateOf, request, requestAll } = useDayMix(storeId, storeNumber);
   const { ref, narrow, short } = usePanelSize();
+  const exceptions = useWeekExceptions(
+    storeId,
+    storeNumber,
+    dates[0] ?? "",
+    dates[dates.length - 1] ?? "",
+  );
 
   const recapDays = useMemo(
     () => buildRecapDays(dates, dayDots, rawSubs, rawHourly),
@@ -68,6 +76,7 @@ const DailyRecap = ({
           day={day}
           money={moneyForDay(rawSubs, day.date, day.net)}
           mix={stateOf(day.date)}
+          exceptions={exceptions}
           withPounds={withPounds}
           narrow={narrow}
           short={short}

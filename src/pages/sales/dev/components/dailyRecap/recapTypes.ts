@@ -57,12 +57,6 @@ export interface RecapWeek {
   peak: { date: string; hour: number } | null;
 }
 
-/** A sub department the store leaves out of its net sales (fuel, lottery). */
-export interface RecapLeftOut {
-  name: string;
-  net: number;
-}
-
 /** A day's money: net sales and the tax on top of it. */
 export interface RecapMoney {
   /** Net sales plus tax: what the registers took in. */
@@ -70,7 +64,6 @@ export interface RecapMoney {
   tax: number;
   /** The day card's net sales. */
   net: number;
-  leftOut: RecapLeftOut[];
 }
 
 /** What the day's item rows say that nothing else in the panel does. */
@@ -102,3 +95,27 @@ export interface RecapItem {
   pounds: number;
   net: number;
 }
+
+/** One exception type on one day. Qty and amount are null for a type that
+ *  rings nothing (No Sale). */
+export interface RecapExceptionType {
+  type: string;
+  label: string;
+  transactions: number;
+  qty: number | null;
+  amount: number | null;
+}
+
+/** A day's exceptions: distinct receipts and their amount, then by type. */
+export interface RecapExceptions {
+  transactions: number;
+  amount: number;
+  types: RecapExceptionType[];
+}
+
+/** Where the week's exception lines are. */
+export type WeekExceptionsState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; byDay: Map<string, RecapExceptions> };

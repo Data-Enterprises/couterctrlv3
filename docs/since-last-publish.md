@@ -1898,3 +1898,20 @@ Averages adds sales per hour and baskets per hour, over the hours the day
 traded (first sale's hour to last). Its tiles and Baskets' now stretch to
 share their card's height, so Averages fills down beside the hour chart; at a
 store with an odd number of averages the last tile takes the whole row.
+
+### Daily recap: a picked day as board 15, with Exceptions
+
+A picked day now opens straight to its cards, with no heading line (the day
+card and Money already say it). Across the top: Money (the day's net sales,
+the sum behind it, and the price mix as a bar with each side's dollars),
+Baskets (transactions and the average basket, then qty, average unit price,
+weight where the store weighs things, and items), and a new Exceptions card:
+how many transactions had a void, cancel, refund or no sale and their amount,
+then each type with its count and amount. A transaction is one receipt
+however many lines it voided. Underneath, net sales by hour across the full
+width, with busiest, slowest, sales per hour and baskets per hour in a column
+beside the chart; hovering an hour still shows its figures.
+
+The exceptions come from /cashiers/exceptions, read once for the week when
+the tab opens. Tender lines are left out: they are payments, not exceptions.
+Figures are separated with "|" rather than dots.

@@ -51,7 +51,7 @@ const RecapWeekBand = ({
         withPounds ? `${pounds(week.pounds)} lb` : null,
       ]
         .filter(Boolean)
-        .join(" · "),
+        .join(" | "),
     },
     {
       label: "Busiest",

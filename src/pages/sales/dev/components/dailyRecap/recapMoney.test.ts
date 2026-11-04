@@ -27,15 +27,4 @@ describe("a day's money", () => {
     const m = moneyForDay(subs, "2026-10-30", 1500);
     expect(m).toMatchObject({ net: 1500, tax: 120, withTax: 1620 });
   });
-
-  it("names fuel and lottery as left out of net, biggest first", () => {
-    expect(moneyForDay(subs, "2026-10-30", 1500).leftOut).toEqual([
-      { name: "Fuel", net: 900 },
-      { name: "Lottery", net: 300 },
-    ]);
-  });
-
-  it("leaves out nothing at a store with no excluded sub depts", () => {
-    expect(moneyForDay([row("2026-10-30", "Burgers", 10, 1)], "2026-10-30", 9).leftOut).toEqual([]);
-  });
 });

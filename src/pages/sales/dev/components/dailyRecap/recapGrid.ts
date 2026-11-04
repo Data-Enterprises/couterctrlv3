@@ -24,15 +24,13 @@ export const ROW =
 
 export const CARD = "rounded-[10px] border border-brand_line bg-brand_paper shadow-card";
 
-/** A card's title bar: a tint of the page ground, a hairline under it. */
-export const CARD_BAR =
-  "flex flex-none items-center gap-2 px-4 bg-bkg/40 border-b border-brand_line";
+/** A card in a picked day's view: board 15 draws these flat, a border and no
+ *  shadow, so the four read as one sheet of figures. */
+export const DAY_CARD = "rounded-[10px] border border-brand_line bg-brand_paper";
 
 /** The ground the day's cards sit on: the panel's own white, so the cards'
  *  shadows are what lift them. */
 export const TRAY = "bg-custom-white";
-
-export const CARD_TITLE = "text-[11px] font-bold uppercase tracking-wide text-content";
 
 export const NUM = "text-right tabular-nums";
 

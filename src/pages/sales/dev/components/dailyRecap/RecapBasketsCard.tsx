@@ -1,16 +1,15 @@
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-import RecapCard from "./RecapCard";
-import RecapTile from "./RecapTile";
-import { count, pounds } from "./recapFormat";
+import RecapStatCard from "./RecapStatCard";
+import { avgBasket, avgItemPrice, itemsPerBasket } from "./recapDays";
+import { count, money, one, pounds } from "./recapFormat";
 import type { DayMixState, RecapDay } from "./recapTypes";
 
 /**
- * How much the day moved, as counts: transactions (as Hourly counts them),
- * how many different items sold (from the day's item rows), qty (the day
- * card's) and, at a store that weighs things, the weight.
+ * The day's baskets: how many, and what an average one came to, then each
+ * count beside what it averages to per basket.
  *
- * Only counts: the per-basket and per-unit figures are their own Averages
- * card, laid out the same way, so neither card is a wall of numbers.
+ * Transactions as Hourly counts them; qty and net sales are the day card's;
+ * items (how many different ones sold) comes from the day's item rows. Weight only at a store
+ * that weighs things.
  */
 const RecapBasketsCard = ({
   day,
@@ -23,25 +22,39 @@ const RecapBasketsCard = ({
   withPounds: boolean;
   short: boolean;
 }) => {
+  const basket = avgBasket(day.net, day.transactions);
+  const perBasket = itemsPerBasket(day.units, day.transactions);
+  const unitPrice = avgItemPrice(day.net, day.units);
   const items =
     mix.status === "ready" ? count(mix.mix.items) : mix.status === "error" ? "—" : "…";
   return (
-    <RecapCard title="Baskets" icon={ShoppingCartIcon} compact={short} bodyClassName="p-3">
-      <div
-        className={`grid h-full auto-rows-fr ${withPounds ? "grid-cols-2" : "grid-cols-3"} ${
-          short ? "gap-1.5" : "gap-2"
-        }`}
-      >
-        <RecapTile
-          value={day.transactions > 0 ? count(day.transactions) : "—"}
-          label="transactions"
-          short={short}
-        />
-        <RecapTile value={items} label="items" short={short} />
-        <RecapTile value={count(day.units)} label="qty" short={short} />
-        {withPounds && <RecapTile value={`${pounds(day.pounds)} lb`} label="weight" short={short} />}
-      </div>
-    </RecapCard>
+    <RecapStatCard
+      title="Baskets"
+      hero={day.transactions > 0 ? count(day.transactions) : "—"}
+      heroSub={`transactions${basket === null ? "" : ` | ${money(basket)} avg basket`}`}
+      short={short}
+      rows={[
+        {
+          label: "Qty",
+          value: count(day.units),
+          sub: perBasket === null ? undefined : ` | ${one(perBasket)} per basket`,
+        },
+        { label: "Avg unit price", value: unitPrice === null ? "—" : money(unitPrice) },
+        ...(withPounds
+          ? [
+              {
+                label: "Weight",
+                value: `${pounds(day.pounds)} lb`,
+                sub:
+                  day.transactions > 0
+                    ? ` | ${pounds(day.pounds / day.transactions)} per basket`
+                    : undefined,
+              },
+            ]
+          : []),
+        { label: "Items", value: items },
+      ]}
+    />
   );
 };
 
