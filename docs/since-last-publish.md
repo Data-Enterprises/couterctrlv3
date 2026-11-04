@@ -1959,6 +1959,8 @@ The Summary item view has a Clear all button after the Vendors filter. It shows 
 
 The Summary item view now sits straight in the panel, filling it edge to edge like Top 200's list, instead of a bordered card on a padded tray.
 
+The item view's Vendor column is narrower (130px, 100px on a narrow panel) and Description takes the difference, so more of each item name shows.
+
 ## Sales: Top 200
 
 dev mode only
