@@ -1,6 +1,6 @@
 import RecapSortHead from "./RecapSortHead";
 import RecapTextTip from "./RecapTextTip";
-import { count, money, pounds } from "./recapFormat";
+import { count, money, weight3 } from "./recapFormat";
 import { NO_VENDOR } from "./recapItems";
 import type { ItemSort, ItemSortCol, RecapItemRow } from "./recapTypes";
 import { useCursorTip } from "./useCursorTip";
@@ -15,7 +15,9 @@ const colsOf = (withPounds: boolean, narrow: boolean) =>
     ? `100px minmax(0,1fr) 100px 100px 86px 56px${withPounds ? " 68px" : ""}`
     : `125px minmax(0,1fr) 125px 130px 96px 62px${withPounds ? " 82px" : ""}`;
 
-const lb = (n: number) => (n > 0 ? `${pounds(n)} lb` : "—");
+/** Pounds to three places, no unit (the heading says Weight); a dash on an
+ *  item sold by the each. */
+const lb = (n: number) => (n > 0 ? weight3(n) : "—");
 
 /**
  * The item view's list (board 18): sortable heads, one page of items,

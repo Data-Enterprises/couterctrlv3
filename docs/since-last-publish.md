@@ -1973,6 +1973,8 @@ The item view's Net sales column is now headed Sales and sits left of Qty: UPC, 
 
 In the item view, the Qty and Weight figures are semibold like Sales.
 
+The item view's Weight column drops the lb and shows three decimal places (105.700), in the rows and the totals row.
+
 ## Sales: Top 200
 
 dev mode only

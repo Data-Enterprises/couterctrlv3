@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayLabel, hourRange, hourSpan, hourTick, pounds } from "./recapFormat";
+import { dayLabel, hourRange, hourSpan, hourTick, pounds, weight3 } from "./recapFormat";
 
 describe("recap labels", () => {
   it("writes an hour the way the Hourly tab does", () => {
@@ -24,5 +24,12 @@ describe("recap labels", () => {
   it("gives pounds one decimal", () => {
     expect(pounds(129)).toBe("129.0");
     expect(pounds(1234.56)).toBe("1,234.6");
+  });
+});
+
+describe("the item view's weight", () => {
+  it("shows three places, no unit", () => {
+    expect(weight3(105.7)).toBe("105.700");
+    expect(weight3(3323.25)).toBe("3,323.250");
   });
 });

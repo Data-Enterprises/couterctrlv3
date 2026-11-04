@@ -57,4 +57,8 @@ export const one = (n: number) =>
 
 export const pounds = one;
 
+/** A weight to three places, as the item view lists it: 105.700. */
+export const weight3 = (n: number) =>
+  n.toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
 export const pct = (n: number) => `${Math.round(n)}%`;
