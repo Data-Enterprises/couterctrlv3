@@ -774,8 +774,10 @@ const PopupTopItems = ({
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       {label}
                     </div>
+                    {/* A picked day is one date, as Top 200 Sales shows it,
+                        not that date written as a range to itself. */}
                     <div className="text-[10px] font-bold text-content mb-0.5">
-                      {dayText(from)} &ndash; {dayText(to)}
+                      {oneDay ? dayText(from) : <>{dayText(from)} &ndash; {dayText(to)}</>}
                     </div>
                     <div className="flex items-baseline justify-center gap-2">
                       <span className="text-[14px] font-bold text-content tabular-nums">
