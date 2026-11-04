@@ -1765,3 +1765,9 @@ and last year are still in each item's own detail.
 **Top 200 lists every sub department.** The department list showed the
 biggest nine and folded the rest into one "8 more" line, with a count strip
 above it. Both are gone: every sub department is listed, biggest first.
+
+## Sales: Top 200
+
+dev mode only
+
+Single-store Top 200 with a day picked: the vs Last Week and vs Last Year headers now show that one day's date (e.g. 10/22/2026), as Top 200 Sales does, instead of the date written as a range to itself.
