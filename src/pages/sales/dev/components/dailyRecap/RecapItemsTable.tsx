@@ -96,8 +96,8 @@ const RecapItemsTable = ({
                 )}
               </span>
               <span className="text-right font-semibold tabular-nums">{money(r.net)}</span>
-              <span className="text-right tabular-nums">{count(r.units)}</span>
-              {withPounds && <span className="text-right tabular-nums">{lb(r.pounds)}</span>}
+              <span className="text-right font-semibold tabular-nums">{count(r.units)}</span>
+              {withPounds && <span className="text-right font-semibold tabular-nums">{lb(r.pounds)}</span>}
             </div>
           );
         })}

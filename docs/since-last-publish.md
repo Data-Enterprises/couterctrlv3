@@ -1971,6 +1971,8 @@ Fixed in the item view: Sub dept, Vendor and the figure columns sat to the left 
 
 The item view's Net sales column is now headed Sales and sits left of Qty: UPC, Description, Sub dept, Vendor, Sales, Qty, Weight. It is still net sales and still the default sort, biggest first.
 
+In the item view, the Qty and Weight figures are semibold like Sales.
+
 ## Sales: Top 200
 
 dev mode only
