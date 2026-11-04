@@ -17,3 +17,23 @@ export const datesBetween = (from: string, to: string): string[] => {
   }
   return out;
 };
+
+const md = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+/**
+ * An export's dates for its file name, in the store panel's own style: one
+ * date ("Nov 3, 2026"), a range in one year ("Nov 1 – Nov 3, 2026"), or a
+ * range across two ("Dec 30, 2026 – Jan 2, 2027").
+ */
+export const fileDateLabel = (from: string, to: string) => {
+  const fy = from.slice(0, 4);
+  const ty = to.slice(0, 4);
+  if (from === to) return `${md(from)}, ${fy}`;
+  return fy === ty
+    ? `${md(from)} – ${md(to)}, ${ty}`
+    : `${md(from)}, ${fy} – ${md(to)}, ${ty}`;
+};

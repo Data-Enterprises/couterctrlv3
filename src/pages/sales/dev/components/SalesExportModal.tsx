@@ -21,8 +21,12 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppSelector } from "../../../../hooks";
 import { recapCsv } from "./dailyRecap/recapCsv";
 import { sellsByWeight } from "./dailyRecap/recapDays";
-import { dayName } from "./dailyRecap/recapFormat";
-import { MAX_EXPORT_DAYS, datesBetween } from "./dailyRecap/recapRange";
+import { dayLabel } from "./dailyRecap/recapFormat";
+import {
+  MAX_EXPORT_DAYS,
+  datesBetween,
+  fileDateLabel,
+} from "./dailyRecap/recapRange";
 import { mergeItems } from "./dailyRecap/recapItemRows";
 import { useRecapWeekItems } from "./dailyRecap/useRecapWeekItems";
 
@@ -673,34 +677,29 @@ const SalesExportModal = ({
     // totals over one date or a range (the From and To under the preset),
     // before any search or filter. It takes the days Summary already read
     // from the cache and reads only the rest, a day at a time. A day that
-    // fails is named in the section's title and left out rather than losing
-    // the file.
+    // fails is left out rather than losing the file, and the warning names
+    // it.
     if (selected.has("dailyrecap")) {
       setFetching(true);
       const recapDates = itemsDates;
       const week = await loadRecapWeek(recapDates);
       setFetching(false);
       const missing = week.filter((d) => d.failed).map((d) => d.date);
-      const note = missing.length
-        ? ` — INCOMPLETE: ${missing.join(", ")} could not be read`
-        : "";
-      const period =
-        recapDates.length === 1
-          ? dayName(recapDates[0])
-          : `${recapDates[0]} to ${recapDates[recapDates.length - 1]}`;
       const rows = mergeItems(
         week.map((d) => d.items),
         [],
       );
+      // No title row: the file opens on its column headings, so it sorts and
+      // filters in a spreadsheet as it stands.
       sections.push(
-        `Items Sold — ${period}${note}\n${recapCsv(
+        recapCsv(
           rows,
           sellsByWeight(rawSubs) || rows.some((r) => r.pounds > 0),
-        )}`,
+        ),
       );
       if (missing.length) {
         toast.warn(
-          "Some days' items could not be read — the recap is incomplete",
+          `Items Sold is missing ${missing.map(dayLabel).join(", ")}: those days could not be read`,
         );
       }
     }
@@ -734,7 +733,13 @@ const SalesExportModal = ({
 
     if (!sections.length) return;
     const safeName = storeName.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(sections.join("\n\n"), `${safeName}_${dateLabel}.csv`);
+    // With Items Sold ticked the file is named for its date or range, which
+    // need not be the week's.
+    const fileDates =
+      selected.has("dailyrecap") && itemsDates.length
+        ? fileDateLabel(itemsDates[0], itemsDates[itemsDates.length - 1])
+        : dateLabel;
+    downloadCsv(sections.join("\n\n"), `${safeName}_${fileDates}.csv`);
     onClose();
   };
 
@@ -905,7 +910,12 @@ const SalesExportModal = ({
                 {/* Items Sold's dates, laid out as Financials' are: one
                     date (From and To the same) or a range. */}
                 {id === "dailyrecap" && (
-                  <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
+                  <div
+                    aria-disabled={!selected.has("dailyrecap")}
+                    className={`ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5 transition-opacity ${
+                      selected.has("dailyrecap") ? "" : "opacity-50"
+                    }`}
+                  >
                     <div className="flex items-end gap-2 flex-wrap">
                       <div className="flex flex-col gap-1">
                         <span className="text-[9px] font-bold uppercase tracking-wide text-content">
@@ -913,6 +923,7 @@ const SalesExportModal = ({
                         </span>
                         <input
                           type="date"
+                          disabled={!selected.has("dailyrecap")}
                           aria-label="Items Sold from"
                           value={itemsFrom}
                           max={itemsTo}
@@ -926,6 +937,7 @@ const SalesExportModal = ({
                         </span>
                         <input
                           type="date"
+                          disabled={!selected.has("dailyrecap")}
                           aria-label="Items Sold to"
                           value={itemsTo}
                           min={itemsFrom}
@@ -935,6 +947,7 @@ const SalesExportModal = ({
                       </div>
                       <button
                         type="button"
+                        disabled={!selected.has("dailyrecap")}
                         onClick={() => {
                           setItemsFrom(startDate);
                           setItemsTo(endDate);

@@ -159,7 +159,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Download it",
-          pre: "Open Export CSV from the panel's header and tick Items Sold. It saves the item grid from View items: one row per UPC with its sub department, vendor, sales, qty and weight, totalled over the dates under it. For one day, set From and To to that date; for a range, set both ends (up to 31 days). It starts on the day picked in the day cards, or the week.",
+          pre: "Open Export CSV from the panel's header and tick Items Sold. It saves the item grid from View items: one row per UPC with its sub department, vendor, sales, qty and weight, totalled over the dates under it. Tick it first, then set the dates: for one day, From and To both on that date; for a range, both ends (up to 31 days). They start on the day picked in the day cards, or the week. The file is named for those dates and opens straight on its column headings.",
         },
       ],
       issues: [

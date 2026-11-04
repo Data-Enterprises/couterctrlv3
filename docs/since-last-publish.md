@@ -1983,6 +1983,8 @@ Right-clicking an item in the Summary item view opens the app's UPC menu: Copy U
 
 The Daily Recap export is now Items Sold: Summary's item grid as a file, one row per UPC with its totals (sub dept, vendor, sales, qty, weight), not one row per item per day. Under the preset, From and To pick one date (11/3) or a range (11/1 to 11/3), up to 31 days; they start on the day picked in the day cards, else the week, and This week resets them. For the week the file has the grid's row count and adds up to the All week card (checked on 020 IGA Owensboro: 7,047 UPCs, $166,410.16).
 
+Items Sold's file has no title row; it opens on its column headings. If a day could not be read, the warning names it. The file is named for its date or range (020___IGA_OWENSBORO_KY_Nov 3, 2026.csv, or ..._Nov 1 – Nov 3, 2026.csv). From, To and This week are greyed out and inactive until Items Sold is ticked.
+
 ## Sales: Top 200
 
 dev mode only
