@@ -1953,6 +1953,8 @@ Summary's All week view is now the same view as a picked day (board 16): Money, 
 
 Summary's Money, Baskets, Exceptions and Hourly cards now carry the theme's navy card shadow, so they lift off the panel instead of sitting flat.
 
+Summary can now list every item sold. A View items button at the top right of the Baskets card (its tip says "Shows all items sold this week", or names the day picked) switches Summary to an item view: UPC, description, sub dept, vendor, units, weight at a store that sells by weight, and net sales, biggest first, 100 to a page (250 or 500 on request). Search by name or UPC and narrow by sub depts and vendors; with a vendor ticked an item counts only that vendor's share. A totals row at the bottom covers the whole filtered list. The day cards filter it like the rest of Summary: picking a day inside the item view lists that day's items, and Back to summary shows that day's cards. No new reads for finished days: it uses the item rows Summary already reads; today's are held only while Summary is open. A vendor sent as 0 shows as a dash and is filed under No Vendor in the filter.
+
 ## Sales: Top 200
 
 dev mode only

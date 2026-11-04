@@ -1,9 +1,20 @@
 import type { SubDeptMargin } from "../../../../../interfaces";
 import { countedRows } from "../../../../../utils/hashSubs";
-import type { RecapItem } from "./recapTypes";
+import type { RecapItem, RecapVendorPart } from "./recapTypes";
+
+/** What a row with no vendor on it is filed under: the Vendors filter's
+ *  option for them, and a dash in the Vendor column. */
+export const NO_VENDOR = "No Vendor";
+
+/** The row's vendor. Some POS feeds send 0 for "no vendor" rather than
+ *  nothing, and it showed as a vendor called 0. */
+const vendorOf = (r: SubDeptMargin) => {
+  const name = String(r.vendor_name ?? "").trim();
+  return !name || name === "0" ? NO_VENDOR : name;
+};
 
 /**
- * One row per item for a day, for the Daily Recap export.
+ * One row per item for a day, for the Daily Recap export and the item view.
  *
  * `subs/subs` splits an item's day by price type and vendor, so a can of soda
  * that rang at regular and on sale comes back as two rows. The export wants
@@ -26,12 +37,22 @@ export const foldItems = (rows: SubDeptMargin[]): RecapItem[] => {
         units: 0,
         pounds: 0,
         net: 0,
+        vendors: [],
       },
       nameNet: -Infinity,
     };
     held.item.units += r.qty || 0;
     held.item.pounds += r.weight || 0;
     held.item.net += net;
+    const name = vendorOf(r);
+    let part: RecapVendorPart | undefined = held.item.vendors.find((v) => v.vendor === name);
+    if (!part) {
+      part = { vendor: name, units: 0, pounds: 0, net: 0 };
+      held.item.vendors.push(part);
+    }
+    part.units += r.qty || 0;
+    part.pounds += r.weight || 0;
+    part.net += net;
     if (net > held.nameNet) {
       held.item.name = r.product_description;
       held.item.subDeptId = r.sub_department;
@@ -40,5 +61,8 @@ export const foldItems = (rows: SubDeptMargin[]): RecapItem[] => {
     }
     byCode.set(r.product_code, held);
   }
-  return [...byCode.values()].map((h) => h.item);
+  return [...byCode.values()].map((h) => {
+    h.item.vendors.sort((a, b) => b.net - a.net);
+    return h.item;
+  });
 };

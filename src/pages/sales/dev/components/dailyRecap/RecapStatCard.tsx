@@ -14,7 +14,8 @@ export interface StatRow {
  *
  * Money, Baskets and Exceptions are all this shape, so they read alike: the
  * figure that answers the card first, the working underneath. `children`
- * goes under the lines (Money's price mix).
+ * goes under the lines (Money's price mix); `action` sits at the right of
+ * the title (Baskets' View items).
  */
 const RecapStatCard = ({
   title,
@@ -22,6 +23,7 @@ const RecapStatCard = ({
   heroSub,
   rows,
   short,
+  action,
   children,
 }: {
   title: string;
@@ -29,14 +31,18 @@ const RecapStatCard = ({
   heroSub: string;
   rows: StatRow[];
   short: boolean;
+  action?: ReactNode;
   children?: ReactNode;
 }) => (
   <section
     aria-label={title}
     className={`${DAY_CARD} h-full min-w-0 flex flex-col px-[18px] ${short ? "pt-2.5 pb-2" : "pt-3.5 pb-3"}`}
   >
-    <h4 className="text-[14px] font-semibold text-content">{title}</h4>
-    <div className={`flex flex-wrap items-baseline gap-x-2 ${short ? "mt-1" : "mt-1.5"}`}>
+    <div className="flex items-center justify-between gap-2">
+      <h4 className="text-[14px] font-semibold text-content">{title}</h4>
+      {action}
+    </div>
+    <div className={`flex flex-wrap items-baseline gap-x-2 ${short ? "mt-1" : action ? "mt-1" : "mt-1.5"}`}>
       <span
         className={`${short ? "text-[22px]" : "text-[26px]"} font-bold leading-tight text-content tabular-nums`}
       >

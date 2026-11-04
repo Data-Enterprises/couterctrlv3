@@ -1,4 +1,5 @@
 import RecapStatCard from "./RecapStatCard";
+import RecapViewItemsButton from "./RecapViewItemsButton";
 import { avgBasket, avgItemPrice, itemsPerBasket } from "./recapDays";
 import { count, money, one, pounds } from "./recapFormat";
 import type { DayMixState, RecapDay } from "./recapTypes";
@@ -10,18 +11,23 @@ import type { DayMixState, RecapDay } from "./recapTypes";
  * Transactions as Hourly counts them; qty and net sales are the day card's;
  * items (how many different ones sold) comes from the item rows, an item
  * once however many days it sold on. Weight only at a store that weighs
- * things.
+ * things. View items, top right, opens Summary's item view (board 17).
  */
 const RecapBasketsCard = ({
   day,
   mix,
   withPounds,
   short,
+  itemsTip,
+  onViewItems,
 }: {
   day: RecapDay;
   mix: DayMixState;
   withPounds: boolean;
   short: boolean;
+  /** What View items' tip says: the week, or the day picked. */
+  itemsTip: string;
+  onViewItems: () => void;
 }) => {
   const basket = avgBasket(day.net, day.transactions);
   const perBasket = itemsPerBasket(day.units, day.transactions);
@@ -31,6 +37,7 @@ const RecapBasketsCard = ({
   return (
     <RecapStatCard
       title="Baskets"
+      action={<RecapViewItemsButton tip={itemsTip} onClick={onViewItems} />}
       hero={day.transactions > 0 ? count(day.transactions) : "—"}
       heroSub={`transactions${basket === null ? "" : ` | ${money(basket)} avg basket`}`}
       short={short}

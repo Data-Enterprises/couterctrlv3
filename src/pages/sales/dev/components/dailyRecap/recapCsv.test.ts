@@ -10,6 +10,7 @@ const item = (over: Partial<RecapItem>): RecapItem => ({
   units: 1,
   pounds: 0,
   net: 1,
+  vendors: [],
   ...over,
 });
 

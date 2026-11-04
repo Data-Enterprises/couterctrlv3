@@ -1,11 +1,7 @@
-import { useLayoutEffect, useRef, useState } from "react";
 import { avgBasket } from "./recapDays";
 import { count, hourRange, money, one } from "./recapFormat";
 import type { RecapHour } from "./recapTypes";
-
-/** How far the card sits from the cursor, and from the screen's edges. */
-const GAP = 14;
-const EDGE = 8;
+import { useTipPlacement } from "./useTipPlacement";
 
 /**
  * The readout for one hour of the day's chart, following the mouse.
@@ -31,20 +27,7 @@ const RecapHourTip = ({
   x: number;
   y: number;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ left: x + GAP, top: y + GAP });
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const { width, height } = el.getBoundingClientRect();
-    const right = x + GAP + width > window.innerWidth - EDGE;
-    const below = y + GAP + height > window.innerHeight - EDGE;
-    setPos({
-      left: Math.max(EDGE, right ? x - GAP - width : x + GAP),
-      top: Math.max(EDGE, below ? y - GAP - height : y + GAP),
-    });
-  }, [x, y]);
+  const { ref, pos } = useTipPlacement<HTMLDivElement>(x, y);
 
   const basket = avgBasket(hour.net, hour.transactions);
   const rows: [string, string][] = [

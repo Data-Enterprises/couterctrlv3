@@ -1,9 +1,11 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
 import type { DayDot } from "../../../../../interfaces";
 import RecapDayView from "./RecapDayView";
+import RecapItemsView from "./RecapItemsView";
 import { buildRecapDays, sellsByWeight, weekOf } from "./recapDays";
-import { dayLabel } from "./recapFormat";
+import { dayLabel, dayName } from "./recapFormat";
+import { periodItems } from "./recapItemRows";
 import { moneyForDates } from "./recapMoney";
 import { combineMix } from "./recapPeriod";
 import { useDayMix } from "./useDayMix";
@@ -16,6 +18,11 @@ import { useWeekExceptions } from "./useWeekExceptions";
  * The day cards above the tabs are the filter, as on every other tab: All
  * week shows the week's figures, a day's card the same cards with that day's.
  * Nothing on the tab picks a day itself.
+ *
+ * View items on the Baskets card switches to the item view, every item the
+ * period sold, and Back to summary switches back. The switch is the tab's own,
+ * not the day's: picking a day card in the item view filters the items to
+ * that day, and going back shows that day's cards.
  *
  * A summary, not a verdict: no grades, no thresholds and no last week or last
  * year anywhere on it. Always the open store, even with a comparison store
@@ -50,7 +57,11 @@ const DailyRecap = ({
   // so nothing below re-runs (or re-asks) unless the week really changed.
   const datesKey = datesIn.join(",");
   const dates = useMemo(() => datesIn, [datesKey]);
-  const { stateOf, request, requestAll } = useDayMix(storeId, storeNumber);
+  const { stateOf, itemsOf, request, requestAll, requestItems } = useDayMix(
+    storeId,
+    storeNumber,
+  );
+  const [view, setView] = useState<"cards" | "items">("cards");
   const { ref, narrow, short } = usePanelSize();
   const exceptions = useWeekExceptions(
     storeId,
@@ -64,12 +75,17 @@ const DailyRecap = ({
     [dates, dayDots, rawSubs, rawHourly],
   );
   const withPounds = useMemo(() => sellsByWeight(rawSubs), [rawSubs]);
-  const picked = selectedDate ? recapDays.find((d) => d.date === selectedDate) : undefined;
+  const picked = selectedDate
+    ? recapDays.find((d) => d.date === selectedDate)
+    : undefined;
   const period = useMemo(
     () => (picked ? picked : weekOf(recapDays, rawHourly)),
     [picked, recapDays, rawHourly],
   );
-  const periodDates = useMemo(() => (picked ? [picked.date] : dates), [picked, dates]);
+  const periodDates = useMemo(
+    () => (picked ? [picked.date] : dates),
+    [picked, dates],
+  );
   const mix = useMemo(
     () => (picked ? stateOf(picked.date) : combineMix(dates.map(stateOf))),
     [picked, dates, stateOf],
@@ -86,19 +102,47 @@ const DailyRecap = ({
     else requestAll(dates);
   }, [selectedDate, dates, request, requestAll]);
 
+  // The item view also needs each day's items, which are usually in hand
+  // from the same reads; today's, or a day the export cache let go, is read.
+  useEffect(() => {
+    if (view === "items") requestItems(periodDates);
+  }, [view, periodDates, requestItems]);
+
+  const items = useMemo(
+    () => periodItems(periodDates, periodDates.map(itemsOf)),
+    [periodDates, itemsOf],
+  );
+
   return (
     <div ref={ref} className="h-full min-h-0 min-w-0">
-      <RecapDayView
-        day={period}
-        dates={periodDates}
-        period={picked ? `on ${dayLabel(picked.date)}` : "across the week"}
-        money={money}
-        mix={mix}
-        exceptions={exceptions}
-        withPounds={withPounds}
-        narrow={narrow}
-        short={short}
-      />
+      {view === "items" ? (
+        <RecapItemsView
+          items={items}
+          periodKey={periodDates.join(",")}
+          withPounds={withPounds}
+          narrow={narrow}
+          short={short}
+          onBack={() => setView("cards")}
+        />
+      ) : (
+        <RecapDayView
+          day={period}
+          dates={periodDates}
+          period={picked ? `on ${dayLabel(picked.date)}` : "across the week"}
+          money={money}
+          mix={mix}
+          exceptions={exceptions}
+          withPounds={withPounds}
+          narrow={narrow}
+          short={short}
+          itemsTip={
+            picked
+              ? `Shows all items sold on ${dayName(picked.date)}`
+              : "Shows all items sold this week"
+          }
+          onViewItems={() => setView("items")}
+        />
+      )}
     </div>
   );
 };

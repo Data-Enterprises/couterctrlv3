@@ -150,6 +150,43 @@ describe("a day's mix", () => {
     expect(held[dayKey(685, "369", "2026-10-28")]?.map((i) => i.code)).toEqual(["a"]);
     expect(held[dayKey(685, "369", today)]).toBeUndefined();
   });
+
+  it("gives the item view today's items while Summary is open, without keeping them", async () => {
+    fetchRows.mockResolvedValue([row("369", { product_code: "t" })]);
+    const store = setupStore();
+    const today = localIsoToday();
+    const { result } = setup(store);
+    act(() => result.current.requestItems([today]));
+    await waitFor(() => expect(result.current.itemsOf(today).status).toBe("ready"));
+    const st = result.current.itemsOf(today);
+    expect(st.status === "ready" && st.items.map((i) => i.code)).toEqual(["t"]);
+    expect(store.getState().dev.salesLedger.recapItems[dayKey(685, "369", today)]).toBeUndefined();
+  });
+
+  it("reads a day again for its items when only its mix is held", async () => {
+    fetchRows.mockResolvedValue([row("369")]);
+    const store = setupStore();
+    const today = localIsoToday();
+    const first = setup(store);
+    act(() => first.result.current.request(today));
+    await waitFor(() => expect(first.result.current.stateOf(today).status).toBe("ready"));
+    first.unmount();
+    const again = setup(store);
+    act(() => again.result.current.requestAll([today]));
+    expect(fetchRows).toHaveBeenCalledTimes(1);
+    act(() => again.result.current.requestItems([today]));
+    await waitFor(() => expect(again.result.current.itemsOf(today).status).toBe("ready"));
+    expect(fetchRows).toHaveBeenCalledTimes(2);
+  });
+
+  it("takes a finished day's items from what is kept, reading nothing", async () => {
+    fetchRows.mockResolvedValue([row("369")]);
+    const { result } = setup();
+    act(() => result.current.request("2026-10-28"));
+    await waitFor(() => expect(result.current.itemsOf("2026-10-28").status).toBe("ready"));
+    act(() => result.current.requestItems(["2026-10-28"]));
+    expect(fetchRows).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("the kept mixes", () => {

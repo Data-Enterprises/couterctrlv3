@@ -86,7 +86,19 @@ export type DayMixState =
   | { status: "error" }
   | { status: "ready"; mix: RecapMix };
 
-/** One item on one day, every row of it folded together. For the export. */
+/** One vendor's part of an item's day. */
+export interface RecapVendorPart {
+  /** The vendor's name, or NO_VENDOR for rows that carry none. */
+  vendor: string;
+  units: number;
+  pounds: number;
+  net: number;
+}
+
+/**
+ * One item on one day, every row of it folded together: for the Daily Recap
+ * export, and for Summary's item view.
+ */
 export interface RecapItem {
   code: string;
   name: string;
@@ -95,6 +107,35 @@ export interface RecapItem {
   units: number;
   pounds: number;
   net: number;
+  /** The same day split by vendor, biggest net first, so the item view can
+   *  filter by vendor and count only that vendor's share. Sums to the item. */
+  vendors: RecapVendorPart[];
+}
+
+/** Where one day's items are, for the item view. */
+export type DayItemsState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; items: RecapItem[] };
+
+/** One line of the item view: an item over the period, under its filters. */
+export interface RecapItemRow {
+  code: string;
+  name: string;
+  subDeptName: string;
+  /** The vendor that sold the most of it, then any others, biggest first. */
+  vendors: string[];
+  units: number;
+  pounds: number;
+  net: number;
+}
+
+export type ItemSortCol = "code" | "name" | "dept" | "vendor" | "units" | "pounds" | "net";
+
+export interface ItemSort {
+  column: ItemSortCol;
+  direction: "asc" | "desc";
 }
 
 /** One exception type on one day. Qty and amount are null for a type that

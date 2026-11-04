@@ -30,6 +30,8 @@ const RecapDayView = ({
   withPounds,
   narrow,
   short,
+  itemsTip,
+  onViewItems,
 }: {
   /** The period's figures: one day's, or the week's combined. */
   day: RecapDay;
@@ -43,6 +45,8 @@ const RecapDayView = ({
   withPounds: boolean;
   narrow: boolean;
   short: boolean;
+  itemsTip: string;
+  onViewItems: () => void;
 }) => (
   <div
     className={`${TRAY} h-full min-h-0 overflow-y-auto thin-scrollbar flex flex-col ${
@@ -57,7 +61,14 @@ const RecapDayView = ({
       }`}
     >
       <RecapMoneyCard money={m} mix={mix} short={short} />
-      <RecapBasketsCard day={day} mix={mix} withPounds={withPounds} short={short} />
+      <RecapBasketsCard
+        day={day}
+        mix={mix}
+        withPounds={withPounds}
+        short={short}
+        itemsTip={itemsTip}
+        onViewItems={onViewItems}
+      />
       <div className={narrow ? "col-span-2 min-w-0" : "min-w-0"}>
         <RecapExceptionsCard dates={dates} state={exceptions} short={short} />
       </div>

@@ -109,13 +109,20 @@ describe("Daily recap", () => {
     });
     fetchRows.mockReset();
     // Thu sold a and b, Fri b and c: two items each day, three in the week.
+    // b came from AWG on Thu and Pepsi on Fri.
     fetchRows.mockImplementation((...args: unknown[]) =>
       Promise.resolve(
-        (args[3] === "2026-10-29" ? ["a", "b"] : ["b", "c"]).map(
-          (product_code) =>
+        (args[3] === "2026-10-29"
+          ? [["a", "Pepsi"], ["b", "AWG"]]
+          : [["b", "Pepsi"], ["c", "AWG"]]
+        ).map(
+          ([product_code, vendor_name]) =>
             ({
               store_number: "942",
               product_code,
+              product_description: `Item ${product_code}`,
+              sub_department_description: "Drinks",
+              vendor_name,
               sale_type: "Sale",
               price_type: "",
               total_sales: 5,
@@ -159,7 +166,8 @@ describe("Daily recap", () => {
     expect(screen.queryByRole("region", { name: "This week" })).toBeNull();
     expect(screen.queryByText("Thu")).toBeNull();
     expect(screen.queryByText(/By day|Busiest day/)).toBeNull();
-    expect(screen.queryByRole("button")).toBeNull();
+    // Nothing on the tab picks a day: its one button opens the item view.
+    expect(screen.getAllByRole("button").map((b) => b.textContent)).toEqual(["View items"]);
   });
 
   it("reads every day's items so the week's Items and price mix fill in", async () => {
@@ -218,6 +226,63 @@ describe("Daily recap", () => {
     store.dispatch(setLedgerSelectedDate(null));
     rerender();
     expect(within(money()).getByText("$1,500.00")).toBeTruthy();
+  });
+
+  it("opens every item the week sold from View items, and goes back", async () => {
+    setup();
+    const baskets = screen.getByRole("region", { name: "Baskets" });
+    await waitFor(() => expect(within(baskets).getByText("3")).toBeTruthy());
+    fireEvent.click(within(baskets).getByRole("button", { name: "View items" }));
+
+    const list = screen.getByRole("region", { name: "Items" });
+    const rows = within(list).getAllByRole("row");
+    // Net sales, biggest first: b sold on both days.
+    expect(rows.map((r) => r.textContent?.slice(0, 1))).toEqual(["b", "a", "c"]);
+    expect(within(rows[0]).getByText("$10.00")).toBeTruthy();
+    expect(within(list).getByText("3 items")).toBeTruthy();
+    expect(within(list).getByText("$20.00")).toBeTruthy();
+    expect(within(list).getByText("1–3 of 3")).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "Money" })).toBeNull();
+
+    fireEvent.click(within(list).getByRole("button", { name: "Back to summary" }));
+    expect(screen.getByRole("region", { name: "Money" })).toBeTruthy();
+  });
+
+  it("names the lead vendor, with +1 listing the others on hover", async () => {
+    setup();
+    await waitFor(() =>
+      expect(within(screen.getByRole("region", { name: "Baskets" })).getByText("3")).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "View items" }));
+    const [b] = within(screen.getByRole("region", { name: "Items" })).getAllByRole("row");
+    fireEvent.mouseMove(within(b).getByText("+1"), { clientX: 10, clientY: 10 });
+    const tip = screen.getByRole("tooltip");
+    expect(within(tip).getByText("AWG")).toBeTruthy();
+    expect(within(tip).getByText("Pepsi")).toBeTruthy();
+  });
+
+  it("says what View items will show, for the week or the day picked", () => {
+    setup();
+    fireEvent.mouseMove(screen.getByRole("button", { name: "View items" }), { clientX: 5, clientY: 5 });
+    expect(screen.getByRole("tooltip").textContent).toBe("Shows all items sold this week");
+  });
+
+  it("follows a day card picked inside the item view, and goes back to that day", async () => {
+    const { store, rerender } = setup();
+    await waitFor(() =>
+      expect(within(screen.getByRole("region", { name: "Baskets" })).getByText("3")).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "View items" }));
+    store.dispatch(setLedgerSelectedDate("2026-10-30"));
+    rerender();
+    const list = screen.getByRole("region", { name: "Items" });
+    expect(within(list).getAllByRole("row").map((r) => r.textContent?.slice(0, 1))).toEqual(["b", "c"]);
+    expect(within(list).getByText("2 items")).toBeTruthy();
+
+    fireEvent.click(within(list).getByRole("button", { name: "Back to summary" }));
+    expect(within(screen.getByRole("region", { name: "Money" })).getByText("$1,000.00")).toBeTruthy();
+    fireEvent.mouseMove(screen.getByRole("button", { name: "View items" }), { clientX: 5, clientY: 5 });
+    expect(screen.getByRole("tooltip").textContent).toBe("Shows all items sold on Friday 10/30");
   });
 
   it("grades nothing and compares to nothing", () => {

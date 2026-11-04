@@ -35,6 +35,7 @@ const item = (code: string) => ({
   units: 1,
   pounds: 0,
   net: 1,
+  vendors: [],
 });
 
 const setup = (store = setupStore()) => {
