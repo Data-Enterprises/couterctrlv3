@@ -131,10 +131,10 @@ export const SALES_HELP: HelpContent = {
       desc: "Each day's baskets, busiest hours, money and refunds",
       steps: [
         {
-          title: "Open Daily recap",
-          pre: "With a store open, choose the",
-          chip: "Daily recap",
-          post: "tab.",
+          title: "Open Summary",
+          pre: "Click a store and it opens on its",
+          chip: "Summary",
+          post: "tab, the first one.",
           anchor: "store-tabs",
           see: "Four figures for the week across the top: transactions, the average basket, qty and the busiest hour. Under them, one row per day with its net sales, transactions, average basket, how many different items sold, qty, and a small strip of its hours beside the busiest one. A store that sells by weight also gets its weight. Items fills in a day at a time, as each day's items are read.",
         },

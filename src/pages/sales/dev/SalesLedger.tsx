@@ -120,10 +120,9 @@ const SalesLedger = () => {
   );
 
   const handleRowClick = useCallback(
-    // Sub depts, which is the first tab and the one that answers the
-    // question the store was clicked with. Stores is a step taken from
-    // there, not the landing.
-    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "subdept"),
+    // Summary, the first tab: the store's week at a glance before any
+    // drill-down. Sub depts and the rest are steps taken from there.
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "dailyrecap"),
     [openStore],
   );
 

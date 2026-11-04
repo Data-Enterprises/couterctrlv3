@@ -1915,3 +1915,10 @@ beside the chart; hovering an hour still shows its figures.
 The exceptions come from /cashiers/exceptions, read once for the week when
 the tab opens. Tender lines are left out: they are payments, not exceptions.
 Figures are separated with "|" rather than dots.
+
+### Daily recap is now Summary, and a store opens on it
+
+The tab is renamed Summary and moved to the front of the store panel's tabs;
+clicking a store in the left panel now opens it on Summary rather than Sub
+depts. In the group view's store detail, the button that opens the store now
+reads Open Store Comparison.

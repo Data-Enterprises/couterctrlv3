@@ -815,8 +815,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             offered rather than opening on an empty one. */}
         {(
           (hasGroup
-            ? ["subdept", "comparison", "hourly", "topitems", "dailyrecap"]
-            : ["subdept", "hourly", "topitems", "dailyrecap"]) as PopupTab[]
+            ? ["dailyrecap", "subdept", "comparison", "hourly", "topitems"]
+            : ["dailyrecap", "subdept", "hourly", "topitems"]) as PopupTab[]
         ).map((t) => (
           <button
             key={t}
@@ -834,7 +834,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 : t === "topitems"
                   ? "Top 200"
                   : t === "dailyrecap"
-                    ? "Daily recap"
+                    ? "Summary"
                     : "Compare"}
           </button>
         ))}
