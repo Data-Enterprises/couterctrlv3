@@ -26,6 +26,10 @@ const ALLOWED: Record<string, string> = {
     "keys of requests still on the wire, emptied as each one lands",
   "pages/sales/dev/components/StoreDetailPopup.tsx:inFlightStores":
     "keys of requests still on the wire, emptied as each one lands",
+  "pages/sales/dev/components/dailyRecap/useDayMix.ts:inFlight":
+    "keys of requests still on the wire, emptied as each one lands",
+  "pages/sales/dev/components/dailyRecap/useWeekExceptions.ts:inFlight":
+    "keys of requests still on the wire, emptied as each one lands",
   "pages/upcScanner/dev/useScanResolve.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
   "features/ticketsMockData.ts:MOCK_ATTACHMENTS":
