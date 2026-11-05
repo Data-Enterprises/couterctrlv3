@@ -1,4 +1,5 @@
 import type { Company } from "../../../../../interfaces";
+import type { CompanyRecord } from "../interfaces";
 
 export const blankCompany: Company = {
   id: 0,
@@ -20,14 +21,28 @@ export const canSubmit = (c: Company) =>
   c.zip !== 0 &&
   c.phone !== "";
 
+export const companyCols = [
+  "Name",
+  "Address",
+  "City",
+  "State",
+  "Zip",
+  "Phone",
+  "Contact Email",
+  "",
+];
 
-  export const formTitles = [
-    "Name",
-    "Address",
-    "City",
-    "State",
-    "Zip",
-    "Phone",
-    "Contact Email",
-    ""
-  ]
+export const membersOf = (
+  companies: CompanyRecord[],
+  id: number | undefined,
+) =>
+  id === undefined ? [] : companies.filter((c) => c.parent_company_id === id);
+
+export const parentChoices = (
+  companies: CompanyRecord[],
+  editingId: number | undefined,
+) =>
+  companies
+    .filter((c) => !c.parent_company_id && c.id !== editingId)
+    .map((c) => ({ label: c.name, value: String(c.id) }))
+    .sort((a, b) => a.label.localeCompare(b.label));

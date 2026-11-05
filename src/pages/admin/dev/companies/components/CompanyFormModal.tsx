@@ -2,12 +2,9 @@
 import { useState } from "react";
 
 // Utils
-import {
-  membersOf,
-  parentChoices,
-  type CompanyRecord,
-} from "../../companyFamily";
-import { blankCompany, canSubmit } from "../utils";
+
+import type { CompanyRecord } from "../interfaces";
+import { membersOf, parentChoices, blankCompany, canSubmit } from "../utils";
 
 // Interfaces
 import type { Company } from "../../../../../interfaces";

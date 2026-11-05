@@ -6,13 +6,6 @@ interface CompanyPickerProps {
   selectedId?: number;
   collisionName?: string;
   onSelect?: (id: number) => void;
-  /**
-   * What the help panel points at, as a named prop rather than a loose
-   * `data-help` on the tag: this component forwards nothing, and TypeScript
-   * lets a hyphenated attribute through on any element without checking that
-   * it is accepted — so the attribute would have been dropped in silence and
-   * the help would have said the control was not on screen.
-   */
   helpAnchor?: string;
 }
 
