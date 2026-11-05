@@ -270,3 +270,9 @@ Items Sold's file has no title row; it opens on its column headings. If a day co
 dev mode only
 
 Every hover tooltip in dev mode is now the app's own light tip that follows the mouse, instead of the browser's small dark box: icon buttons, truncated names, column heads and the rest, on every dev page and the shared menus. Not in Legacy and not on phones. Production screens are unchanged.
+
+## Sales: group share
+
+dev mode only
+
+Group share's store rows: the share bar is 10% shorter and the store name column takes that room, and the names are 1px smaller (12px), so more of a long store name shows before it is cut off.
