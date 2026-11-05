@@ -1,6 +1,6 @@
 // Hooks
 import { useState } from "react";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 

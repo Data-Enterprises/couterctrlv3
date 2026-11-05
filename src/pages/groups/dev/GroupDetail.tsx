@@ -1,6 +1,6 @@
 // Hookes
 import { useEffect, useState } from "react";
-import { useGroupCtx } from ".";
+import { useGroupCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useForgetDeletedGroup } from "../../../hooks/useForgetDeletedGroup";
 

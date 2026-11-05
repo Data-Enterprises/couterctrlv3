@@ -5,7 +5,8 @@ import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGr
 import Input from "../../../../components-dev/inputs/Input";
 import type { JsonError } from "../../../../interfaces";
 import { updateGroup } from "../../../../api/groups";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
+
 
 const UpdateGroup = () => {
   const toast = useToast();

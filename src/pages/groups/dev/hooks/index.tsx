@@ -1,7 +1,6 @@
 import { useEffect } from "react";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useGroupCtx } from "..";
 import type { JsonError } from "../../../../interfaces";
 import { getGroups } from "../../../../api/groups";
 import {
@@ -16,6 +15,29 @@ import {
   setSelectedForm,
   setStoresWithGroupStatus,
 } from "../../../../features/dev/devGroupsPageSlice";
+
+export const useGroupCtx = () => {
+  const dispatch = useAppDispatch();
+  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const {userid} = useAppSelector((state) => state.user);
+  const { groups, selectedGroup } = useAppSelector((state) => state.group);
+  const { selectedForm, refreshGroups, storesWithGroupStatus, createInput } =
+    useAppSelector((state) => state.dev.groupsPage);
+
+  return {
+    dispatch,
+    groups,
+    selectedGroup,
+    selectedForm,
+    refreshGroups,
+    storesWithGroupStatus,
+    url,
+    token,
+    userid,
+    isDesktop,
+    createInput,
+  };
+};
 
 /**
  * The data side of the Groups screens, shared by the desktop panel and the

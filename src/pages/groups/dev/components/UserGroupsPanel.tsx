@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
 import type { Group } from "../../../../features/groupSlice";
 import { useGroupsData } from "../hooks";
 
