@@ -1,12 +1,9 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import {
-  PencilIcon,
-  PlusIcon,
-  LockClosedIcon,
-  LockOpenIcon,
-} from "@heroicons/react/20/solid";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
 import { getUserStores } from "../../../../api/user";
 import {
   createNewStore,
@@ -14,42 +11,24 @@ import {
   reactivateStore,
   setNewStoreName,
 } from "../../../../api/admin";
+
+// Interfaces
 import type { JsonError, Store } from "../../../../interfaces";
+import type { StatusFilter } from "../interfaces";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import StoreFormModal, { type StoreForm } from "./components/StoreFormModal";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import {
-  closedOn,
   statusOf,
   statusReported,
   withClosedMark,
   withoutClosedMark,
-  type StatusFilter,
-} from "../storeStatus";
-
-/**
- * The store records, as a grid.
- *
- * Built the way CompanyGrid is, because it is the same job one tab over:
- * a filtered list, icon actions on each row, and one modal that both creates
- * and edits. Two grids in one page that behave differently is a thing to
- * learn twice.
- *
- * Owner and up — the whole dev Admin page is behind ADMIN_MIN_LEVEL, so there
- * is no second gate here.
- *
- * Renaming used to be its own tab, which meant finding the same store twice
- * to rename it and then retire it. It is the pencil now.
- *
- * Stores are fetched into local state rather than read from `state.user`'s
- * assigned/unassigned lists: those back the signed-in user's own nav and
- * permissions, and a page that creates and retires records should not be
- * editing the list its own chrome is drawn from.
- */
-
-const COLS = "grid-cols-[13%_33%_26%_14%_14%]";
+} from "../utils";
+import StoreRow from "./components/StoreRow";
 
 /** Shown only while the endpoint is not reporting status — see `statusOf`. */
 const UNKNOWN_NOTE =
@@ -166,21 +145,7 @@ const StoreRecords = () => {
       .finally(() => setSaving(false));
   };
 
-  /**
-   * Close or re-open a store, and move the CLOSED marker in its name with it.
-   *
-   * The name has carried the state for years — "614 - PW CLOSED" — and
-   * everything outside this page still reads it that way, so writing
-   * `deactivated_at` without touching the name would leave half the app
-   * disagreeing with the other half.
-   *
-   * The status call goes FIRST because it is the real change; the rename is
-   * the label catching up. If the rename then fails, the store is genuinely
-   * closed and only its name is stale, and the toast says exactly that rather
-   * than reporting a success that was half of one. There is no transaction
-   * across two endpoints, so the order is the only thing deciding which half
-   * survives a failure — and the status is the half worth keeping.
-   */
+  // Close or re-open a store, and move the CLOSED marker in its name with it.
   const changeStatus = (store: Store, next: "deactivate" | "reactivate") => {
     const call = next === "deactivate" ? deactivateStore : reactivateStore;
     const verb = next === "deactivate" ? "closed" : "re-opened";
@@ -267,7 +232,7 @@ const StoreRecords = () => {
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div
-          className={`grid ${COLS} px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
+          className={`grid grid-cols-[13%_33%_26%_14%_14%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
         >
           <div>Number</div>
           <div>Name</div>
@@ -278,64 +243,13 @@ const StoreRecords = () => {
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
           {filtered.map((s) => (
-            <div
+            <StoreRow
               key={`${s.storeid}__${s.store_number}`}
-              className={`grid ${COLS} px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50`}
-            >
-              <div className="truncate tabular-nums">{s.store_number}</div>
-              {/* The name usually carries the number too — "043 - PLF ATHENS
-                  TN" — which is how it reads everywhere else in the app, so
-                  it is left as it is rather than stripped. */}
-              <div className="truncate">{s.store_name}</div>
-              <div className="truncate">{s.company_name}</div>
-
-              {/* A pill either way once the status is reported, from one
-                  family so the two read as a pair. Nothing at all while it
-                  is unknown — a blank cell says "not reported", and an
-                  "Active" pill on a store nobody has asked about would be a
-                  claim rather than a reading. */}
-              <div className="truncate">
-                {statusOf(s) === "closed" && (
-                  <span
-                    className="inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text"
-                    title={`Closed ${closedOn(s.deactivated_at as string)}`}
-                  >
-                    Closed
-                  </span>
-                )}
-                {statusOf(s) === "open" && (
-                  <span className="inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded bg-severity_healthy_bg text-severity_healthy_text">
-                    Active
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-end gap-1">
-                <IconButton
-                  icon={PencilIcon}
-                  title={`Rename ${s.store_name}`}
-                  onClick={() => setEditing(s)}
-                />
-                {/* One lock once the status is readable: closed rows offer
-                    the way back, open rows the way out. Both only while the
-                    endpoint is not saying which. */}
-                {statusOf(s) !== "open" && (
-                  <IconButton
-                    icon={LockOpenIcon}
-                    title={`Re-open ${s.store_name}`}
-                    onClick={() => changeStatus(s, "reactivate")}
-                  />
-                )}
-                {statusOf(s) !== "closed" && (
-                  <IconButton
-                    icon={LockClosedIcon}
-                    title={`Close ${s.store_name}`}
-                    variant="danger"
-                    onClick={() => setDeactivating(s)}
-                  />
-                )}
-              </div>
-            </div>
+              s={s}
+              setEditing={setEditing}
+              setDeactivating={setDeactivating}
+              changeStatus={changeStatus}
+            />
           ))}
 
           {stores !== null && filtered.length === 0 && (

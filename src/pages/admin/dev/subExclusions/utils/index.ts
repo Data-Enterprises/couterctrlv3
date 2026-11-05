@@ -1,69 +1,4 @@
-/**
- * Sub-department exclusions — the arithmetic, with no React in it.
- *
- * A store operator does not want lottery, money orders or stamps counted in
- * their net sales. The `sub_department_exclusions` table answers that, and the
- * backend's `excluded_subs_filter` reads it per store, by the store's own
- * sub-department number. Two facts about that shape drive everything here:
- *
- *  1. **The number is the store's, not the chain's.** 14 is Lottery at one
- *     store and TOBACCO at another. So a write is always (storeid, number) and
- *     never a number on its own.
- *  2. **There is no sub-department dimension table.** `sales_partitioned` is
- *     the only source, so the departments a store has are whatever it rang
- *     over some window. A department that rang nothing in that window cannot
- *     be told apart from one that does not exist.
- *
- * Which leaves the company-wide view with a problem: the user thinks "exclude
- * Lottery everywhere", but the table wants twelve different numbers. The join
- * that makes that work is the **description**, normalised — the one thing the
- * stores agree on. It is matched here and shown here, and never written: what
- * goes to the endpoint is each store's own number.
- */
-
-/** A sub department as one store rang it, from `subs/sub_sales`. */
-export interface StoreSubDept {
-  storeid: number;
-  sub_department: number;
-  /** As the POS spells it. Case and spacing vary between stores. */
-  description: string;
-  /**
-   * The last day it rang, `YYYY-MM-DD`, within the catalogue window.
-   *
-   * Stands in for the sales figure the catalogue deliberately does not carry:
-   * net sales is `subs/sub_sales`' number, earned with coupon reattribution
-   * and basket filters, and a second nearly-equal figure on this screen would
-   * be worse than none. What the operator needs here is whether a department
-   * is live, and a date says that.
-   */
-  lastRung: string;
-}
-
-/** A row of `sub_department_exclusions`, as the GET returns it. */
-export interface ExclusionRow {
-  storeid: number;
-  sub_department: number;
-  sub_department_description: string | null;
-}
-
-/** The store identity this module needs. A subset of `Store`. */
-export interface ExclStore {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-}
-
-/** One write, ready for the endpoint. Both endpoints are idempotent — the
- *  insert is `on conflict do nothing`, the delete matches or does not — so a
- *  plan that has gone slightly stale is safe to send. */
-export type ExclusionWrite =
-  | {
-      op: "add";
-      storeid: number;
-      sub_department: number;
-      sub_department_description: string;
-    }
-  | { op: "remove"; storeid: number; sub_department: number };
+import type { CompanyDeptRow, DeptAtStore, DeptState, ExclStore, ExclusionRow, ExclusionWrite, StoreSubDept } from "../interfaces";
 
 /**
  * The description, reduced to the part the stores agree on.
@@ -124,37 +59,6 @@ export const bestLabel = (spellings: string[]): string => {
     (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
   )[0][0];
 };
-
-/** How a department stands at one store. */
-export interface DeptAtStore {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-  /** This store's own number for it. */
-  sub_department: number;
-  excluded: boolean;
-  lastRung: string;
-}
-
-/** One department, across every store that has it. */
-export interface CompanyDeptRow {
-  /** The normalised description. Stable across stores; not a database key. */
-  key: string;
-  label: string;
-  /** Stores that rang it, in store-number order. */
-  at: DeptAtStore[];
-  /** Stores in scope that never rang it in the window — so "excluded at 3 of
-   *  12" can say what the other 9 are, rather than implying 9 refusals. */
-  absent: ExclStore[];
-  excludedCount: number;
-  /** The most recent day any store in scope rang it. */
-  lastRung: string;
-  /** True when the description reads like hash. */
-  hashHint: boolean;
-}
-
-/** `"all"`, `"none"`, or `"some"` of the stores that have it. */
-export type DeptState = "all" | "some" | "none";
 
 export const deptState = (row: CompanyDeptRow): DeptState => {
   if (row.at.length === 0 || row.excludedCount === 0) return "none";
