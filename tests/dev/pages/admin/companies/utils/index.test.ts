@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { membersOf, parentChoices, type CompanyRecord } from "@/pages/admin/dev/companyFamily";
+import { membersOf, parentChoices } from "@/pages/admin/dev/companies/utils";
+import type { CompanyRecord } from "@/pages/admin/dev/companies/interfaces";
 
 const co = (id: number, name: string, parent: number | null = null) =>
   ({ id, name, parent_company_id: parent }) as CompanyRecord;

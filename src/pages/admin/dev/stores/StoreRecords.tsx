@@ -19,7 +19,7 @@ import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import StoreFormModal, { type StoreForm } from "../StoreFormModal";
+import StoreFormModal, { type StoreForm } from "./components/StoreFormModal";
 import {
   closedOn,
   statusOf,
