@@ -20,8 +20,8 @@ import type { DeptRow, ItemMenu, ItemSortColumn, ItemSortState } from "../interf
 
 // Components
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
-import SubDeptInsight from "./SubDeptInsight";
-import SubDeptKpis from "./SubDeptKpis";
+import InsightToggle from "../../../components/InsightToggle";
+import PeriodKpis from "../../../components/PeriodKpis";
 import ItemsToolbar from "./ItemsToolbar";
 import ItemsTable from "./ItemsTable";
 
@@ -132,7 +132,7 @@ const SubDeptDetailPanel = ({
   return (
     <div className="flex flex-col flex-1 min-w-0">
       {selected && cta && (
-        <SubDeptInsight
+        <InsightToggle
           name={selected.desc}
           cta={cta}
           open={ctaOpen}
@@ -142,7 +142,7 @@ const SubDeptDetailPanel = ({
 
       {selected ? (
         <div className="flex flex-col flex-1 overflow-hidden">
-          <SubDeptKpis
+          <PeriodKpis
             row={selected}
             coverage={coverage}
             threshold={threshold}

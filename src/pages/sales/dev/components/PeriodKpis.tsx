@@ -1,14 +1,27 @@
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
-import { comparisonPillClass, isCompleteCoverage } from "../../../utils/ledgerUtils";
-import { formatPct } from "../../../utils/index";
+import { formatCurrency2 } from "../../../../utils";
+import { comparisonPillClass, isCompleteCoverage } from "../utils/ledgerUtils";
+import { formatPct } from "../utils/index";
 
 // Interfaces
-import type { Coverage } from "../../../utils/ledgerUtils";
-import type { DeptRow } from "../interfaces";
+import type { Coverage } from "../utils/ledgerUtils";
 
-interface SubDeptKpisProps {
-  row: DeptRow;
+/** What the three figures need from a row: a sub department or an hour. */
+interface PeriodRow {
+  tw: number;
+  lw: number;
+  ly: number;
+  qty: number;
+  lwQty: number;
+  lyQty: number;
+  hasLW: boolean;
+  hasLY: boolean;
+  vsLWPct: number;
+  vsLYPct: number;
+}
+
+interface PeriodKpisProps {
+  row: PeriodRow;
   coverage: Coverage;
   threshold: number;
   twDateLabel: string;
@@ -21,15 +34,15 @@ const DATE = "text-[10px] font-bold text-content mt-0.5";
 const VALUE = "text-[13px] font-bold text-content";
 const UNITS = "text-[10px] font-bold text-content";
 
-/** The open sub department's three figures: this year, vs last week, vs last year. */
-const SubDeptKpis = ({
+/** The open row's three figures: this year, vs last week, vs last year. */
+const PeriodKpis = ({
   row,
   coverage,
   threshold,
   twDateLabel,
   lwDateLabel,
   lyDateLabel,
-}: SubDeptKpisProps) => (
+}: PeriodKpisProps) => (
   <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 leading-snug flex-shrink-0">
     <div className="px-4 py-3 text-center">
       <div className={LABEL}>TY Net Sales</div>
@@ -72,4 +85,4 @@ const SubDeptKpis = ({
   </div>
 );
 
-export default SubDeptKpis;
+export default PeriodKpis;

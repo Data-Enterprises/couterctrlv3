@@ -1,8 +1,8 @@
 // Utils
-import { ctaClasses } from "../utils";
+import { ctaClasses } from "../utils/index";
 
 // Interfaces
-import type { DeptCta } from "../interfaces";
+import type { Severity } from "../utils/index";
 
 // Components
 import {
@@ -13,16 +13,18 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 
-interface SubDeptInsightProps {
+interface InsightToggleProps {
   name: string;
-  cta: DeptCta;
+  cta: { text: string; severity: Severity | null };
   open: boolean;
   onToggle: () => void;
+  /** The hourly view sets its "Insight" word a size smaller. */
+  small?: boolean;
 }
 
-/** The open sub department's name, coloured by its grade; a click shows the
- *  insight line under it. */
-const SubDeptInsight = ({ name, cta, open, onToggle }: SubDeptInsightProps) => {
+/** The open row's name (a sub department, an hour), coloured by its grade;
+ *  a click shows the insight line under it. */
+const InsightToggle = ({ name, cta, open, onToggle, small = false }: InsightToggleProps) => {
   const c = ctaClasses(cta.severity);
   return (
     <div className={`relative border-b ${c.border}`}>
@@ -40,7 +42,9 @@ const SubDeptInsight = ({ name, cta, open, onToggle }: SubDeptInsightProps) => {
           <CheckCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
         )}
         <span className={`text-[12px] font-semibold truncate ${c.text}`}>{name}</span>
-        <span className={`text-[12px] font-semibold flex-shrink-0 ${c.text}`}>Insight</span>
+        <span className={`${small ? "text-[10px]" : "text-[12px]"} font-semibold flex-shrink-0 ${c.text}`}>
+          Insight
+        </span>
         <span className="flex-1" />
         {open ? (
           <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${c.text}`} />
@@ -59,4 +63,4 @@ const SubDeptInsight = ({ name, cta, open, onToggle }: SubDeptInsightProps) => {
   );
 };
 
-export default SubDeptInsight;
+export default InsightToggle;

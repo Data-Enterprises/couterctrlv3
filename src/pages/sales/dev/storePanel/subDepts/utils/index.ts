@@ -9,7 +9,6 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../../utils/ledgerUtils";
-import { CTA_SEVERITY_CLASSES } from "../../../utils/index";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
@@ -52,16 +51,6 @@ export const deptSeverity = (
     ? gradeOnBasis(basis, r.vsLWQtyPct, r.vsLYQtyPct, threshold)
     : gradeOnBasis(basis, r.vsLWPct, r.vsLYPct, threshold);
 };
-
-/** The CTA palette for an ungraded row: no verdict, so no severity colour. */
-const NEUTRAL_CTA = {
-  border: "border-gray-200",
-  bg: "bg-gray-50",
-  hoverBg: "hover:bg-gray-100",
-  text: "text-content",
-};
-export const ctaClasses = (sev: Severity | null) =>
-  sev ? CTA_SEVERITY_CLASSES[sev] : NEUTRAL_CTA;
 
 export const getCta = (
   row: DeptRow,

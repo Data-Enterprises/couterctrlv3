@@ -50,6 +50,9 @@ export const useSalesCtx = () =>
       selectedSubDeptItems: s.dev.salesLedger.selectedSubDeptItems,
       inactiveSubDeptItems: s.dev.salesLedger.inactiveSubDeptItems,
       lastFetchedItemsKey: s.dev.salesLedger.lastFetchedItemsKey,
+      // The Hourly tab: its threshold and the open hour.
+      hourlyThreshold: s.dev.salesLedger.hourlyThreshold,
+      selectedHour: s.dev.salesLedger.selectedHour,
     }),
     shallowEqual,
   );
