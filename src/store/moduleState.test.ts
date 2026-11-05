@@ -24,7 +24,7 @@ const ALLOWED: Record<string, string> = {
     "keys of requests still on the wire, emptied as each one lands",
   "pages/sales/dev/storePanel/top200/PopupTopItems.tsx:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/storePanel/StoreDetailPopup.tsx:inFlightStores":
+  "pages/sales/dev/storePanel/hooks/index.ts:inFlightStores":
     "keys of requests still on the wire, emptied as each one lands",
   "pages/sales/dev/storePanel/summary/hooks/useDayMix.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",

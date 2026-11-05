@@ -1,71 +1,42 @@
-﻿// Hooks
-import { useState, useEffect, memo } from "react";
+// Hooks
+import { useState, memo } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
 import {
-  useAppSelector,
-  useAppDispatch,
-  useCanSeeComingSoon,
-  useStoreName,
-} from "../../../../hooks";
-import { useCriticalReport } from "../../../../hooks/useCriticalReport";
+  useDateLabels,
+  useDayScopedSales,
+  useStoreNames,
+  useStorePanelFetch,
+  useWeekWindow,
+} from "./hooks";
 
 // Redux
 import { isGroupSearch } from "../../../../features/searchSlice";
-import {
-  setSubSales,
-  setHourlySales,
-  setHourlySalesLastWeek,
-  setHourlySalesLastYear,
-  setPeriodSubSales,
-} from "../../../../features/dev/devSalesSlice";
-import {
-  setLedgerTab,
-  setCounterpart,
-  clearPopupSelections,
-  cacheStoreData,
-  restoreStoreData,
-} from "../../../../features/dev/devSalesLedgerSlice";
-
-// API
-import { getSubs, getHourly } from "../../../../api/sales";
+import { setCounterpart } from "../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import {
-  addDays,
-  formatGoliathDate,
-  sameWeekDayLastYear,
-  formatCurrency2,
-  formatBigNumber,
-} from "../../../../utils";
+import { sameWeekDayLastYear } from "../../../../utils";
 import { shiftIsoDay } from "../../../../utils/dates";
-import {
-  computeDayMatchedTotals,
-  describeLyWindow,
-  PARTIAL_PILL_CLASS,
-  scopeToStoreNumber,
-  applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
-} from "../utils/ledgerUtils";
-import { formatPct, pillClass, severityHeaderBgClass } from "../utils/index";
+import { buildHeaderTotals } from "./utils";
 
 // Interfaces
 import type { LedgerRowData, StoreSelection } from "../components/LedgerRow";
 
 // Components
-import {
-  ArrowDownTrayIcon,
-  ClipboardDocumentListIcon,
-} from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import SalesExportModal from "./export/SalesExportModal";
 import PopupTopItems from "./top200/PopupTopItems";
 import TopItemsReport from "./top200/components/TopItemsReport";
-import PopupTipButton from "./components/PopupTipButton";
 import DailyRecap from "./summary/DailyRecap";
 import PopupComparisonList from "./compare/PopupComparisonList";
 import DeptReport from "./subDepts/components/DeptReport";
 import HourlySideBySide from "./hourly/components/HourlySideBySide";
 import PopupSubDeptList from "./subDepts/PopupSubDeptList";
 import PopupHourlyView from "./hourly/PopupHourlyView";
+import StorePopupHeader from "./components/StorePopupHeader";
+import StoreKpiStrip from "./components/StoreKpiStrip";
+import StorePopupTabs from "./components/StorePopupTabs";
 
 interface StoreDetailPopupProps {
   selection: StoreSelection;
@@ -75,533 +46,53 @@ interface StoreDetailPopupProps {
   groupRows?: LedgerRowData[];
 }
 
-type PopupTab =
-  | "subdept"
-  | "hourly"
-  | "comparison"
-  | "topitems"
-  | "dailyrecap";
-
-const fmtDate = (d: string) =>
-  new Date(d + "T12:00:00").toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-
-/**
- * Stores whose six calls are already in the air.
- *
- * Outside the component because it has to survive a remount — which is the
- * whole case it exists for. Keyed by store AND number: co-located stores
- * share an id and are two different answers.
- */
-const inFlightStores = new Set<string>();
-
+/** The open store's panel: title bar, KPI strip, day cards, tabs and the open
+ *  tab's content. */
 const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   // A search of one store has no reference set, so there is nothing to
   // compare against and the tab is never offered.
   const hasGroup = !!groupRows && groupRows.length > 1;
   const dispatch = useAppDispatch();
-  // Item Actions is unreleased, so the way in goes with it. A button that
-  // navigates somewhere the nav says does not exist is worse than no button.
-  const canSeeComingSoon = useCanSeeComingSoon();
-  const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const {
     tab,
     selectedDate,
-    rawSubs,
-    rawLWSubs,
-    rawLYSubs,
-    rawHourly,
-    rawLWHourly,
-    rawLYHourly,
-    lastFetchedStoreKey,
-    storeCache,
     gradingMetric,
     counterpart,
-  } = useAppSelector((state) => state.dev.salesLedger);
-  const isQty = gradingMetric === "qty";
-
-  const [loading, setLoading] = useState(false);
+    itemThreshold: rawItemThreshold,
+  } = useSalesCtx();
+  const itemThreshold = rawItemThreshold ?? 9;
   const [exportOpen, setExportOpen] = useState(false);
-  const openCriticalReport = useCriticalReport();
-  // The same item threshold the sub-dept list grades against, so the button's
-  // definition of critical is the one already on screen.
-  const itemThreshold =
-    useAppSelector((state) => state.dev.salesLedger.itemThreshold) ?? 9;
 
-  const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-  const twEnd = formatGoliathDate(search.singleDate);
-  const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-  const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-  // The full 7 calendar days of the searched week — deliberately NOT
-  // selection.days (the store's weekly-sales row list), which only has an
-  // entry for days that list actually returned a row for. A day missing
-  // there doesn't mean this specific dept/hour/item has no real data for
-  // it — using the true calendar range means every entity's LW/LY match is
-  // scoped to its own genuine data, not gated by a different fetch's gaps.
-  const twRealDates = Array.from(
-    { length: 7 },
-    (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
-  );
-  /**
-   * What the LY comparison actually looks at, as opposed to what was fetched.
-   *
-   * `lyStart`/`lyEnd` are min/max of the shifted dates and exist to make the
-   * FETCH wide enough — a Labor Day in this week matches Labor Day last year,
-   * which can sit ten days from the rest of the week, and the row has to be
-   * inside the requested range. Printing those bounds as the label is what put
-   * "Sep 1 – Sep 11" over a seven-day week.
-   */
-  const lyWindow = describeLyWindow(twRealDates);
-  const lyWeekDates = [...lyWindow.dates].sort();
-  const lyStart = lyWeekDates[0];
-  const lyEnd = lyWeekDates[lyWeekDates.length - 1];
-  const lwWeekDates = twRealDates.map(
-    (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
-  );
-
-  const twYear = new Date(twEnd + "T12:00:00").getFullYear();
-
-  // Static range strings
-  const staticTwDate = `${fmtDate(twStart)} – ${fmtDate(twEnd)}, ${twYear}`;
-
-  // Dynamic date labels — update when a day is selected
-  const twDateLabel = selectedDate
-    ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
-    : `${fmtDate(twStart)} – ${fmtDate(twEnd)}`;
-  const lwDateLabel = selectedDate
-    ? new Date(
-        addDays(new Date(selectedDate), -7).toISOString().split("T")[0] +
-          "T12:00:00",
-      ).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
-    : `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}`;
-  const lyDateLabel = selectedDate
-    ? (() => {
-        const label = new Date(
-          sameWeekDayLastYear(selectedDate).date + "T12:00:00",
-        ).toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        });
-        // A holiday is matched to last year's holiday rather than shifted by
-        // weekday, so this date deliberately breaks the pattern of the days
-        // either side of it. Unnamed, it reads as an off-by-something.
-        const hol = lyWindow.holidays.find((h) => h.twDate === selectedDate);
-        return hol ? `${label} · ${hol.name}` : label;
-      })()
-    : lyWindow.label;
-
-  // KPI strip values — full week or selected day
-  const sortedDays = [...selection.days].sort((a, b) =>
-    a.sale_date.localeCompare(b.sale_date),
-  );
-  const activeDay = selectedDate
-    ? sortedDays.find((d) => d.sale_date.startsWith(selectedDate))
-    : null;
-  // Whole-week figures go through computeDayMatchedTotals so the header
-  // agrees with the left panel and day strip — the TW side of each
-  // comparison is restricted to just the days with a genuine LW/LY match,
-  // same as buildLedgerRows/PopupDaySidebar. A single selected day has no
-  // aggregation to do, but its lwNet/lyNet (or lwQty/lyQty) can still be
-  // null (no match). Every figure below follows gradingMetric — Sales
-  // shows dollars, Qty shows units — same toggle as the left panel.
-  const weekTotals = computeDayMatchedTotals(sortedDays, gradingMetric);
-  const headerTwTotal = activeDay
-    ? isQty
-      ? activeDay.twQty
-      : activeDay.twNet
-    : isQty
-      ? weekTotals.twQty
-      : weekTotals.twTotal;
-  const headerLwTotal = activeDay
-    ? isQty
-      ? activeDay.lwQty
-      : activeDay.lwNet
-    : isQty
-      ? weekTotals.lwQty
-      : weekTotals.lwTotal;
-  const headerLyTotal = activeDay
-    ? isQty
-      ? activeDay.lyQty
-      : activeDay.lyNet
-    : isQty
-      ? weekTotals.lyQty
-      : weekTotals.lyTotal;
-  const headerHasLW = activeDay
-    ? isQty
-      ? activeDay.lwQty !== null && activeDay.lwQty > 0
-      : activeDay.lwNet !== null && activeDay.lwNet > 0
-    : weekTotals.hasLW;
-  const headerHasLY = activeDay
-    ? isQty
-      ? activeDay.lyQty !== null && activeDay.lyQty > 0
-      : activeDay.lyNet !== null && activeDay.lyNet > 0
-    : weekTotals.hasLY;
-  const headerVsLWPct = activeDay
-    ? headerHasLW
-      ? isQty
-        ? ((activeDay.twQty - (activeDay.lwQty as number)) /
-            (activeDay.lwQty as number)) *
-          100
-        : ((activeDay.twNet - (activeDay.lwNet as number)) /
-            (activeDay.lwNet as number)) *
-          100
-      : null
-    : weekTotals.hasLW
-      ? weekTotals.vsLWPct
-      : null;
-  /**
-   * How much of the week each comparison covers.
-   *
-   * A selected day is its own comparison, so it is one of one or it has no
-   * pill at all. The week is where this matters: three matched days out of
-   * seven produced a -12.07% that read exactly like a complete one.
-   */
-  const headerLYDays = activeDay ? 1 : weekTotals.lyDayCount;
-  const headerLWDays = activeDay ? 1 : weekTotals.lwDayCount;
-  const headerDays = activeDay ? 1 : weekTotals.dayCount;
-  /** No matching last-year row at all — for the week, not one day of it; for a
-   *  selected day, its one date. Distinct from a genuine $0 day, which has a
-   *  row (lyNet 0, not null). */
-  const noLyHistory = activeDay
-    ? activeDay.lyNet === null
-    : headerDays > 0 && headerLYDays === 0;
-  const headerVsLYPct = activeDay
-    ? headerHasLY
-      ? isQty
-        ? ((activeDay.twQty - (activeDay.lyQty as number)) /
-            (activeDay.lyQty as number)) *
-          100
-        : ((activeDay.twNet - (activeDay.lyNet as number)) /
-            (activeDay.lyNet as number)) *
-          100
-      : null
-    : weekTotals.hasLY
-      ? weekTotals.vsLYPct
-      : null;
-
-  // Matches the left-hand row: resolved via assignedStores, then — for
-  // co-located stores only — the embedded number swapped to this location's.
-  const resolvedStoreName = useStoreName(
-    selection.storeId,
-    selection.storeName,
-  );
-  const headerStoreName = applyStoreNumberToName(
-    resolvedStoreName,
-    selection.storeNumber,
-    selection.storeNumbersForId,
-  );
-
-  const THRESHOLD = 9;
-
-  useEffect(() => {
-    // Remounting with data already fetched for this exact store (e.g.
-    // navigating away and back) shouldn't refire the request — Redux still
-    // has it, only the component tree was torn down.
-    const storeKey = `${selection.storeId}__${selection.storeNumber}`;
-    if (lastFetchedStoreKey === storeKey) return;
-    // Both of the guards above land only once the six calls have come back.
-    // StrictMode mounts, unmounts and mounts again in development, so the
-    // second run read the state the first had not written yet and sent all
-    // six a second time.
-    if (inFlightStores.has(storeKey)) return;
-    // Held from an earlier visit: six calls saved, and the panel paints on
-    // this tick rather than after a round trip. Clients hop between stores --
-    // that is what the counterpart is for -- so this is the common path, not
-    // a clever one.
-    if (storeCache[storeKey]) {
-      dispatch(clearPopupSelections());
-      dispatch(restoreStoreData(storeKey));
-      return;
-    }
-    dispatch(clearPopupSelections());
-    const scopeToStore = <T extends { store_number: string }>(rows: T[]) =>
-      scopeToStoreNumber(rows, selection.storeNumber);
-    inFlightStores.add(storeKey);
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const [
-          subsResp,
-          lwSubsResp,
-          lySubsResp,
-          hourlyResp,
-          lwHourlyResp,
-          lyHourlyResp,
-        ] = await Promise.all([
-          getSubs(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-          getSubs(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-          getSubs(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            0,
-            selection.storeId,
-            1,
-          ),
-        ]);
-        // One dispatch, not seven. The six arrays are a single answer, and
-        // caching them separately would let a store keep its own subs beside
-        // somebody else's hourly.
-        dispatch(
-          cacheStoreData({
-            key: storeKey,
-            data: {
-              rawSubs:
-                subsResp.data.error === 0
-                  ? scopeToStore(subsResp.data.subs)
-                  : [],
-              rawLWSubs:
-                lwSubsResp.data.error === 0
-                  ? scopeToStore(lwSubsResp.data.subs)
-                  : [],
-              rawLYSubs:
-                lySubsResp.data.error === 0
-                  ? scopeToStore(lySubsResp.data.subs)
-                  : [],
-              rawHourly:
-                hourlyResp.data.error === 0
-                  ? scopeToStore(hourlyResp.data.subs)
-                  : [],
-              rawLWHourly:
-                lwHourlyResp.data.error === 0
-                  ? scopeToStore(lwHourlyResp.data.subs)
-                  : [],
-              rawLYHourly:
-                lyHourlyResp.data.error === 0
-                  ? scopeToStore(lyHourlyResp.data.subs)
-                  : [],
-            },
-          }),
-        );
-      } finally {
-        inFlightStores.delete(storeKey);
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, [selection.storeId, selection.storeNumber]);
-
-  useEffect(() => {
-    if (!rawSubs.length && !rawHourly.length) return;
-
-    if (selectedDate === null) {
-      // The raw LW/LY arrays can include days that don't actually correspond
-      // to any day in this TW week (the LY range is deliberately widened
-      // around holidays, and the underlying data itself is fragmented) —
-      // filter down to the exact matched date set before aggregating, same
-      // as buildLedgerRows already does for the store-level totals, so the
-      // sub-dept/hourly figures agree with the KPI header above them.
-      const lwDateSet = new Set(lwWeekDates);
-      const lyDateSet = new Set(lyWeekDates);
-      dispatch(setSubSales(rawSubs));
-      dispatch(
-        setPeriodSubSales({
-          subs: rawLWSubs.filter((s) =>
-            lwDateSet.has(s.sale_date.split("T")[0]),
-          ),
-          period: 2,
-        }),
-      );
-      dispatch(
-        setPeriodSubSales({
-          subs: rawLYSubs.filter((s) =>
-            lyDateSet.has(s.sale_date.split("T")[0]),
-          ),
-          period: 3,
-        }),
-      );
-      dispatch(setHourlySales(rawHourly));
-      dispatch(
-        setHourlySalesLastWeek(
-          rawLWHourly.filter((h) => lwDateSet.has(h.sale_date.split("T")[0])),
-        ),
-      );
-      dispatch(
-        setHourlySalesLastYear(
-          rawLYHourly.filter((h) => lyDateSet.has(h.sale_date.split("T")[0])),
-        ),
-      );
-    } else {
-      dispatch(
-        setSubSales(
-          rawSubs.filter((s) => s.sale_date.startsWith(selectedDate)),
-        ),
-      );
-      const lwDay = addDays(new Date(selectedDate), -7)
-        .toISOString()
-        .split("T")[0];
-      const lyDay = sameWeekDayLastYear(selectedDate).date;
-      dispatch(
-        setPeriodSubSales({
-          subs: rawLWSubs.filter((s) => s.sale_date.startsWith(lwDay)),
-          period: 2,
-        }),
-      );
-      dispatch(
-        setPeriodSubSales({
-          subs: rawLYSubs.filter((s) => s.sale_date.startsWith(lyDay)),
-          period: 3,
-        }),
-      );
-      dispatch(
-        setHourlySales(
-          rawHourly.filter((h) => h.sale_date.startsWith(selectedDate)),
-        ),
-      );
-      dispatch(
-        setHourlySalesLastWeek(
-          rawLWHourly.filter((h) => h.sale_date.startsWith(lwDay)),
-        ),
-      );
-      dispatch(
-        setHourlySalesLastYear(
-          rawLYHourly.filter((h) => h.sale_date.startsWith(lyDay)),
-        ),
-      );
-    }
-  }, [
+  const loading = useStorePanelFetch(selection);
+  useDayScopedSales();
+  const {
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    twRealDates,
+    lyWeekDates,
+    lyStart,
+    lyEnd,
+    lwWeekDates,
+    staticTwDate,
+  } = useWeekWindow();
+  const { twDateLabel, lwDateLabel, lyDateLabel } = useDateLabels();
+  const { headerStoreName } = useStoreNames(selection);
+  const { activeDay, weekTotals } = buildHeaderTotals(
+    selection.days,
     selectedDate,
-    rawSubs,
-    rawLWSubs,
-    rawLYSubs,
-    rawHourly,
-    rawLWHourly,
-    rawLYHourly,
-  ]);
+    gradingMetric,
+  );
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-      {/* Title bar — tinted to the selected store's severity */}
-      <div
-        className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${
-          // Navy when the store wasn't graded — tinting it would claim a verdict.
-          selection.severity
-            ? severityHeaderBgClass[selection.severity]
-            : "bg-brand_navy"
-        }`}
-      >
-        <p className="text-custom-white text-[14px] font-bold leading-tight justify-self-start">
-          {headerStoreName}
-        </p>
-        <span className="text-custom-white text-[14px] font-bold justify-self-center truncate">
-          {counterpart
-            ? `${headerStoreName} vs ${counterpart.storeName}`
-            : "Weekly Performance"}
-        </span>
-        <div className="flex items-center gap-3 justify-self-end">
-          {/* {!loading && gapCount > 0 && (
-            <button
-              onClick={() => setGapReportOpen(true)}
-              title={`${gapCount} day${gapCount === 1 ? "" : "s"} missing comparison data`}
-              className="relative flex items-center justify-center w-[22px] h-[22px] flex-shrink-0"
-            >
-              <span className="relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-custom-white">
-                <ExclamationTriangleIcon className="w-3 h-3 text-amber-600" />
-              </span>
-              <span className="absolute -top-1 -right-1 min-w-[13px] h-[13px] px-[3px] rounded-full bg-amber-600 text-custom-white text-[8px] font-semibold flex items-center justify-center leading-none">
-                {gapCount}
-              </span>
-            </button>
-          )} */}
-          {/* Whole-store critical report.
-              Nothing is fetched here. Sales loads item rows one department at
-              a time, so grading the store first would strand the user on this
-              popup watching nothing happen — instead the rule travels with the
-              handoff and the report resolves it on its own loading screen,
-              using the fan-out it was going to run anyway. */}
-          {canSeeComingSoon && !loading && rawSubs.length > 0 && (
-            <PopupTipButton
-              label="See item actions"
-              onClick={() =>
-                openCriticalReport({
-                  storeId: selection.storeId,
-                  grade: {
-                    kind: "sales",
-                    threshold: itemThreshold,
-                    metric: gradingMetric,
-                    storeNumber: selection.storeNumber,
-                  },
-                  window: { start: twStart, end: twEnd },
-                  sourceLabel: resolvedStoreName,
-                  basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
-                })
-              }
-            >
-              <ClipboardDocumentListIcon className="w-4 h-4" />
-            </PopupTipButton>
-          )}
-          {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
-            <PopupTipButton label="Export CSV" onClick={() => setExportOpen(true)}>
-              <ArrowDownTrayIcon className="w-4 h-4" />
-            </PopupTipButton>
-          )}
-        </div>
-      </div>
-
-      {/* {gapReportOpen && (
-        <DataGapReport
-          gaps={gaps}
-          storeName={selection.storeName}
-          storeNumber={selection.storeNumber}
-          onClose={() => setGapReportOpen(false)}
-        />
-      )} */}
+      <StorePopupHeader
+        selection={selection}
+        loading={loading}
+        onExport={() => setExportOpen(true)}
+      />
 
       {exportOpen && (
         <SalesExportModal
@@ -628,149 +119,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
         />
       )}
 
-      {/* KPI metric strip — values and date labels update with day selection */}
-      <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-        <div className="px-4 pt-2.5 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            {isQty ? "TY Qty" : "TY Net Sales"}
-          </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">
-            {twDateLabel}
-          </div>
-          <div className="text-[14px] font-bold text-content">
-            {isQty
-              ? formatBigNumber(headerTwTotal, 0)
-              : formatCurrency2(headerTwTotal)}
-          </div>
-        </div>
-        <div className="px-4 pt-2.5 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            vs Last Week
-          </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">
-            {lwDateLabel}
-          </div>
-          <div className="flex items-baseline justify-center gap-2">
-            <span className="text-[14px] font-bold text-content">
-              {headerLwTotal !== null
-                ? isQty
-                  ? formatBigNumber(headerLwTotal, 0)
-                  : formatCurrency2(headerLwTotal)
-                : "—"}
-            </span>
-            {headerVsLWPct !== null && (
-              <span
-                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                  headerLWDays < headerDays
-                    ? PARTIAL_PILL_CLASS
-                    : pillClass(headerVsLWPct, THRESHOLD)
-                }`}
-              >
-                {formatPct(headerVsLWPct)}
-              </span>
-            )}
-          </div>
-          {headerLWDays < headerDays && (
-            <div className="text-[10px] font-semibold text-content pb-0.5">
-              {headerLWDays} of {headerDays} days matched
-            </div>
-          )}
-        </div>
-        <div className="px-4 pt-2.5 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            vs Last Year
-          </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">
-            {lyDateLabel}
-          </div>
-          <div className="flex items-baseline justify-center gap-2">
-            {/* Not one day of the week has a matching date on file. $0.00
-                would read as a store that sold nothing; the store simply has
-                no history there. */}
-            <span
-              className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}
-            >
-              {noLyHistory
-                ? "No history"
-                : headerLyTotal !== null
-                  ? isQty
-                    ? formatBigNumber(headerLyTotal, 0)
-                    : formatCurrency2(headerLyTotal)
-                  : "—"}
-            </span>
-            {!noLyHistory && headerVsLYPct !== null && (
-              <span
-                /* Grey, not red or green, when days are missing. The figure is
-                   arithmetically right over the days it has and still does not
-                   support a verdict — store 590's three matched days are
-                   missing both weekend days, the two biggest of the week. */
-                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                  headerLYDays < headerDays
-                    ? PARTIAL_PILL_CLASS
-                    : pillClass(headerVsLYPct, THRESHOLD)
-                }`}
-                title={
-                  headerLYDays < headerDays
-                    ? `Compares only the ${headerLYDays} day${headerLYDays === 1 ? "" : "s"} with a matching date last year. The total beside it is those days too — not the ${headerDays}-day week above.`
-                    : undefined
-                }
-              >
-                {formatPct(headerVsLYPct)}
-              </span>
-            )}
-          </div>
-          {!noLyHistory && headerLYDays < headerDays && (
-            <div className="text-[10px] font-semibold text-content pb-0.5">
-              {headerLYDays} of {headerDays} days matched
-            </div>
-          )}
-        </div>
-      </div>
+      <StoreKpiStrip days={selection.days} />
 
-      {/* Day strip */}
       <div className="flex-shrink-0">
         <PopupDaySidebar days={selection.days} />
       </div>
 
-      {/* Tabs */}
-      <div
-        data-help="store-tabs"
-        className="flex items-center border-b border-gray-100 px-3 flex-shrink-0"
-      >
-        {/* Sub depts leads: it is the tab that answers the question the
-            page was opened with, and it reads the same whether or not a
-            counterpart has been chosen. Compare sits beside it as the
-            place that chooses one.
-
-            Compare shows only when there are siblings to compare with — a
-            single-store search has no reference set, so the tab is not
-            offered rather than opening on an empty one. */}
-        {(
-          (hasGroup
-            ? ["dailyrecap", "subdept", "comparison", "hourly", "topitems"]
-            : ["dailyrecap", "subdept", "hourly", "topitems"]) as PopupTab[]
-        ).map((t) => (
-          <button
-            key={t}
-            onClick={() => dispatch(setLedgerTab(t))}
-            className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
-              tab === t
-                ? "border-brand_navy text-content"
-                : "border-transparent text-content"
-            }`}
-          >
-            {t === "subdept"
-              ? "Sub depts"
-              : t === "hourly"
-                ? "Hourly"
-                : t === "topitems"
-                  ? "Top 200"
-                  : t === "dailyrecap"
-                    ? "Summary"
-                    : "Compare"}
-          </button>
-        ))}
-      </div>
+      <StorePopupTabs hasGroup={hasGroup} />
 
       {/* Content — fills remaining height */}
       <div className="flex-1 overflow-hidden">
@@ -915,7 +270,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
 };
 
 // This panel grades off its own thresholds (subDept/item/hourly/category), not
-// the store-row threshold in the header — so it has no reason to re-render when
+// the store-row threshold in the header, so it has no reason to re-render when
 // that one changes. Without this it re-rendered on every drag frame purely
 // because SalesLedger re-rendered above it.
 export default memo(StoreDetailPopup);
