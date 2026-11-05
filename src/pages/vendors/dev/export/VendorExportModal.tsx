@@ -21,13 +21,10 @@ import {
 } from "../../../../utils/grading";
 import { fmtDayLabel } from "../../../../utils/dateLabels";
 import { getVendorTier, marginPct } from "../utils";
-import {
-  collectGradedItems,
-  type GradedItem,
-  type GradedSev,
-} from "../utils/vendorGradedItems";
+import { collectGradedItems } from "../utils/vendorGradedItems";
 
 // Interfaces
+import type { GradedItem, GradedSev } from "../interfaces";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import type { SubDeptMargin } from "../../../../interfaces";
 import type { VendorMetric, VendorRow } from "../utils";

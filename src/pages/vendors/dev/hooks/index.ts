@@ -1,4 +1,5 @@
 // Hooks
+import { shallowEqual } from "react-redux";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -41,6 +42,10 @@ import { buildVendorRows, datesOf, scopePeriods } from "../utils";
  *  because desktop and mobile each hold their own copy of the hook. */
 let searchSeq = 0;
 
+/** The Vendors page's slice, read where it is used instead of passed down. */
+export const useVendorsCtx = () =>
+  useAppSelector((s) => s.dev.vendors, shallowEqual);
+
 export const useVendorSearch = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -49,7 +54,7 @@ export const useVendorSearch = () => {
   const user = useAppSelector((s) => s.user);
   // Narrow on purpose: re-presenting a cached search needs the totals, and
   // this hook should not re-render its caller on every filter change.
-  const rollup = useAppSelector((s) => s.dev.vendors.rollup);
+  const { rollup } = useVendorsCtx();
 
   /** Resolves once the rows are in the store. Returns the row count so a
    *  caller can tell "found nothing" from "never ran" without reading state

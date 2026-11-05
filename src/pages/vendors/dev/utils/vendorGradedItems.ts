@@ -3,7 +3,6 @@ import {
   buildItemRows,
   getItemSeverity,
   type ItemGradingMetric,
-  type ItemMarginRow,
 } from "../../../../utils/itemMargins";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../../utils/grading";
 import { rowsForVendor } from "./index";
@@ -11,6 +10,7 @@ import { rowsForVendor } from "./index";
 // Interfaces
 import type { SubDeptMargin } from "../../../../interfaces";
 import type { VendorRow } from "./index";
+import type { GradedItem, GradedSev } from "../interfaces";
 
 /**
  * Which graded items a vendor contributes, and in what order.
@@ -22,20 +22,6 @@ import type { VendorRow } from "./index";
  * there: a vendor's range routinely spans several sub departments, and that set
  * is what narrows the fan-out when the list is handed to Item Actions.
  */
-
-export type GradedSev = "critical" | "watch" | "healthy";
-
-/** One graded item, with the vendor and department it came from. The full
- *  export and the UPC-only export share this so the two can never disagree
- *  about which items are in scope — the second is the first with the columns
- *  taken away. */
-export interface GradedItem {
-  vendorId: string;
-  vendorName: string;
-  dept: string;
-  r: ItemMarginRow;
-  sev: GradedSev;
-}
 
 export const collectGradedItems = (
   rows: VendorRow[],

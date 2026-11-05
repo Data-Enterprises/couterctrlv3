@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useVendorsCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Redux
@@ -40,7 +41,7 @@ import { getVendorTier, vendorDelta, marginPct } from "../utils";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import LocationTabs from "../../../../components/filters/LocationTabs";
+import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
@@ -99,7 +100,7 @@ interface Props {
 const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
-  const vend = useAppSelector((s) => s.dev.vendors);
+  const vend = useVendorsCtx();
   const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
 
   /**

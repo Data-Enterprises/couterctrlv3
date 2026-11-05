@@ -6,6 +6,7 @@ import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../../utils/grading";
 
 // Interfaces
+import type { PeriodRange, VendorScope } from "../interfaces";
 import type { SubDeptMargin } from "../../../../interfaces";
 
 /**
@@ -50,17 +51,6 @@ const SINGLE_STORE = 1;
  * request argument it means "all", as a row value it means that department.
  */
 const ALL_SUB_DEPTS = 0;
-
-export interface VendorScope {
-  url: string;
-  token: string;
-  storeid: number;
-}
-
-export interface PeriodRange {
-  start: string;
-  end: string;
-}
 
 /** The three ranges, derived from this week's. Offsets are shared so the fetch
  *  and the day-alignment can't drift apart. */

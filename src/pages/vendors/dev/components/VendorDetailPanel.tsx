@@ -1,11 +1,8 @@
 // Hooks
 import { useMemo, useState } from "react";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-import {
-  useAppSelector,
-  useAppDispatch,
-  useCanSeeComingSoon,
-} from "../../../../hooks";
+import { useAppDispatch, useCanSeeComingSoon } from "../../../../hooks";
+import { useVendorsCtx } from "../hooks";
 
 // Redux
 import {
@@ -104,7 +101,7 @@ const Kpi = ({
 
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
-  const vend = useAppSelector((s) => s.dev.vendors);
+  const vend = useVendorsCtx();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
   const canSeeComingSoon = useCanSeeComingSoon();

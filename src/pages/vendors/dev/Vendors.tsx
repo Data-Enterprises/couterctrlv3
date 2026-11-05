@@ -1,7 +1,7 @@
 // Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
-import { useVendorSearch } from "./hooks";
+import { useVendorSearch, useVendorsCtx } from "./hooks";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -26,7 +26,7 @@ const Vendors = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const vend = useAppSelector((s) => s.dev.vendors);
+  const vend = useVendorsCtx();
   const { runSearch, applyLocation } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);
