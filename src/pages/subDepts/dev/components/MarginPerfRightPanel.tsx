@@ -38,7 +38,7 @@ import {
 } from "@heroicons/react/16/solid";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import MarginPerfExportModal from "../export/MarginPerfExportModal";
-import MarginPerfItemsTable from "./MarginPerfItemsTable";
+import MarginPerfItemsTable from "./itemsTable/MarginPerfItemsTable";
 import SubDeptCostGrid from "./SubDeptCostGrid";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
 
