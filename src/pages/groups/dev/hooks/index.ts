@@ -24,7 +24,6 @@ import { getGroups } from "../../../../api/groups";
 import type { JsonError } from "../../../../interfaces";
 
 export const useGroupCtx = () => {
-  const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const { userid } = useAppSelector((state) => state.user);
   const { groups, selectedGroup } = useAppSelector((state) => state.group);
@@ -32,7 +31,6 @@ export const useGroupCtx = () => {
     useAppSelector((state) => state.dev.groupsPage);
 
   return {
-    dispatch,
     groups,
     selectedGroup,
     selectedForm,
