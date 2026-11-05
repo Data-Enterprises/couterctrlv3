@@ -3,7 +3,7 @@ import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import RecapSortHead from "./RecapSortHead";
 import { count, money, weight3 } from "../utils/recapFormat";
 import { NO_VENDOR } from "../utils/recapItems";
-import type { ItemSort, ItemSortCol, RecapItemRow } from "../types/index";
+import type { ItemSort, ItemSortCol, RecapItemRow } from "../interfaces/index";
 import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
 import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
 

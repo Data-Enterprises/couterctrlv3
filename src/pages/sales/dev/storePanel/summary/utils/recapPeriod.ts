@@ -1,5 +1,5 @@
 import { NO_EXCEPTIONS, byTypeOrder } from "./recapExceptions";
-import type { DayMixState, RecapExceptions, RecapExceptionType, RecapMix } from "../types/index";
+import type { DayMixState, RecapExceptions, RecapExceptionType, RecapMix } from "../interfaces/index";
 
 /**
  * Several days' mixes as one, so the week's cards read exactly as a day's.

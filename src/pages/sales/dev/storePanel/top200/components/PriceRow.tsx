@@ -1,6 +1,6 @@
 import type { TopItemPricePoint } from "../../../../../../api/topItems";
 import { money } from "../utils";
-import type { PriceLine } from "../types";
+import type { PriceLine } from "../interfaces";
 
 const side = (p: TopItemPricePoint | null) =>
   p === null

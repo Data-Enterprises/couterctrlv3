@@ -7,7 +7,7 @@ import {
   subDeptOptions,
   vendorOptions,
 } from "@/pages/sales/dev/storePanel/summary/utils/recapItemRows";
-import type { RecapItem, RecapVendorPart } from "@/pages/sales/dev/storePanel/summary/types";
+import type { RecapItem, RecapVendorPart } from "@/pages/sales/dev/storePanel/summary/interfaces";
 
 const part = (vendor: string, net: number, units = 1, pounds = 0): RecapVendorPart => ({
   vendor,

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import type { Cause, ItemVerdict } from "../utils/deptInvestigation";
-import type { FilterKind } from "../types";
+import type { FilterKind } from "../interfaces";
 
 /** The grid's four column filters and the list they leave. The cause filter
  *  is also set from the other tabs, which is why the page holds it. */

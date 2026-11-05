@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { recapCsv } from "@/pages/sales/dev/storePanel/export/utils/recapCsv";
-import type { RecapItemRow } from "@/pages/sales/dev/storePanel/summary/types";
+import type { RecapItemRow } from "@/pages/sales/dev/storePanel/summary/interfaces";
 
 const row = (over: Partial<RecapItemRow>): RecapItemRow => ({
   code: "1",

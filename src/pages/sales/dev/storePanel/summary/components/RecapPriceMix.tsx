@@ -1,6 +1,6 @@
 import { priceShares } from "../utils/recapMix";
 import { money0, pct } from "../utils/recapFormat";
-import type { DayMixState } from "../types/index";
+import type { DayMixState } from "../interfaces/index";
 
 /**
  * The day's net sales split by price type, under Money's lines: one slim bar,

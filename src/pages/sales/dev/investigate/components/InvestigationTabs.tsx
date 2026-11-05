@@ -1,6 +1,6 @@
 import { CAUSE_LABEL, type Summary } from "../utils/deptInvestigation";
 import type { Desk, Holds, Supply } from "../utils/investigationSteps";
-import type { InvestigationTab } from "../types";
+import type { InvestigationTab } from "../interfaces";
 import Bar from "./Bar";
 
 /*

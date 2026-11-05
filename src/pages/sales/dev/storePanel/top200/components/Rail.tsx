@@ -18,7 +18,7 @@ import {
   type CompareMetric,
 } from "../utils/topItemsCompare";
 import { money, pct, pts, signedMoney, toneOf } from "../utils";
-import type { PriceLine } from "../types";
+import type { PriceLine } from "../interfaces";
 import PriceRow from "./PriceRow";
 
 /**

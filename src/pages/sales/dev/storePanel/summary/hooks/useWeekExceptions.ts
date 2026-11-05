@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
 import { cacheRecapExceptions } from "../../../../../../features/dev/devSalesLedgerSlice";
 import { exceptionsByDay } from "../utils/recapExceptions";
 import { loadWeekExceptions } from "../utils/recapExceptionsLoad";
-import type { WeekExceptionsState } from "../types/index";
+import type { WeekExceptionsState } from "../interfaces/index";
 
 /**
  * Weeks whose exception lines are on the wire right now, so a remount or

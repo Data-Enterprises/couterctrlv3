@@ -24,7 +24,7 @@ import type {
   RecapExceptions,
   RecapItem,
   RecapMix,
-} from "../../pages/sales/dev/storePanel/summary/types/index";
+} from "../../pages/sales/dev/storePanel/summary/interfaces/index";
 import {
   RECAP_ITEMS_MAX,
   RECAP_MIX_MAX,

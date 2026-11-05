@@ -10,7 +10,7 @@ import {
   type Supply,
   type SupplyRecord,
 } from "../utils/investigationSteps";
-import type { DocLine } from "../types";
+import type { DocLine } from "../interfaces";
 import Carousel from "./Carousel";
 import Timeline from "./Timeline";
 import Document from "./Document";

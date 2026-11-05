@@ -1,7 +1,7 @@
 import RecapStatCard from "./RecapStatCard";
 import { count, money } from "../utils/recapFormat";
 import { combineExceptions } from "../utils/recapPeriod";
-import type { WeekExceptionsState } from "../types/index";
+import type { WeekExceptionsState } from "../interfaces/index";
 
 /**
  * The period's exceptions, a day or the week: how many transactions had one

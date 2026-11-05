@@ -1,5 +1,5 @@
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import type { ModalMode } from "../types/index";
+import type { ModalMode } from "../interfaces/index";
 
 interface ExportModalHeaderProps {
   storeName: string;

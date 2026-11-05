@@ -11,7 +11,7 @@ import {
   one,
 } from "../utils/recapFormat";
 import { DAY_CARD } from "../utils/recapGrid";
-import type { RecapDay } from "../types/index";
+import type { RecapDay } from "../interfaces/index";
 import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
 
 /** One fact in the column: its label, then its figure with an aside at the right. */

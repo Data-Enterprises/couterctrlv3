@@ -6,7 +6,7 @@ import {
 } from "../../../../../../features/dev/devSalesLedgerSlice";
 import { dayKey, isCacheableDay } from "../../summary/utils/recapKeys";
 import { loadDayItems } from "../../summary/utils/recapLoad";
-import type { RecapItem } from "../../summary/types/index";
+import type { RecapItem } from "../../summary/interfaces/index";
 
 /** One day for the export: its items, and whether they could be read. */
 export interface WeekDayItems {

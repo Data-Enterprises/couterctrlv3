@@ -3,7 +3,7 @@ import { countedRows } from "../../../../../../utils/hashSubs";
 import { fetchSubDeptRowsOrEmpty } from "../../../../../../utils/marginRows";
 import { scopeToStoreNumber } from "../../../../../../utils/storeIdentity";
 import { foldItems } from "./recapItems";
-import type { RecapItem } from "../types/index";
+import type { RecapItem } from "../interfaces/index";
 
 /**
  * One day's item rows for one store location, counted sub depts only.

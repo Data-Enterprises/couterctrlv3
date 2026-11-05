@@ -8,7 +8,7 @@ import {
 } from "./deptInvestigation";
 import { formatCurrency2 } from "../../../../../utils";
 import { cash } from ".";
-import type { Col, FilterKind } from "../types";
+import type { Col, FilterKind } from "../interfaces";
 
 /* ------------------------------------------------------------------ */
 /* The columns                                                         */

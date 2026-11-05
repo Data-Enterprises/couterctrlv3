@@ -1,4 +1,4 @@
-import type { DimDef } from "../types/index";
+import type { DimDef } from "../interfaces/index";
 
 interface GroupByPickerProps {
   dims: DimDef[];

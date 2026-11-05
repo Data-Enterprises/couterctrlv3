@@ -1,4 +1,4 @@
-import type { CustomSource } from "../types/index";
+import type { CustomSource } from "../interfaces/index";
 
 interface DataSourcePickerProps {
   source: CustomSource;

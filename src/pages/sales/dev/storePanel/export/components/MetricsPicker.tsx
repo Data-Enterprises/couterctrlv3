@@ -1,6 +1,6 @@
 import type { AggFn } from "../../../../../../utils/csvExport";
 import { AGG_OPTIONS } from "../utils/index";
-import type { MetricDef, MetricSelection } from "../types/index";
+import type { MetricDef, MetricSelection } from "../interfaces/index";
 
 interface MetricsPickerProps {
   mDefs: MetricDef[];

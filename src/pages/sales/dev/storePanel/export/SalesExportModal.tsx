@@ -30,7 +30,7 @@ import {
   buildItemsCsv,
   PRESET_DATASETS,
 } from "./utils/index";
-import type { ExportDataset, ItemSev, ModalMode } from "./types/index";
+import type { ExportDataset, ItemSev, ModalMode } from "./interfaces/index";
 import ExportModalHeader from "./components/ExportModalHeader";
 import PresetOption from "./components/PresetOption";
 import ItemsSoldDates from "./components/ItemsSoldDates";

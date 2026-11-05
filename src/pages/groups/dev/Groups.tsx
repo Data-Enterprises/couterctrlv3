@@ -59,9 +59,7 @@ const Groups = () => {
           </span>
         </div>
 
-        {/* Only when there is a choice to make. Below the sharing level this
-            page is store groups and nothing else, and one tab would be
-            chrome pretending to be a decision. */}
+        {/* User level gated to Owner for shared groups */}
         {canShare && <FormNavTabs setTab={setTab} tab={tab} />}
 
         {tab === "shared" && canShare ? <SharedGroups /> : <UserGroupsPanel />}

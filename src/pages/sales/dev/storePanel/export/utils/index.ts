@@ -9,7 +9,7 @@ import type {
   ExportDataset,
   ItemSev,
   MetricDef,
-} from "../types/index";
+} from "../interfaces/index";
 
 // ─── Formatting helpers ────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ import { foldItems } from "../utils/recapItems";
 import { dayKey as mixKey, isCacheableDay } from "../utils/recapKeys";
 import { loadDayRows } from "../utils/recapLoad";
 import { mixForDay } from "../utils/recapMix";
-import type { DayItemsState, DayMixState, RecapItem } from "../types/index";
+import type { DayItemsState, DayMixState, RecapItem } from "../interfaces/index";
 
 /**
  * Days whose item rows are on the wire right now, so a second ask (a tab

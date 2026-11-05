@@ -1,5 +1,5 @@
 import type { SubDeptMargin } from "../../../../../../interfaces";
-import type { RecapMix } from "../types/index";
+import type { RecapMix } from "../interfaces/index";
 
 /**
  * A row's type as text. The columns are typed as strings but not every POS

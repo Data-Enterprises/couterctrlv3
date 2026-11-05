@@ -1,6 +1,6 @@
 import type { SubSale } from "../../../../../../interfaces";
 import { countedRows } from "../../../../../../utils/hashSubs";
-import type { RecapMoney } from "../types/index";
+import type { RecapMoney } from "../interfaces/index";
 
 /**
  * A day's or the week's money, as a sum the reader can check: with tax, less

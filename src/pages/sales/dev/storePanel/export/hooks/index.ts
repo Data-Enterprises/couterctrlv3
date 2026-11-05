@@ -10,7 +10,7 @@ import {
   HOURLY_DIMS,
   HOURLY_METRICS,
 } from "../utils/index";
-import type { CustomSource, MetricSelection } from "../types/index";
+import type { CustomSource, MetricSelection } from "../interfaces/index";
 
 interface CustomExportRows {
   rawSubs: SubSale[];

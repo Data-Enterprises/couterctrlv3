@@ -1,5 +1,5 @@
 import type { HourlySale } from "../../../../../../interfaces";
-import type { RecapDayHours, RecapHour } from "../types/index";
+import type { RecapDayHours, RecapHour } from "../interfaces/index";
 
 /**
  * The shape by hour of one day or several, from the Hourly rows the popup

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_ITEM_SORT, nextItemSort, sortItemRows } from "@/pages/sales/dev/storePanel/summary/utils/recapItemSort";
-import type { RecapItemRow } from "@/pages/sales/dev/storePanel/summary/types";
+import type { RecapItemRow } from "@/pages/sales/dev/storePanel/summary/interfaces";
 
 const row = (code: string, name: string, net: number, units: number, vendor = "V"): RecapItemRow => ({
   code,

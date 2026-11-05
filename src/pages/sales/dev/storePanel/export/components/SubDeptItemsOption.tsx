@@ -1,5 +1,5 @@
 import { SEV_CHIP } from "../utils/index";
-import type { ItemSev } from "../types/index";
+import type { ItemSev } from "../interfaces/index";
 
 interface SubDeptItemsOptionProps {
   checked: boolean;

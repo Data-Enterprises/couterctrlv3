@@ -1,6 +1,6 @@
 import type { SubDeptMargin } from "../../../../../../interfaces";
 import { countedRows } from "../../../../../../utils/hashSubs";
-import type { RecapItem, RecapVendorPart } from "../types/index";
+import type { RecapItem, RecapVendorPart } from "../interfaces/index";
 
 /** What a row with no vendor on it is filed under: the Vendors filter's
  *  option for them, and a dash in the Vendor column. */

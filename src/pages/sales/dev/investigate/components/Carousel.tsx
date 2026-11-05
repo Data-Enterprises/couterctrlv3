@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Slide } from "../types";
+import type { Slide } from "../interfaces";
 
 /* ------------------------------------------------------------------ */
 /* One card at a time                                                  */

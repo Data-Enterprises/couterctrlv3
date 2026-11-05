@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { combineExceptions, combineMix } from "@/pages/sales/dev/storePanel/summary/utils/recapPeriod";
-import type { DayMixState, RecapExceptions, RecapMix } from "@/pages/sales/dev/storePanel/summary/types";
+import type { DayMixState, RecapExceptions, RecapMix } from "@/pages/sales/dev/storePanel/summary/interfaces";
 
 const mix = (codes: string[], over: Partial<RecapMix> = {}): DayMixState => ({
   status: "ready",

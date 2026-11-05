@@ -11,7 +11,7 @@ import {
 import { CAUSE_ORDER } from "../utils";
 import { COLUMNS, label, ruleOf, tintOf } from "../utils/columns";
 import type { useItemFilters } from "../hooks";
-import type { Col, FilterKind } from "../types";
+import type { Col, FilterKind } from "../interfaces";
 
 /** The grid's heading row: a filter, a sort or a plain label per column. */
 const GridHead = ({

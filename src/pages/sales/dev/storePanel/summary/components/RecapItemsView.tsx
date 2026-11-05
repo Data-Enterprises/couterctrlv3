@@ -15,7 +15,7 @@ import {
 } from "../utils/recapItemRows";
 import type { PeriodItems } from "../utils/recapItemRows";
 import { DEFAULT_ITEM_SORT, nextItemSort, sortItemRows } from "../utils/recapItemSort";
-import type { ItemSort, ItemSortCol } from "../types/index";
+import type { ItemSort, ItemSortCol } from "../interfaces/index";
 
 /**
  * Summary's item view (board 18): every item the period sold, a page at a

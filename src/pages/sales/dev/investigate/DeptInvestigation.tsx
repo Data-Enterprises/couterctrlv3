@@ -31,7 +31,7 @@ import {
 } from "./utils/investigationSteps";
 import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
-import type { Col, InvestigationTab } from "./types";
+import type { Col, InvestigationTab } from "./interfaces";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";

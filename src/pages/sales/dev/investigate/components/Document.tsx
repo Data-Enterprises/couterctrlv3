@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SupplyRecord } from "../utils/investigationSteps";
-import type { DocLine } from "../types";
+import type { DocLine } from "../interfaces";
 
 /** Sep 24, from an ISO date that may or may not carry a time behind it. */
 const onDay = (d: string) =>

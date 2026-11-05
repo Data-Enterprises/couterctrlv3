@@ -2,7 +2,7 @@ import RecapStatCard from "./RecapStatCard";
 import RecapViewItemsButton from "./RecapViewItemsButton";
 import { avgBasket, avgItemPrice, itemsPerBasket } from "../utils/recapDays";
 import { count, money, one, pounds } from "../utils/recapFormat";
-import type { DayMixState, RecapDay } from "../types/index";
+import type { DayMixState, RecapDay } from "../interfaces/index";
 
 /**
  * The period's baskets, a day or the week: how many, and what an average one

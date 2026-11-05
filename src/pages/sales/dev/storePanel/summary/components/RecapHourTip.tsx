@@ -1,6 +1,6 @@
 import { avgBasket } from "../utils/recapDays";
 import { count, hourRange, money, one } from "../utils/recapFormat";
-import type { RecapHour } from "../types/index";
+import type { RecapHour } from "../interfaces/index";
 import CursorTipBox from "../../../../../../components-dev/tooltip/CursorTipBox";
 
 /**

@@ -1,5 +1,5 @@
 import type { ExceptionLine } from "../../../../../../api/exceptionLines";
-import type { RecapExceptions, RecapExceptionType } from "../types/index";
+import type { RecapExceptions, RecapExceptionType } from "../interfaces/index";
 
 /** The order the card lists types in; anything else follows, by name. */
 const TYPE_ORDER = ["Voided", "Cancelled", "Refunded", "No Sale", "Backup"];

@@ -3,7 +3,7 @@ import RecapExceptionsCard from "./RecapExceptionsCard";
 import RecapMoneyCard from "./RecapMoneyCard";
 import RecapShapeCard from "./RecapShapeCard";
 import { TRAY } from "../utils/recapGrid";
-import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "../types/index";
+import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "../interfaces/index";
 
 /**
  * Summary for one period: the week (board 16), or a day picked from its day
