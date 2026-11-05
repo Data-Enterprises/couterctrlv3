@@ -3,20 +3,11 @@ import { useState, type ReactNode } from "react";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import {
-  ladderFor,
-  ladderSays,
-  CAUSE_LABEL,
-  CAUSE_TONE,
-  evidenceSays,
-  supplyTimeline,
-  type ItemVerdict,
-  type PriceLadder,
-  type PricePoint,
-  type SupplyEvent,
-} from "../utils/deptInvestigation";
+import { ladderFor, supplyTimeline } from "../utils/supplyEvidence";
+import { ladderSays, CAUSE_LABEL, CAUSE_TONE, evidenceSays } from "../utils/deptInvestigation";
 
 // Interfaces
+import type { ItemVerdict, PriceLadder, PricePoint, SupplyEvent } from "../interfaces";
 import type {
   AllOrder,
   ReceiverItemSearchReceiver,

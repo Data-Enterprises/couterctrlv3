@@ -1,6 +1,9 @@
 // Utils
-import { CAUSE_LABEL, type ItemVerdict } from "../utils/deptInvestigation";
+import { CAUSE_LABEL } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
+
+// Interfaces
+import type { ItemVerdict } from "../interfaces";
 
 // Components
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";

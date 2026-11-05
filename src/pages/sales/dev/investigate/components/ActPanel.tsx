@@ -1,7 +1,10 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import { CAUSE_LABEL, type Cause } from "../utils/deptInvestigation";
+import { CAUSE_LABEL } from "../utils/deptInvestigation";
 import { OWNER_LABEL, type Desk } from "../utils/investigationSteps";
+
+// Interfaces
+import type { Cause } from "../interfaces";
 
 /* ------------------------------------------------------------------ */
 /* Step 5 · who fixes it                                               */

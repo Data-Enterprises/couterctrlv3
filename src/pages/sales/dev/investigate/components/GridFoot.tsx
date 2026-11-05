@@ -2,7 +2,7 @@
 import { COLUMNS, tintOf } from "../utils/columns";
 
 // Interfaces
-import type { ItemVerdict } from "../utils/deptInvestigation";
+import type { ItemVerdict } from "../interfaces";
 
 /** The totals row, over every filtered item. */
 const GridFoot = ({

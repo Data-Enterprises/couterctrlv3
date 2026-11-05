@@ -2,7 +2,7 @@
 import { PAGE_ROWS } from "../utils";
 
 // Interfaces
-import type { ItemVerdict } from "../utils/deptInvestigation";
+import type { ItemVerdict } from "../interfaces";
 
 /** The strip under the grid: where you are in the list, and the pages. */
 const GridPager = ({

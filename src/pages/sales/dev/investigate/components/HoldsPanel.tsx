@@ -1,5 +1,5 @@
 // Interfaces
-import type { Summary } from "../utils/deptInvestigation";
+import type { Summary } from "../interfaces";
 import type {
   Holds,
   Spread,

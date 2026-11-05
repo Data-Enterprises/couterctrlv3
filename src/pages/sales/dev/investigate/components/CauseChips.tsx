@@ -1,12 +1,9 @@
 // Utils
-import {
-  CAUSE_LABEL,
-  CAUSE_OWNER,
-  CAUSE_TONE,
-  type Cause,
-  type CauseTotal,
-} from "../utils/deptInvestigation";
+import { CAUSE_LABEL, CAUSE_OWNER, CAUSE_TONE } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
+
+// Interfaces
+import type { Cause, CauseTotal } from "../interfaces";
 
 // Components
 import Bar from "./Bar";

@@ -2,8 +2,7 @@
 import { formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
-import type { Stage } from "../interfaces";
-import type { Cause } from "./deptInvestigation";
+import type { Stage, Cause } from "../interfaces";
 
 /**
  * How many rows a page holds.

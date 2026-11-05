@@ -1,20 +1,8 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildFacts,
-  causeOf,
-  judge,
-  ladderFor,
-  ladderSays,
-  type PriceLadder,
-  marginsOf,
-  decompose,
-  ratiosOf,
-  summarise,
-  supplyTimeline,
-  tilesAt,
-  DEFAULT_BANDS,
-  type ItemFacts,
-} from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { buildFacts, decompose, summarise, tilesAt } from "@/pages/sales/dev/investigate/utils/investigationFacts";
+import { causeOf, judge, ladderSays, marginsOf, ratiosOf, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/utils/supplyEvidence";
+import type { PriceLadder, ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 import type {
   AllOrder,
   ReceiverItemSearchReceiver,

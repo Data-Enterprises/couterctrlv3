@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_LABEL, type Summary } from "../utils/deptInvestigation";
+import { CAUSE_LABEL } from "../utils/deptInvestigation";
 
 // Interfaces
+import type { Summary, InvestigationTab } from "../interfaces";
 import type { Desk, Holds, Supply } from "../utils/investigationSteps";
-import type { InvestigationTab } from "../interfaces";
 
 // Components
 import Bar from "./Bar";

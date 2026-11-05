@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { desksOf, holdsUp, spreadOf, supplyOf, supplySays, vitalsOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
-import { judge, type ItemFacts, type ItemVerdict } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import type { ItemFacts, ItemVerdict } from "@/pages/sales/dev/investigate/interfaces";
 
 const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   productCode: "1",

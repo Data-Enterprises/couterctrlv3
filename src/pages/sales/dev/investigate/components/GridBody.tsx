@@ -2,7 +2,7 @@
 import { COLUMNS, tintOf } from "../utils/columns";
 
 // Interfaces
-import type { ItemVerdict } from "../utils/deptInvestigation";
+import type { ItemVerdict } from "../interfaces";
 import type { useRowSelection } from "../hooks";
 
 // Components

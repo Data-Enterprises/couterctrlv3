@@ -17,15 +17,12 @@ import {
   type SalesWave,
   type Scope,
 } from "../utils/investigationData";
-import {
-  buildFacts,
-  summarise,
-  type Cause,
-  type ItemVerdict,
-} from "../utils/deptInvestigation";
+import { buildFacts, summarise } from "../utils/investigationFacts";
 
 // Interfaces
 import type {
+  Cause,
+  ItemVerdict,
   FilterKind,
   Investigation,
   InvestigationArgs,

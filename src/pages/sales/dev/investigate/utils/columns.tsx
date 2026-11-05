@@ -1,17 +1,12 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import {
-  CAUSE_LABEL,
-  CAUSE_OWNER,
-  CAUSE_TONE,
-  type ItemVerdict,
-} from "./deptInvestigation";
+import { CAUSE_LABEL, CAUSE_OWNER, CAUSE_TONE } from "./deptInvestigation";
 import { cash } from ".";
 
 // Interfaces
+import type { ItemVerdict, Col, FilterKind } from "../interfaces";
 import type { ReactNode } from "react";
 import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { Col, FilterKind } from "../interfaces";
 
 /* ------------------------------------------------------------------ */
 /* The columns                                                         */

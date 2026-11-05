@@ -12,7 +12,7 @@ import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { supplyWindow } from "./utils/investigationData";
-import { CAUSE_LABEL, type ItemVerdict } from "./utils/deptInvestigation";
+import { CAUSE_LABEL } from "./utils/deptInvestigation";
 import {
   desksOf,
   holdsUp,
@@ -25,7 +25,7 @@ import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
 
 // Interfaces
-import type { Col, InvestigationTab } from "./interfaces";
+import type { ItemVerdict, Col, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";

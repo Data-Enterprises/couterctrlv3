@@ -1,17 +1,13 @@
 // Utils
-import {
-  CAUSE_LABEL,
-  type Cause,
-  type CauseTotal,
-} from "../utils/deptInvestigation";
+import { CAUSE_LABEL } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
 import { COLUMNS, label, ruleOf, tintOf } from "../utils/columns";
 
 // Interfaces
+import type { Cause, CauseTotal, Col, FilterKind } from "../interfaces";
 import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { SortState } from "../../../../../utils/useTriStateSort";
 import type { useItemFilters } from "../hooks";
-import type { Col, FilterKind } from "../interfaces";
 
 // Components
 import SortHeader from "../../../../../components-dev/SortHeader";
