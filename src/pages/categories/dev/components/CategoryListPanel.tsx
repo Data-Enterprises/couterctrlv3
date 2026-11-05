@@ -1,25 +1,25 @@
-import LocationTabs from "../../../components/filters/LocationTabs";
+import LocationTabs from "../../../../components/filters/LocationTabs";
 import {
   applyStoreNumberToName,
   combinedStoreName,
-} from "../../../utils/storeIdentity";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
+} from "../../../../utils/storeIdentity";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import CategoryRow from "./CategoryRow";
 import { useMemo, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import TextFilter from "../../../components-dev/filters/TextFilter";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
-} from "../../../components-dev/filters/ThresholdFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+} from "../../../../components-dev/filters/ThresholdFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import {
   formatCurrency2,
   formatCurrencyCompact,
   formatBigNumber,
-} from "../../../utils";
-import { fmtCompactRange } from "../../../utils/dateLabels";
+} from "../../../../utils";
+import { fmtCompactRange } from "../../../../utils/dateLabels";
 import {
   severityDotClass,
   comparisonPillClass,
@@ -27,8 +27,8 @@ import {
   PCT_COL_W,
   formatPct,
   type Severity,
-} from "../../../utils/severity";
-import { isCompleteCoverage } from "../../../utils/grading";
+} from "../../../../utils/severity";
+import { isCompleteCoverage } from "../../../../utils/grading";
 import {
   setTextFilter,
   setTierFilter,
@@ -36,14 +36,14 @@ import {
   setMetric,
   setThreshold,
   CATEGORY_THRESHOLD_DEFAULT,
-} from "../../../features/dev/devCategoriesSlice";
+} from "../../../../features/dev/devCategoriesSlice";
 import {
   getTier,
   categoryDelta,
   pctChange,
   sortGraded,
   type CategoryTier,
-} from "./categoriesUtils";
+} from "../utils";
 
 const TOGGLE_OPTS = [
   { key: "sales" as const, label: "Sales" },

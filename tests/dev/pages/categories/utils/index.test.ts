@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scopePeriods } from "@/pages/categories/dev/categoriesUtils";
+import { scopePeriods } from "@/pages/categories/dev/utils";
 import type { CatSalesDaily } from "@/interfaces";
 
 /**

@@ -1,8 +1,8 @@
-import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+import { onlyStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../../utils";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { formatGoliathDate, getStoreName } from "../../../../utils";
 import {
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
@@ -18,17 +18,17 @@ import {
   setItems,
   setLoadingItems,
   reQuery,
-} from "../../../features/dev/devCategoriesSlice";
+} from "../../../../features/dev/devCategoriesSlice";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,
   fetchHourlyPeriods,
-} from "./categoriesData";
+} from "../utils/categoriesData";
 import {
   buildCategoryRows,
   countedCatRows,
   scopePeriods,
-} from "./categoriesUtils";
+} from "../utils";
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the

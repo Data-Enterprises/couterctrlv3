@@ -3,9 +3,9 @@ import { useAppSelector } from "../../../hooks";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useCategoryData } from "./useCategoryData";
-import CategoryListPanel from "./CategoryListPanel";
-import CategoryDetailPanel from "./CategoryDetailPanel";
+import { useCategoryData } from "./hooks";
+import CategoryListPanel from "./components/CategoryListPanel";
+import CategoryDetailPanel from "./components/CategoryDetailPanel";
 import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
 
 /**

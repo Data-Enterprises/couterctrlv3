@@ -1,13 +1,13 @@
-import { getCats } from "../../../api/sales";
-import { getCatItems } from "../../../api/cats";
-import { fetchAllPages } from "../../../utils/paging";
+import { getCats } from "../../../../api/sales";
+import { getCatItems } from "../../../../api/cats";
+import { fetchAllPages } from "../../../../utils/paging";
 import type {
   CatItem,
   CatSalesDaily,
   CatSalesHourly,
   CatSalesResponse,
-} from "../../../interfaces";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "./categoriesUtils";
+} from "../../../../interfaces";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "./index";
 
 /** Fetching for the Categories page.
  *

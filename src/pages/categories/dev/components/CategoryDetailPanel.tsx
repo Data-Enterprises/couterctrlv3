@@ -1,8 +1,8 @@
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import {
   pillClass,
   comparisonPillClass,
@@ -11,19 +11,19 @@ import {
   chipClass,
   severityHeaderBgClass,
   type Severity,
-} from "../../../utils/severity";
-import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
+} from "../../../../utils/severity";
+import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
 import CategoryItemsTable from "./CategoryItemsTable";
-import CategoryExportModal from "./CategoryExportModal";
-import { fmtDayLabel, fmtRangeLabel } from "../../../utils/dateLabels";
-import ThresholdSlider from "../../../components-dev/filters/ThresholdSlider";
-import ThresholdFilter from "../../../components-dev/filters/ThresholdFilter";
+import CategoryExportModal from "../export/CategoryExportModal";
+import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
+import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import {
   setSelectedDay,
   setThreshold,
   CATEGORY_THRESHOLD_DEFAULT,
   ITEM_THRESHOLD_DEFAULT,
-} from "../../../features/dev/devCategoriesSlice";
+} from "../../../../features/dev/devCategoriesSlice";
 import {
   getTier,
   pctChange,
@@ -32,8 +32,8 @@ import {
   LY_OFFSET,
   type CategoryDay,
   type CategoryTier,
-} from "./categoriesUtils";
-import { gradeBasis, isCompleteCoverage } from "../../../utils/grading";
+} from "../utils";
+import { gradeBasis, isCompleteCoverage } from "../../../../utils/grading";
 
 type Tab = "items" | "hours";
 

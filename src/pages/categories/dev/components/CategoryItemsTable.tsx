@@ -1,9 +1,9 @@
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import ItemMarginsTable from "../../../components-dev/ItemMarginsTable";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
 import {
   setItemThreshold,
   ITEM_THRESHOLD_DEFAULT,
-} from "../../../features/dev/devCategoriesSlice";
+} from "../../../../features/dev/devCategoriesSlice";
 
 /** The open category's items, on the shared item report.
  *
