@@ -1,7 +1,14 @@
+// Hooks
 import { useState } from "react";
-import { PlusIcon } from "@heroicons/react/20/solid";
+
+// Utils and types
 import type { Group } from "../../../features/groupSlice";
+import { BADGE, kindOf } from "./utils";
+import type { Show } from "./interfaces";
+
+// Components
 import TextFilter from "../../../components-dev/filters/TextFilter";
+import { PlusIcon } from "@heroicons/react/20/solid";
 
 interface GroupsListProps {
   /** The signed-in user — tells "shared by you" from "shared with you". */
@@ -15,24 +22,6 @@ interface GroupsListProps {
   onOpenCreate: () => void;
 }
 
-export type Show = "all" | "mine" | "shared";
-
-/** Who a group belongs to, from where the user stands. */
-export const kindOf = (g: Group, userid: number): "mine" | "sharedByYou" | "sharedWithYou" =>
-  g.userid !== userid ? "sharedWithYou" : g.is_shared ? "sharedByYou" : "mine";
-
-export const BADGE = {
-  sharedByYou: { label: "Shared by you", cls: "bg-blue-50 text-blue-700" },
-  sharedWithYou: { label: "Shared with you", cls: "bg-emerald-50 text-emerald-700" },
-} as const;
-
-// Flat master list — mirrors Organization's BaseGroups.tsx left column shape
-// (search + "+ New" + scrollable select list) rather than the old per-action
-// GroupPicker sidebar that got duplicated across 4 separate tabs.
-//
-// All / Mine / Shared narrows it: Mine is the user's own groups; Shared is the
-// shared groups they created (managed on Shared Groups) plus the ones others
-// shared with them (read-only), each badged to say which.
 const GroupsList = ({
   userid,
   groups,

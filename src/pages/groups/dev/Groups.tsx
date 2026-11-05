@@ -1,31 +1,18 @@
 // Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
 import { SHARED_GROUP_OWNER_LEVEL } from "../../organization/dev/sharedGroups/hooks";
-import { useGroupsData } from "./hooks";
 
 // Interfaces
-import { setSelectedForm } from "../../../features/dev/devGroupsPageSlice";
-import type { GroupFormType } from "../../../interfaces";
 import type { GroupsTab } from "./interfaces";
 
 // Components
-import GroupsMobile from "./mobile/GroupsMobile";
 import SharedGroups from "../../organization/dev/sharedGroups/SharedGroups";
 import FormNavTabs from "./components/FormNavTabs";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import UserGroupsPanel from "./components/UserGroupsPanel";
-
-/** The phone view of the user's own groups. */
-export const UserGroupsMobile = () => {
-  const dispatch = useAppDispatch();
-  useGroupsData();
-  const handleFormSelect = (formType: GroupFormType) => {
-    dispatch(setSelectedForm(formType));
-  };
-  return <GroupsMobile handleFormSelect={handleFormSelect} />;
-};
+import UserGroupsMobile from "./mobile/UserGroupsMobile";
 
 /**
  * Config → Groups: the two kinds of group a person owns.
