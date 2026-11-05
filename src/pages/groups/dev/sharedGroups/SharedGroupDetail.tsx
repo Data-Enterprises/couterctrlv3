@@ -1,6 +1,9 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
-import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
+import { useSharedGroupsCtx } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
 import {
   addSharedGroupStores,
   deleteSharedGroup,
@@ -11,6 +14,11 @@ import {
   shareSharedGroups,
   unshareSharedGroups,
 } from "../../../../api/sharedGroups";
+
+// Utils
+import { errorText, nameProblem, storeLabel } from "./utils";
+
+// Interfaces
 import type {
   SharedGroup,
   SharedGroupStoreRow,
@@ -18,16 +26,16 @@ import type {
   SharedGroupUser,
   SharedGroupUsersResp,
 } from "../../../../interfaces";
+
+// Components
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import { errorText, nameProblem, storeLabel, useSharedGroupsCtx } from "./hooks";
+import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   group: SharedGroup;
-  /** Re-reads the owner's shared groups after any change to this one. */
   onChanged: () => void;
-  /** A rename also changes the name in the user's own group list. */
   onRenamed: () => void;
   onDeleted: () => void;
 }
@@ -35,23 +43,20 @@ interface Props {
 type Envelope = { error: number; msg?: string };
 
 /**
- * One of the caller's shared groups: its name, its stores, and who can search
- * with it. Only its creator manages it.
- *
- * Stores come from the creator's own assigned stores, and changes reach
- * everyone it's shared with. Sharing only puts the group in someone's store
- * picker (and their User Groups tab) — it never changes which stores they can
- * open, and they only get the group's stores they're assigned to.
+ * One of the caller's shared groups: its name, its stores, and who can search with it. Only its creator manages it, not who it was shared with.
  */
-const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) => {
+const SharedGroupDetail = ({
+  group,
+  onChanged,
+  onRenamed,
+  onDeleted,
+}: Props) => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
-  // Enter saves and so does leaving the field; this keeps it to one request.
   const saving = useRef(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  // Stores first, then who it's shared with — the order you build a group in.
   const [subTab, setSubTab] = useState<"users" | "stores">("stores");
   const [users, setUsers] = useState<SharedGroupUser[] | null>(null);
   const [stores, setStores] = useState<SharedGroupStoreRow[] | null>(null);
@@ -170,7 +175,9 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
   // Anyone who has the group stays listed, whatever their level, so it can
   // always be taken back. Sharing it out goes to your level or below.
   const sharedWith = others.filter(hasIt);
-  const shareable = others.filter((u) => !hasIt(u) && u.user_level <= ctx.userLevel);
+  const shareable = others.filter(
+    (u) => !hasIt(u) && u.user_level <= ctx.userLevel,
+  );
   const noStores = group.stores.length === 0;
   const userItem = (u: SharedGroupUser) => {
     const full = [u.first_name, u.last_name].filter(Boolean).join(" ");
@@ -185,7 +192,9 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
 
   const storeItem = (s: SharedGroupStoreRow) => ({
     id: s.storeid,
-    label: s.assigned ? storeLabel(s) : `${storeLabel(s)} (no longer assigned to you)`,
+    label: s.assigned
+      ? storeLabel(s)
+      : `${storeLabel(s)} (no longer assigned to you)`,
   });
 
   const recipients = group.userids.length;
@@ -207,10 +216,16 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
             className="basic-input bg-custom-white py-0.5 px-2 text-[15px] font-medium"
           />
         ) : (
-          <span className="text-[16px] font-medium text-content mr-1.5">{group.name}</span>
+          <span className="text-[16px] font-medium text-content mr-1.5">
+            {group.name}
+          </span>
         )}
         {!editing && (
-          <IconButton icon={PencilIcon} title="Rename" onClick={() => setEditing(true)} />
+          <IconButton
+            icon={PencilIcon}
+            title="Rename"
+            onClick={() => setEditing(true)}
+          />
         )}
         <IconButton
           icon={TrashIcon}
@@ -220,8 +235,8 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
         />
       </div>
       <div className="text-[11.5px] text-content/85 mb-2">
-        {group.stores.length} store{group.stores.length === 1 ? "" : "s"} · shared with{" "}
-        {recipients} {recipients === 1 ? "person" : "people"}
+        {group.stores.length} store{group.stores.length === 1 ? "" : "s"} ·
+        shared with {recipients} {recipients === 1 ? "person" : "people"}
       </div>
 
       <div className="flex border-b border-gray-100 mb-4">
@@ -230,7 +245,9 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
             key={t}
             onClick={() => setSubTab(t)}
             className={`text-[12px] font-semibold py-2 px-4 capitalize border-b-2 transition-colors ${
-              subTab === t ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
+              subTab === t
+                ? "border-brand_navy text-brand_navy"
+                : "border-transparent text-content"
             }`}
           >
             {t}
@@ -244,14 +261,16 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
         ) : (
           <>
             <p className="text-[11px] text-content/60 mb-2">
-              From the stores you're assigned to. Changes reach everyone the group is shared
-              with. Once it's shared, it keeps at least one store — unshare it or delete it
-              to empty it.
+              From the stores you're assigned to. Changes reach everyone the
+              group is shared with. Once it's shared, it keeps at least one
+              store — unshare it or delete it to empty it.
             </p>
             <AssignPanel
               leftTitle="Your stores"
               rightTitle="In the group"
-              leftItems={stores.filter((s) => !s.active && s.assigned).map(storeItem)}
+              leftItems={stores
+                .filter((s) => !s.active && s.assigned)
+                .map(storeItem)}
               rightItems={stores.filter((s) => s.active).map(storeItem)}
               verbs={{ assign: "Add", unassign: "Remove" }}
               onAssign={(ids) =>
@@ -280,18 +299,20 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
         ) : (
           <>
             <p className="text-[11px] text-content/60 mb-2">
-              Sharing puts the group in their User Groups and store picker. It doesn't
-              change which stores they can open, and they only see the group's stores
-              they're assigned to. People at your level or below who share a company
-              with you.
+              Sharing puts the group in their User Groups and store picker. It
+              doesn't change which stores they can open, and they only see the
+              group's stores they're assigned to. People at your level or below
+              who share a company with you.
             </p>
             <p className="text-[11px] text-content/75 mb-2">
-              You created this group, so you already have it — it's in your User Groups and
-              your store picker. You don't need to share it with yourself.
+              You created this group, so you already have it — it's in your User
+              Groups and your store picker. You don't need to share it with
+              yourself.
             </p>
             {noStores && (
               <p className="text-[11px] text-amber-800 mb-2">
-                This group has no stores yet. Add some on the Stores tab before sharing it.
+                This group has no stores yet. Add some on the Stores tab before
+                sharing it.
               </p>
             )}
             <AssignPanel
@@ -326,7 +347,9 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
         <ConfirmModal
           title={`Delete ${group.name}?`}
           message={`This removes the group for you${
-            recipients ? ` and the ${recipients} ${recipients === 1 ? "person" : "people"} it's shared with` : ""
+            recipients
+              ? ` and the ${recipients} ${recipients === 1 ? "person" : "people"} it's shared with`
+              : ""
           }. Nobody loses access to a store. This can't be undone.`}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}

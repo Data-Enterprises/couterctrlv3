@@ -1,22 +1,34 @@
+import { storeLabel, nameProblem } from "@/pages/groups/dev/sharedGroups/utils";
 import { describe, expect, it } from "vitest";
-import { nameProblem, storeLabel } from "@/pages/organization/dev/sharedGroups/hooks";
 
 describe("storeLabel", () => {
   it("doesn't repeat a number the name already carries", () => {
     expect(
-      storeLabel({ storeid: 13, store_number: "27", store_name: "027 - IGA GLASGOW KY" }),
+      storeLabel({
+        storeid: 13,
+        store_number: "27",
+        store_name: "027 - IGA GLASGOW KY",
+      }),
     ).toBe("027 - IGA GLASGOW KY");
   });
 
   it("puts the number in front of a name without one", () => {
-    expect(storeLabel({ storeid: 5, store_number: "12", store_name: "GROCERY BASKET" })).toBe(
-      "12 - GROCERY BASKET",
-    );
+    expect(
+      storeLabel({
+        storeid: 5,
+        store_number: "12",
+        store_name: "GROCERY BASKET",
+      }),
+    ).toBe("12 - GROCERY BASKET");
   });
 
   it("falls back when the name is missing", () => {
-    expect(storeLabel({ storeid: 5, store_number: "12", store_name: null })).toBe("Store 12");
-    expect(storeLabel({ storeid: 5, store_number: null, store_name: null })).toBe("Store 5");
+    expect(
+      storeLabel({ storeid: 5, store_number: "12", store_name: null }),
+    ).toBe("Store 12");
+    expect(
+      storeLabel({ storeid: 5, store_number: null, store_name: null }),
+    ).toBe("Store 5");
   });
 });
 

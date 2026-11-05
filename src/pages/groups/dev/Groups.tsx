@@ -2,13 +2,15 @@
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
-import { SHARED_GROUP_OWNER_LEVEL } from "../../organization/dev/sharedGroups/hooks";
+
+// Utils
+import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/utils";
 
 // Interfaces
 import type { GroupsTab } from "./interfaces";
 
 // Components
-import SharedGroups from "../../organization/dev/sharedGroups/SharedGroups";
+import SharedGroups from "./sharedGroups/SharedGroups";
 import FormNavTabs from "./components/FormNavTabs";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import UserGroupsPanel from "./components/UserGroupsPanel";

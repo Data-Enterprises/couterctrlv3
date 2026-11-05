@@ -1,13 +1,25 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { PlusIcon } from "@heroicons/react/20/solid";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { createSharedGroup, getSharedGroups } from "../../../../api/sharedGroups";
+import { useRefreshMyGroups, useSharedGroupsCtx } from "./hooks";
+
+// API
+import {
+  createSharedGroup,
+  getSharedGroups,
+} from "../../../../api/sharedGroups";
+
+// Utils
+import { nameProblem, errorText } from "./utils";
+
+// Interfaces
+import type { RightSide } from "./interfaces";
 import type { SharedGroup, SharedGroupsResp } from "../../../../interfaces";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SharedGroupDetail from "./SharedGroupDetail";
-import { errorText, nameProblem, useRefreshMyGroups, useSharedGroupsCtx } from "./hooks";
-
-type RightSide = { kind: "none" } | { kind: "create" } | { kind: "group"; id: number };
+import { PlusIcon } from "@heroicons/react/20/solid";
 
 /** Just a name — like making a user group. Stores come next, on the group. */
 const NewSharedGroup = ({
@@ -19,21 +31,28 @@ const NewSharedGroup = ({
 }) => {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
+
   // Only complain about a name once there's something typed.
   const problem = name.trim() ? nameProblem(name) : null;
+
   const submit = () => {
     if (creating || nameProblem(name)) return;
     setCreating(true);
     Promise.resolve(onCreate(name)).finally(() => setCreating(false));
   };
+
   return (
     <div className="max-w-[420px]">
-      <div className="text-[16px] font-medium text-content mb-1">New shared group</div>
+      <div className="text-[16px] font-medium text-content mb-1">
+        New shared group
+      </div>
       <p className="text-[11px] text-content/60 mb-3">
-        A user group you can share. Name it, pick its stores from the ones you're assigned
-        to, then share it.
+        A user group you can share. Name it, pick its stores from the ones
+        you're assigned to, then share it.
       </p>
-      <label className="text-[11px] text-content/60 block mb-1">Group name</label>
+      <label className="text-[11px] text-content/60 block mb-1">
+        Group name
+      </label>
       <input
         autoFocus
         value={name}
@@ -43,7 +62,9 @@ const NewSharedGroup = ({
         placeholder="e.g. C-Store QSR"
         className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
       />
-      <div className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/50"}`}>
+      <div
+        className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/50"}`}
+      >
         {problem ?? "Letters, numbers, spaces, _ and -."}
       </div>
       <div className="flex justify-end gap-2 mt-3">
@@ -65,14 +86,7 @@ const NewSharedGroup = ({
   );
 };
 
-/**
- * User Management > Shared Groups — owners and up.
- *
- * A shared group is a user group you can share: a flat list of the ones you
- * created, sorted by name. Create with a name, pick stores from the ones
- * you're assigned to, then share and unshare. Only you can change or delete
- * yours; whoever you share with sees it in their User Groups tab, read-only.
- */
+// Groups > Shared Groups — owners and up.
 const SharedGroups = () => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
@@ -96,9 +110,13 @@ const SharedGroups = () => {
   }, [ctx.url, ctx.token]);
 
   const q = search.trim().toLowerCase();
-  const shown = (groups ?? []).filter((g) => !q || g.name.toLowerCase().includes(q));
+  const shown = (groups ?? []).filter(
+    (g) => !q || g.name.toLowerCase().includes(q),
+  );
   const selected =
-    right.kind === "group" ? (groups ?? []).find((g) => g.id === right.id) ?? null : null;
+    right.kind === "group"
+      ? ((groups ?? []).find((g) => g.id === right.id) ?? null)
+      : null;
 
   const handleCreate = (name: string): Promise<void> => {
     const trimmed = name.trim();
@@ -111,7 +129,9 @@ const SharedGroups = () => {
           // Straight to it once the list has it — an empty group opens on its
           // stores. Selecting before the list arrives would flash the empty
           // "select a group" state.
-          return fetchGroups().then(() => setRight({ kind: "group", id: j.id }));
+          return fetchGroups().then(() =>
+            setRight({ kind: "group", id: j.id }),
+          );
         } else {
           toast.error(j.msg || "Could not create the shared group");
         }
@@ -127,7 +147,9 @@ const SharedGroups = () => {
             value={search}
             onChange={setSearch}
             placeholder={
-              groups ? `Search ${groups.length} shared group${groups.length === 1 ? "" : "s"}…` : "Search shared groups…"
+              groups
+                ? `Search ${groups.length} shared group${groups.length === 1 ? "" : "s"}…`
+                : "Search shared groups…"
             }
             className="flex-1"
           />
@@ -143,7 +165,9 @@ const SharedGroups = () => {
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-gray-100">
           {groups === null ? (
-            <div className="px-3 py-2 text-[11px] text-content/60">Loading…</div>
+            <div className="px-3 py-2 text-[11px] text-content/60">
+              Loading…
+            </div>
           ) : shown.length === 0 ? (
             <div className="px-3 py-2 text-[11px] text-content/60">
               {q ? "No matches" : "No shared groups yet — make one with +"}
@@ -155,15 +179,21 @@ const SharedGroups = () => {
                 <button
                   key={g.id}
                   onClick={() => setRight({ kind: "group", id: g.id })}
-                  style={active ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
+                  style={
+                    active
+                      ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
+                      : undefined
+                  }
                   className={`w-full flex flex-col items-start px-3 py-2 text-left transition-colors ${
                     active ? "bg-custom-white" : "hover:bg-gray-50"
                   }`}
                 >
-                  <span className="text-[12px] font-medium text-content">{g.name}</span>
+                  <span className="text-[12px] font-medium text-content">
+                    {g.name}
+                  </span>
                   <span className="text-[10.5px] text-content/55">
-                    {g.stores.length} store{g.stores.length === 1 ? "" : "s"} · shared with{" "}
-                    {g.userids.length}
+                    {g.stores.length} store{g.stores.length === 1 ? "" : "s"} ·
+                    shared with {g.userids.length}
                   </span>
                 </button>
               );
@@ -174,7 +204,10 @@ const SharedGroups = () => {
 
       <div className="flex-1 min-w-0 overflow-y-auto p-4">
         {right.kind === "create" ? (
-          <NewSharedGroup onCreate={handleCreate} onCancel={() => setRight({ kind: "none" })} />
+          <NewSharedGroup
+            onCreate={handleCreate}
+            onCancel={() => setRight({ kind: "none" })}
+          />
         ) : selected ? (
           <SharedGroupDetail
             group={selected}
@@ -191,7 +224,8 @@ const SharedGroups = () => {
           />
         ) : (
           <div className="flex items-center justify-center h-full text-[12px] text-content text-center px-6">
-            Select a shared group to share it or change its stores, or make a new one with +.
+            Select a shared group to share it or change its stores, or make a
+            new one with +.
           </div>
         )}
       </div>
