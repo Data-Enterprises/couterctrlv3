@@ -20,7 +20,6 @@ import {
 import {
   setLedgerTab,
   setCounterpart,
-  setLedgerSelectedDate,
   clearPopupSelections,
   cacheStoreData,
   restoreStoreData,
@@ -791,12 +790,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
 
       {/* Day strip */}
       <div className="flex-shrink-0">
-        <PopupDaySidebar
-          days={selection.days}
-          selectedDate={selectedDate}
-          gradingMetric={gradingMetric}
-          onSelect={(date) => dispatch(setLedgerSelectedDate(date))}
-        />
+        <PopupDaySidebar days={selection.days} />
       </div>
 
       {/* Tabs */}

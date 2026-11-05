@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo } from "react";
 import { useAppSelector } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
 
 // Utils
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
@@ -13,7 +14,6 @@ import {
 } from "../utils/storeComparison";
 
 // Interfaces
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { LedgerRowData } from "../components/LedgerRow";
 
 // Components
@@ -35,14 +35,9 @@ import GroupShareBalance from "./components/GroupShareBalance";
 
 interface Props {
   rows: LedgerRowData[];
-  gradingMetric: GradingMetric;
   /** The page's own threshold, so the comparison bands move with the control
    *  the severity dot already answers to. */
   threshold: number;
-  /** Shared with the store popup — picking Saturday here keeps Saturday when
-   *  a store is opened. */
-  selectedDate: string | null;
-  onSelectDay: (date: string | null) => void;
   onSelectStore: (row: LedgerRowData) => void;
 }
 
@@ -59,12 +54,10 @@ const pct0 = (v: number | null) =>
 
 const GroupComparisonPanel = ({
   rows,
-  gradingMetric,
   threshold,
-  selectedDate,
-  onSelectDay,
   onSelectStore,
 }: Props) => {
+  const { selectedDate, gradingMetric } = useSalesCtx();
   // The panel's title names the group it is reading, because "By store" did
   // not say which stores.
   const groupName = useAppSelector(
@@ -187,12 +180,7 @@ const GroupComparisonPanel = ({
           they are given, so a shrink-to-fit wrapper makes them sprawl. It also
           draws its own border-b. */}
       <div className="flex-shrink-0">
-        <PopupDaySidebar
-          days={days}
-          selectedDate={selectedDate}
-          gradingMetric={gradingMetric}
-          onSelect={onSelectDay}
-        />
+        <PopupDaySidebar days={days} />
       </div>
 
       {/* Share of the group, as a balance. Below the day cards and above

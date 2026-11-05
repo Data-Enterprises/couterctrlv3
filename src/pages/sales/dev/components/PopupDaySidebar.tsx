@@ -1,3 +1,10 @@
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
+
+// Redux
+import { setLedgerSelectedDate } from "../../../../features/dev/devSalesLedgerSlice";
+
 // Utils
 import { getHolidayName } from "../../../../utils/holidays";
 import {
@@ -8,7 +15,6 @@ import {
 import { computeDayMatchedTotals } from "../utils/ledgerUtils";
 
 // Interfaces
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot } from "./LedgerRow";
 
 // Components
@@ -16,19 +22,15 @@ import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
   days: DayDot[];
-  selectedDate: string | null;
-  gradingMetric: GradingMetric;
-  onSelect: (date: string | null) => void;
 }
 
 const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
-const PopupDaySidebar = ({
-  days,
-  selectedDate,
-  gradingMetric,
-  onSelect,
-}: PopupDaySidebarProps) => {
+const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
+  const dispatch = useAppDispatch();
+  const { selectedDate, gradingMetric } = useSalesCtx();
+  const onSelect = (date: string | null) =>
+    dispatch(setLedgerSelectedDate(date));
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? formatBigNumber(qty, 0) : formatCurrency2(dollars);

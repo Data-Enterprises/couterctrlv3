@@ -78,9 +78,6 @@ const SalesLedger = () => {
     ledgerLoading: loading,
     threshold,
     gradingMetric,
-    // Shared with the store popup on purpose: a day picked in the group view
-    // is still the day you meant when you open a store.
-    selectedDate,
     investigation,
     matrixOpen,
   } = useAppSelector((state) => state.dev.salesLedger);
@@ -669,10 +666,7 @@ const SalesLedger = () => {
                  a group too, the same test the header hero uses. */
               <GroupComparisonPanel
                 rows={ledgerRows}
-                gradingMetric={gradingMetric}
                 threshold={activeThreshold}
-                selectedDate={selectedDate}
-                onSelectDay={(d) => dispatch(setLedgerSelectedDate(d))}
                 /* From the group comparison, so the store opens on the tab
                    that continues that question rather than on its own
                    departments. */
