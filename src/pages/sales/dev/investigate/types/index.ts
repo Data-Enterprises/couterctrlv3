@@ -43,3 +43,6 @@ export interface DocLine {
   units: number;
   cost: number;
 }
+
+/** The four steps along the top of the investigation. */
+export type InvestigationTab = "holds" | "items" | "supply" | "act";
