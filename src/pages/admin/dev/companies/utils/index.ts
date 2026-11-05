@@ -23,10 +23,8 @@ export const canSubmit = (c: Company) =>
 
 export const companyCols = [
   "Name",
-  "Address",
   "City",
   "State",
-  "Zip",
   "Phone",
   "Contact Email",
   "",
