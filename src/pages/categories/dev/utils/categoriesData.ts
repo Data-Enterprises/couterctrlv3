@@ -1,13 +1,18 @@
+// API
 import { getCats } from "../../../../api/sales";
 import { getCatItems } from "../../../../api/cats";
+
+// Utils
 import { fetchAllPages } from "../../../../utils/paging";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "./index";
+
+// Interfaces
 import type {
   CatItem,
   CatSalesDaily,
   CatSalesHourly,
   CatSalesResponse,
 } from "../../../../interfaces";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "./index";
 
 /** Fetching for the Categories page.
  *

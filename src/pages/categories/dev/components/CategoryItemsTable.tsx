@@ -1,9 +1,14 @@
+// Hooks
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
+
+// Redux
 import {
   setItemThreshold,
   ITEM_THRESHOLD_DEFAULT,
 } from "../../../../features/dev/devCategoriesSlice";
+
+// Components
+import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
 
 /** The open category's items, on the shared item report.
  *

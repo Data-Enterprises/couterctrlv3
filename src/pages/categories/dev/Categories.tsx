@@ -1,12 +1,15 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useCategoryData } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useCategoryData } from "./hooks";
+import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
 import CategoryListPanel from "./components/CategoryListPanel";
 import CategoryDetailPanel from "./components/CategoryDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
 
 /**
  * Categories — Performance.

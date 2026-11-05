@@ -1,8 +1,9 @@
-import { onlyStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+// Hooks
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../../../utils";
+
+// Redux
 import {
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
@@ -19,6 +20,10 @@ import {
   setLoadingItems,
   reQuery,
 } from "../../../../features/dev/devCategoriesSlice";
+
+// Utils
+import { onlyStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+import { formatGoliathDate, getStoreName } from "../../../../utils";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,

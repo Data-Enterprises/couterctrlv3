@@ -1,7 +1,11 @@
+// Utils
 import { onlyStoreNumber } from "../../../../utils/storeIdentity";
 import { countedRows } from "../../../../utils/hashSubs";
 import { coverageOf, gradeBasis } from "../../../../utils/grading";
+
+// Interfaces
 import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../../interfaces";
+
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
 export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../../interfaces";
 

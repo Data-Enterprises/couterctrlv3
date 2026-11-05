@@ -1,4 +1,7 @@
+// Hooks
 import { memo, useCallback } from "react";
+
+// Utils
 import { PCT_COL_W } from "../../../../utils/severity";
 
 /**

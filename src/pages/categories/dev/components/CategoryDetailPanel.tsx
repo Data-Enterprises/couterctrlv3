@@ -1,7 +1,17 @@
-import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+// Hooks
 import { useMemo, useRef, useState, useEffect } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+
+// Redux
+import {
+  setSelectedDay,
+  setThreshold,
+  CATEGORY_THRESHOLD_DEFAULT,
+  ITEM_THRESHOLD_DEFAULT,
+} from "../../../../features/dev/devCategoriesSlice";
+
+// Utils
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import {
   pillClass,
@@ -12,18 +22,8 @@ import {
   severityHeaderBgClass,
   type Severity,
 } from "../../../../utils/severity";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
-import CategoryItemsTable from "./CategoryItemsTable";
-import CategoryExportModal from "../export/CategoryExportModal";
 import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
-import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
-import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import {
-  setSelectedDay,
-  setThreshold,
-  CATEGORY_THRESHOLD_DEFAULT,
-  ITEM_THRESHOLD_DEFAULT,
-} from "../../../../features/dev/devCategoriesSlice";
+import { gradeBasis, isCompleteCoverage } from "../../../../utils/grading";
 import {
   getTier,
   pctChange,
@@ -33,7 +33,14 @@ import {
   type CategoryDay,
   type CategoryTier,
 } from "../utils";
-import { gradeBasis, isCompleteCoverage } from "../../../../utils/grading";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import CategoryExportModal from "../export/CategoryExportModal";
+import CategoryItemsTable from "./CategoryItemsTable";
 
 type Tab = "items" | "hours";
 

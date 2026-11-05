@@ -1,9 +1,9 @@
-import { coverageOf } from "../../../../utils/grading";
+// Hooks
 import { useMemo, useState } from "react";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+
+// Utils
+import { coverageOf } from "../../../../utils/grading";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import { calculateCogs } from "../../../../utils/cogs";
 import {
   buildItemRows,
@@ -11,8 +11,7 @@ import {
   type ItemSeverity,
   type ItemGradingMetric,
 } from "../../../../utils/itemMargins";
-import type { CatItem, CatSalesHourly } from "../../../../interfaces";
-import type { CategoryMetric, CategoryRow } from "../utils";
+import { fmtDayLabel } from "../../../../utils/dateLabels";
 import {
   getTier,
   tierOfDelta,
@@ -21,7 +20,15 @@ import {
   LW_OFFSET,
   LY_OFFSET,
 } from "../utils";
-import { fmtDayLabel } from "../../../../utils/dateLabels";
+
+// Interfaces
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { CatItem, CatSalesHourly } from "../../../../interfaces";
+import type { CategoryMetric, CategoryRow } from "../utils";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /**
  * CSV export for Categories.

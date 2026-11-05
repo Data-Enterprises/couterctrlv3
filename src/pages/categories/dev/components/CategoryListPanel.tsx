@@ -1,19 +1,23 @@
-import LocationTabs from "../../../../components/filters/LocationTabs";
+// Hooks
+import { useMemo, useCallback } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
+import {
+  setTextFilter,
+  setTierFilter,
+  setSelectedCategory,
+  setMetric,
+  setThreshold,
+  CATEGORY_THRESHOLD_DEFAULT,
+} from "../../../../features/dev/devCategoriesSlice";
+
+// Utils
 import {
   applyStoreNumberToName,
   combinedStoreName,
 } from "../../../../utils/storeIdentity";
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
-import CategoryRow from "./CategoryRow";
-import { useMemo, useCallback } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import ThresholdFilter, {
-  type ThresholdValue,
-} from "../../../../components-dev/filters/ThresholdFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import {
   formatCurrency2,
   formatCurrencyCompact,
@@ -30,20 +34,23 @@ import {
 } from "../../../../utils/severity";
 import { isCompleteCoverage } from "../../../../utils/grading";
 import {
-  setTextFilter,
-  setTierFilter,
-  setSelectedCategory,
-  setMetric,
-  setThreshold,
-  CATEGORY_THRESHOLD_DEFAULT,
-} from "../../../../features/dev/devCategoriesSlice";
-import {
   getTier,
   categoryDelta,
   pctChange,
   sortGraded,
   type CategoryTier,
 } from "../utils";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import LocationTabs from "../../../../components/filters/LocationTabs";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import ThresholdFilter, {
+  type ThresholdValue,
+} from "../../../../components-dev/filters/ThresholdFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import CategoryRow from "./CategoryRow";
 
 const TOGGLE_OPTS = [
   { key: "sales" as const, label: "Sales" },
