@@ -20,7 +20,7 @@ const ALLOWED: Record<string, string> = {
     "the device's model name, not anybody's data",
   "pages/inventory/dev/ItemAnalysisPanel.tsx:NO_ROWS":
     "a shared empty array, never written to",
-  "pages/sales/dev/storePanel/subDepts/PopupSubDeptList.tsx:inFlightItems":
+  "pages/sales/dev/storePanel/subDepts/hooks/index.ts:inFlightItems":
     "keys of requests still on the wire, emptied as each one lands",
   "pages/sales/dev/storePanel/top200/PopupTopItems.tsx:inFlight":
     "keys of requests still on the wire, emptied as each one lands",

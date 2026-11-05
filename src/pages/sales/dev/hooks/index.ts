@@ -42,6 +42,14 @@ export const useSalesCtx = () =>
       financialsWindow: s.dev.salesLedger.financialsWindow,
       financialsTruncated: s.dev.salesLedger.financialsTruncated,
       financialsLoading: s.dev.salesLedger.financialsLoading,
+      // The Sub depts tab: its two thresholds, the open sub department and
+      // its items (sold this week, and sold before but not this week).
+      subDeptThreshold: s.dev.salesLedger.subDeptThreshold,
+      itemThreshold: s.dev.salesLedger.itemThreshold,
+      selectedSubDeptId: s.dev.salesLedger.selectedSubDeptId,
+      selectedSubDeptItems: s.dev.salesLedger.selectedSubDeptItems,
+      inactiveSubDeptItems: s.dev.salesLedger.inactiveSubDeptItems,
+      lastFetchedItemsKey: s.dev.salesLedger.lastFetchedItemsKey,
     }),
     shallowEqual,
   );
