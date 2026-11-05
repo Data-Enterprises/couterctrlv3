@@ -4,8 +4,8 @@ import {
   useAppSelector,
   useAppDispatch,
   useCanSeeComingSoon,
+  useStoreName,
 } from "../../../../hooks";
-import { useStoreName } from "../../../../hooks";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 
 // Redux
@@ -48,14 +48,13 @@ import {
 import { formatPct, pillClass, severityHeaderBgClass } from "../utils/index";
 
 // Interfaces
-import type { LedgerRowData } from "../components/LedgerRow";
-import type { StoreSelection } from "../components/LedgerRow";
+import type { LedgerRowData, StoreSelection } from "../components/LedgerRow";
 
 // Components
 import {
-  ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/20/solid";
-import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import SalesExportModal from "./export/SalesExportModal";

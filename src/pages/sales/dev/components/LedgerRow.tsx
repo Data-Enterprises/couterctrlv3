@@ -5,9 +5,12 @@ import { useStoreName } from "../../../../hooks";
 // Utils
 import { formatCurrencyCompact } from "../../../../utils";
 import { severityDotClass } from "../utils/index";
-import { applyStoreNumberToName } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
-import { isCompleteCoverage, type GradeBasis } from "../utils/ledgerUtils";
+import {
+  applyStoreNumberToName,
+  isCompleteCoverage,
+  type GradeBasis,
+} from "../utils/ledgerUtils";
 
 // Interfaces
 import type { Severity } from "../../../../utils/severity";
