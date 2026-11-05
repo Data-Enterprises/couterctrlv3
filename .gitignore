@@ -41,8 +41,7 @@ trash/
 .history/
 .env
 
-# The dev-to-prod plan is a working document: it is rewritten from a fresh
-# audit each time a publish is prepared, and a tracked copy only ever goes
-# stale in the diff. The three that came before it were 263 commits out of
-# date by the time anyone looked.
-docs/dev-to-prod-plan.md
+# Repo-specific working docs (plans, change log, trackers, backend notes)
+# live here on the developer's machine and are never pushed: they carry
+# internal and client detail that does not belong on GitHub.
+docs/
