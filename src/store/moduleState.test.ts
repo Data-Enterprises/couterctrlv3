@@ -20,15 +20,15 @@ const ALLOWED: Record<string, string> = {
     "the device's model name, not anybody's data",
   "pages/inventory/dev/ItemAnalysisPanel.tsx:NO_ROWS":
     "a shared empty array, never written to",
-  "pages/sales/dev/components/PopupSubDeptList.tsx:inFlightItems":
+  "pages/sales/dev/storePanel/subDepts/PopupSubDeptList.tsx:inFlightItems":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/PopupTopItems.tsx:inFlight":
+  "pages/sales/dev/storePanel/top200/PopupTopItems.tsx:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/StoreDetailPopup.tsx:inFlightStores":
+  "pages/sales/dev/storePanel/StoreDetailPopup.tsx:inFlightStores":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/dailyRecap/useDayMix.ts:inFlight":
+  "pages/sales/dev/storePanel/summary/hooks/useDayMix.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/dailyRecap/useWeekExceptions.ts:inFlight":
+  "pages/sales/dev/storePanel/summary/hooks/useWeekExceptions.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
   "pages/upcScanner/dev/useScanResolve.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",

@@ -14,7 +14,7 @@ import {
   fetchSubDeptRowsOrEmpty,
   fetchSubDeptRowsSafe,
 } from "../../../../../utils/marginRows";
-import { withProductCode } from "../../shared/ledgerUtils";
+import { withProductCode } from "../../utils/ledgerUtils";
 import InfoModal from "../../../../../components-dev/InfoModal";
 import MobileSortChips, {
   type SortOption,
@@ -86,15 +86,15 @@ import {
   cmpLabels,
   cmpShort,
   type CmpBasis,
-} from "./perfData";
+} from "./utils/perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../../components-dev/mobile/MobilePerfDetail";
-import PerfStoreReport from "./PerfStoreReport";
-import PerfDrillList from "./PerfDrillList";
+import PerfStoreReport from "./components/PerfStoreReport";
+import PerfDrillList from "./components/PerfDrillList";
 
 /** Two breakdowns under a store. Items are not one of them — they live
  *  inside a sub department, and a tab for them showed the department list a

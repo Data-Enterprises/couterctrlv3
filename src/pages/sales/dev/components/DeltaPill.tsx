@@ -1,5 +1,5 @@
 import { comparisonPillClass, pillClass } from "../../../../utils/severity";
-import { PCT_COL_W } from "./utils";
+import { PCT_COL_W } from "../utils/index";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 

@@ -5,7 +5,7 @@ import type {
   OrdersWave,
   ReceiptsWave,
   SalesWave,
-} from "../../pages/sales/dev/shared/investigationData";
+} from "../../pages/sales/dev/investigate/utils/investigationData";
 
 /**
  * What the Sales comparison has already asked for.

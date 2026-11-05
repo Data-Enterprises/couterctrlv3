@@ -1,0 +1,698 @@
+import { useSalesState } from "../hooks/useSalesState";
+import { useState, useRef, useMemo, useCallback } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { getWeekly } from "../../../../api/sales";
+import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
+import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
+import type { Store } from "../../../../interfaces";
+import {
+  setWeeklySales,
+  setWeeklySalesLastWeek,
+  setWeeklySalesLastYear,
+  concatWeeklySales,
+  concatWeeklySalesLastWeek,
+  concatWeeklySalesLastYear,
+  reQuery,
+} from "../../../../features/dev/devSalesSlice";
+import {
+  setHasSearched,
+  setLedgerLoading,
+  setFinancials,
+  setFinancialsLoading,
+  setLedgerSelection,
+  setLedgerTab,
+  type LedgerTab,
+  setLedgerSelectedDate,
+  reQueryLedger,
+} from "../../../../features/dev/devSalesLedgerSlice";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
+import DeptInvestigation from "../investigate/DeptInvestigation";
+import DeptMatrixPanel from "../deptMatrix/DeptMatrixPanel";
+import GroupComparisonPanel from "../groupCompare/GroupComparisonPanel";
+import { selectionFor } from "../utils/storeComparison";
+import LedgerEntryCard from "./components/LedgerEntryCard";
+import StoreDetailPopup from "../storePanel/StoreDetailPopup";
+import LedgerHeader from "./components/LedgerHeader";
+import LedgerRow from "../components/LedgerRow";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+import { PCT_COL_W } from "../utils/index";
+import type { SevFilter } from "../utils/index";
+import { isGroupSearch } from "../../../../features/searchSlice";
+import StoreColFilter from "../components/StoreColFilter";
+
+type SortColumn = "ty" | "vsLW" | "vsLY";
+
+const SalesLedger = () => {
+  const dispatch = useAppDispatch();
+  const toast = useToast();
+  const context = useAppSelector((state) => state.app);
+  const { userid } = useAppSelector((state) => state.user);
+  const search = useAppSelector((state) => state.search);
+  const {
+    weeklySales = [],
+    weeklySalesLastWeek = [],
+    weeklySalesLastYear = [],
+    // hourlySales = [],
+    // hourlySalesLastWeek = [],
+    // hourlySalesLastYear = [],
+  } = useSalesState();
+  const {
+    hasSearched,
+    selection,
+    ledgerLoading: loading,
+    threshold,
+    gradingMetric,
+    // Shared with the store popup on purpose: a day picked in the group view
+    // is still the day you meant when you open a store.
+    selectedDate,
+    investigation,
+    matrixOpen,
+  } = useAppSelector((state) => state.dev.salesLedger);
+  const { assignedStores } = useAppSelector((state) => state.user);
+
+  // Grading should never move stores around on its own when the threshold
+  // input is cleared — with no new number typed, keep grading against the
+  // last valid amount so severity/sort order stays exactly where it was.
+  const lastValidThresholdRef = useRef<number>(threshold?.amount ?? 9);
+  if (threshold?.amount != null) {
+    lastValidThresholdRef.current = threshold.amount;
+  }
+  // Snapshot the ref into a render-scoped value — a ref's .current isn't a
+  // sound memo dependency, and this is already resolved by the time it's read.
+  const activeThreshold = lastValidThresholdRef.current;
+
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [storeFilter, setStoreFilter] = useState("");
+  const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
+
+  // Stable identity — an inline arrow here would be a new prop on every
+  // render and would defeat the memo on LedgerRow entirely.
+  //
+  // Clicking the store that is already open closes it, which is how you get
+  // back to the group view without reaching for the X.
+  //
+  // A store opens on Stores, which is the first step of the comparison: who
+  // to measure it against. Picking a counterpart there is what Sub depts and
+  // Hourly then answer to, so landing on a department breakdown skips the
+  // question the rest of the panel is built on.
+  //
+  // Except on a single-store search, where there are no siblings and the tab
+  // is not offered at all — opening on it there would show a blank panel.
+  // Carrying the LAST tab over instead would answer whichever question the
+  // reader happened to ask previously.
+  const openStore = useCallback(
+    (
+      s: Parameters<typeof setLedgerSelection>[0],
+      tab: LedgerTab,
+      // Back to All week: a day picked for the last store says nothing about
+      // this one. The group comparison's way in keeps its day, because there
+      // the day is part of the comparison being carried into the store.
+      resetDay = false,
+    ) => {
+      const closing =
+        s &&
+        selectionRef.current?.storeId === s.storeId &&
+        selectionRef.current?.storeNumber === s.storeNumber;
+      if (!closing && s) {
+        dispatch(setLedgerTab(tab));
+        if (resetDay) dispatch(setLedgerSelectedDate(null));
+      }
+      dispatch(setLedgerSelection(closing ? null : s));
+    },
+    [dispatch],
+  );
+
+  const handleRowClick = useCallback(
+    // Summary, the first tab, on All week: the store's week at a glance
+    // before any drill-down. Sub depts and the rest are steps taken from there.
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "dailyrecap", true),
+    [openStore],
+  );
+
+  // Read inside the stable handler above without making it depend on the
+  // selection — a new identity every time the selection changed would defeat
+  // the memo on every row.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+
+  const handlePopupClose = useCallback(
+    () => dispatch(setLedgerSelection(null)),
+    [dispatch],
+  );
+
+  const resetToEntry = () => {
+    dispatch(reQuery());
+    dispatch(setHasSearched(false));
+    dispatch(setLedgerSelection(null));
+  };
+
+  const getDateRanges = () => {
+    const twEnd = formatGoliathDate(search.singleDate);
+    const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
+    const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
+    // Shifting just the two week endpoints breaks when one of them lands on a
+    // fixed-date holiday (e.g. July 4th) — that endpoint gets snapped to the
+    // exact holiday date last year while the other gets a plain weekday-preserving
+    // shift, desyncing the range from the per-day lookups in buildLedgerRows.
+    // Shifting every day in the week and taking the min/max keeps it correct.
+    const twWeekDates = Array.from(
+      { length: 7 },
+      (_, i) => addDays(twStart, i).toISOString().split("T")[0],
+    );
+    const lyWeekDates = twWeekDates
+      .map((d) => sameWeekDayLastYear(d).date)
+      .sort();
+    const lyStart = lyWeekDates[0];
+    const lyEnd = lyWeekDates[lyWeekDates.length - 1];
+    return { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd };
+  };
+
+  const fetchLedger = async () => {
+    const isGroup = isGroupSearch(search.type);
+    const useGroups = isGroup ? 1 : 0;
+    const singleStore = isGroup ? 0 : 1;
+    const searchValue = isGroup ? search.lastGroup : search.lastStore;
+    if (!searchValue) return;
+
+    const { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd } = getDateRanges();
+
+    dispatch(setLedgerLoading(true));
+    dispatch(setHasSearched(true));
+    dispatch(reQuery());
+    dispatch(reQueryLedger());
+    setSearchModalOpen(false);
+    setFetchFailed(false);
+
+    /**
+     * Financials, for the export.
+     *
+     * Fired with the search, alongside everything else this page fetches, so
+     * the export reads data already in hand like its four neighbours do.
+     *
+     * Deliberately not awaited. It is wanted by one optional export and the
+     * ledger is what the searcher is waiting to see — a slow or missing
+     * financials call must not hold up the page, and a failed one must not
+     * fail the search. The export says so itself if the rows never arrived.
+     */
+    // Skipped while the router is undeployed — see FINANCIALS_READY. Without
+    // this every search fires a request that 404s into the catch below.
+    if (FINANCIALS_READY) {
+    dispatch(setFinancialsLoading(true));
+    getFinancials(
+      context.url,
+      context.token,
+      twStart,
+      twEnd,
+      searchValue,
+      useGroups as 0 | 1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) return;
+        dispatch(
+          setFinancials({
+            rows: j.data ?? [],
+            window: { start: twStart, end: twEnd },
+            truncated: !!j.truncated,
+          }),
+        );
+      })
+      .catch(() => {
+        /* the export reports it; the ledger does not care */
+      })
+      .finally(() => dispatch(setFinancialsLoading(false)));
+    }
+
+    // Large group path: >30 stores → per-store calls, collect progressively
+    if (isGroup) {
+      try {
+        const groupResp = await getStoresAssignedToUserGroup(
+          context.url,
+          context.token,
+          userid,
+          search.lastGroup,
+        );
+        if (groupResp.data.error !== 0) toast.warn(groupResp.data.msg);
+        const stores: Store[] =
+          groupResp.data.error === 0
+            ? groupResp.data.stores.filter((s: any) => s.active)
+            : [];
+
+        if (stores.length > 30) {
+          await Promise.allSettled(
+            stores.map((store) =>
+              Promise.all([
+                getWeekly(
+                  context.url,
+                  context.token,
+                  twStart,
+                  twEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getWeekly(
+                  context.url,
+                  context.token,
+                  lwStart,
+                  lwEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getWeekly(
+                  context.url,
+                  context.token,
+                  lyStart,
+                  lyEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+              ])
+                .then(([tw, lw, ly]) => {
+                  if (tw.data.error === 0)
+                    dispatch(concatWeeklySales(tw.data.sales));
+                  if (lw.data.error === 0)
+                    dispatch(concatWeeklySalesLastWeek(lw.data.sales));
+                  if (ly.data.error === 0)
+                    dispatch(concatWeeklySalesLastYear(ly.data.sales));
+                })
+                .catch(() => {}),
+            ),
+          );
+          dispatch(setLedgerLoading(false));
+          return;
+        }
+      } catch {
+        // fall through to standard call
+      }
+    }
+
+    // Standard path: single store or small group
+    try {
+      const [twResp, lwResp, lyResp] = await Promise.all([
+          getWeekly(
+            context.url,
+            context.token,
+            twStart,
+            twEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lwStart,
+            lwEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lyStart,
+            lyEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+        ]);
+      if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
+      if (lwResp.data.error === 0)
+        dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
+      if (lyResp.data.error === 0)
+        dispatch(setWeeklySalesLastYear(lyResp.data.sales));
+    } catch (err: any) {
+      toast.error(err.message);
+      setFetchFailed(true);
+    } finally {
+      dispatch(setLedgerLoading(false));
+    }
+  };
+
+  // Regrouping every store across TW/LW/LY is the expensive half and doesn't
+  // depend on the threshold, so it's memoized on the data alone. The threshold
+  // then only drives the cheap re-grade below — which is what lets the
+  // threshold move continuously without rebuilding all of this per frame.
+  // (Mobile's LedgerStoreList already memoized this; desktop was rebuilding it
+  // on every render.)
+  const baseLedgerRows = useMemo(
+    () =>
+      buildLedgerRows(
+        weeklySales,
+        weeklySalesLastWeek,
+        weeklySalesLastYear,
+        assignedStores,
+        activeThreshold,
+        gradingMetric,
+      ),
+    [
+      weeklySales,
+      weeklySalesLastWeek,
+      weeklySalesLastYear,
+      assignedStores,
+      gradingMetric,
+    ],
+  );
+
+  const ledgerRows = useMemo(
+    () => regradeLedgerRows(baseLedgerRows, activeThreshold),
+    [baseLedgerRows, activeThreshold],
+  );
+
+  /** The matrix asks one store at a time, and these are the stores the
+   *  search already found — so no second call to resolve the group, and
+   *  co-located stores arrive already split by number. */
+  const matrixStores = useMemo(
+    () =>
+      ledgerRows.map((r) => ({
+        storeid: r.storeid,
+        storeNumber: r.store_number,
+        storeName: r.store_name,
+      })),
+    [ledgerRows],
+  );
+
+
+  const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
+  const watchRows = ledgerRows.filter((r) => r.severity === "watch");
+  const healthyRows = ledgerRows.filter((r) => r.severity === "healthy");
+
+  // "All" is every row, not the three graded buckets concatenated. A store
+  // whose comparisons are both short of a full week grades to null — a real
+  // fourth outcome, not a severity — and enumerating the other three dropped
+  // it from the list entirely while the header still counted its sales.
+  // `ledgerRows` is already in grade order with ungraded sunk to the bottom,
+  // so this preserves the ordering the concat produced.
+  const sevFilteredRows =
+    sevFilter === "all"
+      ? ledgerRows
+      : sevFilter === "critical"
+        ? criticalRows
+        : sevFilter === "watch"
+          ? watchRows
+          : healthyRows;
+
+  const textFilteredRows = storeFilter.trim()
+    ? sevFilteredRows.filter((row) => {
+        const q = storeFilter.trim().toLowerCase();
+        return (
+          row.store_name.toLowerCase().includes(q) ||
+          row.store_number.toLowerCase().includes(q)
+        );
+      })
+    : sevFilteredRows;
+
+  const visibleRows = applySort(textFilteredRows, (row, col) =>
+    col === "ty" ? row.twTotal : col === "vsLW" ? row.vsLWPct : row.vsLYPct,
+  );
+
+  const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
+  const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
+  const heroLWTotal = ledgerRows.reduce((acc, r) => acc + r.lwTotal, 0);
+  const heroTWQty = ledgerRows.reduce((acc, r) => acc + r.twQty, 0);
+  const heroLYQty = ledgerRows.reduce((acc, r) => acc + r.lyQty, 0);
+  const heroLWQty = ledgerRows.reduce((acc, r) => acc + r.lwQty, 0);
+  /**
+   * Each pill divides by the TW subtotal for ITS OWN comparison, not by the
+   * week total above it.
+   *
+   * This used to put the full seven-day TW figure over a day-matched LY one.
+   * Store 590 has three of seven LY days, so the same screen carried "+127.28%"
+   * up here and "-12.07%" in the row below — the second being right. The gap
+   * is not a rounding difference, it is 199,279 / 87,680 against
+   * 77,094 / 87,680, and the reader has no way to tell which is which.
+   *
+   * Summing the per-store subtotals rather than averaging the per-store
+   * percentages keeps a group weighted by size: twenty stores where the big
+   * one has full LY history and the small ones have none should read as the
+   * big one.
+   */
+  const heroTWForLY = ledgerRows.reduce((acc, r) => acc + r.twTotalForLY, 0);
+  const heroTWForLW = ledgerRows.reduce((acc, r) => acc + r.twTotalForLW, 0);
+  const heroTWQtyForLY = ledgerRows.reduce((acc, r) => acc + r.twQtyForLY, 0);
+  const heroTWQtyForLW = ledgerRows.reduce((acc, r) => acc + r.twQtyForLW, 0);
+  const heroGradeLY = gradingMetric === "qty" ? heroLYQty : heroLYTotal;
+  const heroGradeLW = gradingMetric === "qty" ? heroLWQty : heroLWTotal;
+  const heroGradeTWForLY =
+    gradingMetric === "qty" ? heroTWQtyForLY : heroTWForLY;
+  const heroGradeTWForLW =
+    gradingMetric === "qty" ? heroTWQtyForLW : heroTWForLW;
+  const heroVsLYPct = heroGradeLY
+    ? ((heroGradeTWForLY - heroGradeLY) / heroGradeLY) * 100
+    : 0;
+  const heroVsLWPct = heroGradeLW
+    ? ((heroGradeTWForLW - heroGradeLW) / heroGradeLW) * 100
+    : 0;
+  // How much of the week each comparison actually covers, across every store
+  // in the result. Drives whether the pill is presented as a verdict.
+  const heroDayCount = ledgerRows.reduce((acc, r) => acc + r.dayCount, 0);
+  const heroLYDayCount = ledgerRows.reduce((acc, r) => acc + r.lyDayCount, 0);
+  const heroLWDayCount = ledgerRows.reduce((acc, r) => acc + r.lwDayCount, 0);
+
+  const weekLabel = (() => {
+    const { twStart, twEnd } = getDateRanges();
+    const start = new Date(twStart + "T12:00:00");
+    const end = new Date(twEnd + "T12:00:00");
+    const fmtD = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+    return `${fmtD(start)} – ${fmtD(end)}/${end.getFullYear()}`;
+  })();
+
+  if (!hasSearched || (!loading && ledgerRows.length === 0)) {
+    return (
+      <div className="w-full min-h-[calc(100vh-3rem)] overflow-hidden p-4">
+        <LedgerEntryCard
+          onSearch={fetchLedger}
+          loading={loading}
+          notice={
+            hasSearched && !fetchFailed
+              ? "No records found, try a different store, group, or week ending"
+              : undefined
+          }
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
+      {loading ? (
+        <div className="relative h-[calc(100vh-3rem)]">
+          <LoadingIndicator message="Loading store ledger" />
+        </div>
+      ) : investigation ? (
+        /* The page's full-width state. Four steps in, the question has
+           outgrown a panel, so the ledger and the report both give way
+           rather than the investigation opening inside one of them. The
+           ledger selection survives underneath, which is what makes the
+           back button able to put the reader where they were. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptInvestigation gradingMetric={gradingMetric} {...getDateRanges()} />
+        </div>
+      ) : matrixOpen ? (
+        /* Where to look, before which store. Full width for the same reason
+           the investigation is: nine stores by twenty departments does not
+           fit half a page. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptMatrixPanel
+            stores={matrixStores}
+            gradingMetric={gradingMetric}
+            threshold={activeThreshold}
+            expanded
+            {...getDateRanges()}
+          />
+        </div>
+      ) : (
+        <div className="flex gap-4 h-[calc(100vh-5rem)]">
+          {/* Left: store list */}
+          <div
+            className="flex flex-col min-w-0 shadow-lg"
+            style={{ flexBasis: "33%", flexShrink: 0 }}
+          >
+            <LedgerHeader
+              weekLabel={weekLabel}
+              twTotal={heroTWTotal}
+              twQty={heroTWQty}
+              vsLYPct={heroVsLYPct}
+              vsLWPct={heroVsLWPct}
+              hasLY={heroGradeLY > 0}
+              hasLW={heroGradeLW > 0}
+              dayCount={heroDayCount}
+              lyDayCount={heroLYDayCount}
+              lwDayCount={heroLWDayCount}
+              // Off the rows, not the search type: what matters is whether the
+              // header sums more than one store, and a storeid carrying two
+              // locations does that too.
+              isGroup={ledgerRows.length > 1}
+              onNewSearch={resetToEntry}
+              onOpenSearch={() => setSearchModalOpen(true)}
+              gradingMetric={gradingMetric}
+            />
+
+            {/* Tier summary pills — click to filter the list below */}
+            <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
+              <div data-help="severity-chips" className="flex items-center gap-1.5">
+                <button
+                  onClick={() =>
+                    setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+                  }
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+                    sevFilter === "critical"
+                      ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                      : ""
+                  }`}
+                >
+                  Crit ({criticalRows.length})
+                </button>
+                <button
+                  onClick={() =>
+                    setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+                  }
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                    sevFilter === "watch"
+                      ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                      : ""
+                  }`}
+                >
+                  Watch ({watchRows.length})
+                </button>
+                <button
+                  onClick={() =>
+                    setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+                  }
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+                    sevFilter === "healthy"
+                      ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                      : ""
+                  }`}
+                >
+                  OK ({healthyRows.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Unified store list — sorted critical → watch → healthy */}
+            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+                <span className="w-2 flex-shrink-0" />
+                <span className="flex-1 min-w-0 flex items-center">
+                  <StoreColFilter value={storeFilter} onApply={setStoreFilter} />
+                </span>
+                <div className="flex items-center gap-[14px]">
+                  <SortHeader
+                    col="ty"
+                    label="TY"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={64}
+                    className={`${PERF_SORT_HEADER} justify-end pl-2.5`}
+                  />
+                  <SortHeader
+                    col="vsLW"
+                    label="vs LW"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={PCT_COL_W}
+                    className={`${PERF_SORT_HEADER} justify-center`}
+                  />
+                  <SortHeader
+                    col="vsLY"
+                    label="vs LY"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={PCT_COL_W}
+                    className={`${PERF_SORT_HEADER} justify-center`}
+                  />
+                </div>
+              </div>
+              <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
+                {visibleRows.map((row) => (
+                  <LedgerRow
+                    key={`${row.storeid}__${row.store_number}`}
+                    row={row}
+                    isSelected={
+                      // storeNumber too — co-located stores share a storeid,
+                      // and id alone would highlight both rows at once.
+                      selection?.storeId === row.storeid &&
+                      selection?.storeNumber === row.store_number
+                    }
+                    gradingMetric={gradingMetric}
+                    threshold={activeThreshold}
+                    onClick={handleRowClick}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: report panel */}
+          <div
+            className="flex-1 min-w-0 shadow-lg"
+            style={{ flexBasis: "52%" }}
+          >
+            {selection !== null ? (
+              <StoreDetailPopup
+                selection={selection}
+                onClose={handlePopupClose}
+                groupRows={ledgerRows}
+              />
+            ) : ledgerRows.length > 1 ? (
+              /* The panel's resting state on a group search. The reference is
+                 the group, which the search already chose, so standing inside
+                 it is a fact about the search rather than a benchmark anyone
+                 sets — and this half of the page was an empty prompt until
+                 somebody clicked a store.
+
+                 Rows, not the search type: a storeid carrying two locations is
+                 a group too, the same test the header hero uses. */
+              <GroupComparisonPanel
+                rows={ledgerRows}
+                gradingMetric={gradingMetric}
+                threshold={activeThreshold}
+                selectedDate={selectedDate}
+                onSelectDay={(d) => dispatch(setLedgerSelectedDate(d))}
+                /* From the group comparison, so the store opens on the tab
+                   that continues that question rather than on its own
+                   departments. */
+                onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
+              />
+            ) : (
+              <EmptyPrompt
+                title="No store selected"
+                description="Select a store from the list to view its weekly report"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Search modal */}
+      {searchModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+          onClick={() => setSearchModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SalesLedger;
