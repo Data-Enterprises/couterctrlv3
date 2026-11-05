@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+// Hooks
+import { useEffect, useMemo, useState } from "react";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
 import { getUserStores } from "../../../../api/user";
 import {
   addSubDeptExclusion,
@@ -11,87 +13,34 @@ import {
   type SubDeptCatalogRow,
   type SubDeptExclusionRow,
 } from "../../../../api/subDeptExclusions";
-import type { JsonError, Store } from "../../../../interfaces";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import Checkbox from "../../../../components-dev/Checkbox";
-import ConfirmModal from "../../../../components-dev/ConfirmModal";
+
+// Utils
 import {
   companyDeptRows,
-  coverageText,
   deptState,
-  differingNumbers,
   planStoreToggle,
   planToggle,
-  type CompanyDeptRow,
-  type ExclusionWrite,
-  type StoreSubDept,
-} from "../shared/subDeptExclusions";
+  ALL_STORES,
+  WINDOWS,
+  COLS,
+} from "./utils";
 
-/**
- * Which sub departments a store does not want counted in its net sales.
- *
- * The hash departments — lottery, money orders, stamps — are money the store
- * handed straight back out, and an operator seeing them inside net sales is
- * reading a number that flatters them by thousands. The backend has read
- * `sub_department_exclusions` since the table landed; what did not exist was
- * any way to write it outside pgAdmin and the Swagger docs, which is not
- * something to do in front of a customer during onboarding.
- *
- * **One store or a whole company**, chosen with the Store select: an operator
- * ringing up their first store is a different job from onboarding a twelve-
- * store chain, and the second one twelve times is how an exclusion gets
- * missed.
- *
- * The thing that makes the company view possible is that the exclusions table
- * is keyed per store, by **the store's own number** — 14 is Lottery at one
- * store and TOBACCO at another. So a chain-wide tick is a fan-out of twelve
- * different numbers, joined up here on the normalised description, which is
- * the only thing the stores agree on. None of that joining is ever written:
- * see `shared/subDeptExclusions`.
- */
+// Interfaces
+import type { JsonError, Store } from "../../../../interfaces";
+import type {
+  CompanyDeptRow,
+  ExclusionWrite,
+  StoreSubDept,
+} from "./interfaces";
 
-const COLS =
-  "grid-cols-[30px_minmax(0,24%)_72px_minmax(0,1fr)_92px_28px]";
+// Components
+import Field from "./components/Field";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import CompDeptRow from "./components/CompDeptRow";
 
-/** How far back to look for "which departments does this store have".
- *
- *  There is no dimension table, so the answer is always "what it rang inside
- *  a window". 120 days is the default because it is quick and because a
- *  department that has not rung since spring is not one anybody is trying to
- *  keep out of this week's net sales. The longer options exist for onboarding,
- *  where a seasonal department genuinely has not rung yet. */
-const WINDOWS = [
-  { value: "120", label: "Last 120 days" },
-  { value: "365", label: "Last year" },
-  { value: "730", label: "Last 2 years" },
-];
-
-const ALL_STORES = "__all__";
-
-/** A select with its question above it. `SelectFilter` carries no label, and
- *  three unlabelled dropdowns in a row is a guessing game. */
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <div className="flex flex-col gap-1 flex-shrink-0">
-    <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-      {label}
-    </span>
-    {children}
-  </div>
-);
-
-const prettyDate = (iso: string) => {
-  if (!iso) return "—";
-  const [y, m, d] = iso.slice(0, 10).split("-");
-  return `${Number(m)}/${Number(d)}/${y.slice(2)}`;
-};
-
+// Which sub departments a store does not want counted in its net sales
 const SubDeptExclusions = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
@@ -268,7 +217,10 @@ const SubDeptExclusions = () => {
     const q = search.trim().toLowerCase();
     return rows.filter(
       (r) =>
-        (!hashOnly || r.hashHint) && (!q || r.key.includes(q) || String(r.at[0]?.sub_department).includes(q)),
+        (!hashOnly || r.hashHint) &&
+        (!q ||
+          r.key.includes(q) ||
+          String(r.at[0]?.sub_department).includes(q)),
     );
   }, [rows, search, hashOnly]);
 
@@ -278,8 +230,6 @@ const SubDeptExclusions = () => {
   ).length;
 
   /**
-   * Send a plan.
-   *
    * `allSettled` rather than `all` because a fan-out is a dozen independent
    * writes with no transaction around them: the first failure must not hide
    * the eleven that worked, and the refetch afterwards means the screen shows
@@ -430,116 +380,18 @@ const SubDeptExclusions = () => {
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
-          {filtered.map((row) => {
-            const state = deptState(row);
-            const varies = differingNumbers(row);
-            const expanded = open === row.key;
-            return (
-              <div key={row.key}>
-                <div
-                  className={`grid ${COLS} px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50`}
-                >
-                  <Checkbox
-                    checked={state === "all"}
-                    disabled={saving}
-                    ariaLabel={`Exclude ${row.label} from net sales`}
-                    onChange={(next) => toggleRow(row, next)}
-                  />
-                  <div className="truncate font-semibold" title={row.label}>
-                    {row.label}
-                    {row.hashHint && state === "none" && (
-                      <span className="ml-1.5 text-[10px] font-semibold text-severity_watch_text">
-                        likely hash
-                      </span>
-                    )}
-                  </div>
-                  <div className="truncate tabular-nums text-content/85">
-                    {varies.length > 0 ? (
-                      <span title={varies.join(" · ")}>varies</span>
-                    ) : (
-                      `#${row.at[0]?.sub_department}`
-                    )}
-                  </div>
-                  <div className="truncate">
-                    <span
-                      className={
-                        state === "some"
-                          ? "font-semibold text-severity_watch_text"
-                          : "text-content/85"
-                      }
-                    >
-                      {coverageText(row)}
-                    </span>
-                  </div>
-                  <div className="truncate tabular-nums text-content/85">
-                    {prettyDate(row.lastRung)}
-                  </div>
-                  {/* Only worth opening when there is more than one store
-                      behind the row — in single-store scope the row already
-                      says everything the expansion would. */}
-                  <div className="flex justify-end">
-                    {row.at.length + row.absent.length > 1 && (
-                      <button
-                        onClick={() => setOpen(expanded ? null : row.key)}
-                        aria-label={`${expanded ? "Hide" : "Show"} stores for ${row.label}`}
-                        className="w-5 h-5 flex items-center justify-center rounded text-content/85 hover:bg-gray-100"
-                      >
-                        <ChevronRightIcon
-                          className={`w-4 h-4 transition-transform ${
-                            expanded ? "rotate-90" : ""
-                          }`}
-                        />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {expanded && (
-                  <div className="bg-bkg px-3 py-2 animate-nb-drop motion-reduce:animate-none">
-                    {row.at.map((a) => (
-                      <div
-                        key={`${a.storeid}__${a.sub_department}`}
-                        className="flex items-center gap-2 py-1 text-[11.5px] text-content"
-                      >
-                        <Checkbox
-                          checked={a.excluded}
-                          disabled={saving}
-                          ariaLabel={`Exclude ${row.label} at ${a.store_name}`}
-                          onChange={(next) =>
-                            send(
-                              planStoreToggle(row, a.storeid, next),
-                              `${row.label} at ${a.store_number}`,
-                              next,
-                            )
-                          }
-                        />
-                        <span className="tabular-nums font-semibold w-[46px]">
-                          {a.store_number}
-                        </span>
-                        <span className="truncate flex-1">{a.store_name}</span>
-                        <span className="tabular-nums text-content/85 w-[52px]">
-                          #{a.sub_department}
-                        </span>
-                        <span className="tabular-nums text-content/85 w-[64px] text-right">
-                          {prettyDate(a.lastRung)}
-                        </span>
-                      </div>
-                    ))}
-                    {row.absent.length > 0 && (
-                      <p className="text-[11px] text-content/85 pt-1.5 leading-snug">
-                        Not rung in this window at{" "}
-                        <span className="font-semibold text-content">
-                          {row.absent.map((s) => s.store_number).join(", ")}
-                        </span>
-                        . Nothing to exclude there — widen the window if the
-                        department is seasonal.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {filtered.map((row) => (
+            <CompDeptRow
+              key={row.key}
+              row={row}
+              open={open}
+              setOpen={setOpen}
+              toggleRow={toggleRow}
+              saving={saving}
+              send={send}
+              planStoreToggle={planStoreToggle}
+            />
+          ))}
 
           {loading && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
@@ -554,13 +406,16 @@ const SubDeptExclusions = () => {
               No stores on this company
             </div>
           )}
-          {!loading && !noStores && catalog !== null && filtered.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-[12px] text-content text-center px-6">
-              {rows.length === 0
-                ? "No sub departments rang in this window. Try a longer one."
-                : "No departments match that search"}
-            </div>
-          )}
+          {!loading &&
+            !noStores &&
+            catalog !== null &&
+            filtered.length === 0 && (
+              <div className="flex items-center justify-center py-8 text-[12px] text-content text-center px-6">
+                {rows.length === 0
+                  ? "No sub departments rang in this window. Try a longer one."
+                  : "No departments match that search"}
+              </div>
+            )}
         </div>
       </div>
 

@@ -212,3 +212,27 @@ export const differingNumbers = (row: CompanyDeptRow): string[] => {
   if (nums.size < 2) return [];
   return row.at.map((a) => `${a.store_number} → #${a.sub_department}`);
 };
+
+export const COLS =
+  "grid-cols-[30px_minmax(0,24%)_72px_minmax(0,1fr)_92px_28px]";
+
+/** How far back to look for "which departments does this store have".
+ *
+ *  There is no dimension table, so the answer is always "what it rang inside
+ *  a window". 120 days is the default because it is quick and because a
+ *  department that has not rung since spring is not one anybody is trying to
+ *  keep out of this week's net sales. The longer options exist for onboarding,
+ *  where a seasonal department genuinely has not rung yet. */
+export const WINDOWS = [
+  { value: "120", label: "Last 120 days" },
+  { value: "365", label: "Last year" },
+  { value: "730", label: "Last 2 years" },
+];
+
+export const ALL_STORES = "__all__";
+
+export const prettyDate = (iso: string) => {
+  if (!iso) return "—";
+  const [y, m, d] = iso.slice(0, 10).split("-");
+  return `${Number(m)}/${Number(d)}/${y.slice(2)}`;
+};
