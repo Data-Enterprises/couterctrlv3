@@ -24,13 +24,8 @@ const UserGroupsPanel = () => {
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
   const [selectedGroup, setSelectedGroupLocal] = useState<Group | null>(null);
-  const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   useGroupsData();
-
-  const filteredGroups = ctx.groups.filter((g) =>
-    g.group_name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   const handleCreateGroup = (name: string) => {
     if (!name.trim()) {
@@ -71,12 +66,7 @@ const UserGroupsPanel = () => {
   return (
     <div className="flex flex-1 min-h-0 w-full">
       <GroupsList
-        userid={ctx.userid}
-        groups={filteredGroups}
-        totalCount={ctx.groups.length}
         selectedId={selectedGroup?.id ?? 0}
-        search={search}
-        onSearchChange={setSearch}
         onSelect={setSelectedGroupLocal}
         onOpenCreate={() => setShowNewGroupModal(true)}
       />

@@ -1,5 +1,6 @@
 // Hooks
 import { useState } from "react";
+import { useGroupCtx } from "../hooks";
 
 // Utils
 import { BADGE, kindOf } from "../utils";
@@ -10,45 +11,42 @@ import type { Show } from "../interfaces";
 
 // Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
+import GroupTypeTabs from "./GroupTypeTabs";
 import { PlusIcon } from "@heroicons/react/20/solid";
 
 interface GroupsListProps {
-  /** The signed-in user — tells "shared by you" from "shared with you". */
-  userid: number;
-  groups: Group[];
-  totalCount: number;
   selectedId: number;
-  search: string;
-  onSearchChange: (v: string) => void;
   onSelect: (group: Group) => void;
   onOpenCreate: () => void;
 }
 
 const GroupsList = ({
-  userid,
-  groups,
-  totalCount,
   selectedId,
-  search,
-  onSearchChange,
   onSelect,
   onOpenCreate,
 }: GroupsListProps) => {
+  const ctx = useGroupCtx();
+  const [search, setSearch] = useState("");
   const [show, setShow] = useState<Show>("all");
+
+  const groups = ctx.groups.filter((g) =>
+    g.group_name.toLowerCase().includes(search.toLowerCase()),
+  );
+
   const count = {
     all: groups.length,
-    mine: groups.filter((g) => kindOf(g, userid) === "mine").length,
-    shared: groups.filter((g) => kindOf(g, userid) !== "mine").length,
+    mine: groups.filter((g) => kindOf(g, ctx.userid) === "mine").length,
+    shared: groups.filter((g) => kindOf(g, ctx.userid) !== "mine").length,
   };
   const visible = groups.filter((g) =>
     show === "all"
       ? true
       : show === "mine"
-        ? kindOf(g, userid) === "mine"
-        : kindOf(g, userid) !== "mine",
+        ? kindOf(g, ctx.userid) === "mine"
+        : kindOf(g, ctx.userid) !== "mine",
   );
   const empty =
-    totalCount === 0
+    ctx.groups.length === 0
       ? "No groups yet"
       : groups.length === 0
         ? "No groups match"
@@ -61,7 +59,7 @@ const GroupsList = ({
       <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
         <TextFilter
           value={search}
-          onChange={onSearchChange}
+          onChange={setSearch}
           placeholder="Search groups…"
           className="flex-1"
         />
@@ -76,27 +74,7 @@ const GroupsList = ({
         </button>
       </div>
 
-      <div
-        role="tablist"
-        aria-label="Which groups"
-        className="flex gap-1 px-2.5 py-2 border-b border-gray-100"
-      >
-        {(["all", "mine", "shared"] as const).map((id) => (
-          <button
-            key={id}
-            role="tab"
-            aria-selected={show === id}
-            onClick={() => setShow(id)}
-            className={`flex-1 text-[11px] font-semibold py-1 rounded-md capitalize transition-colors ${
-              show === id
-                ? "bg-brand_navy text-custom-white"
-                : "text-content hover:bg-gray-100"
-            }`}
-          >
-            {id} <span className="tabular-nums opacity-70">{count[id]}</span>
-          </button>
-        ))}
-      </div>
+      <GroupTypeTabs show={show} setShow={setShow} count={count} />
 
       <div
         data-help="group-list"
@@ -108,7 +86,7 @@ const GroupsList = ({
           </div>
         )}
         {visible.map((g) => {
-          const kind = kindOf(g, userid);
+          const kind = kindOf(g, ctx.userid);
           const isSel = selectedId === g.id;
           return (
             <button
