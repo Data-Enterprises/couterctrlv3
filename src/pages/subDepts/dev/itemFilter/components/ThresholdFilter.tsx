@@ -1,8 +1,12 @@
+// Hooks
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { useSubMarginState } from "../../hooks/useSubMarginState";
+import { useSubMarginActions, useSubMarginState } from "../../hooks";
+
+// Interfaces
 import type { ItemFilterType, ThreshOperator } from "../../../../../features/dev/devSubMarginSlice";
+
+// Components
 import CheckBox from "../../../../../components-dev/inputs/CheckBox";
 import Input from "../../../../../components-dev/inputs/Input";
 

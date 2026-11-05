@@ -1,22 +1,10 @@
-import { countedRows } from "../../../../../utils/hashSubs";
-import { storeMarginDelta } from "../../../../../utils/storeMarginDelta";
-import PageInfoButton from "../../../../../components-dev/PageInfoButton";
+// Hooks
 import { useRef, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useSubMarginCtx } from "../../hooks";
-import { formatDate } from "../widgets";
-import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
-import {
-  applyStoreNumberToName,
-  combinedStoreName,
-} from "../../../../../utils/storeIdentity";
-import { setDates } from "../../../../../utils/dates";
-import {
-  getTier,
-  getGradeDelta,
-  storeMarginPctOf,
-} from "../..";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+import { useSubMarginCtx } from "../hooks";
+
+// Redux
 import {
   setGradingThreshold,
   setGradingMetric,
@@ -24,21 +12,42 @@ import {
   type MarginTier,
   type SubDeptGrade,
   type GradingMetric,
-} from "../../../../../features/dev/devSubMarginSlice";
-import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
-import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
-import TextFilter from "../../../../../components-dev/filters/TextFilter";
+} from "../../../../features/dev/devSubMarginSlice";
+
+// Utils
+import { countedRows } from "../../../../utils/hashSubs";
+import { storeMarginDelta } from "../../../../utils/storeMarginDelta";
+import { formatCurrency2, formatCurrencyCompact } from "../../../../utils";
+import {
+  applyStoreNumberToName,
+  combinedStoreName,
+} from "../../../../utils/storeIdentity";
+import { setDates } from "../../../../utils/dates";
 import {
   severityDotClass,
   comparisonPillClass,
   headerDeltaPill,
   PCT_COL_W,
   type SevFilter,
-} from "../../../../../utils/severity";
-import { isCompleteCoverage } from "../../../../../utils/grading";
-import type { SubDeptMargin } from "../../../../../interfaces";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../../utils/useTriStateSort";
+} from "../../../../utils/severity";
+import { isCompleteCoverage } from "../../../../utils/grading";
+import { formatDate } from "../utils/gridColumns";
+import {
+  getTier,
+  getGradeDelta,
+  storeMarginPctOf,
+} from "../utils";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../interfaces";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import LocationTabs from "../../../../components-dev/filters/LocationTabs";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 
 interface Props {
   onSearchOpen: () => void;

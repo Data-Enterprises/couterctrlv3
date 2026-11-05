@@ -1,41 +1,46 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
   useCanSeeComingSoon,
   useStoreName,
-} from "../../../../../hooks";
-import { useSubMarginCtx } from "../../hooks";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { formatDate } from "../widgets";
-import { formatCurrency2, addDays } from "../../../../../utils";
-import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
-import { gpm } from "../../../../../functions";
-import { calculateCogs, hasNoUsableCost } from "../../../../../utils/cogs";
-import { setDates, getLYDate, weekEnding } from "../../../../../utils/dates";
+} from "../../../../hooks";
+import { useCriticalReport } from "../../../../hooks/useCriticalReport";
+import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+
+// Utils
+import { formatCurrency2, addDays } from "../../../../utils";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { gpm } from "../../../../functions";
+import { calculateCogs, hasNoUsableCost } from "../../../../utils/cogs";
+import { setDates, getLYDate, weekEnding } from "../../../../utils/dates";
+import {
+  severityHeaderBgClass,
+  comparisonPillClass,
+} from "../../../../utils/severity";
+import { isCompleteCoverage } from "../../../../utils/grading";
+import { formatDate } from "../utils/gridColumns";
 import {
   matchedCounterpartRows,
   matchedTyRows,
   getTier,
-} from "../..";
+} from "../utils";
+import { collectGradedItems } from "../utils/gradedItems";
+
+// Interfaces
+import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
+
+// Components
 import {
   ArrowDownTrayIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/16/solid";
-import { collectGradedItems } from "./gradedItems";
-import { useCriticalReport } from "../../../../../hooks/useCriticalReport";
-import type { SubDeptCost, SubDeptMargin } from "../../../../../interfaces";
-
-import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import MarginPerfExportModal from "../export/MarginPerfExportModal";
 import MarginPerfItemsTable from "./MarginPerfItemsTable";
-import SubDeptCostGrid from "../widgets/SubDeptCostGrid";
-import MarginPerfExportModal from "./MarginPerfExportModal";
+import SubDeptCostGrid from "./SubDeptCostGrid";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
-import {
-  severityHeaderBgClass,
-  comparisonPillClass,
-} from "../../../../../utils/severity";
-import { isCompleteCoverage } from "../../../../../utils/grading";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();

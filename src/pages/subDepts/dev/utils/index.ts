@@ -1,12 +1,18 @@
-import { calculateCogs } from "../../../utils/cogs";
-import type { RollupRow } from "../../../api/rollup";
-import { getLYDate, setDates } from "../../../utils/dates";
-import { coverageOf, gradeBasis, type Coverage } from "../../../utils/grading";
-import type { MarginDollars } from "../../../utils/grading";
-import { marginPct } from "../../../utils/grading";
-import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../features/dev/devSubMarginSlice";
-import type { SubDeptMargin } from "../../../interfaces";
+// Utils
+import { calculateCogs } from "../../../../utils/cogs";
+import { getLYDate, setDates } from "../../../../utils/dates";
+import {
+  coverageOf,
+  gradeBasis,
+  type Coverage,
+  marginPct,
+} from "../../../../utils/grading";
 
+// Interfaces
+import type { RollupRow } from "../../../../api/rollup";
+import type { MarginDollars } from "../../../../utils/grading";
+import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
+import type { SubDeptMargin } from "../../../../interfaces";
 
 /** The figure a sub department is graded and ranked on: last year when it
  * covers every day of the week, else last week when that does, else nothing.

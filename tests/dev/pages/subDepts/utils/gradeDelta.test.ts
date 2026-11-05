@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getGradeDelta } from "@/pages/subDepts/dev/index";
+import { getGradeDelta } from "@/pages/subDepts/dev/utils";
 import type { SubDeptGrade } from "@/features/dev/devSubMarginSlice";
 
 /**

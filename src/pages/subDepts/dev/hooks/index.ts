@@ -1,7 +1,24 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { setDates } from "../../../utils/dates";
-import { useAppSelector } from "../../../hooks";
-import { useSubMarginState } from "./hooks/useSubMarginState";
+import { useAppSelector } from "../../../../hooks";
+
+// Redux
+import * as subMarginActions from "../../../../features/dev/devSubMarginSlice";
+
+// Utils
+import { setDates } from "../../../../utils/dates";
+
+export const useSubMarginState = () =>
+  useAppSelector((state) => state.dev.subMargin);
+
+/**
+ * Sub Dept Margins' action creators.
+ *
+ * Used to hand back the legacy slice's actions whenever `devMode` was off,
+ * back when that meant the legacy page was on screen. Sub Dept Margins has no
+ * legacy page any more, and the legacy slice is gone with it.
+ */
+export const useSubMarginActions = () => subMarginActions;
 
 export const useSubMarginCtx = () => {
   const { url, token, isMobile } = useAppSelector((state) => state.app);

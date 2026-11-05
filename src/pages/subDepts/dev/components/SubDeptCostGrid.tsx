@@ -1,10 +1,17 @@
+// Hooks
 import { useEffect, useState, useRef, useMemo } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useSubMarginActions } from "../hooks";
+
+// Utils
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
+
+// Interfaces
+import type { SubDeptCost } from "../../../../interfaces";
+
+// Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../../../../hooks";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import type { SubDeptCost } from "../../../../../interfaces";
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
+import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
 
 // ── Shared filter popover ─────────────────────────────────────────────────────
 

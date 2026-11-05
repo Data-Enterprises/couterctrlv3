@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { storeMarginPctOf, storeMarginDeltaOf } from "@/pages/subDepts/dev/index";
+import { storeMarginPctOf, storeMarginDeltaOf } from "@/pages/subDepts/dev/utils";
 import { marginPct } from "@/utils/grading";
 import type { MarginDollars } from "@/utils/grading";
 

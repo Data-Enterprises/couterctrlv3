@@ -1,9 +1,11 @@
-import { useAppDispatch } from "../../../../../hooks";
-import Modal from "../../../../../components-dev/Modal";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { useSubMarginState } from "../../hooks/useSubMarginState";
-import TextFilter from "./TextFilter";
-import ThresholdFilter from "./TresholdFilter";
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useSubMarginActions, useSubMarginState } from "../hooks";
+
+// Components
+import Modal from "../../../../components-dev/Modal";
+import TextFilter from "./components/TextFilter";
+import ThresholdFilter from "./components/ThresholdFilter";
 
 const ItemFilterModal = () => {
   const dispatch = useAppDispatch();

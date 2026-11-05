@@ -1,9 +1,12 @@
+// Utils
 import { themeQuartz, type ColDef } from "ag-grid-community";
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import type { SubDeptCost } from "../../../../../interfaces";
-import type { ItemRow } from "../../../../../interfaces";
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
+
+// Interfaces
+import type { SubDeptCost, ItemRow } from "../../../../interfaces";
+
 // Defined in src/interfaces — Sub Dept Margins items. Re-exported for this page's files.
-export type { ItemRow, ItemRowMobile } from "../../../../../interfaces";
+export type { ItemRow, ItemRowMobile } from "../../../../interfaces";
 
 export interface BarData {
   sales: number;

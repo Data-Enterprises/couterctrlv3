@@ -1,12 +1,15 @@
-import type { SubDept } from "../../../../../interfaces";
-import type { SubDeptGrade } from "../../../../../features/dev/devSubMarginSlice";
-import { setDates, getLYDate } from "../../../../../utils/dates";
+// Utils
+import { setDates, getLYDate } from "../../../../utils/dates";
 import {
   buildItemRows,
   getItemSeverity,
   type ItemGradingMetric,
   type ItemMarginRow,
-} from "../../../../../utils/itemMargins";
+} from "../../../../utils/itemMargins";
+
+// Interfaces
+import type { SubDept } from "../../../../interfaces";
+import type { SubDeptGrade } from "../../../../features/dev/devSubMarginSlice";
 
 /**
  * Which graded items a department contributes, and in what order.

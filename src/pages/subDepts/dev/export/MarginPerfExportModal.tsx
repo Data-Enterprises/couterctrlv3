@@ -1,17 +1,24 @@
+// Hooks
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import MultiSelectFilter from "../../../../../components-dev/filters/MultiSelectFilter";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { SubDept, SubDeptMargin } from "../../../../../interfaces";
-import type { SubDeptGrade } from "../../../../../features/dev/devSubMarginSlice";
-import { calculateCogs, hasNoUsableCost } from "../../../../../utils/cogs";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../../utils/csvExport";
+
+// Utils
+import { calculateCogs, hasNoUsableCost } from "../../../../utils/cogs";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import {
   gradedDelta,
   type ItemGradingMetric,
-} from "../../../../../utils/itemMargins";
-import { collectGradedItems, type GradedItem, type ItemSev } from "./gradedItems";
+} from "../../../../utils/itemMargins";
+import { collectGradedItems, type GradedItem, type ItemSev } from "../utils/gradedItems";
+
+// Interfaces
+import type { SubDept, SubDeptMargin } from "../../../../interfaces";
+import type { SubDeptGrade } from "../../../../features/dev/devSubMarginSlice";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

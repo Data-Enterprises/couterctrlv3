@@ -1,14 +1,20 @@
+// Hooks
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useSubMarginCtx } from "../../hooks";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { calculateCogs } from "../../../../../utils/cogs";
-import { getLYDate } from "../../../../../utils/dates";
-import { addDays, formatCurrency2 } from "../../../../../utils";
-import { getHolidayName } from "../../../../../utils/holidays";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+
+// Utils
+import { calculateCogs } from "../../../../utils/cogs";
+import { getLYDate } from "../../../../utils/dates";
+import { addDays, formatCurrency2 } from "../../../../utils";
+import { getHolidayName } from "../../../../utils/holidays";
+import { gradeBasis, type Coverage } from "../../../../utils/grading";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../interfaces";
+
+// Components
 import { StarIcon } from "@heroicons/react/20/solid";
-import type { SubDeptMargin } from "../../../../../interfaces";
-import { gradeBasis, type Coverage } from "../../../../../utils/grading";
 
 const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;

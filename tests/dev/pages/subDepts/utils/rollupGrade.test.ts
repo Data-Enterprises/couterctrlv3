@@ -3,7 +3,7 @@ import {
   computeMarginDayMatched,
   computeStoreDayMatched,
   netByDay,
-} from "@/pages/subDepts/dev";
+} from "@/pages/subDepts/dev/utils";
 import type { SubDeptMargin } from "@/interfaces";
 import type { RollupRow } from "@/api/rollup";
 import { calculateCogs } from "@/utils/cogs";

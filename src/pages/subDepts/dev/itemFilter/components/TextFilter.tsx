@@ -1,8 +1,12 @@
+// Hooks
 import { useAppDispatch } from "../../../../../hooks";
-import Input from "../../../../../components-dev/inputs/Input";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { useSubMarginState } from "../../hooks/useSubMarginState";
+import { useSubMarginActions, useSubMarginState } from "../../hooks";
+
+// Interfaces
 import type { ItemFilterType } from "../../../../../features/dev/devSubMarginSlice";
+
+// Components
+import Input from "../../../../../components-dev/inputs/Input";
 
 interface TextFilterProps {
   // define any props you need here

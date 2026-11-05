@@ -1,8 +1,10 @@
-import { useAppDispatch } from "../../../../../hooks";
-import { useSubMarginCtx } from "../../hooks";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import SingleDatePicker from "../../../../../components-dev/datePickers/SingleDatePicker";
-import SingleStoreSearchCard from "../../../../../components-dev/SingleStoreSearchCard";
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+
+// Components
+import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
+import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 
 interface Props {
   onSearch: () => void;

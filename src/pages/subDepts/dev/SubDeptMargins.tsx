@@ -1,28 +1,15 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
-import { useSubMarginCtx } from "./hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useSubMarginActions } from "./hooks/useSubMarginActions";
-import { useSubMarginState } from "./hooks/useSubMarginState";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSubMargins } from "../../../api/subMargins";
-import { useParams } from "./hooks";
-import { setDates, getLYDate } from "../../../utils/dates";
-import { hasNoUsableCost } from "../../../utils/cogs";
 import {
-  computeMarginDayMatched,
-  computeStoreDayMatched,
-  netByDay,
-  storeCoverage,
-} from ".";
-import { getRollup, type RollupRow } from "../../../api/rollup";
-import type { Coverage } from "../../../utils/grading";
-import type {
-  JsonError,
-  SubDept,
-  SubMarginsJsonResp,
-  SubDeptMargin,
-} from "../../../interfaces";
-import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+  useParams,
+} from "./hooks";
+
+// Redux
 import {
   setSubDeptGrade,
   setLoadingGrades,
@@ -35,15 +22,40 @@ import {
   type SubDeptGrade,
 } from "../../../features/dev/devSubMarginSlice";
 
-import MarginPerfLeftPanel from "./display/perf/MarginPerfLeftPanel";
-import MarginPerfRightPanel from "./display/perf/MarginPerfRightPanel";
-import SmDevSearchOverlay from "./display/perf/SmDevSearchOverlay";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
-import SmDevEntryCard from "./display/perf/SmDevEntryCard";
-import ItemFilterModal from "./display/modals/ItemFilterModal";
+// API
+import { getSubMargins } from "../../../api/subMargins";
+import { getRollup, type RollupRow } from "../../../api/rollup";
+
+// Utils
+import { setDates, getLYDate } from "../../../utils/dates";
+import { hasNoUsableCost } from "../../../utils/cogs";
+import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+import {
+  computeMarginDayMatched,
+  computeStoreDayMatched,
+  netByDay,
+  storeCoverage,
+} from "./utils";
+import { costCols, itemCols } from "./utils/gridColumns";
+
+// Interfaces
+import type { Coverage } from "../../../utils/grading";
+import type {
+  JsonError,
+  SubDept,
+  SubMarginsJsonResp,
+  SubDeptMargin,
+} from "../../../interfaces";
+
+// Components
 import ExportModal from "../../../components-dev/modals/ExportModal";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import { costCols, itemCols } from "./display/widgets";
+import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import MarginPerfLeftPanel from "./components/MarginPerfLeftPanel";
+import MarginPerfRightPanel from "./components/MarginPerfRightPanel";
+import SmDevSearchOverlay from "./components/SmDevSearchOverlay";
+import SmDevEntryCard from "./components/SmDevEntryCard";
+import ItemFilterModal from "./itemFilter/ItemFilterModal";
 
 const fetchSafe = (
   url: string,

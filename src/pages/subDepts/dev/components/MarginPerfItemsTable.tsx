@@ -1,21 +1,16 @@
+// Hooks
 import { useEffect, useState, useRef, useMemo } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+
+// Utils
+import { getLYDate } from "../../../../utils/dates";
 import {
-  MagnifyingGlassIcon,
-  MinusCircleIcon,
-} from "@heroicons/react/16/solid";
-import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useSubMarginCtx } from "../../hooks";
-import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { getLYDate } from "../../../../../utils/dates";
-import { severityDotClass } from "../../../../../utils/severity";
-import { formatCurrency2, addDays } from "../../../../../utils";
+  severityDotClass,
+  chipClass,
+  CTA_SEVERITY_CLASSES,
+} from "../../../../utils/severity";
+import { formatCurrency2, addDays } from "../../../../utils";
 import {
   buildItemRows,
   buildItemDetail,
@@ -38,16 +33,30 @@ import {
   type RowMetricKey,
   type SortCol,
   type GradedSeverity,
-} from "../../../../../utils/itemMargins";
-import type { SubDeptMargin } from "../../../../../interfaces";
-import type { Coverage } from "../../../../../utils/grading";
-import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
-import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
-import SharedSeverityBadge from "../../../../../components-dev/SeverityBadge";
-import { chipClass, CTA_SEVERITY_CLASSES } from "../../../../../utils/severity";
-import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../../../../../utils/pricedUnits";
+} from "../../../../utils/itemMargins";
+import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../../../../utils/pricedUnits";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../interfaces";
+import type { Coverage } from "../../../../utils/grading";
+import type { ThresholdValue } from "../../../../components-dev/filters/ThresholdFilter";
+
+// Components
+import {
+  MagnifyingGlassIcon,
+  MinusCircleIcon,
+} from "@heroicons/react/16/solid";
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
+import SharedSeverityBadge from "../../../../components-dev/SeverityBadge";
 
 type SevFilter = "all" | Severity;
 
