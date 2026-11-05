@@ -1,18 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubSale, HourlySale } from "../../../../../interfaces";
 import type { DayDot } from "../../components/LedgerRow";
 import type { ExportSubDeptItem } from "../../../../../features/dev/devSalesLedgerSlice";
+import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
 import {
-  fmtNum,
-  rowsToCsv,
-  downloadCsv,
-  aggregateRows,
-} from "../../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../../utils/csvExport";
-import {
-  FINANCIALS_READY,
   getFinancials,
   type FinancialsResponse,
 } from "../../../../../api/financials";
@@ -28,23 +20,28 @@ import {
 } from "./utils/recapRange";
 import { mergeItems } from "../summary/utils/recapItemRows";
 import { useRecapWeekItems } from "./hooks/useRecapWeekItems";
+import { useCustomExport } from "./hooks/index";
 import {
-  fmtDate,
-  fmtHour,
   buildFinancialsCsv,
   buildSubDeptCsv,
   buildHourlyCsv,
   buildSummaryCsv,
   buildDeptDayGridCsv,
   buildItemsCsv,
-  SUBDEPT_DIMS,
-  SUBDEPT_METRICS,
-  HOURLY_DIMS,
-  HOURLY_METRICS,
-  AGG_OPTIONS,
-  PREVIEW_ROWS,
+  PRESET_DATASETS,
 } from "./utils/index";
-import type { ItemSev } from "./types/index";
+import type { ExportDataset, ItemSev, ModalMode } from "./types/index";
+import ExportModalHeader from "./components/ExportModalHeader";
+import PresetOption from "./components/PresetOption";
+import ItemsSoldDates from "./components/ItemsSoldDates";
+import FinancialsOptions from "./components/FinancialsOptions";
+import FinancialsStorePicker from "./components/FinancialsStorePicker";
+import SubDeptItemsOption from "./components/SubDeptItemsOption";
+import ExportFooter from "./components/ExportFooter";
+import DataSourcePicker from "./components/DataSourcePicker";
+import GroupByPicker from "./components/GroupByPicker";
+import MetricsPicker from "./components/MetricsPicker";
+import CustomPreview from "./components/CustomPreview";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,22 +75,6 @@ interface SalesExportModalProps {
   /** Every store the ledger returned, so Financials can be narrowed to some
    *  of them. */
   stores?: { storeid: number; store_number: string; store_name: string }[];
-}
-
-type ExportDataset =
-  | "subdept"
-  | "deptgrid"
-  | "hourly"
-  | "summary"
-  | "items"
-  | "dailyrecap"
-  | "financials";
-
-type ModalMode = "presets" | "custom";
-type CustomSource = "subdept" | "hourly";
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -174,144 +155,45 @@ const SalesExportModal = ({
     });
   };
 
-  // ── Custom builder state — no default selections ──
-  const [source, setSource] = useState<CustomSource>("subdept");
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
-  const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
-    new Map([
-      ["net_sales", { fn: "sum", enabled: false }],
-      ["qty", { fn: "sum", enabled: false }],
-      ["transaction_count", { fn: "sum", enabled: false }],
-      ["total_tax", { fn: "sum", enabled: false }],
-    ]),
-  );
-
-  const dims = source === "subdept" ? SUBDEPT_DIMS : HOURLY_DIMS;
-  const mDefs = source === "subdept" ? SUBDEPT_METRICS : HOURLY_METRICS;
-
-  // Switch source → reset groupBy & metrics (no default selections)
-  const switchSource = (s: CustomSource) => {
-    setSource(s);
-    setGroupBy(new Set());
-    if (s === "subdept") {
-      setMetrics(
-        new Map([
-          ["net_sales", { fn: "sum", enabled: false }],
-          ["qty", { fn: "sum", enabled: false }],
-          ["transaction_count", { fn: "sum", enabled: false }],
-          ["total_tax", { fn: "sum", enabled: false }],
-        ]),
-      );
+  // Ticking "Sub Dept Items" on its own selects every severity (unless some
+  // are already picked); unticking it clears them.
+  const toggleItems = () => {
+    const checking = !selected.has("items");
+    if (checking) {
+      if (itemSevs.size === 0)
+        setItemSevs(new Set(["critical", "watch", "healthy"]));
     } else {
-      setMetrics(
-        new Map([
-          ["net_sales", { fn: "sum", enabled: false }],
-          ["qty", { fn: "sum", enabled: false }],
-          ["transactions", { fn: "sum", enabled: false }],
-          ["basket_size_sales", { fn: "avg", enabled: false }],
-          ["avg_item_price", { fn: "avg", enabled: false }],
-        ]),
-      );
+      setItemSevs(new Set());
     }
-  };
-
-  const toggleGroupBy = (key: string) => {
-    setGroupBy((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
+    setSelected((prev) => {
+      const n = new Set(prev);
+      checking ? n.add("items") : n.delete("items");
+      return n;
     });
   };
 
-  const toggleMetric = (key: string) => {
-    setMetrics((prev) => {
-      const next = new Map(prev);
-      const cur = next.get(key)!;
-      next.set(key, { ...cur, enabled: !cur.enabled });
-      return next;
-    });
-  };
-
-  const setMetricFn = (key: string, fn: AggFn) => {
-    setMetrics((prev) => {
-      const next = new Map(prev);
-      const cur = next.get(key)!;
-      next.set(key, { ...cur, fn });
-      return next;
-    });
-  };
-
-  // ── Build flat rows for aggregation ──
-  const flatRows = useMemo<AggRow[]>(() => {
-    const tagPeriod = (
-      rows: (SubSale | HourlySale)[],
-      period: string,
-    ): AggRow[] => rows.map((r) => ({ ...r, period }) as AggRow);
-
-    if (source === "subdept") {
-      return [
-        ...tagPeriod(rawSubs, "This Year"),
-        ...tagPeriod(rawLWSubs, "Last Week"),
-        ...tagPeriod(rawLYSubs, "Last Year"),
-      ];
-    }
-    return [
-      ...tagPeriod(rawHourly, "This Year"),
-      ...tagPeriod(rawLWHourly, "Last Week"),
-      ...tagPeriod(rawLYHourly, "Last Year"),
-    ];
-  }, [
+  // Lives here, not in Custom mode, so its picks survive a switch to Presets
+  // and back.
+  const {
     source,
+    switchSource,
+    dims,
+    mDefs,
+    groupBy,
+    toggleGroupBy,
+    metrics,
+    toggleMetric,
+    setMetricFn,
+    aggRows,
+    columns,
+  } = useCustomExport({
     rawSubs,
     rawLWSubs,
     rawLYSubs,
     rawHourly,
     rawLWHourly,
     rawLYHourly,
-  ]);
-
-  // ── Aggregated result ──
-  const { aggRows, columns } = useMemo(() => {
-    const activeDims = dims.filter((d) => groupBy.has(d.key));
-    const activeMetrics = mDefs
-      .map((m) => ({ ...m, sel: metrics.get(m.key) }))
-      .filter((m) => m.sel?.enabled)
-      .map((m) => ({ key: m.key, fn: m.sel!.fn, label: m.label }));
-
-    const aggRows = aggregateRows(
-      flatRows,
-      activeDims.map((d) => d.key),
-      activeMetrics.map((m) => ({ key: m.key, fn: m.fn })),
-    );
-
-    // Format display values
-    const display = aggRows.map((row) => {
-      const out: Record<string, string> = {};
-      for (const d of activeDims) {
-        const raw = row[d.key];
-        if (d.key === "sale_date")
-          out[d.key] = fmtDate(String(raw).split("T")[0]);
-        else if (d.key === "hour") out[d.key] = fmtHour(Number(raw));
-        else out[d.key] = String(raw ?? "");
-      }
-      for (const m of activeMetrics) {
-        const colKey = `${m.fn}__${m.key}`;
-        const val = Number(row[colKey]);
-        out[colKey] = m.fn === "count" ? String(Math.round(val)) : fmtNum(val);
-      }
-      return out;
-    });
-
-    const columns: { key: string; label: string }[] = [
-      ...activeDims.map((d) => ({ key: d.key, label: d.label })),
-      ...activeMetrics.map((m) => ({
-        key: `${m.fn}__${m.key}`,
-        label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
-      })),
-    ];
-
-    return { aggRows: display, columns };
-  }, [flatRows, groupBy, metrics, dims, mDefs]);
+  });
 
   /**
    * Fetch the financials rows, or null if the call failed.
@@ -474,72 +356,6 @@ const SalesExportModal = ({
     onClose();
   };
 
-  const presetDatasets: {
-    id: ExportDataset;
-    label: string;
-    description: string;
-  }[] = [
-    {
-      id: "summary",
-      label: "Weekly Summary",
-      description: "Day-by-day net sales vs last week and last year",
-    },
-    {
-      id: "subdept",
-      label: "Sub Department",
-      description:
-        "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
-    },
-    {
-      id: "deptgrid",
-      label: "Sub Dept by Day",
-      description:
-        "Every sub dept against every day of this week — net sales, with row and column totals",
-    },
-    {
-      id: "hourly",
-      label: "Hourly Breakdown",
-      description:
-        "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
-    },
-    {
-      id: "dailyrecap",
-      label: "Items Sold",
-      description:
-        "Summary's item grid: one row per UPC with its totals for one date or a range",
-    },
-    // Offered only once the router is deployed — see FINANCIALS_READY. The
-    // code around it stays, so turning it on is one constant.
-    ...(FINANCIALS_READY
-      ? [
-          {
-            id: "financials" as const,
-            label: "Financials",
-            description:
-              "Daily POS records by bin — qty, weight and sales, exactly as the register holds them",
-          },
-        ]
-      : []),
-  ];
-
-  const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-    {
-      sev: "critical",
-      label: "Critical",
-      activeClass: "bg-red-600 border-red-600 text-custom-white",
-    },
-    {
-      sev: "watch",
-      label: "Watch",
-      activeClass: "bg-amber-500 border-amber-500 text-custom-white",
-    },
-    {
-      sev: "healthy",
-      label: "Healthy",
-      activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
-    },
-  ];
-
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
 
   return (
@@ -550,36 +366,12 @@ const SalesExportModal = ({
       defaultHeight={960}
     >
       {/* Header */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
-        <div>
-          <p className="text-custom-white text-[13px] font-semibold">
-            Export CSV
-          </p>
-          <p className="text-custom-white text-[10px] mt-0.5">{storeName}</p>
-        </div>
-        {/* Mode tabs */}
-        <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
-          {(["presets", "custom"] as ModalMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                mode === m
-                  ? "bg-custom-white text-brand_navy"
-                  : "text-custom-white"
-              }`}
-            >
-              {m === "presets" ? "Presets" : "Custom"}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={onClose}
-          className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
-        >
-          <XMarkIcon className="w-4 h-4" />
-        </button>
-      </div>
+      <ExportModalHeader
+        storeName={storeName}
+        mode={mode}
+        onModeChange={setMode}
+        onClose={onClose}
+      />
 
       {/* ── PRESETS MODE ── */}
       {mode === "presets" && (
@@ -588,31 +380,20 @@ const SalesExportModal = ({
             <p className="text-[11px] text-content uppercase tracking-wide font-medium">
               Select data to include
             </p>
-            {presetDatasets.map(({ id, label, description }) => (
-              <div key={id}>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(id)}
-                    onChange={() =>
-                      setSelected((prev) => {
-                        const n = new Set(prev);
-                        n.has(id) ? n.delete(id) : n.add(id);
-                        return n;
-                      })
-                    }
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
-                      {label}
-                    </p>
-                    <p className="text-[11px] text-content mt-0.5">
-                      {description}
-                    </p>
-                  </div>
-                </label>
-
+            {PRESET_DATASETS.map(({ id, label, description }) => (
+              <PresetOption
+                key={id}
+                label={label}
+                description={description}
+                checked={selected.has(id)}
+                onToggle={() =>
+                  setSelected((prev) => {
+                    const n = new Set(prev);
+                    n.has(id) ? n.delete(id) : n.add(id);
+                    return n;
+                  })
+                }
+              >
                 {/* Financials is the only preset that fetches, so it is the
                       only one that can answer for dates and stores the page is
                       not showing. The controls live under it rather than in
@@ -628,254 +409,76 @@ const SalesExportModal = ({
                 {/* Items Sold's dates, laid out as Financials' are: one
                     date (From and To the same) or a range. */}
                 {id === "dailyrecap" && (
-                  <div
-                    aria-disabled={!selected.has("dailyrecap")}
-                    className={`ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5 transition-opacity ${
-                      selected.has("dailyrecap") ? "" : "opacity-50"
-                    }`}
-                  >
-                    <div className="flex items-end gap-2 flex-wrap">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
-                          From
-                        </span>
-                        <input
-                          type="date"
-                          disabled={!selected.has("dailyrecap")}
-                          aria-label="Items Sold from"
-                          value={itemsFrom}
-                          max={itemsTo}
-                          onChange={(e) => setItemsFrom(e.target.value)}
-                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
-                          To
-                        </span>
-                        <input
-                          type="date"
-                          disabled={!selected.has("dailyrecap")}
-                          aria-label="Items Sold to"
-                          value={itemsTo}
-                          min={itemsFrom}
-                          onChange={(e) => setItemsTo(e.target.value)}
-                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        disabled={!selected.has("dailyrecap")}
-                        onClick={() => {
-                          setItemsFrom(startDate);
-                          setItemsTo(endDate);
-                        }}
-                        className="text-[11px] font-semibold text-content hover:underline pb-1.5"
-                      >
-                        This week
-                      </button>
-                    </div>
-                    {itemsTooLong && (
-                      <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
-                        Pick {MAX_EXPORT_DAYS} days or fewer.
-                      </p>
-                    )}
-                  </div>
+                  <ItemsSoldDates
+                    enabled={selected.has("dailyrecap")}
+                    from={itemsFrom}
+                    to={itemsTo}
+                    onFromChange={setItemsFrom}
+                    onToChange={setItemsTo}
+                    onThisWeek={() => {
+                      setItemsFrom(startDate);
+                      setItemsTo(endDate);
+                    }}
+                    tooLong={itemsTooLong}
+                  />
                 )}
 
                 {id === "financials" && (
-                  <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
-                    <p className="text-[10px] text-content/85 leading-snug mb-2">
-                      {financialsLoading
-                        ? "Reading the records for this search…"
-                        : searchedAnswers
-                          ? `${searchedRows.length.toLocaleString()} records in hand for this week${
-                              financialsTruncated ? " (capped)" : ""
-                            }`
-                          : "These dates are outside the search — they will be fetched on download."}
-                    </p>
-                    <div className="flex items-end gap-2 flex-wrap">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                          From
-                        </span>
-                        <input
-                          type="date"
-                          value={finFrom}
-                          max={finTo}
-                          onChange={(e) => setFinFrom(e.target.value)}
-                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                          To
-                        </span>
-                        <input
-                          type="date"
-                          value={finTo}
-                          min={finFrom}
-                          onChange={(e) => setFinTo(e.target.value)}
-                          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
-                        />
-                      </div>
-                      <button
-                        onClick={() => {
-                          setFinFrom(startDate);
-                          setFinTo(endDate);
-                        }}
-                        className="text-[11px] font-semibold text-content/85 hover:underline pb-1.5"
-                      >
-                        This week
-                      </button>
-                    </div>
-
+                  <FinancialsOptions
+                    loading={financialsLoading}
+                    inHand={!!searchedAnswers}
+                    recordCount={searchedRows.length}
+                    capped={financialsTruncated}
+                    from={finFrom}
+                    to={finTo}
+                    onFromChange={setFinFrom}
+                    onToChange={setFinTo}
+                    onThisWeek={() => {
+                      setFinFrom(startDate);
+                      setFinTo(endDate);
+                    }}
+                  >
                     {canFilterStores && (
-                      <div className="mt-2.5">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
-                            Stores
-                          </span>
-                          <span className="text-[10px] font-semibold text-content">
-                            {finTicked.length} of {stores!.length}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setFinStores(
-                                new Set(stores!.map((st) => st.storeid)),
-                              )
-                            }
-                            className="text-[10px] font-semibold text-content/85 hover:underline"
-                          >
-                            All
-                          </button>
-                          <button
-                            onClick={() => setFinStores(new Set([storeId]))}
-                            className="text-[10px] font-semibold text-content/85 hover:underline"
-                          >
-                            Just this one
-                          </button>
-                        </div>
-                        <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-gray-100 bg-custom-white">
-                          {stores!.map((st) => (
-                            <label
-                              key={st.storeid}
-                              className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-gray-50"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={finStores.has(st.storeid)}
-                                onChange={() =>
-                                  setFinStores((prev) => {
-                                    const n = new Set(prev);
-                                    n.has(st.storeid)
-                                      ? n.delete(st.storeid)
-                                      : n.add(st.storeid);
-                                    return n;
-                                  })
-                                }
-                                className="h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                              />
-                              <span className="tabular-nums font-semibold w-[46px] flex-shrink-0">
-                                {st.store_number}
-                              </span>
-                              <span className="truncate">{st.store_name}</span>
-                            </label>
-                          ))}
-                        </div>
-                        {finTicked.length === 0 && (
-                          <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
-                            Pick at least one store.
-                          </p>
-                        )}
-                      </div>
+                      <FinancialsStorePicker
+                        stores={stores!}
+                        storeId={storeId}
+                        ticked={finStores}
+                        setTicked={setFinStores}
+                      />
                     )}
-                  </div>
+                  </FinancialsOptions>
                 )}
-              </div>
+              </PresetOption>
             ))}
 
             {hasItems && (
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={selected.has("items")}
-                  onChange={() => {
-                    const checking = !selected.has("items");
-                    if (checking) {
-                      if (itemSevs.size === 0)
-                        setItemSevs(new Set(["critical", "watch", "healthy"]));
-                    } else {
-                      setItemSevs(new Set());
-                    }
-                    setSelected((prev) => {
-                      const n = new Set(prev);
-                      checking ? n.add("items") : n.delete("items");
-                      return n;
-                    });
-                  }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <p className="text-[13px] font-medium text-content">
-                      Sub Dept Items
-                    </p>
-                    {subDeptName && (
-                      <span className="text-[10px] text-content italic truncate">
-                        {subDeptName}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-content mt-0.5 mb-1.5">
-                    Product-level items with severity grading (TY / LW / LY)
-                  </p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                      <button
-                        key={sev}
-                        onClick={() => toggleItemSev(sev)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          itemSevs.has(sev)
-                            ? activeClass
-                            : "bg-custom-white border-gray-200 text-content"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <SubDeptItemsOption
+                checked={selected.has("items")}
+                subDeptName={subDeptName}
+                sevs={itemSevs}
+                onToggle={toggleItems}
+                onToggleSev={toggleItemSev}
+              />
             )}
           </div>
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-            <button
-              onClick={onClose}
-              className="text-[12px] text-content transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => void handlePresetDownload()}
-              disabled={
-                selected.size === 0 ||
-                fetching ||
-                // Financials with nothing ticked would fall back to the one
-                // store, which is not what an empty list means.
-                (selected.has("financials") &&
-                  canFilterStores &&
-                  finTicked.length === 0) ||
-                // Items Sold needs a date, and no more days than it reads.
-                (selected.has("dailyrecap") &&
-                  (itemsDates.length === 0 || itemsTooLong))
-              }
-              className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              {fetching ? "Reading the data…" : "Download CSV"}
-            </button>
-          </div>
+          <ExportFooter
+            spaced
+            onCancel={onClose}
+            onDownload={() => void handlePresetDownload()}
+            disabled={
+              selected.size === 0 ||
+              fetching ||
+              // Financials with nothing ticked would fall back to the one
+              // store, which is not what an empty list means.
+              (selected.has("financials") &&
+                canFilterStores &&
+                finTicked.length === 0) ||
+              // Items Sold needs a date, and no more days than it reads.
+              (selected.has("dailyrecap") &&
+                (itemsDates.length === 0 || itemsTooLong))
+            }
+            label={fetching ? "Reading the data…" : "Download CSV"}
+          />
         </>
       )}
 
@@ -886,185 +489,35 @@ const SalesExportModal = ({
             {/* Left: config panel */}
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               {/* Source */}
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
-                  Data Source
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  {(["subdept", "hourly"] as CustomSource[]).map((s) => (
-                    <label
-                      key={s}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <input
-                        type="radio"
-                        checked={source === s}
-                        onChange={() => switchSource(s)}
-                        className="accent-brand_navy h-3.5 w-3.5"
-                      />
-                      <span className="text-[12px] text-content">
-                        {s === "subdept" ? "Sub Department" : "Hourly"}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              <DataSourcePicker source={source} onChange={switchSource} />
 
               {/* Group by */}
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
-                  Group By
-                </p>
-                <div className="space-y-1.5">
-                  {dims.map((d) => (
-                    <label
-                      key={d.key}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={groupBy.has(d.key)}
-                        onChange={() => toggleGroupBy(d.key)}
-                        className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
-                      />
-                      <span className="text-[12px] text-content">
-                        {d.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              <GroupByPicker
+                dims={dims}
+                groupBy={groupBy}
+                onToggle={toggleGroupBy}
+              />
 
               {/* Metrics */}
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
-                  Metrics
-                </p>
-                <div className="space-y-2">
-                  {mDefs.map((m) => {
-                    const sel = metrics.get(m.key)!;
-                    return (
-                      <div key={m.key} className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={sel.enabled}
-                          onChange={() => toggleMetric(m.key)}
-                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
-                        />
-                        <span className="text-[12px] flex-1 text-content">
-                          {m.label}
-                        </span>
-                        <select
-                          value={sel.fn}
-                          disabled={!sel.enabled}
-                          onChange={(e) =>
-                            setMetricFn(m.key, e.target.value as AggFn)
-                          }
-                          className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
-                          style={{ minWidth: 52 }}
-                        >
-                          {AGG_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <MetricsPicker
+                mDefs={mDefs}
+                metrics={metrics}
+                onToggle={toggleMetric}
+                onFnChange={setMetricFn}
+              />
             </div>
 
             {/* Right: preview */}
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                <p className="text-[11px] font-semibold text-content uppercase tracking-wide">
-                  Preview
-                </p>
-                <span className="text-[10px] text-content">
-                  {aggRows.length === 0
-                    ? "No data — select at least one group or metric"
-                    : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
-                </span>
-              </div>
-
-              {columns.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center p-6 text-center">
-                  <p className="text-[12px] text-content leading-relaxed">
-                    Select at least one group-by dimension
-                    <br />
-                    or metric to see a preview.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-auto thin-scrollbar">
-                  <table className="min-w-full text-[11px] border-collapse">
-                    <thead className="sticky top-0 bg-gray-50 z-10">
-                      <tr>
-                        {columns.map((c) => (
-                          <th
-                            key={c.key}
-                            className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap"
-                          >
-                            {c.label}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                        <tr
-                          key={i}
-                          className={
-                            i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"
-                          }
-                        >
-                          {columns.map((c) => (
-                            <td
-                              key={c.key}
-                              className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50"
-                            >
-                              {row[c.key] ?? "—"}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                      {aggRows.length > PREVIEW_ROWS && (
-                        <tr>
-                          <td
-                            colSpan={columns.length}
-                            className="px-3 py-2 text-[10px] text-content italic"
-                          >
-                            + {aggRows.length - PREVIEW_ROWS} more rows in
-                            download…
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            <CustomPreview rows={aggRows} columns={columns} />
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <button
-              onClick={onClose}
-              className="text-[12px] text-content transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleCustomDownload}
-              disabled={!canCustomDownload}
-              className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              Download CSV
-            </button>
-          </div>
+          <ExportFooter
+            onCancel={onClose}
+            onDownload={handleCustomDownload}
+            disabled={!canCustomDownload}
+            label="Download CSV"
+          />
         </>
       )}
     </ResizableModalShell>

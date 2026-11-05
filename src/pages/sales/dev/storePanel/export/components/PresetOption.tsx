@@ -1,0 +1,39 @@
+import type { ReactNode } from "react";
+
+interface PresetOptionProps {
+  label: string;
+  description: string;
+  checked: boolean;
+  onToggle: () => void;
+  /** Anything the preset shows under its row, such as its own dates. */
+  children?: ReactNode;
+}
+
+const PresetOption = ({
+  label,
+  description,
+  checked,
+  onToggle,
+  children,
+}: PresetOptionProps) => (
+  <div>
+    <label className="flex items-start gap-3 cursor-pointer group">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onToggle}
+        className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+      />
+      <div>
+        <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
+          {label}
+        </p>
+        <p className="text-[11px] text-content mt-0.5">{description}</p>
+      </div>
+    </label>
+
+    {children}
+  </div>
+);
+
+export default PresetOption;

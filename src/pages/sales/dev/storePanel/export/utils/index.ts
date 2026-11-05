@@ -3,8 +3,13 @@ import type { AggFn } from "../../../../../../utils/csvExport";
 import type { SubSale, HourlySale } from "../../../../../../interfaces";
 import type { DayDot } from "../../../components/LedgerRow";
 import type { ExportSubDeptItem } from "../../../../../../features/dev/devSalesLedgerSlice";
-import type { FinancialsRow } from "../../../../../../api/financials";
-import type { DimDef, ItemSev, MetricDef } from "../types/index";
+import { FINANCIALS_READY, type FinancialsRow } from "../../../../../../api/financials";
+import type {
+  DimDef,
+  ExportDataset,
+  ItemSev,
+  MetricDef,
+} from "../types/index";
 
 // ─── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -293,3 +298,69 @@ export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
 ];
 
 export const PREVIEW_ROWS = 5;
+
+export const PRESET_DATASETS: {
+  id: ExportDataset;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: "summary",
+    label: "Weekly Summary",
+    description: "Day-by-day net sales vs last week and last year",
+  },
+  {
+    id: "subdept",
+    label: "Sub Department",
+    description:
+      "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
+  },
+  {
+    id: "deptgrid",
+    label: "Sub Dept by Day",
+    description:
+      "Every sub dept against every day of this week — net sales, with row and column totals",
+  },
+  {
+    id: "hourly",
+    label: "Hourly Breakdown",
+    description:
+      "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
+  },
+  {
+    id: "dailyrecap",
+    label: "Items Sold",
+    description:
+      "Summary's item grid: one row per UPC with its totals for one date or a range",
+  },
+  // Offered only once the router is deployed — see FINANCIALS_READY. The
+  // code around it stays, so turning it on is one constant.
+  ...(FINANCIALS_READY
+    ? [
+        {
+          id: "financials" as const,
+          label: "Financials",
+          description:
+            "Daily POS records by bin — qty, weight and sales, exactly as the register holds them",
+        },
+      ]
+    : []),
+];
+
+export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
+  {
+    sev: "critical",
+    label: "Critical",
+    activeClass: "bg-red-600 border-red-600 text-custom-white",
+  },
+  {
+    sev: "watch",
+    label: "Watch",
+    activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+  },
+  {
+    sev: "healthy",
+    label: "Healthy",
+    activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+  },
+];
