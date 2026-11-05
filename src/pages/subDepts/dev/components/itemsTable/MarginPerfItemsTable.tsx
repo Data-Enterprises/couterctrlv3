@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useState, useRef, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useSubMarginCtx, useSubMarginActions } from "../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
+import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../../hooks";
 
 // Utils
 import { getLYDate } from "../../../../../utils/dates";
@@ -54,7 +54,7 @@ const MarginPerfItemsTable = ({
   // Same Margin/Sales toggle the left panel grades sub depts against —
   // read directly from the dev slice, matching how MarginPerfLeftPanel and
   // MarginPerfRightPanel already read it (this tab is dev-only).
-  const gradingMetric = useAppSelector((s) => s.dev.subMargin.gradingMetric);
+  const { gradingMetric } = useSubMarginState();
 
   // The left list's TY/LW/LY figures always reflect the Margin/Sales toggle
   // in the left panel (gradingMetric) — the View dropdown only controls sort

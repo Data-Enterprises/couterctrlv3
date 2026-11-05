@@ -1,13 +1,8 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  useSubMarginCtx,
-  useSubMarginActions,
-  useSubMarginState,
-  useParams,
-} from "./hooks";
+import { useSubMarginCtx, useSubMarginActions, useSubMarginState, useParams } from "./hooks";
 
 // Redux
 import {
@@ -357,9 +352,7 @@ const SubDeptMargins = () => {
   const rawRef = useRef<RawSearch>(emptyRaw());
   /** The latest search; answers for an older one are dropped. */
   const searchRef = useRef(0);
-  const selectedStoreNumber = useAppSelector(
-    (s) => s.dev.subMargin.selectedStoreNumber,
-  );
+  const { selectedStoreNumber, subDeptGrades } = useSubMarginState();
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;
 
@@ -400,8 +393,7 @@ const SubDeptMargins = () => {
     }
   };
 
-  const subDeptGrades = useAppSelector((s) => s.dev.subMargin.subDeptGrades);
-
+  
   // The ungraded rebuild, shared with Vendors — same fetch and screen, a
   // different list open first. mobile/devMobile is still on disk to compare.
   if (ctx.isMobile)

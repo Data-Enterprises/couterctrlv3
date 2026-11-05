@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useState, useRef, useMemo } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
-import { useSubMarginActions } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useSubMarginActions, useSubMarginState } from "../hooks";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
@@ -141,7 +141,7 @@ const COLS = "minmax(0,2fr) 0.6fr 0.55fr 0.55fr 0.42fr 0.55fr";
 const SubDeptCostGrid = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const sm = useAppSelector((state) => state.dev.subMargin);
+  const sm = useSubMarginState();
 
   const [sortCol, setSortCol] = useState<SortCol | null>("cogs");
   const [sortDir, setSortDir] = useState<"desc" | "asc" | null>("desc");

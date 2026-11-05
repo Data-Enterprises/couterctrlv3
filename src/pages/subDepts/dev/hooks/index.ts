@@ -1,5 +1,6 @@
 // Hooks
 import { useEffect, useState } from "react";
+import { shallowEqual } from "react-redux";
 import { useAppSelector } from "../../../../hooks";
 
 // Redux
@@ -8,8 +9,9 @@ import * as subMarginActions from "../../../../features/dev/devSubMarginSlice";
 // Utils
 import { setDates } from "../../../../utils/dates";
 
+/** The Sub Dept Margins slice, read where it is used. */
 export const useSubMarginState = () =>
-  useAppSelector((state) => state.dev.subMargin);
+  useAppSelector((state) => state.dev.subMargin, shallowEqual);
 
 /**
  * Sub Dept Margins' action creators.

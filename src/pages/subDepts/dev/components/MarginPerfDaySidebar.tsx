@@ -1,7 +1,7 @@
 // Hooks
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../hooks";
 
 // Utils
 import { calculateCogs } from "../../../../utils/cogs";
@@ -42,7 +42,7 @@ const MarginPerfDaySidebar = ({ coverage }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const gradingMetric = useAppSelector((s) => s.dev.subMargin.gradingMetric);
+  const { gradingMetric } = useSubMarginState();
   const unit = gradingMetric === "margin" ? "pts" : "pct";
 
   const tyDates = useMemo(

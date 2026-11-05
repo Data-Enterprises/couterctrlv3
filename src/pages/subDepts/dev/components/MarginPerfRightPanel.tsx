@@ -2,12 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
-  useAppSelector,
   useCanSeeComingSoon,
   useStoreName,
 } from "../../../../hooks";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-import { useSubMarginCtx, useSubMarginActions } from "../hooks";
+import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../hooks";
 
 // Utils
 import { formatCurrency2, addDays } from "../../../../utils";
@@ -50,18 +49,17 @@ const MarginPerfRightPanel = () => {
   const canSeeComingSoon = useCanSeeComingSoon();
   const actions = useSubMarginActions();
 
-  const gradingMetric = useAppSelector((s) => s.dev.subMargin.gradingMetric);
-  const subDeptGrades = useAppSelector((s) => s.dev.subMargin.subDeptGrades);
-  const loadingGrades = useAppSelector((s) => s.dev.subMargin.loadingGrades);
-  const subDeptName =
+  const {
+    gradingMetric,
+    subDeptGrades,
+    loadingGrades,
+    availableStoreNumbers,
+    selectedStoreNumber,
+    gradingThreshold: rawGradingThreshold,
+  } = useSubMarginState();
+      const subDeptName =
     ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
-  const availableStoreNumbers = useAppSelector(
-    (s) => s.dev.subMargin.availableStoreNumbers,
-  );
-  const selectedStoreNumber = useAppSelector(
-    (s) => s.dev.subMargin.selectedStoreNumber,
-  );
-  // Matches the left panel: for co-located stores the resolved name embeds the
+      // Matches the left panel: for co-located stores the resolved name embeds the
   // sibling's number, so rewrite it to the location currently on screen.
   const resolvedStoreName = useStoreName(ctx.searchValue);
   const storeName = selectedStoreNumber
@@ -75,10 +73,7 @@ const MarginPerfRightPanel = () => {
   // Grading should never move rows around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so
   // severity/sort stays exactly where it was until a new number is typed.
-  const rawGradingThreshold = useAppSelector(
-    (s) => s.dev.subMargin.gradingThreshold,
-  );
-  const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
+    const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
   if (rawGradingThreshold != null)
     gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;

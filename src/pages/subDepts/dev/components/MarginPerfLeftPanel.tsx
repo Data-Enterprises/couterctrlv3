@@ -1,8 +1,8 @@
 // Hooks
 import { useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { useSubMarginCtx } from "../hooks";
+import { useSubMarginCtx, useSubMarginState } from "../hooks";
 
 // Redux
 import {
@@ -102,26 +102,24 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
-  const subDeptGrades = useAppSelector((s) => s.dev.subMargin.subDeptGrades);
-  const rawGradingThreshold = useAppSelector((s) => s.dev.subMargin.gradingThreshold);
-  const gradingMetric = useAppSelector((s) => s.dev.subMargin.gradingMetric);
-
+  const {
+    subDeptGrades,
+    gradingThreshold: rawGradingThreshold,
+    gradingMetric,
+    loadingGrades,
+    storeSalesTotals,
+    availableStoreNumbers,
+    selectedStoreNumber,
+  } = useSubMarginState();
+    
   // Grading should never move sub depts around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so tier
   // placement stays exactly where it was until a new number is typed.
   const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
   if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
-  const loadingGrades = useAppSelector((s) => s.dev.subMargin.loadingGrades);
-  const storeSalesTotals = useAppSelector((s) => s.dev.subMargin.storeSalesTotals);
-
-  const availableStoreNumbers = useAppSelector(
-    (s) => s.dev.subMargin.availableStoreNumbers,
-  );
-  const selectedStoreNumber = useAppSelector(
-    (s) => s.dev.subMargin.selectedStoreNumber,
-  );
-  // Co-located stores (one storeid, two locations) resolve to a single
+    
+      // Co-located stores (one storeid, two locations) resolve to a single
   // assignedStores record, so the name embeds only one of the two numbers —
   // rewrite it to whichever location is on screen. Same helper Sales uses, so
   // both pages label these stores identically.
