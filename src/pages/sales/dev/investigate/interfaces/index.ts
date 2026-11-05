@@ -1,5 +1,14 @@
 // Interfaces
 import type { ReactNode } from "react";
+import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { ItemVerdict, Summary } from "../utils/deptInvestigation";
+import type {
+  OrdersWave,
+  ReceiptsWave,
+  SalesWave,
+  Store,
+  Window,
+} from "../utils/investigationData";
 
 export type Col =
   | "mine"
@@ -47,3 +56,27 @@ export interface DocLine {
 
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
+
+export type Stage = "sales" | "orders" | "receipts" | "done" | "failed";
+
+export interface Investigation {
+  stage: Stage;
+  items: ItemVerdict[];
+  summary: Summary;
+  sales: SalesWave | null;
+  orders: OrdersWave;
+  receipts: ReceiptsWave;
+  problem: string | null;
+}
+
+export interface InvestigationArgs {
+  mine: Store;
+  theirs: Store;
+  tw: Window;
+  lw: Window;
+  ly: Window;
+  metric: GradingMetric;
+  /** False while the view is closed, so nothing is fetched for a panel
+   *  nobody has opened. */
+  enabled: boolean;
+}

@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
-import { useSalesState } from "../../../hooks/useSalesState";
+import { useSalesState } from "../../../hooks";
 
 // Redux
 import { setInvestigation } from "../../../../../../features/dev/devSalesLedgerSlice";

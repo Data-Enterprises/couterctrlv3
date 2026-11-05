@@ -1,5 +1,6 @@
 // Interfaces
 import type { AggFn } from "../../../../../../utils/csvExport";
+import type { RecapItem } from "../../summary/interfaces/index";
 
 export type ExportDataset =
   | "subdept"
@@ -25,4 +26,11 @@ export interface MetricDef {
 export interface MetricSelection {
   fn: AggFn;
   enabled: boolean;
+}
+
+/** One day for the export: its items, and whether they could be read. */
+export interface WeekDayItems {
+  date: string;
+  items: RecapItem[];
+  failed?: true;
 }

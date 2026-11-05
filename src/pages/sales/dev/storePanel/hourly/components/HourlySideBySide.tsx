@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../../hooks";
-import { useSalesState } from "../../../hooks/useSalesState";
+import { useSalesState } from "../../../hooks";
 
 // API
 import { getHourly } from "../../../../../../api/sales";

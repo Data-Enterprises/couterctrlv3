@@ -3,7 +3,7 @@ import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { useSalesState } from "../hooks/useSalesState";
+import { useSalesState } from "../hooks";
 
 // Redux
 import {

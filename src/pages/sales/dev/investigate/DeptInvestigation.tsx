@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { useDeptInvestigation } from "./hooks/useDeptInvestigation";
+import { useDeptInvestigation } from "./hooks";
 import { useItemFilters, useRowSelection } from "./hooks";
 
 // Redux

@@ -2,7 +2,7 @@
 import { formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
-import type { Stage } from "../hooks/useDeptInvestigation";
+import type { Stage } from "../interfaces";
 import type { Cause } from "./deptInvestigation";
 
 /**

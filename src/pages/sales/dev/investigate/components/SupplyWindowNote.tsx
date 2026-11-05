@@ -3,7 +3,7 @@ import { SUPPLY_LOOKBACK_DAYS } from "../utils/investigationData";
 import { STAGE_NOTE } from "../utils";
 
 // Interfaces
-import type { Stage } from "../hooks/useDeptInvestigation";
+import type { Stage } from "../interfaces";
 
 const SupplyWindowNote = ({
   them,

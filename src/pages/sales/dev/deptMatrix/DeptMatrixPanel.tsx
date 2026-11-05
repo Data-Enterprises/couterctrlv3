@@ -1,7 +1,7 @@
 // Hooks
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
-import { useDeptMatrix, type MatrixStore } from "./hooks/useDeptMatrix";
+import { useDeptMatrix } from "./hooks";
 
 // Redux
 import {
@@ -16,6 +16,7 @@ import { bestIn, flagged, type Cell, type Matrix } from "./utils/deptMatrix";
 
 // Interfaces
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { MatrixStore } from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";

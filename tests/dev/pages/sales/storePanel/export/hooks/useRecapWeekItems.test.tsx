@@ -6,8 +6,8 @@ import { setupStore } from "@/store";
 import { cacheRecapItems } from "@/features/dev/devSalesLedgerSlice";
 import type { SubDeptMargin } from "@/interfaces";
 import { RECAP_ITEMS_MAX, dayKey, localIsoToday } from "@/pages/sales/dev/storePanel/summary/utils/recapKeys";
-import { useRecapWeekItems } from "@/pages/sales/dev/storePanel/export/hooks/useRecapWeekItems";
-import type { WeekDayItems } from "@/pages/sales/dev/storePanel/export/hooks/useRecapWeekItems";
+import { useRecapWeekItems } from "@/pages/sales/dev/storePanel/export/hooks";
+import type { WeekDayItems } from "@/pages/sales/dev/storePanel/export/interfaces";
 
 const fetchRows = vi.fn();
 vi.mock("@/utils/marginRows", () => ({

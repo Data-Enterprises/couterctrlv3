@@ -8,11 +8,11 @@ import { getSubs } from "../../../../../api/sales";
 // Utils
 import { fetchAllPages } from "../../../../../utils/paging";
 import { scopeToStoreNumber } from "../../../../../utils/storeIdentity";
-import { buildMatrix, type Matrix } from "../utils/deptMatrix";
+import { buildMatrix } from "../utils/deptMatrix";
 
 // Interfaces
 import type { SubSale, SubSalesJsonResp } from "../../../../../interfaces";
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { MatrixArgs, MatrixState, MatrixStore } from "../interfaces";
 
 /**
  * Every store against every department, fetched.
@@ -35,36 +35,9 @@ import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSl
  * and a department and the investigation does the rest.
  */
 
-export interface MatrixStore {
-  storeid: number;
-  /** Co-located stores share a `storeid`, so a response has to be narrowed by
-   *  NUMBER as well or two locations come back as one row. */
-  storeNumber: string;
-  storeName: string;
-}
-
-export interface Args {
-  stores: MatrixStore[];
-  tw: { start: string; end: string };
-  lw: { start: string; end: string };
-  ly: { start: string; end: string };
-  metric: GradingMetric;
-  enabled: boolean;
-}
-
-export interface MatrixState {
-  matrix: Matrix | null;
-  loading: boolean;
-  /** How many of the stores asked for actually answered, so the screen can
-   *  say "7 of 9" rather than quietly drawing a smaller group. */
-  answered: number;
-  asked: number;
-  problem: string | null;
-}
-
 type Rows = { tw: SubSale[]; lw: SubSale[]; ly: SubSale[] };
 
-export const useDeptMatrix = (args: Args): MatrixState => {
+export const useDeptMatrix = (args: MatrixArgs): MatrixState => {
   const { url, token } = useAppSelector((state) => ({
     url: state.app.url,
     token: state.app.token,
