@@ -32,6 +32,7 @@ interface AdminPageState {
   isLoadingStoreActivity: boolean;
   storeNameFilter: string;
   adminForm: AdminForm;
+  exportOpen: boolean;
 }
 
 const initialState: AdminPageState = {
@@ -43,6 +44,7 @@ const initialState: AdminPageState = {
   isLoadingStoreActivity: false,
   storeNameFilter: "",
   adminForm: "companies",
+  exportOpen: false,
 };
 
 const adminPageSlice = createSlice({
@@ -95,6 +97,9 @@ const adminPageSlice = createSlice({
     setStoreNameFilter: (state, action: PayloadAction<string>) => {
       state.storeNameFilter = action.payload;
     },
+    setExportOpen: (state, action: PayloadAction<boolean>) => {
+      state.exportOpen = action.payload;
+    },
     resetAdminPageState: () => initialState,
   },
 });
@@ -110,6 +115,7 @@ export const {
   setFilteredCompanyStoresActivity,
   setIsLoadingStoreActivity,
   setStoreNameFilter,
+  setExportOpen,
   resetAdminPageState,
 } = adminPageSlice.actions;
 export default adminPageSlice.reducer;

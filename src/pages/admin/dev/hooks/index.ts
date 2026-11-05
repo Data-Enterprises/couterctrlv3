@@ -43,6 +43,7 @@ export const useAdminPageCtx = () => {
     filteredStoresActivity,
     isLoadingStoreActivity,
     storeNameFilter,
+    exportOpen,
   } = useAppSelector((state) => state.dev.adminPage);
 
   /**
@@ -117,5 +118,6 @@ export const useAdminPageCtx = () => {
     filteredStoresActivity: scopedFiltered,
     isLoadingStoreActivity,
     storeNameFilter,
+    exportOpen,
   };
 };

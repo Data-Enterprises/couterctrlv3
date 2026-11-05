@@ -53,6 +53,12 @@ export const useSalesCtx = () =>
       // The Hourly tab: its threshold and the open hour.
       hourlyThreshold: s.dev.salesLedger.hourlyThreshold,
       selectedHour: s.dev.salesLedger.selectedHour,
+      // The store panel: its open tab, the counterpart store, and the cache
+      // that saves refetching a store already opened.
+      tab: s.dev.salesLedger.tab,
+      counterpart: s.dev.salesLedger.counterpart,
+      lastFetchedStoreKey: s.dev.salesLedger.lastFetchedStoreKey,
+      storeCache: s.dev.salesLedger.storeCache,
     }),
     shallowEqual,
   );

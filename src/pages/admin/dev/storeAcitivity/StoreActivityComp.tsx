@@ -7,6 +7,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   resetCompanyForm,
   setCompanyStoresActivity,
+  setExportOpen,
   setFilteredCompanyStoresActivity,
   setIsLoadingStoreActivity,
   setSelectedCompanyForm,
@@ -31,16 +32,8 @@ import CompanyPicker from "../CompanyPicker";
 import StoreActivityExportModal from "./components/StoreActivityExportModal";
 import StoreRows from "./components/StoreRows";
 
-interface StoreActivityCompProps {
-  exportOpen: boolean;
-  setExportOpen: (v: boolean) => void;
-}
-
 // Displays stores missing sales data => needs dates missing, not just the total numbers
-const StoreActivityComp = ({
-  exportOpen,
-  setExportOpen,
-}: StoreActivityCompProps) => {
+const StoreActivityComp = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
@@ -100,9 +93,9 @@ const StoreActivityComp = ({
 
   return (
     <div className="flex flex-1 min-h-0 w-full">
-      {exportOpen && (
+      {context.exportOpen && (
         <StoreActivityExportModal
-          onClose={() => setExportOpen(false)}
+          onClose={() => dispatch(setExportOpen(false))}
           companyName={context.companyForm.name}
           stores={context.companyStoresActivity}
         />

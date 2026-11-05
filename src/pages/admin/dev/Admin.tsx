@@ -1,67 +1,39 @@
-import { useEffect, useState } from "react";
+// Hooks
+import { useEffect } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   setAdminForm,
   setCompanies,
+  setExportOpen,
 } from "../../../features/dev/devAdminPageSlice";
-import type { AdminForm } from "../../../features/dev/devAdminPageSlice";
+
+// API
 import { getCompanies } from "../../../api/company";
+
+// Utils
+import { adminPanel, adminTabs } from "./utils";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+
+// Interfaces
+import PageInfoButton from "../../../components-dev/PageInfoButton";
+import ResizeHandle from "../../../components-dev/ResizeHandle";
 import CompanyGrid from "./companies/CompanyGrid";
 import StoreActivityComp from "./storeAcitivity/StoreActivityComp";
-import StoreRecords from './stores/StoreRecords';
-import SubDeptExclusions from './subExclusions/SubDeptExclusions';
-
-/** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
- *  and deleting companies is a change to the whole tenancy, not to one
- *  operator's data, so it stays with level 9. */
-const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
-  { id: "companies", label: "Companies", programmerOnly: true },
-  { id: "store_activity", label: "Store activity" },
-  { id: "store_records", label: "Stores" },
-  // Not programmerOnly. It changes what a customer reads as their net sales,
-  // which is exactly the question support fields during onboarding — and the
-  // alternative they have today is pgAdmin.
-  { id: "sub_exclusions", label: "Sub dept exclusions" },
-];
-
-/**
- * What size each tab wants, and where that tab remembers being dragged to.
- *
- * A grid of companies and a two-field form do not want the same panel, and
- * before this they shared one: whichever you resized last decided the other.
- * Each tab carries its own key, so a drag is remembered per tab rather than
- * across all of them.
- *
- * Companies and Store activity keep the original key and defaults, so nobody
- * loses the size they had already set.
- */
-const PANEL: Record<AdminForm, { key: string; width: number; height: number }> =
-  {
-    companies: { key: "admin-panel-size", width: 820, height: 640 },
-    store_activity: { key: "admin-panel-size", width: 820, height: 640 },
-    store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
-    // Wider: a department row carries a name, a number, a sentence about where
-    // it stands across the chain, and a date.
-    sub_exclusions: {
-      key: "admin-panel-size-subexcl",
-      width: 1040,
-      height: 660,
-    },
-  };
+import SubDeptExclusions from "./subExclusions/SubDeptExclusions";
+import StoreRecords from "./stores/StoreRecords";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 const Admin = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
-  const [exportOpen, setExportOpen] = useState(false);
-  const panel = PANEL[context.adminForm] ?? PANEL.companies;
+  // const [exportOpen, setExportOpen] = useState(false);
+  const panel = adminPanel[context.adminForm] ?? adminPanel.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: panel.key,
     defaultWidth: panel.width,
@@ -72,14 +44,10 @@ const Admin = () => {
     maxHeight: 950,
   });
 
-  const tabs = TABS.filter((t) => context.isProgrammer || !t.programmerOnly);
+  const tabs = adminTabs.filter(
+    (t) => context.isProgrammer || !t.programmerOnly,
+  );
 
-  // `adminForm` persists in the slice, so a level-5 user arriving after a
-  // programmer used the same session would otherwise land on a tab that is no
-  // longer in their strip — visible content under an invisible tab.
-  //
-  // The same goes for a tab that no longer exists at all (Base groups moved
-  // to User Management, Shared groups to the Groups page).
   useEffect(() => {
     if (!tabs.some((t) => t.id === context.adminForm)) {
       dispatch(setAdminForm("store_activity"));
@@ -102,16 +70,9 @@ const Admin = () => {
   const renderActiveTab = () => {
     switch (context.adminForm) {
       case "companies":
-        // Belt and braces: the tab is gone and the effect above redirects, but
-        // a render can happen between the two.
         return context.isProgrammer ? <CompanyGrid /> : null;
       case "store_activity":
-        return (
-          <StoreActivityComp
-            exportOpen={exportOpen}
-            setExportOpen={setExportOpen}
-          />
-        );
+        return <StoreActivityComp />;
       case "store_records":
         return <StoreRecords />;
       case "sub_exclusions":
@@ -123,9 +84,7 @@ const Admin = () => {
     (s) => s.inactive_or_missing_days > 0,
   ).length;
 
-  // The nav lists Admin from level 5 (prod still opens there), but the dev
-  // Admin opens at 7 — see ADMIN_MIN_LEVEL. Nav visibility is not access control —
-  // the route is reachable by typing it. This is the actual gate.
+  // The nav lists Admin from level 5 (prod still opens there), but the dev Admin opens at 7
   if (!context.canOpenAdmin) {
     return (
       <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -171,7 +130,7 @@ const Admin = () => {
               </span>
               <button
                 data-help="export"
-                onClick={() => setExportOpen(true)}
+                onClick={() => dispatch(setExportOpen(true))}
                 disabled={context.companyStoresActivity.length === 0}
                 title="Export CSV"
                 className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
@@ -185,7 +144,7 @@ const Admin = () => {
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
-          {tabs.map((tab) => (
+          {adminTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => dispatch(setAdminForm(tab.id))}

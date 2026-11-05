@@ -86,7 +86,9 @@ const StoreRecords = () => {
         setStores([
           ...validOnly(j.assigned_stores ?? []),
           // Below level 9 the unassigned half is other operators' stores.
-          ...(context.canSeeAllStores ? validOnly(j.unassigned_stores ?? []) : []),
+          ...(context.canSeeAllStores
+            ? validOnly(j.unassigned_stores ?? [])
+            : []),
         ]);
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -100,7 +102,9 @@ const StoreRecords = () => {
     if (!stores) return [];
     const q = search.trim().toLowerCase();
     return stores.filter((s) => {
-      const byCompany = companyFilter ? s.company === Number(companyFilter) : true;
+      const byCompany = companyFilter
+        ? s.company === Number(companyFilter)
+        : true;
       const bySearch = q
         ? s.store_name.toLowerCase().includes(q) ||
           s.store_number.toLowerCase().includes(q)
@@ -142,7 +146,12 @@ const StoreRecords = () => {
   const handleRename = (form: StoreForm) => {
     if (!editing) return;
     setSaving(true);
-    setNewStoreName(context.url, context.token, editing.storeid, form.store_name)
+    setNewStoreName(
+      context.url,
+      context.token,
+      editing.storeid,
+      form.store_name,
+    )
       .then((resp) => {
         const j = resp.data;
         if (j.error !== 0) {
@@ -201,7 +210,8 @@ const StoreRecords = () => {
             store.storeid,
             wanted,
           );
-          if (r.data.error !== 0) throw new Error(r.data.msg ?? "rename failed");
+          if (r.data.error !== 0)
+            throw new Error(r.data.msg ?? "rename failed");
           toast.success(`${wanted} ${verb}`);
         } catch {
           toast.warn(
