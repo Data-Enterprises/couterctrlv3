@@ -1,4 +1,13 @@
-import type { CompanyDeptRow, DeptAtStore, DeptState, ExclStore, ExclusionRow, ExclusionWrite, StoreSubDept } from "../interfaces";
+// Interfaces
+import type {
+  CompanyDeptRow,
+  DeptAtStore,
+  DeptState,
+  ExclStore,
+  ExclusionRow,
+  ExclusionWrite,
+  StoreSubDept,
+} from "../interfaces";
 
 /**
  * The description, reduced to the part the stores agree on.
@@ -139,7 +148,10 @@ export const companyDeptRows = (
         at,
         absent: stores.filter((s) => !has.has(s.storeid)),
         excludedCount: at.filter((a) => a.excluded).length,
-        lastRung: at.reduce((latest, a) => (a.lastRung > latest ? a.lastRung : latest), ""),
+        lastRung: at.reduce(
+          (latest, a) => (a.lastRung > latest ? a.lastRung : latest),
+          "",
+        ),
         hashHint: looksLikeHash(key),
       };
     })

@@ -1,15 +1,10 @@
+// Hooks
 import { useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+
+// Utils
 import { isSupportUser } from "../../../../utils/supportUsers";
-
-/** The only level that may create, rename or delete a company. That changes the
- *  tenancy itself, not what someone is looking at, so it stays here alone. */
-export const PROGRAMMER_LEVEL = 9;
-
-/** Below this, Admin is not theirs to open at all. Owner and up in the dev
- *  Admin; the prod Admin still opens at 5. Only 7+ can reach dev mode anyway,
- *  so this states the rule rather than changing who gets in today. */
-export const ADMIN_MIN_LEVEL = 7;
+import { ADMIN_MIN_LEVEL, PROGRAMMER_LEVEL } from "../utils";
 
 /**
  * Admin's flat context, scoped to the signed-in user.
@@ -44,6 +39,14 @@ export const useAdminPageCtx = () => {
     isLoadingStoreActivity,
     storeNameFilter,
     exportOpen,
+    statusFilter,
+    stores,
+    search,
+    companyFilter,
+    creating,
+    editing,
+    deactivating,
+    saving,
   } = useAppSelector((state) => state.dev.adminPage);
 
   /**
@@ -119,5 +122,13 @@ export const useAdminPageCtx = () => {
     isLoadingStoreActivity,
     storeNameFilter,
     exportOpen,
+    statusFilter,
+    stores,
+    search,
+    companyFilter,
+    creating,
+    editing,
+    deactivating,
+    saving,
   };
 };

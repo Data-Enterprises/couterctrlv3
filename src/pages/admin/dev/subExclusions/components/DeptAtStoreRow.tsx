@@ -1,5 +1,5 @@
 // Utils
-import { prettyDate } from "../utils";
+import { prettyDate, planStoreToggle } from "../utils";
 
 // Interfaces
 import type {
@@ -16,10 +16,9 @@ interface Props {
   row: CompanyDeptRow;
   send: (writes: ExclusionWrite[], label: string, want: boolean) => void
   saving: boolean;
-  planStoreToggle: (row: CompanyDeptRow, storeid: number, next: boolean) => ExclusionWrite[];
 }
 
-const DeptAtStoreRow = ({ a, row, send, saving, planStoreToggle }: Props) => {
+const DeptAtStoreRow = ({ a, row, send, saving }: Props) => {
   return (
     <div
       key={`${a.storeid}__${a.sub_department}`}

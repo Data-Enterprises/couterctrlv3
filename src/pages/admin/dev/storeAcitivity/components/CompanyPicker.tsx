@@ -1,3 +1,4 @@
+// Components
 import type { Company } from "../../../../../interfaces";
 
 interface CompanyPickerProps {

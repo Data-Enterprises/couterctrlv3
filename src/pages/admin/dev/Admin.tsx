@@ -32,7 +32,6 @@ const Admin = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
-  // const [exportOpen, setExportOpen] = useState(false);
   const panel = adminPanel[context.adminForm] ?? adminPanel.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: panel.key,

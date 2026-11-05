@@ -18,7 +18,6 @@ import {
 import {
   companyDeptRows,
   deptState,
-  planStoreToggle,
   planToggle,
   ALL_STORES,
   WINDOWS,
@@ -389,7 +388,6 @@ const SubDeptExclusions = () => {
               toggleRow={toggleRow}
               saving={saving}
               send={send}
-              planStoreToggle={planStoreToggle}
             />
           ))}
 

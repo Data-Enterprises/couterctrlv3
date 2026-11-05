@@ -22,11 +22,6 @@ interface CompDeptRowProps {
   toggleRow: (row: CompanyDeptRow, next: boolean) => void;
   saving: boolean;
   send: (writes: ExclusionWrite[], label: string, want: boolean) => void;
-  planStoreToggle: (
-    row: CompanyDeptRow,
-    storeid: number,
-    next: boolean,
-  ) => ExclusionWrite[];
 }
 
 const CompDeptRow = ({
@@ -36,7 +31,6 @@ const CompDeptRow = ({
   toggleRow,
   saving,
   send,
-  planStoreToggle,
 }: CompDeptRowProps) => {
   const state = deptState(row);
   const varies = differingNumbers(row);
@@ -100,13 +94,12 @@ const CompDeptRow = ({
 
       {expanded && (
         <div className="bg-bkg px-3 py-2 animate-nb-drop motion-reduce:animate-none">
-          {row.at.map((a, i) => (
+          {row.at.map((a) => (
             <DeptAtStoreRow
-              key={i}
+              key={`${a.storeid}__${a.sub_department}`}
               a={a}
               row={row}
               send={send}
-              planStoreToggle={planStoreToggle}
               saving={saving}
             />
           ))}

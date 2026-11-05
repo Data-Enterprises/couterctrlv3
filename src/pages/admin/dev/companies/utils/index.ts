@@ -1,3 +1,4 @@
+// Interfaces
 import type { Company } from "../../../../../interfaces";
 import type { CompanyRecord } from "../interfaces";
 

@@ -1,6 +1,7 @@
 // Hooks
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useAdminPageCtx } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // API
@@ -29,6 +30,16 @@ import {
   withoutClosedMark,
 } from "../utils";
 import StoreRow from "./components/StoreRow";
+import {
+  setCompanyFilter,
+  setCreating,
+  setDeactivating,
+  setEditing,
+  setSaving,
+  setSearch,
+  setStatusFilter,
+  setStores,
+} from "@/features/dev/devAdminPageSlice";
 
 /** Shown only while the endpoint is not reporting status — see `statusOf`. */
 const UNKNOWN_NOTE =
@@ -37,16 +48,7 @@ const UNKNOWN_NOTE =
 const StoreRecords = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
-
-  const [stores, setStores] = useState<Store[] | null>(null);
-  const [search, setSearch] = useState("");
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState<Store | null>(null);
-  const [deactivating, setDeactivating] = useState<Store | null>(null);
-  const [saving, setSaving] = useState(false);
+  const dispatch = useAppDispatch();
 
   /** The backend can return a null store_name or store_number despite the
    *  type claiming string, and the search below throws on a null
@@ -62,27 +64,32 @@ const StoreRecords = () => {
           toast.error(j.msg || "Error fetching stores");
           return;
         }
-        setStores([
-          ...validOnly(j.assigned_stores ?? []),
-          // Below level 9 the unassigned half is other operators' stores.
-          ...(context.canSeeAllStores
-            ? validOnly(j.unassigned_stores ?? [])
-            : []),
-        ]);
+        dispatch(
+          setStores([
+            ...validOnly(j.assigned_stores ?? []),
+            // Below level 9 the unassigned half is other operators' stores.
+            ...(context.canSeeAllStores
+              ? validOnly(j.unassigned_stores ?? [])
+              : []),
+          ]),
+        );
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
   useEffect(fetchStores, []);
 
-  const statusKnown = useMemo(() => statusReported(stores ?? []), [stores]);
+  const statusKnown = useMemo(
+    () => statusReported(context.stores ?? []),
+    [context.stores],
+  );
 
   const filtered = useMemo(() => {
-    if (!stores) return [];
-    const q = search.trim().toLowerCase();
-    return stores.filter((s) => {
-      const byCompany = companyFilter
-        ? s.company === Number(companyFilter)
+    if (!context.stores) return [];
+    const q = context.search.trim().toLowerCase();
+    return context.stores.filter((s) => {
+      const byCompany = context.companyFilter
+        ? s.company === Number(context.companyFilter)
         : true;
       const bySearch = q
         ? s.store_name.toLowerCase().includes(q) ||
@@ -93,13 +100,20 @@ const StoreRecords = () => {
       // quietly shorten the list for no reason the reader can see.
       const st = statusOf(s);
       const byStatus =
-        statusFilter === "all" || st === "unknown" || st === statusFilter;
+        context.statusFilter === "all" ||
+        st === "unknown" ||
+        st === context.statusFilter;
       return byCompany && bySearch && byStatus;
     });
-  }, [stores, search, companyFilter, statusFilter]);
+  }, [
+    context.stores,
+    context.search,
+    context.companyFilter,
+    context.statusFilter,
+  ]);
 
   const handleCreate = (form: StoreForm) => {
-    setSaving(true);
+    dispatch(setSaving(true));
     createNewStore(
       context.url,
       context.token,
@@ -115,20 +129,20 @@ const StoreRecords = () => {
           return;
         }
         toast.success(`${form.store_name} created`);
-        setCreating(false);
+        dispatch(setCreating(false));
         fetchStores();
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => setSaving(false));
+      .finally(() => dispatch(setSaving(false)));
   };
 
   const handleRename = (form: StoreForm) => {
-    if (!editing) return;
-    setSaving(true);
+    if (!context.editing) return;
+    dispatch(setSaving(true));
     setNewStoreName(
       context.url,
       context.token,
-      editing.storeid,
+      context.editing.storeid,
       form.store_name,
     )
       .then((resp) => {
@@ -138,7 +152,7 @@ const StoreRecords = () => {
           return;
         }
         toast.success(`Renamed to ${form.store_name}`);
-        setEditing(null);
+        dispatch(setEditing(null));
         fetchStores();
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -161,7 +175,7 @@ const StoreRecords = () => {
           toast.error(j.msg || "The store could not be updated");
           return;
         }
-        setDeactivating(null);
+        dispatch(setDeactivating(null));
 
         if (wanted === store.store_name) {
           toast.success(`${store.store_name} ${verb}`);
@@ -198,8 +212,8 @@ const StoreRecords = () => {
       <div className="flex items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
-          value={companyFilter}
-          onChange={setCompanyFilter}
+          value={context.companyFilter}
+          onChange={(v) => dispatch(setCompanyFilter(v))}
           placeholder="All companies"
           className="w-[190px] flex-shrink-0"
         />
@@ -209,15 +223,17 @@ const StoreRecords = () => {
               { value: "open", label: "Open" },
               { value: "closed", label: "Closed" },
             ]}
-            value={statusFilter === "all" ? "" : statusFilter}
-            onChange={(v) => setStatusFilter((v || "all") as StatusFilter)}
+            value={context.statusFilter === "all" ? "" : context.statusFilter}
+            onChange={(v) =>
+              dispatch(setStatusFilter((v || "all") as StatusFilter))
+            }
             placeholder="Open and closed"
             className="w-[150px] flex-shrink-0"
           />
         )}
         <TextFilter
-          value={search}
-          onChange={setSearch}
+          value={context.search}
+          onChange={(v) => dispatch(setSearch(v))}
           placeholder="Search stores…"
           className="flex-1"
         />
@@ -252,12 +268,12 @@ const StoreRecords = () => {
             />
           ))}
 
-          {stores !== null && filtered.length === 0 && (
+          {context.stores !== null && filtered.length === 0 && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               No stores found
             </div>
           )}
-          {stores === null && (
+          {context.stores === null && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               Loading stores…
             </div>
@@ -265,36 +281,36 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      {!statusKnown && stores !== null && (
+      {!statusKnown && context.stores !== null && (
         <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
           {UNKNOWN_NOTE}
         </p>
       )}
 
-      {(creating || editing) && (
+      {(context.creating || context.editing) && (
         <StoreFormModal
-          initial={editing}
+          initial={context.editing}
           companies={companyOptions}
-          existingNumbers={(stores ?? []).map((s) =>
+          existingNumbers={(context.stores ?? []).map((s) =>
             s.store_number.toLowerCase(),
           )}
-          existingIds={(stores ?? []).map((s) => s.storeid)}
-          saving={saving}
-          onSave={editing ? handleRename : handleCreate}
+          existingIds={(context.stores ?? []).map((s) => s.storeid)}
+          saving={context.saving}
+          onSave={context.editing ? handleRename : handleCreate}
           onClose={() => {
-            setCreating(false);
-            setEditing(null);
+            dispatch(setCreating(false));
+            dispatch(setEditing(null));
           }}
         />
       )}
 
-      {deactivating && (
+      {context.deactivating && (
         <ConfirmModal
-          title={`Close ${deactivating.store_name}?`}
-          message={`The record stays and nothing is lost — it is marked closed from today and renamed to "${withClosedMark(deactivating.store_name)}". Re-opening it is one click on the same row.`}
+          title={`Close ${context.deactivating.store_name}?`}
+          message={`The record stays and nothing is lost — it is marked closed from today and renamed to "${withClosedMark(context.deactivating.store_name)}". Re-opening it is one click on the same row.`}
           confirmLabel="Close store"
-          onConfirm={() => changeStatus(deactivating, "deactivate")}
-          onCancel={() => setDeactivating(null)}
+          onConfirm={() => changeStatus(context.deactivating!, "deactivate")}
+          onCancel={() => dispatch(setDeactivating(null))}
         />
       )}
     </div>
