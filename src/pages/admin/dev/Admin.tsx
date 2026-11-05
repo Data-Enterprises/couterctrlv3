@@ -5,15 +5,18 @@ import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setAdminForm, setCompanies } from "../../../features/dev/devAdminPageSlice";
+import {
+  setAdminForm,
+  setCompanies,
+} from "../../../features/dev/devAdminPageSlice";
 import type { AdminForm } from "../../../features/dev/devAdminPageSlice";
 import { getCompanies } from "../../../api/company";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import CompanyGrid from "./CompanyGrid";
-import StoreActivityComp from "./StoreActivityComp";
-import StoreRecords from "./StoreRecords";
-import SubDeptExclusions from "./SubDeptExclusions";
+import CompanyGrid from "./companies/CompanyGrid";
+import StoreActivityComp from "./storeAcitivity/StoreActivityComp";
+import StoreRecords from './stores/StoreRecords';
+import SubDeptExclusions from './subExclusions/SubDeptExclusions';
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -39,14 +42,19 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
  * Companies and Store activity keep the original key and defaults, so nobody
  * loses the size they had already set.
  */
-const PANEL: Record<AdminForm, { key: string; width: number; height: number }> = {
-  companies: { key: "admin-panel-size", width: 820, height: 640 },
-  store_activity: { key: "admin-panel-size", width: 820, height: 640 },
-  store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
-  // Wider: a department row carries a name, a number, a sentence about where
-  // it stands across the chain, and a date.
-  sub_exclusions: { key: "admin-panel-size-subexcl", width: 1040, height: 660 },
-};
+const PANEL: Record<AdminForm, { key: string; width: number; height: number }> =
+  {
+    companies: { key: "admin-panel-size", width: 820, height: 640 },
+    store_activity: { key: "admin-panel-size", width: 820, height: 640 },
+    store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
+    // Wider: a department row carries a name, a number, a sentence about where
+    // it stands across the chain, and a date.
+    sub_exclusions: {
+      key: "admin-panel-size-subexcl",
+      width: 1040,
+      height: 660,
+    },
+  };
 
 const Admin = () => {
   const toast = useToast();

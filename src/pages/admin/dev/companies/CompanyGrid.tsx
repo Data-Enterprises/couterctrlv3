@@ -1,22 +1,26 @@
 import { useMemo, useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
-import { useAdminPageCtx } from "./hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setRefresh } from "../../../features/dev/devAdminPageSlice";
+import { useAdminPageCtx } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { setRefresh } from "../../../../features/dev/devAdminPageSlice";
 import {
   createCompany,
   updateCompany,
   deleteCompany,
   getCompanies,
-} from "../../../api/company";
-import { assignUserToCompany } from "../../../api/user";
-import { setCompanies as setUserCompanies } from "../../../features/userSlice";
-import type { Company, CompanyJsonResp, JsonError } from "../../../interfaces";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import IconButton from "../../../components-dev/IconButton";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import CompanyFormModal from "./CompanyFormModal";
-import type { CompanyRecord } from "./companyFamily";
+} from "../../../../api/company";
+import { assignUserToCompany } from "../../../../api/user";
+import { setCompanies as setUserCompanies } from "../../../../features/userSlice";
+import type {
+  Company,
+  CompanyJsonResp,
+  JsonError,
+} from "../../../../interfaces";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import IconButton from "../../../../components-dev/IconButton";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import CompanyFormModal from "../CompanyFormModal";
+import type { CompanyRecord } from "../companyFamily";
 
 // Collapses the old separate Create/Update/Delete tabs into one grid with
 // icon actions — mirrors how Organization's UserGrid replaced legacy Team's

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useAdminPageCtx } from "./hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getUserStores } from "../../../api/user";
+import { useAdminPageCtx } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getUserStores } from "../../../../api/user";
 import {
   addSubDeptExclusion,
   getSubDeptCatalog,
@@ -10,12 +10,12 @@ import {
   removeSubDeptExclusion,
   type SubDeptCatalogRow,
   type SubDeptExclusionRow,
-} from "../../../api/subDeptExclusions";
-import type { JsonError, Store } from "../../../interfaces";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import Checkbox from "../../../components-dev/Checkbox";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
+} from "../../../../api/subDeptExclusions";
+import type { JsonError, Store } from "../../../../interfaces";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import Checkbox from "../../../../components-dev/Checkbox";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import {
   companyDeptRows,
   coverageText,
@@ -26,7 +26,7 @@ import {
   type CompanyDeptRow,
   type ExclusionWrite,
   type StoreSubDept,
-} from "./shared/subDeptExclusions";
+} from "../shared/subDeptExclusions";
 
 /**
  * Which sub departments a store does not want counted in its net sales.

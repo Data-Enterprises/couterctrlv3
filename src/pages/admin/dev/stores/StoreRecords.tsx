@@ -5,21 +5,21 @@ import {
   LockClosedIcon,
   LockOpenIcon,
 } from "@heroicons/react/20/solid";
-import { useAdminPageCtx } from "./hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getUserStores } from "../../../api/user";
+import { useAdminPageCtx } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getUserStores } from "../../../../api/user";
 import {
   createNewStore,
   deactivateStore,
   reactivateStore,
   setNewStoreName,
-} from "../../../api/admin";
-import type { JsonError, Store } from "../../../interfaces";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import IconButton from "../../../components-dev/IconButton";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import StoreFormModal, { type StoreForm } from "./StoreFormModal";
+} from "../../../../api/admin";
+import type { JsonError, Store } from "../../../../interfaces";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import IconButton from "../../../../components-dev/IconButton";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import StoreFormModal, { type StoreForm } from "../StoreFormModal";
 import {
   closedOn,
   statusOf,
@@ -27,7 +27,7 @@ import {
   withClosedMark,
   withoutClosedMark,
   type StatusFilter,
-} from "./storeStatus";
+} from "../storeStatus";
 
 /**
  * The store records, as a grid.
