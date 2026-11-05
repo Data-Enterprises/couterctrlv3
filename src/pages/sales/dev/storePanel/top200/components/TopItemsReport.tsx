@@ -1,20 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { CTA_SEVERITY_CLASSES } from "../../../../../../utils/severity";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
 import { cacheTopItemsTy } from "../../../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/20/solid";
 import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
 import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
-import { formatCurrency2 } from "../../../../../../utils";
 import {
   getItemDetail,
   getTopItems,
@@ -24,13 +16,11 @@ import {
   type TopItemRow,
   type TopItemsResponse,
 } from "../../../../../../api/topItems";
-import { avgPrice } from "../utils/topItems";
 import { severityDotClass } from "../../../../../../utils/severity";
 import SortHeader from "../../../../../../components-dev/SortHeader";
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import { useTriStateSort } from "../../../../../../utils/useTriStateSort";
 import {
-  amountTextOf,
   compareTopItems,
   compareTotals,
   deptsPresent,
@@ -38,10 +28,12 @@ import {
   metricSigned,
   filterCompared,
   sortCompared,
-  type ComparedTopItem,
   type CompareFilter,
   type CompareMetric,
 } from "../utils/topItemsCompare";
+import { money } from "../utils";
+import Row from "./Row";
+import Rail from "./Rail";
 
 /**
  * Two stores' top 200, side by side.
@@ -61,17 +53,6 @@ import {
  * `item_detail` for the absent side and reports what comes back — which is
  * still a SALES answer: "sold none this week", not "off their shelf".
  */
-
-const money = (v: number) => formatCurrency2(v);
-
-/** Points, signed, two places. */
-const pts = (v: number) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
-
-/** Signed dollars, for a gap rather than an amount. */
-const signedMoney = (v: number) =>
-  (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
-
-const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
 
 /** Informational. Nothing in the outline is a verdict on either store, so it
  *  takes the neutral tone rather than borrowing a severity colour. */
@@ -97,16 +78,6 @@ interface Props {
   twEnd: string;
   onBack: () => void;
 }
-
-/** Ahead or behind. No threshold: there is no third state to grade into
- *  when the only question is which of two stores sells more of a thing. */
-const toneOf = (signed: number): "healthy" | "critical" =>
-  signed >= 0 ? "healthy" : "critical";
-
-const TONE_PILL: Record<"healthy" | "critical", string> = {
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-};
 
 const TopItemsReport = ({
   openStoreName,
@@ -581,426 +552,5 @@ const TopItemsReport = ({
     </div>
   );
 };
-
-/**
- * One item.
- *
- * The bar is the department comparison's: the track is this pair against the
- * biggest pair, the fill splits by each store's share OF THE PAIR. The open
- * store's segment is green or red by direction and the counterpart is navy,
- * softened — at full strength it is the heaviest colour in the app and it
- * out-shouts the store the reader actually opened.
- *
- * On a one-sided row the fill is the whole measured bar, because that store
- * has all of it. The unknown is a hatched cap OUTSIDE the bar: drawing it
- * inside would shorten a measured thing to make room for an unmeasured one.
- */
-const Row = ({
-  row,
-  widest,
-  metric,
-  selected,
-  onPick,
-  onContext,
-}: {
-  row: ComparedTopItem;
-  widest: number;
-  metric: CompareMetric;
-  selected: boolean;
-  onPick: () => void;
-  /** Right-click, so the menu can offer this one code as well as the list. */
-  onContext: (x: number, y: number) => void;
-}) => {
-  const signed = metricSigned(row, metric);
-  // Ahead or behind, in the ledger's own two colours. No threshold: a
-  // third band would have to be "close", and nothing on this screen asks
-  // how close two stores are -- only which way.
-  const sev = toneOf(signed);
-  const minePct = row.pair > 0 ? (row.mineSales / row.pair) * 100 : 0;
-  const theirsPct = row.pair > 0 ? (row.theirsSales / row.pair) * 100 : 0;
-
-  return (
-    <button
-      onClick={onPick}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onContext(e.clientX, e.clientY);
-      }}
-      // A heavier rule and more room: at border-gray-100 and py-2 the rows
-      // ran together into one grey block and the bars read as a texture
-      // rather than as figures.
-      className={`w-full text-left px-3.5 py-2.5 border-b transition-colors ${
-        selected
-          ? // Always the pair: the tint alone reads as a stripe rather than
-            // a selection, which is why the audit asks for both.
-            "bg-row_selected border-row_selected_border"
-          : row.only
-            ? "border-brand_line_2 bg-brand_paper hover:bg-bkg"
-            : "border-brand_line_2 hover:bg-bkg"
-      }`}
-    >
-      <span className="flex items-baseline gap-2">
-        <span className="min-w-0 flex-1 text-[13.5px] font-semibold text-content truncate">
-          {row.description}
-        </span>
-        <span className="flex-none text-[11px] text-content">{row.dept}</span>
-        <span
-          className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${TONE_PILL[sev]}`}
-          title={
-            row.only !== null
-              ? `At least ${pts(signed)} points apart — this item is outside the other store's top 200, so their share is unknown`
-              : `This store takes ${pct(
-                  row.mineShare,
-                )} of its top 200 on this item against ${pct(
-                  row.theirsShare,
-                )} at the other — ${pts(signed)} points apart. Not the sales difference: share, so the two stores compare whatever their size.`
-          }
-        >
-          {row.only !== null ? "≥ " : ""}
-          {metric === "sales" ? signedMoney(signed) : `${pts(signed)} pts`}
-        </span>
-      </span>
-
-      <span className="block mt-1.5 h-[9px] rounded-sm bg-bkg overflow-hidden flex">
-        <span className="h-full flex" style={{ width: `${(row.pair / Math.max(1, widest)) * 100}%` }}>
-          {/* delta_positive_TEXT, not _mid. `delta_positive_mid` is a CSS
-              variable that was never added to the Tailwind config, so the
-              class produced nothing and every "ahead" segment rendered
-              invisible — only the counterpart's navy showed. */}
-          <span
-            className={severityDotClass[sev]}
-            style={{ width: `${minePct}%` }}
-          />
-          <span className="bg-brand_navy/15" style={{ width: `${theirsPct}%` }} />
-        </span>
-        {row.only !== null && (
-          <span
-            className="w-3.5 flex-none border-l border-brand_line_2"
-            style={{
-              background:
-                "repeating-linear-gradient(135deg, rgb(var(--color-brand-line-2)) 0 4px, rgb(var(--color-bkg)) 4px 8px)",
-            }}
-            title="Not in the other store's top 200"
-          />
-        )}
-      </span>
-
-      {/* A swatch against each figure, tying it to its own half of the bar.
-          The two used to sit either side of a "|", which left the reader
-          working out which number belonged to which store. */}
-      <span className="flex items-center gap-3.5 mt-2">
-        <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span
-            className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`}
-          />
-          <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
-            {row.mine
-              ? `${money(row.mineSales)} · ${pct(row.mineShare)}`
-              : "not in top 200"}
-          </span>
-        </span>
-        <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
-          <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
-            {row.theirs
-              ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
-              : "not in top 200"}
-          </span>
-        </span>
-      </span>
-    </button>
-  );
-};
-
-/** One price, and what each store did at it. */
-interface PriceLine {
-  price: number;
-  mine: TopItemPricePoint | null;
-  theirs: TopItemPricePoint | null;
-}
-
-/**
- * The price points, keyed on the PRICE rather than one table per store.
- *
- * Two tables would make the reader align the rows themselves. Keyed on the
- * price they line up, and a blank cell is the finding: the other store never
- * rang it at this. That is the answer to "why is it bigger there" far more
- * often than anything about the shopper.
- */
-const priceLines = (
-  code: string,
-  minePoints: TopItemPricePoint[],
-  theirsPoints: TopItemPricePoint[],
-): PriceLine[] => {
-  const byPrice = new Map<number, PriceLine>();
-  const put = (p: TopItemPricePoint, side: "mine" | "theirs") => {
-    if (p.product_code !== code) return;
-    const held =
-      byPrice.get(p.price) ?? { price: p.price, mine: null, theirs: null };
-    held[side] = p;
-    byPrice.set(p.price, held);
-  };
-  for (const p of minePoints) put(p, "mine");
-  for (const p of theirsPoints) put(p, "theirs");
-  return [...byPrice.values()].sort((a, b) => b.price - a.price);
-};
-
-const Rail = ({
-  row,
-  metric,
-  openStoreName,
-  compareStoreName,
-  minePoints,
-  theirsPoints,
-  absent,
-  absentLoading,
-}: {
-  row: ComparedTopItem | null;
-  metric: CompareMetric;
-  openStoreName: string;
-  compareStoreName: string;
-  minePoints: TopItemPricePoint[];
-  theirsPoints: TopItemPricePoint[];
-  absent: ItemDetailResponse | null;
-  absentLoading: boolean;
-}) => {
-  /** The strip opens closed, like every other one. */
-  const [open, setOpen] = useState(false);
-
-  if (!row) {
-    return (
-      <div className="flex-1 min-w-0 flex items-center justify-center px-4">
-        <p className="text-[13px] text-content text-center">
-          Pick an item to compare it.
-        </p>
-      </div>
-    );
-  }
-
-  const lines = priceLines(row.code, minePoints, theirsPoints);
-  // The same tone the row wears, so the rail and the list never disagree
-  // about which way this item goes.
-  const sev = toneOf(metricSigned(row, metric));
-  const cta = CTA_SEVERITY_CLASSES[sev];
-  const Mark_ = sev === "critical" ? ExclamationCircleIcon : CheckCircleIcon;
-
-  const figure = (label: string, a: string, b: string, bold = false) => (
-    <>
-      <span className={bold ? "font-semibold" : ""}>{label}</span>
-      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
-        {a}
-      </span>
-      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
-        {b}
-      </span>
-    </>
-  );
-  const missingName =
-    row.only === "mine" ? compareStoreName : openStoreName;
-  const sold = absent?.stores?.[0] ?? null;
-
-
-  return (
-    <div className="flex-1 min-w-0 flex flex-col min-h-0">
-      {/*
-        Tinted by this item's own grade, the way the panel's own title bar is
-        tinted by the store's. Not a CtaStrip: a strip's job is to hold detail
-        BEHIND a chevron, and nothing here should be behind one -- the claim
-        under it is the most important sentence on the screen. So it takes the
-        severity dress without the folding.
-      */}
-      {/*
-        The same strip the department comparison opens with: the name, and the
-        finding folded behind it. Over the panel rather than above it, so
-        opening and closing never moves the blocks underneath — the reader
-        keeps their place in the thing the strip describes.
-      */}
-      <div className={`relative flex-shrink-0 border-b ${cta.border}`}>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-left transition-colors ${cta.bg} ${cta.hoverBg}`}
-        >
-          <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
-          <span
-            className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${cta.text}`}
-          >
-            {row.description}
-          </span>
-          {open ? (
-            <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
-          ) : (
-            <ChevronDownIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
-          )}
-        </button>
-
-        {open && (
-          <div
-            className={`absolute top-full left-0 right-0 z-20 px-3.5 py-2.5 border-b shadow-lg ${cta.bg} ${cta.border}`}
-          >
-            {/* The points live here, not on the strip: the row the reader
-                just clicked already carries the same figure, and twice on one
-                screen is once too many. */}
-            <p className={`text-[12.5px] leading-snug ${cta.text}`}>
-              <span className="font-bold tabular-nums">
-                {row.only !== null ? "≥ " : ""}
-                {metric === "sales"
-                  ? signedMoney(metricSigned(row, metric))
-                  : `${pts(metricSigned(row, metric))} pts`}
-              </span>
-              {" · "}
-              <span className="tabular-nums">{row.code}</span>
-              {" · "}
-              {row.dept}
-              {row.only === null && " · carried by both"}
-            </p>
-
-            {row.only !== null && (
-              <p className={`text-[12.5px] leading-snug mt-1.5 ${cta.text}`}>
-                Not in <b>{missingName}&rsquo;s top 200</b>
-                {absentLoading && " — asking…"}
-                {!absentLoading && sold && (
-                  <>
-                    {" "}
-                    — and they sold <b>{money(sold.total_sales)}</b> of it this
-                    week.
-                  </>
-                )}
-                {!absentLoading && absent && !sold && (
-                  <> — and they sold <b>none of it this week</b>.</>
-                )}
-                {" "}
-                A sales answer, not a shelf one: a slow mover can be stocked and
-                ring nothing in a week.
-              </p>
-            )}
-
-            {row.unitsDisagree && (
-              <p className={`text-[12.5px] leading-snug mt-1.5 ${cta.text}`}>
-                <b>These stores ring this code differently</b> — one on the
-                scale, one as a pack. The amounts are not comparable; sales
-                and share still are.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div
-        data-help="top200-compare-rail"
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-6"
-      >
-        {/* "Comparison" sits ON the header row with the two store names
-            rather than above it, and each name carries its bar swatch so the
-            rail and the list agree about which store is which. The columns
-            are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
-        <div>
-          <div className="grid grid-cols-[1fr_128px_128px] gap-x-5 gap-y-1.5 text-[13.5px] text-content items-baseline">
-            <span className="font-mono text-[11px] uppercase tracking-wider">
-              Comparison
-            </span>
-            <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
-              <span className="truncate">{openStoreName}</span>
-            </span>
-            <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
-              <span className="truncate">{compareStoreName}</span>
-            </span>
-
-            <span className="col-span-3 h-px bg-brand_line my-0.5" />
-
-            {figure(
-              "Sales",
-              row.mine ? money(row.mineSales) : "—",
-              row.theirs ? money(row.theirsSales) : "—",
-              true,
-            )}
-            {figure(
-              "Amount",
-              amountTextOf(row.mine) ?? "—",
-              amountTextOf(row.theirs) ?? "—",
-            )}
-            {figure(
-              "Avg price",
-              row.mine ? (avgPrice(row.mine)?.toFixed(2) ?? "—") : "—",
-              row.theirs ? (avgPrice(row.theirs)?.toFixed(2) ?? "—") : "—",
-            )}
-            {figure(
-              "Margin",
-              row.mine?.margin !== null && row.mine !== null
-                ? `${row.mine.margin.toFixed(1)}%`
-                : "—",
-              row.theirs?.margin !== null && row.theirs !== null
-                ? `${row.theirs.margin.toFixed(1)}%`
-                : "—",
-            )}
-            {figure(
-              "Share of top 200",
-              pct(row.mineShare),
-              pct(row.theirsShare),
-              true,
-            )}
-          </div>
-        </div>
-
-        {lines.length > 0 && (
-          <div>
-            {/* No heading: "Price" over the first column with a store over
-                each of the others already says what this is. */}
-            <div className="grid grid-cols-[76px_1fr_1fr] gap-x-5 gap-y-1.5 text-[13px] text-content items-baseline">
-              <span className="font-mono text-[11px] uppercase tracking-wider">
-                Price
-              </span>
-              <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
-                <span className="truncate">{openStoreName}</span>
-              </span>
-              <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
-                <span className="truncate">{compareStoreName}</span>
-              </span>
-
-              <span className="col-span-3 h-px bg-brand_line my-0.5" />
-
-              {lines.map((l) => (
-                <PriceRow key={l.price} line={l} />
-              ))}
-            </div>
-            <p className="text-[12.5px] text-content leading-snug mt-2.5">
-              Keyed on the price, so the rows line up and a blank cell is the
-              finding: the other store never rang it at that.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const side = (p: TopItemPricePoint | null) =>
-  p === null
-    ? null
-    : `${(p.weight > 0 ? p.weight : p.units).toLocaleString(undefined, {
-        minimumFractionDigits: p.weight > 0 ? 1 : 0,
-        maximumFractionDigits: p.weight > 0 ? 1 : 0,
-      })} ${p.weight > 0 ? "lb" : "u"} · ${money(p.net_sales)}`;
-
-const PriceRow = ({ line }: { line: PriceLine }) => (
-  <>
-    <span className="tabular-nums font-bold">{money(line.price)}</span>
-    <span className="text-right tabular-nums">
-      {side(line.mine) ?? (
-        <span className="text-content">never rang it</span>
-      )}
-    </span>
-    <span className="text-right tabular-nums">
-      {side(line.theirs) ?? (
-        <span className="text-content">never rang it</span>
-      )}
-    </span>
-  </>
-);
 
 export default TopItemsReport;
