@@ -69,7 +69,6 @@ const LossPrevention = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           const saleTypes = j.sale_types.filter(
             (st: { sale_type: string }) => st.sale_type !== "Tender",
           );

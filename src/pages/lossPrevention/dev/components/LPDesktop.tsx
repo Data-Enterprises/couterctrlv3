@@ -1,17 +1,10 @@
+// Hooks
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import { useApiContext } from "../../../../hooks/useApiContext";
-import { formatGoliathDate } from "../../../../utils";
-import { scopeToStoreNumber } from "../../../../utils/storeIdentity";
-import {
-  getCashierDetails,
-  getCashierTable,
-  getTransactionIds,
-  getAllTransactionList,
-  getCashierTransaction,
-} from "../../../../api/lossPrevention";
+
+// Redux
 import {
   reQuery,
   setCashierDetails,
@@ -36,8 +29,24 @@ import {
   setTransactionDrillDown,
   setTransactionLoadingMessage,
   toggleNoTransMsg,
-  // setSearchString, // Description logic commented out
 } from "../../../../features/dev/devLossPreventionSlice";
+
+// API
+import {
+  getCashierDetails,
+  getCashierTable,
+  getTransactionIds,
+  getAllTransactionList,
+  getCashierTransaction,
+} from "../../../../api/lossPrevention";
+
+// Utils
+import { formatGoliathDate } from "../../../../utils";
+import { scopeToStoreNumber } from "../../../../utils/storeIdentity";
+import { chunkSales } from "../utils";
+import { pickDefaultSaleType } from "../utils/grading";
+
+// Interfaces
 import type {
   CashierDetails,
   JsonError,
@@ -46,12 +55,12 @@ import type {
   TransactionOverview,
   UniqueCashier,
 } from "../../../../interfaces";
-import { chunkSales } from "../utils";
-import { pickDefaultSaleType } from "../utils/grading";
+
+// Components
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SearchCard from "../../../../components-dev/SearchCard";
-// import DescModal from "../components/DescModal"; // Description logic commented out
-import LPStorePanel from "./LPStorePanel";
 import LPTransactionPanel from "../transactions/LPTransactionPanel";
+import LPStorePanel from "./LPStorePanel";
 
 interface Props {
   getSaleTypes: () => void;
@@ -78,14 +87,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       handleSaleTypeSelect(preferred.sale_type);
     }
   }, [cashier.saleTypes]);
-  // const [descModalOpen, setDescModalOpen] = useState(false);
 
   const handleSaleTypeSelect = (saleType: string) => {
-    // Description exception logic commented out until further notice
-    // if (saleType === "Description") {
-    //   setDescModalOpen(true);
-    //   return;
-    // }
     const panels = cashier.saleTypes;
     dispatch(setSelectedStoreId(0));
     dispatch(setSelectedStoreNumber(""));
@@ -143,30 +146,6 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       })
       .catch(() => {});
   };
-
-  // Description submit handler — commented out until further notice
-  // const handleDescriptionSubmit = (description: string) => {
-  //   setDescModalOpen(false);
-  //   const panels = cashier.saleTypes;
-  //   dispatch(resetCashierSlice());
-  //   dispatch(setSaleTypes(panels));
-  //   dispatch(setSearchString(description));
-  //   dispatch(setSelectedSaleType("Description"));
-  //   setLoading(true);
-  //   getCashierDetails(params.url, params.token, params.start, params.end, params.useGroups, params.searchValue, params.singleStore, ["description"], description)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0 && j.sales.length > 0) {
-  //         dispatch(toggleNoTransMsg(false));
-  //         dispatch(setCashierDetails(j.sales));
-  //         dispatch(setCashierTrends(j.trend));
-  //       } else {
-  //         dispatch(toggleNoTransMsg(true));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => toast.error(err.message))
-  //     .finally(() => setLoading(false));
-  // };
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(setTransactionLoadingMessage("Loading Transactions..."));
@@ -364,7 +343,6 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     dispatch(setFetchingCashierTransactions(true));
     dispatch(setTransList([]));
 
-    // const saleType = cashier.selectedSaleType === "Description" ? "description" : cashier.selectedSaleType;
     const saleType = cashier.selectedSaleType;
     const [sm, sd, sy] = search.singleDate.split("/").map(Number);
     const endD = new Date(sy, sm - 1, sd);
@@ -650,7 +628,6 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
-      {/* <DescModal open={descModalOpen} onClose={() => setDescModalOpen(false)} handleSubmit={handleDescriptionSubmit} /> */}
       <LPStorePanel
         loading={loading}
         onDaySelect={handleDaySelect}
