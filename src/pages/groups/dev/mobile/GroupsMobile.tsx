@@ -1,5 +1,9 @@
 // Hooks
-import { useGroupCtx } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useGroupCtx, useGroupsData } from "../hooks";
+
+// Redux
+import { setSelectedForm } from "../../../../features/dev/devGroupsPageSlice";
 
 // Interfaces
 import type { GroupFormType } from "../../../../interfaces";
@@ -16,12 +20,14 @@ import {
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
 
-interface GroupsMobileProps {
-  handleFormSelect: (formType: GroupFormType) => void;
-}
-
-const GroupsMobile = ({ handleFormSelect }: GroupsMobileProps) => {
+const GroupsMobile = () => {
   const ctx = useGroupCtx();
+  const dispatch = useAppDispatch();
+  useGroupsData();
+
+  const handleFormSelect = (formType: GroupFormType) => {
+    dispatch(setSelectedForm(formType));
+  };
 
   const renderForm = () => {
     switch (ctx.selectedForm) {

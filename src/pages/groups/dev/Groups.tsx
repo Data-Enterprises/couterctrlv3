@@ -12,7 +12,7 @@ import SharedGroups from "../../organization/dev/sharedGroups/SharedGroups";
 import FormNavTabs from "./components/FormNavTabs";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import UserGroupsPanel from "./components/UserGroupsPanel";
-import UserGroupsMobile from "./mobile/UserGroupsMobile";
+import GroupsMobile from "./mobile/GroupsMobile";
 
 /**
  * Config → Groups: the two kinds of group a person owns.
@@ -44,7 +44,7 @@ const Groups = () => {
   });
 
   // No tablet layout: a tablet takes the desktop page.
-  if (isMobile) return <UserGroupsMobile />;
+  if (isMobile) return <GroupsMobile />;
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center bg-bkg">
