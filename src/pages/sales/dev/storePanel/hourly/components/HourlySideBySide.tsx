@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../../hooks";
-import { useSalesState } from "../../../hooks";
+import { useSalesCtx, useSalesState } from "../../../hooks";
 
 // API
 import { getHourly } from "../../../../../../api/sales";
@@ -88,9 +88,6 @@ interface Props {
    */
   lwWeekDates: string[];
   lyWeekDates: string[];
-  /** A day picked in the strip above narrows both sides to that day. */
-  selectedDate: string | null;
-  gradingMetric: GradingMetric;
   onBack: () => void;
 }
 
@@ -108,10 +105,10 @@ const HourlySideBySide = ({
   lyEnd,
   lwWeekDates,
   lyWeekDates,
-  selectedDate,
-  gradingMetric,
   onBack,
 }: Props) => {
+  // A day picked in the strip above narrows both sides to that day.
+  const { selectedDate, gradingMetric } = useSalesCtx();
   const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them
   // for its own Hourly tab, which is why only the counterpart is asked for.

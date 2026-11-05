@@ -1,7 +1,7 @@
 // Hooks
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../../hooks";
-import { useSalesState } from "../../hooks";
+import { useSalesCtx, useSalesState } from "../../hooks";
 
 // Redux
 import {
@@ -206,7 +206,6 @@ interface PopupSubDeptListProps {
   // locations — scoped down to this number so the item list agrees with the
   // dept rows above it.
   storeNumber: string;
-  selectedDate: string | null;
   // The full 7 calendar days of the searched week (see StoreDetailPopup) —
   // used to build the exact LW/LY match set so the item list's whole-week
   // totals agree with the KPI strip and sub-dept rows.
@@ -223,9 +222,9 @@ const PopupSubDeptList = ({
   lyDateLabel,
   storeId,
   storeNumber,
-  selectedDate,
   twRealDates,
 }: PopupSubDeptListProps) => {
+  const { selectedDate, gradingMetric } = useSalesCtx();
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
@@ -234,9 +233,6 @@ const PopupSubDeptList = ({
   );
   const rawItemThreshold = useAppSelector(
     (state) => state.dev.salesLedger.itemThreshold,
-  );
-  const gradingMetric = useAppSelector(
-    (state) => state.dev.salesLedger.gradingMetric,
   );
   const isQty = gradingMetric === "qty";
   const selectedId = useAppSelector(

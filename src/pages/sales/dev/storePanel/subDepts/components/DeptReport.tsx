@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
-import { useSalesState } from "../../../hooks";
+import { useSalesCtx, useSalesState } from "../../../hooks";
 
 // Redux
 import { setInvestigation } from "../../../../../../features/dev/devSalesLedgerSlice";
@@ -100,10 +100,6 @@ interface Props {
    */
   lwWeekDates: string[];
   lyWeekDates: string[];
-  /** A day picked in the strip above narrows both sides to that day. The
-   *  open store's departments arrive already narrowed; without this the
-   *  counterpart stayed a whole week, and one Friday was "behind" a week. */
-  selectedDate: string | null;
   onBack: () => void;
 }
 
@@ -134,9 +130,12 @@ const DeptReport = ({
   lyEnd,
   lwWeekDates,
   lyWeekDates,
-  selectedDate,
   onBack,
 }: Props) => {
+  // A day picked in the strip above narrows both sides to that day. The
+  // open store's departments arrive already narrowed; without this the
+  // counterpart stayed a whole week, and one Friday was "behind" a week.
+  const { selectedDate } = useSalesCtx();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them

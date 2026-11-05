@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useTriStateSort } from "../../../../../utils/useTriStateSort";
+import { useSalesCtx } from "../../hooks";
 
 // Redux
 import {
@@ -15,7 +16,6 @@ import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
 
 // Interfaces
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { LedgerRowData } from "../../components/LedgerRow";
 
 // Components
@@ -46,9 +46,7 @@ interface Props {
   rows: LedgerRowData[];
   storeid: number;
   storeNumber: string;
-  gradingMetric: GradingMetric;
   threshold: number;
-  selectedDate: string | null;
   openStoreName: string;
 }
 
@@ -56,11 +54,10 @@ const PopupComparisonList = ({
   rows,
   storeid,
   storeNumber,
-  gradingMetric,
   threshold,
-  selectedDate,
   openStoreName,
 }: Props) => {
+  const { selectedDate, gradingMetric } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const dispatch = useAppDispatch();
   const counterpart = useAppSelector(

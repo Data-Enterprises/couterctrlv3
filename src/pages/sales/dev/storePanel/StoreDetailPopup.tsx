@@ -834,9 +834,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               rows={groupRows as LedgerRowData[]}
               storeid={selection.storeId}
               storeNumber={selection.storeNumber}
-              gradingMetric={gradingMetric}
               threshold={itemThreshold}
-              selectedDate={selectedDate}
               openStoreName={headerStoreName}
             />
           ) : null
@@ -923,7 +921,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               lyEnd={lyEnd}
               lwWeekDates={lwWeekDates}
               lyWeekDates={lyWeekDates}
-              selectedDate={selectedDate}
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (
@@ -933,7 +930,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               lyDateLabel={lyDateLabel}
               storeId={selection.storeId}
               storeNumber={selection.storeNumber}
-              selectedDate={selectedDate}
               twRealDates={twRealDates}
             />
           )
@@ -954,8 +950,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             lyEnd={lyEnd}
             lwWeekDates={lwWeekDates}
             lyWeekDates={lyWeekDates}
-            selectedDate={selectedDate}
-            gradingMetric={gradingMetric}
             onBack={() => dispatch(setCounterpart(null))}
           />
         ) : (
