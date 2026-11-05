@@ -1,6 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+import { useSalesCtx } from "../../../hooks";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../../../utils/useTriStateSort";
 
@@ -98,8 +99,7 @@ const TopItemsReport = ({
   onBack,
 }: Props) => {
   const { url, token } = useAppSelector((s) => s.app);
-  const cache = useAppSelector((s) => s.dev.salesLedger.topItemsCache);
-  const tyCache = useAppSelector((s) => s.dev.salesLedger.topItemsTyCache);
+  const { topItemsCache: cache, topItemsTyCache: tyCache } = useSalesCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
 

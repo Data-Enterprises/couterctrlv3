@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useSalesCtx } from "../hooks";
 import { useDeptInvestigation, useItemFilters, useRowSelection } from "./hooks";
@@ -79,8 +79,7 @@ const DeptInvestigation = ({
   lyEnd,
 }: Props) => {
   const dispatch = useAppDispatch();
-  const { gradingMetric } = useSalesCtx();
-  const target = useAppSelector((state) => state.dev.salesLedger.investigation);
+  const { gradingMetric, investigation: target } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   /** Which item's evidence is open. Held here rather than in the slice: it
    *  belongs to this screen and means nothing once you leave it. */

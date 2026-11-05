@@ -1,6 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -147,7 +148,7 @@ const PopupTopItems = ({
     topItemsKey,
     topItemsLoading,
     topItemsCache,
-  } = useAppSelector((state) => state.dev.salesLedger);
+  } = useSalesCtx();
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);

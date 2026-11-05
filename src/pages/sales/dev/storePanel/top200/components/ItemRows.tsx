@@ -1,5 +1,5 @@
 // Hooks
-import { useAppSelector } from "../../../../../../hooks";
+import { useSalesCtx } from "../../../hooks";
 
 // Utils
 import { pillClass } from "../../../../../../utils/severity";
@@ -28,8 +28,7 @@ const ItemRows = ({
   setSelectedCode: (code: string | null) => void;
 }) => {
   /** The page's grading threshold, so these pills grade like every other. */
-  const threshold =
-    useAppSelector((state) => state.dev.salesLedger.itemThreshold) ?? 9;
+  const threshold = useSalesCtx().itemThreshold ?? 9;
 
   return (
     <div className="overflow-y-auto thin-scrollbar flex-1">

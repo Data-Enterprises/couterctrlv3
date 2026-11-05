@@ -1,18 +1,18 @@
 // Hooks
 import { useRef } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 
 // Redux
-import {
-  setThreshold,
-  setGradingMetric,
-  type GradingMetric,
-} from "../../../../../features/dev/devSalesLedgerSlice";
+import { setThreshold, setGradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
 import { formatCurrencyCompact, formatBigNumber } from "../../../../../utils";
 import { headerDeltaPill } from "../../../../../utils/severity";
 import { formatPct } from "../utils/tierColumnUtils";
+
+// Interfaces
+import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Components
 import {
@@ -43,7 +43,6 @@ interface LedgerHeaderProps {
   isGroup: boolean;
   onNewSearch: () => void;
   onOpenSearch: () => void;
-  gradingMetric: GradingMetric;
 }
 
 const LedgerHeader = ({
@@ -59,10 +58,9 @@ const LedgerHeader = ({
   lwDayCount,
   isGroup,
   onOpenSearch,
-  gradingMetric,
 }: LedgerHeaderProps) => {
   const dispatch = useAppDispatch();
-  const threshold = useAppSelector((s) => s.dev.salesLedger.threshold);
+  const { gradingMetric, threshold } = useSalesCtx();
 
   const isQty = gradingMetric === "qty";
 

@@ -3,7 +3,7 @@ import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { useSalesState } from "../hooks";
+import { useSalesCtx, useSalesState } from "../hooks";
 
 // Redux
 import {
@@ -77,7 +77,7 @@ const SalesLedger = () => {
     gradingMetric,
     investigation,
     matrixOpen,
-  } = useAppSelector((state) => state.dev.salesLedger);
+  } = useSalesCtx();
   const { assignedStores } = useAppSelector((state) => state.user);
 
   // Grading should never move stores around on its own when the threshold
@@ -541,7 +541,6 @@ const SalesLedger = () => {
               isGroup={ledgerRows.length > 1}
               onNewSearch={resetToEntry}
               onOpenSearch={() => setSearchModalOpen(true)}
-              gradingMetric={gradingMetric}
             />
 
             {/* Tier summary pills — click to filter the list below */}

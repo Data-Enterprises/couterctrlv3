@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
 import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 import { useSalesCtx } from "../../hooks";
 
@@ -57,12 +57,9 @@ const PopupComparisonList = ({
   threshold,
   openStoreName,
 }: Props) => {
-  const { selectedDate, gradingMetric } = useSalesCtx();
+  const { selectedDate, gradingMetric, counterpart } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const dispatch = useAppDispatch();
-  const counterpart = useAppSelector(
-    (state) => state.dev.salesLedger.counterpart,
-  );
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) =>
     isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
