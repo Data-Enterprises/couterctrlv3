@@ -1,8 +1,7 @@
-import { onlyStoreNumber } from "../../../utils/storeIdentity";
-import { marginPct } from "../../../utils/grading";
-import type { SubDeptMargin } from "../../../interfaces";
-import type { RollupRow } from "../../../api/rollup";
-import { calculateCogs } from "../../../utils/cogs";
+// Utils
+import { onlyStoreNumber } from "../../../../utils/storeIdentity";
+import { marginPct } from "../../../../utils/grading";
+import { calculateCogs } from "../../../../utils/cogs";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -12,10 +11,15 @@ import {
   tierOfDelta,
   coverageOf,
   gradeBasis,
-} from "../../../utils/grading";
-import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
+} from "../../../../utils/grading";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../interfaces";
+import type { RollupRow } from "../../../../api/rollup";
+import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../../interfaces";
+
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
-export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
+export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../../interfaces";
 
 /** Margin percentage from a net/COGS pair. Re-exported rather than defined:
  *  this page and Sub Dept Margins read the same rows, and the one definition

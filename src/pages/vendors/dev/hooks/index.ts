@@ -1,6 +1,8 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../../utils";
+// Hooks
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   setRows,
   setRaw,
@@ -14,10 +16,13 @@ import {
   setSelectedStoreNumber,
   setRange,
   reQuery,
-} from "../../../features/dev/devVendorsSlice";
-import { fetchVendorPeriods, fetchVendorRollup } from "./vendorsData";
-import { buildVendorRows, datesOf, scopePeriods } from "./vendorsUtils";
-import { storeNumbersIn } from "../../../utils/storeIdentity";
+} from "../../../../features/dev/devVendorsSlice";
+
+// Utils
+import { formatGoliathDate, getStoreName } from "../../../../utils";
+import { storeNumbersIn } from "../../../../utils/storeIdentity";
+import { fetchVendorPeriods, fetchVendorRollup } from "../utils/vendorsData";
+import { buildVendorRows, datesOf, scopePeriods } from "../utils";
 
 /**
  * The Vendors search, shared by the desktop container and the mobile

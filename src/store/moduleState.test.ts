@@ -34,7 +34,7 @@ const ALLOWED: Record<string, string> = {
     "keys of requests still on the wire, emptied as each one lands",
   "features/ticketsMockData.ts:MOCK_ATTACHMENTS":
     "an empty mock list in a file nothing imports",
-  "pages/vendors/dev/useVendorSearch.ts:searchSeq":
+  "pages/vendors/dev/hooks/index.ts:searchSeq":
     "a counter that drops a search's late answers; it holds no data",
   "utils/pageCalls.ts:armed":
     "whether the call recorder is installed, once per tab",

@@ -1,37 +1,9 @@
-import { countedRows } from "../../../utils/hashSubs";
-import { storeMarginDelta } from "../../../utils/storeMarginDelta";
-import {
-  applyStoreNumberToName,
-  combinedStoreName,
-} from "../../../utils/storeIdentity";
-import LocationTabs from "../../../components/filters/LocationTabs";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import VendorRow from "./VendorRow";
+// Hooks
 import { useMemo, useCallback } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import ThresholdFilter, {
-  type ThresholdValue,
-} from "../../../components-dev/filters/ThresholdFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import { formatCurrency2, formatCurrencyCompact } from "../../../utils";
-import { fmtCompactRange } from "../../../utils/dateLabels";
-import {
-  severityDotClass,
-  comparisonPillClass,
-  headerDeltaPill,
-  PCT_COL_W,
-  formatPct,
-  type Severity,
-} from "../../../utils/severity";
-import {
-  pctChange,
-  sortGraded,
-  isCompleteCoverage,
-  type Tier,
-} from "../../../utils/grading";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setTextFilter,
   setTierFilter,
@@ -39,8 +11,43 @@ import {
   setMetric,
   setThreshold,
   VENDOR_THRESHOLD_DEFAULT,
-} from "../../../features/dev/devVendorsSlice";
-import { getVendorTier, vendorDelta, marginPct } from "./vendorsUtils";
+} from "../../../../features/dev/devVendorsSlice";
+
+// Utils
+import { countedRows } from "../../../../utils/hashSubs";
+import { storeMarginDelta } from "../../../../utils/storeMarginDelta";
+import {
+  applyStoreNumberToName,
+  combinedStoreName,
+} from "../../../../utils/storeIdentity";
+import { formatCurrency2, formatCurrencyCompact } from "../../../../utils";
+import { fmtCompactRange } from "../../../../utils/dateLabels";
+import {
+  severityDotClass,
+  comparisonPillClass,
+  headerDeltaPill,
+  PCT_COL_W,
+  formatPct,
+  type Severity,
+} from "../../../../utils/severity";
+import {
+  pctChange,
+  sortGraded,
+  isCompleteCoverage,
+  type Tier,
+} from "../../../../utils/grading";
+import { getVendorTier, vendorDelta, marginPct } from "../utils";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import LocationTabs from "../../../../components/filters/LocationTabs";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import ThresholdFilter, {
+  type ThresholdValue,
+} from "../../../../components-dev/filters/ThresholdFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import VendorRow from "./VendorRow";
 
 const TOGGLE_OPTS = [
   { key: "margin" as const, label: "Margin" },

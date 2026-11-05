@@ -1,24 +1,29 @@
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+// Hooks
 import { useMemo, useState } from "react";
-import {
-  ArrowDownTrayIcon,
-  ClipboardDocumentListIcon,
-} from "@heroicons/react/24/outline";
-import { collectGradedItems } from "./vendorGradedItems";
-import type { ItemGradingMetric } from "../../../utils/itemMargins";
-import { useCriticalReport } from "../../../hooks/useCriticalReport";
+import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 import {
   useAppSelector,
   useAppDispatch,
   useCanSeeComingSoon,
-} from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+} from "../../../../hooks";
+
+// Redux
+import {
+  setSelectedDay,
+  setItemThreshold,
+  VENDOR_THRESHOLD_DEFAULT,
+  VENDOR_ITEM_THRESHOLD_DEFAULT,
+} from "../../../../features/dev/devVendorsSlice";
+
+// Utils
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { formatCurrency2 } from "../../../../utils";
 import {
   comparisonPillClass,
   formatPct,
   severityHeaderBgClass,
   type Severity,
-} from "../../../utils/severity";
+} from "../../../../utils/severity";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -27,18 +32,22 @@ import {
   gradeBasis,
   isCompleteCoverage,
   type Tier,
-} from "../../../utils/grading";
-import { fmtDayLabel, fmtRangeLabel } from "../../../utils/dateLabels";
-import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
-import ItemMarginsTable from "../../../components-dev/ItemMarginsTable";
-import VendorExportModal from "./VendorExportModal";
+} from "../../../../utils/grading";
+import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
+import { collectGradedItems } from "../utils/vendorGradedItems";
+import { getVendorTier, rowsForVendor, marginPct, scopePeriods } from "../utils";
+
+// Interfaces
+import type { ItemGradingMetric } from "../../../../utils/itemMargins";
+
+// Components
 import {
-  setSelectedDay,
-  setItemThreshold,
-  VENDOR_THRESHOLD_DEFAULT,
-  VENDOR_ITEM_THRESHOLD_DEFAULT,
-} from "../../../features/dev/devVendorsSlice";
-import { getVendorTier, rowsForVendor, marginPct, scopePeriods } from "./vendorsUtils";
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/24/outline";
+import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
+import VendorExportModal from "../export/VendorExportModal";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */

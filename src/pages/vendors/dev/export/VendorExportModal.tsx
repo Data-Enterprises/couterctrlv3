@@ -1,16 +1,15 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
-import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../utils/csvExport";
-import { calculateCogs } from "../../../utils/cogs";
+
+// Utils
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import { calculateCogs } from "../../../../utils/cogs";
 import {
   buildItemRows,
   getItemSeverity,
   type ItemSeverity,
   type ItemGradingMetric,
-} from "../../../utils/itemMargins";
+} from "../../../../utils/itemMargins";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -19,16 +18,24 @@ import {
   coverageOf,
   pctChange,
   tierOfDelta,
-} from "../../../utils/grading";
-import { fmtDayLabel } from "../../../utils/dateLabels";
-import type { SubDeptMargin } from "../../../interfaces";
-import type { VendorMetric, VendorRow } from "./vendorsUtils";
-import { getVendorTier, marginPct } from "./vendorsUtils";
+} from "../../../../utils/grading";
+import { fmtDayLabel } from "../../../../utils/dateLabels";
+import { getVendorTier, marginPct } from "../utils";
 import {
   collectGradedItems,
   type GradedItem,
   type GradedSev,
-} from "./vendorGradedItems";
+} from "../utils/vendorGradedItems";
+
+// Interfaces
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { SubDeptMargin } from "../../../../interfaces";
+import type { VendorMetric, VendorRow } from "../utils";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 
 /**
  * CSV export for Vendors.

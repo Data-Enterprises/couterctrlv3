@@ -1,7 +1,12 @@
-import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { getRollup, type RollupRow } from "../../../api/rollup";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../utils/grading";
-import type { SubDeptMargin } from "../../../interfaces";
+// API
+import { getRollup, type RollupRow } from "../../../../api/rollup";
+
+// Utils
+import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../../utils/grading";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../interfaces";
 
 /**
  * Fetching for the Vendors page.

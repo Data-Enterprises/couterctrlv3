@@ -1,5 +1,8 @@
+// Hooks
 import { memo, useCallback } from "react";
-import { PCT_COL_W } from "../../../utils/severity";
+
+// Utils
+import { PCT_COL_W } from "../../../../utils/severity";
 
 /**
  * One row in the vendor list.

@@ -1,12 +1,15 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useVendorSearch } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useVendorSearch } from "./useVendorSearch";
-import VendorListPanel from "./VendorListPanel";
-import VendorDetailPanel from "./VendorDetailPanel";
 import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import VendorListPanel from "./components/VendorListPanel";
+import VendorDetailPanel from "./components/VendorDetailPanel";
 
 /**
  * Vendors — Performance.

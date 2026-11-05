@@ -4,7 +4,7 @@ import {
   vendorDelta,
   getVendorTier,
   scopePeriods,
-} from "@/pages/vendors/dev/vendorsUtils";
+} from "@/pages/vendors/dev/utils";
 import type { SubDeptMargin } from "@/interfaces";
 import type { RollupRow } from "@/api/rollup";
 
