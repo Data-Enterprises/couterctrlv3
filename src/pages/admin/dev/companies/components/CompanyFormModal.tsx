@@ -1,29 +1,24 @@
 import { useState } from "react";
-import Input from "../../../components-dev/inputs/Input";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import type { Company } from "../../../interfaces";
-import { membersOf, parentChoices, type CompanyRecord } from "./companyFamily";
+import Input from "../../../../../components-dev/inputs/Input";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import type { Company } from "../../../../../interfaces";
+import {
+  membersOf,
+  parentChoices,
+  type CompanyRecord,
+} from "../../companyFamily";
+import { blankCompany, canSubmit } from "../utils";
+
 
 interface CompanyFormModalProps {
   initial: CompanyRecord | null;
   existingNames: string[];
-  /** Every company, for the "Belongs to" list. */
+  /** Every company the current user manages. */
   companies: CompanyRecord[];
   /** `parent` is the chosen parent's id, or null to stand alone. */
   onSave: (form: Company, parent: number | null) => void;
   onClose: () => void;
 }
-
-const blank: Company = {
-  id: 0,
-  address: "",
-  city: "",
-  contact_email: "",
-  name: "",
-  phone: "",
-  state: "",
-  zip: 0,
-};
 
 const CompanyFormModal = ({
   initial,
@@ -32,7 +27,7 @@ const CompanyFormModal = ({
   onSave,
   onClose,
 }: CompanyFormModalProps) => {
-  const [form, setForm] = useState<Company>(initial ?? blank);
+  const [form, setForm] = useState<Company>(initial ?? blankCompany);
   const isCreate = !initial;
   const [parent, setParent] = useState<number | null>(
     initial?.parent_company_id ?? null,
@@ -50,16 +45,6 @@ const CompanyFormModal = ({
     isCreate &&
     form.name.trim() !== "" &&
     existingNames.some((n) => n.toLowerCase() === form.name.toLowerCase());
-
-  const canSubmit =
-    form.name !== "" &&
-    form.address !== "" &&
-    form.city !== "" &&
-    form.contact_email !== "" &&
-    form.state !== "" &&
-    form.zip !== 0 &&
-    form.phone !== "" &&
-    !alreadyExists;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -120,16 +105,16 @@ const CompanyFormModal = ({
               className="py-1.5 text-[13px]"
             />
           </div>
-          {/* Which family it is in. Managers in a family administer each
-              other's people, and `users/` shows them to each other, so this
-              decides who sees whom. */}
+          
+          {/* Displays which family the company belongs to */}
           <div className="col-span-2">
             <div className="text-[11px] font-medium text-content mb-1">
               Belongs to
             </div>
             {isParent ? (
               <p className="text-[11.5px] text-content/85 m-0">
-                {members.length} {members.length === 1 ? "company belongs" : "companies belong"}{" "}
+                {members.length}{" "}
+                {members.length === 1 ? "company belongs" : "companies belong"}{" "}
                 under this one ({members.map((m) => m.name).join(", ")}), so it
                 heads its family and can't belong under another.
               </p>
@@ -164,7 +149,7 @@ const CompanyFormModal = ({
             onClick={() => onSave(form, isParent ? null : parent)}
             disabled={!canSubmit}
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
-              canSubmit
+              canSubmit(form)
                 ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}

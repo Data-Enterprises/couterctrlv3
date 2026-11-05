@@ -19,7 +19,7 @@ import type {
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import CompanyFormModal from "../CompanyFormModal";
+import CompanyFormModal from "./components/CompanyFormModal";
 import type { CompanyRecord } from "../companyFamily";
 
 // Collapses the old separate Create/Update/Delete tabs into one grid with
@@ -47,27 +47,6 @@ const CompanyGrid = () => {
     return context.companies.filter((c) => c.name.toLowerCase().includes(q));
   }, [context.companies, search]);
 
-  /**
-   * Put the new company on the account that made it.
-   *
-   * Without this a company is born with nobody in it, and the only way in was
-   * a row written by hand in RDS: the Companies tab in User Management can
-   * only offer companies the assigner already holds, and the creator holds
-   * this one least of all.
-   *
-   * `assign_user_to_company` REPLACES rather than appends — see legacy's
-   * AssignCompanyToUser, which sends the new ids plus every existing one — so
-   * the whole set travels or the rest are silently dropped off the most
-   * privileged account on the system.
-   *
-   * The id is `new_id` on the response, since the 22 Oct backend change.
-   * Before that `create_company` answered with no id, so an API without it
-   * falls back to a re-read: the new company is the one that was not there a
-   * moment ago, and where two appear at once, because somebody else was
-   * creating at the same time, the name settles it. If neither finds it, the
-   * company is still created and the grid still refreshes — only the
-   * assignment is skipped, and it says so rather than claiming otherwise.
-   */
   const claimNewCompany = async (
     before: Set<number>,
     name: string,
@@ -96,9 +75,6 @@ const CompanyGrid = () => {
       [...mine, createdId],
     );
     if (assigned.data.error !== 0) return false;
-    // The login response seeded `user.companies` and this just changed it.
-    // Left stale, the next assignment this session would send yesterday's set
-    // and drop the company that was just claimed.
     context.dispatch(setUserCompanies(assigned.data.companies));
     return true;
   };
