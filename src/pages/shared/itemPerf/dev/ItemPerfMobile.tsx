@@ -12,7 +12,7 @@ import SingleDatePicker from "../../../../components-dev/datePickers/SingleDateP
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import ScannerView from "../../../../components-dev/scanner/ScannerView";
 import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
-import { fetchItemRows } from "./fetchItemRows";
+import { fetchItemRows } from "./utils/fetchItemRows";
 import {
   addDays,
   formatCurrency2,
@@ -74,7 +74,7 @@ import {
   sortMarginRows,
   type MarginRow,
   type PricedRow,
-} from "./itemPerfData";
+} from "./utils/itemPerfData";
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";

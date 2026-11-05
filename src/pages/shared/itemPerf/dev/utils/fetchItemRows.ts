@@ -1,13 +1,18 @@
-import { getCatItems } from "../../../../api/cats";
-import { getCats } from "../../../../api/sales";
-import { fetchAllPages } from "../../../../utils/paging";
-import { fetchSubDeptRows } from "../../../../utils/marginRows";
+// API
+import { getCatItems } from "../../../../../api/cats";
+import { getCats } from "../../../../../api/sales";
+
+// Utils
+import { fetchAllPages } from "../../../../../utils/paging";
+import { fetchSubDeptRows } from "../../../../../utils/marginRows";
+
+// Interfaces
 import type {
   CatItem,
   CatSalesDaily,
   CatSalesResponse,
-} from "../../../../interfaces";
-import type { ItemDimension, ItemRow } from "../../../../features/dev/devItemPerfSlice";
+} from "../../../../../interfaces";
+import type { ItemDimension, ItemRow } from "../../../../../features/dev/devItemPerfSlice";
 
 /** Every group in one read. As a REQUEST argument 0 means "all"; as a ROW
  *  value 0 is a real department, which is why this is named. */

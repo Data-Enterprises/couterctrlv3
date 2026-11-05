@@ -9,7 +9,7 @@ import {
   matchWeek,
   priceRows,
   sortMarginRows,
-} from "@/pages/shared/itemPerf/dev/itemPerfData";
+} from "@/pages/shared/itemPerf/dev/utils/itemPerfData";
 
 const S = { storeid: 685, store_number: "369", store_name: "Arab" };
 
