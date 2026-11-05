@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useRef, useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCategoriesCtx } from "../hooks";
 
 // Redux
 import {
@@ -135,7 +136,7 @@ interface Props {
 
 const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
   const dispatch = useAppDispatch();
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
   const { rows, metric, threshold, selectedCategory, selectedDay, hourly, loadingHourly } = cats;
 
   const [tab, setTab] = useState<Tab>("items");

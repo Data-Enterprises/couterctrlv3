@@ -1,7 +1,7 @@
 // Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
-import { useCategoryData } from "./hooks";
+import { useCategoryData, useCategoriesCtx } from "./hooks";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -26,7 +26,7 @@ const Categories = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.

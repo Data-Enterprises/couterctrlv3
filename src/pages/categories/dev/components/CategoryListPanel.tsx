@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCategoriesCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Redux
@@ -43,7 +44,7 @@ import {
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import LocationTabs from "../../../../components/filters/LocationTabs";
+import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
@@ -97,7 +98,7 @@ const CategoryListPanel = ({
 }: Props) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
   const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } = cats;
 
   // Null threshold means the input is mid-edit; grade against the default

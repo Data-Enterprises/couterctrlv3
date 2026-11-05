@@ -1,5 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCategoriesCtx } from "../hooks";
 
 // Redux
 import {
@@ -21,7 +22,7 @@ import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
 const CategoryItemsTable = () => {
   const dispatch = useAppDispatch();
   const { items, metric, selectedDay, loadingItems, itemThreshold, rows } =
-    useAppSelector((s) => s.dev.categories);
+    useCategoriesCtx();
   // Store-level, so every category row carries the same coverage.
   const coverage = rows[0]?.coverage;
 

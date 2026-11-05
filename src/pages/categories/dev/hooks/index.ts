@@ -1,5 +1,6 @@
 // Hooks
 import { useEffect } from "react";
+import { shallowEqual } from "react-redux";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -59,13 +60,17 @@ const scopeStoreNumber = <T extends { store_number: string }>(
         ly: onlyStoreNumber(rows.ly, storeNumber),
       };
 
+/** The Categories page's slice, read where it is used instead of passed down. */
+export const useCategoriesCtx = () =>
+  useAppSelector((s) => s.dev.categories, shallowEqual);
+
 export const useCategoryData = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
 
   /** Resolves to the row count, so a caller can tell "found nothing" from
    *  "never ran" without reading state back on the next render. */
