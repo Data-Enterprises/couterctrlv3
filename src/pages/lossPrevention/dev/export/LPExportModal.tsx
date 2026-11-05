@@ -1,10 +1,17 @@
+// Hooks
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { TransactionOverview } from "../../../../interfaces";
-import type { CashierGrade, CashierSeverity } from "../gradingUtils";
+
+// Utils
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+
+// Interfaces
+import type { TransactionOverview } from "../../../../interfaces";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { CashierGrade, CashierSeverity } from "../utils/grading";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

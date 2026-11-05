@@ -1,18 +1,25 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
 import { useMemo, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { useAppSelector } from "../../../../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Utils
 import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
-import { useAppSelector } from "../../../../hooks";
+import { severityDotClass } from "../../../../utils/severity";
+import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../utils/grading";
+
+// Interfaces
 import type { CashierDetails } from "../../../../interfaces";
 import type { Severity, SevFilter } from "../../../../utils/severity";
-import { severityDotClass } from "../../../../utils/severity";
-import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
 

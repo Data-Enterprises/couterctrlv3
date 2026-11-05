@@ -1,12 +1,14 @@
+// Interfaces
 import type {
   TransactionOverview,
   UniqueCashier,
   CashierDetails,
-} from "../../../interfaces";
-import type { Severity } from "../../../utils/severity";
+} from "../../../../interfaces";
+import type { Severity } from "../../../../utils/severity";
+
 // Re-exported so LP's existing imports keep working; the helper itself is
 // shared with Cashiers now. See utils/saleTypes.
-export { pickDefaultSaleType } from "../../../utils/saleTypes";
+export { pickDefaultSaleType } from "../../../../utils/saleTypes";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 

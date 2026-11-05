@@ -1,18 +1,27 @@
+// Hooks
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSaleTypes } from "../../../api/lossPrevention";
 import { useApiContext } from "../../../hooks/useApiContext";
-import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
-import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter";
+
+// Redux
 import {
   resetCashierSlice,
   setSaleTypes,
   setNoSaleTypesFound,
   setLoadingSaleTypes,
 } from "../../../features/dev/devLossPreventionSlice";
-import type { JsonError } from "../../../interfaces";
-import LPDesktop from "./desktop/LPDesktop";
 import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getSaleTypes } from "../../../api/lossPrevention";
+import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter";
+
+// Interfaces
+import type { JsonError } from "../../../interfaces";
+
+// Components
+import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
+import LPDesktop from "./components/LPDesktop";
 
 const LossPrevention = () => {
   const toast = useToast();

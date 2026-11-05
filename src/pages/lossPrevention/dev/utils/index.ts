@@ -1,6 +1,9 @@
+// Utils
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { TransactionListItem, UniqueCashier } from "../../../interfaces";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2 } from "../../../../utils";
+
+// Interfaces
+import type { TransactionListItem, UniqueCashier } from "../../../../interfaces";
 
 export const formatDate = (dateStr: string) => {
   const split = dateStr.split("T")[0].split("-");

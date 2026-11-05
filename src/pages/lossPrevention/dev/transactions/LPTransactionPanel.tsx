@@ -1,27 +1,17 @@
+// Hooks
 import { useMemo, useState, useRef, useEffect } from "react";
-import LPDayCards from "./LPDayCards";
-import {
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
-import LPExportModal from "./LPExportModal";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../../hooks";
+
+// Redux
 import {
   setSaleDateFilter,
   setSelectedCashier,
   setCashierSaleIds,
 } from "../../../../features/dev/devLossPreventionSlice";
-import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import type {
-  TransactionListItem,
-  TransactionOverview,
-} from "../../../../interfaces";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import Transaction from "../../../../components-dev/transactions/Transaction";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import type { ThresholdValue } from "../../../../components-dev/filters/ThresholdFilter";
+import { severityHeaderBgClass } from "../../../../utils/severity";
 import {
   gradeAllCashiers,
   matchWeekday,
@@ -30,8 +20,27 @@ import {
   weekRangeLabel,
   weekRangeFilename,
   type CashierSeverity,
-} from "../gradingUtils";
-import { severityHeaderBgClass } from "../../../../utils/severity";
+} from "../utils/grading";
+
+// Interfaces
+import type {
+  TransactionListItem,
+  TransactionOverview,
+} from "../../../../interfaces";
+import type { ThresholdValue } from "../../../../components-dev/filters/ThresholdFilter";
+
+// Components
+import {
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/20/solid";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import Transaction from "../../../../components-dev/transactions/Transaction";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
+import LPDayCards from "../components/LPDayCards";
+import LPExportModal from "../export/LPExportModal";
 
 // Cashier list uses a plain dot (list-level), matching Sales' store/sub-dept
 // rows — the icon+badge treatment is reserved for item-level drill-down.

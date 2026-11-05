@@ -46,12 +46,12 @@ import type {
   TransactionOverview,
   UniqueCashier,
 } from "../../../../interfaces";
-import { chunkSales } from "..";
-import { pickDefaultSaleType } from "../gradingUtils";
+import { chunkSales } from "../utils";
+import { pickDefaultSaleType } from "../utils/grading";
 import SearchCard from "../../../../components-dev/SearchCard";
 // import DescModal from "../components/DescModal"; // Description logic commented out
 import LPStorePanel from "./LPStorePanel";
-import LPTransactionPanel from "./LPTransactionPanel";
+import LPTransactionPanel from "../transactions/LPTransactionPanel";
 
 interface Props {
   getSaleTypes: () => void;

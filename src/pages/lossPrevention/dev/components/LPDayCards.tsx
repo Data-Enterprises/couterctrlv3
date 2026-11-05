@@ -1,7 +1,14 @@
+// Hooks
 import { useMemo } from "react";
+
+// Utils
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+
+// Interfaces
 import type { TransactionOverview } from "../../../../interfaces";
+
+// Components
+import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
 
 /**
  * Day-of-week cards for the selected store. Rendering lives in DayCardStrip;
