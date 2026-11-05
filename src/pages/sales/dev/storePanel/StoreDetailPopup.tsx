@@ -75,15 +75,12 @@ interface StoreDetailPopupProps {
   groupRows?: LedgerRowData[];
 }
 
-// Category tab (and its cat_sales fetch below) is commented out for now —
-// uncomment this, the getCats-related imports above, and the marked blocks
-// below to bring it back.
 type PopupTab =
   | "subdept"
   | "hourly"
   | "comparison"
   | "topitems"
-  | "dailyrecap" /* | "category" */;
+  | "dailyrecap";
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -125,38 +122,19 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     counterpart,
   } = useAppSelector((state) => state.dev.salesLedger);
   const isQty = gradingMetric === "qty";
-  // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
-  //   useSalesState();
 
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  // const [gapReportOpen, setGapReportOpen] = useState(false);
   const openCriticalReport = useCriticalReport();
   // The same item threshold the sub-dept list grades against, so the button's
   // definition of critical is the one already on screen.
   const itemThreshold =
     useAppSelector((state) => state.dev.salesLedger.itemThreshold) ?? 9;
-  // const [catLoading, setCatLoading] = useState(false);
-  // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
   const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
   const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-  // Checked against the raw weekly-sales fetch (not selection.days, which
-  // only ever contains real TW rows) so a day missing from TW itself — not
-  // just from LW/LY — actually shows up instead of being silently invisible.
-  // const gaps = getWeeklyDataGaps(
-  //   selection.storeId,
-  //   twStart,
-  //   twEnd,
-  //   lwStart,
-  //   lwEnd,
-  //   weeklySales,
-  //   weeklySalesLastWeek,
-  //   weeklySalesLastYear,
-  // );
-  // const gapCount = getWeeklyGapCount(gaps);
   // The full 7 calendar days of the searched week — deliberately NOT
   // selection.days (the store's weekly-sales row list), which only has an
   // entry for days that list actually returned a row for. A day missing
@@ -185,12 +163,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   );
 
   const twYear = new Date(twEnd + "T12:00:00").getFullYear();
-  // const lyYear = new Date(lyEnd + "T12:00:00").getFullYear();
 
   // Static range strings
   const staticTwDate = `${fmtDate(twStart)} – ${fmtDate(twEnd)}, ${twYear}`;
-  // const staticLwDate = `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}, ${twYear}`;
-  // const staticLyDate = `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}, ${lyYear}`;
 
   // Dynamic date labels — update when a day is selected
   const twDateLabel = selectedDate
@@ -461,31 +436,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     };
     fetch();
   }, [selection.storeId, selection.storeNumber]);
-
-  // Category tab disabled for now — cat_sales fetch commented out alongside it.
-  // // Category data can run into hundreds of rows per store, so it's fetched
-  // // lazily on first visit to the tab rather than eagerly alongside sub
-  // // dept/hourly — avoids the extra payload for users who never open it.
-  // useEffect(() => {
-  //   if (tab !== "category" || catFetchedFor === selection.storeId) return;
-  //   const fetchCats = async () => {
-  //     setCatLoading(true);
-  //     try {
-  //       const [catsResp, lwCatsResp, lyCatsResp] = await Promise.all([
-  //         getCats(context.url, context.token, twStart, twEnd, 0, selection.storeId, 1),
-  //         getCats(context.url, context.token, lwStart, lwEnd, 0, selection.storeId, 1),
-  //         getCats(context.url, context.token, lyStart, lyEnd, 0, selection.storeId, 1),
-  //       ]);
-  //       dispatch(setRawCats(catsResp.data.error === 0 ? catsResp.data.subs : []));
-  //       dispatch(setRawLWCats(lwCatsResp.data.error === 0 ? lwCatsResp.data.subs : []));
-  //       dispatch(setRawLYCats(lyCatsResp.data.error === 0 ? lyCatsResp.data.subs : []));
-  //       setCatFetchedFor(selection.storeId);
-  //     } finally {
-  //       setCatLoading(false);
-  //     }
-  //   };
-  //   fetchCats();
-  // }, [tab, selection.storeId]);
 
   useEffect(() => {
     if (!rawSubs.length && !rawHourly.length) return;
@@ -958,18 +908,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             lwDateLabel={lwDateLabel}
             lyDateLabel={lyDateLabel}
           />
-          // Category tab disabled for now:
-          // ) : catLoading ? (
-          //   <div className="relative h-full">
-          //     <LoadingIndicator message="Loading category data" />
-          //   </div>
-          // ) : (
-          //   <PopupCategoryList
-          //     twDateLabel={twDateLabel}
-          //     lwDateLabel={lwDateLabel}
-          //     lyDateLabel={lyDateLabel}
-          //     selectedDate={selectedDate}
-          //   />
         )}
       </div>
     </div>

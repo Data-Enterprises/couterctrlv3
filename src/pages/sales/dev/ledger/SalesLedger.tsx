@@ -68,9 +68,6 @@ const SalesLedger = () => {
     weeklySales = [],
     weeklySalesLastWeek = [],
     weeklySalesLastYear = [],
-    // hourlySales = [],
-    // hourlySalesLastWeek = [],
-    // hourlySalesLastYear = [],
   } = useSalesState();
   const {
     hasSearched,
