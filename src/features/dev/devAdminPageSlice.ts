@@ -6,8 +6,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Company, Store, StoreWithActivity } from "../../interfaces";
 
-import type { StatusFilter } from "@/pages/admin/dev/interfaces";
-
 export const defaultComp: Company = {
   id: 0,
   address: "",
@@ -25,6 +23,9 @@ export type AdminForm =
   | "store_records"
   | "sub_exclusions";
 
+/** The Stores tab's status choice. */
+export type StatusFilter = "all" | "open" | "closed";
+
 interface AdminPageState {
   companies: Company[];
   companyForm: Company;
@@ -35,14 +36,11 @@ interface AdminPageState {
   storeNameFilter: string;
   adminForm: AdminForm;
   exportOpen: boolean;
-  stores: Store[] | null;
-  search: string;
-  companyFilter: string;
-  statusFilter: StatusFilter;
-  creating: boolean;
-  editing: Store | null;
-  deactivating: Store | null;
-  saving: boolean;
+  // The Stores tab: its list (null until loaded) and its three filters.
+  storeRecords: Store[] | null;
+  storeSearch: string;
+  storeCompanyFilter: string;
+  storeStatusFilter: StatusFilter;
 }
 
 const initialState: AdminPageState = {
@@ -55,14 +53,10 @@ const initialState: AdminPageState = {
   storeNameFilter: "",
   adminForm: "companies",
   exportOpen: false,
-  stores: null,
-  search: "",
-  companyFilter: "",
-  statusFilter: "all", // "all" is the default
-  creating: false,
-  editing: null,
-  deactivating: null,
-  saving: false,
+  storeRecords: null,
+  storeSearch: "",
+  storeCompanyFilter: "",
+  storeStatusFilter: "all",
 };
 
 const adminPageSlice = createSlice({
@@ -118,29 +112,17 @@ const adminPageSlice = createSlice({
     setExportOpen: (state, action: PayloadAction<boolean>) => {
       state.exportOpen = action.payload;
     },
-    setStores: (state, action: PayloadAction<Store[] | null>) => {
-      state.stores = action.payload;
+    setStoreRecords: (state, action: PayloadAction<Store[] | null>) => {
+      state.storeRecords = action.payload;
     },
-    setSearch: (state, action: PayloadAction<string>) => {
-      state.search = action.payload;
+    setStoreSearch: (state, action: PayloadAction<string>) => {
+      state.storeSearch = action.payload;
     },
-    setCompanyFilter: (state, action: PayloadAction<string>) => {
-      state.companyFilter = action.payload;
+    setStoreCompanyFilter: (state, action: PayloadAction<string>) => {
+      state.storeCompanyFilter = action.payload;
     },
-    setStatusFilter: (state, action: PayloadAction<StatusFilter>) => {
-      state.statusFilter = action.payload;
-    },
-    setCreating: (state, action: PayloadAction<boolean>) => {
-      state.creating = action.payload;
-    },
-    setEditing: (state, action: PayloadAction<Store | null>) => {
-      state.editing = action.payload;
-    },
-    setDeactivating: (state, action: PayloadAction<Store | null>) => {
-      state.deactivating = action.payload;
-    },
-    setSaving: (state, action: PayloadAction<boolean>) => {
-      state.saving = action.payload;
+    setStoreStatusFilter: (state, action: PayloadAction<StatusFilter>) => {
+      state.storeStatusFilter = action.payload;
     },
     resetAdminPageState: () => initialState,
   },
@@ -158,14 +140,10 @@ export const {
   setIsLoadingStoreActivity,
   setStoreNameFilter,
   setExportOpen,
-  setStores,
-  setSearch,
-  setCompanyFilter,
-  setStatusFilter,
-  setCreating,
-  setEditing,
-  setDeactivating,
-  setSaving,
+  setStoreRecords,
+  setStoreSearch,
+  setStoreCompanyFilter,
+  setStoreStatusFilter,
   resetAdminPageState,
 } = adminPageSlice.actions;
 export default adminPageSlice.reducer;

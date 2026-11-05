@@ -1,8 +1,16 @@
 // Hooks
-import { useEffect, useMemo } from "react";
-import { useAdminPageCtx } from "../hooks";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
+import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
+import {
+  setStoreCompanyFilter,
+  setStoreRecords,
+  setStoreSearch,
+  setStoreStatusFilter,
+} from "../../../../features/dev/devAdminPageSlice";
 
 // API
 import { getUserStores } from "../../../../api/user";
@@ -13,33 +21,25 @@ import {
   setNewStoreName,
 } from "../../../../api/admin";
 
-// Interfaces
-import type { JsonError, Store } from "../../../../interfaces";
-import type { StatusFilter } from "../interfaces";
-
-// Components
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import StoreFormModal, { type StoreForm } from "./components/StoreFormModal";
-import { PlusIcon } from "@heroicons/react/20/solid";
+// Utils
 import {
   statusOf,
   statusReported,
   withClosedMark,
   withoutClosedMark,
 } from "../utils";
+
+// Interfaces
+import type { JsonError, Store } from "../../../../interfaces";
+import type { StatusFilter } from "../../../../features/dev/devAdminPageSlice";
+
+// Components
+import { PlusIcon } from "@heroicons/react/20/solid";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import StoreFormModal, { type StoreForm } from "./components/StoreFormModal";
 import StoreRow from "./components/StoreRow";
-import {
-  setCompanyFilter,
-  setCreating,
-  setDeactivating,
-  setEditing,
-  setSaving,
-  setSearch,
-  setStatusFilter,
-  setStores,
-} from "@/features/dev/devAdminPageSlice";
 
 /** Shown only while the endpoint is not reporting status — see `statusOf`. */
 const UNKNOWN_NOTE =
@@ -49,6 +49,17 @@ const StoreRecords = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
   const dispatch = useAppDispatch();
+  const {
+    storeRecords: stores,
+    storeSearch: search,
+    storeCompanyFilter: companyFilter,
+    storeStatusFilter: statusFilter,
+  } = context;
+  // Pop-ups and the save in flight: nothing to keep once the tab is left.
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Store | null>(null);
+  const [deactivating, setDeactivating] = useState<Store | null>(null);
+  const [saving, setSaving] = useState(false);
 
   /** The backend can return a null store_name or store_number despite the
    *  type claiming string, and the search below throws on a null
@@ -65,7 +76,7 @@ const StoreRecords = () => {
           return;
         }
         dispatch(
-          setStores([
+          setStoreRecords([
             ...validOnly(j.assigned_stores ?? []),
             // Below level 9 the unassigned half is other operators' stores.
             ...(context.canSeeAllStores
@@ -80,16 +91,16 @@ const StoreRecords = () => {
   useEffect(fetchStores, []);
 
   const statusKnown = useMemo(
-    () => statusReported(context.stores ?? []),
-    [context.stores],
+    () => statusReported(stores ?? []),
+    [stores],
   );
 
   const filtered = useMemo(() => {
-    if (!context.stores) return [];
-    const q = context.search.trim().toLowerCase();
-    return context.stores.filter((s) => {
-      const byCompany = context.companyFilter
-        ? s.company === Number(context.companyFilter)
+    if (!stores) return [];
+    const q = search.trim().toLowerCase();
+    return stores.filter((s) => {
+      const byCompany = companyFilter
+        ? s.company === Number(companyFilter)
         : true;
       const bySearch = q
         ? s.store_name.toLowerCase().includes(q) ||
@@ -100,20 +111,20 @@ const StoreRecords = () => {
       // quietly shorten the list for no reason the reader can see.
       const st = statusOf(s);
       const byStatus =
-        context.statusFilter === "all" ||
+        statusFilter === "all" ||
         st === "unknown" ||
-        st === context.statusFilter;
+        st === statusFilter;
       return byCompany && bySearch && byStatus;
     });
   }, [
-    context.stores,
-    context.search,
-    context.companyFilter,
-    context.statusFilter,
+    stores,
+    search,
+    companyFilter,
+    statusFilter,
   ]);
 
   const handleCreate = (form: StoreForm) => {
-    dispatch(setSaving(true));
+    setSaving(true);
     createNewStore(
       context.url,
       context.token,
@@ -129,20 +140,20 @@ const StoreRecords = () => {
           return;
         }
         toast.success(`${form.store_name} created`);
-        dispatch(setCreating(false));
+        setCreating(false);
         fetchStores();
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setSaving(false)));
+      .finally(() => setSaving(false));
   };
 
   const handleRename = (form: StoreForm) => {
-    if (!context.editing) return;
-    dispatch(setSaving(true));
+    if (!editing) return;
+    setSaving(true);
     setNewStoreName(
       context.url,
       context.token,
-      context.editing.storeid,
+      editing.storeid,
       form.store_name,
     )
       .then((resp) => {
@@ -152,7 +163,7 @@ const StoreRecords = () => {
           return;
         }
         toast.success(`Renamed to ${form.store_name}`);
-        dispatch(setEditing(null));
+        setEditing(null);
         fetchStores();
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -175,7 +186,7 @@ const StoreRecords = () => {
           toast.error(j.msg || "The store could not be updated");
           return;
         }
-        dispatch(setDeactivating(null));
+        setDeactivating(null);
 
         if (wanted === store.store_name) {
           toast.success(`${store.store_name} ${verb}`);
@@ -212,8 +223,8 @@ const StoreRecords = () => {
       <div className="flex items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
-          value={context.companyFilter}
-          onChange={(v) => dispatch(setCompanyFilter(v))}
+          value={companyFilter}
+          onChange={(v) => dispatch(setStoreCompanyFilter(v))}
           placeholder="All companies"
           className="w-[190px] flex-shrink-0"
         />
@@ -223,17 +234,17 @@ const StoreRecords = () => {
               { value: "open", label: "Open" },
               { value: "closed", label: "Closed" },
             ]}
-            value={context.statusFilter === "all" ? "" : context.statusFilter}
+            value={statusFilter === "all" ? "" : statusFilter}
             onChange={(v) =>
-              dispatch(setStatusFilter((v || "all") as StatusFilter))
+              dispatch(setStoreStatusFilter((v || "all") as StatusFilter))
             }
             placeholder="Open and closed"
             className="w-[150px] flex-shrink-0"
           />
         )}
         <TextFilter
-          value={context.search}
-          onChange={(v) => dispatch(setSearch(v))}
+          value={search}
+          onChange={(v) => dispatch(setStoreSearch(v))}
           placeholder="Search stores…"
           className="flex-1"
         />
@@ -268,12 +279,12 @@ const StoreRecords = () => {
             />
           ))}
 
-          {context.stores !== null && filtered.length === 0 && (
+          {stores !== null && filtered.length === 0 && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               No stores found
             </div>
           )}
-          {context.stores === null && (
+          {stores === null && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               Loading stores…
             </div>
@@ -281,36 +292,36 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      {!statusKnown && context.stores !== null && (
+      {!statusKnown && stores !== null && (
         <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
           {UNKNOWN_NOTE}
         </p>
       )}
 
-      {(context.creating || context.editing) && (
+      {(creating || editing) && (
         <StoreFormModal
-          initial={context.editing}
+          initial={editing}
           companies={companyOptions}
-          existingNumbers={(context.stores ?? []).map((s) =>
+          existingNumbers={(stores ?? []).map((s) =>
             s.store_number.toLowerCase(),
           )}
-          existingIds={(context.stores ?? []).map((s) => s.storeid)}
-          saving={context.saving}
-          onSave={context.editing ? handleRename : handleCreate}
+          existingIds={(stores ?? []).map((s) => s.storeid)}
+          saving={saving}
+          onSave={editing ? handleRename : handleCreate}
           onClose={() => {
-            dispatch(setCreating(false));
-            dispatch(setEditing(null));
+            setCreating(false);
+            setEditing(null);
           }}
         />
       )}
 
-      {context.deactivating && (
+      {deactivating && (
         <ConfirmModal
-          title={`Close ${context.deactivating.store_name}?`}
-          message={`The record stays and nothing is lost — it is marked closed from today and renamed to "${withClosedMark(context.deactivating.store_name)}". Re-opening it is one click on the same row.`}
+          title={`Close ${deactivating.store_name}?`}
+          message={`The record stays and nothing is lost — it is marked closed from today and renamed to "${withClosedMark(deactivating.store_name)}". Re-opening it is one click on the same row.`}
           confirmLabel="Close store"
-          onConfirm={() => changeStatus(context.deactivating!, "deactivate")}
-          onCancel={() => dispatch(setDeactivating(null))}
+          onConfirm={() => changeStatus(deactivating!, "deactivate")}
+          onCancel={() => setDeactivating(null)}
         />
       )}
     </div>

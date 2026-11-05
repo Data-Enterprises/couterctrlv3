@@ -7,5 +7,3 @@
  * null is "asked, and it is open".
  */
 export type Status = "open" | "closed" | "unknown";
-
-export type StatusFilter = "all" | "open" | "closed";
