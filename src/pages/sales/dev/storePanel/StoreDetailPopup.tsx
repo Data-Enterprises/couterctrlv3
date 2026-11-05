@@ -4,9 +4,8 @@ import {
   useAppDispatch,
   useCanSeeComingSoon,
 } from "../../../../hooks";
-// import { useSalesState } from "../hooks/useSalesState";
 import { isGroupSearch } from "../../../../features/searchSlice";
-import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
+import { getSubs, getHourly } from "../../../../api/sales";
 import SalesExportModal from "./export/SalesExportModal";
 import PopupTopItems from "./top200/PopupTopItems";
 import TopItemsReport from "./top200/components/TopItemsReport";
@@ -23,10 +22,6 @@ import {
   setLedgerTab,
   setCounterpart,
   setLedgerSelectedDate,
-  // setRawCats,
-  // setRawLWCats,
-  // setRawLYCats,
-  // setCategoryThreshold,
   clearPopupSelections,
   cacheStoreData,
   restoreStoreData,
@@ -59,8 +54,6 @@ import PopupSubDeptList from "./subDepts/PopupSubDeptList";
 import PopupHourlyView from "./hourly/PopupHourlyView";
 import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-// import DataGapReport from "./DataGapReport";
-// import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import type { StoreSelection } from "../components/LedgerRow";
 import { formatPct, pillClass, severityHeaderBgClass } from "../utils/index";

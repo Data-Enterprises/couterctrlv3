@@ -1,8 +1,6 @@
 import { addDays, sameWeekDayLastYear } from "../../../../utils";
 import { rowsToCsv } from "../../../../utils/csvExport";
 import { matchDatedRows } from "../../../../utils/grading";
-// Universal now (Item Grading uses it too); re-exported for the ledger code.
-export { matchDatedRows };
 import { gradeSeverity } from "../../../../utils/severity";
 import {
   gradeBasis as sharedGradeBasis,
@@ -10,11 +8,6 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../../../utils/grading";
-export { isCompleteCoverage, type Coverage, type GradeBasis };
-export {
-  PARTIAL_PILL_CLASS,
-  comparisonPillClass,
-} from "../../../../utils/severity";
 import { getHolidayName, getHolidayLastYear } from "../../../../utils/holidays";
 import type { HolidayName } from "../../../../utils/holidays";
 import type {
@@ -26,6 +19,14 @@ import type {
 } from "../../../../interfaces";
 import type { LedgerRowData, Severity } from "../components/LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+
+// Universal now (Item Grading uses it too); re-exported for the ledger code.
+export { matchDatedRows };
+export { isCompleteCoverage, type Coverage, type GradeBasis };
+export {
+  PARTIAL_PILL_CLASS,
+  comparisonPillClass,
+} from "../../../../utils/severity";
 
 export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 
