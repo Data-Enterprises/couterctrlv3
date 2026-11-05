@@ -1,15 +1,20 @@
+// Hooks
 import { useGroupCtx } from "..";
+
+// Types/Interfaces
+import type { GroupFormType } from "../../../../interfaces";
+
+// Components
+import CreateGroup from "./CreateGroup";
+import UpdateGroup from "./UpdateGroup";
+import DeleteGroup from "./DeleteGroup";
+import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
 import {
   ArrowPathIcon,
   PlusCircleIcon,
   BuildingStorefrontIcon,
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
-import type { GroupFormType } from "../../../../interfaces";
-import CreateGroup from "./CreateGroup";
-import UpdateGroup from "./UpdateGroup";
-import DeleteGroup from "./DeleteGroup";
-import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
 
 interface GroupsMobileProps {
   handleFormSelect: (formType: GroupFormType) => void;

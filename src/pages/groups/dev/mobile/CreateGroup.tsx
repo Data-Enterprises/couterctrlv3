@@ -1,11 +1,21 @@
+// Hooks
 import { useGroupCtx } from "..";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
+import { createGroup } from "../../../../api/groups";
+
+// Types/Interfaces
 import type { JsonError } from "../../../../interfaces";
 
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
+// Redux actions
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
 
-import { createGroup } from "../../../../api/groups";
+// Components
 import Input from "../../../../components-dev/inputs/Input";
 
 const CreateGroup = () => {

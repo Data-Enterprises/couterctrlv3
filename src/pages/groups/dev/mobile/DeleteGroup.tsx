@@ -2,13 +2,25 @@ import { useState } from "react";
 import { useGroupCtx } from "..";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../../interfaces";
 
-import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-
+// API
 import { deleteGroup } from "../../../../api/groups";
 
+// Types/Interfaces
+import type { JsonError } from "../../../../interfaces";
+
+// Redux actions and state slices
+import {
+  setSelectedGroup,
+  type Group,
+  emptyGroup,
+} from "../../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// Components
 import Input from "../../../../components-dev/inputs/Input";
 
 const DeleteGroup = () => {
@@ -16,11 +28,6 @@ const DeleteGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
-
-  // Shared groups are built and maintained by whoever shared the base group
-  // they came from, so they are not offered as an edit target here. Unlike the
-  // desktop page, these pickers exist only to choose something to change —
-  // there is no view mode a disabled row would still be useful in.
   const editableGroups = groups.filter((g) => !g.is_shared);
 
   const handleSelect = (g: Group) => {
@@ -77,7 +84,12 @@ const DeleteGroup = () => {
           ))}
         </div>
         <div className="relative grid grid-cols-[67%_1fr] gap-3 items-end mt-4">
-          <Input label="Group Name" value={createInput} setValue={() => {}} className="py-1" />
+          <Input
+            label="Group Name"
+            value={createInput}
+            setValue={() => {}}
+            className="py-1"
+          />
           <button
             data-testid="delete-usergroup-btn"
             className={`bg-red-600 text-custom-white py-2 rounded-xl border-2 border-red-600 mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
