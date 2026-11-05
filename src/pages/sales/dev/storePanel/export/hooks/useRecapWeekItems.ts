@@ -1,11 +1,18 @@
+// Hooks
 import { useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+
+// Redux
 import {
   cacheRecapItems,
   touchRecapItems,
 } from "../../../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { dayKey, isCacheableDay } from "../../summary/utils/recapKeys";
 import { loadDayItems } from "../../summary/utils/recapLoad";
+
+// Interfaces
 import type { RecapItem } from "../../summary/interfaces/index";
 
 /** One day for the export: its items, and whether they could be read. */

@@ -1,3 +1,4 @@
+// Components
 import SearchCard from "../../../../../components-dev/SearchCard";
 
 interface LedgerEntryCardProps {

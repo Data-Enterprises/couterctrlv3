@@ -1,6 +1,9 @@
+// Interfaces
 import type { ReactNode } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 import type { ItemSort, ItemSortCol } from "../interfaces/index";
+
+// Components
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 
 /**
  * A column head in the item view that sorts by its column, as Top 200's do:

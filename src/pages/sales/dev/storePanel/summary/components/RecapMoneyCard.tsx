@@ -1,7 +1,12 @@
+// Utils
+import { money } from "../utils/recapFormat";
+
+// Interfaces
+import type { DayMixState, RecapMoney } from "../interfaces/index";
+
+// Components
 import RecapPriceMix from "./RecapPriceMix";
 import RecapStatCard from "./RecapStatCard";
-import { money } from "../utils/recapFormat";
-import type { DayMixState, RecapMoney } from "../interfaces/index";
 
 /**
  * The day's money: net sales first (the day card's figure), then the sum

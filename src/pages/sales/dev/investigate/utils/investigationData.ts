@@ -1,9 +1,14 @@
+// API
 import { getSubMarginsWithPricePoints } from "../../../../../api/subMargins";
 import { getAllOrders } from "../../../../../api/orders";
 import { searchReceiversByItem } from "../../../../../api/receivers";
+
+// Utils
 import { fetchAllPages } from "../../../../../utils/paging";
 import { shiftIso } from "../../../../../utils/grading";
 import { scopeToStoreNumber, scopeRowsToStore } from "../../../../../utils/storeIdentity";
+
+// Interfaces
 import type {
   AllOrder,
   AllOrderResp,

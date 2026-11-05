@@ -1,5 +1,8 @@
-import Mark from "./Mark";
+// Interfaces
 import type { Gate } from "../../../utils/deptReport";
+
+// Components
+import Mark from "./Mark";
 
 /**
  * One gate, as a tile.

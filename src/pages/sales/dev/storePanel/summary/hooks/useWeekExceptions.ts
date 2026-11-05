@@ -1,8 +1,15 @@
+// Hooks
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+
+// Redux
 import { cacheRecapExceptions } from "../../../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { exceptionsByDay } from "../utils/recapExceptions";
 import { loadWeekExceptions } from "../utils/recapExceptionsLoad";
+
+// Interfaces
 import type { WeekExceptionsState } from "../interfaces/index";
 
 /**

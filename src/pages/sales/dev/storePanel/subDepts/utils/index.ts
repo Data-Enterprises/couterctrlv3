@@ -1,3 +1,4 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
 
 export const money = (v: number) => formatCurrency2(v);

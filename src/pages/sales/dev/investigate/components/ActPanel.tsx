@@ -1,3 +1,4 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
 import { CAUSE_LABEL, type Cause } from "../utils/deptInvestigation";
 import { OWNER_LABEL, type Desk } from "../utils/investigationSteps";

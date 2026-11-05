@@ -1,3 +1,19 @@
+// Utils
+import {
+  cmpLabels,
+  cmpShort,
+  cmpWord,
+  fmtChange,
+  pairChangePct,
+  type CmpBasis,
+  type PerfPair,
+  type PairSort,
+} from "../utils/perfData";
+
+// Interfaces
+import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
+
+// Components
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -10,17 +26,6 @@ import MobileSortChips, {
 import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../../components-dev/mobile/perf/PerfChange";
 import { TY_COLOR } from "../../../../../../components-dev/mobile/perf/perfColors";
-import {
-  cmpLabels,
-  cmpShort,
-  cmpWord,
-  fmtChange,
-  pairChangePct,
-  type CmpBasis,
-  type PerfPair,
-  type PairSort,
-} from "../utils/perfData";
-import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
 
 /** What each drill can sort by. Hours adds the time of day, which is also its
  *  default — a day reads as a timeline first.

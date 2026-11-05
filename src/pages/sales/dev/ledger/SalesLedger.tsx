@@ -1,12 +1,11 @@
-import { useSalesState } from "../hooks/useSalesState";
+// Hooks
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
-import { getWeekly } from "../../../../api/sales";
-import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
-import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
-import type { Store } from "../../../../interfaces";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+import { useSalesState } from "../hooks/useSalesState";
+
+// Redux
 import {
   setWeeklySales,
   setWeeklySalesLastWeek,
@@ -27,23 +26,35 @@ import {
   setLedgerSelectedDate,
   reQueryLedger,
 } from "../../../../features/dev/devSalesLedgerSlice";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
+import { getWeekly } from "../../../../api/sales";
+import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+
+// Utils
+import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
+import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
+import { selectionFor } from "../utils/storeComparison";
+import { PCT_COL_W } from "../utils/index";
+
+// Interfaces
+import type { Store } from "../../../../interfaces";
+import type { SevFilter } from "../utils/index";
+
+// Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import DeptInvestigation from "../investigate/DeptInvestigation";
 import DeptMatrixPanel from "../deptMatrix/DeptMatrixPanel";
 import GroupComparisonPanel from "../groupCompare/GroupComparisonPanel";
-import { selectionFor } from "../utils/storeComparison";
-import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "../storePanel/StoreDetailPopup";
-import LedgerHeader from "./components/LedgerHeader";
 import LedgerRow from "../components/LedgerRow";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { PCT_COL_W } from "../utils/index";
-import type { SevFilter } from "../utils/index";
-import { isGroupSearch } from "../../../../features/searchSlice";
 import StoreColFilter from "../components/StoreColFilter";
+import LedgerEntryCard from "./components/LedgerEntryCard";
+import LedgerHeader from "./components/LedgerHeader";
 
 type SortColumn = "ty" | "vsLW" | "vsLY";
 

@@ -1,5 +1,8 @@
-import type { SubSale } from "../../../../interfaces";
+// Utils
 import { countedRows, hashRows } from "../../../../utils/hashSubs";
+
+// Interfaces
+import type { SubSale } from "../../../../interfaces";
 
 /**
  * The sub-department comparison, as a report.

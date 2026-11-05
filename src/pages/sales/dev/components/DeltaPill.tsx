@@ -1,3 +1,4 @@
+// Utils
 import { comparisonPillClass, pillClass } from "../../../../utils/severity";
 import { PCT_COL_W } from "../utils/index";
 

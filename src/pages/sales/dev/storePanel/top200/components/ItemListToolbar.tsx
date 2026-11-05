@@ -1,4 +1,7 @@
+// API
 import { TOP_ITEMS_SHOWN } from "../../../../../../api/topItems";
+
+// Interfaces
 import type { TopItemCompared } from "../utils/topItems";
 
 /** The list's search box, sub dept filter and count. */

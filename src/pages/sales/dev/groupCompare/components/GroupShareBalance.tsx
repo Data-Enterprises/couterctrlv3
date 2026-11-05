@@ -1,7 +1,11 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useTriStateSort } from "../../../../../utils/useTriStateSort";
+
+// Utils
 import { formatBigNumber, formatCurrencyCompact } from "../../../../../utils";
-import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import { severityDotClass } from "../../../../../utils/severity";
+import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import {
   byStanding,
   shareBalanceOf,
@@ -11,14 +15,17 @@ import {
   type ShareStanding,
 } from "../utils/shareBalance";
 import { shareDaysOf, storeKeyOf } from "../utils/shareByDay";
+
+// Interfaces
+import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { ComparisonRow } from "../../utils/storeComparison";
+import type { LedgerRowData } from "../../components/LedgerRow";
+
+// Components
 import SortHeader, {
   PERF_SORT_HEADER,
 } from "../../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 import GroupShareStoreDetail from "./GroupShareStoreDetail";
-import type { ComparisonRow } from "../../utils/storeComparison";
-import type { LedgerRowData } from "../../components/LedgerRow";
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 
 /**
  * Each store's share of group sales, as a balance.

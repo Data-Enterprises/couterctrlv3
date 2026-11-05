@@ -1,9 +1,12 @@
+// Interfaces
 import type { Summary } from "../utils/deptInvestigation";
 import type {
   Holds,
   Spread,
   Vitals as VitalsShape,
 } from "../utils/investigationSteps";
+
+// Components
 import Carousel from "./Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";

@@ -1,4 +1,8 @@
+// Hooks
 import { useState, type ReactNode } from "react";
+
+// Utils
+import { formatCurrency2, formatBigNumber } from "../../../../../utils";
 import {
   ladderFor,
   ladderSays,
@@ -11,7 +15,8 @@ import {
   type PricePoint,
   type SupplyEvent,
 } from "../utils/deptInvestigation";
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
+
+// Interfaces
 import type {
   AllOrder,
   ReceiverItemSearchReceiver,

@@ -1,6 +1,11 @@
-import type { ReactNode } from "react";
-import CursorTip from "../../../../../components-dev/tooltip/CursorTip";
+// Hooks
 import { useCursorTip } from "../../../../../components-dev/tooltip/useCursorTip";
+
+// Interfaces
+import type { ReactNode } from "react";
+
+// Components
+import CursorTip from "../../../../../components-dev/tooltip/CursorTip";
 
 /**
  * An icon button in the store panel's header with the app's tooltip

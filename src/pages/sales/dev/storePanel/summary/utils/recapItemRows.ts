@@ -1,5 +1,8 @@
-import type { MultiSelectOption } from "../../../../../../components-dev/filters/MultiSelectFilter";
+// Utils
 import { NO_VENDOR } from "./recapItems";
+
+// Interfaces
+import type { MultiSelectOption } from "../../../../../../components-dev/filters/MultiSelectFilter";
 import type { DayItemsState, RecapItem, RecapItemRow, RecapVendorPart } from "../interfaces/index";
 
 /** Where a period's items are: every day's in hand, or why not. */

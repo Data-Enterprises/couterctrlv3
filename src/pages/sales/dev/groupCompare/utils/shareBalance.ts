@@ -1,3 +1,4 @@
+// Interfaces
 import type { ComparisonRow } from "../../utils/storeComparison";
 
 /**

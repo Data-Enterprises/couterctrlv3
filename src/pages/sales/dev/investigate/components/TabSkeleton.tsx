@@ -1,3 +1,4 @@
+// Components
 import Bar from "./Bar";
 import LoadNote from "./LoadNote";
 import SkCard from "./SkCard";

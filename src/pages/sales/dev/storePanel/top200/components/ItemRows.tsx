@@ -1,5 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../../../../../hooks";
-import type { TopItemPricePoint } from "../../../../../../api/topItems";
+
+// Utils
 import { pillClass } from "../../../../../../utils/severity";
 import {
   amountText,
@@ -9,6 +11,9 @@ import {
   type TopItemCompared,
 } from "../utils/topItems";
 import { dotClass, moneyText, pctText } from "../utils";
+
+// Interfaces
+import type { TopItemPricePoint } from "../../../../../../api/topItems";
 
 /** The ranked list's rows. */
 const ItemRows = ({

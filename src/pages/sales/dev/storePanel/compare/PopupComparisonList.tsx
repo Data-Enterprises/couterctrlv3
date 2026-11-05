@@ -1,17 +1,26 @@
+// Hooks
 import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useTriStateSort } from "../../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setCounterpart,
   setLedgerTab,
 } from "../../../../../features/dev/devSalesLedgerSlice";
-import { applyStoreNumberToName } from "../../utils/ledgerUtils";
-import StoreColFilter from "../../components/StoreColFilter";
-import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../../components-dev/SortHeader";
+
+// Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import { useTriStateSort } from "../../../../../utils/useTriStateSort";
-import type { LedgerRowData } from "../../components/LedgerRow";
+import { applyStoreNumberToName } from "../../utils/ledgerUtils";
+import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
+
+// Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { LedgerRowData } from "../../components/LedgerRow";
+
+// Components
+import SortHeader, { PERF_SORT_HEADER } from "../../../../../components-dev/SortHeader";
+import StoreColFilter from "../../components/StoreColFilter";
 
 /**
  * The Comparison tab: every other store in the search, against this one.

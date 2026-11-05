@@ -1,3 +1,4 @@
+// Interfaces
 import type { Gate } from "../../../utils/deptReport";
 
 /** Pass, fail, or never reached. A tick, a cross, or an empty ring. */

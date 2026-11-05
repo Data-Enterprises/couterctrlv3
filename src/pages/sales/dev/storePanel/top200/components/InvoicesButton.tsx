@@ -1,9 +1,14 @@
+// Utils
+import { dayText } from "../utils";
+
+// Interfaces
+import type { ItemDetailResponse } from "../../../../../../api/topItems";
+
+// Components
 import {
   ChevronRightIcon,
   DocumentTextIcon,
 } from "@heroicons/react/20/solid";
-import type { ItemDetailResponse } from "../../../../../../api/topItems";
-import { dayText } from "../utils";
 
 /** Opens the invoices rail. */
 const InvoicesButton = ({

@@ -1,3 +1,4 @@
+// Components
 import Bar from "./Bar";
 
 const NAME_W = ["78%", "62%", "85%", "55%", "72%", "68%", "90%", "60%"];

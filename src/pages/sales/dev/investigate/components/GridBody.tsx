@@ -1,6 +1,11 @@
-import type { ItemVerdict } from "../utils/deptInvestigation";
+// Utils
 import { COLUMNS, tintOf } from "../utils/columns";
+
+// Interfaces
+import type { ItemVerdict } from "../utils/deptInvestigation";
 import type { useRowSelection } from "../hooks";
+
+// Components
 import Bar from "./Bar";
 
 /** One page of the grid's rows. */

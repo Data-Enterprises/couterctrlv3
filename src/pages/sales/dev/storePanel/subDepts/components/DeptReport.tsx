@@ -1,23 +1,34 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { severityDotClass } from "../../../../../../utils/severity";
-import { getSubs } from "../../../../../../api/sales";
-import { addDays, sameWeekDayLastYear } from "../../../../../../utils";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+import { useSalesState } from "../../../hooks/useSalesState";
+
+// Redux
 import { setInvestigation } from "../../../../../../features/dev/devSalesLedgerSlice";
 import { rememberCounterpart } from "../../../../../../features/dev/devSalesCacheSlice";
-import { useSalesState } from "../../../hooks/useSalesState";
+
+// API
+import { getSubs } from "../../../../../../api/sales";
+
+// Utils
+import { severityDotClass } from "../../../../../../utils/severity";
+import { addDays, sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
-import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
-import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
-import PageInfoButton from "../../../../../../components-dev/PageInfoButton";
 import {
   buildReport,
   hashTotals,
   totalsFrom,
   type ReportRow,
 } from "../../../utils/deptReport";
-import type { SubSale } from "../../../../../../interfaces";
 import { LIST_COLS, money } from "../utils";
+
+// Interfaces
+import type { SubSale } from "../../../../../../interfaces";
+
+// Components
+import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
+import PageInfoButton from "../../../../../../components-dev/PageInfoButton";
 import ListRow from "./ListRow";
 import Detail from "./Detail";
 

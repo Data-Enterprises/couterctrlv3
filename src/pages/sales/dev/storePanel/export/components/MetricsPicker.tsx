@@ -1,5 +1,8 @@
-import type { AggFn } from "../../../../../../utils/csvExport";
+// Utils
 import { AGG_OPTIONS } from "../utils/index";
+
+// Interfaces
+import type { AggFn } from "../../../../../../utils/csvExport";
 import type { MetricDef, MetricSelection } from "../interfaces/index";
 
 interface MetricsPickerProps {

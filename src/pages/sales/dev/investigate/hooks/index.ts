@@ -1,4 +1,7 @@
+// Hooks
 import { useMemo, useRef, useState } from "react";
+
+// Interfaces
 import type { Cause, ItemVerdict } from "../utils/deptInvestigation";
 import type { FilterKind } from "../interfaces";
 

@@ -1,15 +1,8 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
 import { CTA_SEVERITY_CLASSES, severityDotClass } from "../../../../../../utils/severity";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/20/solid";
-import {
-  type ItemDetailResponse,
-  type TopItemPricePoint,
-} from "../../../../../../api/topItems";
 import { avgPrice } from "../utils/topItems";
 import {
   amountTextOf,
@@ -18,7 +11,21 @@ import {
   type CompareMetric,
 } from "../utils/topItemsCompare";
 import { money, pct, pts, signedMoney, toneOf } from "../utils";
+
+// Interfaces
+import {
+  type ItemDetailResponse,
+  type TopItemPricePoint,
+} from "../../../../../../api/topItems";
 import type { PriceLine } from "../interfaces";
+
+// Components
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/20/solid";
 import PriceRow from "./PriceRow";
 
 /**

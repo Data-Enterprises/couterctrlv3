@@ -1,4 +1,7 @@
+// Utils
 import { SEV_CHIP } from "../utils/index";
+
+// Interfaces
 import type { ItemSev } from "../interfaces/index";
 
 interface SubDeptItemsOptionProps {

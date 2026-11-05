@@ -1,8 +1,4 @@
-import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { SortState } from "../../../../../utils/useTriStateSort";
-import SortHeader from "../../../../../components-dev/SortHeader";
-import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
-import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
+// Utils
 import {
   CAUSE_LABEL,
   type Cause,
@@ -10,8 +6,17 @@ import {
 } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
 import { COLUMNS, label, ruleOf, tintOf } from "../utils/columns";
+
+// Interfaces
+import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { SortState } from "../../../../../utils/useTriStateSort";
 import type { useItemFilters } from "../hooks";
 import type { Col, FilterKind } from "../interfaces";
+
+// Components
+import SortHeader from "../../../../../components-dev/SortHeader";
+import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
 
 /** The grid's heading row: a filter, a sort or a plain label per column. */
 const GridHead = ({

@@ -1,3 +1,4 @@
+// Interfaces
 import type { ItemSort, ItemSortCol, RecapItemRow } from "../interfaces/index";
 
 /** Where the item view opens: biggest net sales first, as Top 200 does. */

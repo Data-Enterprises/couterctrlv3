@@ -1,6 +1,9 @@
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
+// Utils
 import { CAUSE_LABEL, type ItemVerdict } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
+
+// Components
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 /** The grid's right-click menu: the selection first, then copy by cause. */
 const GridContextMenu = ({

@@ -1,3 +1,4 @@
+// Interfaces
 import type { Vitals as VitalsShape } from "../utils/investigationSteps";
 
 /** The department against itself: a standing difference, or something that

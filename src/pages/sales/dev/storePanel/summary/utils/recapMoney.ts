@@ -1,5 +1,8 @@
-import type { SubSale } from "../../../../../../interfaces";
+// Utils
 import { countedRows } from "../../../../../../utils/hashSubs";
+
+// Interfaces
+import type { SubSale } from "../../../../../../interfaces";
 import type { RecapMoney } from "../interfaces/index";
 
 /**

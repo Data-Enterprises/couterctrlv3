@@ -1,5 +1,8 @@
-import { shallowEqual } from "react-redux";
+// Hooks
 import { useAppSelector } from "../../../../hooks";
+
+// Redux
+import { shallowEqual } from "react-redux";
 
 /**
  * The dev tree's Sales state.

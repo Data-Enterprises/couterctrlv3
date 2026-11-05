@@ -1,4 +1,7 @@
-import RecapHourTip from "./RecapHourTip";
+// Hooks
+import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
+
+// Utils
 import { niceTicks } from "../utils/recapAxis";
 import { perTradingHour } from "../utils/recapDays";
 import {
@@ -11,8 +14,12 @@ import {
   one,
 } from "../utils/recapFormat";
 import { DAY_CARD } from "../utils/recapGrid";
+
+// Interfaces
 import type { RecapDay } from "../interfaces/index";
-import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
+
+// Components
+import RecapHourTip from "./RecapHourTip";
 
 /** One fact in the column: its label, then its figure with an aside at the right. */
 const fact = (label: string, value: string, sub: string, first: boolean) => (

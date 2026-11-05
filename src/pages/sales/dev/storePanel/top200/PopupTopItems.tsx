@@ -1,11 +1,16 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   restoreTopItems,
   setTopItems,
   setTopItemsLoading,
 } from "../../../../../features/dev/devSalesLedgerSlice";
+
+// API
 import {
   getItemDetail,
   getTopItems,
@@ -15,6 +20,8 @@ import {
   type ItemDetailResponse,
   type TopItemsResponse,
 } from "../../../../../api/topItems";
+
+// Utils
 import {
   compareWindows,
   deptName,
@@ -38,7 +45,11 @@ import {
   type TopItemCompared,
 } from "./utils/topItems";
 import { dayText, pctText } from "./utils";
+
+// Interfaces
 import type { JsonError } from "../../../../../interfaces";
+
+// Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 import ItemListToolbar from "./components/ItemListToolbar";
 import ItemListHead from "./components/ItemListHead";

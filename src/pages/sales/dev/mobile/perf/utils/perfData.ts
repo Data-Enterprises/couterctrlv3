@@ -1,9 +1,4 @@
-import type {
-  HourlySale,
-  SubDeptMargin,
-  SubSale,
-  WeeklySale,
-} from "../../../../../../interfaces";
+// Utils
 import {
   buildDays as buildDaysCore,
   dayOf,
@@ -20,6 +15,14 @@ import {
   type PerfDay,
   type PerfPair,
 } from "../../../../../../utils/perfPairs";
+
+// Interfaces
+import type {
+  HourlySale,
+  SubDeptMargin,
+  SubSale,
+  WeeklySale,
+} from "../../../../../../interfaces";
 
 export { lyDateFor, storeKeyOf };
 export { pickComparison, type CmpBasis } from "../../../../../../utils/perfPairs";

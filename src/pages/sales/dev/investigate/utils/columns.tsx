@@ -1,13 +1,16 @@
-import type { ReactNode } from "react";
-import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
 import {
   CAUSE_LABEL,
   CAUSE_OWNER,
   CAUSE_TONE,
   type ItemVerdict,
 } from "./deptInvestigation";
-import { formatCurrency2 } from "../../../../../utils";
 import { cash } from ".";
+
+// Interfaces
+import type { ReactNode } from "react";
+import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { Col, FilterKind } from "../interfaces";
 
 /* ------------------------------------------------------------------ */

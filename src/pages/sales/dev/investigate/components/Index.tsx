@@ -1,3 +1,4 @@
+// Interfaces
 import type { Vitals as VitalsShape } from "../utils/investigationSteps";
 
 /** Sales, units and margin on ONE rule, the counterpart at 100, so measures

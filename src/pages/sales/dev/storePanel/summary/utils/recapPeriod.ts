@@ -1,4 +1,7 @@
+// Utils
 import { NO_EXCEPTIONS, byTypeOrder } from "./recapExceptions";
+
+// Interfaces
 import type { DayMixState, RecapExceptions, RecapExceptionType, RecapMix } from "../interfaces/index";
 
 /**

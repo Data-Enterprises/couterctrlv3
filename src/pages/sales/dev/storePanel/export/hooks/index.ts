@@ -1,7 +1,8 @@
+// Hooks
 import { useState, useMemo } from "react";
-import type { SubSale, HourlySale } from "../../../../../../interfaces";
+
+// Utils
 import { fmtNum, aggregateRows } from "../../../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../../../utils/csvExport";
 import {
   fmtDate,
   fmtHour,
@@ -10,6 +11,10 @@ import {
   HOURLY_DIMS,
   HOURLY_METRICS,
 } from "../utils/index";
+
+// Interfaces
+import type { SubSale, HourlySale } from "../../../../../../interfaces";
+import type { AggFn, AggRow } from "../../../../../../utils/csvExport";
 import type { CustomSource, MetricSelection } from "../interfaces/index";
 
 interface CustomExportRows {

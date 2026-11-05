@@ -1,3 +1,4 @@
+// Interfaces
 import type { Dispatch, SetStateAction } from "react";
 
 interface FinancialsStorePickerProps {

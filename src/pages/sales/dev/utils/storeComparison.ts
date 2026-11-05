@@ -1,5 +1,8 @@
-import type { GradeBasis } from "../../../../utils/grading";
+// Utils
 import { gradeBasis, basisPct } from "./ledgerUtils";
+
+// Interfaces
+import type { GradeBasis } from "../../../../utils/grading";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot, StoreSelection } from "../../../../interfaces";
 import type { LedgerRowData } from "../components/LedgerRow";

@@ -1,5 +1,6 @@
-import type { Cause, ItemVerdict } from "./deptInvestigation";
+// Interfaces
 import type { Focus } from "../../utils/deptReport";
+import type { Cause, ItemVerdict } from "./deptInvestigation";
 
 /**
  * The three steps the items grid does not already answer.

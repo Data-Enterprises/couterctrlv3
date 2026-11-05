@@ -1,12 +1,21 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { getHourly } from "../../../../../../api/sales";
-import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../../../../utils";
 import { useAppSelector } from "../../../../../../hooks";
 import { useSalesState } from "../../../hooks/useSalesState";
+
+// API
+import { getHourly } from "../../../../../../api/sales";
+
+// Utils
+import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
-import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+
+// Interfaces
 import type { HourlySale } from "../../../../../../interfaces";
 import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
+
+// Components
+import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 
 /**
  * Two stores' trading day, hour by hour.

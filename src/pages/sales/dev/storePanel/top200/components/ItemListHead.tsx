@@ -1,10 +1,15 @@
-import type { Dispatch, SetStateAction } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
+// Utils
 import {
   nextTopItemSort,
   type TopItemSort,
   type TopItemSortCol,
 } from "../utils/topItems";
+
+// Interfaces
+import type { Dispatch, SetStateAction } from "react";
+
+// Components
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 
 /** The list's column headings. */
 const ItemListHead = ({

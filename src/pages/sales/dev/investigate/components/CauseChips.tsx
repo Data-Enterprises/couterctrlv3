@@ -1,3 +1,4 @@
+// Utils
 import {
   CAUSE_LABEL,
   CAUSE_OWNER,
@@ -6,6 +7,8 @@ import {
   type CauseTotal,
 } from "../utils/deptInvestigation";
 import { CAUSE_ORDER } from "../utils";
+
+// Components
 import Bar from "./Bar";
 
 /** The cause piles, as chips that narrow the grid to one of them. */

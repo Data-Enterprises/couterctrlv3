@@ -1,9 +1,14 @@
+// API
 import {
   COST_HISTORY_DAYS,
   type ItemDetailResponse,
 } from "../../../../../../api/topItems";
-import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+
+// Utils
 import { dayText, moneyText } from "../utils";
+
+// Components
+import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 
 /** What it costs to buy: paying now, best seen, and what waiting could save. */
 const ItemBuyCost = ({

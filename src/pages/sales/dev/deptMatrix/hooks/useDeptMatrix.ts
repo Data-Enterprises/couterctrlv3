@@ -1,9 +1,16 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
+
+// API
 import { getSubs } from "../../../../../api/sales";
+
+// Utils
 import { fetchAllPages } from "../../../../../utils/paging";
 import { scopeToStoreNumber } from "../../../../../utils/storeIdentity";
 import { buildMatrix, type Matrix } from "../utils/deptMatrix";
+
+// Interfaces
 import type { SubSale, SubSalesJsonResp } from "../../../../../interfaces";
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 

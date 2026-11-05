@@ -1,16 +1,23 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
-import type { DayDot } from "../../../../../interfaces";
-import RecapDayView from "./components/RecapDayView";
-import RecapItemsView from "./components/RecapItemsView";
+import { useDayMix } from "./hooks/useDayMix";
+import { usePanelSize } from "./hooks/usePanelSize";
+import { useWeekExceptions } from "./hooks/useWeekExceptions";
+
+// Utils
 import { buildRecapDays, sellsByWeight, weekOf } from "./utils/recapDays";
 import { dayLabel, dayName } from "./utils/recapFormat";
 import { periodItems } from "./utils/recapItemRows";
 import { moneyForDates } from "./utils/recapMoney";
 import { combineMix } from "./utils/recapPeriod";
-import { useDayMix } from "./hooks/useDayMix";
-import { usePanelSize } from "./hooks/usePanelSize";
-import { useWeekExceptions } from "./hooks/useWeekExceptions";
+
+// Interfaces
+import type { DayDot } from "../../../../../interfaces";
+
+// Components
+import RecapDayView from "./components/RecapDayView";
+import RecapItemsView from "./components/RecapItemsView";
 
 /**
  * Summary: the week, or one day of it, in one view.

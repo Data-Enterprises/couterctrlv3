@@ -1,3 +1,14 @@
+// Utils
+import { ctaClasses } from "../utils";
+
+// Interfaces
+import type {
+  ItemInsight,
+  ItemTone,
+  TopItemCompared,
+} from "../utils/topItems";
+
+// Components
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -5,12 +16,6 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/20/solid";
-import type {
-  ItemInsight,
-  ItemTone,
-  TopItemCompared,
-} from "../utils/topItems";
-import { ctaClasses } from "../utils";
 
 const CtaIcon = ({ tone, cls }: { tone: ItemTone; cls: string }) => {
   if (tone === "critical") return <ExclamationTriangleIcon className={cls} />;

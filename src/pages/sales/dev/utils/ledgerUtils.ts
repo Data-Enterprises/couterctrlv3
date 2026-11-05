@@ -1,3 +1,4 @@
+// Utils
 import { addDays, sameWeekDayLastYear } from "../../../../utils";
 import { rowsToCsv } from "../../../../utils/csvExport";
 import { matchDatedRows } from "../../../../utils/grading";
@@ -9,6 +10,8 @@ import {
   type GradeBasis,
 } from "../../../../utils/grading";
 import { getHolidayName, getHolidayLastYear } from "../../../../utils/holidays";
+
+// Interfaces
 import type { HolidayName } from "../../../../utils/holidays";
 import type {
   WeeklySale,
@@ -17,8 +20,8 @@ import type {
   SubDeptMargin,
   Store,
 } from "../../../../interfaces";
-import type { LedgerRowData, Severity } from "../components/LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { LedgerRowData, Severity } from "../components/LedgerRow";
 
 // Universal now (Item Grading uses it too); re-exported for the ledger code.
 export { matchDatedRows };

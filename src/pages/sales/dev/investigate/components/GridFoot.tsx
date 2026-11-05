@@ -1,5 +1,8 @@
-import type { ItemVerdict } from "../utils/deptInvestigation";
+// Utils
 import { COLUMNS, tintOf } from "../utils/columns";
+
+// Interfaces
+import type { ItemVerdict } from "../utils/deptInvestigation";
 
 /** The totals row, over every filtered item. */
 const GridFoot = ({

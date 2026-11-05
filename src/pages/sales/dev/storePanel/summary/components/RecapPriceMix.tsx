@@ -1,5 +1,8 @@
+// Utils
 import { priceShares } from "../utils/recapMix";
 import { money0, pct } from "../utils/recapFormat";
+
+// Interfaces
 import type { DayMixState } from "../interfaces/index";
 
 /**

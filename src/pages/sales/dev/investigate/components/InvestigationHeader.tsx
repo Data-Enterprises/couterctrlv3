@@ -1,8 +1,15 @@
+// Hooks
 import { useEffect, useRef } from "react";
-import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
-import PageInfoButton from "../../../../../components-dev/PageInfoButton";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+
+// Utils
 import { usDate } from "../utils";
+
+// Interfaces
+import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import Waves from "./Waves";
 
 /** The navy bar: the way out, the two stores, and the export. */

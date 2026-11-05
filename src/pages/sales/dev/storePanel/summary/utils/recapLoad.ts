@@ -1,8 +1,11 @@
-import type { SubDeptMargin } from "../../../../../../interfaces";
+// Utils
 import { countedRows } from "../../../../../../utils/hashSubs";
 import { fetchSubDeptRowsOrEmpty } from "../../../../../../utils/marginRows";
 import { scopeToStoreNumber } from "../../../../../../utils/storeIdentity";
 import { foldItems } from "./recapItems";
+
+// Interfaces
+import type { SubDeptMargin } from "../../../../../../interfaces";
 import type { RecapItem } from "../interfaces/index";
 
 /**

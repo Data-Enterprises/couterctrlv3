@@ -1,3 +1,4 @@
+// Interfaces
 import type { DimDef } from "../interfaces/index";
 
 interface GroupByPickerProps {

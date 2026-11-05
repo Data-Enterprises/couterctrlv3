@@ -1,5 +1,8 @@
+// Hooks
 import { useMemo } from "react";
 import { useAppSelector } from "../../../../hooks";
+
+// Utils
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../utils/ledgerUtils";
 import {
@@ -8,10 +11,14 @@ import {
   scopeToDay,
   type Excluded,
 } from "../utils/storeComparison";
+
+// Interfaces
+import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { LedgerRowData } from "../components/LedgerRow";
+
+// Components
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import GroupShareBalance from "./components/GroupShareBalance";
-import type { LedgerRowData } from "../components/LedgerRow";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
  * Where every store stands inside the group that was searched.

@@ -1,8 +1,7 @@
+// Hooks
 import { useMemo, useState } from "react";
-import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
-import TextFilter from "../../../../../../components-dev/filters/TextFilter";
-import RecapItemsTable from "./RecapItemsTable";
-import RecapPager from "./RecapPager";
+
+// Utils
 import { dayLabel } from "../utils/recapFormat";
 import { TRAY } from "../utils/recapGrid";
 import { clampPage } from "../utils/recapItemPaging";
@@ -13,9 +12,17 @@ import {
   subDeptOptions,
   vendorOptions,
 } from "../utils/recapItemRows";
-import type { PeriodItems } from "../utils/recapItemRows";
 import { DEFAULT_ITEM_SORT, nextItemSort, sortItemRows } from "../utils/recapItemSort";
+
+// Interfaces
+import type { PeriodItems } from "../utils/recapItemRows";
 import type { ItemSort, ItemSortCol } from "../interfaces/index";
+
+// Components
+import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
+import TextFilter from "../../../../../../components-dev/filters/TextFilter";
+import RecapItemsTable from "./RecapItemsTable";
+import RecapPager from "./RecapPager";
 
 /**
  * Summary's item view (board 18): every item the period sold, a page at a

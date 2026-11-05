@@ -1,6 +1,9 @@
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+
+// Interfaces
 import type { Stage } from "../hooks/useDeptInvestigation";
 import type { Cause } from "./deptInvestigation";
-import { formatCurrency2 } from "../../../../../utils";
 
 /**
  * How many rows a page holds.

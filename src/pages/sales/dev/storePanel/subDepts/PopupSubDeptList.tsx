@@ -1,6 +1,9 @@
-import { useSalesState } from "../../hooks/useSalesState";
+// Hooks
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../../hooks";
+import { useSalesState } from "../../hooks/useSalesState";
+
+// Redux
 import {
   setItemThreshold,
   setSubDeptThreshold,
@@ -11,9 +14,8 @@ import {
   setInactiveSubDeptItems,
   setLastFetchedItemsKey,
 } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
-import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
-import ThresholdSlider from "../../../../../components-dev/filters/ThresholdSlider";
+
+// Utils
 import {
   formatCurrency2,
   formatBigNumber,
@@ -22,6 +24,7 @@ import {
   sameWeekDayLastYear,
 } from "../../../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../../../utils/marginRows";
+import { aggregateByCode, itemSeverity, matchItemRows } from "../../../../../utils/itemGrading";
 import {
   scopeToStoreNumber,
   withProductCode,
@@ -36,17 +39,6 @@ import {
   type GradeBasis,
 } from "../../utils/ledgerUtils";
 import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/20/solid";
-import type { Severity } from "../../components/LedgerRow";
-import { aggregateByCode, itemSeverity, matchItemRows } from "../../../../../utils/itemGrading";
-import type { SubDeptMargin } from "../../../../../interfaces";
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
-import {
   formatPct,
   chipClass,
   CTA_SEVERITY_CLASSES,
@@ -54,6 +46,23 @@ import {
   PCT_COL_W,
   type SevFilter,
 } from "../../utils/index";
+
+// Interfaces
+import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { SubDeptMargin } from "../../../../../interfaces";
+import type { Severity } from "../../components/LedgerRow";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
+import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../../components-dev/filters/ThresholdSlider";
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import SeverityBadge from "../../../../../components-dev/SeverityBadge";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";

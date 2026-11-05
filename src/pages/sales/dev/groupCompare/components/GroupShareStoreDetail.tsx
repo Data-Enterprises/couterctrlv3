@@ -1,11 +1,9 @@
+// Hooks
 import { useMemo, type ReactNode } from "react";
-import {
-  ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
-  MinusIcon,
-} from "@heroicons/react/16/solid";
-import CtaStrip, { type CtaTone } from "../../../../../components-dev/CtaStrip";
+
+// Utils
 import { formatBigNumber, formatCurrencyCompact } from "../../../../../utils";
+import { severityDotClass } from "../../../../../utils/severity";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import {
   counterweightOf,
@@ -14,7 +12,14 @@ import {
 } from "../utils/shareBalance";
 import { shareDayNoteOf, type ShareDay } from "../utils/shareByDay";
 import { shareTrendOf, trendPoints } from "../utils/shareQuestions";
-import { severityDotClass } from "../../../../../utils/severity";
+
+// Components
+import {
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
+  MinusIcon,
+} from "@heroicons/react/16/solid";
+import CtaStrip, { type CtaTone } from "../../../../../components-dev/CtaStrip";
 
 /**
  * One store out of the balance, as the questions it raises.

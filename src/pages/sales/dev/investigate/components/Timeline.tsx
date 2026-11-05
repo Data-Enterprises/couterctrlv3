@@ -1,3 +1,4 @@
+// Interfaces
 import type { SupplyRecord } from "../utils/investigationSteps";
 
 /**

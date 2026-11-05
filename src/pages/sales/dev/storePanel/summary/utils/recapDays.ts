@@ -1,6 +1,9 @@
-import type { DayDot, HourlySale, SubSale } from "../../../../../../interfaces";
+// Utils
 import { countedRows } from "../../../../../../utils/hashSubs";
 import { hoursForDates, hoursForDay } from "./recapHours";
+
+// Interfaces
+import type { DayDot, HourlySale, SubSale } from "../../../../../../interfaces";
 import type { RecapDay, RecapDayHours } from "../interfaces/index";
 
 const dayOf = (saleDate: string) => saleDate.split("T")[0];

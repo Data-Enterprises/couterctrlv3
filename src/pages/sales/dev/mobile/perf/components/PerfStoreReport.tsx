@@ -1,7 +1,12 @@
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { cmpLabels, cmpWord, type CmpBasis } from "../utils/perfData";
+
+// Interfaces
 import type { PerfDay, PerfTotals } from "../utils/perfData";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfDelta from "../../../../../../components-dev/mobile/perf/PerfDelta";

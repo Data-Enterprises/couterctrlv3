@@ -1,8 +1,11 @@
+// Utils
 import {
   formatPricedUnits,
   isWeighted,
   pricedUnits,
 } from "../../../../../../utils/pricedUnits";
+
+// Interfaces
 import type { TopItemRow, TopItemPricePoint } from "../../../../../../api/topItems";
 
 /**

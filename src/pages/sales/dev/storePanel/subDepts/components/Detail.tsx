@@ -1,4 +1,17 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
+import {
+  CTA_SEVERITY_CLASSES,
+  type Severity,
+} from "../../../../../../utils/severity";
+import { money, signed } from "../utils";
+
+// Interfaces
+import type { ReportRow } from "../../../utils/deptReport";
+
+// Components
 import {
   CheckCircleIcon,
   ChevronDownIcon,
@@ -6,14 +19,8 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
-import {
-  CTA_SEVERITY_CLASSES,
-  type Severity,
-} from "../../../../../../utils/severity";
 import { Block, Measure } from "./CompareBlocks";
 import Tile from "./Tile";
-import { money, signed } from "../utils";
-import type { ReportRow } from "../../../utils/deptReport";
 
 /** Whole units, with the measure where the department rings by weight. */
 const whole = (v: number) => Math.round(v).toLocaleString("en-US");

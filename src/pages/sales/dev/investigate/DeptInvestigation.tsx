@@ -1,11 +1,34 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useDeptInvestigation } from "./hooks/useDeptInvestigation";
 import { useItemFilters, useRowSelection } from "./hooks";
+
+// Redux
+import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { supplyWindow } from "./utils/investigationData";
 import { CAUSE_LABEL, type ItemVerdict } from "./utils/deptInvestigation";
-import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import {
+  desksOf,
+  holdsUp,
+  spreadOf,
+  supplyOf,
+  vitalsOf,
+  type Desk,
+} from "./utils/investigationSteps";
+import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
+import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
+
+// Interfaces
+import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { Col, InvestigationTab } from "./interfaces";
+
+// Components
 import TabSkeleton from "./components/TabSkeleton";
 import HoldsPanel from "./components/HoldsPanel";
 import SupplyPanel from "./components/SupplyPanel";
@@ -21,20 +44,6 @@ import GridPager from "./components/GridPager";
 import EvidenceRail from "./components/EvidenceRail";
 import ItemEvidence from "./components/ItemEvidence";
 import GridContextMenu from "./components/GridContextMenu";
-import {
-  desksOf,
-  holdsUp,
-  spreadOf,
-  supplyOf,
-  vitalsOf,
-  type Desk,
-} from "./utils/investigationSteps";
-import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
-import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
-import type { Col, InvestigationTab } from "./interfaces";
-import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
  * Why this store is behind that one, in this department.

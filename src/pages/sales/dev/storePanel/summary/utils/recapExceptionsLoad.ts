@@ -1,4 +1,7 @@
+// API
 import { getExceptionLines, type ExceptionLine, type ExceptionLinesResp } from "../../../../../../api/exceptionLines";
+
+// Utils
 import { fetchAllPages } from "../../../../../../utils/paging";
 import { scopeToStoreNumber } from "../../../../../../utils/storeIdentity";
 

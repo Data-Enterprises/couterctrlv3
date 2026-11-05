@@ -1,4 +1,7 @@
+// Hooks
 import { useRef, useState } from "react";
+
+// Interfaces
 import type { Slide } from "../interfaces";
 
 /* ------------------------------------------------------------------ */

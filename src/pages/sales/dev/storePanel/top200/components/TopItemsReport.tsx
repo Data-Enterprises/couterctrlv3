@@ -1,12 +1,13 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
-import { cacheTopItemsTy } from "../../../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
-import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
-import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
-import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
-import TextFilter from "../../../../../../components-dev/filters/TextFilter";
+import { useTriStateSort } from "../../../../../../utils/useTriStateSort";
+
+// Redux
+import { cacheTopItemsTy } from "../../../../../../features/dev/devSalesLedgerSlice";
+
+// API
 import {
   getItemDetail,
   getTopItems,
@@ -16,10 +17,9 @@ import {
   type TopItemRow,
   type TopItemsResponse,
 } from "../../../../../../api/topItems";
+
+// Utils
 import { severityDotClass } from "../../../../../../utils/severity";
-import SortHeader from "../../../../../../components-dev/SortHeader";
-import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
-import { useTriStateSort } from "../../../../../../utils/useTriStateSort";
 import {
   compareTopItems,
   compareTotals,
@@ -32,6 +32,15 @@ import {
   type CompareMetric,
 } from "../utils/topItemsCompare";
 import { money } from "../utils";
+
+// Components
+import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
+import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
+import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../../../../components-dev/filters/TextFilter";
+import SortHeader from "../../../../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import Row from "./Row";
 import Rail from "./Rail";
 

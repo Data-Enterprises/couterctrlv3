@@ -1,4 +1,4 @@
-import type { ItemDetailResponse } from "../../../../../../api/topItems";
+// Utils
 import {
   amountText,
   avgPrice,
@@ -9,6 +9,9 @@ import {
   type TopItemCompared,
 } from "../utils/topItems";
 import { dayText, moneyText } from "../utils";
+
+// Interfaces
+import type { ItemDetailResponse } from "../../../../../../api/topItems";
 
 /** Whether the cost and the retail are right: price, cost, margin, profit. */
 const ItemCost = ({

@@ -1,6 +1,9 @@
-import type { Stage } from "../hooks/useDeptInvestigation";
+// Utils
 import { SUPPLY_LOOKBACK_DAYS } from "../utils/investigationData";
 import { STAGE_NOTE } from "../utils";
+
+// Interfaces
+import type { Stage } from "../hooks/useDeptInvestigation";
 
 const SupplyWindowNote = ({
   them,

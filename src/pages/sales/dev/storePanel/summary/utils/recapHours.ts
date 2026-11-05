@@ -1,3 +1,4 @@
+// Interfaces
 import type { HourlySale } from "../../../../../../interfaces";
 import type { RecapDayHours, RecapHour } from "../interfaces/index";
 

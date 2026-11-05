@@ -1,7 +1,12 @@
-import { ChevronLeftIcon } from "@heroicons/react/20/solid";
+// Utils
+import { dayText, moneyText } from "../utils";
+
+// Interfaces
 import type { ItemDetailResponse } from "../../../../../../api/topItems";
 import type { TopItemCompared } from "../utils/topItems";
-import { dayText, moneyText } from "../utils";
+
+// Components
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 
 /** The selected item's invoices, sliding over the panel. */
 const InvoicesRail = ({

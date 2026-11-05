@@ -1,3 +1,4 @@
+// Interfaces
 import type { ReactNode } from "react";
 
 /** Why the screen is holding something back, beside a light that says it is

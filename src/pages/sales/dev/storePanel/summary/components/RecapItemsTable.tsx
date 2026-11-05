@@ -1,11 +1,18 @@
+// Hooks
 import { useState } from "react";
-import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
-import RecapSortHead from "./RecapSortHead";
+import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
+
+// Utils
 import { count, money, weight3 } from "../utils/recapFormat";
 import { NO_VENDOR } from "../utils/recapItems";
+
+// Interfaces
 import type { ItemSort, ItemSortCol, RecapItemRow } from "../interfaces/index";
+
+// Components
+import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
-import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
+import RecapSortHead from "./RecapSortHead";
 
 /**
  * UPC, Description, Sub dept, Vendor, Sales (net), Qty, [Weight]. Fixed

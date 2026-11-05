@@ -1,4 +1,7 @@
+// Hooks
 import { useEffect, useState } from "react";
+
+// Components
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 

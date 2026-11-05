@@ -1,6 +1,11 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+
+// Redux
 import { rememberInvestigation } from "../../../../../features/dev/devSalesCacheSlice";
+
+// Utils
 import {
   codesIn,
   fetchOrders,
@@ -20,6 +25,8 @@ import {
   type ItemVerdict,
   type Summary,
 } from "../utils/deptInvestigation";
+
+// Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 
 /**

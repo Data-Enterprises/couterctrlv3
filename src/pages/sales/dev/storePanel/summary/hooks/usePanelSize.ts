@@ -1,3 +1,4 @@
+// Hooks
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Below this width the recap lays itself out for a narrow panel. */

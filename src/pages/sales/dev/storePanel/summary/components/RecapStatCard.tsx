@@ -1,5 +1,8 @@
-import type { ReactNode } from "react";
+// Utils
 import { DAY_CARD } from "../utils/recapGrid";
+
+// Interfaces
+import type { ReactNode } from "react";
 
 /** One line under the headline: what it is, its figure, and a quieter aside. */
 export interface StatRow {

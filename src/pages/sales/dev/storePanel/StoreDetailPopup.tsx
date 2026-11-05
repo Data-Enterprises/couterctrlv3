@@ -1,16 +1,15 @@
-﻿import { useState, useEffect, memo } from "react";
+﻿// Hooks
+import { useState, useEffect, memo } from "react";
 import {
   useAppSelector,
   useAppDispatch,
   useCanSeeComingSoon,
 } from "../../../../hooks";
+import { useStoreName } from "../../../../hooks";
+import { useCriticalReport } from "../../../../hooks/useCriticalReport";
+
+// Redux
 import { isGroupSearch } from "../../../../features/searchSlice";
-import { getSubs, getHourly } from "../../../../api/sales";
-import SalesExportModal from "./export/SalesExportModal";
-import PopupTopItems from "./top200/PopupTopItems";
-import TopItemsReport from "./top200/components/TopItemsReport";
-import PopupTipButton from "./components/PopupTipButton";
-import DailyRecap from "./summary/DailyRecap";
 import {
   setSubSales,
   setHourlySales,
@@ -26,6 +25,11 @@ import {
   cacheStoreData,
   restoreStoreData,
 } from "../../../../features/dev/devSalesLedgerSlice";
+
+// API
+import { getSubs, getHourly } from "../../../../api/sales";
+
+// Utils
 import {
   addDays,
   formatGoliathDate,
@@ -41,22 +45,29 @@ import {
   scopeToStoreNumber,
   applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
 } from "../utils/ledgerUtils";
-import { useStoreName } from "../../../../hooks";
+import { formatPct, pillClass, severityHeaderBgClass } from "../utils/index";
+
+// Interfaces
+import type { LedgerRowData } from "../components/LedgerRow";
+import type { StoreSelection } from "../components/LedgerRow";
+
+// Components
 import {
   ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
 } from "@heroicons/react/20/solid";
+import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import PopupDaySidebar from "../components/PopupDaySidebar";
+import SalesExportModal from "./export/SalesExportModal";
+import PopupTopItems from "./top200/PopupTopItems";
+import TopItemsReport from "./top200/components/TopItemsReport";
+import PopupTipButton from "./components/PopupTipButton";
+import DailyRecap from "./summary/DailyRecap";
 import PopupComparisonList from "./compare/PopupComparisonList";
 import DeptReport from "./subDepts/components/DeptReport";
 import HourlySideBySide from "./hourly/components/HourlySideBySide";
-import type { LedgerRowData } from "../components/LedgerRow";
 import PopupSubDeptList from "./subDepts/PopupSubDeptList";
 import PopupHourlyView from "./hourly/PopupHourlyView";
-import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
-import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import type { StoreSelection } from "../components/LedgerRow";
-import { formatPct, pillClass, severityHeaderBgClass } from "../utils/index";
 
 interface StoreDetailPopupProps {
   selection: StoreSelection;

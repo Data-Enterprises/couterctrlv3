@@ -1,5 +1,8 @@
-import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
+// Hooks
 import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
+
+// Components
+import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
 
 /**
  * View items, top right of the Baskets card (board 17): switches Summary to

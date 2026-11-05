@@ -1,4 +1,4 @@
-import type { DayDot } from "./LedgerRow";
+// Utils
 import { getHolidayName } from "../../../../utils/holidays";
 import {
   formatCurrency2,
@@ -6,7 +6,12 @@ import {
   sameWeekDayLastYear,
 } from "../../../../utils";
 import { computeDayMatchedTotals } from "../utils/ledgerUtils";
+
+// Interfaces
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { DayDot } from "./LedgerRow";
+
+// Components
 import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {

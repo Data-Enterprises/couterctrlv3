@@ -1,3 +1,4 @@
+// Hooks
 import {
   useDeferredValue,
   useEffect,
@@ -8,34 +9,9 @@ import {
 } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import SearchCard from "../../../../../components-dev/SearchCard";
-import { getHourly, getSubs, getWeekly } from "../../../../../api/sales";
-import {
-  fetchSubDeptRowsOrEmpty,
-  fetchSubDeptRowsSafe,
-} from "../../../../../utils/marginRows";
-import { withProductCode } from "../../utils/ledgerUtils";
-import InfoModal from "../../../../../components-dev/InfoModal";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../../components-dev/mobile/MobileSortChips";
-import type { DetailTab } from "../../../../../components-dev/mobile/MobilePerfDetail";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import {
-  addDays,
-  formatCurrency2,
-  formatDateSimple,
-  formatGoliathDate,
-  resolveStoreName,
-  sameWeekDayLastYear,
-} from "../../../../../utils";
+
+// Redux
 import { isGroupSearch } from "../../../../../features/searchSlice";
-import type {
-  HourlySale,
-  JsonError,
-  SubDeptMargin,
-  SubSale,
-} from "../../../../../interfaces";
 import {
   cachePerfItems,
   cachePerfStoreData,
@@ -63,6 +39,24 @@ import {
   togglePerfStore,
   type PerfBundle,
 } from "../../../../../features/dev/devSalesPerfSlice";
+
+// API
+import { getHourly, getSubs, getWeekly } from "../../../../../api/sales";
+
+// Utils
+import {
+  fetchSubDeptRowsOrEmpty,
+  fetchSubDeptRowsSafe,
+} from "../../../../../utils/marginRows";
+import {
+  addDays,
+  formatCurrency2,
+  formatDateSimple,
+  formatGoliathDate,
+  resolveStoreName,
+  sameWeekDayLastYear,
+} from "../../../../../utils";
+import { withProductCode } from "../../utils/ledgerUtils";
 import {
   buildDays,
   buildHourPairs,
@@ -87,6 +81,23 @@ import {
   cmpShort,
   type CmpBasis,
 } from "./utils/perfData";
+
+// Interfaces
+import type { DetailTab } from "../../../../../components-dev/mobile/MobilePerfDetail";
+import type {
+  HourlySale,
+  JsonError,
+  SubDeptMargin,
+  SubSale,
+} from "../../../../../interfaces";
+
+// Components
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import SearchCard from "../../../../../components-dev/SearchCard";
+import InfoModal from "../../../../../components-dev/InfoModal";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";

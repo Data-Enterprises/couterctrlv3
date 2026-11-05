@@ -1,4 +1,7 @@
+// Hooks
 import { useState } from "react";
+
+// Interfaces
 import type { SupplyRecord } from "../utils/investigationSteps";
 import type { DocLine } from "../interfaces";
 

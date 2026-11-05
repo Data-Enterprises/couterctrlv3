@@ -1,5 +1,7 @@
+// Hooks
 import { Fragment } from "react";
-import type { AllOrder } from "../../../../../interfaces";
+
+// Utils
 import {
   SUPPLY_LOOKBACK_DAYS,
   type OrdersWave,
@@ -10,7 +12,12 @@ import {
   type Supply,
   type SupplyRecord,
 } from "../utils/investigationSteps";
+
+// Interfaces
+import type { AllOrder } from "../../../../../interfaces";
 import type { DocLine } from "../interfaces";
+
+// Components
 import Carousel from "./Carousel";
 import Timeline from "./Timeline";
 import Document from "./Document";

@@ -1,15 +1,24 @@
+// Hooks
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
+import { useDeptMatrix, type MatrixStore } from "./hooks/useDeptMatrix";
+
+// Redux
 import {
   setGroupView,
   setInvestigation,
   setMatrixOpen,
 } from "../../../../features/dev/devSalesLedgerSlice";
-import { useDeptMatrix, type MatrixStore } from "./hooks/useDeptMatrix";
-import { bestIn, flagged, type Cell, type Matrix } from "./utils/deptMatrix";
+
+// Utils
 import { applyStoreNumberToName } from "../utils/ledgerUtils";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import { bestIn, flagged, type Cell, type Matrix } from "./utils/deptMatrix";
+
+// Interfaces
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+
+// Components
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
 /**
  * Where to look.

@@ -1,9 +1,12 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import {
   CTA_SEVERITY_CLASSES,
   severityDotClass,
   type Severity,
 } from "../../../../../../utils/severity";
+
+// Interfaces
 import type { ItemTone } from "./topItems";
 
 export const money = (v: number) => formatCurrency2(v);

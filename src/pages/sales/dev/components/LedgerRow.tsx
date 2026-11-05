@@ -1,15 +1,22 @@
+// Hooks
 import { memo } from "react";
-import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
+
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
 import { severityDotClass } from "../utils/index";
-import DeltaPill from "./DeltaPill";
 import { applyStoreNumberToName } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
-import type { Severity } from "../../../../utils/severity";
 import { isCompleteCoverage, type GradeBasis } from "../utils/ledgerUtils";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
+// Interfaces
+import type { Severity } from "../../../../utils/severity";
+import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot, StoreSelection } from "../../../../interfaces";
+
+// Components
+import DeltaPill from "./DeltaPill";
+
 // Defined in src/interfaces — the Sales slices hold them.
 export type { DayDot, Severity, StoreSelection };
 

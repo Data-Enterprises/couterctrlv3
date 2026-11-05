@@ -1,3 +1,4 @@
+// Interfaces
 import type { DisplayVerdict } from "../utils/topItems";
 
 /** Whether it is worth a display: the verdict and the checks behind it. */

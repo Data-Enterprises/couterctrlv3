@@ -1,3 +1,4 @@
+// Interfaces
 import type { ReactNode } from "react";
 
 /** The slide-in frame the open item's evidence sits in, over the grid. */

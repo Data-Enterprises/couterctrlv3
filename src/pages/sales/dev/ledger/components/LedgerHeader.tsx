@@ -1,17 +1,24 @@
-import PageInfoButton from "../../../../../components-dev/PageInfoButton";
+// Hooks
 import { useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../../hooks";
+
+// Redux
 import {
   setThreshold,
   setGradingMetric,
   type GradingMetric,
 } from "../../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { formatCurrencyCompact, formatBigNumber } from "../../../../../utils";
-import { formatPct } from "../utils/tierColumnUtils";
 import { headerDeltaPill } from "../../../../../utils/severity";
+import { formatPct } from "../utils/tierColumnUtils";
+
+// Components
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../../components-dev/filters/ThresholdSlider";
 

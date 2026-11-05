@@ -1,10 +1,17 @@
+// Hooks
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+
+// Redux
 import { cacheRecapItems, cacheRecapMix } from "../../../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { foldItems } from "../utils/recapItems";
 import { dayKey as mixKey, isCacheableDay } from "../utils/recapKeys";
 import { loadDayRows } from "../utils/recapLoad";
 import { mixForDay } from "../utils/recapMix";
+
+// Interfaces
 import type { DayItemsState, DayMixState, RecapItem } from "../interfaces/index";
 
 /**

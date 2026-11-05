@@ -1,4 +1,7 @@
+// Utils
 import { LIST_COLS, signed } from "../utils";
+
+// Interfaces
 import type { Finding, ReportRow } from "../../../utils/deptReport";
 
 /** Whole units, signed, with the measure where it is not pieces. */

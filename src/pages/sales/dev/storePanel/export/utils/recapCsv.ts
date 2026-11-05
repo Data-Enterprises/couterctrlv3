@@ -1,6 +1,9 @@
+// Utils
 import { rowsToCsv } from "../../../../../../utils/csvExport";
 import { NO_VENDOR } from "../../summary/utils/recapItems";
 import { DEFAULT_ITEM_SORT, sortItemRows } from "../../summary/utils/recapItemSort";
+
+// Interfaces
 import type { RecapItemRow } from "../../summary/interfaces/index";
 
 /** Every vendor that sold the item, biggest first; blank where it had none. */

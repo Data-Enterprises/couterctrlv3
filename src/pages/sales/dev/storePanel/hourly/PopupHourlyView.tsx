@@ -1,26 +1,20 @@
-﻿import { useState, useMemo, useRef, useEffect } from "react";
+﻿// Hooks
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../../hooks";
+
+// Redux
 import {
   setSelectedHour,
   setHourlyThreshold,
 } from "../../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import {
   formatCurrency2,
   formatBigNumber,
   addDays,
   sameWeekDayLastYear,
 } from "../../../../../utils";
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
-import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PresentationChartLineIcon,
-} from "@heroicons/react/20/solid";
-import type { Severity } from "../../components/LedgerRow";
-import HourTrendChart from "./components/HourTrendChart";
 import {
   formatPct,
   pillClass,
@@ -41,8 +35,23 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../utils/ledgerUtils";
+
+// Interfaces
+import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import type { Severity } from "../../components/LedgerRow";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PresentationChartLineIcon,
+} from "@heroicons/react/20/solid";
 import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../../components-dev/filters/ThresholdSlider";
+import HourTrendChart from "./components/HourTrendChart";
 
 const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
