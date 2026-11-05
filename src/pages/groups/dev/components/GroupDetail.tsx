@@ -24,9 +24,9 @@ import type { JsonError } from "../../../../interfaces";
 // Components
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
+import StoreColumn from "./StoreColumn";
 
 interface Props {
   group: Group;
@@ -216,82 +216,28 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
             {/* A shared group has nothing to add to, so the picker side is
                 dropped entirely rather than shown with dead buttons. */}
             {!readOnly && (
-              <div className="flex-1 min-w-0 flex flex-col min-h-0">
-                <div className="mb-1.5">
-                  <TextFilter
-                    value={unassignedFilter}
-                    onChange={setUnassignedFilter}
-                    placeholder="Search unassigned…"
-                  />
-                </div>
-                <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
-                  Unassigned ({unassigned.length})
-                </div>
-                <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-gray-100">
-                  {unassigned.map((s) => (
-                    <div
-                      key={s.storeid}
-                      className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-gray-100 ${
-                        pending.has(s.storeid) ? "opacity-40" : ""
-                      }`}
-                    >
-                      <span className="truncate">{s.store_name}</span>
-                      <button
-                        onClick={() => handleToggle(s.storeid, "unassigned")}
-                        disabled={pending.has(s.storeid)}
-                        className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-brand_navy border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-                  ))}
-                  {unassigned.length === 0 && (
-                    <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                      No stores found
-                    </div>
-                  )}
-                </div>
-              </div>
+              <StoreColumn
+                kind="unassigned"
+                title="Unassigned"
+                group={group}
+                pending={pending}
+                filter={unassignedFilter}
+                setFilter={setUnassignedFilter}
+                stores={unassigned}
+                handleToggle={handleToggle}
+              />
             )}
 
-            <div className="flex-1 min-w-0 flex flex-col min-h-0">
-              <div className="mb-1.5">
-                <TextFilter
-                  value={assignedFilter}
-                  onChange={setAssignedFilter}
-                  placeholder="Search assigned…"
-                />
-              </div>
-              <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
-                Assigned ({assigned.length})
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-gray-100">
-                {assigned.map((s) => (
-                  <div
-                    key={s.storeid}
-                    className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-gray-100 ${
-                      pending.has(s.storeid) ? "opacity-40" : ""
-                    }`}
-                  >
-                    <span className="truncate">{s.store_name}</span>
-                    {!readOnly && (
-                      <button
-                        onClick={() => handleToggle(s.storeid, "assigned")}
-                        disabled={pending.has(s.storeid)}
-                        className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-red-600 border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        −
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {assigned.length === 0 && (
-                  <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                    No stores found
-                  </div>
-                )}
-              </div>
-            </div>
+            <StoreColumn
+              kind="assigned"
+              title="Assigned"
+              group={group}
+              pending={pending}
+              filter={assignedFilter}
+              setFilter={setAssignedFilter}
+              stores={assigned}
+              handleToggle={handleToggle}
+            />
           </div>
         )}
       </div>
