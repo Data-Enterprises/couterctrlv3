@@ -1,15 +1,10 @@
+// Hooks
 import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getCoupons } from "../../../api/coupons";
 import { useApiContext } from "../../../hooks/useApiContext";
-import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
-import {
-  couponReceipt,
-  fetchCouponEvents,
-} from "../../../api/eventPerf/couponAdapter";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { formatDateSimple } from "../../../utils";
+
+// Redux
 import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setCouponSalesData,
@@ -22,16 +17,31 @@ import {
   setCouponBaseline,
   setCouponMobileLines,
 } from "../../../features/dev/devCouponSalesSlice";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getCoupons } from "../../../api/coupons";
+import {
+  couponReceipt,
+  fetchCouponEvents,
+} from "../../../api/eventPerf/couponAdapter";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { formatDateSimple } from "../../../utils";
+import { buildStoreRows, storeKeyOf, totalsFor } from "./utils";
+
+// Interfaces
 import type { CouponsResponse, JsonError } from "../../../interfaces";
+
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
 import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
-import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
-import CpnSalesExportModal from "./components/CpnSalesExportModal";
-import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
-import { isGroupSearch } from "../../../features/searchSlice";
-
+import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
+import CpnSalesExportModal from "./export/CpnSalesExportModal";
 
 const CouponSales = () => {
   const toast = useToast();

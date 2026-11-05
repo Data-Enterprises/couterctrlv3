@@ -1,7 +1,5 @@
-import type { CouponItem } from "../../../../interfaces";
-import type { GradingOptions } from "./couponGrading";
-import type { Store } from "../../../../interfaces";
-import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
+// Utils
+import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
 import {
   couponValueOf,
   buildStoreRows,
@@ -11,7 +9,11 @@ import {
   buildItemRows,
   buildTransactions,
   type CouponRow,
-} from "./couponGrading";
+} from "../../utils";
+
+// Interfaces
+import type { CouponItem, Store } from "../../../../../interfaces";
+import type { GradingOptions } from "../../utils";
 
 /** What the export is grouped by. Mirrors the page's own breakdowns, so an
  *  exported file matches what was on screen when it was pulled. */

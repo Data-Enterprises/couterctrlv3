@@ -1,8 +1,10 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { formatCurrency2, formatBigNumber, formatDate } from "../../../../utils";
-import { downloadCsv } from "../../../../utils/csvExport";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setCouponBreakdown,
   setSelectedCouponSection,
@@ -12,11 +14,13 @@ import {
   type CouponBreakdown,
   type CouponTierFilter,
 } from "../../../../features/dev/devCouponSalesSlice";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
 import { getCashierTransaction } from "../../../../api/lossPrevention";
-import CpnSalesDayCards from "./CpnSalesDayCards";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+
+// Utils
+import { formatCurrency2, formatBigNumber, formatDate } from "../../../../utils";
+import { downloadCsv } from "../../../../utils/csvExport";
 import {
   buildBreakdownRows,
   buildTransactions,
@@ -27,15 +31,22 @@ import {
   totalsFor,
   type CouponTransaction,
   type GradingOptions,
-} from "../shared/couponGrading";
+} from "../utils";
+
+// Interfaces
 import type { CouponTier } from "../../../../features/dev/devCouponSalesSlice";
 import type {
   CouponItem,
   JsonError,
   TransactionListItem,
 } from "../../../../interfaces";
+
+// Components
+import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
+import CpnSalesDayCards from "../components/CpnSalesDayCards";
 
 type SectionSortCol = "amount" | "trans" | "count" | "avg";
 type TxSortCol = "count" | "amount";

@@ -1,11 +1,19 @@
-import type { CouponItem, Store } from "../../../../interfaces";
+// Utils
 import { formatDateSimple } from "../../../../utils";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  couponValueOf,
+  usesFallbackValue,
+  sumCouponAmount,
+} from "../../../../utils/couponValue";
+
+// Interfaces
+import type { CouponItem, Store } from "../../../../interfaces";
 import type {
   CouponTier,
   CouponBreakdown,
   CouponMetric,
 } from "../../../../features/dev/devCouponSalesSlice";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 
 /**
  * Coupon Sales asks two questions about the average value of a single coupon,
@@ -39,11 +47,6 @@ export const avgCouponAmount = (amount: number, lines: number): number =>
 // Coupon value + null-fallback handling lives in utils/couponValue — the
 // Coupons page needs the identical rule, and the two must not drift.
 // Re-exported so this module stays the single import for grading callers.
-import {
-  couponValueOf,
-  usesFallbackValue,
-  sumCouponAmount,
-} from "../../../../utils/couponValue";
 export { couponValueOf, usesFallbackValue, sumCouponAmount };
 
 /** Percentage move of this week's average against the baseline average.

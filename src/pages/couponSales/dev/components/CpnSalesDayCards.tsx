@@ -1,8 +1,15 @@
+// Hooks
 import { useMemo } from "react";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
-import { avgCouponAmount, sumCouponAmount } from "../shared/couponGrading";
+import { avgCouponAmount, sumCouponAmount } from "../utils";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
+
+// Components
+import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
 
 /**
  * Day-of-week cards for the selected store, matching the strip on Sales, Sub

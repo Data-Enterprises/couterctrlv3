@@ -1,8 +1,9 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
 import { useMemo, useRef } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -15,12 +16,18 @@ import {
   type CouponTierFilter,
   type CouponMetric,
 } from "../../../../features/dev/devCouponSalesSlice";
+
+// Utils
+import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../utils";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
   { key: "trend", label: "Trend" },

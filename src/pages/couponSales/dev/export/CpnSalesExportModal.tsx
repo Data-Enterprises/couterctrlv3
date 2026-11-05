@@ -1,12 +1,15 @@
+// Hooks
 import { useMemo, useState } from "react";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+
+// Redux
 import {
   setCouponExportOpen,
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
 } from "../../../../features/dev/devCouponSalesSlice";
+
+// Utils
 import {
   aggregateRows,
   downloadCsv,
@@ -14,17 +17,23 @@ import {
   rowsToCsv,
   type AggFn,
   type AggRow,
+  AGG_OPTIONS,
 } from "../../../../utils/csvExport";
-import { AGG_OPTIONS } from "../../../../utils/csvExport";
+import { couponValueOf, usesFallbackValue } from "../utils";
 import {
   buildCouponPresetCsv,
   PRESET_OPTIONS,
   CPN_SALES_DIMS,
   CPN_SALES_METRICS,
   type CouponPreset,
-} from "../shared/couponSalesExport";
+} from "./utils";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
-import { couponValueOf, usesFallbackValue } from "../shared/couponGrading";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 interface Props {
   /** Coupons for the selected store. The whole-search set is offered too —
