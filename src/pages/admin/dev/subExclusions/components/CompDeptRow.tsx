@@ -9,10 +9,10 @@ import {
 
 // Interfaces
 import type { CompanyDeptRow, ExclusionWrite } from "../interfaces";
-import Checkbox from "@/components-dev/Checkbox";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import Checkbox from "@/components-dev/Checkbox";
 import DeptAtStoreRow from "./DeptAtStoreRow";
 
 interface CompDeptRowProps {
