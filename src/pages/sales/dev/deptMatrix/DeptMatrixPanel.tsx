@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
 import { useDeptMatrix } from "./hooks";
 
 // Redux
@@ -15,7 +16,6 @@ import { applyStoreNumberToName } from "../utils/ledgerUtils";
 import { bestIn, flagged, type Cell, type Matrix } from "./utils/deptMatrix";
 
 // Interfaces
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { MatrixStore } from "./interfaces";
 
 // Components
@@ -88,7 +88,6 @@ interface Props {
    *  find out who is in the group, and co-located stores are already split by
    *  number there. */
   stores: MatrixStore[];
-  gradingMetric: GradingMetric;
   /** The page's own threshold, widened by DEPT_BAND. One control still
    *  governs the ledger's dots and this grid, and an index IS a percentage
    *  of expected, so the two are the same unit — a department simply needs
@@ -107,7 +106,6 @@ interface Props {
 
 const DeptMatrixPanel = ({
   stores,
-  gradingMetric,
   threshold,
   expanded,
   twStart,
@@ -118,6 +116,7 @@ const DeptMatrixPanel = ({
   lyEnd,
 }: Props) => {
   const dispatch = useAppDispatch();
+  const { gradingMetric } = useSalesCtx();
 
   const args = useMemo(
     () => ({

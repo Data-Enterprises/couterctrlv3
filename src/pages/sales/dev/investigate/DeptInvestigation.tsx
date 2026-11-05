@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { useDeptInvestigation } from "./hooks";
-import { useItemFilters, useRowSelection } from "./hooks";
+import { useSalesCtx } from "../hooks";
+import { useDeptInvestigation, useItemFilters, useRowSelection } from "./hooks";
 
 // Redux
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
@@ -25,7 +25,6 @@ import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
 
 // Interfaces
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { Col, InvestigationTab } from "./interfaces";
 
 // Components
@@ -63,7 +62,6 @@ import GridContextMenu from "./components/GridContextMenu";
  */
 
 interface Props {
-  gradingMetric: GradingMetric;
   twStart: string;
   twEnd: string;
   lwStart: string;
@@ -73,7 +71,6 @@ interface Props {
 }
 
 const DeptInvestigation = ({
-  gradingMetric,
   twStart,
   twEnd,
   lwStart,
@@ -82,6 +79,7 @@ const DeptInvestigation = ({
   lyEnd,
 }: Props) => {
   const dispatch = useAppDispatch();
+  const { gradingMetric } = useSalesCtx();
   const target = useAppSelector((state) => state.dev.salesLedger.investigation);
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   /** Which item's evidence is open. Held here rather than in the slice: it

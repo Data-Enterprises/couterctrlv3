@@ -506,7 +506,7 @@ const SalesLedger = () => {
            ledger selection survives underneath, which is what makes the
            back button able to put the reader where they were. */
         <div className="h-[calc(100vh-5rem)]">
-          <DeptInvestigation gradingMetric={gradingMetric} {...getDateRanges()} />
+          <DeptInvestigation {...getDateRanges()} />
         </div>
       ) : matrixOpen ? (
         /* Where to look, before which store. Full width for the same reason
@@ -515,7 +515,6 @@ const SalesLedger = () => {
         <div className="h-[calc(100vh-5rem)]">
           <DeptMatrixPanel
             stores={matrixStores}
-            gradingMetric={gradingMetric}
             threshold={activeThreshold}
             expanded
             {...getDateRanges()}
