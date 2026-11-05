@@ -1,14 +1,12 @@
 // Interfaces
 import type { StoreWithGroupStatus } from "../../../../interfaces";
-import type { Group } from "../../../../features/groupSlice";
 
 // Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 
 interface StoreColumnProps {
   kind: "unassigned" | "assigned";
-  title: string;
-  group: Group;
+  readOnly: boolean;
   pending: Set<number>;
   filter: string;
   setFilter: (value: string) => void;
@@ -18,15 +16,14 @@ interface StoreColumnProps {
 
 const StoreColumn = ({
   kind,
-  title,
-  group,
+  readOnly,
   filter,
   setFilter,
   pending,
   stores,
   handleToggle,
 }: StoreColumnProps) => {
-  const readOnly = group.is_shared;
+  const title = kind === "unassigned" ? "Unassigned" : "Assigned";
   const placeHolder = `Search ${title.toLowerCase()}…`;
   const adds = kind === "unassigned";
 

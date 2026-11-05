@@ -218,8 +218,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
             {!readOnly && (
               <StoreColumn
                 kind="unassigned"
-                title="Unassigned"
-                group={group}
+                readOnly={readOnly}
                 pending={pending}
                 filter={unassignedFilter}
                 setFilter={setUnassignedFilter}
@@ -230,8 +229,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
 
             <StoreColumn
               kind="assigned"
-              title="Assigned"
-              group={group}
+              readOnly={readOnly}
               pending={pending}
               filter={assignedFilter}
               setFilter={setAssignedFilter}
