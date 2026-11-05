@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../../hooks";
+import { useLossPreventionCtx } from "../hooks";
 
 // Redux
 import {
@@ -26,7 +27,7 @@ import type {
   TransactionOverview,
 } from "../../../../interfaces";
 import type { ThresholdValue } from "../../../../components-dev/filters/ThresholdFilter";
-import type { CashierSeverity } from "../utils/grading";
+import type { CashierSeverity } from "../interfaces";
 
 // Components
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
@@ -49,7 +50,7 @@ interface Props {
  *  their transactions or one receipt. */
 const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((s) => s.dev.lossPrevention);
+  const cashier = useLossPreventionCtx();
   const search = useAppSelector((s) => s.search);
 
   const [selectedOverview, setSelectedOverview] =

@@ -7,7 +7,7 @@ import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils
 // Interfaces
 import type { TransactionOverview } from "../../../../interfaces";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import type { CashierGrade, CashierSeverity } from "../utils/grading";
+import type { CashierGrade, CashierSeverity } from "../interfaces";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";

@@ -4,7 +4,7 @@ import { CASHIER_DOT_CLASS } from "../utils";
 
 // Interfaces
 import type { Dispatch, SetStateAction } from "react";
-import type { CashierGrade, CashierSeverity } from "../../utils/grading";
+import type { CashierGrade, CashierSeverity } from "../../interfaces";
 
 interface CashierListProps {
   fetchingCashierTransactions: boolean;

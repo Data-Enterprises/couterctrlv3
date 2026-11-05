@@ -5,7 +5,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { CSSProperties } from "react";
 import type { CashierDetails } from "../../../../../interfaces";
 import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
-import type { CashierGrade, CashierSeverity } from "../../utils/grading";
+import type { CashierGrade, CashierSeverity } from "../../interfaces";
 
 // Cashier list uses a plain dot (list-level), matching Sales' store/sub-dept
 // rows — the icon+badge treatment is reserved for item-level drill-down.

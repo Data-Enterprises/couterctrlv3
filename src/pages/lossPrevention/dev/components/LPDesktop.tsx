@@ -1,6 +1,7 @@
 // Hooks
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useLossPreventionCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../../../hooks/useApiContext";
 
@@ -73,7 +74,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
-  const cashier = useAppSelector((s) => s.dev.lossPrevention);
+  const cashier = useLossPreventionCtx();
   const [loading, setLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 

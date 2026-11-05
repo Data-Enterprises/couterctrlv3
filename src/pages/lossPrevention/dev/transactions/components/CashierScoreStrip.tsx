@@ -1,6 +1,6 @@
 // Interfaces
 import type { buildScoreMetrics } from "../utils";
-import type { CashierGrade } from "../../utils/grading";
+import type { CashierGrade } from "../../interfaces";
 
 // Components
 import StripCell from "./StripCell";

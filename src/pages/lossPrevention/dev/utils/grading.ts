@@ -1,4 +1,5 @@
 // Interfaces
+import type { CashierSeverity, CashierMetric, CashierGrade, PeerAverages } from "../interfaces";
 import type {
   TransactionOverview,
   UniqueCashier,
@@ -9,8 +10,6 @@ import type { Severity } from "../../../../utils/severity";
 // Re-exported so LP's existing imports keep working; the helper itself is
 // shared with Cashiers now. See utils/saleTypes.
 export { pickDefaultSaleType } from "../../../../utils/saleTypes";
-
-export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
 // ── Week date range (LPStorePanel + LPTransactionPanel header/export) ──────
 // search.singleDate is the searched week-ending date ("m/d/yyyy") — the week
@@ -106,36 +105,6 @@ export const passFailChipClass = (isPass: boolean | null): string => {
 // the good outcome.
 export const trendPillClass = (pct: number): string =>
   pct > 0 ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800";
-
-export interface CashierMetric {
-  value: number;
-  avg: number;
-  /** (value - avg) / avg * 100 — display only, not used for pass/fail */
-  pct: number;
-  /** true when value ≤ baseline (below = good for LP exceptions) */
-  isPass: boolean;
-}
-
-export interface CashierGrade {
-  cashier_number: number;
-  cashier_name: string;
-  store_number: string;
-  trans: CashierMetric;
-  qty: CashierMetric;
-  sales: CashierMetric;
-  avgTicket: CashierMetric;
-  passes: number;
-  severity: CashierSeverity;
-  /** false when cashier had no activity in the baseline period — grade is unreliable */
-  hasBaseline: boolean;
-}
-
-export interface PeerAverages {
-  trans: number;
-  qty: number;
-  sales: number;
-  avgTicket: number;
-}
 
 // ── Step 1: aggregate transOverviews into per-cashier stats ─────────────────
 
