@@ -23,7 +23,7 @@ import type { CompanyJsonResp, JsonError } from "../../../interfaces";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import CompanyGrid from "./companies/CompanyGrid";
-import StoreActivityComp from "./storeAcitivity/StoreActivityComp";
+import StoreActivityComp from "./storeActivity/StoreActivityComp";
 import SubDeptExclusions from "./subExclusions/SubDeptExclusions";
 import StoreRecords from "./stores/StoreRecords";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
