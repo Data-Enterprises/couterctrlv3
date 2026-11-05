@@ -2,9 +2,7 @@
 import { useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useGroupCtx } from "../hooks";
-import type { Group } from "../../../../features/groupSlice";
-import { useGroupsData } from "../hooks";
+import { useGroupCtx, useGroupsData } from "../hooks";
 
 // Redux
 import { setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
@@ -13,6 +11,7 @@ import { setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
 import { createGroup } from "../../../../api/groups";
 
 // Interfaces
+import type { Group } from "../../../../features/groupSlice";
 import type { JsonError } from "../../../../interfaces";
 
 // Components

@@ -1,9 +1,11 @@
 // Hooks
 import { useState } from "react";
 
+// Utils
+import { BADGE, kindOf } from "../utils";
+
 // Interfaces
 import type { Group } from "../../../../features/groupSlice";
-import { BADGE, kindOf } from "../utils";
 import type { Show } from "../interfaces";
 
 // Components

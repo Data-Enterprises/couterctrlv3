@@ -1,8 +1,9 @@
+// Hooks
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../../interfaces";
-import { getGroups } from "../../../../api/groups";
+
+// Redux
 import {
   setGroups,
   setSelectedGroup,
@@ -16,10 +17,16 @@ import {
   setStoresWithGroupStatus,
 } from "../../../../features/dev/devGroupsPageSlice";
 
+// API
+import { getGroups } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
 export const useGroupCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
-  const {userid} = useAppSelector((state) => state.user);
+  const { userid } = useAppSelector((state) => state.user);
   const { groups, selectedGroup } = useAppSelector((state) => state.group);
   const { selectedForm, refreshGroups, storesWithGroupStatus, createInput } =
     useAppSelector((state) => state.dev.groupsPage);
@@ -46,7 +53,7 @@ export const useGroupCtx = () => {
  * Everything GET /groups/ returns: their own groups, the shared groups they
  * created, and the shared groups other people shared with them. Shared ones
  * carry the SHARED badge and open read-only, showing only the stores the
- * user is assigned to; they're managed on User Management's Shared Groups tab.
+ * user is assigned to; they're managed on Groups' Shared Groups tab.
  *
  * Reloaded on open rather than trusting the list fetched at sign-in, which is
  * stale the moment a group is shared or unshared.

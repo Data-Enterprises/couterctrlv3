@@ -1,3 +1,4 @@
+// Interfaces
 import type { Group } from "@/features/groupSlice";
 import type { StoreWithGroupStatus } from "@/interfaces";
 

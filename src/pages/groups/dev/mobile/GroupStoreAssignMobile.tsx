@@ -9,6 +9,7 @@ import {
   setStoresWithGroupStatus,
   updateStoresWithStatus,
 } from "../../../../features/dev/devGroupsPageSlice";
+import { setSelectedGroup } from "../../../../features/groupSlice";
 
 // API
 import {
@@ -18,9 +19,7 @@ import {
 } from "../../../../api/groups";
 
 // Interfaces
-import { setSelectedGroup } from "../../../../features/groupSlice";
-import type { StoreWithGroupStatus } from "../../../../interfaces";
-import type { JsonError } from "../../../../interfaces";
+import type { StoreWithGroupStatus, JsonError } from "../../../../interfaces";
 
 // Components
 import SingleSelect from "../../../../components-dev/SingleSelect";
