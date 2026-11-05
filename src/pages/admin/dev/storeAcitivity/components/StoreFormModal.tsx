@@ -1,17 +1,12 @@
+// Hooks
 import { useState } from "react";
-import Input from "../../../components-dev/inputs/Input";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import type { Store } from "../../../interfaces";
 
-/**
- * New store, or a rename of one that exists.
- *
- * The same modal serves both, as CompanyFormModal does — but the two are not
- * symmetrical, and the form says so. Creating takes an ID, a number, a name
- * and a company; editing takes the NAME only, because `stores/change_store_name` is
- * the only edit the backend offers. The number and company are shown on an
- * edit so the reader knows which store they have, and are plainly not fields.
- */
+// Interfaces
+import type { Store } from "../../../../../interfaces";
+
+// Components
+import Input from "../../../../../components-dev/inputs/Input";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 
 export interface StoreForm {
   storeid: number;
@@ -21,18 +16,16 @@ export interface StoreForm {
 }
 
 interface Props {
-  /** Null to create. */
   initial: Store | null;
   companies: { value: string; label: string }[];
-  /** Every number already on file, lower-cased by the caller. */
   existingNumbers: string[];
-  /** Every storeid already on file. */
   existingIds: number[];
   saving: boolean;
   onSave: (form: StoreForm) => void;
   onClose: () => void;
 }
 
+// Does both creating and editing stores
 const StoreFormModal = ({
   initial,
   companies,

@@ -1,6 +1,9 @@
+// Hooks
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   resetCompanyForm,
   setCompanyStoresActivity,
@@ -9,21 +12,31 @@ import {
   setSelectedCompanyForm,
   setStoreNameFilter,
 } from "../../../../features/dev/devAdminPageSlice";
+
+// API
 import { getAllStoreActivity } from "../../../../api/admin";
-import type { JsonError, StoreActivityJsonResp } from "../../../../interfaces";
+
+// Utils
 import { formatGoliathDate } from "../../../../utils";
+
+// Interfaces
+import type { JsonError, StoreActivityJsonResp } from "../../../../interfaces";
+
+// Components
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import CompanyPicker from "../CompanyPicker";
-import StoreActivityExportModal from "../StoreActivityExportModal";
+import StoreActivityExportModal from "./components/StoreActivityExportModal";
+import StoreRows from "./components/StoreRows";
 
 interface StoreActivityCompProps {
   exportOpen: boolean;
   setExportOpen: (v: boolean) => void;
 }
 
+// Displays stores missing sales data => needs dates missing, not just the total numbers
 const StoreActivityComp = ({
   exportOpen,
   setExportOpen,
@@ -32,7 +45,6 @@ const StoreActivityComp = ({
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
   const { startDate, endDate } = useAppSelector((state) => state.search);
-
   const hasData = context.companyStoresActivity.length > 0;
 
   const handleCompanySelect = (id: number) => {
@@ -101,9 +113,7 @@ const StoreActivityComp = ({
           className="border-r border-gray-100 p-3 flex-shrink-0"
           style={{ width: "220px" }}
         >
-          {/* `data-help` is what the help panel points at. It names the
-              control, not its markup, so neither can quietly stop matching
-              the other — see components-dev/help/helpTypes.ts. */}
+          {/* `data-help` is what the help panel points at */}
           <div data-help="dates">
             <DatePickers showBtn={false} stacked />
           </div>
@@ -174,24 +184,7 @@ const StoreActivityComp = ({
               <div className="text-right">Active</div>
               <div className="text-right">Missing</div>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
-              {context.filteredStoresActivity.map((s) => (
-                <div
-                  key={s.storeid}
-                  className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 text-[12px] text-content even:bg-row_stripe hover:bg-gray-50"
-                >
-                  <div>{s.storeid}</div>
-                  <div className="truncate">{s.store_name}</div>
-                  <div className="text-right">{s.total_days_in_range}</div>
-                  <div className="text-right">{s.active_days}</div>
-                  <div
-                    className={`text-right ${s.inactive_or_missing_days > 0 ? "text-red-600 font-medium" : "text-content"}`}
-                  >
-                    {s.inactive_or_missing_days}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <StoreRows />
           </>
         )}
       </div>

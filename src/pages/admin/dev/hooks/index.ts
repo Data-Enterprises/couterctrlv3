@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { isSupportUser } from "../../../utils/supportUsers";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { isSupportUser } from "../../../../utils/supportUsers";
 
 /** The only level that may create, rename or delete a company. That changes the
  *  tenancy itself, not what someone is looking at, so it stays here alone. */
