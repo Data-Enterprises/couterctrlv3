@@ -28,7 +28,7 @@ import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import CompanyPicker from "../CompanyPicker";
+import CompanyPicker from "./components/CompanyPicker";
 import StoreActivityExportModal from "./components/StoreActivityExportModal";
 import StoreRows from "./components/StoreRows";
 

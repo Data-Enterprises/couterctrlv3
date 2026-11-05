@@ -9,10 +9,12 @@ import {
   normalizeDesc,
   planStoreToggle,
   planToggle,
-  type ExclStore,
-  type ExclusionRow,
-  type StoreSubDept,
-} from "@/pages/admin/dev/shared/subDeptExclusions";
+} from "@/pages/admin/dev/subExclusions/utils";
+import type {
+  ExclStore,
+  ExclusionRow,
+  StoreSubDept,
+} from "@/pages/admin/dev/subExclusions/interfaces";
 
 const stores: ExclStore[] = [
   { storeid: 501, store_number: "018", store_name: "Owensboro" },

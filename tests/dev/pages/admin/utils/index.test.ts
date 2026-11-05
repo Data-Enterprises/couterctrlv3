@@ -5,7 +5,7 @@ import {
   statusReported,
   withClosedMark,
   withoutClosedMark,
-} from "@/pages/admin/dev/storeStatus";
+} from "@/pages/admin/dev/utils";
 
 describe("statusOf", () => {
   it("is unknown when the endpoint does not return the field", () => {
