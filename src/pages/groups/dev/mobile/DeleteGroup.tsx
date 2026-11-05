@@ -1,15 +1,10 @@
+// Hooks
 import { useState } from "react";
 import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-// API
-import { deleteGroup } from "../../../../api/groups";
-
-// Types/Interfaces
-import type { JsonError } from "../../../../interfaces";
-
-// Redux actions and state slices
+// Redux
 import {
   setSelectedGroup,
   type Group,
@@ -19,6 +14,12 @@ import {
   setCreateInput,
   setRefreshGroups,
 } from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { deleteGroup } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
 
 // Components
 import Input from "../../../../components-dev/inputs/Input";

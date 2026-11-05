@@ -1,11 +1,8 @@
-// Hookes
+// Hooks
 import { useEffect, useState } from "react";
-import { useGroupCtx } from "./hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useForgetDeletedGroup } from "../../../hooks/useForgetDeletedGroup";
-
-// Utils
-import { byFilter } from "./utils";
+import { useGroupCtx } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useForgetDeletedGroup } from "../../../../hooks/useForgetDeletedGroup";
 
 // API
 import {
@@ -14,18 +11,21 @@ import {
   getStoresAssignedToUserGroup,
   addStoreToGroup,
   removeStoreFromGroup,
-} from "../../../api/groups";
+} from "../../../../api/groups";
 
-// Types/Interfaces
-import type { Group } from "../../../features/groupSlice";
-import type { StoreWithGroupStatus } from "../../../interfaces";
-import type { JsonError } from "../../../interfaces";
+// Utils
+import { byFilter } from "../utils";
+
+// Interfaces
+import type { Group } from "../../../../features/groupSlice";
+import type { StoreWithGroupStatus } from "../../../../interfaces";
+import type { JsonError } from "../../../../interfaces";
 
 // Components
-import IconButton from "../../../components-dev/IconButton";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import IconButton from "../../../../components-dev/IconButton";
+import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 interface Props {
@@ -200,7 +200,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
         {readOnly && (
           <div className="text-[12px] text-content/75 mt-1">
             {group.userid === ctx.userid
-              ? "A shared group you created. Manage its stores and who has it in User Management > Shared Groups."
+              ? "A shared group you created. Manage its stores and who has it in Groups > Shared Groups."
               : "Shared with you. Only its stores you're assigned to are shown, and only an owner can change it."}
           </div>
         )}

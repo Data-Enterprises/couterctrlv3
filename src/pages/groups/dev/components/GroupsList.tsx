@@ -1,13 +1,13 @@
 // Hooks
 import { useState } from "react";
 
-// Utils and types
-import type { Group } from "../../../features/groupSlice";
-import { BADGE, kindOf } from "./utils";
-import type { Show } from "./interfaces";
+// Interfaces
+import type { Group } from "../../../../features/groupSlice";
+import { BADGE, kindOf } from "../utils";
+import type { Show } from "../interfaces";
 
 // Components
-import TextFilter from "../../../components-dev/filters/TextFilter";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
 import { PlusIcon } from "@heroicons/react/20/solid";
 
 interface GroupsListProps {
@@ -39,7 +39,11 @@ const GroupsList = ({
     shared: groups.filter((g) => kindOf(g, userid) !== "mine").length,
   };
   const visible = groups.filter((g) =>
-    show === "all" ? true : show === "mine" ? kindOf(g, userid) === "mine" : kindOf(g, userid) !== "mine",
+    show === "all"
+      ? true
+      : show === "mine"
+        ? kindOf(g, userid) === "mine"
+        : kindOf(g, userid) !== "mine",
   );
   const empty =
     totalCount === 0
@@ -59,7 +63,8 @@ const GroupsList = ({
           placeholder="Search groups…"
           className="flex-1"
         />
-        <button data-help="create"
+        <button
+          data-help="create"
           onClick={onOpenCreate}
           title="New group"
           aria-label="New group"
@@ -91,9 +96,14 @@ const GroupsList = ({
         ))}
       </div>
 
-      <div data-help="group-list" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div
+        data-help="group-list"
+        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
+      >
         {visible.length === 0 && (
-          <div className="p-4 text-[11px] text-content text-center">{empty}</div>
+          <div className="p-4 text-[11px] text-content text-center">
+            {empty}
+          </div>
         )}
         {visible.map((g) => {
           const kind = kindOf(g, userid);
@@ -108,7 +118,9 @@ const GroupsList = ({
                   : undefined
               }
               className={`w-full flex items-center gap-1.5 text-left px-3 py-2.5 border-b border-gray-100 text-[12px] font-medium transition-colors ${
-                isSel ? "bg-custom-white text-content" : "hover:bg-gray-50 text-content"
+                isSel
+                  ? "bg-custom-white text-content"
+                  : "hover:bg-gray-50 text-content"
               }`}
             >
               <span className="flex-1 truncate">{g.group_name}</span>

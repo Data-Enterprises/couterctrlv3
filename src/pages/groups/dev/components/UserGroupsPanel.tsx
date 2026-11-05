@@ -1,4 +1,4 @@
-// hooks
+// Hooks
 import { useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -6,16 +6,18 @@ import { useGroupCtx } from "../hooks";
 import type { Group } from "../../../../features/groupSlice";
 import { useGroupsData } from "../hooks";
 
-// Redux actions
+// Redux
 import { setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
 
 // API
 import { createGroup } from "../../../../api/groups";
+
+// Interfaces
 import type { JsonError } from "../../../../interfaces";
 
 // Components
-import GroupsList from "../GroupsList";
-import GroupDetail from "../GroupDetail";
+import GroupsList from "./GroupsList";
+import GroupDetail from "./GroupDetail";
 import NewGroupModal from "./NewGroupModal";
 
 const UserGroupsPanel = () => {

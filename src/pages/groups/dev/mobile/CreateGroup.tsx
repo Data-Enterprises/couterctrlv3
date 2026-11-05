@@ -3,17 +3,17 @@ import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-// API
-import { createGroup } from "../../../../api/groups";
-
-// Types/Interfaces
-import type { JsonError } from "../../../../interfaces";
-
-// Redux actions
+// Redux
 import {
   setCreateInput,
   setRefreshGroups,
 } from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { createGroup } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
 
 // Components
 import Input from "../../../../components-dev/inputs/Input";

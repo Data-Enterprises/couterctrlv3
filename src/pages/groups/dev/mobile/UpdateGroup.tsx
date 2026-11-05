@@ -1,12 +1,27 @@
+// Hooks
 import { useAppDispatch } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-import Input from "../../../../components-dev/inputs/Input";
-import type { JsonError } from "../../../../interfaces";
-import { updateGroup } from "../../../../api/groups";
 import { useGroupCtx } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Redux
+import {
+  setSelectedGroup,
+  type Group,
+  emptyGroup,
+} from "../../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { updateGroup } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
+// Components
+import Input from "../../../../components-dev/inputs/Input";
 
 const UpdateGroup = () => {
   const toast = useToast();

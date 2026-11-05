@@ -1,3 +1,4 @@
+// Interfaces
 import type { GroupsTab } from "../interfaces";
 
 const tabs: { id: GroupsTab; label: string }[] = [

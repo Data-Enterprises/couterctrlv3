@@ -4,6 +4,12 @@ import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Redux
+import {
+  setStoresWithGroupStatus,
+  updateStoresWithStatus,
+} from "../../../../features/dev/devGroupsPageSlice";
+
 // API
 import {
   addStoreToGroup,
@@ -11,16 +17,10 @@ import {
   removeStoreFromGroup,
 } from "../../../../api/groups";
 
-// Types/Interfaces
+// Interfaces
 import { setSelectedGroup } from "../../../../features/groupSlice";
 import type { StoreWithGroupStatus } from "../../../../interfaces";
 import type { JsonError } from "../../../../interfaces";
-
-// Redux actions
-import {
-  setStoresWithGroupStatus,
-  updateStoresWithStatus,
-} from "../../../../features/dev/devGroupsPageSlice";
 
 // Components
 import SingleSelect from "../../../../components-dev/SingleSelect";

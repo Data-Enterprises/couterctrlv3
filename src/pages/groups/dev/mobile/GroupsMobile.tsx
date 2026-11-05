@@ -1,7 +1,7 @@
 // Hooks
 import { useGroupCtx } from "../hooks";
 
-// Types/Interfaces
+// Interfaces
 import type { GroupFormType } from "../../../../interfaces";
 
 // Components
