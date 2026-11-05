@@ -82,8 +82,14 @@ const ORDER: ShareStanding[] = ["falling", "consistent", "rising"];
 type Col = "share" | "change" | "worth";
 
 /** Shared by the column heads and every row — two copies of this is a column
- *  that slides out from under its own name. */
-const COLS = "minmax(0,142px) minmax(0,1fr) 58px 62px 74px";
+ *  that slides out from under its own name.
+ *
+ *  The store name takes a tenth of the bar's room on top of its 142px, so
+ *  more of a long name shows and the bar is 10% shorter at any width: the
+ *  room the two share is the row less the three figure columns and four
+ *  8px gaps (226px). */
+const COLS =
+  "minmax(0,calc(142px + (100% - 226px - 142px) * 0.1)) minmax(0,1fr) 58px 62px 74px";
 
 /** Points of the group, written as a percentage because that is what the
  *  column beside it is. */
@@ -253,7 +259,7 @@ const GroupShareBalance = ({
                         resolves identically for both and only the NUMBER
                         tells them apart. Without this the falling store wore
                         its neighbour's name. */}
-                    <span className="min-w-0 text-[13px] font-medium text-content truncate">
+                    <span className="min-w-0 text-[12px] font-medium text-content truncate">
                       {applyStoreNumberToName(
                         r.storeName,
                         r.storeNumber,

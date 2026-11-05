@@ -20,6 +20,15 @@ import type {
   SubSale,
   ThresholdValue,
 } from "../../interfaces";
+import type {
+  RecapExceptions,
+  RecapItem,
+  RecapMix,
+} from "../../pages/sales/dev/components/dailyRecap/recapTypes";
+import {
+  RECAP_ITEMS_MAX,
+  RECAP_MIX_MAX,
+} from "../../pages/sales/dev/components/dailyRecap/recapKeys";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -28,7 +37,8 @@ export type LedgerTab =
   | "hourly"
   | "comparison"
   | "category"
-  | "topitems";
+  | "topitems"
+  | "dailyrecap";
 
 /**
  * The store the open one is being measured against.
@@ -191,6 +201,36 @@ interface SalesLedgerState {
    */
   storeCache: Record<string, PopupStoreData>;
   storeCacheOrder: string[];
+  /**
+   * Summary (Daily recap): what each day's item rows came to, per store
+   * location and date (`storeid__number__date`).
+   *
+   * The rolled-up answer only (the item codes, refunds and the price mix),
+   * not the rows, so it stays small; bounded to RECAP_MIX_MAX store-days all
+   * the same, most recent kept. Kept here rather than in the tab because the
+   * tab unmounts on every tab switch and store hop, and Summary is the tab
+   * every store opens on: held in the tab, a store's seven day reads ran
+   * again every time it was looked at. Cleared on sign-out with the rest of
+   * the dev namespace.
+   */
+  recapMix: Record<string, RecapMix>;
+  recapMixOrder: string[];
+  /** The week's exceptions, rolled up by day, per store location and week
+   *  (`storeid__number__start__end`). Same reasons as `recapMix`. */
+  recapExceptions: Record<string, Record<string, RecapExceptions>>;
+  /**
+   * Each finished day's item rows, folded to one row per item, for the Daily
+   * Recap export: the rows Summary already read for its item count and price
+   * mix, kept instead of read again on download.
+   *
+   * Folded, not raw: one row per item rather than one per item, price type
+   * and vendor, which is the difference between a few hundred KB a day and
+   * many MB a week at a big store. Never today, which is still changing.
+   * Bounded to RECAP_ITEMS_MAX store-days, most recently used kept, and
+   * cleared on sign-out with the rest of the dev namespace.
+   */
+  recapItems: Record<string, RecapItem[]>;
+  recapItemsOrder: string[];
 
   /**
    * Financials — the daily per-bin POS records, for the export.
@@ -308,6 +348,11 @@ const initialState: SalesLedgerState = {
   lastFetchedStoreKey: null,
   storeCache: {},
   storeCacheOrder: [],
+  recapMix: {},
+  recapMixOrder: [],
+  recapExceptions: {},
+  recapItems: {},
+  recapItemsOrder: [],
   topItems: [],
   topItemPoints: [],
   topItemsLW: [],
@@ -512,6 +557,30 @@ const salesLedgerSlice = createSlice({
 
     /** Serve a store already held, without going to the network. A read is a
      *  use, so it goes to the front of the queue too. */
+    cacheRecapMix: (state, action: PayloadAction<{ key: string; mix: RecapMix }>) => {
+      const { key, mix } = action.payload;
+      state.recapMix[key] = mix;
+      const put = lruPut(state.recapMixOrder, key, RECAP_MIX_MAX);
+      put.evicted.forEach((k) => delete state.recapMix[k]);
+      state.recapMixOrder = put.order;
+    },
+    cacheRecapItems: (state, action: PayloadAction<{ key: string; items: RecapItem[] }>) => {
+      const { key, items } = action.payload;
+      state.recapItems[key] = items;
+      const put = lruPut(state.recapItemsOrder, key, RECAP_ITEMS_MAX);
+      put.evicted.forEach((k) => delete state.recapItems[k]);
+      state.recapItemsOrder = put.order;
+    },
+    /** A held day was used: keep it from being the next one dropped. */
+    touchRecapItems: (state, action: PayloadAction<string>) => {
+      state.recapItemsOrder = lruTouch(state.recapItemsOrder, action.payload);
+    },
+    cacheRecapExceptions: (
+      state,
+      action: PayloadAction<{ key: string; byDay: Record<string, RecapExceptions> }>,
+    ) => {
+      state.recapExceptions[action.payload.key] = action.payload.byDay;
+    },
     restoreStoreData: (state, action: PayloadAction<string>) => {
       const held = state.storeCache[action.payload];
       if (!held) return;
@@ -719,6 +788,10 @@ export const {
   setTop10Loading,
   cacheStoreData,
   restoreStoreData,
+  cacheRecapMix,
+  cacheRecapExceptions,
+  cacheRecapItems,
+  touchRecapItems,
   setLastFetchedStoreKey,
   setRawSubs,
   setRawLWSubs,

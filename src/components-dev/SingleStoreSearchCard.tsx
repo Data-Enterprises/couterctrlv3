@@ -38,6 +38,14 @@ interface SingleStoreSearchCardProps {
   loading?: boolean;
   /** Optional: Item Lookup searches a UPC, not a date. */
   datePicker?: ReactNode;
+  /**
+   * More inputs the search needs, shown above the button.
+   *
+   * `children` sit below it, which suits notes and extras but not a field
+   * the button is waiting on: Item Actions' UPC list sat under a button that
+   * said "Add a UPC list", so the form read bottom to top.
+   */
+  fields?: ReactNode;
   children?: ReactNode;
   notice?: string;
   /** Shown while the search runs. Worth naming what is being fetched. */
@@ -55,6 +63,7 @@ const SingleStoreSearchCard = ({
   onSearch,
   loading = false,
   datePicker,
+  fields,
   children,
   notice,
   onBack,
@@ -146,6 +155,8 @@ const SingleStoreSearchCard = ({
           )}
 
           {datePicker}
+
+          {fields}
 
           <button
             onClick={onSearch}

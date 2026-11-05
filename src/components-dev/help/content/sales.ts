@@ -126,6 +126,62 @@ export const SALES_HELP: HelpContent = {
       ],
     },
     {
+      id: "daily-recap",
+      title: "Recap the week, a day at a time",
+      desc: "Each day's baskets, busiest hours, money and refunds",
+      steps: [
+        {
+          title: "Open Summary",
+          pre: "Click a store and it opens on its",
+          chip: "Summary",
+          post: "tab, the first one.",
+          anchor: "store-tabs",
+          see: "The week: Money, Baskets and Exceptions across the top, then Hourly, each hour's net sales added up across the seven days, with the busiest and slowest hours, sales per hour and baskets per hour beside the chart. Items counts each different item once, however many days it sold on. A store that sells by weight also gets its weight. Items and the price mix fill in once every day's items are read.",
+        },
+        {
+          title: "Pick a day",
+          pre: "Click the day's card above the tabs, the same cards every tab uses. Nothing on the tab itself picks a day.",
+          see: "The same cards in the same places, with that day's figures. All week in the cards goes back to the week's.",
+        },
+        {
+          title: "Read the money",
+          pre: "Money leads with net sales, the same figure as the day card picked (All week for the week), and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
+          see: "A store that sends no price type, such as Sonic, shows an empty bar marked not reported rather than a full one that would claim everything sold at regular.",
+        },
+        {
+          title: "Read the exceptions",
+          pre: "Exceptions counts the transactions that had a void, cancel, refund or no sale, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
+        },
+        {
+          title: "See every item",
+          pre: "Click View items at the top right of Baskets. Summary switches to a list of every item sold that week, or that day with a day card picked: UPC, description, sub department, vendor, sales (net sales, biggest first), qty, and weight at a store that sells by weight. Click a column heading to sort by it.",
+          see: "Search by name or UPC, or tick sub departments and vendors to narrow it. With a vendor ticked, an item shows only that vendor's qty and sales. The totals row at the bottom covers everything the search and filters leave, across every page. Right-click an item to copy its UPC, or every UPC in the list. Picking another day card filters the list to that day; Back to summary returns to the cards for the day picked.",
+        },
+        {
+          title: "Download it",
+          pre: "Open Export CSV from the panel's header and tick Items Sold. It saves the item grid from View items: one row per UPC with its sub department, vendor, sales, qty and weight, totalled over the dates under it. Tick it first, then set the dates: for one day, From and To both on that date; for a range, both ends (up to 31 days). They start on the day picked in the day cards, or the week. The file is named for those dates and opens straight on its column headings.",
+        },
+      ],
+      issues: [
+        {
+          q: "Where are last week and last year?",
+          a: "Not here, on purpose. A recap is a summary of what happened, so it has no comparisons and no grades. Sub depts, Hourly and Top 200 carry the comparisons.",
+        },
+        {
+          q: "Why is there no coupon figure?",
+          a: "The register already takes coupons out of the sales, and the coupon columns repeat that money (sometimes twice, on the item and on its discount line). Any coupon total shown here would be counted twice.",
+        },
+        {
+          q: "Is fuel or lottery in these figures?",
+          a: "No. The store leaves its fuel, lottery and cash sub departments out of net sales, and so does the recap, the same as the day cards.",
+        },
+        {
+          q: "The price mix or the exceptions could not be read",
+          a: "Everything else is unaffected. Pick a day to read its price mix once more; the week's fills in once every day has been read. Closing and reopening the store reads the exceptions again.",
+        },
+      ],
+    },
+    {
       id: "top-items-compare",
       title: "Compare one store's top 200 with another's",
       desc: "What both sell, what only one does, and where the two really differ",

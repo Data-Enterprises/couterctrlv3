@@ -10,6 +10,8 @@ import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import PopupTopItems from "./PopupTopItems";
 import TopItemsReport from "./TopItemsReport";
+import PopupTipButton from "./PopupTipButton";
+import DailyRecap from "./dailyRecap/DailyRecap";
 import {
   setSubSales,
   setHourlySales,
@@ -75,7 +77,11 @@ interface StoreDetailPopupProps {
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
 type PopupTab =
-  "subdept" | "hourly" | "comparison" | "topitems" /* | "category" */;
+  | "subdept"
+  | "hourly"
+  | "comparison"
+  | "topitems"
+  | "dailyrecap" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -610,7 +616,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               handoff and the report resolves it on its own loading screen,
               using the fan-out it was going to run anyway. */}
           {canSeeComingSoon && !loading && rawSubs.length > 0 && (
-            <button
+            <PopupTipButton
+              label="See item actions"
               onClick={() =>
                 openCriticalReport({
                   storeId: selection.storeId,
@@ -625,20 +632,14 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                   basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
                 })
               }
-              title="See item actions"
-              className="text-custom-white transition-colors"
             >
               <ClipboardDocumentListIcon className="w-4 h-4" />
-            </button>
+            </PopupTipButton>
           )}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
-            <button
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-              className="text-custom-white transition-colors"
-            >
+            <PopupTipButton label="Export CSV" onClick={() => setExportOpen(true)}>
               <ArrowDownTrayIcon className="w-4 h-4" />
-            </button>
+            </PopupTipButton>
           )}
         </div>
       </div>
@@ -667,6 +668,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           subDeptItems={exportSubDeptItems}
           subDeptName={exportSubDeptName}
           storeId={selection.storeId}
+          storeNumber={selection.storeNumber}
+          selectedDate={selectedDate}
           startDate={twStart}
           endDate={twEnd}
           // Only when the ledger actually searched a group. Financials is the
@@ -808,8 +811,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             offered rather than opening on an empty one. */}
         {(
           (hasGroup
-            ? ["subdept", "comparison", "hourly", "topitems"]
-            : ["subdept", "hourly", "topitems"]) as PopupTab[]
+            ? ["dailyrecap", "subdept", "comparison", "hourly", "topitems"]
+            : ["dailyrecap", "subdept", "hourly", "topitems"]) as PopupTab[]
         ).map((t) => (
           <button
             key={t}
@@ -826,7 +829,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 ? "Hourly"
                 : t === "topitems"
                   ? "Top 200"
-                  : "Compare"}
+                  : t === "dailyrecap"
+                    ? "Summary"
+                    : "Compare"}
           </button>
         ))}
       </div>
@@ -849,6 +854,18 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               openStoreName={headerStoreName}
             />
           ) : null
+        ) : tab === "dailyrecap" ? (
+          /* Always the open store, counterpart or not: a recap is a summary
+             of one store's week, not a comparison. Keyed on the store so its
+             open rows and its read items start again with a new one. */
+          <DailyRecap
+            key={`${selection.storeId}__${selection.storeNumber}`}
+            storeId={selection.storeId}
+            storeNumber={selection.storeNumber}
+            dates={twRealDates}
+            days={selection.days}
+            selectedDate={selectedDate}
+          />
         ) : tab === "topitems" ? (
           /* Same rule as Sub depts above: with a counterpart chosen in
              Stores, this tab IS the comparison. Without one it is the
