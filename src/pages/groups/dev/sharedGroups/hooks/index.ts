@@ -2,11 +2,12 @@
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useForgetDeletedGroup } from "../../../../../hooks/useForgetDeletedGroup";
 
+// Redux
+import { setGroups, type Group } from "../../../../../features/groupSlice";
+
 // API
 import { getGroups } from "../../../../../api/groups";
 
-// Redux
-import { setGroups, type Group } from "../../../../../features/groupSlice";
 
 export const useSharedGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);

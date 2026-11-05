@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import { useSharedGroupsCtx } from "./hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useSharedGroupsCtx } from "../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // API
 import {
@@ -13,10 +13,10 @@ import {
   renameSharedGroup,
   shareSharedGroups,
   unshareSharedGroups,
-} from "../../../../api/sharedGroups";
+} from "../../../../../api/sharedGroups";
 
 // Utils
-import { errorText, nameProblem, storeLabel } from "./utils";
+import { errorText, nameProblem, storeLabel } from "../utils";
 
 // Interfaces
 import type {
@@ -25,12 +25,12 @@ import type {
   SharedGroupStoresResp,
   SharedGroupUser,
   SharedGroupUsersResp,
-} from "../../../../interfaces";
+} from "../../../../../interfaces";
 
 // Components
-import AssignPanel from "../../../../components-dev/AssignPanel";
-import IconButton from "../../../../components-dev/IconButton";
-import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import AssignPanel from "../../../../../components-dev/AssignPanel";
+import IconButton from "../../../../../components-dev/IconButton";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 interface Props {
