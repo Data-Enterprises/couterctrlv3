@@ -119,8 +119,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     rawHourly,
     rawLWHourly,
     rawLYHourly,
-    exportSubDeptItems,
-    exportSubDeptName,
     lastFetchedStoreKey,
     storeCache,
     gradingMetric,
@@ -660,18 +658,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           onClose={() => setExportOpen(false)}
           storeName={selection.storeName}
           dateLabel={staticTwDate}
-          rawSubs={rawSubs}
-          rawLWSubs={rawLWSubs}
-          rawLYSubs={rawLYSubs}
-          rawHourly={rawHourly}
-          rawLWHourly={rawLWHourly}
-          rawLYHourly={rawLYHourly}
           days={selection.days}
-          subDeptItems={exportSubDeptItems}
-          subDeptName={exportSubDeptName}
           storeId={selection.storeId}
           storeNumber={selection.storeNumber}
-          selectedDate={selectedDate}
           startDate={twStart}
           endDate={twEnd}
           // Only when the ledger actually searched a group. Financials is the

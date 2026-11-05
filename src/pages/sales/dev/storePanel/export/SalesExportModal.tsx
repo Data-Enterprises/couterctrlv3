@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { useAppSelector } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 import { useCustomExport, useRecapWeekItems } from "./hooks/index";
 
 // API
@@ -32,8 +33,6 @@ import {
 } from "./utils/index";
 
 // Interfaces
-import type { SubSale, HourlySale } from "../../../../../interfaces";
-import type { ExportSubDeptItem } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot } from "../../components/LedgerRow";
 import type { ExportDataset, ItemSev, ModalMode } from "./interfaces/index";
 
@@ -57,15 +56,7 @@ interface SalesExportModalProps {
   onClose: () => void;
   storeName: string;
   dateLabel: string;
-  rawSubs: SubSale[];
-  rawLWSubs: SubSale[];
-  rawLYSubs: SubSale[];
-  rawHourly: HourlySale[];
-  rawLWHourly: HourlySale[];
-  rawLYHourly: HourlySale[];
   days: DayDot[];
-  subDeptItems?: ExportSubDeptItem[];
-  subDeptName?: string;
   /** The store this popup is about, and the week it is showing. The Financials
    *  option is the only one that fetches, so it is the only one that needs
    *  them. */
@@ -73,8 +64,6 @@ interface SalesExportModalProps {
   /** The location within `storeId`: Items Sold reads that location's items
    *  a day at a time. */
   storeNumber: string;
-  /** The day picked in the day cards, if any: Items Sold starts on it. */
-  selectedDate?: string | null;
   startDate: string;
   endDate: string;
   /** The group the ledger searched, when it searched one. Lets Financials
@@ -91,34 +80,34 @@ const SalesExportModal = ({
   onClose,
   storeName,
   dateLabel,
-  rawSubs,
-  rawLWSubs,
-  rawLYSubs,
-  rawHourly,
-  rawLWHourly,
-  rawLYHourly,
   days,
-  subDeptItems,
-  subDeptName,
   storeId,
   storeNumber,
-  selectedDate = null,
   startDate,
   endDate,
   group,
   stores,
 }: SalesExportModalProps) => {
-  const hasItems = !!subDeptItems && subDeptItems.length > 0;
-  const toast = useToast();
-  const { url, token } = useAppSelector((state) => state.app);
-  const loadRecapWeek = useRecapWeekItems(storeId, storeNumber);
-  /** Fetched with the search — see SalesLedger's fetchLedger. */
   const {
+    rawSubs,
+    rawLWSubs,
+    rawLYSubs,
+    rawHourly,
+    rawLWHourly,
+    rawLYHourly,
+    exportSubDeptItems: subDeptItems,
+    exportSubDeptName: subDeptName,
+    // The day picked in the day cards, if any: Items Sold starts on it.
+    selectedDate,
     financials: searchedRows,
     financialsWindow,
     financialsTruncated,
     financialsLoading,
-  } = useAppSelector((state) => state.dev.salesLedger);
+  } = useSalesCtx();
+  const hasItems = !!subDeptItems && subDeptItems.length > 0;
+  const toast = useToast();
+  const { url, token } = useAppSelector((state) => state.app);
+  const loadRecapWeek = useRecapWeekItems(storeId, storeNumber);
 
   // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");

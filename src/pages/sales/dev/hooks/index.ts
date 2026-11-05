@@ -28,6 +28,20 @@ export const useSalesCtx = () =>
     (s) => ({
       selectedDate: s.dev.salesLedger.selectedDate,
       gradingMetric: s.dev.salesLedger.gradingMetric,
+      // The open store's rows: this week, last week, last year.
+      rawSubs: s.dev.salesLedger.rawSubs,
+      rawLWSubs: s.dev.salesLedger.rawLWSubs,
+      rawLYSubs: s.dev.salesLedger.rawLYSubs,
+      rawHourly: s.dev.salesLedger.rawHourly,
+      rawLWHourly: s.dev.salesLedger.rawLWHourly,
+      rawLYHourly: s.dev.salesLedger.rawLYHourly,
+      exportSubDeptItems: s.dev.salesLedger.exportSubDeptItems,
+      exportSubDeptName: s.dev.salesLedger.exportSubDeptName,
+      // Fetched with the search; see SalesLedger's fetchLedger.
+      financials: s.dev.salesLedger.financials,
+      financialsWindow: s.dev.salesLedger.financialsWindow,
+      financialsTruncated: s.dev.salesLedger.financialsTruncated,
+      financialsLoading: s.dev.salesLedger.financialsLoading,
     }),
     shallowEqual,
   );
