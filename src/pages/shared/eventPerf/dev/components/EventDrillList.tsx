@@ -1,16 +1,21 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../components-dev/mobile/MobileSortChips";
-import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
-import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
-import { formatCurrency2, formatDateSimple } from "../../../../utils";
-import type { EventSort } from "../../../../features/dev/devEventPerfSlice";
+// Utils
+import { formatCurrency2, formatDateSimple } from "../../../../../utils";
 import {
   receiptLabel,
   type EventGroupRow,
   type EventReceipt,
-} from "./eventPerfData";
+} from "../utils";
+
+// Interfaces
+import type { EventSort } from "../../../../../features/dev/devEventPerfSlice";
+
+// Components
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../../../components-dev/mobile/MobileSortChips";
+import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 

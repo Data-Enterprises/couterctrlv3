@@ -1,10 +1,15 @@
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+
+// Interfaces
+import type { EventTotals } from "../utils";
+
+// Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../../../utils";
-import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
-import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
-import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
-import { LY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
-import type { EventTotals } from "./eventPerfData";
+import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
+import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
+import { LY_COLOR, TY_SWATCH_BG } from "../../../../../components-dev/mobile/perf/perfColors";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 

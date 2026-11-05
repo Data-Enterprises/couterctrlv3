@@ -1,3 +1,4 @@
+// Hooks
 import {
   useDeferredValue,
   useEffect,
@@ -6,24 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { useStore } from "react-redux";
-import {
-  ChevronRightIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import type { RootState } from "../../../../store";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import SearchCard from "../../../../components-dev/SearchCard";
-import BottomSheet from "../../../../components-dev/BottomSheet";
-import InfoModal from "../../../../components-dev/InfoModal";
-import type { HelpPage } from "../../../../constants/helpPages";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../components-dev/mobile/MobileSortChips";
-import { formatCurrency2, formatDateSimple } from "../../../../utils";
-import type { JsonError } from "../../../../interfaces";
+
+// Redux
+import { useStore } from "react-redux";
 import {
   beginEventLoad,
   claimEventPerf,
@@ -54,6 +42,9 @@ import {
   type EventSort,
   type EventView,
 } from "../../../../features/dev/devEventPerfSlice";
+
+// Utils
+import { formatCurrency2, formatDateSimple } from "../../../../utils";
 import {
   buildEventDays,
   buildGroupRows,
@@ -67,8 +58,26 @@ import {
   type EventReceipt,
   type EventScope,
   type EventTotals,
-} from "./eventPerfData";
-import type { ReceiptLine } from "./receiptTypes";
+} from "./utils";
+
+// Interfaces
+import type { RootState } from "../../../../store";
+import type { HelpPage } from "../../../../constants/helpPages";
+import type { JsonError } from "../../../../interfaces";
+import type { ReceiptLine } from "./interfaces";
+
+// Components
+import {
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/20/solid";
+import SearchCard from "../../../../components-dev/SearchCard";
+import BottomSheet from "../../../../components-dev/BottomSheet";
+import InfoModal from "../../../../components-dev/InfoModal";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
@@ -76,8 +85,8 @@ import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
 import { TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
-import EventStoreReport from "./EventStoreReport";
-import EventDrillList from "./EventDrillList";
+import EventStoreReport from "./components/EventStoreReport";
+import EventDrillList from "./components/EventDrillList";
 
 export interface EventFetchResult {
   rows: EventRow[];

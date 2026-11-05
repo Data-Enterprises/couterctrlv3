@@ -1,9 +1,10 @@
+// Redux
 import {
   cashierKeyOf,
   storeKeyOf,
   type EventRow,
   type EventSort,
-} from "../../../../features/dev/devEventPerfSlice";
+} from "../../../../../features/dev/devEventPerfSlice";
 
 /** What the screen currently has open. Every builder takes the same scope so
  *  the card, the chart and the list can never disagree about what they show. */
@@ -96,7 +97,7 @@ export const transactionsIn = (rows: EventRow[]) => {
 };
 
 // Moved to utils/dates (the adapters in src/api use it too); re-exported here.
-export { clockOf } from "../../../../utils/dates";
+export { clockOf } from "../../../../../utils/dates";
 
 export interface EventTotals {
   /** Coupon lines / exception rows. */

@@ -12,7 +12,7 @@ import {
   EMPTY_SCOPE,
   receiptLabel,
   sortGroupRows,
-} from "@/pages/shared/eventPerf/dev/eventPerfData";
+} from "@/pages/shared/eventPerf/dev/utils";
 
 const MON = "2026-08-24";
 const TUE = "2026-08-25";
