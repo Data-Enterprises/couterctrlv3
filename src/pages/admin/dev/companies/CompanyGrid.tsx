@@ -1,8 +1,13 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
 import { setRefresh } from "../../../../features/dev/devAdminPageSlice";
+import { setCompanies as setUserCompanies } from "../../../../features/userSlice";
+
+// API
 import {
   createCompany,
   updateCompany,
@@ -10,21 +15,26 @@ import {
   getCompanies,
 } from "../../../../api/company";
 import { assignUserToCompany } from "../../../../api/user";
-import { setCompanies as setUserCompanies } from "../../../../features/userSlice";
+
+// Utils
+import { formTitles } from "./utils";
+
+// Interfaces
 import type {
   Company,
   CompanyJsonResp,
   JsonError,
 } from "../../../../interfaces";
+import type { CompanyRecord } from "../companyFamily";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import CompanyFormModal from "./components/CompanyFormModal";
-import type { CompanyRecord } from "../companyFamily";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
 
-// Collapses the old separate Create/Update/Delete tabs into one grid with
-// icon actions — mirrors how Organization's UserGrid replaced legacy Team's
-// separate Browse/Delete grids.
+// Company grid that handles all CRUD operations in one form
 const CompanyGrid = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
@@ -32,7 +42,6 @@ const CompanyGrid = () => {
   const [editingCompany, setEditingCompany] = useState<CompanyRecord | null>(
     null,
   );
-  /** `get_companies` carries each company's parent since 22 Oct. */
   const records = context.companies as CompanyRecord[];
   const nameOf = useMemo(
     () => new Map(records.map((c) => [c.id, c.name])),
@@ -119,8 +128,7 @@ const CompanyGrid = () => {
           toast.error(j.msg ?? "The company was not updated");
         }
       })
-      // The backend refuses a parent that would make a family two deep; its
-      // reason is in `detail`.
+      // The backend refuses a parent that would make a family two deep; its reason is in `detail`.
       .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
         toast.error(err.response?.data?.detail ?? err.message),
       );
@@ -137,8 +145,7 @@ const CompanyGrid = () => {
           context.dispatch(setRefresh(true));
         }
       })
-      // A company others belong under can't be deleted until they move; the
-      // backend says so in `detail`.
+      // A company others belong under can't be deleted until they move; the backend says so in `detail`.
       .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
         toast.error(err.response?.data?.detail ?? err.message),
       );
@@ -164,12 +171,9 @@ const CompanyGrid = () => {
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
-          <div>Name</div>
-          <div>City</div>
-          <div>State</div>
-          <div>Phone</div>
-          <div>Contact email</div>
-          <div></div>
+          {formTitles.map((title) => (
+            <div key={title}>{title}</div>
+          ))}
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
           {filtered.map((c) => (

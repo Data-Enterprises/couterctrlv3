@@ -19,3 +19,15 @@ export const canSubmit = (c: Company) =>
   c.state !== "" &&
   c.zip !== 0 &&
   c.phone !== "";
+
+
+  export const formTitles = [
+    "Name",
+    "Address",
+    "City",
+    "State",
+    "Zip",
+    "Phone",
+    "Contact Email",
+    ""
+  ]

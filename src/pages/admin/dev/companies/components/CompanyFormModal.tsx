@@ -1,7 +1,7 @@
+// Hooks
 import { useState } from "react";
-import Input from "../../../../../components-dev/inputs/Input";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
-import type { Company } from "../../../../../interfaces";
+
+// Utils
 import {
   membersOf,
   parentChoices,
@@ -9,6 +9,12 @@ import {
 } from "../../companyFamily";
 import { blankCompany, canSubmit } from "../utils";
 
+// Interfaces
+import type { Company } from "../../../../../interfaces";
+
+// Components
+import Input from "../../../../../components-dev/inputs/Input";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 
 interface CompanyFormModalProps {
   initial: CompanyRecord | null;
@@ -105,7 +111,7 @@ const CompanyFormModal = ({
               className="py-1.5 text-[13px]"
             />
           </div>
-          
+
           {/* Displays which family the company belongs to */}
           <div className="col-span-2">
             <div className="text-[11px] font-medium text-content mb-1">
