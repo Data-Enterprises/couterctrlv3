@@ -1,8 +1,13 @@
+// Hookes
 import { useEffect, useState } from "react";
-import { useForgetDeletedGroup } from "../../../hooks/useForgetDeletedGroup";
-import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { useGroupCtx } from ".";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useForgetDeletedGroup } from "../../../hooks/useForgetDeletedGroup";
+
+// Utils
+import { byFilter } from "./utils";
+
+// API
 import {
   updateGroup,
   deleteGroup,
@@ -10,13 +15,18 @@ import {
   addStoreToGroup,
   removeStoreFromGroup,
 } from "../../../api/groups";
+
+// Types/Interfaces
 import type { Group } from "../../../features/groupSlice";
 import type { StoreWithGroupStatus } from "../../../interfaces";
 import type { JsonError } from "../../../interfaces";
+
+// Components
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   group: Group;
@@ -24,20 +34,7 @@ interface Props {
   onDeleted: () => void;
 }
 
-const byFilter = (
-  stores: StoreWithGroupStatus[],
-  filter: string,
-  active: 0 | 1,
-) =>
-  stores
-    .filter((s) => s.active === active)
-    .filter((s) => s.store_name.toLowerCase().includes(filter.toLowerCase()));
-
-// Selected group's rename/delete + store assign panel, all in one view — no
-// separate "Update"/"Delete"/"Assign stores" tabs. Store assignment keeps the
-// existing immediate-toggle-with-pending-row model (not AssignPanel's staged
-// batch model) since that was a deliberate, already-approved improvement over
-// legacy's fire-and-forget toggle.
+// Selected group's rename/delete + store assign panel, all in one view
 const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   const ctx = useGroupCtx();
   const toast = useToast();
@@ -49,10 +46,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   const [unassignedFilter, setUnassignedFilter] = useState("");
   const [assignedFilter, setAssignedFilter] = useState("");
 
-  // A shared group is managed on this page's Shared Groups tab (owners and
-  // up), so here it's shown but never edited. Its stores come from
-  // stores_assigned_to_user_group as this user, so only the group's stores
-  // they're assigned to appear.
+  // A shared group is managed on this page's Shared Groups tab (owners and up), so here it's shown but never edited.
   const readOnly = group.is_shared;
   const forgetDeletedGroup = useForgetDeletedGroup();
 
@@ -106,8 +100,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
         const j = resp.data;
         if (j.error == "0") {
           toast.success("Group deleted successfully");
-          // If this was the group the search is set to, stop using it — now
-          // and at the next sign-in.
+          // If this was the group the search is set to, stop using it now, and at the next sign-in.
           forgetDeletedGroup(group.id, { persistPrefs: true });
           onDeleted();
         }
@@ -128,7 +121,13 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
     setStorePending(storeid, true);
     const call =
       type === "assigned"
-        ? removeStoreFromGroup(ctx.url, ctx.token, ctx.userid, group.id, storeid)
+        ? removeStoreFromGroup(
+            ctx.url,
+            ctx.token,
+            ctx.userid,
+            group.id,
+            storeid,
+          )
         : addStoreToGroup(ctx.url, ctx.token, ctx.userid, group.id, storeid);
 
     call
@@ -140,7 +139,10 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
               ? prev
                   .map((s) =>
                     s.storeid === storeid
-                      ? ({ ...s, active: s.active === 1 ? 0 : 1 } as StoreWithGroupStatus)
+                      ? ({
+                          ...s,
+                          active: s.active === 1 ? 0 : 1,
+                        } as StoreWithGroupStatus)
                       : s,
                   )
                   .sort((a, b) => b.active - a.active)
@@ -214,42 +216,42 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
             {/* A shared group has nothing to add to, so the picker side is
                 dropped entirely rather than shown with dead buttons. */}
             {!readOnly && (
-            <div className="flex-1 min-w-0 flex flex-col min-h-0">
-              <div className="mb-1.5">
-                <TextFilter
-                  value={unassignedFilter}
-                  onChange={setUnassignedFilter}
-                  placeholder="Search unassigned…"
-                />
-              </div>
-              <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
-                Unassigned ({unassigned.length})
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-gray-100">
-                {unassigned.map((s) => (
-                  <div
-                    key={s.storeid}
-                    className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-gray-100 ${
-                      pending.has(s.storeid) ? "opacity-40" : ""
-                    }`}
-                  >
-                    <span className="truncate">{s.store_name}</span>
-                    <button
-                      onClick={() => handleToggle(s.storeid, "unassigned")}
-                      disabled={pending.has(s.storeid)}
-                      className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-brand_navy border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+              <div className="flex-1 min-w-0 flex flex-col min-h-0">
+                <div className="mb-1.5">
+                  <TextFilter
+                    value={unassignedFilter}
+                    onChange={setUnassignedFilter}
+                    placeholder="Search unassigned…"
+                  />
+                </div>
+                <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
+                  Unassigned ({unassigned.length})
+                </div>
+                <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-gray-100">
+                  {unassigned.map((s) => (
+                    <div
+                      key={s.storeid}
+                      className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-gray-100 ${
+                        pending.has(s.storeid) ? "opacity-40" : ""
+                      }`}
                     >
-                      +
-                    </button>
-                  </div>
-                ))}
-                {unassigned.length === 0 && (
-                  <div className="flex items-center justify-center py-8 text-[12px] text-content">
-                    No stores found
-                  </div>
-                )}
+                      <span className="truncate">{s.store_name}</span>
+                      <button
+                        onClick={() => handleToggle(s.storeid, "unassigned")}
+                        disabled={pending.has(s.storeid)}
+                        className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-brand_navy border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                  {unassigned.length === 0 && (
+                    <div className="flex items-center justify-center py-8 text-[12px] text-content">
+                      No stores found
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
             )}
 
             <div className="flex-1 min-w-0 flex flex-col min-h-0">

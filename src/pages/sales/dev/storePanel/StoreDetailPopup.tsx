@@ -909,7 +909,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             lwEnd={selectedDate ? shiftIsoDay(selectedDate, -7) : lwEnd}
             lyStart={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart}
             lyEnd={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd}
-            threshold={itemThreshold}
           />
           )
         ) : tab === "subdept" ? (
