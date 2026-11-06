@@ -23,8 +23,8 @@ import type { HelpPage } from "../../constants/helpPages";
  * Data pages have the same problem one level down: their drill-downs are all
  * "a list of things under a heading", so each screen names what it is showing.
  *
- * The "?" opens the same help page desktop opens, for whichever page this
- * header is naming. It is what replaced the severity legend that used to sit
+ * The "?" opens that page's phone help, for whichever page this header is
+ * naming. It is what replaced the severity legend that used to sit
  * on row two: the legend explained the colours and nothing else, and the help
  * explains the whole page.
  */

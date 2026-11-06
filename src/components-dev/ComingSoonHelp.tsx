@@ -22,11 +22,11 @@ interface Props {
  * route decides which section of the document it opens at, so a page says
  * nothing about itself here.
  *
- * **Not an S3 help page.** The rest of the "?" system fetches a signed URL and
- * re-signs it before it lapses, because those pages live in a bucket. This one
- * is a single client document that ships with the app, so it is a static file
- * in `public/` and the iframe loads it by path: nothing to sign, nothing to
- * expire, nothing to upload before it works. It is also right the moment the
+ * **Not the in-app help.** The rest of the "?" system is data in
+ * `components-dev/help`, drawn as the desktop panel or the phone sheet. This
+ * one is a single client document, so it is a static file in `public/` and the
+ * iframe loads it by path: nothing to fetch, nothing to upload before it
+ * works. It is also right the moment the
  * branch is, which is the property that matters while it is being shown.
  *
  * Renders nothing on a route outside `comingSoonSection` — a released page

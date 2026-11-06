@@ -64,7 +64,6 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
 
           <PageInfoButton
             page="upc-list"
-            section={ctx.activeTab}
             className="flex-shrink-0"
           />
         </div>

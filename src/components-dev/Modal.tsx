@@ -9,8 +9,8 @@ interface ModalProps {
   children: React.ReactNode;
   modalClassName?: string;
   allowClickOutside?: boolean;
-  /** Off for content that owns its own edges — the help iframe fills the
-   *  modal, so the usual inset would frame it like a window in a window. */
+  /** Off for content that owns its own edges — the phone help sheet fills
+   *  the modal, so the usual inset would frame it like a window in a window. */
   padded?: boolean;
 }
 

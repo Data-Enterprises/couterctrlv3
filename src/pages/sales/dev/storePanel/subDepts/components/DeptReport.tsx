@@ -383,7 +383,6 @@ const DeptReport = ({
           </span>
           <PageInfoButton
             page="sales"
-            section="gap-split"
             variant="light"
             title="How a department is checked"
             className="flex-shrink-0 -my-1"
