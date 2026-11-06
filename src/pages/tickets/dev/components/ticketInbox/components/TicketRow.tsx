@@ -40,8 +40,7 @@ const TicketRow = ({
         open ? "bg-row_selected" : "hover:bg-bkg"
       }`}
     >
-      {/* The dot's column is held whether or not there is a dot, so a
-                          row does not shift sideways the day unread starts working. */}
+      {/* The dot's column is held whether or not there is a dot, so a row does not shift sideways the day unread starts working. */}
       <span
         aria-hidden
         className={`mt-[7px] h-[7px] w-[7px] flex-none rounded-full ${
@@ -71,8 +70,7 @@ const TicketRow = ({
           </span>
         </span>
 
-        {/* Who to answer: a client's own rows name the tech; a manager's
-                            staff tickets name who filed them. */}
+        {/* Who to answer: a client's own rows name the tech; a manager's staff tickets name who filed them. */}
         <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
           {isTech || ticket.opened_by !== userid
             ? ticket.opened_by_name
