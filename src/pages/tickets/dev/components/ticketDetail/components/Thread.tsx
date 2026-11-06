@@ -6,7 +6,7 @@ import type {
   TicketAttachment,
   TicketComment,
 } from "../../../../../../api/tickets";
-import type { Dispatch, RefObject, SetStateAction } from "react"
+import type { Dispatch, RefObject, SetStateAction } from "react";
 
 // Components
 import { PaperClipIcon } from "@heroicons/react/24/outline";
