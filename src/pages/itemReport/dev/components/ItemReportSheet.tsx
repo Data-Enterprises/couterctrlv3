@@ -15,14 +15,9 @@ import {
 import { formatCurrencyCompact } from "../../../../utils";
 import { formatPct, pillClass } from "../../../../utils/severity";
 import { ACTION_TONE } from "../utils/actionTone";
-import {
-  ACTION_LABEL,
-  ACTION_RANK,
-  daysSince,
-  type ActionKind,
-  type ReportItem,
-  type Verdict,
-} from "../utils/metrics";
+import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
+import { daysSince } from "../utils/metrics";
+import type { ActionKind, ReportItem, Verdict } from "../interfaces";
 
 // Interfaces
 import type { ReceiptLine } from "../utils";

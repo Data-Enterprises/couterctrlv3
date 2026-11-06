@@ -9,7 +9,7 @@ import { ACTION_TONE } from "../utils/actionTone";
 
 // Interfaces
 import type { ReceiverDetailsItem } from "../../../../interfaces";
-import type { ActionKind } from "../utils/metrics";
+import type { ActionKind } from "../interfaces";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";

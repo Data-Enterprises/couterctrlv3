@@ -12,7 +12,7 @@ import { ACTION_TONE } from "../../utils/actionTone";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../../interfaces";
-import type { ActionKind } from "../../utils/metrics";
+import type { ActionKind } from "../../interfaces";
 
 // Components
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";

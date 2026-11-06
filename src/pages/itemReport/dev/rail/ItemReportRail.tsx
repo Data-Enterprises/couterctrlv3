@@ -13,15 +13,10 @@ import {
 import { formatCurrency2, formatDateSimple } from "../../../../utils";
 import { formatPct, pillClass } from "../../../../utils/severity";
 import { unitPrice } from "../../../../utils/pricePoints";
-import {
-  ACTION_LABEL,
-  buildPriceEras,
-  daysSince,
-  deliveryGap,
-  mergePricePoints,
-  type ActionKind,
-  type ReportItem,
-} from "../utils/metrics";
+import { ACTION_LABEL, deliveryGap } from "../utils/verdict";
+import { buildPriceEras, mergePricePoints } from "../utils/priceEras";
+import { daysSince } from "../utils/metrics";
+import type { ActionKind, ReportItem } from "../interfaces";
 import { ACTION_TONE } from "../utils/actionTone";
 import { describeReceipt } from "../utils";
 

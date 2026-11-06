@@ -39,12 +39,9 @@ import {
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
   type ReportScope,
 } from "./utils";
-import {
-  buildPriceEras,
-  buildReport,
-  buildRollup,
-  verdictFor,
-} from "./utils/metrics";
+import { buildPriceEras } from "./utils/priceEras";
+import { buildReport, buildRollup } from "./utils/report";
+import { verdictFor } from "./utils/verdict";
 
 // Interfaces
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";

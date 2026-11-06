@@ -1,5 +1,5 @@
 // Interfaces
-import type { ActionKind } from "./metrics";
+import type { ActionKind } from "./../interfaces";
 
 /**
  * How each action looks. One definition, because the sheet's chips and the

@@ -1,12 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import {
-  buildPriceEras,
-  deliveryGap,
-  mergePricePoints,
-  flatDaysBefore,
-  verdictFor,
-  type ReportItem,
-} from "@/pages/itemReport/dev/utils/metrics";
+import { buildPriceEras, mergePricePoints } from "@/pages/itemReport/dev/utils/priceEras";
+import { deliveryGap, flatDaysBefore, verdictFor } from "@/pages/itemReport/dev/utils/verdict";
+import type { ReportItem } from "@/pages/itemReport/dev/interfaces";
 import type { ReceiptLine } from "@/pages/itemReport/dev/utils";
 
 /**
