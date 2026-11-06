@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { useAppSelector, useStoreName } from "../../../../hooks";
-import LookupDesktopEntry from "./LookupDesktopEntry";
-import LookupQueuePanel from "./LookupQueuePanel";
-import LookupReportPanel from "./LookupReportPanel";
-import LookupExportModal from "./LookupExportModal";
-import { useLookupQueue } from "./useLookupQueue";
+import LookupDesktopEntry from "./components/LookupDesktopEntry";
+import LookupQueuePanel from "./components/LookupQueuePanel";
+import LookupReportPanel from "./components/LookupReportPanel";
+import LookupExportModal from "./components/LookupExportModal";
+import { useLookupQueue } from "./hooks";
 import {
   buildDayBuckets,
   buildSaleTypeBreakdown,
@@ -13,7 +13,7 @@ import {
   computeTrend,
   findGaps,
   rowsOfSaleType,
-} from "../lookupMetrics";
+} from "../utils";
 
 const ItemLookupDesktop = () => {
   const { selectedStore } = useAppSelector((s) => s.dev.item);

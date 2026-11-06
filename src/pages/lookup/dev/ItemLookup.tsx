@@ -1,5 +1,5 @@
 import { useAppSelector } from "../../../hooks";
-import ItemLookupMobile from "./ItemLookupMobile";
+import ItemLookupMobile from "./mobile/ItemLookupMobile";
 import ItemLookupDesktop from "./desktop/ItemLookupDesktop";
 
 const ItemLookup = () => {

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
-import { setError } from "../../../features/itemScanSlice";
-import ScannerView from "../../../components-dev/scanner/ScannerView";
-import { useScanGun } from "../../../components-dev/scanner/useScanGun";
-import RecentLookupsStrip from "./RecentLookupsStrip";
-import RecentLookupsCard from "./RecentLookupsCard";
+import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
+import { setSelectedStore } from "../../../../features/dev/devItemLookupSlice";
+import { setError } from "../../../../features/itemScanSlice";
+import ScannerView from "../../../../components-dev/scanner/ScannerView";
+import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
+import RecentLookupsStrip from "./components/RecentLookupsStrip";
+import RecentLookupsCard from "./components/RecentLookupsCard";
 
 interface LookupEntryScreenProps {
   onSearch: (upc: string) => void;

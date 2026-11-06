@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../../utils";
-import type { ItemLookupHistory } from "../../../features/dev/devItemLookupSlice";
-import type { DayBucket, MarginResult, TrendResult } from "./lookupMetrics";
+import { formatCurrency2 } from "../../../../utils";
+import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
+import type { DayBucket, MarginResult, TrendResult } from "../utils";
 import {
   buildDayBuckets,
   buildSaleTypeBreakdown,
@@ -10,7 +10,7 @@ import {
   formatUnits,
   hasSaleTypeBreakdown,
   rowsOfSaleType,
-} from "./lookupMetrics";
+} from "../utils";
 import {
   bestDay,
   dayLabel,
@@ -19,12 +19,12 @@ import {
   formatSignedPct,
   vsSellingAverage,
   windowTotals,
-} from "./lookupReport";
-import ItemDayChart from "./ItemDayChart";
-import LookupDayRows from "./LookupDayRows";
-import LocationTabs from "../../../components-dev/filters/LocationTabs";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoModal from "../../../components-dev/InfoModal";
+} from "./utils";
+import ItemDayChart from "./components/ItemDayChart";
+import LookupDayRows from "./components/LookupDayRows";
+import LocationTabs from "../../../../components-dev/filters/LocationTabs";
+import InfoButton from "../../../../components-dev/InfoButton";
+import InfoModal from "../../../../components-dev/InfoModal";
 
 interface Props {
   description: string;

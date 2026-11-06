@@ -10,7 +10,7 @@ import {
   dayUnitCost,
   findGaps,
   itemDescription,
-  rowsOfSaleType, lookupFailureText } from "@/pages/lookup/dev/lookupMetrics";
+  rowsOfSaleType, lookupFailureText } from "@/pages/lookup/dev/utils";
 
 // UPC 70417 (Picadeli Salad Bar) at store 545, as returned on 9/15/2026: a
 // scale item that rings qty 0, with no cost on file and a blank description

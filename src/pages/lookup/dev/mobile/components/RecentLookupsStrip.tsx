@@ -1,5 +1,5 @@
-import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+import { useAppSelector } from "../../../../../hooks";
+import { formatCurrency2 } from "../../../../../utils";
 
 interface RecentLookupsStripProps {
   onSelect: (productCode: string) => void;

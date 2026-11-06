@@ -1,6 +1,6 @@
-import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
-import { formatUnits } from "./lookupMetrics";
+import { useAppSelector } from "../../../../../hooks";
+import { formatCurrency2 } from "../../../../../utils";
+import { formatUnits } from "../../utils";
 
 interface Props {
   onSelect: (productCode: string) => void;

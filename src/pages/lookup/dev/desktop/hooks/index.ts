@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { getItemLookupSingleStore } from "../../../../api/itemLookup";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { getItemLookupSingleStore } from "../../../../../api/itemLookup";
 import {
   addRecentLookup,
   setLookupQueue,
@@ -9,14 +9,14 @@ import {
   setLookupSelectedUpc,
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
-} from "../../../../features/dev/devItemLookupSlice";
-import { computeMargin, itemDescription, lookupFailureText } from "../lookupMetrics";
-import { isSaleRow } from "../../../../utils/saleType";
+} from "../../../../../features/dev/devItemLookupSlice";
+import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
+import { isSaleRow } from "../../../../../utils/saleType";
 import {
   scopeToStoreNumber,
   storeNumbersIn,
-} from "../../../../utils/storeIdentity";
-import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
+} from "../../../../../utils/storeIdentity";
+import type { ItemLookupHistory } from "../../../../../features/dev/devItemLookupSlice";
 
 // The lookup is fetched by storeid, so a co-located storeid returns both
 // locations' line items in one history. Every headline figure is derived from

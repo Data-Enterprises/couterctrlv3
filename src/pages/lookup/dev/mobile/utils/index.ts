@@ -1,4 +1,4 @@
-import type { DayBucket } from "./lookupMetrics";
+import type { DayBucket } from "../../utils";
 
 /**
  * The figures the report layout reads, none of which the table layout needed.

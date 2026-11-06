@@ -1,9 +1,9 @@
 import type {
   ItemLookupHistory,
   SaleTypeSummary,
-} from "../../../features/dev/devItemLookupSlice";
-import { calculateCogs } from "../../../utils/cogs";
-import { isSaleRow } from "../../../utils/saleType";
+} from "../../../../features/dev/devItemLookupSlice";
+import { calculateCogs } from "../../../../utils/cogs";
+import { isSaleRow } from "../../../../utils/saleType";
 
 /**
  * How many priced units a row represents.

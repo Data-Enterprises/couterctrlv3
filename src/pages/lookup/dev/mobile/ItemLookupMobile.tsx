@@ -3,10 +3,10 @@ import {
   applyStoreNumberToName,
   scopeToStoreNumber,
   storeNumbersIn,
-} from "../../../utils/storeIdentity";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getItemLookupSingleStore } from "../../../api/itemLookup";
+} from "../../../../utils/storeIdentity";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getItemLookupSingleStore } from "../../../../api/itemLookup";
 import {
   setItemsLoaded,
   setProductCode,
@@ -22,17 +22,17 @@ import {
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
   type ItemLookupHistory,
-} from "../../../features/dev/devItemLookupSlice";
-import { setError } from "../../../features/itemScanSlice";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+} from "../../../../features/dev/devItemLookupSlice";
+import { setError } from "../../../../features/itemScanSlice";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupItemReport from "./LookupItemReport";
 import {
   buildDayBuckets,
   computeMargin,
   computeTrend,
-  itemDescription, lookupFailureText } from "./lookupMetrics";
-import { isSaleRow } from "../../../utils/saleType";
+  itemDescription, lookupFailureText } from "../utils";
+import { isSaleRow } from "../../../../utils/saleType";
 
 const ItemLookupMobile = () => {
   const dispatch = useAppDispatch();

@@ -3,9 +3,9 @@ import {
   useAppDispatch,
   useAppSelector,
   useStoreName,
-} from "../../../../hooks";
-import SingleSelect from "../../../../components-dev/SingleSelect";
-import { setSelectedStore } from "../../../../features/dev/devItemLookupSlice";
+} from "../../../../../hooks";
+import SingleSelect from "../../../../../components-dev/SingleSelect";
+import { setSelectedStore } from "../../../../../features/dev/devItemLookupSlice";
 
 interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;

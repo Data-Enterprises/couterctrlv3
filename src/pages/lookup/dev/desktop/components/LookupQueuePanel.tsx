@@ -1,10 +1,10 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import {
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import type { QueueItem } from "../../../../features/dev/devItemLookupSlice";
-import LocationTabs from "../../../../components-dev/filters/LocationTabs";
+import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
+import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 
 interface LookupQueuePanelProps {
   storeName: string;

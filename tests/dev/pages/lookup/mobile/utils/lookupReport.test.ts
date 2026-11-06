@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DayBucket } from "@/pages/lookup/dev/lookupMetrics";
+import type { DayBucket } from "@/pages/lookup/dev/utils";
 import {
   bestDay,
   dayLabel,
@@ -9,7 +9,7 @@ import {
   formatSignedPct,
   vsSellingAverage,
   windowTotals,
-} from "@/pages/lookup/dev/lookupReport";
+} from "@/pages/lookup/dev/mobile/utils";
 
 const bucket = (
   date: string,
