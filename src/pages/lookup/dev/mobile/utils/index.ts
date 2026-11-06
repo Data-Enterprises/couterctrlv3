@@ -3,11 +3,8 @@ import type { DayBucket } from "../../interfaces";
 import type { WindowTotals } from "../interfaces";
 
 /**
- * The figures the report layout reads, none of which the table layout needed.
- *
- * Kept out of the components so the arithmetic can be tested without
- * rendering, and out of `lookupMetrics` so removing the dev view later takes
- * this file with it rather than leaving orphans behind.
+ * The figures the report layout reads, kept out of the components (testable)
+ * and out of the page's utils (so removing the dev view takes this with it).
  */
 
 export const windowTotals = (buckets: DayBucket[]): WindowTotals => ({
@@ -19,10 +16,8 @@ export const windowTotals = (buckets: DayBucket[]): WindowTotals => ({
   hasCost: buckets.some((b) => b.hasCost),
 });
 
-/** The biggest day by takings, or null when nothing sold.
- *
- *  Ties go to the earlier day — arbitrary, but stable, so the tile doesn't
- *  flip between two equal days as the window rolls. */
+/** The biggest day by takings, or null when nothing sold. Ties go to the
+ *  earlier day, so the tile is stable. */
 export const bestDay = (buckets: DayBucket[]): DayBucket | null =>
   buckets.reduce<DayBucket | null>(
     (best, b) => (b.hasSale && (!best || b.revenue > best.revenue) ? b : best),
@@ -35,11 +30,8 @@ export const dayShare = (day: DayBucket, total: number): number | null =>
   total > 0 ? (day.revenue / total) * 100 : null;
 
 /**
- * How far a day sits from a typical selling day, as a percentage.
- *
- * Measured against the mean of the days that SOLD, not of the window — a day
- * compared against an average dragged down by closed days reads as a triumph
- * every time it opens.
+ * How far a day sits from a typical selling day, as a percentage, against the
+ * mean of the days that sold (not the window).
  */
 export const vsSellingAverage = (
   day: DayBucket,
@@ -59,11 +51,8 @@ export const dayMargin = (day: DayBucket): number | null =>
     : null;
 
 /**
- * "Mon Sep 15" from a YYYY-MM-DD.
- *
- * Built from the parts rather than `new Date(iso)`: that parses as UTC
- * midnight, which is the previous day everywhere in the US, so every label
- * would be off by one.
+ * "Mon Sep 15" from a YYYY-MM-DD, built from the parts: `new Date(iso)` parses
+ * UTC midnight, the day before in the US.
  */
 export const dayLabel = (iso: string): string => {
   const [y, m, d] = iso.split("-").map(Number);

@@ -13,20 +13,8 @@ interface Props {
 }
 
 /**
- * Recent lookups, dev only — see `lookupDevView.ts`.
- *
- * The five-column list this replaces gave the item description whatever was
- * left of a 375px screen after four fixed columns and four gaps: 75px, about
- * ten characters. "Picadeli Salad Bar" arrived as "Picadeli S…", so the one
- * column you choose a row by was the one that could not be read.
- *
- * Two lines instead, the same row `PerfDrillList` and the day list use — the
- * name gets the width, and the unit travels with the item rather than living
- * in a header two hundred pixels away.
- *
- * A scale item shows pounds. It rings `qty: 0`, so the old Qty column read
- * zero for everything sold by weight, and there was no weight on the entry to
- * fall back to until `units` was added to `RecentLookup`.
+ * Recent lookups, dev only: two lines per row (as `PerfDrillList`) so the name
+ * gets the width. A scale item shows pounds (it rings `qty: 0`).
  */
 const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
   const { recentLookups } = useAppSelector((s) => s.dev.item);

@@ -37,9 +37,8 @@ const LookupQueuePanel = ({
     (q) => q.status === "loaded" || q.status === "error",
   ).length;
 
-  // The lookup endpoint's 14-day window ends yesterday, not today (today's
-  // sales aren't final yet), and it takes no date param — so this label has
-  // to mirror that same offset rather than just showing "today."
+  // The lookup's 14-day window ends yesterday (today isn't final) and takes no
+  // date, so the label mirrors that offset.
   const end = new Date();
   end.setDate(end.getDate() - 1);
   const start = new Date(end);

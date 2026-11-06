@@ -20,16 +20,9 @@ interface LookupEntryScreenProps {
 }
 
 /**
- * Item Lookup's landing screen.
- *
- * Built on the same `SingleStoreSearchCard` every other mobile page opens with,
- * so the first thing a user sees is the card they already know rather than a
- * page-specific form. No navy header: nothing has been searched yet, so there
- * is no store, week or result for a header to name.
- *
- * What is specific to this page — the scanner, the manual UPC field and the
- * recent list — rides in the card's `children` slot beneath its search button.
- * The card's own date picker is omitted; a lookup takes a code, not a date.
+ * Item Lookup's landing screen, on the same `SingleStoreSearchCard` every
+ * mobile page opens with, without a date picker (a lookup takes a code). The
+ * scanner, the UPC field and the recent list ride in its `children` slot.
  */
 const LookupEntryScreen = ({
   onSearch,
@@ -57,10 +50,8 @@ const LookupEntryScreen = ({
     onSearch(upc);
   };
 
-  // A scan gun trigger pull is a camera read: already normalized, it searches
-  // at once. With no store picked there is nothing to search against yet, so
-  // the code waits in the field (the camera button is disabled for the same
-  // reason) and Search runs it once a store is chosen.
+  // A scan-gun read is already normalised, so it searches at once; with no
+  // store picked it waits in the field until a store is chosen.
   const gun = useScanGun((upc) => {
     if (!hasStore) {
       setManualUpc(upc);
@@ -71,11 +62,8 @@ const LookupEntryScreen = ({
   });
 
   return (
-    // pb-14 clears the fixed bottom tab bar — 56px, outside document flow, so
-    // nothing reserves space for it and the last recent row sits underneath it.
-    // Same fix and value as SalesPerfMobile and the dev result screen. Gated
-    // only because this screen is shared with prod, which is meant to stay
-    // exactly as it is; the bug is there too and this would fix it.
+    // pb-14 clears the fixed 56px bottom tab bar. Gated because this screen is
+    // shared with prod, which stays as it is (the bug is there too).
     <div
       className={`h-[calc(100dvh-3rem)] overflow-y-auto ${devView ? "pb-14" : ""}`}
     >
@@ -111,10 +99,8 @@ const LookupEntryScreen = ({
           <div className="relative">
             {cameraOpen ? (
               <>
-                {/* The shared camera. This screen answers one question, so it
-                    stops on the read, and it keeps its own error panel below —
-                    passing `onError` is what tells the component not to print
-                    the message a second time inside the frame. */}
+                {/* The shared camera: stops on the read, and `onError` keeps the
+                    message in this screen's own error panel. */}
                 <ScannerView
                   onDetected={handleScan}
                   stopOnRead

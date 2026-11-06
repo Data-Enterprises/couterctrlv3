@@ -17,16 +17,10 @@ interface SaleTypeBreakdownProps {
 }
 
 /**
- * The window split by register line type — Sale, then Backup (restored
- * transactions), Cancelled and Voided by dollars.
- *
- * Every other figure on the screen counts Sale only, which is how the
- * endpoint's own totals count. This is where the rest show up, each against
- * Sale dollars so a $0.85 cancellation reads as the rounding error it is and a
- * $90 one doesn't.
- *
- * Each row is a button: picking a type swaps the daily breakdown to that
- * type's timeline. Picking it again, or picking Sale, goes back.
+ * The window split by register line type: Sale, then Backup (restored
+ * transactions), Cancelled and Voided, by dollars, each against Sale dollars.
+ * Every other figure counts Sale only. Picking a row swaps the daily
+ * breakdown to that type; picking it again, or Sale, goes back.
  */
 const SaleTypeBreakdown = ({
   saleTypes,

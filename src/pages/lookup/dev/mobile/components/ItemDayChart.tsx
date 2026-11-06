@@ -15,21 +15,9 @@ interface Props {
 }
 
 /**
- * The lookup window as one column per day, and the screen's only filter.
- *
- * The same idea as `PerfDayChart` and deliberately not the same component: that
- * one draws a PAIR of columns per day because every Performance page compares
- * against last year. A lookup has no last year — it is fourteen days of one
- * item — so a shared component would need a second series that does not exist,
- * and faking it with zeroes would draw a grey stub under every column.
- *
- * Colour, dimming and the tap-again-to-clear behaviour are shared, so the two
- * charts read as the same control.
- *
- * Columns are keyed by date, so React keeps the nodes across a scope change and
- * the height/opacity transition has something to animate. A new item replaces
- * them and lands at full height with no animation, which is right — that is a
- * different chart, not a change to this one.
+ * The lookup window as one column per day, and the screen's only filter. Like
+ * `PerfDayChart` but one column per day (no last year here); colour, dimming
+ * and tap-again-to-clear are shared. Keyed by date so a scope change animates.
  */
 const ItemDayChart = ({ buckets, selected, onToggle }: Props) => {
   const max = buckets.reduce((m, b) => Math.max(m, b.revenue), 0) || 1;

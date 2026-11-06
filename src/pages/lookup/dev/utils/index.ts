@@ -10,44 +10,25 @@ import type {
 } from "../../../../features/dev/devItemLookupSlice";
 
 /**
- * How many priced units a row represents.
- *
- * `qty` counts how many times the item was *rung*; `weight` is what the
- * customer was actually charged for. They're the same thing only for
- * each-priced goods. Bananas ring ~2.1 lb at a time, so costing them by qty
- * understates COGS by more than half — 67.78% margin against a real 30.93%.
- *
- * `weight` comes back 0 on an each-priced item, which is the discriminator:
- * no null handling, no heuristic. This used to derive pounds from
- * `total_sales / price` because the column wasn't returned; that guess is gone
- * along with the directional tolerance it needed to survive promoted items
- * whose shelf price wasn't their ring price.
+ * How many priced units a row represents. `qty` counts rings; `weight` is what
+ * the customer was charged for (bananas ring ~2.1 lb at a time). `weight` is 0
+ * on an each-priced item, which is the discriminator.
  */
 export const pricedUnits = (h: ItemLookupHistory): number =>
   h.weight > 0 ? h.weight : h.qty;
 
 /**
- * What one unit of this item cost — after the vendor's allowance where there is
- * one, at list where there isn't. The figure Sub Dept Margins costs against,
- * and the only way the two pages can agree on a promoted item.
+ * What one unit of this item cost, after the vendor's allowance where there is
+ * one: the figure Sub Dept Margins costs against. Three routes, best first:
  *
- * Three routes, best first, so this works against whatever the endpoint
- * happens to be returning that day:
+ *   1. `unit_cost`, from the server.
+ *   2. `net_cost × casecost / cost`: `net_cost` and `cost` are per case and
+ *      `casecost` per unit, so `casecost / cost` is `1 / case_size`.
+ *      On 7800003538: 11.98 × 7.50 / 15 = 5.99.
+ *   3. `casecost`, list cost per unit.
  *
- *   1. `unit_cost` — the server did it. Nothing to reconstruct.
- *
- *   2. `net_cost x casecost / cost`. `net_cost` and `cost` are both per CASE
- *      while `casecost` is per unit, so `casecost / cost` is exactly
- *      `1 / case_size` — which brings `net_cost` down to a unit without
- *      `case_size` ever being returned. On 7800003538: 11.98 x 7.50 / 15 =
- *      5.99, against the 7.50 `casecost` alone would have given.
- *
- *   3. `casecost` — list cost per unit. Correct for anything without an
- *      allowance, and low-margin-biased for anything with one.
- *
- * There is deliberately no route from `net_cost` and `casecost` alone:
- * `net_cost / casecost` is `case_size` only when cost equals net_cost, so
- * dividing by it just returns `casecost` and quietly looks like it worked.
+ * There is no route from `net_cost` and `casecost` alone: `net_cost / casecost`
+ * is `case_size` only when cost equals net_cost.
  */
 export const rowUnitCost = (h: ItemLookupHistory): number => {
   if (h.unit_cost && h.unit_cost > 0) return h.unit_cost;
@@ -58,17 +39,14 @@ export const rowUnitCost = (h: ItemLookupHistory): number => {
   return h.casecost;
 };
 
-/** COGS for one lookup row, through the same helper Sub Dept Margins uses.
- *  The cost is already per-unit, so it goes in on the caseSize-0 path that
- *  treats it as such. */
+/** COGS for one lookup row, through Sub Dept Margins' helper; the cost is
+ *  already per unit, so it goes in on the caseSize-0 path. */
 export const rowCogs = (h: ItemLookupHistory): number =>
   calculateCogs(0, rowUnitCost(h), 0, h.qty, pricedUnits(h));
 
 /**
- * The item's name. The top-level `description` can come back blank while the
- * history rows carry one — an item that rang before its description was set
- * up, then got named mid-window. Falls back to the most recent row that has a
- * name.
+ * The item's name: the top-level `description` can be blank while the rows
+ * carry one, so it falls back to the most recent named row.
  */
 export const itemDescription = (
   description: string | null | undefined,
@@ -82,11 +60,9 @@ export const itemDescription = (
 };
 
 /**
- * Every register line type in the window: Sale first, then the rest by dollars.
- *
- * Takes every row as returned, not the Sale rows the headline figures use. Returns only
- * Sale when the response carries no `sale_type`, which the UI reads as nothing
- * to break down.
+ * Every register line type in the window, Sale first, then by dollars, from
+ * every row. Only Sale when the response has no `sale_type` (nothing to break
+ * down).
  */
 export const buildSaleTypeBreakdown = (
   rows: ItemLookupHistory[],
@@ -154,10 +130,8 @@ export const buildDayBuckets = (
   });
 
   const buckets: DayBucket[] = [];
-  // The lookup endpoint takes no date param — it's a plain daysback count —
-  // and its window ends yesterday, not today (today's sales aren't final
-  // yet). Mirror that here so the grid we build lines up with what the
-  // API actually returned.
+  // The endpoint takes a daysback count, not a date, and its window ends
+  // yesterday; the grid mirrors that.
   const end = new Date();
   end.setDate(end.getDate() - 1);
   for (let i = daysBack - 1; i >= 0; i--) {
@@ -222,9 +196,8 @@ export const computeMargin = (
   };
 };
 
-// Only resolved (closed) gaps — a run of no-sale days still open as of today
-// is surfaced separately via computeActiveGap, since "no sales as of today"
-// is a live, urgent signal rather than a passive historical stat.
+// Only closed gaps here; a run of no-sale days still open today comes from
+// computeActiveGap, as a live signal.
 export const findGaps = (buckets: DayBucket[]): { start: string; end: string; days: number }[] => {
   const gaps: { start: string; end: string; days: number }[] = [];
   let runStartIndex = -1;
@@ -257,17 +230,10 @@ export const computeActiveGap = (buckets: DayBucket[]): number => {
 };
 
 /**
- * What to tell the reader when a lookup comes back with `error: 1`.
- *
- * `items/itemlookup/{storeid}` answers an item with no sales in the window the
- * same way it answers a failure: `error: 1`, with a message that says which it
- * was -- "no sales for upc 123 at store 695 in the last 14 days". Showing "There
- * was an issue finding this item" for that read as a fault when it was an
- * answer (dev board review, finding Y).
- *
- * The endpoint can't tell an unknown UPC from one that hasn't sold lately, so
- * the message is about sales, not about whether the item exists. Anything else
- * is still a fault and stays worded as one.
+ * What to say when a lookup returns `error: 1`. The endpoint answers "no sales
+ * for upc 123 at store 695 in the last 14 days" the same way as a failure, so
+ * that message reads as an answer about sales (it can't tell an unknown UPC
+ * from an unsold one); anything else stays worded as a fault.
  */
 export const lookupFailureText = (msg: string | null | undefined) => {
   const m = /^no sales for upc .* in the last (\d+) days/i.exec(msg ?? "");

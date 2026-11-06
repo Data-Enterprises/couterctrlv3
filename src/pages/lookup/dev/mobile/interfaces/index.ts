@@ -5,9 +5,8 @@ export interface WindowTotals {
   /** Priced units — pounds on a scale item. */
   units: number;
   cost: number;
-  /** Days that actually sold, not days in the window. Every per-day average
-   *  divides by this: a fortnight with one selling day averages that day's
-   *  takings, not a fourteenth of them. */
+  /** Days that actually sold, not days in the window: every per-day average
+   *  divides by this. */
   sellingDays: number;
   /** Days in the window, selling or not. */
   windowDays: number;

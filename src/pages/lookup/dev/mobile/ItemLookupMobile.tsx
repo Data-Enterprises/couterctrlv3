@@ -77,9 +77,8 @@ const ItemLookupMobile = () => {
   // the figures and the sale-type breakdown without refetching.
   const rawHistoryRef = useRef<ItemLookupHistory[]>([]);
 
-  // The lookup is by storeid, so its history covers both locations. Every
-  // headline figure is derived from those rows, so scoping re-derives all.
-  // Headline figures count Sale rows only; the breakdown counts every type.
+  // By storeid, so the history covers both locations; scoping re-derives every
+  // figure. Headline figures count Sale rows; the breakdown counts every type.
   const applyScope = (
     allHistory: ItemLookupHistory[],
     storeNumber: string | null,
@@ -105,9 +104,8 @@ const ItemLookupMobile = () => {
 
   const handleStoreNumberChange = (storeNumber: string | null) => {
     dispatch(setLookupSelectedStoreNumber(storeNumber));
-    // rawHistoryRef is component-local and empties on remount. Re-deriving from
-    // an empty cache would zero out the metrics on screen, so leave the current
-    // view alone rather than blanking it.
+    // rawHistoryRef empties on remount; re-deriving from it would zero the
+    // screen, so the current view is left alone.
     if (rawHistoryRef.current.length === 0) return;
     applyScope(rawHistoryRef.current, storeNumber);
   };
@@ -163,12 +161,10 @@ const ItemLookupMobile = () => {
             }),
           );
         } else {
-          // A non-zero error means the lookup did not complete — `"'product_code'"`
-          // is a Python KeyError leaking through — so nothing was learned about
-          // whether the store stocks this item. The old copy asserted it wasn't
-          // in inventory, sending people to hunt a stocking problem that may not
-          // exist. The toast carries whatever the server said; the panel stays
-          // deliberately vague, because vague and true beats specific and wrong.
+          // A non-zero error means the lookup didn't complete (e.g. a leaked
+          // KeyError), so nothing is known about stock. The toast carries the
+          // server's words; the panel stays vague rather than claim it's not
+          // stocked.
           toast.error(lookupFailureText(j.msg));
           dispatch(setError(lookupFailureText(j.msg)));
           dispatch(setItemsLoaded(false));
@@ -197,10 +193,8 @@ const ItemLookupMobile = () => {
   }
 
   const buckets = buildDayBuckets(itemLookupHistory);
-  // Identical props either way, so the two screens stay swappable. By tree:
-  // the dev tree shows the new report (Option A); prod keeps
-  // LookupResultScreen until this tree is promoted. (Was keyed off apiEnv while both
-  // environments shared one tree — lookupDevView.ts.)
+  // Identical props either way, so the two screens stay swappable: dev shows
+  // the new report, prod keeps LookupResultScreen until promotion.
   const Result = LookupItemReport;
 
   return (

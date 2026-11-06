@@ -74,10 +74,8 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
           value={rawUpcs}
           onChange={(e) => setRawUpcs(e.target.value)}
           onKeyDown={(e) => {
-            // A scanner types the digits and presses Enter, and expects a
-            // result. Enter used to add a line, so a scan sat waiting for a
-            // click (dev board review, finding Y). Shift+Enter still adds a
-            // line for typing several by hand; pasting a list is unaffected.
+            // Enter looks up, so a scanner's digits-then-Enter gets a result;
+            // Shift+Enter adds a line for typing several by hand.
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSubmit();

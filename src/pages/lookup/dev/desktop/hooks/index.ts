@@ -27,11 +27,9 @@ import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
 // Interfaces
 import type { ItemLookupHistory } from "../../../../../features/dev/devItemLookupSlice";
 
-// The lookup is fetched by storeid, so a co-located storeid returns both
-// locations' line items in one history. Every headline figure is derived from
-// those rows, so scoping the rows re-derives all of them — no refetch needed.
-// Takes every line type: the breakdown counts them all, while everything else
-// is derived from Sale rows only.
+// The lookup is by storeid, so a co-located storeid returns both locations;
+// scoping the rows re-derives every figure without a refetch. Takes every line
+// type: the breakdown counts them all, the rest counts Sale rows only.
 const deriveTotals = (
   allHistory: ItemLookupHistory[],
   storeNumber: string | null,

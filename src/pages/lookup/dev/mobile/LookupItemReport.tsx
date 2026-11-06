@@ -72,37 +72,14 @@ const Tile = ({
 );
 
 /**
- * Item Lookup's result screen, dev only — see `lookupDevView.ts`.
+ * Item Lookup's result screen, dev only. One unit, never two: pounds for a
+ * scale item, a count otherwise. A missing cost is said once. Order: the days,
+ * the figure they add up to, then what made it up. Scoping a day narrows this
+ * card only.
  *
- * The table this replaces put six columns on a 375px phone, and on a scale item
- * three of them carried nothing: a quantity of zero on every row, "No cost"
- * thirteen times, and a column of dashes for the margin that cost implies.
- * Everything needed to know that was already computed — `margin.weighed`,
- * `margin.costMissing`, `DayBucket.hasCost` — and simply wasn't consulted.
- *
- * So: one unit, never two. Pounds for a scale item, a count for anything else.
- * A missing cost is said once, in a sentence, instead of twenty-six times in
- * two columns. And the window opens with its own shape, because the question
- * behind a lookup is usually "what has this been doing", which thirteen numbers
- * in a column cannot answer.
- *
- * Order follows `PerfStoreReport`: the days first, then the figure they add up
- * to, then what made it up.
- *
- * Scoping a day narrows THIS card only. The sale-type and day-by-day cards stay
- * where they are — they are the context the scoped figure is read against, and
- * removing them meant the screen changed shape underneath a tap.
- *
- * NO FIGURE HERE IS GRADED. No red, no green, nothing that scores the margin
- * or ranks the item — mobile states the figures and lets the reader draw the
- * conclusion, which is deliberate and long-standing rather than a gap to fill
- * in later.
- *
- * The amber band at the foot of the card is the one exception, and it is not a
- * grade: it reports a CONDITION the reader would otherwise have to notice for
- * themselves by reading fourteen rows — that the second week moved less than
- * the first, or that nothing has sold for days. A verdict on how well the item
- * is doing stays out of it.
+ * NO FIGURE HERE IS GRADED: mobile states figures and lets the reader judge,
+ * on purpose. The amber band reports a condition (the second week moved less,
+ * or nothing has sold for days), not a grade.
  */
 const LookupItemReport = ({
   description,
@@ -157,9 +134,8 @@ const LookupItemReport = ({
 
   const pickSaleType = (type: string) => {
     setSaleTypePick({ code: productCode, type });
-    // The scoped day belonged to the outgoing timeline. A cancellation on the
-    // 12th is not the same fact as a sale on the 12th, and silently carrying
-    // the selection across made the headline change meaning without moving.
+    // The scoped day belonged to the old timeline (a cancellation on the 12th
+    // isn't a sale on the 12th), so it is cleared.
     setDayPick({ code: productCode, date: null });
   };
 
@@ -178,14 +154,10 @@ const LookupItemReport = ({
       : null;
 
   return (
-    // Fixed height with its own scroll region, the same shape every mobile
-    // Performance page uses. A `min-h` page grows past the viewport and the
-    // last card ends up underneath the bottom nav, which is where the sale
-    // type card was being cut in half.
+    // Fixed height with its own scroll region, like every mobile Performance
+    // page, so the last card never ends up under the bottom nav.
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
-      {/* pb-14 clears the fixed bottom tab bar — 56px, outside document
-          flow, so nothing reserves space for it. Same fix and same
-          value as SalesPerfMobile. */}
+      {/* pb-14 clears the fixed 56px bottom tab bar. */}
       <div data-help="report" className="min-h-0 flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-2.5 p-2.5">
         {/* ── what is being read, and through which lens ─────────── */}
@@ -193,15 +165,8 @@ const LookupItemReport = ({
           data-testid="lookup-header"
           className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
         >
-          {/* One block, not two.
-           *
-           * This card IS the page, so the page's controls live on it rather
-           * than on a navy band above that named the same store twice — but
-           * splitting the store and the item into two bordered bands stacked
-           * three rules between the top of the card and the chart, and put the
-           * store above the item on a screen you reached by looking up an
-           * item. The item is the title; the store and the window are what
-           * qualify it. */}
+          {/* One block: the item is the title, the store and window qualify
+              it, and the page's controls live on this card. */}
           <div className="flex items-start gap-2 border-b border-gray-100 px-3.5 py-2.5">
             <div className="min-w-0 flex-1">
               <div className="truncate font-display text-[15px] font-bold leading-tight text-content">
@@ -211,21 +176,13 @@ const LookupItemReport = ({
                 {productCode}
                 {categoryDescription ? ` \u00b7 ${categoryDescription}` : ""}
               </div>
-              {/* The window is already drawn by the chart and counted by the
-                  caption under it, so it sits here as small print rather than
-                  as a third announcement. */}
+              {/* The window as small print: the chart already draws it. */}
               <div className="mt-1 truncate text-[11px] font-semibold text-content/85">
                 {storeName} &middot; {dateRangeLabel}
               </div>
             </div>
-            {/* Search and "?" together in the corner, the same pair
-                MobilePerfCard puts on a card that IS the page.
-             *
-             * The back arrow that used to sit on the left said "up" without
-             * saying where to — and where it goes is the search card, which
-             * also holds the recent lookups. A magnifying glass names that
-             * destination, so leaving this item and looking up another are
-             * visibly the same action rather than two. */}
+            {/* Search and "?" together in the corner, as MobilePerfCard does:
+                search leads back to the search card and its recent lookups. */}
             <div className="flex flex-none items-center gap-1.5">
               <button
                 type="button"
@@ -257,12 +214,7 @@ const LookupItemReport = ({
           )}
           {hasSaleTypeBreakdown(saleTypes) && (
               <div data-testid="lookup-sale-types" className="border-t border-gray-100">
-                {/* A caption, not a heading. The card already has a title —
-                  the item — and a second one at nearly the same weight
-                  directly beneath it read as two cards fused together. This
-                  labels the rows the way the tile captions label their
-                  figures, and the rows themselves say they are selectable by
-                  carrying the selected marker. */}
+                {/* A caption, not a heading: the item is the card's title. */}
               <div className="px-3.5 pb-1.5 pt-2.5">
                 <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/85">
                   By sale type
@@ -447,9 +399,8 @@ const LookupItemReport = ({
             </p>
           )}
 
-          {/* Window-level readings. Suppressed while a day is scoped: they
-              describe the fortnight, and sitting under one day's figure they
-              read as describing that day. */}
+          {/* Window-level readings, hidden while a day is scoped (they
+              describe the fortnight, not the day). */}
           {!day && isSale && trend.isSlowing && (
             <p className="border-t border-amber-200 bg-amber-50 px-3.5 py-2 text-[11.5px] font-semibold text-amber-900">
               Slowing down — {formatUnits(trend.firstHalfUnits, weighed)} the
