@@ -35,7 +35,6 @@ interface AdminPageState {
   isLoadingStoreActivity: boolean;
   storeNameFilter: string;
   adminForm: AdminForm;
-  exportOpen: boolean;
   // The Stores tab: its list (null until loaded) and its three filters.
   storeRecords: Store[] | null;
   storeSearch: string;
@@ -52,7 +51,6 @@ const initialState: AdminPageState = {
   isLoadingStoreActivity: false,
   storeNameFilter: "",
   adminForm: "companies",
-  exportOpen: false,
   storeRecords: null,
   storeSearch: "",
   storeCompanyFilter: "",
@@ -109,9 +107,6 @@ const adminPageSlice = createSlice({
     setStoreNameFilter: (state, action: PayloadAction<string>) => {
       state.storeNameFilter = action.payload;
     },
-    setExportOpen: (state, action: PayloadAction<boolean>) => {
-      state.exportOpen = action.payload;
-    },
     setStoreRecords: (state, action: PayloadAction<Store[] | null>) => {
       state.storeRecords = action.payload;
     },
@@ -139,7 +134,6 @@ export const {
   setFilteredCompanyStoresActivity,
   setIsLoadingStoreActivity,
   setStoreNameFilter,
-  setExportOpen,
   setStoreRecords,
   setStoreSearch,
   setStoreCompanyFilter,

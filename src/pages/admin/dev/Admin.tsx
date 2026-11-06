@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
@@ -9,7 +9,6 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setAdminForm,
   setCompanies,
-  setExportOpen,
 } from "../../../features/dev/devAdminPageSlice";
 
 // API
@@ -32,6 +31,7 @@ const Admin = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
+  const [exportOpen, setExportOpen] = useState(false);
   const panel = adminPanel[context.adminForm] ?? adminPanel.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: panel.key,
@@ -71,7 +71,12 @@ const Admin = () => {
       case "companies":
         return context.isProgrammer ? <CompanyGrid /> : null;
       case "store_activity":
-        return <StoreActivityComp />;
+        return (
+          <StoreActivityComp
+            exportOpen={exportOpen}
+            setExportOpen={setExportOpen}
+          />
+        );
       case "store_records":
         return <StoreRecords />;
       case "sub_exclusions":
@@ -129,7 +134,7 @@ const Admin = () => {
               </span>
               <button
                 data-help="export"
-                onClick={() => dispatch(setExportOpen(true))}
+                onClick={() => setExportOpen(true)}
                 disabled={context.companyStoresActivity.length === 0}
                 title="Export CSV"
                 className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
