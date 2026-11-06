@@ -1,6 +1,3 @@
-// Utils
-import { downloadCsv } from "../../../../../../utils/csvExport";
-
 // Interfaces
 import type {
   ReceiverDetailsItem,
@@ -9,7 +6,6 @@ import type {
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import { buildDetailsCsv } from "../utils";
 
 interface ModalPresetModeProps {
   onClose: () => void;
@@ -18,25 +14,17 @@ interface ModalPresetModeProps {
   referenceNumber: string;
   details: ReceiverDetailsItem[];
   totals: ReceiverDetailsTotals | null;
+  handlePresetDownload: () => void;
 }
 
 const ModalPresetMode = ({
   onClose,
   vendorName,
   invoiceId,
-  referenceNumber,
   details,
   totals,
+  handlePresetDownload,
 }: ModalPresetModeProps) => {
-  const handlePresetDownload = () => {
-    const label = `${vendorName} — Invoice ${invoiceId} (Ref #${referenceNumber})`;
-    const safeName = vendorName.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(
-      buildDetailsCsv(details, label, totals),
-      `${safeName}_${invoiceId}.csv`,
-    );
-    onClose();
-  };
   return (
     <>
       <div className="px-4 pt-4 pb-2 space-y-3">
