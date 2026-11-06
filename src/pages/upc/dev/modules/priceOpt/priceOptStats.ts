@@ -1,5 +1,8 @@
-import type { UpcPriceOpt } from "../../../../../interfaces";
+// Utils
 import { isWeighted } from "../../../../../utils/pricedUnits";
+
+// Interfaces
+import type { UpcPriceOpt } from "../../../../../interfaces";
 
 export type PricePoint = {
   price: number;

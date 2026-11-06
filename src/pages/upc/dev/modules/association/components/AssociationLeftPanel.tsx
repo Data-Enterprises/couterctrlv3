@@ -1,6 +1,11 @@
-import { ArrowLeftIcon, CheckIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
+
+// Interfaces
 import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSlice";
+
+// Components
+import { ArrowLeftIcon, CheckIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
 interface Props {
   selectedUpcs: string[];

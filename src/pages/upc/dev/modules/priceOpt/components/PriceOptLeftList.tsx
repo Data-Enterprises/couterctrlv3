@@ -1,6 +1,9 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import type { PriceOptRowSummary } from "../priceOptStats";
 import { getPriceOptPhrase, type PriceOptTone } from "../utils";
+
+// Interfaces
+import type { PriceOptRowSummary } from "../priceOptStats";
 
 interface Props {
   rows: PriceOptRowSummary[];

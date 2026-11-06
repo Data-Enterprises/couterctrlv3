@@ -1,6 +1,9 @@
+// Hooks
 import { useMemo } from "react";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import {
   toggleDevSelectedUpc,
   setDevAllSelectedUpcs,

@@ -1,7 +1,10 @@
-import type { UpcTrend } from "../../../../../../interfaces";
-import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
+// Utils
 import { accelerationFactor, impactUnits, type TrendStatus } from "../trendStats";
 import { activeRatePct } from "./trendWindow";
+
+// Interfaces
+import type { UpcTrend } from "../../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
 export type TrendTone = "up" | "down" | "flat" | "muted";
 export type TrendPhrase = { text: string; tone: TrendTone };

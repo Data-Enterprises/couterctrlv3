@@ -1,7 +1,10 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
+import { computePriceOptRowSummary } from "./priceOptStats";
+
+// Interfaces
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import type { KpiCell } from "../../interfaces";
-import { computePriceOptRowSummary } from "./priceOptStats";
 
 // No current price or cost anywhere in this data, so there's nothing to
 // compare a price against — only what price history alone can answer:

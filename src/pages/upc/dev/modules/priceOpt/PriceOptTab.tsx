@@ -1,19 +1,30 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   setDevPriceOptLoading,
   mergeDevPriceOpt,
   setDevUpcItems,
 } from "../../../../../features/dev/devUpcDevSlice";
+
+// API
 import { getPriceOpt } from "../../../../../api/upc";
+
+// Utils
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
 import { answerOf } from "../../utils";
-import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import type { UpcPriceOpt } from "../../../../../interfaces";
 import { computePriceOptRowSummary } from "./priceOptStats";
+
+// Interfaces
+import type { UpcPriceOpt } from "../../../../../interfaces";
+
+// Components
 import PriceOptLeftList from "./components/PriceOptLeftList";
 import PriceOptDetailPanel from "./components/PriceOptDetailPanel";
 

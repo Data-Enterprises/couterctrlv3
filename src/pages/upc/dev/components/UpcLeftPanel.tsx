@@ -1,8 +1,11 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Components
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import UpcItemList from "./UpcItemList";
 
 interface Props {

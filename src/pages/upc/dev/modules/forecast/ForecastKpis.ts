@@ -1,3 +1,4 @@
+// Interfaces
 import type { UpcForecastData } from "../../../../../interfaces";
 import type { KpiCell } from "../../interfaces";
 

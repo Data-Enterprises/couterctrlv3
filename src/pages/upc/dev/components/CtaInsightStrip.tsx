@@ -1,4 +1,7 @@
+// Hooks
 import { useState } from "react";
+
+// Components
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,

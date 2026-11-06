@@ -1,3 +1,4 @@
+// Components
 import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 
 interface Props {

@@ -1,5 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { formatPricedUnitsShort } from "../../../../../../utils/pricedUnits";
+
+// Interfaces
 import type { PricePoint } from "../priceOptStats";
 
 interface Props {

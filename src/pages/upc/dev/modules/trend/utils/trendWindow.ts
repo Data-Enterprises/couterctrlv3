@@ -1,3 +1,4 @@
+// Interfaces
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
 const MIN_SAMPLE_AFTER_DAYS = 30;

@@ -1,5 +1,8 @@
-import type { UpcDevTab } from "../../../../features/dev/devUpcDevSlice";
+// Utils
 import { missingFrom } from "../coverage";
+
+// Interfaces
+import type { UpcDevTab } from "../../../../features/dev/devUpcDevSlice";
 
 /** What the export needs to know about the page to say whether it can run. */
 export interface ExportWaitInput {

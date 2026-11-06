@@ -1,7 +1,10 @@
-import type { UpcTrend } from "../../../../../../interfaces";
-import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
+// Utils
 import { impactUnits, type TrendStatus } from "../trendStats";
 import { getTrendPhrase, type TrendTone } from "../utils";
+
+// Interfaces
+import type { UpcTrend } from "../../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
 interface Props {
   rows: { t: UpcTrend; status: TrendStatus }[];

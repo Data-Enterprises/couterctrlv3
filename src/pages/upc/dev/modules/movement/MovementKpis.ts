@@ -1,4 +1,4 @@
-import type { KpiCell } from "../../interfaces";
+// Utils
 import {
   fmtMovement,
   fmtRate,
@@ -7,6 +7,9 @@ import {
   shortDate,
   type MovementGrid,
 } from "./movementStats";
+
+// Interfaces
+import type { KpiCell } from "../../interfaces";
 
 /**
  * The strip above Movement, for the item the grid is showing.

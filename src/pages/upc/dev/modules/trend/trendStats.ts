@@ -1,3 +1,4 @@
+// Interfaces
 import type { UpcTrend } from "../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
 

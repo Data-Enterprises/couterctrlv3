@@ -1,6 +1,5 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
-import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
-import type { KpiCell } from "../../interfaces";
 import {
   getDisplayItems,
   getQueryDepartments,
@@ -11,6 +10,10 @@ import {
   getTopRevenueItem,
   getCrossDeptCount,
 } from "./associationStats";
+
+// Interfaces
+import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
+import type { KpiCell } from "../../interfaces";
 
 // 5 tiles, ordered by impact: dollar scale first, then the specific dollar
 // opportunity to act on, then volume, then the two department-flavored

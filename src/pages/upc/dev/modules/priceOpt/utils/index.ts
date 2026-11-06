@@ -1,3 +1,4 @@
+// Interfaces
 import type { PricePoint } from "../priceOptStats";
 
 export type PriceOptTone = "up" | "down" | "flat" | "muted";

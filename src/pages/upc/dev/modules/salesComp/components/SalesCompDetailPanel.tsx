@@ -1,8 +1,6 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { heatStyle } from "../../../utils/heatColor";
-import KpiTileGrid from "../../../components/KpiTileGrid";
-import CtaInsightStrip from "../../../components/CtaInsightStrip";
-import type { KpiCell } from "../../../interfaces";
 import {
   DAYS,
   DAY_SHORT,
@@ -10,6 +8,13 @@ import {
   type UpcSalesCompStats,
 } from "../salesCompStats";
 import { getStatusPhrase, getStatusInsight } from "../utils";
+
+// Interfaces
+import type { KpiCell } from "../../../interfaces";
+
+// Components
+import KpiTileGrid from "../../../components/KpiTileGrid";
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
 
 interface Props {
   stats: UpcSalesCompStats;

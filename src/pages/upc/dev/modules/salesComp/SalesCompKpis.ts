@@ -1,6 +1,5 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
-import type { UpcSalesComp } from "../../../../../interfaces";
-import type { KpiCell } from "../../interfaces";
 import {
   computeUpcSalesCompStats,
   salesCompCodes,
@@ -10,6 +9,10 @@ import {
   DAY_SHORT,
   type SalesCompRange,
 } from "./salesCompStats";
+
+// Interfaces
+import type { UpcSalesComp } from "../../../../../interfaces";
+import type { KpiCell } from "../../interfaces";
 
 /** Calendar days in the selection on which any UPC sold. Counted per (week,
  *  weekday), not per weekday column — counting columns capped a two-week range

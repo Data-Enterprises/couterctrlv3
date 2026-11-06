@@ -1,7 +1,10 @@
+// Hooks
 import { useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/20/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch, useSearchPick } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import {
   setDevUpcs,
   setDevUpcText,
@@ -10,8 +13,9 @@ import {
   setDevActiveTab,
   UPC_DEV_TABS,
 } from "../../../../features/dev/devUpcDevSlice";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Components
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 

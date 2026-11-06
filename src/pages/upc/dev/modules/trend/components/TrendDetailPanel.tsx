@@ -1,14 +1,19 @@
+// Utils
+import { accelerationFactor, impactUnits } from "../trendStats";
+import { getTrendPhrase, getTrendInsight } from "../utils";
+import { activeRatePct, isWeakBaseline, isSmallSample } from "../utils/trendWindow";
+
+// Interfaces
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
+import type { KpiCell } from "../../../interfaces";
+import type { TrendStatus } from "../trendStats";
+
+// Components
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
 import KpiTileGrid from "../../../components/KpiTileGrid";
 import BeforeAfterBar from "./BeforeAfterBar";
 import BeforeAfterLegend from "./BeforeAfterLegend";
-import type { KpiCell } from "../../../interfaces";
-import type { TrendStatus } from "../trendStats";
-import { accelerationFactor, impactUnits } from "../trendStats";
-import { getTrendPhrase, getTrendInsight } from "../utils";
-import { activeRatePct, isWeakBaseline, isSmallSample } from "../utils/trendWindow";
 import TrendBeforeAfterTile from "./TrendBeforeAfterTile";
 
 interface Props {

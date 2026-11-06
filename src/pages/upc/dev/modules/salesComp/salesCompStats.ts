@@ -1,4 +1,7 @@
+// Utils
 import { addDays, sameWeekDayLastYear } from "../../../../../utils";
+
+// Interfaces
 import type { UpcSalesComp } from "../../../../../interfaces";
 
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;

@@ -1,8 +1,5 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import CtaInsightStrip from "../../../components/CtaInsightStrip";
-import KpiTileGrid from "../../../components/KpiTileGrid";
-import type { KpiCell } from "../../../interfaces";
-import type { AssociationResult } from "../../../../../../features/dev/devUpcDevSlice";
 import {
   getDisplayItems,
   getDepartmentBreakdown,
@@ -14,6 +11,14 @@ import {
   getTopCompanion,
   getWeightedAvgAttachRate,
 } from "../associationStats";
+
+// Interfaces
+import type { AssociationResult } from "../../../../../../features/dev/devUpcDevSlice";
+import type { KpiCell } from "../../../interfaces";
+
+// Components
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
+import KpiTileGrid from "../../../components/KpiTileGrid";
 import AssociationItemsTable from "./AssociationItemsTable";
 
 interface Props {

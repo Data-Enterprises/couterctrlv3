@@ -1,9 +1,14 @@
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import CtaInsightStrip from "../../../components/CtaInsightStrip";
-import KpiTileGrid from "../../../components/KpiTileGrid";
-import type { KpiCell } from "../../../interfaces";
 import { formatBestUnits, type PriceOptRowSummary } from "../priceOptStats";
 import { getPriceOptPhrase, getPriceOptInsight } from "../utils";
+
+// Interfaces
+import type { KpiCell } from "../../../interfaces";
+
+// Components
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
+import KpiTileGrid from "../../../components/KpiTileGrid";
 import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
 
 interface Props {

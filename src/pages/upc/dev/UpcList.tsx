@@ -1,7 +1,10 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
+
+// Redux
 import {
   setDevDataLoaded,
   seedDevUpcItems,
@@ -10,9 +13,14 @@ import {
   removeDevUpcs,
   clearDevUpcData,
 } from "../../../features/dev/devUpcDevSlice";
+
+// API
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
 import { upcQueue } from "./upcQueue";
 
+// Components
 import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";

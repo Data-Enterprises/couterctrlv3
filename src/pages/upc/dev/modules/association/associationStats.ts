@@ -1,3 +1,4 @@
+// Interfaces
 import type { AssociationItem, AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
 
 /** A seed set as one string: the UPCs sorted and joined, so the same set ticked

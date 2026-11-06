@@ -1,10 +1,17 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
+
+// Utils
 import { formatCurrency2 } from "../../../../../../utils";
+import { sortByAttachRateDesc } from "../associationStats";
+
+// Interfaces
 import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSlice";
+
+// Components
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
 import ColFilter from "../../../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../../../components-dev/filters/colFilterStyles";
-import { sortByAttachRateDesc } from "../associationStats";
 
 interface Props {
   items: AssociationItem[];

@@ -1,6 +1,10 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
@@ -15,14 +19,19 @@ import {
   type AssociationItem,
   type AssociationResult,
 } from "../../../../../features/dev/devUpcDevSlice";
+
+// API
 import { getItemAssociation } from "../../../../../api/upc";
+
+// Utils
 import { upcQueue } from "../../upcQueue";
-import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import { failureReason } from "../../utils";
 import { buildSeedKey, seedDataFor } from "./associationStats";
+
+// Components
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import AssociationLeftPanel from "./components/AssociationLeftPanel";
 import AssociationDetailPanel from "./components/AssociationDetailPanel";
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 const LIMIT = 25;
 

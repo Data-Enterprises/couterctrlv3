@@ -1,17 +1,20 @@
+// Hooks
 import { useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/dev/devUpcDevSlice";
 
-import UpcKpiStrip from "./UpcKpiStrip";
-import UpcExportModal from "./UpcExportModal";
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import SalesCompTab from "../modules/salesComp/SalesCompTab";
 import MovementTab from "../modules/movement/MovementTab";
-
 import PriceOptTab from "../modules/priceOpt/PriceOptTab";
 import TrendTab from "../modules/trend/TrendTab";
 import AssociationTab from "../modules/association/AssociationTab";
+import UpcKpiStrip from "./UpcKpiStrip";
+import UpcExportModal from "./UpcExportModal";
 
 const UpcRightPanel = () => {
   const ctx = useUpcDevCtx();
