@@ -1,4 +1,4 @@
-import type { PricePoint } from "./priceOptStats";
+import type { PricePoint } from "../priceOptStats";
 
 export type PriceOptTone = "up" | "down" | "flat" | "muted";
 export type PriceOptPhrase = { text: string; tone: PriceOptTone };

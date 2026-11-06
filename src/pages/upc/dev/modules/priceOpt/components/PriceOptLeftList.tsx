@@ -1,6 +1,6 @@
-import { formatCurrency2 } from "../../../../../utils";
-import type { PriceOptRowSummary } from "./priceOptStats";
-import { getPriceOptPhrase, type PriceOptTone } from "./priceOptPhrase";
+import { formatCurrency2 } from "../../../../../../utils";
+import type { PriceOptRowSummary } from "../priceOptStats";
+import { getPriceOptPhrase, type PriceOptTone } from "../utils";
 
 interface Props {
   rows: PriceOptRowSummary[];

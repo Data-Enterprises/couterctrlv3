@@ -18,10 +18,10 @@ import {
 import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import { failureReason } from "../../answer";
+import { failureReason } from "../../utils";
 import { buildSeedKey, seedDataFor } from "./associationStats";
-import AssociationLeftPanel from "./AssociationLeftPanel";
-import AssociationDetailPanel from "./AssociationDetailPanel";
+import AssociationLeftPanel from "./components/AssociationLeftPanel";
+import AssociationDetailPanel from "./components/AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 const LIMIT = 25;

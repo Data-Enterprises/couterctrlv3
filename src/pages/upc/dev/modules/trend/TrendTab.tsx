@@ -12,13 +12,13 @@ import {
 import { getTrendDetect } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { answerOf } from "../../answer";
+import { answerOf } from "../../utils";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import type { UpcTrend } from "../../../../../interfaces";
 import { getTrendStatus, impactUnits } from "./trendStats";
-import { trendRequest } from "./trendWindow";
-import TrendLeftList from "./TrendLeftList";
-import TrendDetailPanel from "./TrendDetailPanel";
+import { trendRequest } from "./utils/trendWindow";
+import TrendLeftList from "./components/TrendLeftList";
+import TrendDetailPanel from "./components/TrendDetailPanel";
 
 // Parked with the Window input row below — re-enable together.
 // const WINDOW_OPTIONS = [30, 60, 90, 120, 180, 365];

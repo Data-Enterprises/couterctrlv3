@@ -10,12 +10,12 @@ import {
 import { getPriceOpt } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { answerOf } from "../../answer";
+import { answerOf } from "../../utils";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import { computePriceOptRowSummary } from "./priceOptStats";
-import PriceOptLeftList from "./PriceOptLeftList";
-import PriceOptDetailPanel from "./PriceOptDetailPanel";
+import PriceOptLeftList from "./components/PriceOptLeftList";
+import PriceOptDetailPanel from "./components/PriceOptDetailPanel";
 
 const PriceOptTab = () => {
   const ctx = useUpcDevCtx();

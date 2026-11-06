@@ -1,6 +1,6 @@
-import { formatCurrency2 } from "../../../../../utils";
-import { formatPricedUnitsShort } from "../../../../../utils/pricedUnits";
-import type { PricePoint } from "./priceOptStats";
+import { formatCurrency2 } from "../../../../../../utils";
+import { formatPricedUnitsShort } from "../../../../../../utils/pricedUnits";
+import type { PricePoint } from "../priceOptStats";
 
 interface Props {
   points: PricePoint[];

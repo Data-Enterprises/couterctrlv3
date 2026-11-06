@@ -1,6 +1,6 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { UpcSalesComp } from "../../../../../interfaces";
-import type { KpiCell } from "../../types";
+import type { KpiCell } from "../../interfaces";
 import {
   computeUpcSalesCompStats,
   salesCompCodes,

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UpcTrend } from "@/interfaces";
 import { accelerationFactor, getTrendStatus, impactUnits, isDecline } from "@/pages/upc/dev/modules/trend/trendStats";
-import { getTrendInsight, hasAvailabilityFlag } from "@/pages/upc/dev/modules/trend/trendPhrase";
-import { trendRequest } from "@/pages/upc/dev/modules/trend/trendWindow";
+import { getTrendInsight, hasAvailabilityFlag } from "@/pages/upc/dev/modules/trend/utils";
+import { trendRequest } from "@/pages/upc/dev/modules/trend/utils/trendWindow";
 
 /** Verbatim from a live `marketing/trend_detector` answer: store 545,
  *  9/1/2026 - 9/16/2026, periods 90. Both rows are real, and between them they

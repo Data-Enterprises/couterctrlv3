@@ -1,6 +1,6 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
-import type { KpiCell } from "../../types";
+import type { KpiCell } from "../../interfaces";
 import {
   getDisplayItems,
   getQueryDepartments,

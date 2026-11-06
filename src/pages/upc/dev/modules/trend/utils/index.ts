@@ -1,6 +1,6 @@
-import type { UpcTrend } from "../../../../../interfaces";
-import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
-import { accelerationFactor, impactUnits, type TrendStatus } from "./trendStats";
+import type { UpcTrend } from "../../../../../../interfaces";
+import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
+import { accelerationFactor, impactUnits, type TrendStatus } from "../trendStats";
 import { activeRatePct } from "./trendWindow";
 
 export type TrendTone = "up" | "down" | "flat" | "muted";

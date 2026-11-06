@@ -1,15 +1,15 @@
-import { formatCurrency2 } from "../../../../../utils";
-import { heatStyle } from "../../utils/heatColor";
-import KpiTileGrid from "../../components/KpiTileGrid";
-import CtaInsightStrip from "../../components/CtaInsightStrip";
-import type { KpiCell } from "../../types";
+import { formatCurrency2 } from "../../../../../../utils";
+import { heatStyle } from "../../../utils/heatColor";
+import KpiTileGrid from "../../../components/KpiTileGrid";
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
+import type { KpiCell } from "../../../interfaces";
 import {
   DAYS,
   DAY_SHORT,
   fmtWeekRange,
   type UpcSalesCompStats,
-} from "./salesCompStats";
-import { getStatusPhrase, getStatusInsight } from "./salesCompPhrase";
+} from "../salesCompStats";
+import { getStatusPhrase, getStatusInsight } from "../utils";
 
 interface Props {
   stats: UpcSalesCompStats;

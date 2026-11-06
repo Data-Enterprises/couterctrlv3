@@ -1,6 +1,6 @@
 import type { UpcTrend } from "../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
-import type { KpiCell } from "../../types";
+import type { KpiCell } from "../../interfaces";
 import { getTrendStatus, impactUnits, isDecline } from "./trendStats";
 
 export function getTrendKpis(

@@ -1,4 +1,4 @@
-import type { KpiCell } from "../../types";
+import type { KpiCell } from "../../interfaces";
 import {
   fmtMovement,
   fmtRate,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answerOf } from "@/pages/upc/dev/answer";
+import { answerOf } from "@/pages/upc/dev/utils";
 
 describe("answerOf", () => {
   it("reads error 0 as an answer with data", () => {

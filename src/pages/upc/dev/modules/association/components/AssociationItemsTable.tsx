@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
-import { formatCurrency2 } from "../../../../../utils";
-import type { AssociationItem } from "../../../../../features/dev/devUpcDevSlice";
-import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
-import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
-import { sortByAttachRateDesc } from "./associationStats";
+import { formatCurrency2 } from "../../../../../../utils";
+import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSlice";
+import ColFilter from "../../../../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../../../../components-dev/filters/colFilterStyles";
+import { sortByAttachRateDesc } from "../associationStats";
 
 interface Props {
   items: AssociationItem[];

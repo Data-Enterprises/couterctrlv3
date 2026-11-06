@@ -1,5 +1,5 @@
 import type { UpcForecastData } from "../../../../../interfaces";
-import type { KpiCell } from "../../types";
+import type { KpiCell } from "../../interfaces";
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 

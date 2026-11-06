@@ -13,7 +13,7 @@ import { getSalesComp } from "../../../../../api/upc";
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { answerOf } from "../../answer";
+import { answerOf } from "../../utils";
 import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
 import {
   combineSalesCompRows,
@@ -22,8 +22,8 @@ import {
   salesCompRange,
 } from "./salesCompStats";
 import type { UpcSalesComp } from "../../../../../interfaces";
-import SalesCompLeftList from "./SalesCompLeftList";
-import SalesCompDetailPanel from "./SalesCompDetailPanel";
+import SalesCompLeftList from "./components/SalesCompLeftList";
+import SalesCompDetailPanel from "./components/SalesCompDetailPanel";
 
 /** sameWeekDayLastYear returns ISO (YYYY-MM-DD); the API rejects that with a
  *  400 ("Please use mm/dd/yyyy") — reformat to match ctx.startDate/endDate's

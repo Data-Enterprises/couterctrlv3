@@ -1,4 +1,4 @@
-import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
+import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
 const MIN_SAMPLE_AFTER_DAYS = 30;
 const WEAK_BASELINE_R2 = 0.2;
