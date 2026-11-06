@@ -50,6 +50,8 @@ export const kpiStrip = (
   ];
 };
 
+export const lineItemHeaders = ["Description", "Cases", "Units", "Cost", "GM%"];
+
 export const fmtDate = (dateStr: string) => {
   if (!dateStr) return "";
   const trimmed = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
