@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { formatCurrency2 } from "../../../utils";
-import { orDash } from "./trackerTone";
-import { SUB_GRID, NUM } from "./trackerColumns";
+import { formatCurrency2 } from "../../../../utils";
+import { orDash } from "../utils/trackerTone";
+import { SUB_GRID, NUM } from "../utils/trackerColumns";
 import VsLy from "./VsLy";
-import type { SubDeptTotal } from "./trackerTotals";
+import type { SubDeptTotal } from "../utils/trackerTotals";
 
 interface SubDeptRowProps {
   row: SubDeptTotal;

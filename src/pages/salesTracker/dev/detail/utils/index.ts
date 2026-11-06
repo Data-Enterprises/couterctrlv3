@@ -1,5 +1,5 @@
-import type { SubDeptTotal } from "./trackerTotals";
-import { basisWord, type WindowPlan } from "./trackerWeeks";
+import type { SubDeptTotal } from "../../utils/trackerTotals";
+import { basisWord, type WindowPlan } from "../../utils";
 
 interface ExportArgs {
   row: SubDeptTotal;

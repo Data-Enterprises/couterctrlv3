@@ -21,30 +21,30 @@ import {
   setSubFilter,
   reQueryTracker,
 } from "../../../features/dev/devSalesTrackerSlice";
-import TrackerEntryCard from "./TrackerEntryCard";
-import TrackerHeader from "./TrackerHeader";
-import SubDeptRow from "./SubDeptRow";
-import TrackerDetail from "./TrackerDetail";
+import TrackerEntryCard from "./components/TrackerEntryCard";
+import TrackerHeader from "./components/TrackerHeader";
+import SubDeptRow from "./components/SubDeptRow";
+import TrackerDetail from "./detail/TrackerDetail";
 import {
   fetchLySubSales,
   fetchSubSales,
   fetchTrackerWindow,
-} from "./trackerData";
+} from "./utils/trackerData";
 import {
   basisWord,
   buildWindowPlan,
   isoToDisplay,
   shiftDays,
   type TrackerBasis,
-} from "./trackerWeeks";
+} from "./utils";
 import {
   buildSubDeptTotals,
   allDeptsTotal,
   type SubDeptTotal,
-} from "./trackerTotals";
-import { orDash } from "./trackerTone";
-import VsLy from "./VsLy";
-import { SUB_GRID, NUM } from "./trackerColumns";
+} from "./utils/trackerTotals";
+import { orDash } from "./utils/trackerTone";
+import VsLy from "./components/VsLy";
+import { SUB_GRID, NUM } from "./utils/trackerColumns";
 import { isGroupSearch } from "../../../features/searchSlice";
 
 type SortColumn = "dept" | "ty" | "ly" | "ats" | "dollar";

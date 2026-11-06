@@ -1,5 +1,5 @@
-﻿import type { SubSale } from "../../../interfaces";
-import type { WindowPlan } from "./trackerWeeks";
+﻿import type { SubSale } from "../../../../interfaces";
+import type { WindowPlan } from ".";
 
 /**
  * Sub-department totals for the tracker, shaped the way the legacy tracker
