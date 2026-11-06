@@ -1,8 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { LENSES, type Signal, type SpreadKind } from "../utils";
+import { LENSES } from "../utils";
 
 // Interfaces
+import type { Signal, SpreadKind } from "../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 
 // Components

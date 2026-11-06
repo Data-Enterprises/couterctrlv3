@@ -3,16 +3,10 @@ import { useMemo, useState } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import {
-  describeSignal,
-  formatClock,
-  groupSignalByTransaction,
-  receiptLinesFor,
-  transactionLabel,
-  type Signal,
-} from "../utils";
+import { describeSignal, formatClock, groupSignalByTransaction, receiptLinesFor, transactionLabel } from "../utils";
 
 // Interfaces
+import type { SortCol, Signal } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 
@@ -27,7 +21,6 @@ interface SignalDetailProps {
   transactionLengths: Record<string, number>;
 }
 
-
 // Scalable items come back with fractional qty (weight), so only show decimals
 // when there actually are any.
 const formatQty = (qty: number) =>
@@ -35,8 +28,6 @@ const formatQty = (qty: number) =>
 
 const GRID_COLS =
   "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
-
-type SortCol = "date" | "transaction" | "qty" | "amount";
 
 const SignalDetail = ({
   signal,

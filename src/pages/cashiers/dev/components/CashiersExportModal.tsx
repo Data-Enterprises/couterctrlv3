@@ -11,10 +11,10 @@ import {
 import { groupSignalByTransaction } from "../utils";
 
 // Interfaces
+import type { Dataset, ModalMode, Signal } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import type { Signal } from "../utils";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
@@ -33,9 +33,6 @@ interface CashiersExportModalProps {
   /** sale_id -> total lines on that transaction, for basket position. */
   transactionLengths: Record<string, number>;
 }
-
-type ModalMode = "presets" | "custom";
-type Dataset = "signals" | "transactions" | "lines";
 
 const AGG_OPTIONS: { value: AggFn; label: string }[] = [
   { value: "sum", label: "Sum" },

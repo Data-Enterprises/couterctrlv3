@@ -2,6 +2,7 @@
 import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 
 // Interfaces
+import type { ExplorerTotals, Signal, SignalTransaction, SpreadKind, StoreNameResolver } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 
@@ -11,28 +12,6 @@ export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "item", label: "Item" },
   { key: "terminal", label: "Terminal" },
 ];
-
-// "Is this one person, or is it the item/lane?" — the flag that decides
-// whether a signal is an investigation or a maintenance ticket. Anything a
-// single cashier owns is behavior; the same exception spread across several
-// cashiers is almost always a bad tag, a wrong price, or a broken lane.
-export type SpreadKind = "single" | "narrow" | "wide" | "unmapped";
-
-export interface Signal {
-  key: string;
-  label: string;
-  sublabel: string;
-  count: number;
-  amount: number;
-  transactions: number;
-  cashiers: number;
-  items: number;
-  lastLineCount: number;
-  topItem: { label: string; count: number } | null;
-  spread: SpreadKind;
-  spreadLabel: string;
-  rows: TransactionListItem[];
-}
 
 // sale_start_time comes back as bare digits — "093045", or "93045" with the
 // leading zero dropped — which is why Transaction.tsx formats it by slicing
@@ -192,11 +171,6 @@ const groupKeyFor = (lens: ExplorerLens, row: TransactionListItem): string | nul
   }
 };
 
-// Store names resolve through the logged-in user's own assignedStores rather
-// than the store_name on the row — the API's copy comes back null for closed
-// stores, which is exactly the set an exception report is likely to surface.
-export type StoreNameResolver = (storeid: number, fallback: string) => string;
-
 const labelsFor = (
   lens: ExplorerLens,
   row: TransactionListItem,
@@ -280,19 +254,6 @@ export const buildSignals = (
 
   return signals.sort((a, b) => b.count - a.count || b.amount - a.amount);
 };
-
-export interface SignalTransaction {
-  saleId: string;
-  saleDate: string;
-  startTime: string;
-  cashierName: string;
-  cashierNumber: number;
-  lineCount: number;
-  totalLines: number;
-  qty: number;
-  amount: number;
-  hasLastLine: boolean;
-}
 
 // A signal's rows are exception LINES, and one transaction can contribute many
 // of them (the same item voided eleven times in a single sale). Listing rows
@@ -399,15 +360,6 @@ export const describeSignal = (signal: Signal, lens: ExplorerLens): string => {
   }
   return parts.join(" ");
 };
-
-export interface ExplorerTotals {
-  exceptions: number;
-  transactions: number;
-  amount: number;
-  stores: number;
-  cashiers: number;
-  items: number;
-}
 
 export const buildTotals = (rows: TransactionListItem[]): ExplorerTotals => ({
   exceptions: rows.length,

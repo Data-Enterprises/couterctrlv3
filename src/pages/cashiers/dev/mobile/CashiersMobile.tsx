@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useCashierSignals } from "../hooks";
-import { useCashierExplorer, type ExplorerOutcome } from "./hooks";
+import { useCashierExplorer } from "./hooks";
 
 // Redux
 import {
@@ -10,6 +10,9 @@ import {
   setExplorerMobileSearchOpen,
   setExplorerNotice,
 } from "../../../../features/dev/devCashiersSlice";
+
+// Interfaces
+import type { ExplorerOutcome } from "./interfaces";
 
 // Components
 import SearchCard from "../../../../components-dev/SearchCard";

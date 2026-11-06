@@ -27,6 +27,7 @@ import { getStoreName, formatGoliathDate } from "../../../../../utils";
 import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
 
 // Interfaces
+import type { ExplorerOutcome } from "../interfaces";
 import type { JsonError, TransactionListItem } from "../../../../../interfaces";
 
 /**
@@ -47,10 +48,6 @@ import type { JsonError, TransactionListItem } from "../../../../../interfaces";
 /** Receipts are fetched by id; past this the request gets unwieldy and the page
  *  reports how many were dropped rather than hanging. */
 const MAX_TRANSACTIONS = 400;
-
-/** How a run ended. `stale` means a newer run superseded it and nothing it
- *  fetched was applied — the caller should do nothing further either. */
-export type ExplorerOutcome = "loaded" | "empty" | "error" | "stale";
 
 const fetchAllPages = async <T>(
   firstPage: { total_pages?: number },
