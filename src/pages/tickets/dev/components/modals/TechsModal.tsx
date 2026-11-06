@@ -38,19 +38,9 @@ interface Props {
 }
 
 /**
- * The roster.
- *
- * One component with two faces. A programmer gets the switches, Add, and the
- * stood-down techs listed — bringing one back is half the job. Everybody else
- * on the desk gets the same list read-only, which is not a consolation: "who
- * else is on today and what are they carrying" is a real question before
- * picking up an unassigned ticket, and nothing else in the app answers it.
- *
- * Rows lead with the USERNAME. A tech is an account before it is a person:
- * the username is unique, it is what a log and a URL carry, and it assumes
- * nothing about who somebody is — nothing in `users` or `ticket_techs` says,
- * so nothing here implies. The display name keeps the second line, where
- * recognising a colleague still works.
+ * The roster. A programmer gets the switches, Add and the stood-down techs;
+ * everyone else on the desk gets the same list read-only. Rows lead with the
+ * username, which is unique; the display name is the second line.
  */
 const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
   const { url, token } = useDevApi();
@@ -137,9 +127,7 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
             </p>
           </div>
 
-          {/* Worth a search once the desk is past a handful. Below that the
-              box is one more thing to read above a list you can already
-              see all of. */}
+          {/* A search only once the desk is past a handful of techs. */}
           {roster.length > SEARCHABLE_FROM && (
             <div className="flex-shrink-0 px-4 pb-2">
               <TextFilter
@@ -331,13 +319,8 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
 };
 
 /**
- * Taking somebody off the desk.
- *
- * Two things have to be said before it happens, and only the server knows
- * one of them. Their open tickets stay assigned unless they are handed over —
- * silently unassigning would lose who was working each one — and a
- * stood-down tech can no longer see the queue, so work left with them goes
- * quiet rather than moving.
+ * Taking somebody off the desk. Their open tickets stay assigned unless handed
+ * over, and a stood-down tech can no longer see the queue.
  */
 const StandDown = ({
   tech,
@@ -438,11 +421,8 @@ const StandDown = ({
 };
 
 /**
- * Putting somebody on it.
- *
- * The list is the server's: active staff on the support domain who are not
- * already here. Everyone in it can be added, which is why it is asked for
- * rather than filtered out of the whole user table in the browser.
+ * Putting somebody on the desk. The list is the server's: active support staff
+ * not already on it.
  */
 const AddTech = ({
   candidates,
@@ -469,15 +449,8 @@ const AddTech = ({
 
   const nextCode = useMemo(() => nextTechCode(techs), [techs]);
   /**
-   * The code this tech will have. Shown, not typed.
-   *
-   * It was a text field, which let somebody put anything in a column the rest
-   * of the desk is numbered by. Nobody chooses a tech's number — it is the
-   * next one — so the field was offering a decision that does not exist.
-   *
-   * A returning tech shows the code on their own row rather than the next one:
-   * adding them brings that row back, and showing them a new number would read
-   * as a renumbering that is not going to happen.
+   * The code this tech will have, shown and not typed. A returning tech shows
+   * their own row's code, since adding them brings that row back.
    */
   const codeValue = picked?.was_a_tech
     ? (picked.previous_tech_code ?? nextCode)
@@ -525,9 +498,7 @@ const AddTech = ({
               onChange={setShownAs}
             />
           </div>
-          {/* Dressed to sit level with "Shown as" beside it, but plainly not
-              an input: a box that looks typeable and is not is worse than one
-              that never looked it. */}
+          {/* Sits level with "Shown as" but is plainly not an input. */}
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="text-[12px] font-medium text-content">Code</span>
             <span className="flex items-center rounded border border-brand_line bg-bkg px-1.5 py-1">
@@ -568,12 +539,8 @@ const AddTech = ({
           disabled={working || !picked}
           onClick={() =>
             picked &&
-            /* The code is shown, not sent. The server generates it at insert
-               from the same rule this preview uses, so sending the preview
-               would only matter when the two disagree — which is exactly the
-               case where the preview is stale, because somebody else added a
-               tech while this was open. Letting the server decide means two
-               people adding at once get two numbers rather than one twice. */
+            /* The code is shown, not sent: the server generates it at insert,
+               so two people adding at once get two numbers. */
             onConfirm({
               userid: picked.userid,
               ...(shownAs.trim() ? { display_name: shownAs.trim() } : {}),

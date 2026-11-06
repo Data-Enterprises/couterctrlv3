@@ -24,13 +24,8 @@ import CloseTicketModal from "./components/modals/CloseTicketModal";
 import TechsModal from "./components/modals/TechsModal";
 
 /**
- * The Client Help Desk — one page, two views.
- * Which view someone gets is decided by the server and arrives with the data:
- * `canViewAll` brings the queue, every company's tickets and the internal
- * notes; without it the page is the tickets the client may see, which `scope`
- * names: their own, also their stores', or also their companies'. Nothing here
- * derives that from a user level, because the rule lives server-side and the
- * two would drift the first time a level moved.
+ * The Client Help Desk: one page, two views, and the server picks which
+ * (`canViewAll` or `scope`). Never derive it from a user level.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -51,7 +46,7 @@ const Tickets = () => {
 
   const refresh = () => {
     // A poll has already fetched the newer queue, so applying it is instant
-    // and costs no call. With nothing held, this is a real fetch as before.
+    // and costs no call. With nothing held, it fetches.
     if (ctx.pending) ctx.applyPending();
     else ctx.load();
   };
@@ -80,19 +75,13 @@ const Tickets = () => {
         pending={Boolean(ctx.pending)}
         onRefresh={refresh}
         /*
-         * Filing is the client's action.
-         * A ticket takes its company from whoever opens it, so a tech filing
-         * one on a client's behalf would file it under ours — the endpoint
-         * refuses any other company outright. The button would be a way to
-         * misfile rather than a way to help, so a tech does not get one.
+         * Filing is the client's action: a ticket takes the filer's company,
+         * so a tech filing for a client would misfile it. Techs get no button.
          */
         onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
         /*
-         * The roster is the desk's own business.
-         * A client has no use for it and no right to it — the endpoint
-         * refuses them anyway, so a button would only be a 403 with a label.
-         * Changing it still needs the programmer level; the sheet reads
-         * `canManageTechs` and wears the right face.
+         * The roster is the desk's own business; the endpoint refuses clients.
+         * Changing it needs the programmer level (`canManageTechs`).
          */
         onTechs={ctx.isTech ? () => setTechsOpen(true) : undefined}
         error={ctx.error}

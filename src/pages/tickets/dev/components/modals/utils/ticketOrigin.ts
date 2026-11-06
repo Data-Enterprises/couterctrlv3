@@ -8,14 +8,8 @@ import type { DateShape, PickedStore, TicketOrigin } from "../interfaces";
 
 
 /**
- * Page to ticket category, by the nav's own href.
- *
- * One category per family of pages in the nav, so every page has an answer
- * (decided 29 Oct 2026). Sub Dept Margins, Categories and Vendors are one
- * screen and one category; Orders, Receivers and AWG Invoices are the
- * receiving side; User Management, Groups, Admin and Settings are all who can
- * see what. Only the help desk itself (`tickets`) and Home name no category:
- * a ticket filed from there is about nothing in particular.
+ * Page to ticket category, by the nav's href: one category per family of
+ * pages. Only the help desk itself and Home name none.
  */
 export const PAGE_CATEGORY: Record<string, string> = {
   sales: "Sales",
@@ -48,13 +42,8 @@ export const PAGE_CATEGORY: Record<string, string> = {
 };
 
 /**
- * What the title bar handed over, as somewhere a ticket can come from.
- *
- * The page's name and its area arrive rather than being looked up: the nav
- * holds that map, the nav lives in the prod tree, and this is the dev one.
- * Passing the two words it already computed for its own highlight is cheaper
- * than a second copy of the table here, and a second copy is what would
- * quietly stop matching.
+ * What the title bar handed over, as somewhere a ticket can come from. The
+ * page name and area are passed in, because the nav that maps them is prod-tree.
  */
 export const originOf = (from: {
   reportFrom: string;
@@ -71,13 +60,8 @@ export const originOf = (from: {
 };
 
 /**
- * Which dates a page actually means.
- *
- * The search slice always carries all three — a start, an end and a single
- * date — and a page reads whichever one matches the shape of its data. Sales
- * is a week: it takes `singleDate` as the week's last day and works back
- * seven, and its startDate and endDate say nothing about what is on screen.
- * Printing those two on a Sales ticket is printing a range nobody searched.
+ * Which dates a page actually means. The search slice carries a range and a
+ * single date; Sales, for one, is the week ending on `singleDate`.
  */
 const PAGE_DATES: Record<string, DateShape> = {
   sales: "week",
@@ -100,17 +84,8 @@ const PAGE_DATES: Record<string, DateShape> = {
 };
 
 /**
- * Pages the store and group search does not scope at all.
- *
- * The search slice outlives every page: it holds whatever store was last
- * searched anywhere in the session. A ticket filed from one of these pages
- * printed that store as if the problem were about it — Erica's ticket from
- * User Management read "GROCERY BASKET · #1 · storeid 805" while she and
- * Wayne were working on a B&T user, because Grocery Basket was the last store
- * she had searched on another page.
- *
- * The same pages the dates already leave out, plus Settings: nothing on them
- * is about a store somebody picked.
+ * Pages the store and group search does not scope. The slice holds the
+ * session's last store, which would otherwise print as the ticket's store.
  */
 const NO_SEARCH = new Set([
   "admin",
@@ -125,14 +100,8 @@ const NO_SEARCH = new Set([
 export const pageUsesSearch = (href: string) => !NO_SEARCH.has(href);
 
 /**
- * One date, as mm/dd/yyyy, whichever way it arrives.
- *
- * Two shapes reach this. The search slice stores what `formatDate` produced,
- * which is already m/d/yyyy and unpadded; `weekEnding` returns what
- * `setDates` produced, which is yyyy-mm-dd because the endpoints want it that
- * way. Running the ISO formatter over an already-formatted date is what
- * printed "undefined/undefined/9/27/2026" — it split on "-", found no parts,
- * and pasted the undefineds in front.
+ * One date as mm/dd/yyyy, from either shape that reaches it: the slice's
+ * m/d/yyyy or `weekEnding`'s yyyy-mm-dd.
  */
 const day = (value: string) => {
   if (!value) return "";
@@ -160,12 +129,7 @@ const datesFor = (search: SearchState, shape: DateShape): string => {
 };
 
 /**
- * What they had asked for, in one line.
- *
- * Shown rather than asked about: "is this about your last search?" makes
- * somebody remember, and a line naming the store and the dates lets them
- * check. Returns null when nothing has been searched, so the offer does not
- * appear with nothing behind it.
+ * What they had asked for, in one line, or null when nothing was searched.
  */
 export const searchSummary = (
   search: SearchState,
@@ -190,12 +154,7 @@ export const searchSummary = (
 
 /**
  * The scope the ticket was filed under, as a record rather than a sentence.
- *
- * The panel showed the store and the dates and then sent neither — a tech
- * opened "Issue on Sales" with no idea which store it was about. For a
- * miscalculation that is the whole question, and the name on its own does not
- * answer it: two stores share a storeid when they are two locations of one
- * business, and a number is how you tell 369 from 370.
+ * Store number and id ride along, since two locations can share a storeid.
  */
 
 export const scopeOf = (
@@ -226,11 +185,8 @@ export const scopeOf = (
                 id: search.selectedGroup?.id ?? null,
                 group_name: search.selectedGroup?.group_name ?? null,
                 is_shared: search.selectedGroup?.is_shared ?? null,
-                // Inside the group rather than beside it — these are a narrowing of
-                // it, and one self-contained key beats a second top-level shape
-                // that only exists sometimes. Absent rather than empty when they
-                // did not narrow: present and empty reads as "no stores", which is
-                // the opposite of "the whole group".
+                // Kept inside the group, and absent (not empty) when they did
+                // not narrow it: empty would read as "no stores".
                 ...(stores.length ? { stores } : {}),
               },
             }),
@@ -243,10 +199,8 @@ export const scopeOf = (
       };
 
 /**
- * The same thing in a sentence, for the foot of the first message.
- *
- * Carries the store number and the id as well as the name: the name is how
- * somebody says which store, and the other two are how anybody looks it up.
+ * The same scope as a sentence, for the foot of the first message: name,
+ * number and id, so anyone can look the store up.
  */
 export const scopeLine = (
   search: SearchState,

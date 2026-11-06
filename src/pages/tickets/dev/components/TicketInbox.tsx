@@ -30,7 +30,7 @@ interface Props {
    *  Foodland" on their own ticket learns nothing. */
   isTech: boolean;
   /** Which tickets the server is showing this reader. Null from an API older
-   *  than the store tiers, which reads as before. */
+   *  than the store tiers. */
   scope: TicketScope | null;
   /** Whose rows are whose: a Manager's list holds other people's tickets. */
   userid: number;
@@ -70,13 +70,8 @@ interface Props {
 const STATUSES: TicketStatus[] = ["open", "in_progress", "waiting"];
 
 /**
- * The tabs, which are the piles you work through in order.
- *
- * Urgent is not one of them — it is a jump to whatever cannot wait, so it
- * sits beside Refresh as a button that says how many, rather than as a fourth
- * tab you would have to remember to look at. A client has two tabs and no
- * urgent button: Unassigned, Mine and Urgent are all the same pile when every
- * ticket is yours.
+ * The tabs, worked through in order. Urgent is a button beside Refresh, not
+ * a tab; a client has two tabs and no Urgent button.
  */
 const QUEUE: { key: QueueTab; label: string }[] = [
   { key: "all", label: "All" },
@@ -98,23 +93,9 @@ const PRIORITIES = [
 ];
 
 /**
- * The queue as a column of conversations.
- *
- * This replaced a six-to-eight column grid. The grid could say more per row,
- * but only at a width that left the thread beside it too narrow to read, and
- * the columns it spent that width on — company, opener, assignee — are three
- * of the six fields the search box already matches on. So the row keeps what
- * identifies a ticket and the rail keeps what sorts it.
- *
- * The two narrowing pickers sit above the search box rather than in the rail.
- * They are not folders: they cut down whichever folder is open, and both are
- * multi-select, so mixing them into an exclusive list of five made picking a
- * second one mean two different things depending on where it was.
- *
- * Two things are drawn but not yet fed, and deliberately: the unread dot and
- * the reply preview. `snippetOf` and `isUnread` are the only place that knows
- * the fields are missing, and both render to nothing until the list endpoint
- * carries them — the row's shape does not change when they arrive.
+ * The queue as a column of conversations. The two pickers above the search
+ * narrow whichever tab is open. The unread dot and reply preview draw nothing
+ * until the list endpoint sends them (see `snippetOf`, `isUnread`).
  */
 const TicketInbox = ({
   rows,
@@ -148,16 +129,12 @@ const TicketInbox = ({
 
   return (
     <div className="flex h-full w-[379px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg xl:w-[410px] 2xl:w-[460px]">
-      {/* One row. Urgent and Refresh belong beside the search box, where
-          they are within reach of the thing they change — a second navy row
-          holding one button read as a header for a header. */}
+      {/* One row: Urgent and Refresh sit beside the search box they act on. */}
       <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 py-2.5 flex items-end gap-3">
         <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
           {isTech ? "Queue" : scope ? SCOPE_HEADING[scope] : "Your tickets"}
         </span>
-        {/* Up here rather than beside Refresh: who is on the desk is a
-            standing fact about the queue, not something you do to the list
-            you are looking at. */}
+        {/* Who is on the desk: a fact about the queue, so it sits up here. */}
         {onTechs && (
           <button
             type="button"
@@ -183,12 +160,8 @@ const TicketInbox = ({
       </div>
 
       <div className="flex-none border-b border-brand_line p-2.5">
-        {/* Tabs, because they are exclusive and they are the top level of
-            this column — a row of pills read as four more filters beside the
-            two that actually are. */}
-        {/* `auto-cols-fr` rather than a fixed four, so the client's two
-            divide the same width evenly instead of leaving half the row
-            empty. */}
+        {/* Tabs, because they are exclusive and the top level of this column. */}
+        {/* `auto-cols-fr`, so a client's two tabs share the width evenly. */}
         <div
           data-help="queue-tabs"
           role="tablist"
@@ -322,9 +295,8 @@ const TicketInbox = ({
           </button>
         </div>
 
-        {/* What this list is, from the server's answer. A manager who does
-            not see a coworker's ticket is told why, rather than left to
-            wonder whether it was filed. */}
+        {/* What this list is, from the server's `scope`, so a manager knows
+            why a coworker's ticket is not here. */}
         {scope && scope !== "all" && (
           <p className="m-0 mt-2 text-[11.5px] text-content/85">
             {SCOPE_TEXT[scope]}
@@ -384,10 +356,7 @@ const TicketInbox = ({
               </span>
 
               <span className="min-w-0 flex-1">
-                {/* The number rides the title rather than taking a line of its
-                    own: it is how a ticket is referred to out loud, and on its
-                    own line it pushed everything that says what the ticket IS
-                    further down. */}
+                {/* The number rides the title: it is how a ticket is named out loud. */}
                 <span className="flex items-baseline gap-2">
                   <span
                     className={`min-w-0 flex-1 truncate text-[12.5px] ${
@@ -404,10 +373,8 @@ const TicketInbox = ({
                   </span>
                 </span>
 
-                {/* Who to answer. A client already knows who they are, so
-                    their own rows name the tech instead. A manager's list
-                    also holds their staff's tickets, and those name who
-                    filed them. */}
+                {/* Who to answer: a client's own rows name the tech; a manager's
+                    staff tickets name who filed them. */}
                 <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
                   {isTech || t.opened_by !== userid
                     ? t.opened_by_name

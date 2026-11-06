@@ -66,11 +66,8 @@ const statusOf = (err: unknown) =>
   (err as { status?: number })?.status;
 
 /**
- * Everything the Client Help Desk needs, in one hook.
- *
- * The page is dev-only, so every call goes through `useDevApi` — the dev URL
- * and dev token straight from the environment, never `app.url`, which follows
- * whichever API the session is browsing.
+ * Everything the Client Help Desk needs, in one hook. Dev-only, so every call
+ * goes through `useDevApi`, never `app.url`.
  */
 export const useTicketsCtx = () => {
   const dispatch = useAppDispatch();
@@ -80,11 +77,8 @@ export const useTicketsCtx = () => {
   const userid = useAppSelector((state) => state.user.userid);
 
   /**
-   * Which view this is.
-   *
-   * Both flags come back on every list and detail response, so the page reads
-   * the server's answer rather than deriving one from a user level. There is
-   * no client-side override: a view can only be what the payload allows.
+   * Which view this is: both flags come back on every response, and there is
+   * no client-side override.
    */
   const isTech = tickets.caps.canViewAll;
   const canManage = tickets.caps.canManage;
@@ -93,13 +87,8 @@ export const useTicketsCtx = () => {
   const canManageTechs = tickets.caps.canManageTechs;
 
   /**
-   * What this reader may see at all is what the server sent.
-   *
-   * There used to be a client-side backstop here, filtering by company while
-   * the server's scope leaked across companies. The server now scopes by tier
-   * (`scope`), and a Manager legitimately sees tickets from another company
-   * when they name one of the Manager's stores, so a company filter here would
-   * hide exactly what the tiers were built to show.
+   * What this reader may see is what the server sent. No company filter here:
+   * a Manager legitimately sees other companies' tickets naming their stores.
    */
   const scoped = tickets.tickets;
 
@@ -151,9 +140,8 @@ export const useTicketsCtx = () => {
             scope: j.scope ?? null,
           }),
         );
-        // Only someone who can assign has anyone to assign to. Asking anyway
-        // cost every customer a 403 and a console error on every load (dev
-        // board review, finding AQ), so this now waits on the list's answer.
+        // Only someone who can assign asks for the techs; anyone else would
+        // get a 403 on every load.
         if (j.canManage) loadAssignees();
       })
       .catch(failed("Could not read the tickets"));
@@ -162,11 +150,8 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * The pickers on their own.
-   *
-   * Filing a ticket from another page needs the categories and the
-   * attachment limits and nothing else — pulling the whole queue to get them
-   * would fetch every ticket the reader can see for the sake of two lists.
+   * The pickers on their own (categories and attachment limits), for filing
+   * from another page without pulling the whole queue.
    */
   const loadLookups = () => {
     getTicketLookups(url, token)
@@ -192,11 +177,7 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * Open one.
-   *
-   * The detail carries the thread, the files and both flags in a single call,
-   * so there is no window where the page has a ticket and does not yet know
-   * what may be done to it.
+   * Open one. The detail carries the thread, files and both flags in one call.
    */
   const open = (id: number) => {
     dispatch(selectTicket(id));
@@ -229,14 +210,8 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * Ask what is new on the open ticket.
-   *
-   * `since` trims the thread to what has not been seen; the ticket comes back
-   * whole, because status and assignee can move while a pane is open and a
-   * header that quietly lied would be worse than no polling.
-   *
-   * Nothing here touches `working` or the composer — a poll must never clear
-   * a spinner or a half-typed reply.
+   * Ask what is new on the open ticket. `since` trims the thread; the ticket
+   * comes back whole. Never touches `working` or the composer.
    */
   const poll = () => {
     const id = tickets.selectedId;
@@ -247,27 +222,20 @@ export const useTicketsCtx = () => {
         if (ticketFailed(j)) return;
         if (j.comments?.length) dispatch(appendComments(j.comments));
         if (j.ticket) dispatch(refreshHeader(j.ticket));
-        // Replaced, not appended: attaching writes no comment, so `since`
-        // finds nothing and a file the other side just sent would never
-        // arrive. This is the line that makes a screenshot show up.
+        // Files are replaced, not appended: attaching writes no comment, so
+        // `since` alone would never bring a new file in.
         if (j.attachments) dispatch(setAttachments(j.attachments));
       })
       .catch((err) => {
-        // A 404 is not a missed poll: the ticket has left this reader's view
-        // (a tech changed its stores, or they lost the store). Retrying would
-        // fail every five seconds forever.
+        // A 404 means the ticket has left this reader's view, so polling stops.
         if (statusOf(err) === 404) dispatch(lostTicket(id));
         /* Anything else is the next poll's problem. */
       });
   };
 
   /**
-   * Ask what is new in the queue, and hold it.
-   *
-   * The list sorts by updated_at, so applying this would move rows under
-   * somebody reaching for one — they would watch TCK-14 jump because a reply
-   * landed on a different ticket, and click the wrong thing. Thirty seconds
-   * stale is a smaller problem than that, so it is offered rather than taken.
+   * Ask what is new in the queue, and hold it: applying it would reorder rows
+   * under the reader's cursor, so it is offered rather than taken.
    */
   const pollList = () => {
     return listTickets(
@@ -278,9 +246,8 @@ export const useTicketsCtx = () => {
       .then((resp) => {
         const j = resp.data as TicketListResp;
         if (ticketFailed(j) || !j.tickets) return;
-        // Whether anything actually moved is decided in the reducer, where
-        // the current list is — this interval was created once and holds the
-        // closure it was born with.
+        // Whether anything moved is decided in the reducer: this interval's
+        // closure holds the list it started with.
         dispatch(setPending(j.tickets));
       })
       .catch(() => {
@@ -289,18 +256,8 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * File one, with whatever was attached to it.
-   *
-   * Two calls, because an upload needs a ticket id: create, then one upload
-   * per file. Sequential rather than parallel — each upload bumps
-   * `updated_at`, and a couple of screenshots is not worth racing.
-   *
-   * The failure case is the part that matters. **The ticket exists from the
-   * moment the create returns.** A file that then fails to upload must not be
-   * reported as a ticket that failed to send: that throws away something
-   * somebody already typed, and there is nothing to roll back to. So it says
-   * the ticket is filed, names the file that did not make it, and points at
-   * the Attach button on the ticket itself.
+   * File one, then upload each file to it in turn. The ticket exists once the
+   * create returns, so a failed upload says it is filed and names the file.
    */
   const fileTicket = async (
     body: {
@@ -313,18 +270,13 @@ export const useTicketsCtx = () => {
     },
     files: File[] = [],
     /**
-     * What to do once it is filed, when opening it is not the answer.
-     *
-     * The help desk opens the new ticket, because that is the screen it is
-     * on. A report filed from Sales has no detail pane to open it into, and
-     * fetching one would be a call whose result nothing draws — so that
-     * caller closes its own modal instead.
+     * What to do once it is filed, when opening it is not the answer: a report
+     * filed from another page closes its own modal instead.
      */
     after?: (ticket: Ticket) => void,
   ): Promise<string | null> => {
-    // Returns why it did not send, or null once it has. The form says why
-    // under its own Send button: a failure set on the page sat behind the
-    // modal on the help desk, and filed from another page it showed nowhere.
+    // Returns why it did not send, or null once it has; the form shows it
+    // under its own Send button.
     dispatch(startWork());
     let ticket: Ticket;
     try {
@@ -407,9 +359,8 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * Move it. Closing carries the resolution, which the modal collects —
-   * nothing else can reach `closed`, because that is the one field nobody can
-   * supply afterwards.
+   * Move it. Only closing can reach `closed`, and it carries the resolution
+   * the modal collects.
    */
   const move = (
     status: TicketStatus,
@@ -470,11 +421,8 @@ export const useTicketsCtx = () => {
   };
 
   /**
-   * Replace the open ticket's stores. Techs only.
-   *
-   * Returns why it did not save, or null. `changed: false` is a success with
-   * nothing to do. The internal note the server writes arrives with the next
-   * poll, which is asked for straight away so the tech sees it land.
+   * Replace the open ticket's stores (techs only). Returns why it did not
+   * save, or null; polls straight away so the server's note shows up.
    */
   const setStores = async (storeids: number[]): Promise<string | null> => {
     const id = tickets.selectedId;

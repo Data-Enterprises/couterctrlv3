@@ -52,10 +52,8 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import NewTicketAttachments from "./components/NetTicketAttachments";
 
 /**
- * FILING: Two fields are required and the rest the queue works out for itself. There
- * is no company picker: the ticket's company is derived from whoever is
- * filing, and sending one that is not their own is a 400 rather than a silent
- * misfiling — so offering the choice would only be a way to fail.
+ * Filing: two fields are required and the queue works out the rest. No
+ * company picker: the server takes the filer's company and refuses any other.
  */
 const NewTicketModal = ({
   ctx,
@@ -78,8 +76,7 @@ const NewTicketModal = ({
   const shared = useAppSelector((state) => state.search);
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
   // A page with its own store picker is about its own store, not the last one
-  // searched on Sales. Everything below reads `search`, so the header, the
-  // ticked store and the record sent with the ticket all follow it.
+  // searched on Sales; everything below reads `search`.
   const own = useAppSelector(
     (state) => (origin ? pageStoreOf(state, origin.href) : undefined),
     shallowEqual,
@@ -90,10 +87,8 @@ const NewTicketModal = ({
   );
   const summary = origin ? searchSummary(search, origin.href) : null;
   /**
-   * Fetched once, because a call made while the form is open is the form's own doing
-   * rather than anything the client was looking at. Grouped, because a paged
-   * fetch is several calls to one path and listing them separately makes one
-   * table look like twelve problems.
+   * The page's captured calls, read once (calls the form makes are not
+   * evidence) and grouped per endpoint, since a paged fetch is several calls.
    */
   const [{ kept, dropped }] = useState(() =>
     from?.from
@@ -103,18 +98,9 @@ const NewTicketModal = ({
   const [skip, setSkip] = useState<Set<string>>(new Set());
 
   /**
-   * REQUIRED: Asked on every ticket, from a page or from the help desk, because the
-   * server scopes by it: a Manager sees a ticket that names one of their
-   * stores.
-   *
-   * The list is the signed-in person's own stores, already in the app from
-   * sign-in, so opening the form makes no store call. **A tech is the
-   * exception:** they are support, filing for a client who phoned in.
-   *
-   * The page's search only decides where the list starts: a store search
-   * ticks that store, a group search lists the group's stores first, and a
-   * page with no search (User Management, Groups, the help desk) starts on
-   * all of them.
+   * Required on every ticket, because the server scopes by store. The list is
+   * the filer's own stores (a tech, filing for a client, gets every store);
+   * the page's search only decides where it starts.
    */
   const searchedStoreId =
     origin && pageUsesSearch(origin.href) && search.type === "Store"
@@ -177,11 +163,8 @@ const NewTicketModal = ({
   const [showAllStores, setShowAllStores] = useState(false);
 
   /**
-   * A group search says the problem is somewhere in the group, which is not
-   * the same as saying it is everywhere in it, so the group's stores are
-   * listed first with none ticked. Only the ones that are also the reader's
-   * own: a shared group is search-only and can hold stores they cannot file
-   * against.
+   * A group search lists the group's stores first, none ticked, and only
+   * those that are also the reader's own (a shared group is search-only).
    */
   const groupId =
     origin && pageUsesSearch(origin.href) && search.type !== "Store"
@@ -192,8 +175,7 @@ const NewTicketModal = ({
   >([]);
   /**
    * Whether the group's stores are in. The list waits for them rather than
-   * drawing every store and then narrowing: a list that jumps from all of
-   * someone's companies to the five they searched reads as a bug.
+   * drawing every store and then narrowing.
    */
   const [groupRead, setGroupRead] = useState(!groupId);
 
@@ -259,9 +241,8 @@ const NewTicketModal = ({
   const limits = ctx.lookups?.attachments;
 
   /**
-   * De-duplicated by name because a picker can be opened repeatedly, and
-   * checked here as well as by the endpoint — a ticket should not end up
-   * filed with half its evidence missing.
+   * De-duplicated by name (a picker can be opened repeatedly), and checked here
+   * as well as by the endpoint, so a ticket is not filed with evidence missing.
    */
   const addFiles = (list: FileList | null) => {
     if (!list) return;
@@ -341,9 +322,8 @@ const NewTicketModal = ({
                   />
                 </button>
 
-                {/* Its own scroll, capped: a page with a dozen datasets
-                    should not be the reason somebody cannot reach the
-                    description field. */}
+                {/* Its own capped scroll, so many datasets never push the
+                    description field out of reach. */}
                 {evidenceOpen && (
                   <div className="mt-1.5 flex max-h-[168px] flex-col gap-1 overflow-y-auto thin-scrollbar pr-1">
                     {kept.map((group) => (
@@ -368,9 +348,8 @@ const NewTicketModal = ({
                   </div>
                 )}
 
-                {/* Named rather than silently missing: a tech reading the
-                    ticket should know something was too big to send, not
-                    wonder why a dataset is absent. */}
+                {/* Named rather than silently dropped, so a tech knows something
+                    was too big to send. */}
                 {dropped.length > 0 && (
                   <div className="mt-1.5 text-[11px] text-content/85">
                     Too large to send — {dropped.map((g) => g.label).join(", ")}

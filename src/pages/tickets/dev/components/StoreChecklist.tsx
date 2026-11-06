@@ -23,11 +23,8 @@ interface Props {
 }
 
 /**
- * A checklist rather than a dropdown: a ticket can be about several stores,
- * and the answer has to be visible while the rest of the form is filled in.
- * Grouped by company when the list spans more than one, because two companies
- * can both have a store 5. Closed stores sit last in their company and can
- * still be ticked. Each company folds independently.
+ * A checklist, since a ticket can be about several stores. Grouped by
+ * company (two companies can both have a store 5); closed stores go last.
  */
 const StoreChecklist = ({
   options,

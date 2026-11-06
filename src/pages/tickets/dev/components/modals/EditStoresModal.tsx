@@ -25,13 +25,8 @@ interface Props {
 }
 
 /**
- * A tech corrects which stores a ticket is about.
- *
- * People tick too few or too many, and the stores decide which managers see a
- * ticket, so this is how the desk keeps that right without asking a client to
- * refile. The list is the server's own answer for this ticket (its company,
- * the opener's companies, the opener's stores), with what is on it now ticked,
- * so it cannot offer a store the save would refuse.
+ * A tech corrects which stores a ticket is about (the stores decide which
+ * managers see it). The options are the server's, so the save never refuses one.
  */
 const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
   const { url, token } = useDevApi();

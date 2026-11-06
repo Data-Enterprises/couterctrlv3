@@ -9,12 +9,8 @@ import type {
 } from "../../../../features/dev/devTicketsSlice";
 
 /**
- * The filtering behind the tabs and the search box.
- *
- * All of it runs on rows already in hand: the endpoint sends every field these
- * need, so switching tabs costs nothing and a queue stays responsive while a
- * tech reads down it. Only status and company are worth a round trip, and the
- * endpoint takes those as query params.
+ * The filtering behind the tabs and the search box, all on rows already in
+ * hand; only status and company go to the server.
  */
 
 /** How a status reads on screen. The database's four, not the mock's three. */
@@ -26,11 +22,8 @@ export const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 /**
- * Chip colours, from the app's own tokens.
- *
- * Four states have to be told apart at a glance, so they differ in lightness
- * as well as hue — `waiting` and `open` are the pair most often confused, and
- * they sit at opposite ends of that range.
+ * Chip colours, from the app's own tokens. The states differ in lightness as
+ * well as hue, with `waiting` and `open` (most often confused) furthest apart.
  */
 export const STATUS_CLASS: Record<TicketStatus, string> = {
   open: "bg-row_selected text-content",
@@ -47,11 +40,8 @@ export const PRIORITY_CLASS: Record<string, string> = {
 };
 
 /**
- * Is this one mine?
- *
- * Compares `assignee_id` — the tech as a users.id — against the signed-in
- * user. `assigned_tech_id` is the same person in the ticket_techs id space and
- * comparing it works for exactly one tech by coincidence.
+ * Is this one mine? Compares `assignee_id` (a users.id), not
+ * `assigned_tech_id`, which is a ticket_techs id.
  */
 export const isMine = (ticket: Ticket, userid: number) =>
   ticket.assignee_id !== null && ticket.assignee_id === userid;
@@ -80,11 +70,7 @@ export const matchesSearch = (ticket: Ticket, search: string) => {
 };
 
 /**
- * The rows a tab shows.
- *
- * "All" means every OPEN piece of work rather than literally everything —
- * closed tickets have their own tab, and a queue that filled up with a year of
- * finished work would not be a queue.
+ * The rows a tab shows. "All" is every open ticket; closed ones have their own tab.
  */
 export const onTab = (ticket: Ticket, tab: QueueTab, userid: number) => {
   if (tab === "closed") return ticket.status === "closed";
@@ -101,11 +87,7 @@ const holds = (value: string | null, term: string) =>
   (value ?? "").toLowerCase().includes(term.trim().toLowerCase());
 
 /**
- * The column filters.
- *
- * An empty list means every one of them rather than none — the same reading
- * the export page's filters use, and the one people expect from a column
- * heading they have not touched.
+ * The column filters. An empty list means every value, not none.
  */
 export const matchesFilters = (ticket: Ticket, filters: TicketFilters) => {
   if (filters.status.length && !filters.status.includes(ticket.status)) {
@@ -160,16 +142,8 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
 });
 
 /**
- * A server timestamp, as a moment.
- *
- * The tickets API sends UTC with no zone on it (`2026-10-21T22:32:10.299190`),
- * and JavaScript reads a zone-less date-time as LOCAL time. So every ticket
- * read five hours ahead in Central -- TCK-35, sent at 5:32 PM, showed 10:32
- * PM -- and anything from the last five hours sat in the future, which
- * `whenText` reports as "just now" (dev board review, finding AO).
- *
- * A stamp that already carries `Z` or an offset is left alone, so this keeps
- * working once the API starts sending one.
+ * A server timestamp, as a moment. The API sends UTC with no zone, which
+ * JavaScript reads as local time, so a stamp without one is read as UTC.
  */
 export const parseServerTime = (iso: string): number => {
   const zoned = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso.trim());
@@ -177,14 +151,8 @@ export const parseServerTime = (iso: string): number => {
 };
 
 /**
- * Why a new ticket did not send, in words the sender can act on.
- *
- * A ticket is filed under a company (`tickets.company` is NOT NULL since 22
- * Oct), so somebody with no company has nowhere to file one. The server
- * answers 400 with a `detail` that says so and says what to do — ask a
- * manager to assign one — and that sentence is shown as written. It is about
- * their account, not the form, so it is the one failure worth reading out
- * word for word. Anything else is ours, and reads as such.
+ * Why a new ticket did not send, in words the sender can act on. The server's
+ * "no company" 400 is shown as written; anything else reads as our fault.
  */
 export const sendFailureText = (err: unknown): string => {
   const resp = (
@@ -199,11 +167,8 @@ export const sendFailureText = (err: unknown): string => {
 };
 
 /**
- * When something happened, in the reader's own time.
- *
- * Recent things read better as an age than as a clock time — "12m" answers
- * "is anyone on this?" without arithmetic — and anything older than a day is
- * a date, because "31h" is not how people think.
+ * When something happened, in the reader's own time: an age under a day,
+ * then "yesterday", then a date.
  */
 export const whenText = (iso: string, now = Date.now()) => {
   const at = parseServerTime(iso);
@@ -235,12 +200,8 @@ export const stampText = (iso: string) => {
 };
 
 /**
- * What kind of fix closed it, if anything says.
- *
- * Closing stores the resolution type as a reserved `type:` label rather than a
- * column, so it rides along on the ticket like any other label. The lookups
- * hide those from the picker — they are written by closing, not chosen by
- * hand — which is why reading one back means looking here.
+ * What kind of fix closed it, if anything says. It is stored as a reserved
+ * `type:` label, which the pickers hide.
  */
 export const resolutionLabel = (ticket: Ticket) => {
   const found = ticket.labels?.find((l) => l.name.startsWith("type:"));
@@ -255,11 +216,8 @@ export const fileSize = (bytes: number) =>
     : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
 /**
- * Why this file cannot be attached, or null.
- *
- * The endpoint checks the extension AND the declared type, so a .exe labelled
- * image/png is refused there. This is the same check one step earlier, to save
- * someone a 413 after the upload.
+ * Why this file cannot be attached, or null. The same extension and type check
+ * the endpoint makes, done first to save a 413.
  */
 export const attachmentProblem = (
   file: File,
@@ -278,11 +236,8 @@ export const attachmentProblem = (
 };
 
 /**
- * Initials for the inbox avatar.
- *
- * Two letters from the ends of the name, so "Randall Nunez" is RN and a
- * single-word name still gets something. Mirrors the TitleBar avatar, which
- * is the only other place in the app that draws one.
+ * Initials for the inbox avatar, from the first and last words of the name
+ * (as the TitleBar avatar does).
  */
 export const initialsOf = (name: string | null) => {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -293,15 +248,8 @@ export const initialsOf = (name: string | null) => {
 };
 
 /**
- * The two fields the inbox row has room for and the list endpoint does not
- * send yet: a preview of the newest reply, and whether this reader has seen
- * it.
- *
- * Read through here rather than off the row so there is one place to delete
- * the cast when they arrive. A snippet needs the list query to carry the last
- * comment; unread needs a per-user read marker, which is a real table and not
- * something the client can infer — `updated_at` moves for an edit, an assign
- * and a status change, none of which is a message anybody missed.
+ * The reply preview and unread flag, which the list endpoint does not send yet.
+ * Read through here so there is one place to change when they arrive.
  */
 export const snippetOf = (ticket: Ticket): string | null =>
   (ticket as Ticket & { last_comment?: string | null }).last_comment ?? null;
@@ -331,11 +279,8 @@ export const priorityCounts = (tickets: Ticket[]) => {
 };
 
 /**
- * Everything else this person has filed, newest first.
- *
- * The queue is already in memory and already holds every company a tech can
- * see, so "their other tickets" costs no call — it is the list filtered by
- * the opener, minus the one being read.
+ * Everything else this person has filed, newest first, from the queue already
+ * in memory.
  */
 export const alsoFrom = (tickets: Ticket[], ticket: Ticket, limit = 5) =>
   tickets
@@ -364,11 +309,8 @@ export const openerStats = (tickets: Ticket[], ticket: Ticket) => {
 };
 
 /**
- * The labels meant for a reader.
- *
- * `type:` is reserved: it carries the resolution and is read by
- * `resolutionLabel`, which renders it as a word in the closed strip. Drawn
- * raw it reads as "type:fixed", which is a database row on the screen.
+ * The labels meant for a reader. `type:` labels are hidden here; they carry
+ * the resolution, which `resolutionLabel` reads.
  */
 export const visibleLabels = (ticket: Ticket) =>
   (ticket.labels ?? []).filter((l) => !l.name.startsWith("type:"));

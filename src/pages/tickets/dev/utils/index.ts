@@ -9,27 +9,16 @@ import type { Store } from "../../../../interfaces";
 import type { StoreCompanyGroup } from "../interfaces";
 
 /**
- * The stores a ticket is about, and who that lets see it.
- *
- * A ticket carries a list of stores (`ticket_store_link`), and the server
- * scopes the queue by them: below Manager sees what they opened, a Manager also
- * sees tickets naming one of their stores, an Owner also sees their companies'
- * tickets. Empty means "Not about a store", which is an answer, not a gap.
- *
- * Every rule lives server-side. These are only the pieces the screens need to
- * draw the answer and to ask the question without offering a store the server
- * would refuse.
+ * The stores a ticket is about, and who that lets see it. The server scopes by
+ * them; empty means "Not about a store". These helpers only draw and ask.
  */
 
 /** A ticket's stores, safe before the API sends them. */
 export const storesOf = (ticket: Ticket): TicketStore[] => ticket.stores ?? [];
 
 /**
- * The compact form for a queue row: `#54 · #75 · +3`.
- *
- * Numbers, not names: the row has room for a chip, and a store number is how
- * people say which store. Three and then a count, so one ticket about a whole
- * group does not wrap the row.
+ * The compact form for a queue row: `#54 · #75 · +3`. Three numbers then a
+ * count, so a ticket about a whole group does not wrap.
  */
 export const storeChipText = (stores: TicketStore[], shown = 3): string => {
   if (stores.length === 0) return "";
@@ -45,11 +34,8 @@ export const storeFullText = (stores: TicketStore[]): string =>
     : stores.map((s) => `#${s.store_number} ${s.store_name}`).join(", ");
 
 /**
- * What the inbox is showing, in words.
- *
- * Read from the server's `scope`, never derived from a level: a manager who
- * does not see a coworker's ticket should be told why by the page, not left
- * to wonder whether it was filed.
+ * What the inbox is showing, in words, from the server's `scope` (never from
+ * a level).
  */
 export const SCOPE_TEXT: Record<TicketScope, string> = {
   own: "Tickets you opened.",
@@ -76,13 +62,8 @@ const byNumber = (a: { store_number: string }, b: { store_number: string }) => {
 };
 
 /**
- * The signed-in person's own stores, as the New Ticket picker's options.
- *
- * Their `assigned` stores, which the app already holds from sign-in
- * (`user.assignedStores`), so filing a ticket costs no store call. It is the
- * same set the server files against: `_has_store` in tickets.py is a row in
- * `assigned`, and `assigned_stores` is read from it too. A tech's
- * `store_options` was every store on the system (423); this is only theirs.
+ * The filer's own stores, as the New Ticket picker's options: their `assigned`
+ * stores from sign-in, the same set the server files against.
  */
 export const assignedAsOptions = (stores: Store[]): TicketStoreOption[] =>
   cleanStoreOptions(
@@ -98,13 +79,8 @@ export const assignedAsOptions = (stores: Store[]): TicketStoreOption[] =>
   );
 
 /**
- * The server's options with every text field a string.
- *
- * `store_options` left-joins companies, so a store with no company comes
- * back with `company` and `company_name` null, and nothing in the table stops a
- * store's number or name being null. The picker sorts and searches on all
- * three, and one null among a tech's every-store list took the whole page
- * down ("Cannot read properties of null (reading 'localeCompare')").
+ * The server's options with every text field a string. A store with no
+ * company comes back with nulls, and one null broke the picker's sort.
  */
 export const cleanStoreOptions = (
   raw: TicketStoreOption[],
@@ -117,12 +93,8 @@ export const cleanStoreOptions = (
   }));
 
 /**
- * The picker's list, a block per company.
- *
- * Grouped because a DCR user, a Houchens user and a tech all hold stores in
- * several companies, and two companies can both have a store 5. Closed stores
- * go last within their company: they can still be picked, since a ticket can
- * be about one, but they are rarely the one meant.
+ * The picker's list, a block per company (two companies can both have a
+ * store 5). Closed stores go last: pickable, but rarely the one meant.
  */
 export const groupByCompany = (
   options: TicketStoreOption[],
@@ -164,12 +136,8 @@ export const matchesStoreQuery = (o: TicketStoreOption, query: string) => {
 };
 
 /**
- * What the picker starts with.
- *
- * Only stores the person can actually file against: a shared group is
- * search-only, so the store a page was searching can be one that is not in
- * their `assigned` and the server would answer 400. Pre-ticking it would make
- * the form's own default the thing that fails.
+ * What the picker starts with: only stores the person can file against (a
+ * shared group's store may not be, and the server would answer 400).
  *
  * - A store search ticks that store, if it is one of theirs.
  * - Someone with exactly one store, who is not a tech, gets it ticked and is
@@ -197,11 +165,8 @@ export const initialStorePicks = ({
 };
 
 /**
- * Which options to list first, for a ticket filed from a group search.
- *
- * The group's stores that are also theirs. A shared group can hold none of
- * their stores at all, and then the list falls back to all of them rather
- * than offering an empty box.
+ * Which options to list first for a group search: the group's stores that are
+ * also theirs, or all of theirs when there are none.
  */
 export const optionsForGroup = (
   options: TicketStoreOption[],
@@ -214,9 +179,7 @@ export const optionsForGroup = (
 };
 
 /**
- * Every store that appears on the tickets in hand, for the queue's store
- * filter. Read off the rows, so the filter costs no call and never offers a
- * store with nothing behind it.
+ * Every store on the tickets in hand, for the queue's store filter.
  */
 export const storesOnTickets = (tickets: Ticket[]): TicketStore[] => {
   const seen = new Map<number, TicketStore>();

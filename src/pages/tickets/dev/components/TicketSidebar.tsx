@@ -31,11 +31,8 @@ const Fact = ({ label, value }: { label: string; value: string }) => (
 );
 
 /**
- * Who filed this, and what else they have filed.
- * Only that. The ticket's own facts — its number, when it was opened, its
- * category, who has it — sit under the thread's header instead, where what a
- * ticket IS is beside the conversation it belongs to rather than two columns
- * away from it.
+ * Who filed this, and what else they have filed. The ticket's own facts sit
+ * under the thread's header.
  */
 const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
   const stats = openerStats(tickets, ticket);

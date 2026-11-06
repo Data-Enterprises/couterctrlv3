@@ -5,16 +5,8 @@ import type { Store } from "../../../../../../interfaces";
 import type { PageStore } from "../interfaces";
 
 /**
- * Pages with their own store picker.
- *
- * The shared search is what Sales and the pages built on it read, and it
- * outlives every page. These pages pick a store on their own card and never
- * write it there, so on them the shared search is whichever store was last
- * searched somewhere else. A ticket filed from Item Actions read
- * "002 - IGA IRVINGTON KY 2" in its header and ticked that store, because it
- * was the store open on Sales; the page was about a different one.
- * 
- * Unlisted pages read the shared search, as before.
+ * Pages with their own store picker. These never write the shared search, so
+ * for them it holds some other page's store. Unlisted pages read it.
  */
 const OWN_STORE: Record<string, (s: RootState) => PageStore> = {
   // What was run, once something has been; until then, the picker.
@@ -49,13 +41,8 @@ const NO_STORE: Store = {
 };
 
 /**
- * The search the ticket should describe.
- *
- * For a page with its own picker, a store search on that page's store, named
- * from the person's assigned stores (the only ones the picker offers). With
- * nothing picked it is a store search on no store, which names nothing and
- * ticks nothing: an empty line beats somebody else's store. Dates stay the
- * shared search's except where the page holds its own window.
+ * The search the ticket should describe: on a page with its own picker, that
+ * page's store (or none) and, where it holds one, its own date window.
  */
 export const searchForPage = (
   shared: SearchState,

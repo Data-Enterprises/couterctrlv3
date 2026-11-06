@@ -10,10 +10,8 @@ import Modal from "../../../../../components-dev/Modal";
 import ClosedOptions from "./components/ClosedOptions";
 
 /**
- * The resolution is required when closing one — the endpoint answers 400 without it — and it
- * posts to the thread as a VISIBLE reply, which is how the client is told what
- * was done. It is the one field nobody can supply retroactively, which is why
- * closing is its own endpoint rather than another field on a PATCH.
+ * The resolution is required (the endpoint answers 400 without it) and posts
+ * to the thread as a visible reply, which is how the client hears what was done.
  */
 const CloseTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
   const [resolution, setResolution] = useState("");

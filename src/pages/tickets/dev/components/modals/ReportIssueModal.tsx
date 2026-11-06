@@ -10,13 +10,8 @@ import { closeReportIssue } from "../../../../../features/appSlice";
 import NewTicketModal from "./NewTicketModal";
 
 /**
- * Filing a ticket without leaving the page the problem is on.
- *
- * Mounted once, at the app level, and drawn only while the shared slice says
- * somebody asked for it. That is the whole reason it exists as its own
- * component: the title bar raises the flag and the title bar is prod-tree,
- * which may not reach a dev page — but `App` is neither tree, so it can hold
- * the door open for both.
+ * Filing a ticket without leaving the page. Mounted once in `App`, because
+ * the title bar that asks for it is prod-tree and cannot reach a dev page.
  */
 const ReportIssueModal = () => {
   const dispatch = useAppDispatch();

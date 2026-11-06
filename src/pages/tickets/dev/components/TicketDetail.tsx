@@ -45,17 +45,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const commentCount = ctx.comments.length;
 
   /**
-   * Ask every five seconds, while this pane is open and the tab is being
-   * looked at.
-   *
-   * There is no push: prod runs two tasks behind the load balancer, so a
-   * socket held open to one of them could not hear a reply that arrived at
-   * the other. At five seconds a reply lands in two or three, which reads as
-   * live for a help desk.
-   *
-   * The interval is scoped to this component, so closing the pane, picking
-   * another ticket or leaving the page all stop it. `inFlight` keeps a slow
-   * call from becoming a queue of overlapping ones.
+   * Polls every five seconds while the pane is open and the tab is visible.
+   * There is no push (prod runs two tasks); `inFlight` stops overlapping calls.
    */
   useEffect(() => {
     if (!ticketId) return;
@@ -129,11 +120,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
   return (
     <div className="flex-1 min-h-0 overflow-hidden rounded-xl bg-custom-white shadow-lg flex flex-col">
-      {/*
-       * The card's header, and it reads as one: the number, the title and
-       * the two pills that answer "where is this up to" before anything
-       * else does.
-       */}
+      {/* The card's header: number, title, and the status and priority pills. */}
       <div className="flex-shrink-0 rounded-t-xl bg-brand_navy text-custom-white px-4 py-3 flex items-center gap-2.5 flex-wrap">
         <span className="font-mono text-[12.5px] text-custom-white/85">
           {ticket.ticket_number}
@@ -156,12 +143,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       </div>
 
       <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">
-        {/*
-         * The ticket's own facts, under the header that names it. They were
-         * briefly in the right-hand sidebar, which put what this ticket IS
-         * two columns away from the thread it belongs to — the sidebar
-         * answers "who sent this", and that is a different question.
-         */}
+        {/* The ticket's own facts, under the header that names it. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-content/85">
           {ctx.isTech && ticket.company_name && (
             <span className="font-semibold text-content">
@@ -179,9 +161,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
               <span>{ticket.category_name}</span>
             </>
           )}
-          {/* Which stores, in full: they decide which managers can see it,
-              so whoever is reading should be able to check them. Only once
-              the API sends them; an older one has no answer to print. */}
+          {/* Which stores, in full: they decide which managers can see it.
+              Drawn only once the API sends them. */}
           {ticket.stores && (
             <>
               <span aria-hidden>·</span>
@@ -262,11 +243,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         )}
       </div>
 
-      {/*
-       * A closed ticket says so plainly. It is the state people most often
-       * misread — the thread looks like any other conversation, and the one
-       * thing they need to know is that nobody is working on it.
-       */}
+      {/* A closed ticket says so plainly: nobody is working on it. */}
       {closed && (
         <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-brand_green_tint border-b border-brand_line">
           <CheckCircleIcon className="w-4 h-4 text-brand_green_darker flex-shrink-0" />
@@ -292,10 +269,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         </div>
       )}
 
-      {/* The thread and the files share this box: the files sit over the
-          conversation rather than after it, so opening them costs the reader
-          the bottom of the thread for as long as they are looking and gives
-          it straight back. */}
+      {/* The thread and the files share this box; the files open over the
+          foot of the thread rather than after it. */}
       <div className="relative flex-1 min-h-0">
         <div
           ref={thread}
@@ -304,23 +279,16 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
             wasAtBottom.current =
               box.scrollHeight - box.scrollTop - box.clientHeight < 80;
           }}
-          // The collapsed Files bar sits over the foot of this box, so the
-          // thread reserves its height — otherwise the newest message, which
-          // is the one you are here to read, is the one underneath it.
+          // Leaves room for the collapsed Files bar, so it never covers the
+          // newest message.
           className={`h-full overflow-y-auto thin-scrollbar px-4 pt-3 flex flex-col gap-3 ${
             ctx.attachments.length > 0 ? "pb-14" : "pb-3"
           }`}
         >
           {ctx.comments.map((comment) => {
             /*
-             * Yours on the right, theirs on the left — the shape every
-             * messaging app has taught people to read, so who said what is
-             * answered before anybody reads a name.
-             *
-             * An internal note keeps its amber whichever side it lands on: it
-             * is not a different speaker, it is a different audience, and
-             * losing that to the alignment would lose the only thing about it
-             * that matters.
+             * Yours on the right, theirs on the left. An internal note keeps
+             * its amber on either side: a different audience, not a speaker.
              */
             const mine = comment.userid === ctx.userid;
             return (
@@ -389,13 +357,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
             </button>
 
             {/*
-             * 0fr to 1fr rather than a height.
-             *
-             * The list is however long it is, so there is no pixel value to
-             * animate to without measuring it first — and a max-height picked
-             * to be "big enough" eases at the wrong speed for every list
-             * shorter than that. A grid row interpolates to the content's own
-             * height, so three files and thirty both take the same 300ms.
+             * 0fr to 1fr rather than a height, so a list of any length opens
+             * at the same speed without being measured.
              */}
             <div
               className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
@@ -425,12 +388,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       </div>
 
       {/*
-       * A closed ticket has no composer, for anybody.
-       * The thread stays readable — the whole history is the point of
-       * closing one properly — but nothing new goes into it. A tech reopens
-       * from the strip above; a client files a new ticket, which is also the
-       * honest answer, since a closed ticket that needs more work is usually
-       * a different piece of work.
+       * A closed ticket has no composer, for anybody. A tech reopens it from
+       * the strip above; a client files a new ticket.
        */}
       {!closed && (
         <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
