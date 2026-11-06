@@ -17,9 +17,7 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /**
- * The grid's whole organising idea is the ranking, so a CSV that drops it
- * arrives as an unordered list of items. Rows are sorted by contribution and
- * carry their rank, band and share.
+ * A row as exported: sorted by contribution, carrying its rank, band and share.
  */
 const withRank = (
   rows: ForecastOutlierRow[],
@@ -38,13 +36,8 @@ const withRank = (
     });
 
 /**
- * Forecast export.
- *
- * Same shell, header and Presets/Custom split as the other export modals —
- * `CategoryExportModal` / `VendorExportModal` / `OrdersExportModal`. Presets are
- * multi-select: tick several and each downloads as its own file, which is why
- * they're checkboxes rather than radios. Custom is the `200px 1fr` split with a
- * live preview and its own footer.
+ * Forecast export, with the other export modals' shell and Presets/Custom
+ * split. Presets are multi-select: each ticked one downloads as its own file.
  */
 
 const COLS: { key: ColKey; label: string }[] = [
@@ -337,9 +330,8 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
               Select data to include
             </p>
 
-            {/* Contribution scope. Sits above the datasets because it changes
-                what every one of them contains — cleared means all tiers,
-                rather than an extra toggle that could contradict them. */}
+            {/* Contribution scope, above the datasets because it changes
+                what each contains; cleared means all tiers. */}
             {tierChips}
 
             {presetDatasets.map(({ id, label, description, disabled }) => (

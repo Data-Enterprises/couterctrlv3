@@ -21,19 +21,11 @@ import ResizableModalShell from "../../../../components-dev/modals/ResizableModa
 import ForecastScenarios from "./components/ForecastScenarios";
 
 /**
- * The per-item popup, opened by double-clicking a row.
- *
- * Scenarios on the left, calculator on the right. They're separate jobs:
- * scenarios answer "which of these prices should I run" and write back to the
- * grid; the calculator answers "what would this price I just thought of do"
- * and writes nothing.
- *
- * There is no price-history list. Price and Hist qty in the scenario rows are
- * that history — showing it twice was the old layout's main redundancy.
- *
- * The maths is legacy's, unchanged: `fitLinearDemand` / `predictQty` /
- * `forecastUnits` with the same arguments, and `buildScenarioRows` shared with
- * legacy's own table.
+ * The per-item popup, opened by double-clicking a row. Scenarios (which price
+ * to run; they write back to the grid) on the left, the calculator (a what-if;
+ * writes nothing) on the right. Price and Hist qty in the scenarios are the
+ * price history. The maths is legacy's, unchanged (`fitLinearDemand`,
+ * `predictQty`, `forecastUnits`, shared `buildScenarioRows`).
  */
 
 const SECTION = "border border-gray-200 rounded-lg overflow-hidden";
@@ -97,14 +89,9 @@ const ForecastCalcModal = () => {
   const handleClose = () => dispatch(setSelectedUpc(""));
 
   /**
-   * The row's own price stands in until the state above is seeded, and any time
-   * the field is empty.
-   *
-   * Load-bearing, not defensive noise: an unparseable price reaches
-   * `predictQty` as NaN, `prices.indexOf(NaN)` is -1, and the -1 walks off the
-   * front of the array into a `find` that misses — the `!` there then throws.
-   * The component renders once before its effect runs, so without this the
-   * popup crashes on open.
+   * The row's own price stands in until the state is seeded, and whenever the
+   * field is empty. Load-bearing: a NaN price makes `predictQty`'s lookup miss
+   * and throw, and the component renders once before its effect runs.
    */
   const priced = parseFloat(newPrice);
   const activePrice = isFinite(priced) ? priced : row.fcstPrice;
@@ -154,10 +141,9 @@ const ForecastCalcModal = () => {
         </button>
       </div>
 
-      {/* Item facts — what the fit is standing on, before any of it is
-            interpreted. Reg retail is the non-promo price and the baseline
-            every Markdown figure is measured against; price points is how many
-            distinct prices the demand curve is fitted through. */}
+      {/* Item facts the fit stands on: Reg retail is the baseline every
+          Markdown figure is measured against; price points is how many prices
+          the demand curve is fitted through. */}
       <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         {(
           [
@@ -238,9 +224,8 @@ const ForecastCalcModal = () => {
                 Calculate
               </button>
 
-              {/* The calculator's answer lives inside its own section — it
-                    writes nothing back, so it has no business in a strip
-                    across the top of the popup. */}
+              {/* The calculator's answer stays in its own section: it writes
+                  nothing back. */}
               <div className="border-t border-gray-100 pt-2 flex flex-col gap-1">
                 <div className="text-[10.5px] font-medium text-content/85">
                   At {formatCurrency2(activePrice)} over 7 days

@@ -33,17 +33,10 @@ import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
 /**
- * The forecast grid.
- *
- * Rows are a CSS grid on a shared column template, the same construction
- * `AssociationItemsTable` uses — sticky uppercase header, `even:bg-row_stripe`,
- * `border-brand_navy/15` rules. No table element and no grid library: the rows
- * are a flat list with one tri-state sort, which `useTriStateSort` already
- * does for every other Performance list.
- *
- * Detail lives in the calculator popup on double-click, so there are no tabs
- * and no expanding rows here. Notes are set two ways: in bulk from the toolbar
- * across every ticked row, or per item in that popup.
+ * The forecast grid: a CSS grid on a shared column template, with one
+ * tri-state sort (`useTriStateSort`). Detail is in the calculator popup on
+ * double-click. Notes are set in bulk from the toolbar, or per item in the
+ * popup.
  */
 
 /** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | share | markdown */
@@ -148,9 +141,8 @@ const ForecastRowsTable = ({
   );
 
   /**
-   * The row that opens each tier band. Bands only make sense while the list is
-   * in contribution order — a user sort scatters the tiers, and a tier filter
-   * means the chip is already saying which band you're in.
+   * The row that opens each tier band, shown only in contribution order with
+   * no tier filter.
    */
   const bandStarts = useMemo(() => {
     if (sort) return new Map<string, Tier>();
@@ -175,13 +167,9 @@ const ForecastRowsTable = ({
   }, [rows, ranks]);
 
   /**
-   * UPCs whose applied price was typed rather than drawn from history.
-   *
-   * Both Qty sold and At price are meaningless for those rows and worse than
-   * blank: applying a custom price sets `qtySold` to 0 — which reads as "sold
-   * none" when it means "never sold at this price" — and `daysAtPrice` to an
-   * estimate. The figures still drive the forecast; they just stop being
-   * reported as history.
+   * UPCs whose applied price was typed rather than from history: their Qty sold
+   * (0) and At price (an estimate) still drive the forecast but are not shown
+   * as history.
    */
   const customPriced = useMemo(() => {
     const set = new Set<string>();
@@ -229,12 +217,9 @@ const ForecastRowsTable = ({
   );
 
   /**
-   * Writes to the rows actually on screen — after the tier chips and the column
-   * filters, not the whole ticked selection. Filtering to Tail and hitting
-   * Apply has to mean "these ones", or the filters would be a lie.
-   *
-   * Single-price rows are excluded from price and ad days, as in legacy: one
-   * price point can't be refitted to a new one.
+   * Writes to the rows on screen, after the tier chips and column filters, not
+   * the whole ticked selection. Single-price rows are excluded from price and ad
+   * days, as in legacy.
    */
   const handleSetBatch = () => {
     const upcs = searched.filter((r) => !r.singlePrice).map((r) => r.upc);
@@ -291,9 +276,8 @@ const ForecastRowsTable = ({
           ))}
         </div>
 
-        {/* Contribution tiers. Not a grade — A items are simply the ones the
-            ad's numbers rest on. The coverage line is the point of the whole
-            thing on a list of any real size. */}
+        {/* Contribution tiers, not a grade: A items are the ones the ad's
+            numbers rest on. */}
         <div data-help="bands" className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0">
           {(
             [
@@ -395,10 +379,8 @@ const ForecastRowsTable = ({
           >
             Reset
           </button>
-          {/* Notes are deliberately outside Reset — authored text shouldn't
-              disappear as a side effect of undoing a price. Clearing them is
-              its own action, and the batch field can't do it (an empty note
-              submits nothing, by design). */}
+          {/* Notes are outside Reset (authored text shouldn't vanish with a
+              price undo); clearing them is its own action. */}
           <button
             onClick={() => {
               dispatch(
@@ -621,9 +603,8 @@ const ForecastRowsTable = ({
                               </span>
                             )}
                           </div>
-                          {/* The badges sit on the UPC line at UPC size —
-                              the description keeps the full width for the
-                              thing people actually read the row by. */}
+                          {/* Badges sit on the UPC line, so the description
+                              keeps the full width. */}
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="text-[11px] font-medium text-content/85 tabular-nums flex-shrink-0">
                               {row.upc}

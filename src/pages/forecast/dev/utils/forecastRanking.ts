@@ -4,17 +4,9 @@ import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSli
 import type { PriceHistoryResult } from "../../../../interfaces";
 
 /**
- * Ranking for the forecast grid.
- *
- * A forecast list is heavily skewed — on a real 13-item ad, two items were 75%
- * of it and the bottom six were under 4%. Showing every row with equal weight
- * hides that, and at a few hundred UPCs it's unreadable. So rows are ranked by
- * what they contribute and cut into A/B/C tiers on cumulative share, which is
- * the standard ABC split merchandisers already use for exactly this problem.
- *
- * Nothing here grades an item. A C-tier row isn't bad — it's small. The only
- * judgement this module makes is in `exceptionsFor`, and those are all
- * statements about the *forecast's* reliability or cost, not about the item.
+ * Ranking for the forecast grid: rows ranked by what they contribute and cut
+ * into A/B/C tiers on cumulative share (the merchandisers' ABC split). Nothing
+ * grades an item; `exceptionsFor` only flags the forecast's reliability or cost.
  */
 
 /** Cumulative-share cut points. A is the ad, B supports it, C is the tail. */
@@ -22,10 +14,8 @@ const A_CUT = 0.8;
 const B_CUT = 0.95;
 
 /**
- * Rank rows by forecast total, descending.
- *
- * Returns a lookup rather than a sorted array so callers keep control of their
- * own ordering — the grid still has a user-driven sort on every column.
+ * Rank rows by forecast total, descending, as a lookup, so callers keep their
+ * own sort.
  */
 export const rankRows = (
   rows: ForecastOutlierRow[],
@@ -44,15 +34,12 @@ export const rankRows = (
 
   for (const row of byContribution) {
     position += 1;
-    // A zero total makes every share 0 — which is right. It also stops the
-    // cumulative from ever advancing, so every row lands in A. That's the
-    // honest answer when there's nothing to apportion.
+    // A zero total makes every share 0 and every row an A: nothing to
+    // apportion.
     const share = total > 0 ? row.fcstTotal / total : 0;
 
-    // The tier is decided by the cumulative BEFORE this row is added, so the
-    // item that carries the running total past 80% is itself an A. Deciding it
-    // afterwards would drop an 11%-of-the-ad item into B for the crime of
-    // being the one that crossed the line.
+    // The tier is decided by the cumulative BEFORE this row, so the item that
+    // crosses 80% is itself an A.
     const before = running;
     running += share;
 
@@ -85,9 +72,7 @@ export const tierSummary = (ranks: Map<string, RankEntry>) => {
   return out;
 };
 
-/** What each band means, in the buyer's terms rather than the model's. The
- *  A/B/C letters stay on the band chip so the ABC framing is still legible to
- *  anyone who thinks in it, but nothing is labelled by letter alone. */
+/** What each band means, in the buyer's terms; the letter stays on the chip. */
 export const TIER_LABEL: Record<Tier, string> = {
   A: "Driving",
   B: "Supporting",
@@ -103,9 +88,8 @@ export const TIER_STRIPE: Record<Tier, string> = {
 };
 
 /**
- * Filter-chip treatment, borrowed from the Performance pages' severity chips:
- * a tinted fill always, a ring on the active one. Same shape and behaviour,
- * navy ramp instead of the severity palette — these are weights, not verdicts.
+ * Filter-chip treatment, shaped like the severity chips but on a navy ramp:
+ * these are weights, not verdicts.
  */
 export const TIER_CHIP_BASE: Record<Tier, string> = {
   A: "bg-brand_navy/10 text-brand_navy",
@@ -133,10 +117,8 @@ export const tierCounts = (ranks: Map<string, RankEntry>) => {
 };
 
 /**
- * How much the markdown share has to exceed the revenue share before the row is
- * worth pointing at. 1.5x is deliberately loose: on a real ad plenty of items
- * run slightly markdown-heavy, and a flag that fires on a third of the list
- * stops being a flag.
+ * How far the markdown share must exceed the revenue share to flag a row:
+ * 1.5×, loose on purpose, so the flag stays rare.
  */
 const COSTLY_RATIO = 1.5;
 
@@ -144,11 +126,8 @@ const COSTLY_RATIO = 1.5;
 const THIN_POINTS = 2;
 
 /**
- * Reasons this particular row's forecast deserves a second look.
- *
- * Deliberately scoped to A and B tiers for the reliability flags: a shaky
- * forecast on an item worth 0.1% of the ad is not worth anyone's attention,
- * and flagging it buries the ones that are.
+ * Reasons a row's forecast deserves a second look. The reliability flags are
+ * scoped to A and B tiers.
  */
 export const exceptionsFor = (
   row: ForecastOutlierRow,

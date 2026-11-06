@@ -5,11 +5,8 @@ import * as XLSX from "xlsx";
 import type { AdListRow } from "../../../../features/dev/devForecastSlice";
 
 /**
- * AD list workbook → rows.
- *
- * Lifted verbatim out of `AdListInput` so the dev card can use its own button
- * and hidden input without a second copy of the column mapping. The mapping is
- * unchanged — same column names, same `unitAdRetail = adRetail / adCount`.
+ * AD list workbook → rows, verbatim from `AdListInput` (same column names,
+ * same `unitAdRetail = adRetail / adCount`).
  */
 
 const num = (v: unknown): number => {

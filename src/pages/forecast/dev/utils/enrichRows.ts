@@ -12,15 +12,9 @@ import type { PriceHistoryFromListResp } from "../../../../interfaces";
 import type { AdListData, AdListRow } from "../../../../features/dev/devForecastSlice";
 
 /**
- * Ad-list enrichment + row formatting, lifted verbatim out of `Forecasting.tsx`
- * so the dev page runs the exact same arithmetic rather than a second copy of
- * it. The only edit was making `adListRows` a parameter instead of a closure
- * over the component's selector — no figure it produces has changed.
- *
- * What it does: for any item on the AD list, the ad price is injected into the
- * price history as if it were real history (so the calculator treats it as
- * native rather than a custom row), then every metric on that row is refitted
- * at the ad price.
+ * Ad-list enrichment and row formatting, the same arithmetic as legacy (only
+ * `adListRows` became a parameter). An AD item's ad price is injected into the
+ * price history as if real, then every metric on its row is refitted at it.
  */
 
 export const enrichForecastRows = (

@@ -17,12 +17,8 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 
 /**
- * The item panel.
- *
- * Same shape as `UpcLeftPanel` / `LookupQueuePanel`: a 2-row navy header
- * carrying the search context, then a filter strip, then the list. Ticking
- * items narrows what the grid and the KPI strip on the right cover, which is
- * how you price an ad down to a subset without re-running the search.
+ * The item panel, shaped like `UpcLeftPanel`. Ticking items narrows what the
+ * grid and the KPI strip cover, without re-running the search.
  */
 
 interface Props {

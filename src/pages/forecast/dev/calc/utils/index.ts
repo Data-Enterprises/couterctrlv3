@@ -5,13 +5,8 @@ import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../../../../u
 import type { Args, ScenarioRow } from "../interfaces";
 
 /**
- * Price scenarios for one item.
- *
- * Lifted verbatim out of `ScenarioTable`'s `buildRow` so the dev modal and the
- * legacy table compute identical figures rather than keeping two copies of the
- * same chain. Not one operand changed: same `calcFcstQty`, same
- * `estimateDaysActive` fallback for a price with no history, same
- * `forecastUnits` argument order, same `(regularRetail - price) * adFcst`.
+ * Price scenarios for one item, verbatim from legacy `ScenarioTable`'s
+ * `buildRow`, so both compute identical figures.
  */
 
 export const buildScenarioRows = ({

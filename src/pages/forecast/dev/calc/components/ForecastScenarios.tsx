@@ -10,13 +10,9 @@ import type { PriceHistory } from "../../../../../interfaces";
 import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
 
 /**
- * Price scenarios for the open item.
- *
- * Same figures as legacy's `ScenarioTable` — both call `buildScenarioRows` —
- * rendered on the CSS-grid convention the main grid uses, and carrying the same
- * column names it does (Ad fcst, Total) so a row means the same thing in both
- * places. The item's own price history isn't listed separately: Price and Hist
- * qty here are that history.
+ * Price scenarios for the open item: legacy `ScenarioTable`'s figures (both
+ * call `buildScenarioRows`), with the main grid's column names (Ad fcst,
+ * Total).
  */
 
 const COLS = "1fr 60px 44px 60px 84px 84px 56px";
@@ -157,10 +153,9 @@ const ForecastScenarios = ({
               <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
                 {row.histQty ?? "—"}
               </span>
-              {/* A typed price was never on the shelf, so it has no days at
-                  price to report. The forecast still needs one and uses
-                  `estimateDaysActive`, but that's an assumption of ours — it
-                  doesn't belong in a column of observed history. */}
+              {/* A typed price was never on the shelf, so no days at price:
+                  the forecast uses `estimateDaysActive`, an assumption, which
+                  doesn't belong in observed history. */}
               <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
                 {row.isCustom ? "—" : row.daysAtPrice}
               </span>

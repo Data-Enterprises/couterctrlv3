@@ -24,16 +24,10 @@ import SingleDatePicker from "../../../../components-dev/datePickers/SingleDateP
 import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
 
 /**
- * Forecast entry — the search card.
- *
- * UPC List's search card with two changes: one date instead of a range (the
- * endpoint takes the end of the history window and walks 90 days back from it),
- * and an AD list upload beside the CSV one.
- *
- * The AD list isn't a convenience import: its prices are injected into the
- * price history before the forecast is fitted, so it changes every figure on
- * the page. Its items join the list like any other UPC and carry an AD badge on
- * the chip, so it's clear which ones are priced off the ad.
+ * Forecast entry: UPC List's search card with one date (the endpoint walks 90
+ * days back from it) and an AD list upload. AD prices are injected into the
+ * price history before fitting, so they change every figure; their items carry
+ * an AD badge.
  */
 
 const PILL =
