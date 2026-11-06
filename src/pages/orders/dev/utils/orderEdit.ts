@@ -1,4 +1,5 @@
 // Utils
+import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
 import { getCogs, getERet } from ".";
 
 // Interfaces
@@ -529,7 +530,6 @@ export const EDIT_COMPANY_IDS = [1, 4, 5, 6, 17, 21];
 export const EDIT_MIN_LEVEL = 5;
 /** Owner and up are not held to the cut-off; see `canEditOrders`. */
 export const EDIT_ANY_DAY_FROM_LEVEL = 7;
-export const PROGRAMMER_LEVEL = 9;
 
 /**
  * Past the point in the week where an edit still reaches the vendor.

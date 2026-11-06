@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 // The same authority Admin gates company creation and deletion on: who may act
 // on the tenancy itself. Assigning any company to any user is that same power,
 // so it answers to that constant rather than to a second copy of the number.
-import { PROGRAMMER_LEVEL } from "../../admin/dev/utils";
+import { PROGRAMMER_LEVEL } from "../../../utils/userLevels";
 
 export const useOrganizationCtx = () => {
   const dispatch = useAppDispatch();
