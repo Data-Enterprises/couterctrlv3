@@ -19,7 +19,7 @@ import {
   type UniqueSub,
 } from "../../../../features/dev/devOrdersSlice";
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
-import { getCogs, getERet } from "..";
+import { getCogs, getERet } from "../utils";
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import SearchCard from "../../../../components-dev/SearchCard";
 import BottomSheet from "../../../../components-dev/BottomSheet";

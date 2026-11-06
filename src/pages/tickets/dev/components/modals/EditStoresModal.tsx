@@ -1,5 +1,7 @@
+// Hooks
 import { useEffect, useState } from "react";
-import Modal from "../../../../../components-dev/Modal";
+
+// API
 import { useDevApi } from "../../../../../hooks/useDevApi";
 import {
   getTicketStoreOptions,
@@ -7,12 +9,16 @@ import {
   type Ticket,
   type TicketStoreOption,
 } from "../../../../../api/tickets";
+
+// Utils
+import { cleanStoreOptions, storesOf } from "../../utils";
+
+// Components
+import Modal from "../../../../../components-dev/Modal";
 import StoreChecklist from "../StoreChecklist";
-import { cleanStoreOptions, storesOf } from "./ticketStores";
 
 interface Props {
   ticket: Ticket;
-  /** Returns why it did not save, or null once it has. */
   onSave: (storeids: number[]) => Promise<string | null>;
   onClose: () => void;
   working: boolean;
@@ -26,9 +32,6 @@ interface Props {
  * refile. The list is the server's own answer for this ticket (its company,
  * the opener's companies, the opener's stores), with what is on it now ticked,
  * so it cannot offer a store the save would refuse.
- *
- * Saving replaces the whole list. The server notes the change in the thread as
- * an internal note, so the next tech can see why a ticket moved.
  */
 const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
   const { url, token } = useDevApi();

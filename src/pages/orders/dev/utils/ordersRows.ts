@@ -1,9 +1,9 @@
-import type { AllOrder } from "../../../interfaces";
+import type { AllOrder } from "../../../../interfaces";
 import type {
   OrderFlag,
   OrdersFilters,
-} from "../../../features/dev/devOrdersSlice";
-import type { SortState } from "../../../utils/useTriStateSort";
+} from "../../../../features/dev/devOrdersSlice";
+import type { SortState } from "../../../../utils/useTriStateSort";
 
 export type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
 

@@ -5,7 +5,7 @@ import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "../components/ordersExportShared";
+import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
 
 interface OrdersExportSheetProps {
   onClose: () => void;

@@ -1,4 +1,4 @@
-import type { AllOrder } from "../../../interfaces";
+import type { AllOrder } from "../../../../interfaces";
 import { getCogs, getERet } from ".";
 
 /**

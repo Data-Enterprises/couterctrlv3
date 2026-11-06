@@ -23,10 +23,10 @@ import type {
   Store,
   UpdateFileResp,
 } from "../../../interfaces";
-import { getCogs, getERet } from ".";
-import { buildRows } from "./ordersRows";
+import { getCogs, getERet } from "./utils";
+import { buildRows } from "./utils/ordersRows";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
-import type { SortKey } from "./ordersRows";
+import type { SortKey } from "./utils/ordersRows";
 import { formatGoliathDate } from "../../../utils";
 
 import {
@@ -55,7 +55,7 @@ import {
   type OrderDraft,
   applySent,
   docKey,
-} from "./orderEdit";
+} from "./utils/orderEdit";
 
 import SearchCard from "../../../components-dev/SearchCard";
 import OrderPickerPanel from "./components/OrderPickerPanel";
@@ -64,10 +64,10 @@ import OrderEditPanel, {
   type SubDeptOption,
 } from "./components/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
-import OrdersExportModal from "./components/OrdersExportModal";
+import OrdersExportModal from "./export/OrdersExportModal";
 import ProblemList from "./components/ProblemList";
 import ItemFixPanel from "./components/ItemFixPanel";
-import { itemsInScope, workingOrder } from "./problemItems";
+import { itemsInScope, workingOrder } from "./utils/problemItems";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";

@@ -1,5 +1,5 @@
-import type { AllOrder } from "../../../interfaces";
-import type { OrderFlag } from "../../../features/dev/devOrdersSlice";
+import type { AllOrder } from "../../../../interfaces";
+import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 import { lineFlags } from "./ordersRows";
 import {
   buildDocs,

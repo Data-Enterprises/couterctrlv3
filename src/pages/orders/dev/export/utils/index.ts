@@ -1,4 +1,4 @@
-import type { AllOrder } from "../../../interfaces";
+import type { AllOrder } from "../../../../../interfaces";
 
 /**
  * The columns an order-line export can carry.

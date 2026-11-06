@@ -27,7 +27,7 @@ import {
   type EditableField,
   type LinePatch,
   type OrderDraft,
-} from "../orderEdit";
+} from "../utils/orderEdit";
 
 export type EditSearch = { code: string; desc: string; onlyChanged: boolean };
 export type VendorOption = { id: string; name: string };

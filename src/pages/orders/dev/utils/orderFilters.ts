@@ -1,4 +1,4 @@
-import type { AllOrder } from "../../../interfaces";
+import type { AllOrder } from "../../../../interfaces";
 
 /**
  * Which option in each filter is still reachable, given the others.

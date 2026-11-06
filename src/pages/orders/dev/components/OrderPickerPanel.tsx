@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { matchesPick, type OrderDoc } from "../orderEdit";
+import { matchesPick, type OrderDoc } from "../utils/orderEdit";
 
 interface Props {
   /** Every order in the range, newest first. */

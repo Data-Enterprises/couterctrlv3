@@ -5,8 +5,8 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import SortHeader from "../../../../components-dev/SortHeader";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
-import { FLAG_DOT, FLAG_TITLE } from "./flagStyles";
+import { lineFlags, type GridSort, type SortKey } from "../utils/ordersRows";
+import { FLAG_DOT, FLAG_TITLE } from "./utils";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */

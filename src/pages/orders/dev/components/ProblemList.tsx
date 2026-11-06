@@ -3,8 +3,8 @@ import { CheckIcon } from "@heroicons/react/16/solid";
 import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import { workingOrder, type ProblemItem } from "../problemItems";
-import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./flagStyles";
+import { workingOrder, type ProblemItem } from "../utils/problemItems";
+import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./utils";
 
 /** The order the list works in: the cause, its usual symptom, then the one
  *  that is often fine. */

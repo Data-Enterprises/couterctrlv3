@@ -5,14 +5,14 @@ import Checkbox from "../../../../components-dev/Checkbox";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import type { OrderDraft } from "../orderEdit";
+import type { OrderDraft } from "../utils/orderEdit";
 import {
   commonUnit,
   itemStoreRows,
   type Figures,
   type ProblemItem,
-} from "../problemItems";
-import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
+} from "../utils/problemItems";
+import { FLAG_LABEL, FLAG_ON } from "./utils";
 import { Band } from "./OrderEditPanel";
 
 interface Props {

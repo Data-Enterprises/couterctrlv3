@@ -4,8 +4,8 @@ import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFil
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type { AllOrder } from "../../../../interfaces";
 import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
-import { buildRows, type SortKey } from "../ordersRows";
-import { ORDER_EXPORT_COLUMNS } from "../ordersExportColumns";
+import { buildRows, type SortKey } from "../utils/ordersRows";
+import { ORDER_EXPORT_COLUMNS } from "./utils";
 
 interface Props {
   /** Every line the search returned, before any filter. */
