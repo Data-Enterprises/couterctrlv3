@@ -36,16 +36,9 @@ import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
 /**
- * Price Opt — Sub Department.
- *
- * Estimated against actual price points for one item at a time, reached by
- * opening a department and picking a UPC out of it.
- *
- * The fetch lives here rather than in a panel, per the page pattern — panels
- * render what the container loaded and never reach for data themselves. The
- * exception is the register fetch, which is owned by its own hook because it
- * carries a staleness guard that has to survive the user clicking a second item
- * before the first resolves.
+ * Price Opt: Sub Department. Estimated against actual price points for one
+ * item, reached by opening a department and picking a UPC. The fetch lives
+ * here, except the register fetch, whose hook carries a staleness guard.
  */
 const InventorySubDept = () => {
   const toast = useToast();
@@ -55,10 +48,8 @@ const InventorySubDept = () => {
 
   const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  // Kept in the slice so a return visit lands on the last result instead of an
-  // empty form (dev board review, finding K). The slice holds the store and
-  // dates; the token comes from the session each render, so a re-login can't
-  // leave a stale one behind.
+  // Kept in the slice so a return visit lands on the last result. The token
+  // comes from the session each render, never from the slice.
   const view = useAppSelector((s) => s.dev.priceOpt.subDept);
   const scope = useMemo<InventoryScope | null>(
     () => (view.window ? { url, token, ...view.window } : null),
@@ -99,15 +90,12 @@ const InventorySubDept = () => {
   const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
-  /** The department whose items are wanted on screen. A response that no longer
-   *  matches lost a race and is discarded — clicking a big department and then
-   *  a small one would otherwise leave the small one's name above the big one's
-   *  items, since the small request resolves first. */
+  /** The department whose items are wanted on screen; a response that no
+   *  longer matches lost a race and is discarded. */
   const wantedSubDept = useRef<number | null>(null);
 
-  // A department left open with no items means its fetch was still in flight
-  // when the page was left, and that answer is gone with the old page. Close
-  // it rather than show an open department that reads as empty.
+  // An open department with no items had its fetch cut off when the page was
+  // left, so it is closed rather than shown empty.
   useEffect(() => {
     // Nothing cached for it means the fetch was still in flight, not that the
     // department is empty -- a cached empty department keeps its entry.
@@ -163,19 +151,16 @@ const InventorySubDept = () => {
       setOpenSubDept(null);
       return;
     }
-    // A different one opening takes the item panel with it: the item belongs
-    // to the list it was picked from, and leaving it up read as the new
-    // list's item (dev board review, finding H). Collapsing the open one
-    // keeps it.
+    // Opening a different one closes the item panel (the item belongs to the
+    // old list); collapsing the open one keeps it.
     setSelected(null);
     resetPrices();
     resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
 
-    // Already read in this window. The items of a department cannot change
-    // inside a fixed store and date range, so reopening one is a render, not
-    // a request -- no spinner either, because there is nothing to wait for.
+    // Already read in this window: a department's items can't change inside
+    // a fixed store and range, so reopening is a render, not a request.
     if (id in view.productsBySubDept) return;
 
     setProductsLoading(true);
@@ -188,9 +173,7 @@ const InventorySubDept = () => {
       // Left out of the cache deliberately, so reopening it tries again.
       toast.error(e instanceof Error ? e.message : "Could not load items");
     } finally {
-      // Only the winner clears the spinner; a loser doing so would uncover an
-      // empty list while the department the user actually wants is still in
-      // flight.
+      // Only the winning request clears the spinner.
       if (wantedSubDept.current === id) setProductsLoading(false);
     }
   };
@@ -255,9 +238,8 @@ const InventorySubDept = () => {
         </div>
       )}
 
-      {/* Built here rather than held in state — the item roll-up only has to
-          exist while the modal is open, and the vendor page's equivalent is
-          expensive enough that computing it every render would be felt. */}
+      {/* Built here, not held in state: the roll-up only needs to exist
+          while the modal is open. */}
       {exportOpen && (
         <InventoryExportModal
           onClose={() => setExportOpen(false)}

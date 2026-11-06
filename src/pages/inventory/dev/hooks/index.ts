@@ -10,12 +10,9 @@ import type { InvoiceCostState, InvoiceCost, InventoryScope } from "../interface
 const initial: InvoiceCostState = { upc: null, cost: null, loading: false };
 
 /**
- * The latest invoiced cost for the item on screen.
- *
- * Runs beside `useActualPricePoints` when an item is picked. A failure resolves
- * to no invoice rather than an error: the page falls back to the item-file
- * cost, which is what it showed before, so a lost lookup costs accuracy, not
- * the page.
+ * The latest invoiced cost for the item on screen, beside
+ * `useActualPricePoints`. A failure means no invoice, and the page falls back
+ * to the item-file cost.
  */
 export const useInvoiceCost = () => {
   const [state, setState] = useState<InvoiceCostState>(initial);

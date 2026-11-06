@@ -10,16 +10,10 @@ import type { InvoiceCost, ResolvedCost, InventoryScope } from "../interfaces";
 import type { ReceiverItemSearchReceiver } from "../../../../interfaces";
 
 /**
- * What the store actually paid for an item, off its invoices.
- *
- * Price Opt used the item-file cost carried on the sales rows, and the item
- * file goes stale: COKE 6PK read $4.91 there while the 10/16 Coke invoice says
- * $3.13 a unit, so a $3.33 sale was flagged "below cost" at -47% when it made
- * money (dev board review, findings O and W). Item Actions already reads
- * invoices and got $3.13; this uses the same search, so the two pages agree.
- *
- * Decided 2026-10-22: the invoice cost is what they paid, so it wins; the item
- * file is the fallback when there is no invoice to read.
+ * What the store actually paid for an item, off its invoices (the item file
+ * goes stale: COKE 6PK read $4.91 against a $3.13 invoice). The same search as
+ * Item Actions, so the two agree. Invoice cost wins; the item file is the
+ * fallback (decided 2026-10-22).
  */
 
 /** How far back to look for a delivery. Same as Item Actions' default. */
@@ -28,12 +22,9 @@ export const INVOICE_LOOKBACK_DAYS = 90;
 const MAX_RECEIVERS = 50;
 
 /**
- * The most recent invoiced cost for one UPC, on or before `asOf`.
- *
- * `ucost` is the paid unit cost on the day the line landed, whatever free or
- * returned quantity rides on the same line, so those are not filtered out.
- * A delivery after the window is skipped, because it can't be the cost of
- * anything sold inside it.
+ * The most recent invoiced cost for one UPC, on or before `asOf`. `ucost` is
+ * the paid unit cost whatever free or returned quantity rides on the line; a
+ * delivery after the window is skipped.
  */
 export const latestInvoiceCost = (
   receivers: ReceiverItemSearchReceiver[],
@@ -70,12 +61,9 @@ export const fetchInvoiceCost = async (
 };
 
 /**
- * Which cost the page shows, and says where it came from.
- *
- * Invoice first. A weighed item stays on the item file: its sales are counted
- * in pounds, and an invoice line can be billed per case or per pack, so
- * holding one against the other would be the per-pound vs per-pack mix-up
- * this review already found once (finding A).
+ * Which cost the page shows, and where it came from: invoice first, except a
+ * weighed item stays on the item file (sold in pounds; invoices can bill per
+ * case or pack).
  */
 export const resolveUnitCost = (
   itemFileUnitCost: number | null,

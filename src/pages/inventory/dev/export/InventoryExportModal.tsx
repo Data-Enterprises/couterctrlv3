@@ -22,22 +22,10 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /**
- * CSV export for both Price Opt pages.
- *
- * One modal, two pages, because the only thing that differs between them is
- * what a group is called — the four things worth exporting are identical, and
- * two copies would have drifted the first time a column moved.
- *
- * The four sources are deliberately not one flattened sheet. They sit at
- * different grains (a vendor, an item, a price, a receipt) and joining them
- * would repeat an item's totals down every one of its transaction rows, which
- * is how a "sales" column ends up double-counted in a pivot table.
- *
- * Scope is bounded by what the page actually holds, and the preset captions say
- * so rather than implying more. Registers are read one item at a time, so price
- * points and transactions cover the selected item and no other — exporting them
- * for a whole department would mean hundreds of two-step fetches nobody asked
- * for.
+ * CSV export for both Price Opt pages. The four sources stay separate sheets
+ * (a group, an item, a price, a receipt): joined, an item's totals would repeat
+ * down its transactions. Price points and transactions cover the selected item
+ * only, and the captions say so.
  */
 
 interface Props {

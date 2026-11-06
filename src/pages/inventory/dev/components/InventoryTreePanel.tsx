@@ -20,32 +20,16 @@ import TextFilter from "../../../../components-dev/filters/TextFilter";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
 
 /**
- * Groups, and the items inside the one that's open.
- *
- * A tree rather than two screens because the comparison that matters is
- * between sibling items — you open a group to find out which of its items is
- * priced oddly, and pushing that behind a drill-in would cost a click each way
- * to answer it.
- *
- * Only one group is expanded at a time. On the department page each expansion
- * is a network call, so leaving several open would invite exactly the fan-out
- * that page is designed to avoid; on the vendor page it costs nothing, but two
- * groups' items side by side answer no question either way, since pricing
- * patterns are read within a supplier or a category.
- *
- * Group ids are strings so one component serves both — department numbers and
- * vendor ids have nothing else in common, and a second copy of this file would
- * have drifted the first time either page changed.
+ * Groups, and the items inside the one that's open: a tree, so sibling items
+ * are compared side by side. One group open at a time (on the department page
+ * each opening is a call). Group ids are strings so one component serves
+ * departments and vendors.
  */
 
 /**
- * One way of writing money down the tree.
- *
- * The shared compact formatter keeps up to one decimal, so the same column read
- * "$25.1K", "$758.3" and "$674" (dev board review, finding G). Whole dollars
- * below a thousand, one decimal of a thousand above it, so every row reads the
- * same way. Local rather than a change to the shared formatter, which 23 other
- * screens use.
+ * Money down the tree: whole dollars under a thousand, one decimal of a
+ * thousand above (the shared formatter mixes the two). Local, since the shared
+ * one has 23 other users.
  */
 const treeMoney = (n: number) =>
   Math.abs(n) < 1000
@@ -54,9 +38,7 @@ const treeMoney = (n: number) =>
 
 interface Props {
   title: string;
-  /** Which of the two Price Opt help pages the "?" opens — the pages are
-   *  siblings and differ only in how the tree groups, so the panel is told
-   *  rather than guessing from the title. */
+  /** Which of the two Price Opt help pages the "?" opens. */
   helpPage: HelpPage;
   storeName: string;
   dateLabel: string;
@@ -70,10 +52,8 @@ interface Props {
   onSelectProduct: (p: ProductSummary) => void;
   onSearchOpen: () => void;
   onExportOpen: () => void;
-  /** Whether a group holds an item matching the filter, for a page that
-   *  already has every item in hand. The Vendor page does, so typing an item
-   *  name finds the vendors that sell it; the department page loads items one
-   *  department at a time, so it can't, and passes nothing. */
+  /** Whether a group holds an item matching the filter, for a page with every
+   *  item in hand (Vendor). The department page can't, and passes nothing. */
   groupHasItem?: (groupId: string, term: string) => boolean;
 }
 
@@ -124,9 +104,8 @@ const InventoryTreePanel = ({
   );
 
   return (
-    /* 26% matches Receivers, the widest of the data-page panels and the closest
-       relative — both are nested lists rather than flat ones, and the second
-       level here carries full product descriptions. */
+    /* 26%, as on Receivers: both are nested lists with full descriptions on
+       the second level. */
     <div className="flex-shrink-0 shadow-lg" style={{ width: "26%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">

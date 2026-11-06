@@ -30,25 +30,14 @@ import {
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 
 /**
- * One item, read two ways — and only one of them gets a vote.
+ * One item, read two ways, and only one gets a vote. Estimated (left) is from
+ * daily roll-ups; actual (right) is `cashiers/price_points`, every receipt
+ * line bucketed on the server. A price on the left with no counterpart on the
+ * right never existed.
  *
- * Estimated on the left from daily roll-ups already in hand, actual on the
- * right from `cashiers/price_points`, which buckets every receipt line on the
- * server. The two tables share their first two columns so a reader's eye can
- * run across, and the gap between them is the finding: a price on the left
- * with no counterpart on the right never existed.
- *
- * The suggestion reads the **actual** side only. Estimated divides a day's
- * dollars by a day's units, so nineteen rings at $13.99 and one at $12.99
- * produce a $13.88 that nobody was ever charged — fine as an observation,
- * disqualifying as a recommendation.
- *
- * The actual side keeps its full height while it loads. It arrives seconds
- * after the estimated side, and a panel that grows underneath the reader is
- * worse than one that starts the right size.
- *
- * Shared with the forthcoming Vendor page unchanged — only the tree that
- * chooses the item differs between them.
+ * The suggestion reads the **actual** side only: estimated divides a day's
+ * dollars by its units, giving prices nobody was charged. The actual side
+ * keeps its full height while it loads.
  */
 
 interface Props {
@@ -85,10 +74,9 @@ const ItemAnalysisPanel = ({
   const actual = prices;
   const receiptsHere = receipts.upc === product.productCode;
 
-  // Register lines carry no cost, so a unit cost has to reach them before any
-  // actual-side margin can exist. The latest invoice cost when there is one,
-  // the item-file cost off the `subs/subs` rows otherwise -- one figure, held
-  // under both tables and the header, so no two margins on screen disagree.
+  // Register lines carry no cost, so one unit cost reaches them: the latest
+  // invoice cost, else the item-file cost from `subs/subs`. Held once, so no
+  // two margins on screen disagree.
   const itemFile = useMemo(() => itemCostStats(product), [product]);
   const weighed = useMemo(
     () => product.rows.some((r) => r.weight > 0),
@@ -115,10 +103,8 @@ const ItemAnalysisPanel = ({
     () => pricePointsFromServer(rows, unitCost),
     [rows, unitCost],
   );
-  // "Package deal" reads each receipt for the item at two prices. The server
-  // reports that count now (finding D), so the pattern is judged from it
-  // rather than from a download of every receipt. Null on a weighed item or
-  // an older API, and the pattern then stays quiet.
+  // "Package deal" is judged from the server's count of receipts reading the
+  // item at two prices; null on a weighed item or an older API (no note).
   const pattern = useMemo(
     () => classifyPattern(act, mixed),
     [act, mixed],
@@ -140,9 +126,7 @@ const ItemAnalysisPanel = ({
       units: product.units,
       marginPct: stats.marginPct,
       unitCost: stats.unitCost,
-      // One count, shared with the pattern note under it. These were computed
-      // separately and disagreed on screen — 5 here against "4 prices across
-      // 84 transactions" below (finding AT).
+      // One count, shared with the pattern note under it.
       prices: act.priceCount,
       // Receipts, once each, even when one sits in both tables.
       trans: act.receiptCount,
@@ -184,9 +168,8 @@ const ItemAnalysisPanel = ({
                 ? formatCurrency2(totals.unitCost)
                 : dash}
             </div>
-            {/* Where the figure came from, because the two sources can differ
-                by a dollar a unit and a reader checking an invoice needs to
-                know which one this is. */}
+            {/* Where the figure came from: the two sources can differ by a
+                dollar a unit. */}
             <div className="text-[11px] text-content/85 leading-tight mt-0.5">
               {cost.source === "invoice" && cost.invoice
                 ? `invoice ${cost.invoice.date.slice(5).replace("-", "/")}`
@@ -354,10 +337,8 @@ const ItemAnalysisPanel = ({
             className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
           >
             <div className="flex items-baseline gap-2 mb-2">
-              {/* "Estimated" read as approximate-but-right, which is the one
-                  thing this side is not. Naming the arithmetic is the warning:
-                  a reader who knows it is an average already knows not to
-                  quote a figure from it. */}
+              {/* Names the arithmetic (an average), so nobody quotes a figure
+                from it. */}
               <span className="text-[12px] font-semibold text-content">
                 Daily average
               </span>
@@ -497,9 +478,9 @@ const ItemAnalysisPanel = ({
                       <span className="text-right">Days</span>
                       <span className="text-right">Total</span>
                     </div>
-                    {/* Never highlighted, whatever it sells — a multi-unit ring
-                        divided by its quantity is a derived figure, and the
-                        suggestion only names prices customers were charged. */}
+                    {/* Never highlighted: a multi-unit ring divided by its
+                        quantity is derived, and the suggestion only names
+                        prices customers were charged. */}
                     {act.averaged.map((p) => (
                       <ActualPriceRow
                         key={`a-${p.price}-${p.priceType}`}

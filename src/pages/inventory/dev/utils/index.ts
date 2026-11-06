@@ -6,9 +6,7 @@ import { getRollup } from "../../../../api/rollup";
 import { fetchAllPages } from "../../../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
 import { calculateCogs } from "../../../../utils/cogs";
-// Net of tax, the basis every other Sales surface reconciles on. Price Opt
-// summed raw total_sales and read 6-7% above Top 200 and Item Lookup for
-// the same item and week (dev board review, finding E).
+// Net of tax, the basis every other Sales surface reconciles on.
 import { netOf } from "../../../../utils/perfPairs";
 
 // Interfaces
@@ -20,27 +18,18 @@ import type {
 } from "../../../../interfaces";
 
 /**
- * Fetching for Price Opt — Sub Department.
- *
- * Two levels, and deliberately lazy between them. `subs/sub_sales` names the
- * departments that sold; `subs/subs` returns the item rows for **one** of them.
- * Nothing below a department is fetched until the user opens it, which is what
- * keeps this page cheap on a store with forty departments — the sibling Vendor
- * page can't do that, because `vendor_id` only exists on item rows and so every
- * department has to be walked before a single vendor can be named.
- *
- * Both flags are fixed. Price Opt is examined one store at a time, like Sub Dept
- * Margins, Categories and Vendors — the pages this one drills beneath.
+ * Fetching for Price Opt: Sub Department, lazy between two levels:
+ * `subs/sub_sales` names the departments that sold; `subs/subs` returns one
+ * department's item rows when it is opened. One store at a time, like the
+ * pages this drills beneath.
  */
 
 const USE_GROUPS = 0;
 const SINGLE_STORE = 1;
 
 /**
- * The departments that sold in the window.
- *
- * Paged: a large store's department list can exceed one page, and reading only
- * page 1 would silently drop whole departments off the tree.
+ * The departments that sold in the window, paged (a large store's list can
+ * exceed one page).
  */
 export const fetchSubDepts = async (
   scope: InventoryScope,
@@ -94,23 +83,15 @@ export const fetchSubDepts = async (
   return [...byId.values()].sort((a, b) => b.sales - a.sales);
 };
 
-/** Priced units for an item row. `qty` counts rings; `weight` is what the
- *  customer was charged for, and comes back 0 on an each-priced item — the same
- *  discriminator Item Lookup uses. */
+/** Priced units for an item row: `weight` when non-zero, else `qty`, the same
+ *  discriminator as Item Lookup. */
 export const pricedUnits = (r: SubDeptMargin): number =>
   r.weight > 0 ? r.weight : r.qty;
 
 /**
- * Item rows into one entry per UPC.
- *
- * Sales rank the list because that is the order someone hunting a pricing
- * problem wants: the item that moved the most money first. Returns are left in
- * the rows so the estimated math can exclude them itself — dropping them here
- * would make the item's sales total disagree with Sub Dept Margins.
- *
- * Shared by both Price Opt pages. They differ in how rows are *obtained* — one
- * department on demand, or every department up front — and not at all in how
- * they're rolled up.
+ * Item rows into one entry per UPC, ranked by sales. Returns stay in the rows
+ * (the estimated maths excludes them), so totals agree with Sub Dept Margins.
+ * Shared by both Price Opt pages.
  */
 export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
   const byCode = new Map<string, ProductSummary>();
@@ -138,12 +119,8 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
 };
 
 /**
- * The cost floor under every price on the page.
- *
- * Register lines carry no cost of their own, so this is what reaches them from
- * the `subs/subs` rows — which makes it the one number the panel, the
- * suggestion and the export all have to agree on. It lives here rather than in
- * the panel so the export can't compute it a second, subtly different way.
+ * The cost floor under every price on the page, from the `subs/subs` rows. The
+ * panel, the suggestion and the export all read it from here.
  */
 export const itemCostStats = (
   p: ProductSummary,
@@ -193,19 +170,14 @@ export const fetchProducts = async (
 
 /* ------------------------------------------------------------------ vendors */
 
-/** Rows with no vendor are real — DSD and miscellaneous departments both
- *  produce them — and bucketing them together under one heading is more
- *  honest than dropping the sales out of the page entirely. */
+/** Rows with no vendor are real (DSD and miscellaneous departments), so they
+ *  are bucketed under one heading rather than dropped. */
 const NO_VENDOR = "—";
 
 /**
- * One vendor id, whichever kind of row it came from.
- *
- * The rollup's key is the item rows' `vendor_id` as trimmed text, so the two
- * agree on every real vendor. Nothing at all, or all zeros (coupon lines send
- * the number 0), is no vendor, the same rule the Vendors page uses. Without
- * one rule here, a vendor from the rollup and the same vendor from the item
- * rows would be two different groups.
+ * One vendor id, whichever kind of row it came from: trimmed text, matching the
+ * rollup's key. Nothing, or all zeros (coupon lines send 0), is no vendor, as
+ * on the Vendors page.
  */
 const vendorKey = (raw: unknown): string => {
   const id = (raw === null || raw === undefined ? "" : String(raw)).trim();
@@ -213,9 +185,8 @@ const vendorKey = (raw: unknown): string => {
 };
 
 /**
- * Every vendor that sold in the window, from `subs/rollup`: names and sales,
- * no item rows. ~40 KB, so the tree draws at once; `fetchVendors` brings the
- * items behind it.
+ * Every vendor that sold in the window, from `subs/rollup` (names and sales, no
+ * item rows, ~40 KB), so the tree draws at once; `fetchVendors` brings the items.
  */
 export const fetchVendorTotals = async (
   scope: InventoryScope,
@@ -249,28 +220,16 @@ export const fetchVendorTotals = async (
 };
 
 /**
- * The `sub_department` argument that asks `subs/subs` for every department in
- * one read. As a request argument 0 means "all"; as a row value it is a real
- * department, which is why it is named rather than written as a bare 0.
+ * The `sub_department` argument meaning "all": as a request argument 0 is all,
+ * as a row value it is a real department.
  */
 const ALL_SUB_DEPTS = 0;
 
 /**
- * Every vendor that sold in the window, with their items.
- *
- * `vendor_id` lives only on item rows, so naming a single vendor needs every
- * item row in the window, which is why this loads up front rather than
- * expanding on click.
- *
- * One paged read of every department, the way the Vendors page reads it. This
- * used to ask for the department list first and then fire one `subs/subs` per
- * department, all at once: 27 calls and up to 26 in flight for one store-week
- * (dev board review, finding I). The rows that come back are the same rows;
- * only the number of requests changes.
- *
- * Read behind `fetchVendorTotals` now, which draws the tree first. Still every
- * item row, deliberately: opening a vendor and the item filter both read
- * them, and every field `subs/subs` returns stays in hand.
+ * Every vendor that sold in the window, with their items, in one paged read of
+ * every department (as the Vendors page reads it). Loaded up front because
+ * `vendor_id` lives only on item rows, and opening a vendor and the item filter
+ * both need them.
  */
 export const fetchVendors = async (
   scope: InventoryScope,

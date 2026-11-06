@@ -12,25 +12,13 @@ import type { TransactionListItem } from "../../../../interfaces";
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 
 /**
- * One actual price point, and the receipts behind it on demand.
- *
- * A price point is a count until you can see what it counted. "19 transactions
- * at $13.99" is only trustworthy if the nineteen can be named — and when a
- * price looks wrong, the individual rings are where the reason is: one cashier,
- * one terminal, one afternoon.
- *
- * Shared by the exact and averaged tables rather than written twice. The two
- * differ only in which bucket they were built from, and a second copy of this
- * would drift the first time either table changed.
- *
- * The point comes from the server's price table, which counts receipts but
- * does not list them. So opening a price is what reads them: `onOpen` asks for
- * the item's receipts, and `lines` stays null until they are in.
+ * One actual price point, and the receipts behind it on demand. Shared by the
+ * exact and averaged tables. The server's price table counts receipts but
+ * doesn't list them, so `onOpen` reads them and `lines` stays null until in.
  */
 
-// Widened with the type (23 Oct). Every column here is sized to its
-// widest real value, so a point of font size has to be paid for in px or
-// $1,332.63 clips. The 1fr price column absorbs it.
+// Every column is sized to its widest real value, so the 1fr price column
+// absorbs extra width ($1,332.63 must not clip).
 export const ACT_COLS = "1fr 44px 48px 40px 50px 36px 64px";
 const TXN_COLS = "90px 1fr 92px 48px 64px";
 

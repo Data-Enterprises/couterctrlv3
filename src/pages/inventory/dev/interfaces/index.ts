@@ -14,9 +14,8 @@ export interface SubDeptSummary {
   id: number;
   description: string;
   sales: number;
-  /** Items can't be counted until the department is opened — `subs/sub_sales`
-   *  aggregates above the item line. Null means "not loaded yet", which is why
-   *  the row shows nothing rather than a misleading zero. */
+  /** Items can't be counted until the department is opened (`subs/sub_sales`
+   *  aggregates above the item line); null means not loaded, shown as nothing. */
   itemCount: number | null;
 }
 
@@ -38,9 +37,8 @@ export interface ItemCostStats {
   /** Cost of everything sold in the window. */
   cogs: number;
   netSales: number;
-  /** Blended across the window, because cost moves. An item bought at two costs
-   *  has no single true unit cost, and the average is the only honest figure to
-   *  hold a price against. Null when nothing sold. */
+  /** Blended across the window: an item bought at two costs has no single unit
+   *  cost. Null when nothing sold. */
   unitCost: number | null;
   marginPct: number | null;
 }
@@ -49,9 +47,8 @@ export interface VendorSummary {
   vendorId: string;
   vendorName: string;
   sales: number;
-  /** Distinct items. Null while the vendor comes from the rollup alone: its
-   *  item counts are per day, and a week's distinct count can't be added up
-   *  from them. Filled in when the item rows land. */
+  /** Distinct items; null while the vendor comes from the rollup alone (per-day
+   *  counts don't add up to a week), filled in when the item rows land. */
   itemCount: number | null;
   /** Every item row this vendor supplied, so opening it costs nothing. Empty
    *  until the item rows land. */
@@ -76,9 +73,8 @@ export interface ResolvedCost {
 }
 
 export interface InvoiceCostState {
-  /** Which UPC `cost` belongs to. The panel checks this before reading, the
-   *  same way it checks the register lines, so a slow answer for the item
-   *  clicked before can't land on the one on screen. */
+  /** Which UPC `cost` belongs to, checked before reading so a slow answer for
+   *  the previous item can't land on this one. */
   upc: string | null;
   cost: InvoiceCost | null;
   loading: boolean;
@@ -88,8 +84,7 @@ export interface TreeGroup {
   id: string;
   label: string;
   sales: number;
-  /** Null when the count can't be known until the group is opened, which is
-   *  the department page's situation — `sub_sales` aggregates above the item
-   *  line. Rendered as nothing rather than a misleading zero. */
+  /** Null when the count can't be known until the group is opened (the
+   *  department page); shown as nothing, not zero. */
   itemCount: number | null;
 }

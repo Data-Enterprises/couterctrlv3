@@ -33,21 +33,10 @@ import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
 /**
- * Price Opt — Vendor.
- *
- * The sibling of the Sub Department page, and identical from the item rightward
- * — same Item Analysis panel, same register fetch, same suggestion. Only the
- * grouping differs.
- *
- * What isn't identical is the cost of getting there. `vendor_id` exists only on
- * item rows, and item rows come one department at a time, so a vendor cannot be
- * named until every department has been walked. That makes this an up-front
- * load behind a two-step message rather than the department page's expand-on-
- * click — and it's why the two searches are worth keeping as separate pages
- * instead of a toggle that quietly costs forty calls.
- *
- * Departments are never shown here. They're a means of reaching item rows, and
- * surfacing them would just be the other page.
+ * Price Opt: Vendor. Identical to Sub Department from the item rightward; only
+ * the grouping differs. `vendor_id` exists only on item rows, so every
+ * department is walked up front before a vendor can be named, which is why the
+ * two are separate pages. Departments are never shown here.
  */
 const InventoryVendor = () => {
   const toast = useToast();
@@ -57,10 +46,8 @@ const InventoryVendor = () => {
 
   const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  // Kept in the slice so a return visit lands on the last result instead of an
-  // empty form (dev board review, finding K). The slice holds the store and
-  // dates; the token comes from the session each render, so a re-login can't
-  // leave a stale one behind.
+  // Kept in the slice so a return visit lands on the last result. The token
+  // comes from the session each render, never from the slice.
   const view = useAppSelector((s) => s.dev.priceOpt.vendor);
   const scope = useMemo<InventoryScope | null>(
     () => (view.window ? { url, token, ...view.window } : null),
@@ -119,12 +106,8 @@ const InventoryVendor = () => {
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
   /**
-   * Every item's name and UPC, per vendor, for the filter.
-   *
-   * "Filter vendors and items" found nothing for an item name with no vendor
-   * open, though every item row was already loaded (dev board review, finding
-   * J). One lowercased string per vendor makes each keystroke a substring test
-   * per vendor rather than a walk over thousands of rows.
+   * Every item's name and UPC per vendor, as one lowercased string, so the
+   * filter finds items in closed vendors with a substring test per vendor.
    */
   const itemText = useMemo(
     () =>
@@ -194,10 +177,8 @@ const InventoryVendor = () => {
       setOpenVendor(null);
       return;
     }
-    // A different one opening takes the item panel with it: the item belongs
-    // to the list it was picked from, and leaving it up read as the new
-    // list's item (dev board review, finding H). Collapsing the open one
-    // keeps it.
+    // Opening a different one closes the item panel (the item belongs to the
+    // old list); collapsing the open one keeps it.
     setSelected(null);
     resetPrices();
     resetInvoiceCost();
@@ -254,9 +235,8 @@ const InventoryVendor = () => {
 
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
-      {/* Re-search is an overlay, never a return to the entry screen — losing
-          a load this expensive to change one field is exactly what that pattern
-          prevents. */}
+      {/* Re-search is an overlay, so changing one field never loses this
+          expensive load. */}
       {searchOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
@@ -266,10 +246,8 @@ const InventoryVendor = () => {
         </div>
       )}
 
-      {/* Every vendor's items, not just the open one — the rows are all in hand
-          here, so scoping the export to the open vendor would withhold data
-          already paid for. Rolled up inside the conditional so the whole store
-          isn't regrouped on every render. */}
+      {/* Every vendor's items, not just the open one: they're all in hand.
+          Rolled up inside the conditional, not every render. */}
       {exportOpen && (
         <InventoryExportModal
           onClose={() => setExportOpen(false)}
