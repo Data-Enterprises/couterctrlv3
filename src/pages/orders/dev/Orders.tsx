@@ -66,14 +66,12 @@ import type {
   UpdateFileResp,
 } from "../../../interfaces";
 import type { SortKey } from "./utils/ordersRows";
+import type { EditSearch, SubDeptOption } from "./interfaces";
 
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
 import OrderPickerPanel from "./components/OrderPickerPanel";
-import OrderEditPanel, {
-  type EditSearch,
-  type SubDeptOption,
-} from "./components/OrderEditPanel";
+import OrderEditPanel from "./components/editPanel/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
 import OrdersExportModal from "./export/OrdersExportModal";
 import ProblemList from "./components/ProblemList";

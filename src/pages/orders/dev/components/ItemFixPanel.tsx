@@ -20,7 +20,7 @@ import { InformationCircleIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import Checkbox from "../../../../components-dev/Checkbox";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import { Band } from "./OrderEditPanel";
+import Band from "./Band";
 
 interface Props {
   /** The item open on the left, or null for the "pick one" state. */
