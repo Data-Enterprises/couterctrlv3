@@ -26,3 +26,9 @@ export type PickedStore = {
   store_number: string;
   store_name: string;
 };
+
+/**
+ * The store a page picked for itself, and the window it ran, when it has one.
+ * A storeid of 0 means the page has a picker and nothing is picked yet.
+ */
+export type PageStore = { storeid: number; start?: string; end?: string };

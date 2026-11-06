@@ -1,12 +1,8 @@
+// Interfaces
 import type { RootState } from "../../../../../../store";
 import type { SearchState } from "../../../../../../features/searchSlice";
 import type { Store } from "../../../../../../interfaces";
-
-/**
- * The store a page picked for itself, and the window it ran, when it has one.
- * A storeid of 0 means the page has a picker and nothing is picked yet.
- */
-export type PageStore = { storeid: number; start?: string; end?: string };
+import type { PageStore } from "../interfaces";
 
 /**
  * Pages with their own store picker.
@@ -17,11 +13,7 @@ export type PageStore = { storeid: number; start?: string; end?: string };
  * searched somewhere else. A ticket filed from Item Actions read
  * "002 - IGA IRVINGTON KY 2" in its header and ticked that store, because it
  * was the store open on Sales; the page was about a different one.
- *
- * Each entry reads the store the page is showing, from the page's own slice.
- * The window rides along where the page keeps one, so the record sent with
- * the ticket says what was run rather than what the shared search last held.
- *
+ * 
  * Unlisted pages read the shared search, as before.
  */
 const OWN_STORE: Record<string, (s: RootState) => PageStore> = {
