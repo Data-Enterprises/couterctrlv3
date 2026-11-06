@@ -7,7 +7,7 @@ import { openClosing } from "../../../../features/dev/devTicketsSlice";
 import type { TicketStatus } from "../../../../api/tickets";
 import type { TicketsCtx } from "../hooks";
 import EditStoresModal from "./modals/EditStoresModal";
-import { storeFullText, storesOf } from "./ticketStores";
+// import { storeFullText, storesOf } from "./ticketStores";
 import {
   PRIORITY_CLASS,
   STATUS_CLASS,
@@ -19,13 +19,10 @@ import {
   stampText,
   whenText,
 } from "../ticketsUtils";
+import { storeFullText, storesOf } from "../utils";
 
 /**
- * One ticket: the conversation, and what may be done to it.
- *
- * The same thread for both views. A client's payload simply has no internal
- * notes in it — they are filtered in the query, not hidden here — and the
- * controls that change a ticket are never rendered without `canManage`.
+ * The open ticket with all messages, notes, and attachments.
  */
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
@@ -71,10 +68,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
   /**
    * Follow the conversation, unless the reader has gone looking for
-   * something.
-   *
-   * A message arriving while somebody is three replies up should not yank
-   * them back down.
+   * something. New messages scroll to the bottom
    */
   useEffect(() => {
     const box = thread.current;
@@ -427,7 +421,6 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
       {/*
        * A closed ticket has no composer, for anybody.
-       *
        * The thread stays readable — the whole history is the point of
        * closing one properly — but nothing new goes into it. A tech reopens
        * from the strip above; a client files a new ticket, which is also the

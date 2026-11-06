@@ -1,43 +1,33 @@
+// Hooks
 import { useMemo, useState, type ReactNode } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import Checkbox from "../../../../components-dev/Checkbox";
+
+// API
 import type { TicketStoreOption } from "../../../../api/tickets";
-import { groupByCompany, matchesStoreQuery } from "./ticketStores";
+
+// Utils
+import { groupByCompany, matchesStoreQuery } from "../utils";
+
+// Components
+import Checkbox from "../../../../components-dev/Checkbox";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
 interface Props {
-  /** Null while the list is on its way. */
   options: TicketStoreOption[] | null;
   picked: number[];
   onPicked: (next: number[]) => void;
-  /** The explicit "Not about a store", which excludes every tick. */
   notAbout: boolean;
   onNotAbout: (next: boolean) => void;
-  /** A tech's list is every store on the system; nobody scrolls 423. */
   searchable: boolean;
-  /** Why the list could not be read, shown in place of it. */
   loadError?: string | null;
-  /** A line under the list: a hint, or a "show all" for a narrowed list. */
   extra?: ReactNode;
 }
 
 /**
- * Which stores a ticket is about.
- *
  * A checklist rather than a dropdown: a ticket can be about several stores,
  * and the answer has to be visible while the rest of the form is filled in.
- * One answer is required, so "Not about a store" is a choice of its own
- * rather than what an empty list means. Leaving it empty by accident would
- * otherwise read exactly like saying so.
- *
  * Grouped by company when the list spans more than one, because two companies
  * can both have a store 5. Closed stores sit last in their company and can
- * still be ticked.
- *
- * Each company folds. A tech's list is 400-odd stores in a dozen companies,
- * so they start folded and the list reads as the companies; one opens on a
- * click. A company holding a ticked store starts open, so a pre-ticked store
- * is never hidden, and typing in the search box opens every company with a
- * match, since the search is how someone who knows the store finds it.
+ * still be ticked. Each company folds independently.
  */
 const StoreChecklist = ({
   options,
@@ -50,7 +40,6 @@ const StoreChecklist = ({
   extra,
 }: Props) => {
   const [query, setQuery] = useState("");
-  /** Companies the reader has opened or closed; the rest follow their picks. */
   const [folded, setFolded] = useState<Map<string, boolean>>(new Map());
   const groups = useMemo(
     () =>
@@ -171,9 +160,6 @@ const StoreChecklist = ({
                         onChange={(on) => toggle(o.storeid, on)}
                         label={
                           <span className="min-w-0 truncate text-[12.5px] text-content">
-                            {/* The name already leads with the number
-                                ("010 - IGA LEITCHFIELD KY"), so no #10 before
-                                it. The search box still matches on number. */}
                             {o.store_name || `Store ${o.store_number}`}
                             {o.deactivated && (
                               <span className="text-content/85"> (closed)</span>

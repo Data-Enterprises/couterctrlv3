@@ -1,18 +1,19 @@
+// Hooks
 import { useState } from "react";
-import Modal from "../../../components-dev/Modal";
-import { openClosing } from "../../../features/dev/devTicketsSlice";
-import type { TicketsCtx } from "./hooks";
+import type { TicketsCtx } from "../../hooks";
+
+// Redux
+import { openClosing } from "../../../../../features/dev/devTicketsSlice";
+
+// Components
+import Modal from "../../../../../components-dev/Modal";
+import ClosedOptions from "./components/ClosedOptions";
 
 /**
- * Closing one.
- *
- * The resolution is required — the endpoint answers 400 without it — and it
+ * The resolution is required when closing one — the endpoint answers 400 without it — and it
  * posts to the thread as a VISIBLE reply, which is how the client is told what
  * was done. It is the one field nobody can supply retroactively, which is why
  * closing is its own endpoint rather than another field on a PATCH.
- *
- * The kind of fix is stored as a `type:` label. That is what turns a year of
- * tickets into something answerable later.
  */
 const CloseTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
   const [resolution, setResolution] = useState("");
@@ -20,14 +21,6 @@ const CloseTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
 
   const close = () => ctx.dispatch(openClosing(false));
   const ticket = ctx.detail;
-
-  const kinds = ctx.lookups?.resolutionTypes ?? [
-    { value: "fixed", description: "Fixed" },
-    { value: "config", description: "Config" },
-    { value: "user_error", description: "User error" },
-    { value: "no_action", description: "No action" },
-    { value: "duplicate", description: "Duplicate" },
-  ];
 
   return (
     <Modal
@@ -59,29 +52,7 @@ const CloseTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
 
         <div className="flex flex-col gap-2">
           <span className="text-[12.5px] font-medium">What kind of fix</span>
-          <div className="flex flex-wrap gap-2">
-            {kinds.map((option) => (
-              <label
-                key={option.value}
-                htmlFor={`kind-${option.value}`}
-                className={`flex items-center gap-2 text-[12.5px] rounded-lg px-3 py-2 border transition-colors ${
-                  kind === option.value
-                    ? "bg-filter_active border-filter_active_border"
-                    : "bg-custom-white border-brand_line hover:border-brand_slate"
-                }`}
-              >
-                <input
-                  id={`kind-${option.value}`}
-                  type="radio"
-                  name="resolution-kind"
-                  checked={kind === option.value}
-                  onChange={() => setKind(option.value)}
-                  className="w-4 h-4"
-                />
-                {option.description}
-              </label>
-            ))}
-          </div>
+          <ClosedOptions kind={kind} setKind={setKind} />
           <span className="text-[11px] text-content/85">
             Stored as a label on the ticket. It is what makes the archive worth
             reading a year from now.
