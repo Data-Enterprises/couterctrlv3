@@ -489,7 +489,10 @@ const NewTicketModal = ({
                 title,
                 /** The scope goes under what they wrote, not over it. It is the first message in the thread, so a tech reads. */
                 description: origin
-                  ? `${description} — ${scopeLine(search, origin, narrowedTo)}`
+                  ? `${description}
+
+—
+${scopeLine(search, origin, narrowedTo)}`
                   : description,
                 priority,
                 category_id: category ? Number(category) : null,

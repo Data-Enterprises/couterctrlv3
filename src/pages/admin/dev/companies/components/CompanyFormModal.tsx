@@ -49,6 +49,8 @@ const CompanyFormModal = ({
     form.name.trim() !== "" &&
     existingNames.some((n) => n.toLowerCase() === form.name.toLowerCase());
 
+  const ok = canSubmit(form) && !alreadyExists;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-custom-white rounded-xl p-5 w-[440px] shadow-2xl">
@@ -150,9 +152,9 @@ const CompanyFormModal = ({
           </button>
           <button
             onClick={() => onSave(form, isParent ? null : parent)}
-            disabled={!canSubmit}
+            disabled={!ok}
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
-              canSubmit(form)
+              ok
                 ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
