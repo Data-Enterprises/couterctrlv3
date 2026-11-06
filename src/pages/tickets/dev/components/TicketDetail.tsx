@@ -2,25 +2,19 @@
 import { useEffect, useRef, useState } from "react";
 
 // Utils
-import {
-  STATUS_LABEL,
-  attachmentProblem,
-  fileSize,
-  resolutionLabel,
-  stampText,
-} from "../utils/ticketsUtils";
+import { STATUS_LABEL, attachmentProblem } from "../utils/ticketsUtils";
 
 // Interfaces
 import type { TicketsCtx } from "../hooks";
 
 // Components
-import { CheckCircleIcon, PaperClipIcon } from "@heroicons/react/24/outline";
-import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import CheckBox from "../../../../components-dev/inputs/CheckBox";
 import EditStoresModal from "./modals/EditStoresModal";
 import DetailHeader from "./ticketDetail/components/DetailHeader";
 import TicketFacts from "./ticketDetail/components/TicketFacts";
 import ManageBar from "./ticketDetail/components/ManageBar";
+import ClosedStrip from "./ticketDetail/components/ClosedStrip";
+import Thread from "./ticketDetail/components/Thread";
 
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
@@ -114,12 +108,14 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   return (
     <div className="flex-1 min-h-0 overflow-hidden rounded-xl bg-custom-white shadow-lg flex flex-col">
       <DetailHeader ticket={ticket} />
+
       <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">
         <TicketFacts
           ticket={ticket}
           isTech={ctx.isTech}
           canManage={ctx.canManage}
         />
+
         {ctx.canManage && (
           <ManageBar
             ticket={ticket}
@@ -135,149 +131,27 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           />
         )}
       </div>
-      {/* ClosedStrip */}
+
       {closed && (
-        <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-brand_green_tint border-b border-brand_line">
-          <CheckCircleIcon className="w-4 h-4 text-brand_green_darker flex-shrink-0" />
-          <span className="text-[12.5px] font-semibold text-brand_green_darker">
-            Closed{ticket.closed_at ? ` ${stampText(ticket.closed_at)}` : ""}
-          </span>
-          {resolutionLabel(ticket) && (
-            <span className="text-[11.5px] text-brand_green_darker">
-              · {resolutionLabel(ticket)}
-            </span>
-          )}
-          <div className="flex-1" />
-          {ctx.canManage && (
-            <button
-              type="button"
-              onClick={() => ctx.move("open")}
-              disabled={ctx.working}
-              className="text-[11.5px] font-semibold text-brand_green_darker underline underline-offset-2 disabled:opacity-40"
-            >
-              Reopen it
-            </button>
-          )}
-        </div>
-      )}{" "}
-      {/* ClosedStrip */}
-      {/* Thread.tsx */}
-      <div className="relative flex-1 min-h-0">
-        <div
-          ref={thread}
-          onScroll={(e) => {
-            const box = e.currentTarget;
-            wasAtBottom.current =
-              box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-          }}
-          // Leaves room for the collapsed Files bar, so it never covers the
-          // newest message.
-          className={`h-full overflow-y-auto thin-scrollbar px-4 pt-3 flex flex-col gap-3 ${
-            ctx.attachments.length > 0 ? "pb-14" : "pb-3"
-          }`}
-        >
-          {ctx.comments.map((comment) => {
-            /*
-             * Yours on the right, theirs on the left. An internal note keeps
-             * its amber on either side: a different audience, not a speaker.
-             */
-            const mine = comment.userid === ctx.userid;
-            return (
-              <div
-                key={comment.id}
-                className={`flex flex-col gap-1 max-w-[82%] ${
-                  mine ? "self-end items-end" : "self-start items-start"
-                }`}
-              >
-                <div className="flex items-baseline gap-2 flex-wrap px-1">
-                  <span className="text-[12.5px] font-semibold">
-                    {mine ? "You" : comment.author_name}
-                  </span>
-                  <span className="text-[11px] text-content/85">
-                    {stampText(comment.created_at)}
-                  </span>
-                </div>
-                <div
-                  className={`rounded-2xl px-3.5 py-2.5 ${
-                    mine ? "rounded-br-sm" : "rounded-bl-sm"
-                  } ${
-                    comment.is_internal
-                      ? "bg-amber-50 border border-amber-200"
-                      : mine
-                        ? "bg-brand_navy text-custom-white"
-                        : "bg-row_selected border border-brand_line"
-                  }`}
-                >
-                  {comment.is_internal && (
-                    <div className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-900 mb-1">
-                      Internal note — never sent to a client
-                    </div>
-                  )}
-                  <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap m-0">
-                    {comment.comment}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+        <ClosedStrip
+          ticket={ticket}
+          canManage={ctx.canManage}
+          working={ctx.working}
+          move={ctx.move}
+        />
+      )}
 
-          {ctx.comments.length === 0 && !ctx.detailLoading && (
-            <p className="text-[12.5px] text-content/85">
-              Nothing in the thread yet.
-            </p>
-          )}
-        </div>
-
-        {ctx.attachments.length > 0 && (
-          <div className="absolute inset-x-0 bottom-0 border-t border-brand_line bg-custom-white shadow-[0_-4px_12px_rgb(var(--color-brand-navy)/0.08)]">
-            <button
-              type="button"
-              onClick={() => setFilesOpen((v) => !v)}
-              aria-expanded={filesOpen}
-              className="flex w-full items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-bkg"
-            >
-              <PaperClipIcon className="h-3.5 w-3.5 flex-shrink-0 text-content/85" />
-              <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-content/85">
-                Files · {ctx.attachments.length}
-              </span>
-              <ChevronUpIcon
-                className={`h-4 w-4 flex-shrink-0 text-content/85 transition-transform duration-300 motion-reduce:transition-none ${
-                  filesOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {/*
-             * 0fr to 1fr rather than a height, so a list of any length opens
-             * at the same speed without being measured.
-             */}
-            <div
-              className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
-              style={{ gridTemplateRows: filesOpen ? "1fr" : "0fr" }}
-            >
-              <div className="overflow-hidden">
-                <div className="flex max-h-[45vh] flex-col gap-1.5 overflow-y-auto thin-scrollbar px-4 pb-3">
-                  {ctx.attachments.map((file) => (
-                    <div key={file.id} className="flex items-center gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => ctx.openAttachment(file.id)}
-                        className="truncate font-mono text-[12px] text-brand_navy_hover underline underline-offset-2"
-                      >
-                        {file.original_filename}
-                      </button>
-                      <span className="flex-shrink-0 text-[11.5px] text-content/85">
-                        {fileSize(file.file_size)} · {file.uploaded_by_name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>{" "}
-      {/* Thread */}
+      <Thread
+        thread={thread}
+        wasAtBottom={wasAtBottom}
+        attachments={ctx.attachments}
+        comments={ctx.comments}
+        userid={ctx.userid}
+        detailLoading={ctx.detailLoading}
+        openAttachment={ctx.openAttachment}
+        filesOpen={filesOpen}
+        setFilesOpen={setFilesOpen}
+      />
       {/*
        * A closed ticket has no composer, for anybody. A tech reopens it from
        * the strip above; a client files a new ticket.
