@@ -58,20 +58,6 @@ const OVER: Array<[string, string]> = [
 ];
 
 const STEP = 9;
-
-/**
- * How much wider a department's band is than a store's.
- *
- * The page threshold is calibrated for a store's whole week. One department
- * inside one store swings far harder — a slow Tuesday in Hot Deli moves it
- * 20 points and means nothing — so grading a department on the store's number
- * paints half the grid. At ±9 this grid flagged 134 of 288 cells, which is
- * not a shortlist, it is wallpaper.
- *
- * The same reasoning, and the same factor, as `compareForView` widening its
- * bands for a single day: a thinner baseline needs a wider band before it is
- * saying anything.
- */
 const DEPT_BAND = 2;
 
 const shade = (index: number | null, band: number) => {
@@ -84,17 +70,8 @@ const shade = (index: number | null, band: number) => {
 };
 
 interface Props {
-  /** The searched stores, straight off the ledger rows — no second call to
-   *  find out who is in the group, and co-located stores are already split by
-   *  number there. */
   stores: MatrixStore[];
-  /** The page's own threshold, widened by DEPT_BAND. One control still
-   *  governs the ledger's dots and this grid, and an index IS a percentage
-   *  of expected, so the two are the same unit — a department simply needs
-   *  more of it before it is worth a look. */
   threshold: number;
-  /** Full width, or the right panel. The same view either way — only the
-   *  room changes, and so does what the header offers. */
   expanded: boolean;
   twStart: string;
   twEnd: string;
