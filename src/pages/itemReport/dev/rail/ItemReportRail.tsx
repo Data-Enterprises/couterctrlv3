@@ -1,6 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useItemReportCtx } from "../hooks";
 
 // Redux
 import {
@@ -406,9 +407,7 @@ const ItemReportRail = ({
   evidence,
 }: Props) => {
   const dispatch = useAppDispatch();
-  const expandedReceipt = useAppSelector(
-    (s) => s.dev.itemReport.expandedReceipt,
-  );
+  const { expandedReceipt, collapsedSections: collapsed } = useItemReportCtx();
   /** Which price row is open, or null. Local: a transient overlay over one
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
@@ -431,7 +430,6 @@ const ItemReportRail = ({
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
 
-  const collapsed = useAppSelector((s) => s.dev.itemReport.collapsedSections);
   /** One place that knows how a section folds, so four call sites can't drift
    *  on the key they use or the handler they pass. */
   const fold = (id: string) => ({

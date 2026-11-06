@@ -1,6 +1,7 @@
 // Hooks
+import { shallowEqual } from "react-redux";
 import { useCallback, useRef } from "react";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 
 // Redux
 import {
@@ -13,6 +14,10 @@ import {
 import { fetchReceiversByItem, toReceiptLineFromSearch } from "../../../../utils/receivers";
 import { fetchInvoices, RECEIVING_LOOKBACK_DAYS } from "../utils";
 import type { ReportScope, ReceiptLine } from "../interfaces";
+
+/** The page's slice, read where it is used instead of passed down. */
+export const useItemReportCtx = () =>
+  useAppSelector((s) => s.dev.itemReport, shallowEqual);
 
 /**
  * The receiving half of Item Actions.

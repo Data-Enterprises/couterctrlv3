@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
-import { useReceivingWalk } from "./hooks";
+import { useReceivingWalk, useItemReportCtx } from "./hooks";
 
 // Redux
 import {
@@ -109,7 +109,7 @@ const ItemReport = () => {
   const useSubsPricePoints = true;
   const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
-  const state = useAppSelector((s) => s.dev.itemReport);
+  const state = useItemReportCtx();
 
   const { startWalk, cancelWalk } = useReceivingWalk();
   const { actual, loadActual, resetActual } = useActualPricePoints();

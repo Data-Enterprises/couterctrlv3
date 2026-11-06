@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useItemReportCtx } from "../hooks";
 
 // Redux
 import {
@@ -156,11 +157,13 @@ const ItemReportSheet = ({
   // Filters live in the slice with everything else. A route change would
   // otherwise silently reset which pile someone was working through, and they
   // would come back to a sheet that looks the same but isn't.
-  const only = useAppSelector((s) => s.dev.itemReport.actionFilter);
-  const upcTerm = useAppSelector((s) => s.dev.itemReport.upcFilter);
-  const descTerm = useAppSelector((s) => s.dev.itemReport.descFilter);
-  const dept = useAppSelector((s) => s.dev.itemReport.deptFilter);
-  const vendor = useAppSelector((s) => s.dev.itemReport.vendorFilter);
+  const {
+    actionFilter: only,
+    upcFilter: upcTerm,
+    descFilter: descTerm,
+    deptFilter: dept,
+    vendorFilter: vendor,
+  } = useItemReportCtx();
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
   const [noReceiverOpen, setNoReceiverOpen] = useState(false);
   // Draft stays local — a half-typed UPC is not page state, and only the value

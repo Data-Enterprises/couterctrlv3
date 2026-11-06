@@ -1,6 +1,7 @@
 // Hooks
 import { useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useItemReportCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -57,18 +58,20 @@ const ItemReportEntry = ({
   const dispatch = useAppDispatch();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-  const upcs = useAppSelector((s) => s.dev.itemReport.pendingUpcs);
+  const {
+    pendingUpcs: upcs,
+    upcs: lastBuilt,
+    pendingDepartments: departments,
+    pendingFileName: fileName,
+    pendingUpcText: upcText,
+  } = useItemReportCtx();
   /** The codes the last Build ran on. A pending list that still holds them is
    *  being carried into the next Build, and adding to it extends that list
    *  rather than starting a new one: 24 kept plus 49 added built 67 in the
    *  review (finding S). Clear all was already there; nothing said it was
    *  needed. */
-  const lastBuilt = useAppSelector((s) => s.dev.itemReport.upcs);
   const carried =
     lastBuilt.length > 0 && upcs.some((u) => lastBuilt.includes(u));
-  const departments = useAppSelector((s) => s.dev.itemReport.pendingDepartments);
-  const fileName = useAppSelector((s) => s.dev.itemReport.pendingFileName);
-  const upcText = useAppSelector((s) => s.dev.itemReport.pendingUpcText);
 
   const handleParseText = () => {
     const parsed = parseUpload(upcText);
