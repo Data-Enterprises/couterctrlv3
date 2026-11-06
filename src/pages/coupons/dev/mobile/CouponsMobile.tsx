@@ -1,24 +1,34 @@
+// Hooks
 import { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
-import { useCouponContext } from "..";
-import { useCouponActions } from "../hooks/useCouponActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useCouponContext, useCouponActions } from "../hooks";
+
+// Redux
+import { setSelectedGroupStores } from "../../../../features/userSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
 import { getCoupons } from "../../../../api/coupons";
 import { getStoresAssignedToUserGroup } from "../../../../api/groups";
-import { setSelectedGroupStores } from "../../../../features/userSlice";
+
+// Utils
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+
+// Interfaces
 import type {
   CouponsResponse,
   CouponItem,
   JsonError,
 } from "../../../../interfaces";
+
+// Components
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
-import { isGroupSearch } from "../../../../features/searchSlice";
 
 export type GroupTab = "subdept" | "date" | "cashier";
 

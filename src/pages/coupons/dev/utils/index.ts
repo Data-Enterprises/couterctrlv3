@@ -1,6 +1,9 @@
-import type { CouponItem } from "../../../interfaces";
-import { fmtNum, rowsToCsv } from "../../../utils/csvExport";
-import { withResolvedCouponAmount } from "../../../utils/couponValue";
+// Utils
+import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
+import { withResolvedCouponAmount } from "../../../../utils/couponValue";
+
+// Interfaces
+import type { CouponItem } from "../../../../interfaces";
 
 export const buildPresetCsv = (rows: CouponItem[], label: string) => {
   // coupon_amount can be null with the figure in store_coupon/vendor_coupon,
@@ -40,4 +43,4 @@ export const METRICS = [
 ];
 
 // Moved to utils/csvExport beside AggFn; re-exported for this page's files.
-export { AGG_OPTIONS } from "../../../utils/csvExport";
+export { AGG_OPTIONS } from "../../../../utils/csvExport";

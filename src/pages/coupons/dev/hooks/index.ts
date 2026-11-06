@@ -1,4 +1,8 @@
-import { useAppSelector } from "../../../hooks";
+// Hooks
+import { useAppSelector } from "../../../../hooks";
+
+// Redux
+import * as couponActions from "../../../../features/dev/devCouponSlice";
 
 export const useCouponContext = () => {
   const {
@@ -39,3 +43,12 @@ export const useCouponContext = () => {
     showSubsMobileFilter,
   };
 };
+
+/**
+ * Coupons' action creators.
+ *
+ * Used to hand back the legacy slice's actions whenever `devMode` was off,
+ * back when that meant the legacy Coupons page was on screen. Coupons has no
+ * legacy page any more, and the legacy slice is gone with it.
+ */
+export const useCouponActions = () => couponActions;

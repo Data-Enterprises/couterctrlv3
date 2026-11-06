@@ -1,18 +1,25 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useAppSelector } from "../../../../hooks";
+
+// Utils
 import {
   applyStoreNumberToName,
   numbersByStoreId,
 } from "../../../../utils/storeIdentity";
 import { resolveStoreName } from "../../../../utils";
-import { useAppSelector } from "../../../../hooks";
+import { sumCouponAmount } from "../../../../utils/couponValue";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
+
+// Components
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import InfoModal from "../../../../components-dev/InfoModal";
 import CpnExportSheet from "./CpnExportSheet";
 import CpnListControls from "./CpnListControls";
 import CpnSectionRow from "./CpnSectionRow";
 import CpnTotalsCard from "./CpnTotalsCard";
-import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];

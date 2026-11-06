@@ -1,12 +1,19 @@
+// Hooks
 import { useMemo, useState } from "react";
+
+// Utils
+import { sumCouponAmount } from "../../../../utils/couponValue";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobile";
+
+// Components
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import CpnExportSheet from "./CpnExportSheet";
 import CpnListControls from "./CpnListControls";
 import CpnSectionRow from "./CpnSectionRow";
 import CpnTotalsCard from "./CpnTotalsCard";
-import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];

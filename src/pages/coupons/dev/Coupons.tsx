@@ -1,24 +1,34 @@
+// Hooks
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { getCoupons } from "../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { setSelectedGroupStores } from "../../../features/userSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useCouponContext } from ".";
+import { useCouponContext } from "./hooks";
+
+// Redux
+import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setIsFetching,
   setNoCouponsFound,
   setCoupons,
 } from "../../../features/dev/devCouponSlice";
-import type { CouponsResponse, JsonError } from "../../../interfaces";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getCoupons } from "../../../api/coupons";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
 import { formatGoliathDate } from "../../../utils";
 
+// Interfaces
+import type { CouponsResponse, JsonError } from "../../../interfaces";
+
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import CouponsMobile from "./mobile/CouponsMobile";
-import CouponListPanel from "./CouponListPanel";
-import CouponDetailPanel from "./CouponDetailPanel";
-import { isGroupSearch } from "../../../features/searchSlice";
+import CouponListPanel from "./components/CouponListPanel";
+import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
 
 const Coupons = () => {
   const toast = useToast();

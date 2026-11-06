@@ -1,13 +1,20 @@
-import PageInfoButton from "../../../components-dev/PageInfoButton";
+// Hooks
 import { useState, useMemo } from "react";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
-import { sumCouponAmount } from "../../../utils/couponValue";
+import { useAppSelector, useStoreName } from "../../../../hooks";
+
+// Redux
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// Utils
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import { sumCouponAmount } from "../../../../utils/couponValue";
+import { formatCurrency2 } from "../../../../utils";
+
+// Components
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import { useAppSelector, useStoreName } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
-import { isGroupSearch } from "../../../features/searchSlice";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 
 interface CouponListPanelProps {
   selectedKey: string;

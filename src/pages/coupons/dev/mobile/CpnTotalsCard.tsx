@@ -1,5 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { sumCouponAmount } from "../../../../utils/couponValue";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
 
 interface Props {

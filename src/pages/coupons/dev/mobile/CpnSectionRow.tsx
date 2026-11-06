@@ -1,5 +1,8 @@
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+// Utils
 import { formatCurrency2 } from "../../../../utils";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   label: string;

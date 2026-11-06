@@ -1,20 +1,27 @@
+// Hooks
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { CouponItem } from "../../../interfaces";
+
+// Utils
 import {
   fmtNum,
   rowsToCsv,
   downloadCsv,
   aggregateRows,
-} from "../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../utils/csvExport";
+} from "../../../../utils/csvExport";
 import {
   buildPresetCsv,
   DIMS,
   METRICS,
   AGG_OPTIONS,
-} from "./couponsExportShared";
+} from "../utils";
+
+// Interfaces
+import type { CouponItem } from "../../../../interfaces";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 interface CouponsExportModalProps {
   onClose: () => void;

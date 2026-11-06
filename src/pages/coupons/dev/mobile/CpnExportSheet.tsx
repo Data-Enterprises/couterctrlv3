@@ -1,10 +1,17 @@
+// Hooks
 import { useState, useMemo } from "react";
+
+// Utils
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import { DIMS, METRICS, AGG_OPTIONS, buildPresetCsv } from "../utils";
+
+// Interfaces
+import type { CouponItem } from "../../../../interfaces";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import type { CouponItem } from "../../../../interfaces";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { DIMS, METRICS, AGG_OPTIONS, buildPresetCsv } from "../couponsExportShared";
 
 interface CpnExportSheetProps {
   onClose: () => void;

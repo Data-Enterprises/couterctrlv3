@@ -1,5 +1,24 @@
+// Hooks
 import { useState, useMemo, useEffect, useRef } from "react";
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import { useAppSelector, useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+
+// Redux
+import { setCouponReceiptLines } from "../../../../../features/dev/devCouponSlice";
+import { isGroupSearch } from "../../../../../features/searchSlice";
+
+// API
+import { getCashierTransaction } from "../../../../../api/lossPrevention";
+
+// Utils
+import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
+import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue";
+import { formatCurrency2, formatDate } from "../../../../../utils";
+
+// Interfaces
+import type { JsonError } from "../../../../../interfaces";
+
+// Components
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -7,20 +26,12 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
 } from "@heroicons/react/20/solid";
-import { couponValueOf, sumCouponAmount } from "../../../utils/couponValue";
-import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
-import { formatCurrency2, formatDate } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import CouponsExportModal from "./CouponsExportModal";
-import { getCashierTransaction } from "../../../api/lossPrevention";
-import { setCouponReceiptLines } from "../../../features/dev/devCouponSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../interfaces";
+import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 import ThresholdFilter, {
   type ThresholdValue,
-} from "../../../components-dev/filters/ThresholdFilter";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import { isGroupSearch } from "../../../features/searchSlice";
+} from "../../../../../components-dev/filters/ThresholdFilter";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import CouponsExportModal from "../../export/CouponsExportModal";
 
 interface CouponDetailPanelProps {
   selectedKey: string; // sub dept name (single store) | store ID string (group) | "" for all

@@ -1,20 +1,30 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
+import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
+
+// API
+import { getCashierTransaction } from "../../../../api/lossPrevention";
+
+// Utils
+import { formatCurrency2, formatDate } from "../../../../utils";
+import { couponValueOf } from "../../../../utils/couponValue";
+
+// Interfaces
+import type { CouponItem, JsonError } from "../../../../interfaces";
+
+// Components
 import {
   ChevronRightIcon,
   ChevronDownIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
-import CpnTotalsCard from "./CpnTotalsCard";
-import { useAppSelector } from "../../../../hooks";
-import { useAppDispatch } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { formatCurrency2, formatDate } from "../../../../utils";
-import { getCashierTransaction } from "../../../../api/lossPrevention";
-import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
-import type { CouponItem, JsonError } from "../../../../interfaces";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import { couponValueOf } from "../../../../utils/couponValue";
+import CpnTotalsCard from "./CpnTotalsCard";
 
 interface Props {
   coupons: CouponItem[];
