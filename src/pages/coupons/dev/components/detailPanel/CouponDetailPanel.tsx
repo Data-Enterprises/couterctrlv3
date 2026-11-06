@@ -1,5 +1,5 @@
 // Hooks
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
@@ -13,160 +13,29 @@ import { getCashierTransaction } from "../../../../../api/lossPrevention";
 // Utils
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue";
-import { formatCurrency2, formatDate } from "../../../../../utils";
 
 // Interfaces
 import type { GroupTab } from "../../interfaces";
-import type { GroupedSection } from "./interfaces";
+import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
 import type { JsonError } from "../../../../../interfaces";
+import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
 
 // Components
-import {
-  ArrowDownTrayIcon,
-  ArrowLeftIcon,
-  MagnifyingGlassIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-} from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
-import ThresholdFilter, {
-  type ThresholdValue,
-} from "../../../../../components-dev/filters/ThresholdFilter";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import CouponsExportModal from "../../export/CouponsExportModal";
+import DetailHeader from "./components/DetailHeader";
+import KpiStrip from "./components/KpiStrip";
+import GroupTabs from "./components/GroupTabs";
+import SectionList from "./components/SectionList";
+import SectionHeader from "./components/SectionHeader";
+import TransactionDetail from "./components/TransactionDetail";
+import CouponGrid from "./components/CouponGrid";
 
 interface CouponDetailPanelProps {
   selectedKey: string; // sub dept name (single store) | store ID string (group) | "" for all
   sortMetric: "amount" | "qty";
 }
 
-const GROUP_TABS: { key: GroupTab; label: string }[] = [
-  { key: "subdept", label: "Sub dept" },
-  { key: "date", label: "Date" },
-  { key: "cashier", label: "Cashier" },
-];
-
-const fmtThreshold = (t: ThresholdValue | null, prefix = ""): string => {
-  if (!t) return "";
-  const sym = t.op === "gt" ? ">" : t.op === "lt" ? "<" : "=";
-  return `${sym} ${prefix}${t.amount}`;
-};
-
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  appliedDisplay?: string;
-  align?: "left" | "right";
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
-const ColFilter = ({
-  label,
-  active,
-  appliedDisplay,
-  align = "left",
-  onApply,
-  onClear,
-  children,
-}: ColFilterProps) => {
-  const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
-
-  const handleApply = () => {
-    onApply();
-    setOpen(false);
-  };
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleApply();
-  };
-  const labelColor =
-    open || active
-      ? "rgb(var(--color-brand-navy))"
-      : hovered
-        ? "rgb(var(--color-brand-navy) / 0.65)"
-        : "rgb(var(--color-brand-navy) / 0.4)";
-
-  return (
-    <div
-      ref={wrapRef}
-      className={`relative flex items-center gap-1 min-w-0 ${align === "right" ? "justify-end" : ""}`}
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0"
-        style={{ color: labelColor }}
-      >
-        {label}
-      </button>
-      {active && appliedDisplay && (
-        <span
-          className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
-        >
-          <span className="text-[8px] font-medium text-brand_navy truncate">
-            {appliedDisplay}
-          </span>
-          {onClear && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-              className="text-[8px] text-brand_navy/50 hover:text-brand_navy leading-none flex-shrink-0 ml-0.5"
-            >
-              ✕
-            </button>
-          )}
-        </span>
-      )}
-      {open && (
-        <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
-      )}
-      {open && (
-        <div
-          onKeyDown={handleKeyDown}
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            ...(align === "right" ? { right: 0 } : { left: 0 }),
-            zIndex: 200,
-            background: "white",
-            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
-            borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-            padding: "10px 10px 8px",
-            minWidth: 176,
-          }}
-        >
-          {children}
-          <button
-            onClick={handleApply}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
-          >
-            <MagnifyingGlassIcon className="w-3 h-3" />
-            Apply
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const CouponDetailPanel = ({
   selectedKey,
@@ -366,25 +235,6 @@ const CouponDetailPanel = ({
 
   // Aggregated coupon rows for the grid (grouped by UPC/product)
   const aggCouponRows = useMemo(() => {
-    type AggUse = {
-      sale_id: string;
-      sale_date: string;
-      cashier_name: string;
-      storeid: number;
-      store_number: string;
-      terminal: string;
-      count: number;
-      amount: number;
-      row: any;
-    };
-    type AggRow = {
-      product_code: string;
-      product_description: string;
-      sub_department_description: string;
-      count: number;
-      total: number;
-      uses: AggUse[];
-    };
     const map = new Map<string, AggRow>();
     filteredGridRows.forEach((r: any) => {
       const key =
@@ -572,6 +422,27 @@ const CouponDetailPanel = ({
     : "All Coupons";
   const exportSubtitle = `${isGroup ? groupName : storeName} · ${dateRangeLabel}`;
 
+  // The grid's column filters, handed down as one bundle.
+  const filters: GridFilters = {
+    draftUpc,
+    setDraftUpc,
+    appliedUpc,
+    setAppliedUpc,
+    draftProduct,
+    setDraftProduct,
+    appliedProduct,
+    setAppliedProduct,
+    draftSubDept,
+    setDraftSubDept,
+    appliedSubDept,
+    setAppliedSubDept,
+    draftAmount,
+    setDraftAmount,
+    appliedAmount,
+    setAppliedAmount,
+    uniqueSubDeptOptions,
+  };
+
   return (
     <div
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
@@ -586,58 +457,24 @@ const CouponDetailPanel = ({
         />
       )}
 
-      {/* Navy header */}
-      <div
-        className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
-        style={{ background: "rgb(var(--color-brand-navy))" }}
-      >
-        <div className="text-[13px] font-semibold text-custom-white">
-          {headerTitle}
-          <span className="ml-2 text-[11px] font-normal text-custom-white">
-            {headerSuffix} · {dateRangeLabel}
-          </span>
-        </div>
-        {totalCoupons > 0 && (
-          <div className="flex items-center gap-3 mt-0.5">
-            <button data-help="export"
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-              className="text-custom-white/60 hover:text-custom-white transition-colors"
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-            </button>
-            <div className="w-px h-4 bg-custom-white/15" />
-            <div className="flex items-baseline gap-1">
-              <span className="text-custom-white text-[10px] uppercase tracking-wide">
-                Records
-              </span>
-              <span className="text-[13px] font-medium text-custom-white">
-                {totalCoupons}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
+      <DetailHeader
+        headerTitle={headerTitle}
+        headerSuffix={headerSuffix}
+        dateRangeLabel={dateRangeLabel}
+        totalCoupons={totalCoupons}
+        onExport={() => setExportOpen(true)}
+      />
 
       {/* KPI strip */}
       {!state.isFetching && totalCoupons > 0 && (
-        <div data-help="kpis" className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-          {[
-            { label: "Coupons", value: String(totalCoupons) },
-            { label: "Total amt", value: formatCurrency2(totalAmount) },
-            { label: "Avg / coupon", value: formatCurrency2(avgPerCoupon) },
-            { label: "Products", value: String(uniqueProducts) },
-            { label: "Sub depts", value: String(uniqueSubDepts) },
-            { label: "Vendor", value: String(vendorCount) },
-          ].map(({ label, value }) => (
-            <div key={label} className="px-4 pt-2.5 text-center">
-              <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                {label}
-              </div>
-              <div className="text-[14px] font-bold text-content">{value}</div>
-            </div>
-          ))}
-        </div>
+        <KpiStrip
+          totalCoupons={totalCoupons}
+          totalAmount={totalAmount}
+          avgPerCoupon={avgPerCoupon}
+          uniqueProducts={uniqueProducts}
+          uniqueSubDepts={uniqueSubDepts}
+          vendorCount={vendorCount}
+        />
       )}
 
       {state.isFetching && (
@@ -649,580 +486,54 @@ const CouponDetailPanel = ({
       {!state.isFetching && (
         <>
           {/* Tab bar — full width row */}
-          <div data-help="tabs" className="flex items-center border-b border-gray-100 flex-shrink-0">
-            {GROUP_TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setGroupTab(t.key)}
-                className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
-                  groupTab === t.key
-                    ? "border-brand_navy text-content"
-                    : "border-transparent text-content/50 hover:text-content/70"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <GroupTabs groupTab={groupTab} onTab={setGroupTab} />
 
           <div className="flex flex-1 min-h-0">
             {/* ── Left: group overview cards ── */}
-            <div
-              className="flex flex-col border-r border-gray-100 flex-shrink-0"
-              style={{ width: "26%" }}
-            >
-              {/* Section cards */}
-              <div className="flex-1 overflow-y-auto thin-scrollbar">
-                {groupedSections.map((section) => {
-                  const isSel = selectedSection === section.key;
-                  return (
-                    <button
-                      key={section.key}
-                      onClick={() =>
-                        setSelectedSection(isSel ? null : section.key)
-                      }
-                      className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
-                      style={
-                        isSel
-                          ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
-                          : undefined
-                      }
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-medium flex-1 truncate text-content">
-                          {section.label}
-                        </span>
-                        <div className="flex items-baseline gap-1.5 flex-shrink-0">
-                          <span className="text-[12px] font-semibold text-content">
-                            {formatCurrency2(section.total)}
-                          </span>
-                          <span className="text-[11px] text-content/60">
-                            {section.count}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <SectionList
+              groupedSections={groupedSections}
+              selectedSection={selectedSection}
+              onSelect={setSelectedSection}
+            />
 
             {/* ── Right: coupon grid or transaction detail ── */}
             <div className="flex flex-col flex-1 min-w-0">
               {/* Selected section header */}
-              {selectedSection &&
-                !selectedSaleId &&
-                (() => {
-                  const sec = groupedSections.find(
-                    (s) => s.key === selectedSection,
-                  );
-                  if (!sec) return null;
-                  const tabLabel =
-                    GROUP_TABS.find((t) => t.key === groupTab)?.label ??
-                    groupTab;
-                  return (
-                    <>
-                      <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
-                        <span className="text-[12px] font-semibold text-content truncate">
-                          {sec.label}
-                        </span>
-                        <span className="text-[11px] text-content/45 italic flex-shrink-0">
-                          {tabLabel} · {dateRangeLabel}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 flex-shrink-0">
-                        {[
-                          { label: "Coupons", value: String(secCoupons) },
-                          {
-                            label: "Total amt",
-                            value: formatCurrency2(secAmount),
-                          },
-                          {
-                            label: "Avg / coupon",
-                            value: formatCurrency2(secAvg),
-                          },
-                          { label: "Products", value: String(secProducts) },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="px-4 pt-2.5 text-center">
-                            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                              {label}
-                            </div>
-                            <div className="text-[13px] font-bold text-content">
-                              {value}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  );
-                })()}
+              {selectedSection && !selectedSaleId && (
+                <SectionHeader
+                  groupedSections={groupedSections}
+                  selectedSection={selectedSection}
+                  groupTab={groupTab}
+                  dateRangeLabel={dateRangeLabel}
+                  secCoupons={secCoupons}
+                  secAmount={secAmount}
+                  secAvg={secAvg}
+                  secProducts={secProducts}
+                />
+              )}
               {selectedSaleId ? (
                 /* Transaction detail */
-                <>
-                  <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-custom-white">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleBack}
-                        className="flex items-center gap-1 text-content/50 hover:text-content transition-colors text-[11px]"
-                      >
-                        <ArrowLeftIcon className="w-3 h-3" />
-                        Back to coupons
-                      </button>
-                      <div className="w-px h-4 bg-gray-200" />
-                      <div>
-                        <div className="text-[12px] font-semibold text-content">
-                          {txMeta?.cashier_name}
-                          <span className="ml-2 text-[10px] font-normal text-content/50">
-                            — Terminal {txMeta?.terminal}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-content/45">
-                          {txMeta?.sale_start_time?.replace(
-                            /(\d{2})(\d{2})(\d{2})/,
-                            "$1:$2",
-                          )}{" "}
-                          –{" "}
-                          {txMeta?.sale_end_time?.replace(
-                            /(\d{2})(\d{2})(\d{2})/,
-                            "$1:$2",
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {txLines.length > 0 && (
-                        <button
-                          onClick={exportTransaction}
-                          title="Export transaction CSV"
-                          className="text-content/40 hover:text-content transition-colors"
-                        >
-                          <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                      <div className="w-px h-5 bg-gray-200" />
-                      <div className="text-right">
-                        <div className="text-[9px] uppercase tracking-wide text-content/45">
-                          Trans
-                        </div>
-                        <div className="text-[12px] font-medium text-content">
-                          {txMeta?.transaction_id ??
-                            txMeta?.sale_id?.split("-")[1]}
-                        </div>
-                      </div>
-                      <div className="w-px h-5 bg-gray-200" />
-                      <div className="text-right">
-                        <div className="text-[9px] uppercase tracking-wide text-content/45">
-                          Items
-                        </div>
-                        <div className="text-[12px] font-medium text-content">
-                          {txLines.length}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 px-3 py-1.5 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                    <span className="text-[11px] font-semibold text-content">
-                      {txMeta?.store_name}
-                    </span>
-                    <span className="text-[10px] text-content/50">
-                      {txMeta?.store_address}, {txMeta?.store_city}{" "}
-                      {txMeta?.store_state}
-                    </span>
-                    <div className="flex-1" />
-                    <span className="text-[10px] font-medium text-content/70">
-                      {formatDate(txMeta?.sale_date?.split("T")[0])}
-                    </span>
-                  </div>
-                  {txLines.length === 0 ? (
-                    <div className="flex-1 relative min-h-0">
-                      <LoadingIndicator message="Loading transaction..." />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex-1 overflow-auto thin-scrollbar">
-                        <table className="w-full border-collapse text-[12px]">
-                          <thead>
-                            <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-                              <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right w-7">
-                                #
-                              </th>
-                              <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left">
-                                Description
-                              </th>
-                              <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right">
-                                Qty
-                              </th>
-                              <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right">
-                                Total
-                              </th>
-                              <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-center w-14">
-                                Type
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-brand_navy/15">
-                            {txLines.map((item: any, i: number) => {
-                              const isCpn = item.is_coupon === 1;
-                              const isTender = item.sale_type === "Tender";
-                              return (
-                                <tr
-                                  key={i}
-                                  style={
-                                    isCpn
-                                      ? { background: "rgba(234,179,8,0.07)" }
-                                      : undefined
-                                  }
-                                >
-                                  <td className="px-2 py-2 text-right tabular-nums text-content/50">
-                                    {item.line_number}
-                                  </td>
-                                  <td
-                                    className="px-2 py-2 text-content truncate max-w-0"
-                                    style={{ maxWidth: 200 }}
-                                  >
-                                    {item.product_description}
-                                  </td>
-                                  <td className="px-2 py-2 text-right tabular-nums text-content/60">
-                                    {item.qty > 0 ? item.qty : "—"}
-                                  </td>
-                                  <td
-                                    className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-amber-700" : "text-content"}`}
-                                  >
-                                    {formatCurrency2(
-                                      isCpn
-                                        ? couponValueOf(item)
-                                        : item.total_sales,
-                                    )}
-                                  </td>
-                                  <td className="px-2 py-2 text-center">
-                                    {isCpn ? (
-                                      <span
-                                        className="text-[11px] font-semibold rounded px-1.5 py-0.5"
-                                        style={{
-                                          background: "rgba(234,179,8,0.15)",
-                                          color: "#92600a",
-                                        }}
-                                      >
-                                        Cpn
-                                      </span>
-                                    ) : isTender ? (
-                                      <span
-                                        className="text-[11px] font-semibold rounded px-1.5 py-0.5"
-                                        style={{
-                                          background: "rgba(37,99,235,0.1)",
-                                          color: "#1d4ed8",
-                                        }}
-                                      >
-                                        Tender
-                                      </span>
-                                    ) : (
-                                      <span
-                                        className="text-[11px] font-semibold rounded px-1.5 py-0.5"
-                                        style={{
-                                          background: "rgba(22,163,74,0.1)",
-                                          color: "#15803d",
-                                        }}
-                                      >
-                                        Sale
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-gray-100 bg-gray-50">
-                        {txCoupons > 0 && (
-                          <div className="text-[11px] text-amber-700/70">
-                            Coupons{" "}
-                            <span className="font-medium ml-1">
-                              -{formatCurrency2(txCoupons)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="text-[11px] text-content/50">
-                          Tax{" "}
-                          <span className="text-content font-medium ml-1">
-                            {formatCurrency2(txTax)}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-content/50">
-                          Net{" "}
-                          <span className="text-content font-medium ml-1">
-                            {formatCurrency2(txNet)}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-content/70 font-medium">
-                          Total{" "}
-                          <span className="text-content ml-1">
-                            {formatCurrency2(txTotal)}
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </>
+                <TransactionDetail
+                  txMeta={txMeta}
+                  txLines={txLines}
+                  onBack={handleBack}
+                  onExport={exportTransaction}
+                  txCoupons={txCoupons}
+                  txTax={txTax}
+                  txNet={txNet}
+                  txTotal={txTotal}
+                />
               ) : (
                 /* Coupon grid */
-                <>
-                  {gridRows.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center">
-                      <span className="text-[12px] text-content/50">
-                        {selectedSection
-                          ? "No coupons to display"
-                          : "Select a group to drill down"}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex-1 overflow-auto thin-scrollbar">
-                      <table data-help="products" className="w-full border-collapse text-[12px]">
-                        <thead>
-                          <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
-                            <th
-                              className="px-3 py-2 text-left w-32"
-                              style={{ overflow: "visible" }}
-                            >
-                              <ColFilter
-                                label="UPC"
-                                active={!!appliedUpc}
-                                appliedDisplay={appliedUpc}
-                                onApply={() => setAppliedUpc(draftUpc)}
-                                onClear={() => {
-                                  setAppliedUpc("");
-                                  setDraftUpc("");
-                                }}
-                              >
-                                <input
-                                  autoFocus
-                                  style={{
-                                    width: "100%",
-                                    fontSize: 11,
-                                    border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
-                                    borderRadius: 4,
-                                    padding: "4px 7px",
-                                    outline: "none",
-                                    color: "var(--color-text-primary)",
-                                    background: "rgb(var(--color-brand-navy) / 0.03)",
-                                  }}
-                                  placeholder="Search UPC…"
-                                  value={draftUpc}
-                                  onChange={(e) => setDraftUpc(e.target.value)}
-                                />
-                              </ColFilter>
-                            </th>
-                            <th
-                              className="px-3 py-2 text-left"
-                              style={{ overflow: "visible" }}
-                            >
-                              <ColFilter
-                                label="Product"
-                                active={!!appliedProduct}
-                                appliedDisplay={appliedProduct}
-                                onApply={() => setAppliedProduct(draftProduct)}
-                                onClear={() => {
-                                  setAppliedProduct("");
-                                  setDraftProduct("");
-                                }}
-                              >
-                                <input
-                                  autoFocus
-                                  style={{
-                                    width: "100%",
-                                    fontSize: 11,
-                                    border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
-                                    borderRadius: 4,
-                                    padding: "4px 7px",
-                                    outline: "none",
-                                    color: "var(--color-text-primary)",
-                                    background: "rgb(var(--color-brand-navy) / 0.03)",
-                                  }}
-                                  placeholder="Search product…"
-                                  value={draftProduct}
-                                  onChange={(e) =>
-                                    setDraftProduct(e.target.value)
-                                  }
-                                />
-                              </ColFilter>
-                            </th>
-                            <th
-                              className="px-3 py-2 text-left"
-                              style={{ overflow: "visible", width: "10.2%" }}
-                            >
-                              <ColFilter
-                                label="Sub dept"
-                                active={!!appliedSubDept}
-                                appliedDisplay={appliedSubDept}
-                                onApply={() => setAppliedSubDept(draftSubDept)}
-                                onClear={() => {
-                                  setAppliedSubDept("");
-                                  setDraftSubDept("");
-                                }}
-                              >
-                                <SelectFilter
-                                  options={uniqueSubDeptOptions}
-                                  value={draftSubDept}
-                                  onChange={setDraftSubDept}
-                                  placeholder="All sub depts"
-                                  className="w-full"
-                                />
-                              </ColFilter>
-                            </th>
-                            <th
-                              className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right whitespace-nowrap"
-                              style={{ width: "8%" }}
-                            >
-                              Trans
-                            </th>
-                            <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right w-12">
-                              Count
-                            </th>
-                            <th
-                              className="px-3 py-2 text-right w-24"
-                              style={{ overflow: "visible" }}
-                            >
-                              <ColFilter
-                                label="Total"
-                                active={!!appliedAmount}
-                                appliedDisplay={fmtThreshold(
-                                  appliedAmount,
-                                  "$",
-                                )}
-                                align="right"
-                                onApply={() => setAppliedAmount(draftAmount)}
-                                onClear={() => {
-                                  setAppliedAmount(null);
-                                  setDraftAmount(null);
-                                }}
-                              >
-                                <ThresholdFilter
-                                  value={draftAmount}
-                                  onChange={setDraftAmount}
-                                  prefix="$"
-                                  placeholder="Amount"
-                                  showOp
-                                  showClear
-                                  stretch
-                                  className="w-full"
-                                />
-                              </ColFilter>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-brand_navy/5">
-                          {aggCouponRows.map((agg, idx) => {
-                            const isExp = expandedCoupons.has(agg.product_code);
-                            return (
-                              <>
-                                <tr
-                                  key={agg.product_code}
-                                  className={`cursor-pointer hover:bg-gray-50 transition-colors ${idx % 2 === 1 ? "bg-row_stripe" : ""}`}
-                                  onClick={() => toggleCoupon(agg.product_code)}
-                                >
-                                  <td className="px-3 py-2 whitespace-nowrap tabular-nums">
-                                    <div className="flex items-center gap-1.5">
-                                      {isExp ? (
-                                        <ChevronDownIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
-                                      ) : (
-                                        <ChevronRightIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
-                                      )}
-                                      <span className="text-content">
-                                        {agg.product_code || "—"}
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td
-                                    className="px-3 py-2 text-content font-medium truncate max-w-0"
-                                    style={{ maxWidth: 180 }}
-                                  >
-                                    {agg.product_description}
-                                  </td>
-                                  <td className="px-3 py-2 text-content whitespace-nowrap">
-                                    {agg.sub_department_description}
-                                  </td>
-                                  <td className="px-3 py-2 text-right tabular-nums text-content">
-                                    {agg.uses.length}
-                                  </td>
-                                  <td className="px-3 py-2 text-right tabular-nums text-content">
-                                    {agg.count}
-                                  </td>
-                                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
-                                    {formatCurrency2(agg.total)}
-                                  </td>
-                                </tr>
-                                {isExp && (
-                                  <>
-                                    <tr className="bg-gray-100/70 text-[11px]">
-                                      <td className="pl-8 pr-3 py-1" />
-                                      <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
-                                        Cashier
-                                      </td>
-                                      <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
-                                        Date
-                                      </td>
-                                      <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
-                                        Trans ID
-                                      </td>
-                                      <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content text-right">
-                                        Qty
-                                      </td>
-                                      <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content text-right">
-                                        Amount
-                                      </td>
-                                    </tr>
-                                    {agg.uses.map((use) => (
-                                      <tr
-                                        key={use.sale_id}
-                                        className="bg-gray-50/85 cursor-pointer hover:bg-blue-50/40 transition-colors text-[11px]"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleRowClick(use.row);
-                                        }}
-                                      >
-                                        <td className="pl-8 pr-3 py-1.5" />
-                                        <td
-                                          className="px-3 py-1.5 text-content truncate max-w-0"
-                                          style={{ maxWidth: 180 }}
-                                        >
-                                          {use.cashier_name}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-content whitespace-nowrap">
-                                          {formatDate(
-                                            use.sale_date.split("T")[0],
-                                          )}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-content whitespace-nowrap tabular-nums">
-                                          {use.sale_id}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-right tabular-nums text-content">
-                                          {use.count}
-                                        </td>
-                                        <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">
-                                          {formatCurrency2(use.amount)}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </>
-                                )}
-                              </>
-                            );
-                          })}
-                          {aggCouponRows.length === 0 && (
-                            <tr>
-                              <td
-                                colSpan={6}
-                                className="px-3 py-6 text-center text-[11px] text-content"
-                              >
-                                No results match the current filters
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
+                <CouponGrid
+                  gridRows={gridRows}
+                  selectedSection={selectedSection}
+                  filters={filters}
+                  aggCouponRows={aggCouponRows}
+                  expandedCoupons={expandedCoupons}
+                  toggleCoupon={toggleCoupon}
+                  handleRowClick={handleRowClick}
+                />
               )}
             </div>
           </div>
