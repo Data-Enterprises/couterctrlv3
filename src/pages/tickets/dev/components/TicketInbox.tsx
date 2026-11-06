@@ -1,15 +1,4 @@
-import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
-import type {
-  Ticket,
-  TicketScope,
-  TicketStatus,
-  TicketStore,
-} from "../../../../api/tickets";
-import type {
-  QueueTab,
-  TicketFilters,
-} from "../../../../features/dev/devTicketsSlice";
+// Utils
 import {
   PRIORITY_CLASS,
   STATUS_CLASS,
@@ -21,6 +10,22 @@ import {
   whenText,
 } from "../utils/ticketsUtils";
 import { SCOPE_HEADING, SCOPE_TEXT, storeChipText, storesOf } from "../utils";
+
+// Interfaces
+import type {
+  Ticket,
+  TicketScope,
+  TicketStatus,
+  TicketStore,
+} from "../../../../api/tickets";
+import type {
+  QueueTab,
+  TicketFilters,
+} from "../../../../features/dev/devTicketsSlice";
+
+// Components
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 
 interface Props {
   rows: Ticket[];

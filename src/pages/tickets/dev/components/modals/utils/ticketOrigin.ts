@@ -6,7 +6,6 @@ import { formatDateSimple } from "../../../../../../utils";
 import type { SearchState } from "../../../../../../features/searchSlice";
 import type { DateShape, PickedStore, TicketOrigin } from "../interfaces";
 
-
 /**
  * Page to ticket category, by the nav's href: one category per family of
  * pages. Only the help desk itself and Home name none.
@@ -156,7 +155,6 @@ export const searchSummary = (
  * The scope the ticket was filed under, as a record rather than a sentence.
  * Store number and id ride along, since two locations can share a storeid.
  */
-
 export const scopeOf = (
   search: SearchState,
   origin: TicketOrigin,

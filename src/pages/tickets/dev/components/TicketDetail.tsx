@@ -1,6 +1,5 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import type { TicketsCtx } from "../hooks";
 
 // Redux
 import { openClosing } from "../../../../features/dev/devTicketsSlice";
@@ -21,13 +20,14 @@ import { storeFullText, storesOf } from "../utils";
 
 // Interfaces
 import type { TicketStatus } from "../../../../api/tickets";
+import type { TicketsCtx } from "../hooks";
 
 // Components
+import { CheckCircleIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import CheckBox from "../../../../components-dev/inputs/CheckBox";
 import EditStoresModal from "./modals/EditStoresModal";
-import { CheckCircleIcon, PaperClipIcon } from "@heroicons/react/24/outline";
-import { ChevronUpIcon } from "@heroicons/react/20/solid";
 
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");

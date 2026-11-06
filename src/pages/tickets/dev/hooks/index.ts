@@ -59,7 +59,6 @@ import {
 // Interfaces
 import type { JsonError } from "../../../../interfaces";
 
-
 /** The HTTP status of a failed call, from axios or from a test double. */
 const statusOf = (err: unknown) =>
   (err as { response?: { status?: number } })?.response?.status ??

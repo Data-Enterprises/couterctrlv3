@@ -15,7 +15,7 @@ import {
 import { priorityCounts, statusCounts } from "./utils/ticketsUtils";
 import { storesOnTickets } from "./utils";
 
-// Componenets
+// Components
 import TicketInbox from "./components/TicketInbox";
 import TicketDetail from "./components/TicketDetail";
 import TicketSidebar from "./components/TicketSidebar";

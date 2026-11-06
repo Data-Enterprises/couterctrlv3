@@ -1,15 +1,15 @@
 // Hooks
 import { useMemo, useState, type ReactNode } from "react";
 
-// API
-import type { TicketStoreOption } from "../../../../api/tickets";
-
 // Utils
 import { groupByCompany, matchesStoreQuery } from "../utils";
 
+// Interfaces
+import type { TicketStoreOption } from "../../../../api/tickets";
+
 // Components
-import Checkbox from "../../../../components-dev/Checkbox";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import Checkbox from "../../../../components-dev/Checkbox";
 
 interface Props {
   options: TicketStoreOption[] | null;

@@ -19,6 +19,7 @@ import {
 
 // Utils
 import { nextTechCode } from "./utils/techCodes";
+import { SEARCHABLE_FROM } from "./utils";
 
 // Interfaces
 import type { Mode } from "./interfaces";
@@ -29,7 +30,6 @@ import Checkbox from "../../../../../components-dev/Checkbox";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import TextField from "../../../../../components-dev/inputs/TextField";
-import { SEARCHABLE_FROM } from "./utils";
 
 interface Props {
   canManageTechs: boolean; //Level 9 only (Programmer)

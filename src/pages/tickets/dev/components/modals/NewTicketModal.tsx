@@ -1,11 +1,10 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { shallowEqual } from "react-redux";
 import { useAppSelector } from "../../../../../hooks";
 import { useDevApi } from "../../../../../hooks/useDevApi";
-import type { TicketsCtx } from "../../hooks";
 
 // Redux
+import { shallowEqual } from "react-redux";
 import { openNew } from "../../../../../features/dev/devTicketsSlice";
 
 // API
@@ -27,6 +26,12 @@ import {
 } from "../../../../../utils/pageCalls";
 import { attachmentProblem } from "../../utils/ticketsUtils";
 import {
+  assignedAsOptions,
+  cleanStoreOptions,
+  initialStorePicks,
+  optionsForGroup,
+} from "../../utils";
+import {
   originOf,
   pageUsesSearch,
   scopeLine,
@@ -35,20 +40,17 @@ import {
   suggestedTitle,
 } from "./utils/ticketOrigin";
 import { pageStoreOf, searchForPage } from "./utils";
-import {
-  assignedAsOptions,
-  cleanStoreOptions,
-  initialStorePicks,
-  optionsForGroup,
-} from "../../utils";
+
+// Interfaces
+import type { TicketsCtx } from "../../hooks";
 
 // Components
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../../../components-dev/Modal";
 import Checkbox from "../../../../../components-dev/Checkbox";
 import TextField from "../../../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import StoreChecklist from "../StoreChecklist";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import NewTicketAttachments from "./components/NetTicketAttachments";
 
 /**

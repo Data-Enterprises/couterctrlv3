@@ -1,9 +1,11 @@
 // Hooks
 import { useState } from "react";
-import type { TicketsCtx } from "../../hooks";
 
 // Redux
 import { openClosing } from "../../../../../features/dev/devTicketsSlice";
+
+// Interfaces
+import type { TicketsCtx } from "../../hooks";
 
 // Components
 import Modal from "../../../../../components-dev/Modal";
