@@ -521,7 +521,7 @@ export const costSwing = (draft: OrderDraft) => {
  * no stores of its own, so it is here to let our own people work the feature
  * rather than because it has orders to edit. That is why this list and the
  * Houchens family (the companies whose `parent_company_id` is 1, see
- * `familyOf` in `pages/organization/dev/scoping`) differ by exactly one id:
+ * `familyOf` in `pages/organization/dev/utils`) differ by exactly one id:
  * anyone reconciling the two should stop at that and not "fix" it.
  */
 export const EDIT_COMPANY_IDS = [1, 4, 5, 6, 17, 21];

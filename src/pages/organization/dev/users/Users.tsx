@@ -5,7 +5,7 @@ import {
   setSelectedUserForm,
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
-import UserGrid from "./UserGrid";
+import UserGrid from "./components/UserGrid";
 import UserWizard from "./create/UserWizard";
 
 type View = "grid" | "create";

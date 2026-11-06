@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "./hooks";
+import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type {
   BaseGroup,
@@ -19,7 +19,7 @@ import {
   heldGroupIds,
   visibleCompanyList,
   visibleGroups,
-} from "../scoping";
+} from "../utils";
 import {
   getBaseGroups,
   getAllStoresInBaseGroup,
@@ -27,7 +27,7 @@ import {
 } from "../../../../api/baseGroups";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import BaseGroupDetail from "./BaseGroupDetail";
+import BaseGroupDetail from "./components/BaseGroupDetail";
 
 const NewGroupModal = ({
   companies,

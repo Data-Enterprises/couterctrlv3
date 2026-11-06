@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupsCtx } from "../baseGroups/hooks";
+import { useBaseGroupsCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getAllUsers, getUserStores } from "../../../../api/user";
 import type { JsonError, Store, User } from "../../../../interfaces";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import StoresExportModal from "./StoresExportModal";
-import StoreUsersPanel from "./StoreUsersPanel";
+import StoresExportModal from "./components/StoresExportModal";
+import StoreUsersPanel from "./components/StoreUsersPanel";
 
 interface Props {
   exportOpen: boolean;

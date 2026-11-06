@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupCompanies, useBaseGroupsCtx } from "../baseGroups/hooks";
+import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getAllUsers } from "../../../../api/user";
 import type { JsonError, User } from "../../../../interfaces";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import CompanyUsersPanel from "./CompanyUsersPanel";
+import CompanyUsersPanel from "./components/CompanyUsersPanel";
 
 /**
  * User Management → Companies: who holds each company.

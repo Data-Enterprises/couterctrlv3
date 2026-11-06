@@ -20,15 +20,25 @@ import type {
   JsonError,
   Store,
 } from "../../../../../interfaces";
-import UserFields from "./UserFields";
-import AccessPanel from "../access/AccessPanel";
-import EffectiveStoresPanel from "../view/EffectiveStoresPanel";
-import Stepper from "./Stepper";
-import { STEP_ORDER, type WizardStep } from "./wizardSteps";
-import { usePanelFit, type PanelFit } from "../../panelFit";
-import StepAccessType from "./StepAccessType";
-import StepReview from "./StepReview";
-import { useSeededPicks } from "./useSeededPicks";
+import UserFields from "./components/UserFields";
+import AccessPanel from "./components/AccessPanel";
+import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
+import Stepper from "./components/Stepper";
+import { STEP_ORDER, type WizardStep } from "./utils";
+import { usePanelFit, type PanelFit } from "../../utils/panelFit";
+import StepAccessType from "./components/StepAccessType";
+import StepReview from "./components/StepReview";
+import {
+  useSeededPicks,
+  useAccessSave,
+  outcomeSentence,
+  NOTHING_HELD,
+  type AccessOutcome,
+  useAccessMode,
+  failedReadsText,
+  useHeldAccess,
+  useExistingAccess,
+} from "./hooks";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -38,7 +48,7 @@ import {
   readiness,
   singleStoreNote,
   trimToSingleStore,
-} from "./wizardRules";
+} from "./utils/wizardRules";
 import {
   accessSets,
   directStoreIds,
@@ -47,16 +57,7 @@ import {
   hasChanges,
   NO_PICKS,
   type AccessPicks,
-} from "../access/accessSets";
-import {
-  useAccessSave,
-  outcomeSentence,
-  NOTHING_HELD,
-  type AccessOutcome,
-} from "../access/useAccessSave";
-import { useAccessMode } from "../access/useAccessMode";
-import { failedReadsText, useHeldAccess } from "../access/useHeldAccess";
-import { useExistingAccess } from "../access/useExistingAccess";
+} from "../utils";
 
 interface UserWizardProps {
   /**

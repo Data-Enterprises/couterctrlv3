@@ -25,7 +25,7 @@ const TAB_FIT: Record<Tab, PanelFit> = {
   baseGroups: { width: 1320, height: 660 },
   stores: { width: 1320, height: 660 },
 };
-import { PanelFitContext, type PanelFit } from "./panelFit";
+import { PanelFitContext, type PanelFit } from "./utils/panelFit";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
@@ -50,12 +50,12 @@ import {
   setUsersExportOpen,
 } from "../../../features/dev/devOrganizationSlice";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
-import UsersExportModal from "./users/UsersExportModal";
+import UsersExportModal from "./components/UsersExportModal";
 import {
   filterUsers,
   filtersApplied,
   showsInactive,
-} from "./users/userFilters";
+} from "./utils/userFilters";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";

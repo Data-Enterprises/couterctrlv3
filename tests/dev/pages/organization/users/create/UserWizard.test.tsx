@@ -8,7 +8,7 @@ import {
   type DuplicateSource,
 } from "@/features/dev/devUsersSlice";
 import UserWizard from "@/pages/organization/dev/users/create/UserWizard";
-import Stepper from "@/pages/organization/dev/users/create/Stepper";
+import Stepper from "@/pages/organization/dev/users/create/components/Stepper";
 
 vi.mock("@/components/toasts/hooks/useToast", () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() }),
