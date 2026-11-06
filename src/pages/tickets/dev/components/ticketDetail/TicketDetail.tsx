@@ -10,11 +10,8 @@ import {
   attachmentProblem,
   fileSize,
   resolutionLabel,
-  visibleLabels,
   stampText,
-  whenText,
 } from "../../utils/ticketsUtils";
-import { storeFullText, storesOf } from "../../utils";
 
 // Interfaces
 import type { TicketStatus } from "../../../../../api/tickets";
@@ -27,6 +24,7 @@ import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import CheckBox from "../../../../../components-dev/inputs/CheckBox";
 import EditStoresModal from "../modals/EditStoresModal";
 import DetailHeader from "./components/DetailHeader";
+import TicketFacts from "./components/TicketFacts";
 
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
@@ -122,57 +120,13 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       {/* The card's header: number, title, and the status and priority pills. */}
       <DetailHeader ticket={ticket} />
 
+      {/* The ticket's own facts, under the header that names it. */}
       <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">
-        {/* The ticket's own facts, under the header that names it. */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-content/85">
-          {ctx.isTech && ticket.company_name && (
-            <span className="font-semibold text-content">
-              {ticket.company_name}
-            </span>
-          )}
-          <span>opened by {ticket.opened_by_name}</span>
-          <span aria-hidden>·</span>
-          <span>{stampText(ticket.created_at)}</span>
-          <span aria-hidden>·</span>
-          <span>updated {whenText(ticket.updated_at)}</span>
-          {ticket.category_name && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{ticket.category_name}</span>
-            </>
-          )}
-          {/* Which stores, in full: they decide which managers can see it.
-              Drawn only once the API sends them. */}
-          {ticket.stores && (
-            <>
-              <span aria-hidden>·</span>
-              <span className="font-medium text-content">
-                {storeFullText(storesOf(ticket))}
-              </span>
-            </>
-          )}
-          {/* Who has it, for the readers who have no assign control below —
-              a client, and a tech without canManage. */}
-          {!ctx.canManage && (
-            <>
-              <span aria-hidden>·</span>
-              <span>
-                {ticket.assigned_tech
-                  ? `with ${ticket.assigned_tech}`
-                  : "unassigned"}
-              </span>
-            </>
-          )}
-          {visibleLabels(ticket).map((l) => (
-            <span
-              key={l.id}
-              className="rounded px-1.5 py-[1px] text-[10.5px] font-semibold"
-              style={{ background: `${l.color}22`, color: l.color }}
-            >
-              {l.name}
-            </span>
-          ))}
-        </div>
+        <TicketFacts
+          ticket={ticket}
+          isTech={ctx.isTech}
+          canManage={ctx.canManage}
+        />
 
         {ctx.canManage && (
           <div className="flex items-center gap-2 flex-wrap">
