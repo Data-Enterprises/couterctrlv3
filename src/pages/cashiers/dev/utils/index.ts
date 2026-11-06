@@ -13,10 +13,8 @@ export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "terminal", label: "Terminal" },
 ];
 
-// sale_start_time comes back as bare digits — "093045", or "93045" with the
-// leading zero dropped — which is why Transaction.tsx formats it by slicing
-// rather than parsing. A colon-based regex silently matches nothing on that
-// shape, so handle the digit form first and treat colons as the fallback.
+// sale_start_time comes back as bare digits ("093045" or "93045"), so the
+// digit form is handled first and colons are the fallback.
 const clockDigits = (raw: string | null | undefined): string | null => {
   if (!raw) return null;
   const digits = raw.replace(/\D/g, "");
@@ -25,12 +23,8 @@ const clockDigits = (raw: string | null | undefined): string | null => {
 };
 
 /**
- * What the signal list is a list OF, for the drill's Back control.
- *
- * "Back to signals" is the developer's word for it. On screen the list is
- * stores, or cashiers, or items — the lens decides — and a reader who just
- * tapped a store expects to go back to stores. Plural of the lens label,
- * lowercased, so it reads as a destination rather than a heading.
+ * What the signal list is a list of, for the drill's Back control: the lens
+ * label's plural, lowercased ("stores", "cashiers"...).
  */
 export const lensListLabel = (lens: ExplorerLens) => {
   const label = LENSES.find((l) => l.key === lens)?.label ?? "signal";
@@ -38,15 +32,9 @@ export const lensListLabel = (lens: ExplorerLens) => {
 };
 
 /**
- * The transaction number a till receipt is printed with.
- *
- * `sale_id` is a backend compound — store, transaction, lane, then the date as
- * "1550-417853-1-10-14-2026". Only the second field is the number anyone in a
- * store can act on: it is what is on the paper, what a till lookup takes and
- * what a customer reads out. The rest is addressing.
- *
- * Falls back to the whole id rather than an empty cell, so an unexpected shape
- * is visible instead of silently blank.
+ * The transaction number a till receipt is printed with: the second field of
+ * the compound `sale_id` ("1550-417853-1-10-14-2026"). Falls back to the
+ * whole id, so an unexpected shape shows rather than blanks.
  */
 export const transactionLabel = (saleId: string) =>
   saleId.split("-")[1] ?? saleId;
@@ -73,10 +61,8 @@ export const formatHourRange = (hour: number) => {
   return `${label(hour)} – ${label((hour + 1) % 24)}`;
 };
 
-// The API returns every line of a receipt, not just the exception lines, so
-// the true transaction length has to come from the unfiltered set. Measuring it
-// against the exception-only rows would make every exception look like the
-// last line in its transaction.
+// Transaction length comes from the unfiltered rows (every receipt line);
+// the exception rows alone would make each exception look like the last line.
 export const buildTransactionLengths = (allRows: TransactionListItem[]) => {
   const lengths: Record<string, number> = {};
   allRows.forEach((row) => {
@@ -86,11 +72,8 @@ export const buildTransactionLengths = (allRows: TransactionListItem[]) => {
   return lengths;
 };
 
-// A receipt renders the whole sale, so it needs every line of it — not just the
-// exception lines a signal holds — and in till order, which the API doesn't
-// guarantee. Showing only the exception lines would make every receipt look
-// like a one-item sale and throw its totals off. sale_id is coerced because ids
-// have come back as numbers despite the string type.
+// A receipt needs every line of the sale, in till order (not guaranteed by
+// the API). sale_id is coerced: ids have come back as numbers.
 export const receiptLinesFor = (
   allRows: TransactionListItem[],
   saleId: string,
@@ -99,11 +82,9 @@ export const receiptLinesFor = (
     .filter((r) => String(r.sale_id) === String(saleId))
     .sort((a, b) => a.line_number - b.line_number);
 
-// Store identity is storeid + store_number: a few storeids cover two physical
-// locations, and keying on the id alone merges them. See utils/storeIdentity.
-// Cashier and lane numbers are only unique inside a store — cashier 12 at one
-// store is a different person from cashier 12 at the next — so in a group
-// search they have to carry the store too, or two people fold into one signal.
+// Store identity is storeid + store_number (a few storeids cover two
+// locations; see utils/storeIdentity). Cashier and lane numbers are only
+// unique within a store, so in a group search they carry the store too.
 export const storeKeyOf = (r: TransactionListItem) =>
   `${r.storeid}__${r.store_number}`;
 export const cashierKeyOf = (r: TransactionListItem) =>
@@ -255,11 +236,8 @@ export const buildSignals = (
   return signals.sort((a, b) => b.count - a.count || b.amount - a.amount);
 };
 
-// A signal's rows are exception LINES, and one transaction can contribute many
-// of them (the same item voided eleven times in a single sale). Listing rows
-// straight would repeat that transaction eleven times and contradict the
-// transaction count shown alongside it, so the drill-down collapses to one row
-// per transaction with the line count carried on it.
+// A signal's rows are exception lines, and one transaction can hold many, so
+// the drill-down collapses to one row per transaction with its line count.
 export const groupSignalByTransaction = (
   signal: Signal,
   transactionLengths: Record<string, number>,
@@ -294,9 +272,7 @@ export const groupSignalByTransaction = (
   );
 };
 
-// The one-line read-out above the drill-down. This is the whole point of the
-// page — stating the pattern outright instead of leaving the user to assemble
-// it from the rows underneath.
+// The one-line read-out above the drill-down: the pattern, stated outright.
 export const describeSignal = (signal: Signal, lens: ExplorerLens): string => {
   const parts: string[] = [];
   // "line", not "transaction" — one transaction can carry several exception lines,

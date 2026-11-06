@@ -138,12 +138,8 @@ export const useCashiersState = () =>
   useAppSelector((state) => state.dev.cashier);
 
 /**
- * The explorer's derived state — exception rows, transaction lengths, totals
- * and signals — off whatever the slice currently holds.
- *
- * Lifted out of `Cashiers.tsx` so the mobile explorer reads the same figures
- * from the same maths. The desktop had it inline; a second copy would have been
- * the kind of thing that silently drifts once a lens or a spread rule changes.
+ * The explorer's derived state (exception rows, transaction lengths, totals,
+ * signals) from the slice, shared by desktop and mobile so they agree.
  */
 export const useCashierSignals = () => {
   const { explorerAllRows, explorerFetchedException, explorerLens } =

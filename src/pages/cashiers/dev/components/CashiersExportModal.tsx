@@ -162,10 +162,8 @@ const buildLinesCsv = (rows: TransactionListItem[]) => {
 };
 
 // ─── Custom mode ──────────────────────────────────────────────────────────────
-//
-// Custom aggregates the exception LINES — the only fully granular dataset here.
-// Signals and transactions are already roll-ups, so re-aggregating them would
-// just be summing sums.
+// Custom aggregates the exception LINES, the only granular dataset (signals
+// and transactions are already roll-ups).
 
 const DIMS: { key: string; label: string }[] = [
   { key: "store", label: "Store" },

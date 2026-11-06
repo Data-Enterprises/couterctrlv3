@@ -24,33 +24,15 @@ import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail
 import Transaction from "../../../../components-dev/transactions/Transaction";
 
 /**
- * One signal's transactions — the drill-down between the signal list and a
- * receipt.
- *
- * A screen rather than a sheet, matching Loss Prevention: the receipt itself is
- * the sheet, and stacking one inside another is the thing that pattern exists
- * to avoid. It wears `MobilePerfDetail`, the same wrapper every other mobile
- * Performance drill uses, rather than its own navy bar — the back control, the
- * scope line and the start-at-the-top behaviour all come with it.
- *
- * One tab. `MobilePerfDetail` renders no tab row for a single entry, which is
- * what this wants: there is one breakdown of a signal and a lone tab would be
- * a label pretending to be a control.
- *
- * The band under the header is `describeSignal()` — the explorer's own reading
- * of what the signal means ("…likely an unmapped item rather than cashier
- * behavior"). It is the most useful thing the desktop produces and had no
- * mobile home before this.
+ * One signal's transactions, between the signal list and a receipt: a screen
+ * (the receipt is the sheet) in `MobilePerfDetail`, with one tab (no tab row).
+ * The band under the header is `describeSignal()`, the explorer's reading of
+ * what the signal means.
  */
 
 /**
- * One labelled figure on a row's second line.
- *
- * The label is the quieter half — it is there so the number can be read
- * without counting positions, not to compete with it. It gets there on case
- * and letter-spacing rather than opacity, which is the caption treatment the
- * rest of these screens use and the only one left now the text floor is /95:
- * dimming a label to subordinate it is exactly what that floor forbids.
+ * One labelled figure on a row's second line; the label is set apart by case
+ * and letter-spacing, not opacity.
  */
 const Meta = ({
   label,
@@ -150,9 +132,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
                 <span className="flex-none font-display text-[13.5px] font-semibold text-content">
                   #{transactionLabel(r.saleId)}
                 </span>
-                {/* The cashier is the answer on every lens except Cashier —
-                    on Store, Item and Terminal it is exactly who you are
-                    trying to identify. */}
+                {/* The cashier is the answer on every lens but Cashier. */}
                 <span className="min-w-0 flex-1 truncate text-[12.5px] text-content/95">
                   {r.cashierName}
                 </span>
@@ -161,11 +141,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
                 </span>
                 <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
               </div>
-              {/* Each figure carries its own label rather than sitting under
-                  a column band that scrolls away on the second row. Date and
-                  time especially: "10/14 · 16:12" is two unlabelled numbers,
-                  and on a refund row beside a quantity it is not obvious
-                  which is which. */}
+              {/* Each figure carries its own label, date and time included. */}
               <div className="mt-1 flex items-center gap-2">
                 <span className="min-w-0 truncate font-mono text-[12px] tabular-nums text-content/95">
                   <Meta label="Date">
@@ -191,9 +167,8 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
           onClose={() => dispatch(setExplorerReceipt(null))}
           closeRef={sheetCloseRef}
         >
-          {/* saleType is passed rather than left to the component: LP's
-              receipt otherwise reads Loss Prevention's own selected type,
-              which has nothing to do with the exception loaded here. */}
+          {/* saleType is passed so the receipt doesn't read Loss
+              Prevention's own selected type. */}
           <Transaction trans={receipt} saleType={explorerFetchedException} compact />
         </BottomSheet>
       )}

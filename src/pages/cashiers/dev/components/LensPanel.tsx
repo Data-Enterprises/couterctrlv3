@@ -27,9 +27,8 @@ const LENS_COLUMN_LABEL: Record<ExplorerLens, string> = {
   hour: "Hour",
 };
 
-// A single cashier owning every hit reads as behavior; the same exception
-// spread across many reads as an item/lane problem. Colouring only those two
-// ends keeps the list from turning into a wall of badges.
+// One cashier owning every hit reads as behaviour; spread across many, an
+// item or lane problem. Only those two ends are coloured.
 const SPREAD_STYLES: Record<SpreadKind, string> = {
   single: "bg-red-50 text-red-700",
   narrow: "bg-red-50 text-red-700",
@@ -102,9 +101,8 @@ const LensPanel = ({
                 <span className="text-[12.5px] font-medium text-content truncate">
                   {s.label}
                 </span>
-                {/* Two numbers, because they answer different questions: one
-                    transaction with 15 voids is not the same story as 15 transactions
-                    with one void each. */}
+                {/* Two numbers: one transaction with 15 voids is not 15
+                    transactions with one void each. */}
                 <span
                   className="text-[12.5px] font-medium text-content flex-shrink-0"
                   title={`${s.count} exception lines across ${s.transactions} transactions`}

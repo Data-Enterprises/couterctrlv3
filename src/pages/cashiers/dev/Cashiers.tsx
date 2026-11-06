@@ -44,9 +44,8 @@ import LensPanel from "./components/LensPanel";
 import SignalDetail from "./components/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
 
-// LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
-// explorer uses the same ceiling rather than inventing a second notion of
-// "recent" — and it keeps the group-scope fetch below bounded.
+// LP grades against "the prior 2 weeks" (lossPrevention/lpInfo.ts), so the
+// explorer uses the same ceiling, which also bounds the group fetch.
 const MAX_RANGE_DAYS = 14;
 // A group query can span hundreds of stores. Past this many transactions the
 // receipt fetch stops being interactive, so it's capped and the user is told.
@@ -153,19 +152,17 @@ const Cashiers = () => {
     return [...rows, ...rest.flat()];
   };
 
-  // Stage two — walk every page of cashier_table for the chosen exception,
-  // then pull the full receipts for those transactions. transaction_list returns
-  // every line of a receipt, not just the exception lines, which is what makes
-  // transaction position ("line 12 of 12") and the inline receipt possible.
+  // Stage two: walk every page of cashier_table for the chosen exception, then
+  // pull those transactions' full receipts (transaction_list returns every
+  // line, which gives "line 12 of 12" and the inline receipt).
   const runExplore = async () => {
     const { start, end, useGroups, searchValue, singleStore } = scopeArgs();
     const exception = explorerException;
     setTruncated(0);
     ctx.dispatch(setExplorerLoading(true));
     ctx.dispatch(setExplorerMessage("Loading transactions…"));
-    // The shared Transaction receipt component reads selectedSaleType off the
-    // slice to decide how it totals voids vs refunds, so it has to be set here
-    // for the drill-down receipts to add up correctly.
+    // The shared Transaction receipt reads selectedSaleType to total voids vs
+    // refunds, so it is set here for the drill-down receipts.
     ctx.dispatch(setSelectedSaleType(exception));
     setSearchOpen(false);
 
@@ -267,9 +264,8 @@ const Cashiers = () => {
 
   if (ctx.isMobile) return <CashiersMobile />;
 
-  // Stay on the entry card until an explore has actually returned — both
-  // preflight and the first explore report progress through the card's own
-  // button rather than swapping to an empty shell.
+  // Stay on the entry card until an explore has returned; progress shows on
+  // the card's own button.
   if (!explorerSearched) {
     return (
       <ExplorerSearch
@@ -371,9 +367,8 @@ const Cashiers = () => {
               onSearchChange={setSignalSearch}
             />
             {selected ? (
-              // Keyed so picking a different signal remounts the panel and
-              // drops any open receipt — otherwise the receipt view survives
-              // the switch and shows a transaction from the previous signal.
+              // Keyed so picking another signal remounts the panel and drops
+              // any open receipt from the previous signal.
               <SignalDetail
                 key={`${explorerLens}-${selected.key}`}
                 signal={selected}

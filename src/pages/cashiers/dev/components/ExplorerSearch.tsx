@@ -21,10 +21,9 @@ interface ExplorerSearchProps {
   onBack?: () => void;
 }
 
-// Entry point for the exception explorer. Deliberately two-stage: the
-// exception list comes from cashiers/preflight, which itself needs the dates
-// and scope, so the dropdown can only be populated after those are chosen.
-// Upside is the user can never pick an exception that returns nothing.
+// Entry point for the exception explorer, in two stages: cashiers/preflight
+// needs the dates and scope first, so the dropdown only offers exceptions that
+// return something.
 const ExplorerSearch = ({
   saleTypes,
   exception,
@@ -55,9 +54,8 @@ const ExplorerSearch = ({
           </p>
         </div>
 
-        {/* The explore step walks every page of two endpoints, so it can run
-            for a while — the card needs a real indicator, not just a button
-            label, or it reads as hung. */}
+        {/* The explore step walks every page of two endpoints, so the card
+            shows a real indicator. */}
         {loading && (
           <div className="relative h-24">
             <LoadingIndicator message={message || "Loading…"} />

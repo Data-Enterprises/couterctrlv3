@@ -26,16 +26,9 @@ const NOTICES: Partial<Record<ExplorerOutcome, string>> = {
 };
 
 /**
- * Cashiers on mobile — the signal explorer, not the old card drill-down.
- *
- * The previous version was built before the desktop was rebuilt as an explorer,
- * and answered a different question ("which store, then which cashier?") off a
- * different pipeline (`getStoreCards`/`getCashierCards`). This runs the same
- * two-stage fetch the desktop does, via `useCashierExplorer`, and derives the
- * same signals via `useCashierSignals` — so the two views can't disagree.
- *
- * Walkthrough, mirroring Loss Prevention but with no severity grading, because
- * nothing here is graded:
+ * Cashiers on mobile: the signal explorer, with the desktop's two-stage fetch
+ * (`useCashierExplorer`) and signals (`useCashierSignals`), so they agree. No
+ * grading.
  *
  *   search (scope + week) → preflight picks the exception
  *     → signal list (lens picker)
@@ -57,9 +50,8 @@ const CashiersMobile = () => {
   const { runPreflight, runExplore, scopeArgs } = useCashierExplorer();
   const { signals } = useCashierSignals();
 
-  /** The transactions screen needs its signal. Coming back to the page after
-   *  the rows changed underneath it — desktop switched lens, or reloaded —
-   *  would otherwise render nothing at all; send it back to the list. */
+  /** The transactions screen needs its signal; if the rows changed under it,
+   *  go back to the list. */
   const signalGone =
     explorerMobileScreen === "transactions" &&
     !signals.some((s) => s.key === explorerSignalKey);
@@ -75,9 +67,7 @@ const CashiersMobile = () => {
   const noticeFor = (outcome: ExplorerOutcome) =>
     dispatch(setExplorerNotice(NOTICES[outcome] ?? ""));
 
-  /** Both stages in one go: the user picked a scope and a week, and the
-   *  exception they'd most likely want is derivable — making them choose it in
-   *  a second step would be asking a question we can already answer. */
+  /** Both stages in one go: the likely exception is picked for the user. */
   const handleSearch = async () => {
     dispatch(setExplorerNotice(""));
     const preflight = await runPreflight();

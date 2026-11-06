@@ -1,10 +1,9 @@
 // Interfaces
 import type { TransactionListItem } from "../../../../interfaces";
 
-// "Is this one person, or is it the item/lane?" — the flag that decides
-// whether a signal is an investigation or a maintenance ticket. Anything a
-// single cashier owns is behavior; the same exception spread across several
-// cashiers is almost always a bad tag, a wrong price, or a broken lane.
+// "One person, or the item/lane?": decides whether a signal is an
+// investigation or a maintenance ticket. One cashier owning it is behaviour;
+// spread across several is usually a bad tag, a wrong price or a broken lane.
 export type SpreadKind = "single" | "narrow" | "wide" | "unmapped";
 
 export interface Signal {
@@ -23,9 +22,8 @@ export interface Signal {
   rows: TransactionListItem[];
 }
 
-// Store names resolve through the logged-in user's own assignedStores rather
-// than the store_name on the row — the API's copy comes back null for closed
-// stores, which is exactly the set an exception report is likely to surface.
+// Store names resolve through the user's assignedStores, not the row's
+// store_name, which is null for closed stores.
 export type StoreNameResolver = (storeid: number, fallback: string) => string;
 
 export interface SignalTransaction {

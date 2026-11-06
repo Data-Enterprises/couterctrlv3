@@ -31,18 +31,10 @@ import type { ExplorerOutcome } from "../interfaces";
 import type { JsonError, TransactionListItem } from "../../../../../interfaces";
 
 /**
- * The explorer's two-stage fetch, used by the mobile explorer.
- *
- * Stage one preflights `sale_types` — which exceptions even occurred depends on
- * the scope and dates just chosen, so the list can't be static. Stage two walks
- * every page of `cashier_table` for the chosen exception, then pulls the full
- * receipts for those transactions: `transaction_list` returns every line of a
- * receipt, not just the exception lines, which is what makes transaction
- * position ("line 12 of 12") and the inline receipt possible.
- *
- * Lifted out of `Cashiers.tsx` rather than copied into mobile — it is ~90 lines
- * of paging, dedup and truncation, and two copies would drift the moment either
- * endpoint changes shape.
+ * The explorer's two-stage fetch, used by the mobile explorer. Stage one
+ * preflights `sale_types` (which exceptions occurred depends on scope and
+ * dates); stage two walks every page of `cashier_table` for the chosen
+ * exception, then pulls those receipts in full from `transaction_list`.
  */
 
 /** Receipts are fetched by id; past this the request gets unwieldy and the page
@@ -89,10 +81,9 @@ export const useCashierExplorer = () => {
   };
 
   /**
-   * Starts a run and returns a check for whether it has since been superseded.
-   * The counter lives in the slice, so it is read back through getState rather
-   * than a selector — a selector value is frozen at the render that created
-   * this closure and would never see the bump from a later run.
+   * Starts a run and returns a check for whether it has been superseded. The
+   * counter is read through getState, since a selector value would be frozen
+   * in this closure.
    */
   const beginRequest = () => {
     const currentId = () =>
@@ -108,9 +99,8 @@ export const useCashierExplorer = () => {
       : getStoreName(assignedStores, lastStore, `Store ${lastStore}`);
 
   /**
-   * Stage one. Resolves to the exception types found, already defaulted — the
-   * caller gets the list *and* the one to land on, so it never has to duplicate
-   * `pickDefaultSaleTypeName`.
+   * Stage one: the exception types found, plus the one to land on
+   * (`pickDefaultSaleTypeName`).
    */
   const runPreflight = async (): Promise<{
     types: string[];
@@ -155,9 +145,7 @@ export const useCashierExplorer = () => {
       toast.error("Error fetching exceptions: " + (err as JsonError).message);
       return { types: [], fallback: "", outcome: "error" };
     } finally {
-      // Only the newest run owns the spinner. A superseded one clearing it
-      // would drop the loading state while the run that replaced it is still
-      // in flight.
+      // Only the newest run owns the spinner.
       if (!isStale()) {
         dispatch(setExplorerLoading(false));
         dispatch(setExplorerMessage(""));
@@ -176,11 +164,9 @@ export const useCashierExplorer = () => {
     dispatch(setExplorerLoading(true));
     dispatch(setExplorerMessage("Loading transactions…"));
 
-    // Every apply goes through here so a superseded run can't write anything.
-    // selectedSaleType is set alongside the rows, not up front: the shared
-    // Transaction receipt reads it to decide how it totals voids vs refunds,
-    // and setting it at the start of a run that later loses would pair the
-    // winning run's rows with the losing run's rules.
+    // Every apply goes through here, so a superseded run can't write.
+    // selectedSaleType is set with the rows (the receipt totals by it), not at
+    // the start of a run that might lose.
     const apply = (rows: TransactionListItem[]) => {
       if (rows.length) dispatch(setExplorerScopeLabel(scopeLabel()));
       dispatch(setSelectedSaleType(exception));
