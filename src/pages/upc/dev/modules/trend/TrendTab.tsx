@@ -37,10 +37,7 @@ const TrendTab = () => {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [retryTick, retry] = useAbandonedRetry();
 
-  // searchedUpcs, not upcs: `upcs` is the search card's working list and
-  // changes live as the user edits chips in the re-search popup, which would
-  // start fetching the moment they typed rather than when they clicked Search.
-  // `searchedUpcs` only moves when a search is actually committed.
+  // searchedUpcs, not upcs (see PriceOptTab).
   const missing = missingFrom(ctx.searchedUpcs, ctx.trendCoverage);
   const missingKey = missing.join(",");
 
@@ -50,9 +47,9 @@ const TrendTab = () => {
     if (ctx.activeTab !== "trend") return;
     if (ctx.trendLoading || !ctx.storeids || !missingKey) return;
 
-    // `trendPeriods` is the baseline: how many days before the start date to
-    // compare against. What goes out is that plus the days since the start
-    // date, because the endpoint counts its window back from today.
+    // `trendPeriods` is the baseline (days before the start date); what goes
+    // out adds the days since the start date, since the endpoint counts its
+    // window back from today.
     const { periods, window } = trendRequest(ctx.startDate, ctx.trendPeriods);
 
     const load = async () => {
@@ -73,22 +70,16 @@ const TrendTab = () => {
 
         const j = res.data;
         const answer = answerOf(j);
-        // A failure is a failure, not an empty answer. Taking the success path
-        // here extended coverage, which recorded these UPCs as
-        // fetched-and-empty and meant the tab never asked again — the catch
-        // below deliberately leaves coverage alone for exactly this reason. No
-        // sales in the window is a real answer, though, and covers them.
+        // A failure is a failure, not an empty answer, so coverage is left
+        // alone and the tab asks again. No sales in the window is a real
+        // answer and covers them.
         if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Trend detection failed for these UPCs");
           return;
         }
         const rows: UpcTrend[] = answer === "ok" && j.trends?.length > 0 ? j.trends : [];
-        // j.top_5 / j.bottom_5 are dropped on the floor: they're the backend's
-        // own cross-UPC rankings, and nothing in this page reads them — the
-        // left list ranks by impact_units itself, so a stored ranking would
-        // only be one more thing to keep true as UPCs are added and removed.
-        // They'd also be wrong under delta fetching, being a ranking of
-        // whatever subset that one call happened to ask about.
+        // j.top_5 / j.bottom_5 are ignored: the left list ranks by impact
+        // itself, and a ranking of one delta call's subset would be wrong.
         dispatch(setDevTrendWindow(window));
         dispatch(mergeDevTrends({ rows, codes: missing }));
         dispatch(
@@ -123,9 +114,8 @@ const TrendTab = () => {
       );
   }, [ctx.upcTrends, ctx.selectedUpcs, ctx.fixes, ctx.trendWindow]);
 
-  // Keep the detail panel pointed at a valid item — same pattern as Sales
-  // Comp/Price Opt: default to the first row, re-pick if the current
-  // selection drops out of the filtered set.
+  // Keep the detail panel on a valid item: the first row by default, re-picked
+  // if the selection drops out of the filtered set.
   useEffect(() => {
     if (!rows.length) {
       setSelectedCode(null);

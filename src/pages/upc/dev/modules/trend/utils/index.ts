@@ -7,14 +7,9 @@ import type { TrendPhrase, TrendTone, TrendStatus } from "../interfaces";
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
-// Trend already has a real categorical diagnosis, unlike Sales Comp/Price Opt
-// where a phrase had to be synthesized from raw signals — the list phrase is
-// just the status label itself. Accelerating and Declining share "down" (the
-// shared tone system only has 4 states); the phrase text itself still carries
-// which is which. Reduced availability gets "flat" deliberately, since the
-// whole point of that status is "not a demand problem" — it shouldn't read
-// with the same alarm color as a real decline. New gets "muted": there is no
-// comparison to be had, and green would claim one.
+// The list phrase is the status label. Accelerating and Declining share
+// "down" (the phrase says which); Reduced availability is "flat", since it is
+// not a demand problem; New is "muted", with nothing to compare.
 const STATUS_LABEL: Record<TrendStatus, string> = {
   growing: "Growing",
   declining: "Declining",
@@ -37,15 +32,10 @@ export function getTrendPhrase(status: TrendStatus): TrendPhrase {
   return { text: STATUS_LABEL[status], tone: STATUS_TONE[status] };
 }
 
-// Fewer active selling days can explain part of a decline even when the item
-// is genuinely losing demand too — checked independently of status so it can
-// flag on top of Declining/Accelerating, not just inside Reduced-
-// availability's own definition.
-//
-// Compared as shares of each window's days, not as counts: the windows are
-// 90 days and however long since the pivot, so 73 selling days before
-// against 15 since read as a sharp drop for an item that sold nearly every
-// day in both. Flags when the share since is under half the share before.
+// Fewer selling days can explain part of any decline, so it is checked
+// independently of status. Compared as shares of each window's days, not
+// counts (the windows differ in length): flags when the share since is under
+// half the share before.
 export function hasAvailabilityFlag(t: UpcTrend, window: UpcTrendWindow | null): boolean {
   if (!window || t.active_days_before <= 0) return false;
   const before = t.active_days_before / window.beforeDays;
@@ -53,12 +43,8 @@ export function hasAvailabilityFlag(t: UpcTrend, window: UpcTrendWindow | null):
   return after / before < 0.5;
 }
 
-// Daily rates in this sentence use mean_before/mean_after (the item's own
-// plain daily average), not slope_before/slope_after. Slope is a rate of
-// CHANGE — how fast the daily rate itself is moving — not a sales rate, so
-// plugging it into a "declining at X units/day" sentence describes the wrong
-// quantity. The server's own plain-language tooltip field uses the same
-// mean-based phrasing, which is what confirmed this.
+// Daily rates here use mean_before/mean_after (plain daily averages), not
+// slope_*, which is the rate of change of the daily rate.
 export function getTrendInsight(
   t: UpcTrend,
   status: TrendStatus,

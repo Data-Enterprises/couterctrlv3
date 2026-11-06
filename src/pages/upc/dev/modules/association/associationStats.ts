@@ -7,11 +7,8 @@ import type { AssociationItem, AssociationResult } from "../../../../../features
 export const buildSeedKey = (upcs: string[]) => [...upcs].sort().join(",");
 
 /**
- * The seed answer, if it is the answer for the UPCs ticked now; otherwise null.
- *
- * The answer stays in state while a new seed set loads, and after a failed
- * load. Reading it without this check showed the previous seed's companions,
- * KPIs and export under the new seed set's title.
+ * The seed answer if it is for the UPCs ticked now, otherwise null, so a
+ * previous seed's companions never show under a new seed set.
  */
 export const seedDataFor = (
   selectedUpcs: string[],
@@ -20,28 +17,20 @@ export const seedDataFor = (
 ): AssociationResult | null =>
   data && dataKey === buildSeedKey(selectedUpcs) ? data : null;
 
-// Seed items showing up in their own results isn't useful cross-merchandising
-// information the way it first seemed — it just re-lists what's already
-// visible in the Seed UPCs panel. excludeUpc additionally drops the current
-// re-root target, since an item can never be its own association.
+// Seed items are dropped from their own results (already in the Seed UPCs
+// panel), and excludeUpc drops the re-root target.
 export function getDisplayItems(items: AssociationItem[], excludeUpc?: string | null): AssociationItem[] {
   return items.filter((i) => !i.is_seed && i.product_code !== excludeUpc);
 }
 
-// The department(s) this fetch's own query UPCs belong to — used only for
-// the Cross-department KPI (how many companions sit outside the thing
-// you're actually examining), not for grouping/splitting the table itself.
-// Works the same for a re-root view as the seed view: is_seed reflects
-// membership in whichever upcs list drove that specific fetch, so this
-// naturally re-centers on the re-root target without special-casing it.
+// The departments the query's own UPCs belong to, for the Cross-department
+// KPI only. Works for a re-root too, since is_seed follows that fetch.
 export function getQueryDepartments(items: AssociationItem[]): Set<number> {
   return new Set(items.filter((i) => i.is_seed).map((i) => i.sub_department));
 }
 
-// How many displayed companions fall in each sub department, and how much
-// revenue they generated, sorted by count descending. Shared by the
-// "Top Sub Dept" KPI (just the first entry) and the CTA insight's full
-// breakdown, so the two can't drift into disagreeing about the tally.
+// Companions per sub department, with revenue, by count. Shared by the
+// "Top Sub Dept" KPI and the CTA breakdown so they agree.
 export function getDepartmentBreakdown(items: AssociationItem[]): DepartmentCount[] {
   const counts = new Map<number, { label: string; count: number; revenue: number }>();
   for (const item of items) {
@@ -62,10 +51,8 @@ export function getDepartmentBreakdown(items: AssociationItem[]): DepartmentCoun
     .sort((a, b) => b.count - a.count);
 }
 
-// Splits an already-computed department breakdown into departments that
-// match the query's own seed departments ("same as seed") vs. everything
-// else ("cross sub dept"). Centralized so the KPI strip and the CTA
-// breakdown can't disagree about which side a department landed on.
+// Splits the department breakdown into "same as seed" and "cross sub dept",
+// in one place so the KPI strip and the CTA breakdown agree.
 export function splitDeptBreakdown(
   breakdown: DepartmentCount[],
   queryDepartments: Set<number>,
@@ -76,9 +63,8 @@ export function splitDeptBreakdown(
   };
 }
 
-// Straight sum, not an average of averages — each department entry already
-// carries its own summed revenue, so this just totals whichever side of the
-// cross/same split a caller wants a figure for.
+// A straight sum of each side's department revenue, not an average of
+// averages.
 export function sumGroupRevenue(depts: DepartmentCount[]): number {
   return depts.reduce((sum, d) => sum + d.revenue, 0);
 }
@@ -91,9 +77,8 @@ export function getTotalUnits(items: AssociationItem[]): number {
   return items.reduce((sum, i) => sum + i.qty, 0);
 }
 
-// A mean across all qualifying baskets, not a per-basket attribution —
-// individual baskets vary a lot (some $0, some well above this), so any
-// label built from this has to read as an average, not an exact figure.
+// A mean across qualifying baskets, not per-basket, so any label built from
+// it must read as an average.
 export function getAvgRevenuePerBasket(totalRevenue: number, totalBaskets: number): number {
   return totalBaskets > 0 ? totalRevenue / totalBaskets : 0;
 }
@@ -102,9 +87,8 @@ export function getTopRevenueItem(items: AssociationItem[]): AssociationItem | u
   return [...items].sort((a, b) => b.revenue - a.revenue)[0];
 }
 
-// Attach rate descending is both the grid's own default sort and the
-// "strongest single pairing" pick — shared here so the two can never
-// disagree about which companion is actually on top.
+// Attach rate descending: the grid's default sort and the "strongest
+// pairing" pick, shared so they agree.
 export function sortByAttachRateDesc(items: AssociationItem[]): AssociationItem[] {
   return [...items].sort((a, b) => b.attach_rate - a.attach_rate);
 }
@@ -117,10 +101,8 @@ export function getCrossDeptCount(items: AssociationItem[], queryDepartments: Se
   return items.filter((i) => !queryDepartments.has(i.sub_department)).length;
 }
 
-// Weighted by basket_count rather than a plain mean of each companion's own
-// rate — a companion with only 2 baskets of evidence shouldn't move the
-// average as much as one with 40. Σ(attach_rate × basket_count) ÷
-// Σ(basket_count), so a rate backed by more baskets counts for more.
+// Weighted by basket_count, Σ(attach_rate × basket_count) ÷ Σ(basket_count),
+// so a rate backed by more baskets counts for more.
 export function getWeightedAvgAttachRate(items: AssociationItem[]): number {
   const totalBaskets = items.reduce((sum, i) => sum + i.basket_count, 0);
   if (totalBaskets === 0) return 0;

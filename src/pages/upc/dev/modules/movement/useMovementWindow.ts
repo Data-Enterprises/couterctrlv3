@@ -7,11 +7,8 @@ import { MOVEMENT_DEFAULT_WEEKS, isoFromMdy, movementWeeks } from "./movementSta
 
 /**
  * The weeks Movement shows: ending on the search's end date, as many as the
- * tab is set to, or as many as the search's range covers until someone picks.
- *
- * One hook because the tab, its KPI strip and the export all have to agree on
- * the same weeks — three copies of this arithmetic would be three chances for
- * a CSV whose columns aren't the grid's.
+ * tab is set to, or as many as the search covers until someone picks. One
+ * hook so the tab, its KPI strip and the export agree.
  */
 export const useMovementWindow = () => {
   const ctx = useUpcDevCtx();

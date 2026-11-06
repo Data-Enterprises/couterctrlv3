@@ -12,12 +12,9 @@ interface Props {
   note?: string;
 }
 
-// Stacked before/after rows plotted against a fixed 0-100 scale, not scaled
-// to the pair's own max — the fill length has to mean the literal
-// percentage, or a modest value next to a larger sibling reads as maxed
-// out. Only for metrics genuinely bounded 0-100 (Confidence, Active rate).
-// Anything without a natural ceiling belongs in a plain before/after text
-// tile instead (see modules/trend/TrendBeforeAfterTile.tsx), not this bar.
+// Before/after rows against a fixed 0-100 scale, so fill length is the literal
+// percentage. Only for metrics bounded 0-100 (Confidence, Active rate); others
+// use TrendBeforeAfterTile.
 const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay, afterDisplay, flagged, note }: Props) => {
   return (
     <div className="bg-gray-200/60 rounded px-2.5 py-2 mb-2 last:mb-0">

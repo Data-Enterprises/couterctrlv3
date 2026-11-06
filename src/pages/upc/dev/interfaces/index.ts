@@ -30,13 +30,9 @@ export interface ExportWaitInput {
 export type HeatStyle = { bg: string; color: string };
 
 /**
- * What a marketing/* answer says about the UPCs it was asked for.
- *
- * Those endpoints answer `error: 1` both when they failed and when the UPCs
- * simply sold nothing in the window: "No data was returned." comes back with
- * `success: true`, a real failure with `success: false`. Only a failure should
- * leave the UPCs unfetched. An empty answer is still an answer and covers
- * them; treating it as a failure meant every visit to the tab asked again,
- * warned again, and paid for the call again.
+ * What a marketing/* answer says about the UPCs asked for. `error: 1` comes
+ * back both for failures (`success: false`) and for no sales in the window
+ * (`success: true`). Only a failure leaves the UPCs unfetched; an empty answer
+ * covers them.
  */
 export type UpcAnswer = "ok" | "empty" | "failed";

@@ -4,9 +4,8 @@ interface Props {
   after: string;
 }
 
-// Plain before/after text tile for metrics with no natural ceiling (Total
-// units, Volatility, Slope) — self-labeling on purpose, replacing an
-// earlier "117 → 54" arrow notation that wasn't intuitive without a legend.
+// Plain before/after tile for metrics with no natural ceiling (Total units,
+// Volatility, Slope), labelled in words.
 const TrendBeforeAfterTile = ({ label, before, after }: Props) => {
   return (
     <div className="text-center bg-gray-200/60 rounded py-2 px-1.5">

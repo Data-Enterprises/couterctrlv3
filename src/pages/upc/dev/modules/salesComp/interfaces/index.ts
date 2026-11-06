@@ -2,9 +2,8 @@
 import type { UpcSalesComp } from "../../../../../../interfaces";
 
 /**
- * The dates a Sales Comp answer covers: the search's, and last year's that the
- * tab asked for alongside them. Any of the app's date forms: m/d/yyyy, or ISO
- * with or without a time.
+ * The dates a Sales Comp answer covers: the search's, and last year's. Any of
+ * the app's date forms (m/d/yyyy, or ISO with or without a time).
  */
 export type SalesCompRange = { start: string; end: string; lyStart: string; lyEnd: string };
 
@@ -23,14 +22,12 @@ export type UpcSalesCompStats = {
   lyPeriodTotal: number;
   vsLYPct: number | null;
   peakShifted: boolean;
-  // Day-of-week % change vs LY, and this item's own peak-day scale for
-  // heat coloring — both derived once here so the list, detail panel, and
-  // export summary all read the same numbers.
+  // Day-of-week % change vs LY, and the item's peak-day scale for heat
+  // colouring, derived once so list, detail and export agree.
   dayDeltaPcts: (number | null)[];
   rowMax: number;
-  // Total ÷ count of individual (week, weekday) cells that actually had a
-  // sale — a true per-active-day average. The KPI strip counts days the same
-  // way, so with one UPC selected the two agree.
+  // Total ÷ (week, weekday) cells that had a sale: a per-active-day average,
+  // counted the same way as the KPI strip.
   avgDaily: number;
 };
 

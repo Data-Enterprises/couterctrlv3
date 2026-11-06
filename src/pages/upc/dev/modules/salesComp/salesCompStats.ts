@@ -13,15 +13,9 @@ function rowTotal(row: UpcSalesComp): number {
 }
 
 /**
- * One row per UPC per week, as everything downstream assumes.
- *
- * upload_upcs_daily_sales groups by description as well as UPC and week, so an
- * item whose sales rang under two descriptions — often one of them blank —
- * comes back as two rows for the same week. Left split, the period total
- * counted both while the week-by-week table showed only the first, and the
- * day-of-week averages divided by row count instead of week count.
- *
- * Days are summed, and the first non-blank description wins.
+ * One row per UPC per week. upload_upcs_daily_sales also groups by
+ * description, so an item rung under two descriptions comes back as two rows a
+ * week; days are summed, and the first non-blank description wins.
  */
 export function combineSalesCompRows(rows: UpcSalesComp[]): UpcSalesComp[] {
   const byKey = new Map<string, UpcSalesComp>();
@@ -61,9 +55,8 @@ export function salesCompRange(startDate: string, endDate: string): SalesCompRan
   };
 }
 
-/** A date as a local midnight: "2026-09-07T00:00:00", "2026-09-07" or
- *  "9/7/2026". ISO without a time would otherwise parse as UTC and land on the
- *  day before anywhere in the US. */
+/** A date as a local midnight, from "2026-09-07T00:00:00", "2026-09-07" or
+ *  "9/7/2026" (a bare ISO date would parse as UTC, the day before in the US). */
 export function dayOf(s: string): Date {
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
@@ -74,13 +67,9 @@ export function dayOf(s: string): Date {
 const plusDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
 /**
- * Whether a week's seven days all fall inside the searched range.
- *
- * Both ends. A range that starts mid-week makes its first week partial just as
- * one that ends mid-week makes its last, and only the end used to be checked:
- * a Wednesday start counted Wed-Sun as a full week, so flat sales read as up
- * 16.7% week over week. A partial week's total would skew both the "recent
- * week" figure and the average it's compared against, so it's left out of both.
+ * Whether a week's seven days all fall inside the searched range, at both
+ * ends. A partial week is left out of both the "recent week" figure and the
+ * average it's compared against.
  */
 export function makeIsWeekComplete(startDate: string, endDate: string) {
   const first = dayOf(startDate);
@@ -95,12 +84,9 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
 /**
- * Every week the range touches, by its Monday, written the way the endpoint
- * writes a row's week ("2026-09-07T00:00:00").
- *
- * The endpoint only answers weeks that sold, so the weeks have to come from
- * the range: built from the rows, a week with no sales simply wasn't there,
- * and an item that stopped selling in its last week read as flat or up.
+ * Every week the range touches, by its Monday, in the endpoint's own form
+ * ("2026-09-07T00:00:00"). From the range, not the rows: the endpoint omits
+ * weeks with no sales.
  */
 export function weeksIn(startDate: string, endDate: string): string[] {
   const end = dayOf(endDate);
@@ -113,12 +99,9 @@ export function weeksIn(startDate: string, endDate: string): string[] {
 }
 
 /**
- * How many times each weekday falls in the range, Monday first.
- *
- * What a weekday's average divides by. Dividing by the number of weeks
- * understated any weekday the range holds fewer of: Monday 10/5 to Wednesday
- * 10/14 has two Mondays but one Saturday, so a $100 Saturday averaged $50 and
- * lost the peak to two $60 Mondays.
+ * How many times each weekday falls in the range, Monday first: what a
+ * weekday's average divides by (not the week count, which skews weekdays the
+ * range holds fewer of).
  */
 export function weekdayCounts(startDate: string, endDate: string): number[] {
   const counts = DAYS.map(() => 0);
@@ -128,11 +111,8 @@ export function weekdayCounts(startDate: string, endDate: string): number[] {
 }
 
 /**
- * Every UPC with sales in either year, this year's first.
- *
- * Built from this year's rows alone, an item that sold last year and nothing
- * this year wasn't in the list, the strip or the export at all: a -100% item
- * simply vanished.
+ * Every UPC with sales in either year, this year's first, so an item that
+ * stopped selling still shows (at -100%).
  */
 export function salesCompCodes(tyRows: UpcSalesComp[], lyRows: UpcSalesComp[]): string[] {
   return [...new Set([...tyRows.map((r) => r.product_code), ...lyRows.map((r) => r.product_code)])];
@@ -173,9 +153,8 @@ export function computeUpcSalesCompStats(
       rows.find((r) => r.description)?.description ||
       lyRowsForCode.find((r) => r.description)?.description ||
       code;
-    // Every week in the range, sold or not, plus any week a row carries that
-    // the range somehow doesn't. Matched on the date alone, so the row's own
-    // spelling of its week doesn't matter.
+    // Every week in the range, sold or not, plus any week a row carries outside
+    // it, matched on the date alone.
     const byWeek = new Map(rows.map((r) => [r.week.slice(0, 10), r]));
     const sortedWeeks = [
       ...new Set([...rangeWeeks.map((w) => w.slice(0, 10)), ...byWeek.keys()]),

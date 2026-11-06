@@ -10,13 +10,8 @@ const upcCount = (n: number) => `${n} UPC${n === 1 ? "" : "s"}`;
 
 /**
  * Why Download has to wait, or null when the file would hold what the screen
- * shows.
- *
- * The export writes whatever the tab holds. Clicked while a tab is still
- * loading, or after its call failed, that was a CSV of headers only -- or for
- * Movement, rows of blanks that read like nothing sold -- and the window closed
- * as if it had worked. So Download waits until every UPC the file would hold
- * has loaded for that tab.
+ * shows: it waits until every UPC the file would hold has loaded for that tab,
+ * so a still-loading or failed tab never exports blanks.
  */
 export const exportWaitReason = (p: ExportWaitInput): string | null => {
   const selected = new Set(p.selectedUpcs);

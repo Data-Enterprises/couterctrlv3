@@ -5,9 +5,8 @@ import { isWeighted } from "../../../../../utils/pricedUnits";
 import type { PriceOptRowSummary, PricePoint } from "./interfaces";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 
-// One row per unique price — the raw API rows can repeat the same price
-// (e.g. across separate periods), so qty/weight/revenue are summed per price
-// rather than shown as duplicate rows.
+// One row per unique price: the API can repeat a price across periods, so
+// qty/weight/revenue are summed per price.
 export function pricePoints(bestPrices: UpcPriceOpt[], code: string): PricePoint[] {
   const byPrice = new Map<number, PricePoint>();
   for (const p of bestPrices) {
@@ -30,37 +29,23 @@ export function pricePoints(bestPrices: UpcPriceOpt[], code: string): PricePoint
 }
 
 /**
- * The figure this item is actually priced and sold in.
- *
- * A scale item's `total_qty` is a scan count — how many times it was rung —
- * while `total_weight` is what the shelf price is denominated in and what the
- * revenue was earned on. Reading qty for a by-the-pound item doesn't just
- * mis-scale the column, it silently changes what the number means from row to
- * row, and it feeds elasticity a count where the price is per pound.
- *
- * Same rule as `pricedUnits` in utils, which the item margin tables already
- * follow — weight wins whenever it is non-zero.
+ * The figure the item is priced and sold in: weight wins whenever it is
+ * non-zero (a scale item's `total_qty` is a ring count), the same rule as
+ * `pricedUnits` in utils.
  */
 export const pointUnits = (p: PricePoint, weighted: boolean) =>
   weighted ? p.weight : p.qty;
 
 /**
  * The price points that count: ones that moved anything, in the item's own
- * unit.
- *
- * A price that rang and moved nothing (a sale and its refund, or a scale item
- * rung at a price with no weight behind it) is no evidence of how the item
- * sells at that price. The KPI strip already left those out while the panel
- * and the export kept them, so one item could read 2 points and elasticity
- * -1.7 in the strip and 3 points and "—" beside it. Every caller now goes
- * through computePriceOptRowSummary, which applies this once.
+ * unit (a sale and its refund, or a weightless scale ring, is no evidence).
+ * Every caller goes through computePriceOptRowSummary, which applies this once.
  */
 export const livePoints = (points: PricePoint[], weighted: boolean) =>
   points.filter((p) => pointUnits(p, weighted) > 0);
 
-// No date field anywhere in this data, so there's no real "before/after" —
-// elasticity is taken between the highest and lowest observed price points,
-// which is well-defined regardless of how many price points exist.
+// No dates in this data, so elasticity is taken between the highest and
+// lowest observed price points.
 export function elasticityFromPoints(
   points: PricePoint[],
   weighted = false,
@@ -78,11 +63,8 @@ export function elasticityFromPoints(
   return pctQtyChange / pctPriceChange;
 }
 
-// Single source of truth for a row's numbers, shared by the left list and
-// the detail panel so they can never drift out of sync. Best price is the
-// API's own best_prices_by_upc pick (by revenue) taken directly — there's
-// no current price or cost anywhere in this data, so there's nothing to
-// compare it against or compute profit from.
+// One source of a row's numbers, shared by the left list and the detail panel.
+// Best price is the API's best_prices_by_upc pick (by revenue).
 export function computePriceOptRowSummary(
   row: UpcPriceOpt,
   ownBestPrices: UpcPriceOpt[],
@@ -95,11 +77,8 @@ export function computePriceOptRowSummary(
     fixes && (isWeighted(row.total_weight) || all.some((p) => p.weight > 0));
   const points = livePoints(all, weighted);
   const elasticity = elasticityFromPoints(points, weighted);
-  // The best price's volume from its price point -- every row at that price
-  // summed -- in the item's own unit. The best row alone can be one of
-  // several at that price, or a week the scale item rang with no weight: the
-  // tile then read "0" beside a per-pound price while the export wrote the
-  // ring count as "ea".
+  // The best price's volume, summed over every row at that price, in the
+  // item's own unit (one row alone can be partial or weightless).
   const bestPoint = all.find((p) => p.price === row.price);
   const bestUnits = bestPoint
     ? pointUnits(bestPoint, weighted)
@@ -113,10 +92,8 @@ export function computePriceOptRowSummary(
     points,
     bestPrice: row.price,
     bestUnits,
-    // From the same price point as the volume: the best row alone is one of
-    // possibly several at that price (an item rung under two descriptions),
-    // so its revenue sat beside a volume summed over all of them -- $120
-    // next to 61.50 lb at $3.99/lb.
+    // Revenue from the same price point as the volume, so the two describe
+    // the same rows.
     bestRevenue: bestPoint ? bestPoint.revenue : row.total_revenue,
     weighted,
     elasticity,

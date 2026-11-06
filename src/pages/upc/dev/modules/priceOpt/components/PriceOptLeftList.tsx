@@ -18,9 +18,7 @@ const TONE_TEXT: Record<PriceOptTone, string> = {
   muted: "text-content/85",
 };
 
-// Headline is always Best price — there's no current price anywhere in this
-// data for it to compete with, so every row reads the same regardless of
-// order clicked.
+// The headline is always Best price: there is no current price to compare.
 const PriceOptLeftList = ({ rows, selectedCode, onSelect }: Props) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

@@ -119,9 +119,8 @@ const AssociationDetailPanel = ({
     </>
   );
 
-  // Ordered by impact: the one derived "so what" number first, then the
-  // specific named finding to act on, then context for how typical that
-  // finding is, ending on the sample-size fact everything else depends on.
+  // By impact: the derived number, the finding to act on, how typical it is,
+  // then the sample size everything depends on.
   const kpis: KpiCell[] = [
     { label: "Avg Revenue", value: formatCurrency2(avgRevenuePerBasket) },
     {

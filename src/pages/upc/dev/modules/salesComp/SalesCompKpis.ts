@@ -7,10 +7,8 @@ import type { SalesCompRange } from "./interfaces";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import type { KpiCell } from "../../interfaces";
 
-/** Calendar days in the selection on which any UPC sold. Counted per (week,
- *  weekday), not per weekday column — counting columns capped a two-week range
- *  at 7 days, so the strip's average disagreed with the detail panel's. With
- *  one UPC selected the two are the same figure. */
+/** Calendar days in the selection on which any UPC sold, counted per (week,
+ *  weekday) so the strip's average matches the detail panel's. */
 function activeDayCount(rows: UpcSalesComp[]): number {
   const days = new Set<string>();
   for (const r of rows) {
@@ -46,22 +44,16 @@ export function getSalesCompKpis(
 
   const totalSales = stats.reduce((acc, s) => acc + s.periodTotal, 0);
   const totalSalesLY = stats.reduce((acc, s) => acc + (s.hasLY ? s.lyPeriodTotal : 0), 0);
-  // vs LY is like for like: only items that sold in both years. A new item
-  // added this year's sales with nothing against them (▲100% while every item
-  // was flat), and one that stopped did the same the other way. Both stay in
-  // the list with their own figures; the strip says how many it compared.
+  // vs LY is like for like: only items that sold in both years. Others keep
+  // their own figures; the strip says how many it compared.
   const both = stats.filter((s) => s.periodTotal > 0 && s.lyPeriodTotal > 0);
   const bothTY = both.reduce((acc, s) => acc + s.periodTotal, 0);
   const bothLY = both.reduce((acc, s) => acc + s.lyPeriodTotal, 0);
   const vsLYPct = bothLY > 0 ? ((bothTY - bothLY) / bothLY) * 100 : null;
 
-  // Peak day: dollar-weighted (which day the money actually lands on) leads —
-  // this needs the true per-day sum across all rows, not an average of each
-  // UPC's own average day, so it's computed directly rather than from `stats`.
-  // Mode (which day most individual UPCs peak on) is the sub — the two can
-  // genuinely disagree when a few high-volume UPCs outweigh many small ones.
-  // Per occurrence of the weekday, as the item rows do: a weekday the range
-  // holds twice would otherwise outweigh one it holds once.
+  // Peak day: dollar-weighted (the true per-day sum across rows) leads; the
+  // mode (the day most UPCs peak on) is the sub, since the two can disagree.
+  // Per occurrence of the weekday, as the item rows do.
   const dayCounts = weekdayCounts(range.start, range.end);
   const daySums = DAYS.map(
     (d, i) => filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0) / (dayCounts[i] || 1),

@@ -16,16 +16,9 @@ interface Props {
   onBackToSeed: () => void;
 }
 
-// Two states in one panel rather than a separate breadcrumb bar: once
-// re-rooted, it collapses to a back-link plus a plain row for the current
-// target, matching the same flat row shape as the Seed UPCs list below (no
-// box/border/glow — this panel has no selection state of its own to
-// highlight, unlike the other tabs' single-select lists that borrowed
-// glow from). At the seed level it's a plain, read-only list — the
-// page-level "UPC Upload" panel (UpcLeftPanel.tsx / UpcItemList.tsx)
-// already owns selectedUpcs/toggleDevSelectedUpc as the one control for
-// narrowing the workbook selection; this just reflects whatever's
-// currently checked there rather than duplicating that checkbox UI again.
+// Two states in one panel: re-rooted, a back-link plus the current target;
+// at seed level, a read-only list mirroring what's checked in the page's UPC
+// panel (which owns the selection).
 const AssociationLeftPanel = ({
   selectedUpcs,
   upcItemsMap,

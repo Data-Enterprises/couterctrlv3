@@ -6,10 +6,9 @@ import { computePriceOptRowSummary } from "./priceOptStats";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import type { KpiCell } from "../../interfaces";
 
-// No current price or cost anywhere in this data, so there's nothing to
-// compare a price against — only what price history alone can answer:
-// which price has generated the most revenue, how big the gap is between
-// tested prices, and how price-sensitive demand looks.
+// This data has no current price or cost, so only what price history can
+// answer: the highest-revenue price, the gap between tested prices, and price
+// sensitivity.
 export function getPriceOptKpis(
   optBestPrices: UpcPriceOpt[],
   optBestPricesByUpc: UpcPriceOpt[],

@@ -1,9 +1,7 @@
 // Interfaces
 
-// deptId is the numeric sub_department, kept alongside the display label so
-// callers can check membership against getQueryDepartments' Set<number>
-// (e.g. to split cross-sub-dept vs. same-as-seed) without string-matching
-// descriptions, which aren't guaranteed to be a reliable join key.
+// deptId is the numeric sub_department, kept beside the label so membership
+// is checked by number, not by description.
 export type DepartmentCount = { deptId: number; label: string; count: number; revenue: number };
 
 export type ContextMenuState = { x: number; y: number; upc: string };

@@ -46,12 +46,8 @@ const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: string;
   },
 };
 
-// Clickable, tone-colored insight strip that replaces a plain title with an
-// expandable plain-language explanation. Mirrors Sales' CTA_SEVERITY_CLASSES
-// / getCta pattern (PopupSubDeptList.tsx), remapped to a tone (up/down/flat)
-// instead of a 3-tier critical/watch/healthy grade — diagnostic modules
-// don't grade, they flag direction. Shared so any UPC module's future
-// detail panel can reuse it with its own title/insight/tone.
+// Clickable, tone-coloured insight strip that expands into a plain-language
+// explanation; flags direction (up/down/flat), it doesn't grade.
 const CtaInsightStrip = ({ title, insight, tone }: Props) => {
   const [open, setOpen] = useState(false);
   const c = TONE_CLASSES[tone];

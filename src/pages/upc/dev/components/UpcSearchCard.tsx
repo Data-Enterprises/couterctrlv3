@@ -21,11 +21,8 @@ import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 
 interface Props {
   onSearch: () => void;
-  /** Passed only when the card is a re-search overlay, not the full-page
-   *  landing state. Two effects: it shows a close button, and it drops the
-   *  card's own full-viewport centering — that centering is what made the
-   *  overlay untappable, since the wrapper covering the whole screen
-   *  swallowed every backdrop click. In overlay mode the backdrop centers. */
+  /** Only for the re-search overlay: shows a close button and drops the
+   *  card's own full-viewport centering (the backdrop centers instead). */
   onClose?: () => void;
   /** The search is looking up the group's stores. */
   busy?: boolean;

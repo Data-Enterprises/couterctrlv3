@@ -12,11 +12,9 @@ interface Props {
   weighted: boolean;
 }
 
-// Price Opt's equivalent of Sales Comp's day-of-week grid — a variable-
-// length list rather than a fixed 7-cell shape, since price points aren't
-// tied to a calendar. No profit column and no "current" row — there's no
-// current price or cost anywhere in this data, only the best-by-revenue
-// row gets a tinted background.
+// Price Opt's version of Sales Comp's day-of-week grid: a variable-length list
+// of price points. No profit column and no "current" row; the best-by-revenue
+// row is tinted.
 const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: Props) => {
   const sorted = [...points].sort((a, b) => b.revenue - a.revenue);
   const cols = "1fr 70px 90px";
@@ -28,9 +26,7 @@ const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: Props) => {
       </div>
       <div className="grid gap-1 px-2 text-[10px] font-semibold uppercase tracking-wide text-content/85" style={{ gridTemplateColumns: cols }}>
         <span>Price</span>
-        {/* The table covers one item, so the header can name its unit
-            outright rather than hedging with "Qty / Lb" the way a mixed
-            sub-department grid has to. */}
+        {/* One item per table, so the header names its unit outright. */}
         <span className="text-right">{weighted ? "Lb" : "Qty"}</span>
         <span className="text-right">Revenue</span>
       </div>

@@ -22,10 +22,8 @@ const TONE_TEXT: Record<TrendTone, string> = {
   muted: "text-content/85",
 };
 
-// Headline is units lost (impact_units), not a dollar figure — Trend's own
-// unit, matching the aggregate KPI strip above it. Phrase is just the
-// status label itself; no synthesis needed here the way Sales Comp/Price
-// Opt required.
+// The headline is units lost (impact_units), Trend's own unit, matching the
+// KPI strip; the phrase is the status label itself.
 const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: Props) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

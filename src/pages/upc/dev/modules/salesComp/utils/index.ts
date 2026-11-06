@@ -1,9 +1,8 @@
 // Interfaces
 import type { Direction, StatusPhrase, Trajectory } from "../interfaces";
 
-// Matches the flat-band convention SalesCompKpis already uses for bucketing
-// WoW into up/flat/down — reused here so both signals agree on what counts
-// as a real move vs. noise.
+// The same flat band SalesCompKpis uses for up/flat/down, so both agree on
+// what counts as a real move.
 const FLAT_THRESHOLD = 1;
 
 function classifyDirection(pct: number): Direction {
@@ -32,10 +31,8 @@ const MATRIX: Record<Direction, Record<Trajectory, string>> = {
   },
 };
 
-// Synthesizes vs-LY direction and week-over-week trajectory into one
-// plain-language verdict for the left list — two real, sometimes
-// contradictory signals (an item can be down for the year but improving
-// recently), rather than collapsing them into a single misleading word.
+// Combines vs-LY direction and week-over-week trajectory into one verdict for
+// the left list, since they can disagree (down for the year, improving lately).
 export function getStatusPhrase(vsLYPct: number | null, wowPct: number | null): StatusPhrase {
   if (vsLYPct === null && wowPct === null) {
     return { text: "Not enough data yet", tone: "muted" };
@@ -84,9 +81,8 @@ const INSIGHT_MATRIX: Record<Direction, Record<Trajectory, (vsLY: number, wow: n
   },
 };
 
-// Fuller, sentence-form version of the same signals behind getStatusPhrase —
-// for the CTA insight strip's expanded state, where there's room to spell
-// out the two-signal story instead of compressing it into a short label.
+// The sentence form of getStatusPhrase's signals, for the CTA strip's
+// expanded state.
 export function getStatusInsight(vsLYPct: number | null, wowPct: number | null): string {
   if (vsLYPct === null && wowPct === null) {
     return "Not enough data yet to compare this item against its own history.";

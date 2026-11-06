@@ -24,14 +24,8 @@ const COLS = "1fr 110px 60px 70px 80px 70px 75px";
 
 const getSortValue = (item: AssociationItem, col: SortCol) => item[col];
 
-// Mirrors PriceOptPricePointsTable.tsx's shape — a variable-length list of
-// items with several numeric attributes each maps naturally onto columns,
-// same as Price Opt's price-point history did. Sortable columns and the
-// product-description filter follow the app's established column-header
-// conventions (see ColFilter.tsx and MarginPerfItemsTable.tsx's colSort
-// pattern) rather than inventing new ones. Department and Attach stay
-// plain, non-interactive columns by design — Attach rate is the table's
-// own default sort, and Department doesn't need its own filter/sort here.
+// Shaped like PriceOptPricePointsTable, with the app's column-header sort and
+// filter conventions. Department and Attach stay plain columns.
 const AssociationItemsTable = ({ items, onReroot, onContextMenu }: Props) => {
   const [colSort, setColSort] = useState<{ col: SortCol; dir: "desc" | "asc" } | null>(null);
   const [draftDesc, setDraftDesc] = useState("");
