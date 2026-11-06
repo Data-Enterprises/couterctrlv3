@@ -1,22 +1,11 @@
 import { describe, it, expect } from "vitest";
-import {
-  accessSets,
-  changedGrants,
-  changedSets,
-  directStoreIds,
-  effectiveStores,
-  emptySelectedGroupIds,
-  groupCompanies,
-  hasChanges,
-  heldGroupIds,
-  accessModeOf,
-  NO_PICKS,
-  picksForMode,
-  revokedGroupIds,
-  toggleGroup,
-  type AccessPicks,
-} from "@/pages/organization/dev/users/utils";
-import type { SelectableStore } from "@/pages/organization/dev/users/interfaces";
+import { accessSets, changedGrants, changedSets, directStoreIds, effectiveStores, emptySelectedGroupIds, groupCompanies, hasChanges, heldGroupIds, accessModeOf, NO_PICKS, picksForMode, revokedGroupIds, toggleGroup } from "@/pages/organization/dev/users/utils";
+import type {
+  SelectableStore,
+  AccessPicks,
+} from "@/pages/organization/dev/users/interfaces";
+
+// Interfaces
 
 const store = (
   storeid: number,

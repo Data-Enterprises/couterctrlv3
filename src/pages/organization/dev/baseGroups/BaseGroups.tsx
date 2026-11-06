@@ -1,7 +1,7 @@
 // Hooks
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "../hooks";
+import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
 
 // API
 import { getAllUsers } from "../../../../api/user";
@@ -24,6 +24,7 @@ import {
 } from "../utils";
 
 // Interfaces
+import type { StoreSplit } from "./interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,

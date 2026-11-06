@@ -1,5 +1,8 @@
 // Utils
-import { STEP_ORDER, STEP_TITLE, type WizardStep } from "../utils";
+import { STEP_ORDER, STEP_TITLE } from "../utils";
+
+// Interfaces
+import type { WizardStep } from "../interfaces";
 
 // Components
 import { CheckIcon } from "@heroicons/react/20/solid";

@@ -23,7 +23,7 @@ import { getUserLevels } from "../../../api/team";
 import { getCompanies } from "../../../api/company";
 
 // Utils
-import { PanelFitContext, type PanelFit } from "./utils/panelFit";
+import { PanelFitContext } from "./utils/panelFit";
 import {
   filterUsers,
   filtersApplied,
@@ -31,6 +31,7 @@ import {
 } from "./utils/userFilters";
 
 // Interfaces
+import type { Tab, PanelFit } from "./interfaces";
 import type {
   CompanyJsonResp,
   JsonError,
@@ -72,8 +73,6 @@ const TAB_FIT: Record<Tab, PanelFit> = {
   stores: { width: 1320, height: 660 },
 };
 
-type Tab = "users" | "companies" | "baseGroups" | "stores";
-
 /**
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
  *
@@ -95,7 +94,6 @@ const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
   { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
 ];
-
 
 const Organization = () => {
   const toast = useToast();
@@ -133,7 +131,6 @@ const Organization = () => {
     // An export window left open on a previous visit stays shut until asked.
     ctx.dispatch(setUsersExportOpen(false));
   }, []);
-
 
   // The users list only loads for people who get the Users tab.
   useEffect(() => {
@@ -280,7 +277,6 @@ const Organization = () => {
             </button>
           ))}
         </div>
-
 
         {pendingTab && ctx.unsavedWizard && (
           <ConfirmModal

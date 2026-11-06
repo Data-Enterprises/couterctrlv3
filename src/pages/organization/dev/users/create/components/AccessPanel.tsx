@@ -16,21 +16,16 @@ import {
   mayChangeGroup,
   wizardGroups,
 } from "../../../utils";
-import {
-  type AccessPicks,
-  NO_PICKS,
-  heldGroupIds,
-  toggleGroup,
-} from "../../utils";
+import { NO_PICKS, heldGroupIds, toggleGroup } from "../../utils";
 
 // Interfaces
+import type { AccessPicks, SelectableStore } from "../../interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
 } from "../../../../../../interfaces";
-import type { SelectableStore } from "../../interfaces";
 
 // Components
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";

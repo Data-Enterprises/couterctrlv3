@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { useBaseGroupsCtx, type StoreSplit } from "../../hooks";
+import { useBaseGroupsCtx } from "../../hooks";
 import { useMarkUsersStale } from "../../utils/usersStale";
 
 // API
@@ -14,14 +14,10 @@ import {
 
 // Utils
 import { groupStoresConfirm } from "../../utils/bulkConfirm";
-import {
-  callReason,
-  summarizeAssign,
-  summarizeUnassign,
-  type StoreOutcome,
-} from "../utils";
+import { callReason, summarizeAssign, summarizeUnassign } from "../utils";
 
 // Interfaces
+import type { StoreSplit, StoreOutcome } from "../interfaces";
 import type { CompanyBaseGroup, JsonError, User } from "../../../../../interfaces";
 
 // Components

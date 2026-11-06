@@ -1,4 +1,5 @@
 // Interfaces
+import type { UserSort } from "../interfaces";
 import type { User } from "../../../../interfaces";
 import type { UsersGridFilters } from "../../../../features/dev/devOrganizationSlice";
 
@@ -88,13 +89,6 @@ export const filtersApplied = (f: UsersGridFilters) =>
     f.usernameFilter.trim(),
     f.emailFilter.trim(),
   ].some((v) => v !== "");
-
-/** The users grid's sortable columns. */
-export type UserSortKey = "first" | "last" | "role" | "level" | "access" | "visited";
-export interface UserSort {
-  key: UserSortKey;
-  desc: boolean;
-}
 
 /**
  * The grid in a column's order. Rows came in API order with no way to sort.

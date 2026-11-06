@@ -14,7 +14,7 @@ import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
 import { seesEverything } from "../utils";
 
 // Interfaces
-import type { Company, JsonError, Store } from "../../../../interfaces";
+import type { Company, JsonError } from "../../../../interfaces";
 
 export const useOrganizationCtx = () => {
   const dispatch = useAppDispatch();
@@ -87,8 +87,6 @@ export const useOrganizationCtx = () => {
     unsavedWizard,
   };
 };
-
-export type StoreSplit = { assigned: Store[]; unassigned: Store[] };
 
 /**
  * What the Base Groups tab needs.

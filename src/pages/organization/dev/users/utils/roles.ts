@@ -1,7 +1,5 @@
-export type SelectOption = {
-  value: number | string;
-  label: string;
-};
+// Interfaces
+import type { SelectOption } from "../interfaces";
 
 export const roles: SelectOption[] = [
   { value: "1", label: "Single Store" },

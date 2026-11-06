@@ -14,16 +14,10 @@ import { assignUserToCompany, getAllUsers } from "../../../../../api/user";
 // Utils
 import { canAdministerUser, companyReach } from "../../utils";
 import { peopleConfirm } from "../../utils/bulkConfirm";
-import {
-  planAdd,
-  planRemove,
-  summarize,
-  type CompanyPlan,
-  type MemberUser,
-  type UserOutcome,
-} from "../utils";
+import { planAdd, planRemove, summarize } from "../utils";
 
 // Interfaces
+import type { CompanyPlan, MemberUser, UserOutcome } from "../interfaces";
 import type { JsonError, User } from "../../../../../interfaces";
 
 // Components

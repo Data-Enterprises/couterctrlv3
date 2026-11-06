@@ -21,16 +21,11 @@ import {
 import { getCompaniesAssignedToUser } from "../../../../../../api/company";
 
 // Utils
-import {
-  heldGroupIds,
-  picksForMode,
-  type AccessPicks,
-  changedSets,
-  accessModeOf,
-  type CarriedAccess,
-} from "../../utils";
+import { heldGroupIds, picksForMode, changedSets, accessModeOf } from "../../utils";
 
 // Interfaces
+import type { AccessPicks, AccessSets, SelectableStore } from "../../interfaces";
+import type { AccessOutcome, AccessStep, ExistingAccess, HeldRead } from "../interfaces";
 import type {
   GrantMode,
   JsonError,
@@ -38,8 +33,6 @@ import type {
   BaseGroup,
   UserGroupPick,
 } from "../../../../../../interfaces";
-import type { AccessSets } from "../../utils";
-import type { SelectableStore } from "../../interfaces";
 
 /**
  * Edit's picks: seeded from what the person holds, and re-seeded as those
@@ -149,26 +142,11 @@ export const useAccessMode = () => {
   );
 };
 
-/** The stages of a save, in the order they have to be written. */
-export type AccessStep = "companies" | "grants" | "revoke";
-
 export const STEP_LABEL: Record<AccessStep, string> = {
   companies: "Companies",
   grants: "Base groups",
   revoke: "Removed base groups",
 };
-
-export interface AccessOutcome {
-  ok: boolean;
-  /** Written successfully, in the order they went out. */
-  saved: AccessStep[];
-  /** Skipped because nothing in that stage moved. */
-  skipped: AccessStep[];
-  /** Where it stopped. Null when everything asked for was written. */
-  failed: AccessStep | null;
-  /** Why it stopped, in words a person can act on. */
-  reason: string | null;
-}
 
 /**
  * Writing a person's access, shared by Add and Edit.
@@ -319,13 +297,6 @@ export const NOTHING_HELD: AccessSets = {
   grants: [],
 };
 
-export interface ExistingAccess {
-  /** What the panel may show and the editor may change. */
-  picks: AccessPicks;
-  /** What the panel cannot show or does not own, kept out of its reach. */
-  carried: CarriedAccess;
-}
-
 /**
  * What the selected user already holds.
  *
@@ -434,9 +405,6 @@ export const useExistingAccess = (
     groupPicks,
   ]);
 };
-
-/** The four reads, by what the person holds that each one answers. */
-export type HeldRead = "groups" | "stores" | "picks" | "companies";
 
 const READ_NAMES: Record<HeldRead, string> = {
   groups: "base groups",

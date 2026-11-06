@@ -9,6 +9,7 @@ import {
 } from "../../../../../api/team";
 
 // Interfaces
+import type { Outcome } from "../interfaces";
 import type { JsonError, User } from "../../../../../interfaces";
 
 // Components
@@ -29,12 +30,6 @@ interface SetActiveModalProps {
    *  re-read the lists and drop its selection. */
   onClose: (changed: boolean) => void;
 }
-
-type Outcome =
-  | { kind: "changed" }
-  | { kind: "unchanged" }
-  | { kind: "refused"; reason: string }
-  | { kind: "not_found" };
 
 /**
  * Deactivate or reactivate several people at once, after naming every one.

@@ -9,11 +9,12 @@ import {
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
 
+// Interfaces
+import type { View } from "./interfaces";
+
 // Components
 import UserGrid from "./components/UserGrid";
 import UserWizard from "./create/UserWizard";
-
-type View = "grid" | "create";
 
 const Users = () => {
   const ctx = useOrganizationCtx();

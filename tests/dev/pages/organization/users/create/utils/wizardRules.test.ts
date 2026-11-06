@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DuplicateSource } from "@/features/dev/devUsersSlice";
-import { NO_PICKS, type AccessPicks } from "@/pages/organization/dev/users/utils";
+import { NO_PICKS } from "@/pages/organization/dev/users/utils";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -13,6 +13,9 @@ import {
   singleStoreNote,
   trimToSingleStore,
 } from "@/pages/organization/dev/users/create/utils/wizardRules";
+
+// Interfaces
+import type { AccessPicks } from "@/pages/organization/dev/users/interfaces";
 
 const store = (storeid: number, store_number: string, store_name: string) => ({
   storeid,

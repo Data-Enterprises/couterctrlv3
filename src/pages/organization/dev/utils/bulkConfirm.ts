@@ -1,16 +1,5 @@
-/**
- * What Assign all and Unassign all ask before they act, on the Companies,
- * Stores and Base Groups tabs. Neither asked: Unassign all on Companies took
- * the company off everyone, the person pressing it included, in one click.
- *
- * Unassign all always asks. Assign all asks above a handful, where a slip
- * would be a lot to undo. The count is named, and so is the person pressing
- * it when they are in the list.
- */
-export interface BulkConfirm {
-  message: string;
-  confirmLabel: string;
-}
+// Interfaces
+import type { BulkConfirm } from "../interfaces";
 
 /** Assign all asks only above this many. */
 export const HANDFUL = 5;

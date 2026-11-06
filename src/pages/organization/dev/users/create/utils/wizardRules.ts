@@ -1,17 +1,16 @@
 // Utils
-import { STEP_ORDER, type WizardStep } from ".";
+import { STEP_ORDER } from ".";
 
 // Interfaces
+import type { AccessPicks } from "../../interfaces";
+import type { StepReadiness } from "../interfaces";
 import type { DuplicateSource } from "../../../../../../features/dev/devUsersSlice";
-import type { AccessPicks } from "../../utils";
 
 /**
  * The wizard's rules, as plain functions: which steps are ready, how far the
  * step bar may jump, and why Create is off. Kept out of the component so they
  * can be read and tested on their own.
  */
-
-export type StepReadiness = Record<WizardStep, boolean>;
 
 export const readiness = ({
   identity,

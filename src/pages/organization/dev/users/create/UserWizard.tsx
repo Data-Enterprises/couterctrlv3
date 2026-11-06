@@ -2,18 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { useOrganizationCtx } from "../../hooks";
-import { usePanelFit, type PanelFit } from "../../utils/panelFit";
-import {
-  useSeededPicks,
-  useAccessSave,
-  outcomeSentence,
-  NOTHING_HELD,
-  type AccessOutcome,
-  useAccessMode,
-  failedReadsText,
-  useHeldAccess,
-  useExistingAccess,
-} from "./hooks";
+import { usePanelFit } from "../../utils/panelFit";
+import { useSeededPicks, useAccessSave, outcomeSentence, NOTHING_HELD, useAccessMode, failedReadsText, useHeldAccess, useExistingAccess } from "./hooks";
 
 // Redux
 import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
@@ -31,16 +21,8 @@ import { createUser, updateUser } from "../../../../../api/team";
 import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 
 // Utils
-import {
-  accessSets,
-  directStoreIds,
-  emptySelectedGroupIds,
-  groupCompanies,
-  hasChanges,
-  NO_PICKS,
-  type AccessPicks,
-} from "../utils";
-import { STEP_ORDER, type WizardStep } from "./utils";
+import { accessSets, directStoreIds, emptySelectedGroupIds, groupCompanies, hasChanges, NO_PICKS } from "../utils";
+import { STEP_ORDER } from "./utils";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -53,6 +35,9 @@ import {
 } from "./utils/wizardRules";
 
 // Interfaces
+import type { PanelFit } from "../../interfaces";
+import type { AccessPicks } from "../interfaces";
+import type { AccessOutcome, WizardStep } from "./interfaces";
 import type {
   CompanyBaseGroup,
   GrantMode,

@@ -4,19 +4,17 @@ import { useOrganizationCtx } from "../../../hooks";
 
 // Utils
 import { roles } from "../../utils/roles";
-import {
-  effectiveStores,
-  picksInGroup,
-  type AccessPicks, heldGroupIds } from "../../utils";
+import { effectiveStores, picksInGroup, heldGroupIds } from "../../utils";
 
 // Interfaces
+import type { AccessPicks } from "../../interfaces";
+import type { WizardStep } from "../interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,
   GrantMode,
   Store,
 } from "../../../../../../interfaces";
-import type { WizardStep } from "../utils";
 
 // Components
 import {

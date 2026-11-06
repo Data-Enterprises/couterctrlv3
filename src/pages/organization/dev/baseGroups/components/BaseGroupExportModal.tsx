@@ -11,6 +11,7 @@ import { callReason } from "../utils";
 import { withinReachOf } from "../utils/userReach";
 
 // Interfaces
+import type { ExportDataset } from "../interfaces";
 import type {
   BaseGroupUserRow,
   BaseGroupUsersResp,
@@ -32,12 +33,6 @@ interface BaseGroupExportModalProps {
   /** Every user, with levels: the group's user rows carry none. */
   users: User[];
 }
-
-type ExportDataset =
-  | "assigned"
-  | "unassigned"
-  | "assignedUsers"
-  | "unassignedUsers";
 
 const buildStoresCsv = (stores: Store[], label: string) => {
   const headers = ["Store ID", "Store #", "Store Name"];

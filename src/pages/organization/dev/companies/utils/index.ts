@@ -1,3 +1,6 @@
+// Interfaces
+import type { CompanyPlan, MemberUser, MembershipSummary, UserOutcome } from "../interfaces";
+
 /**
  * Moving users in and out of a company.
  *
@@ -17,20 +20,6 @@
  * The full list is already on hand: `GET users/` returns each user with their
  * `companies`, so nothing has to be fetched per company to do this safely.
  */
-
-/** The shape this needs off a `User`. */
-export interface MemberUser {
-  id: number;
-  /** Every company the user currently holds. */
-  companies: number[];
-}
-
-/** One call to make: a user, and the complete list they should end up with. */
-export interface CompanyPlan {
-  userid: number;
-  /** Whole and final — the endpoint replaces with exactly this. */
-  companies: number[];
-}
 
 const uniq = (ids: number[]) =>
   Array.from(new Set(ids.filter((id) => Number.isFinite(id) && id > 0)));
@@ -73,17 +62,6 @@ export const planRemove = (
  *  `company_link` — but worth being able to name. */
 export const leftWithNothing = (plans: CompanyPlan[]): number[] =>
   plans.filter((p) => p.companies.length === 0).map((p) => p.userid);
-
-export type UserOutcome =
-  | { userid: number; ok: true }
-  | { userid: number; ok: false; reason: string };
-
-export interface MembershipSummary {
-  tone: "success" | "error";
-  text: string;
-  ok: number;
-  failed: number;
-}
 
 const plural = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;

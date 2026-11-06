@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { NO_PICKS, type AccessPicks } from "@/pages/organization/dev/users/utils";
+import { NO_PICKS } from "@/pages/organization/dev/users/utils";
 import { useSeededPicks } from "@/pages/organization/dev/users/create/hooks";
+
+// Interfaces
+import type { AccessPicks } from "@/pages/organization/dev/users/interfaces";
 
 const holding = (baseGroups: number[]): AccessPicks => ({
   ...NO_PICKS,

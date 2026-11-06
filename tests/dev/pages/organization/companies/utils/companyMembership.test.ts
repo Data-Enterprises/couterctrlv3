@@ -4,9 +4,8 @@ import {
   planAdd,
   planRemove,
   summarize,
-  type MemberUser,
-  type UserOutcome,
 } from "@/pages/organization/dev/companies/utils";
+import type { MemberUser, UserOutcome } from "@/pages/organization/dev/companies/interfaces";
 
 const user = (id: number, companies: number[]): MemberUser => ({
   id,

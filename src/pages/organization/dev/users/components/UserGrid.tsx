@@ -23,18 +23,12 @@ import {
 } from "../../../../../api/team";
 
 // Utils
-import {
-  accessLabel,
-  filterUsers,
-  NO_COMPANY_VALUE,
-  sortUsers,
-  type UserSort,
-  type UserSortKey,
-} from "../../utils/userFilters";
+import { accessLabel, filterUsers, NO_COMPANY_VALUE, sortUsers } from "../../utils/userFilters";
 import { accessModeOf } from "../utils";
 import { roles } from "../utils/roles";
 
 // Interfaces
+import type { UserSort, UserSortKey } from "../../interfaces";
 import type {
   BaseGroup,
   JsonError,

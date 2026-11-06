@@ -7,6 +7,7 @@ import { roles } from "../users/utils/roles";
 import { accessLabel } from "../utils/userFilters";
 
 // Interfaces
+import type { ExportDataset } from "../interfaces";
 import type { User, UserLevel } from "../../../../interfaces";
 
 // Components
@@ -22,8 +23,6 @@ interface UsersExportModalProps {
   /** Any of the grid's filters is narrowing the list (see filtersApplied). */
   filtersActive: boolean;
 }
-
-type ExportDataset = "all" | "filtered";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "N/A";

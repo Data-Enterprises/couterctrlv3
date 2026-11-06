@@ -3,8 +3,8 @@ import {
   callReason,
   summarizeAssign,
   summarizeUnassign,
-  type StoreOutcome,
 } from "@/pages/organization/dev/baseGroups/utils";
+import type { StoreOutcome } from "@/pages/organization/dev/baseGroups/interfaces";
 
 const added = (storeid: number, granted = 12, skippedSingleStore = 0): StoreOutcome => ({
   storeid,

@@ -2,6 +2,7 @@
 import { isSupportUser } from "../../../../utils/supportUsers";
 
 // Interfaces
+import type { CompanyRef } from "../interfaces";
 import type { BaseGroup } from "../../../../interfaces";
 
 /**
@@ -19,17 +20,6 @@ import type { BaseGroup } from "../../../../interfaces";
  */
 export const seesEverything = (userLevel: number, email: string) =>
   userLevel === 9 || isSupportUser(email);
-
-/**
- * A company as a membership row carries it: its id, and what it belongs under.
- *
- * `UserCompany` has both, on the signed-in user (from the sign-in response)
- * and on every user `users/` returns.
- */
-export interface CompanyRef {
-  company: number;
-  parent_company_id?: number | null;
-}
 
 /**
  * Which family a company is in: its parent's id, or its own when it has none.

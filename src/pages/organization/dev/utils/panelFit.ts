@@ -1,19 +1,8 @@
 // Hooks
 import { createContext, useContext, useEffect } from "react";
 
-/**
- * A size the content asks the page panel for.
- *
- * `height: "auto"` means "as tall as what is in me" — the panel stops being a
- * box with a drag handle and becomes a card around a form. A number means the
- * content needs room it cannot derive, which is the three-column picker: its
- * columns scroll independently, so they have no natural height at all and an
- * auto one would collapse them to nothing.
- */
-export interface PanelFit {
-  width: number;
-  height: number | "auto";
-}
+// Interfaces
+import type { PanelFit } from "../interfaces";
 
 /** Consumed directly by `Organization`, which owns the panel. No provider
  *  component lives here: a module exporting both a component and a hook

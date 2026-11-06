@@ -2,12 +2,10 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import {
-  effectiveStores,
-  type AccessPicks,
-} from "../../utils";
+import { effectiveStores } from "../../utils";
 
 // Interfaces
+import type { AccessPicks } from "../../interfaces";
 import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../interfaces";
 
 // Components

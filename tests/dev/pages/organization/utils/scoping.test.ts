@@ -1,18 +1,9 @@
 import { describe, it, expect } from "vitest";
-import {
-  canAdministerUser,
-  companyReach,
-  familyOf,
-  companiesWithHeldGroups,
-  heldGroupIds,
-  seesEverything,
-  visibleCompanyList,
-  visibleGroups,
-  type CompanyRef,
-  mayChangeGroup,
-  wizardGroups,
-} from "@/pages/organization/dev/utils";
+import { canAdministerUser, companyReach, familyOf, companiesWithHeldGroups, heldGroupIds, seesEverything, visibleCompanyList, visibleGroups, mayChangeGroup, wizardGroups } from "@/pages/organization/dev/utils";
 import type { BaseGroup } from "@/interfaces";
+
+// Interfaces
+import type { CompanyRef } from "@/pages/organization/dev/interfaces";
 
 const row = (
   id: number,
