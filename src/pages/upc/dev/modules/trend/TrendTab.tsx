@@ -1,21 +1,32 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   setDevTrendLoading,
   mergeDevTrends,
   setDevTrendWindow,
   setDevUpcItems,
 } from "../../../../../features/dev/devUpcDevSlice";
+
+// API
 import { getTrendDetect } from "../../../../../api/upc";
+
+// Utils
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
 import { answerOf } from "../../utils";
-import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import type { UpcTrend } from "../../../../../interfaces";
 import { getTrendStatus, impactUnits } from "./trendStats";
 import { trendRequest } from "./utils/trendWindow";
+
+// Interfaces
+import type { UpcTrend } from "../../../../../interfaces";
+
+// Components
 import TrendLeftList from "./components/TrendLeftList";
 import TrendDetailPanel from "./components/TrendDetailPanel";
 
