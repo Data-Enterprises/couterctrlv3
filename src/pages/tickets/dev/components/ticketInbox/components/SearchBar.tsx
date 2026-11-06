@@ -43,7 +43,7 @@ const SearchBar = ({
         <button
           type="button"
           onClick={() => onTab("urgent")}
-          aria-pressed={urgent > 0}
+          aria-pressed={tab === "urgent"}
           title="Tickets that cannot wait"
           className={`flex-none rounded-lg border px-2.5 py-2 text-[12px] font-semibold transition-colors ${
             tab === "urgent"
