@@ -6,30 +6,34 @@ import { useItemReportCtx } from "../hooks";
 // Redux
 import {
   setItemReportExpandedReceipt,
-  openItemReportInvoice,
   toggleItemReportSection,
 } from "../../../../features/dev/devItemReportSlice";
 
 // Utils
 import { formatCurrency2, formatDateSimple } from "../../../../utils";
-import { formatPct, pillClass } from "../../../../utils/severity";
 import { unitPrice } from "../../../../utils/pricePoints";
 import { ACTION_LABEL, deliveryGap } from "../utils/verdict";
 import { buildPriceEras, mergePricePoints } from "../utils/priceEras";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind, ReportItem, ReceiptLine, PeriodLabels } from "../interfaces";
 import { ACTION_TONE } from "../utils/actionTone";
-import { describeReceipt } from "../utils";
+import { MOVEMENT_FALLBACK, TXN_COLS, fmtUnits } from "./utils";
 
 // Interfaces
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
 import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
+import type { ActionKind, ReportItem, ReceiptLine, PeriodLabels } from "../interfaces";
 
 // Components
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import DetailPopover from "../components/DetailPopover";
 import TransactionSheet from "./components/TransactionSheet";
+import Kpi from "./components/Kpi";
+import Kpis from "./components/Kpis";
+import Block from "./components/Block";
+import Head from "./components/Head";
+import Line from "./components/Line";
+import ShowAll from "./components/ShowAll";
+import ReceiptDetail from "./components/ReceiptDetail";
 
 /**
  * The detail beside the sheet: what arrived, what moved, what it rang at.
@@ -45,15 +49,6 @@ import TransactionSheet from "./components/TransactionSheet";
  * movement, and the money lives in the sheet's trailing column and in the
  * export, where it can't crowd out the figure that matters here.
  */
-
-/** How far a unit swing has to go before the pill calls it critical rather than
- *  watch. Sales' own delta pill is binary red/green, which would paint a 2% dip
- *  as a crisis — the false alarm this page is built to avoid. */
-const DELTA_THRESHOLD = 10;
-
-/** Shown in the Unit movement heading before receipts land, so the section
- *  names its own window rather than appearing to cover all time. */
-const MOVEMENT_FALLBACK = 14;
 
 interface Props {
   item: ReportItem | null;
@@ -74,325 +69,6 @@ interface Props {
    *  in the list, where it broke the columns apart. */
   evidence?: string;
 }
-
-const fmtUnits = (n: number | null) =>
-  n === null ? "—" : n % 1 === 0 ? String(n) : n.toFixed(1);
-
-/** One period cell, matching the KPI strip on Sales: label, the dates it
- *  covers, then the figure — with the comparison pill inline on the two
- *  baselines. */
-const Kpi = ({
-  label,
-  dates,
-  units,
-  pct,
-}: {
-  label: string;
-  dates: string;
-  units: number | null;
-  pct?: number | null;
-}) => (
-  <div className="px-4 pt-2.5 pb-1.5 text-center">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </div>
-    <div className="text-[10px] font-bold text-content mb-0.5">{dates}</div>
-    <div className="flex items-baseline justify-center gap-2">
-      <span className="text-[14px] font-bold text-content tabular-nums">
-        {fmtUnits(units)}
-      </span>
-      {pct !== undefined && (
-        <span
-          className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(pct ?? null, DELTA_THRESHOLD)}`}
-        >
-          {pct === null || pct === undefined ? "—" : formatPct(pct)}
-        </span>
-      )}
-    </div>
-  </div>
-);
-
-/**
- * One section of the rail.
- *
- * Sections divide on navy at 15% rather than a grey hairline — the same colour
- * the panel headers use, so the rail reads as one panel instead of a stack of
- * unrelated cards.
- */
-const Block = ({
-  // `id` arrives via the spread and is only there so the caller can key the
-  // fold; the component itself has no use for it.
-  label,
-  note,
-  noteTone = "text-content",
-  collapsed,
-  onToggle,
-  children,
-}: {
-  /** Stable across renders, unlike `label` — two of these interpolate a day
-   *  count into their heading, and a key that changes would lose the fold. */
-  id: string;
-  label: string;
-  /** Sits opposite the label. For a fact qualifying the whole section — how
-   *  stale the deliveries are, say — which belongs with the heading rather than
-   *  dangling under a list it isn't a row of. */
-  note?: string;
-  noteTone?: string;
-  collapsed: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) => (
-  <div className="px-3 py-2.5 border-b border-brand_navy/15">
-    {/* The whole heading is the hit area, not just the chevron — a 12px target
-        in a panel this narrow is a miss waiting to happen. */}
-    <div
-      onClick={onToggle}
-      className={`flex items-center justify-between gap-2 cursor-pointer select-none ${
-        collapsed ? "" : "mb-1.5"
-      }`}
-    >
-      <span className="flex items-center gap-1 min-w-0">
-        {collapsed ? (
-          <ChevronRightIcon className="w-3.5 h-3.5 text-content flex-shrink-0" />
-        ) : (
-          <ChevronDownIcon className="w-3.5 h-3.5 text-content flex-shrink-0" />
-        )}
-        <span className="text-[11.5px] font-medium uppercase tracking-wide text-content truncate">
-          {label}
-        </span>
-      </span>
-      {note && (
-        <span
-          className={`text-[12px] font-medium tabular-nums flex-shrink-0 ${noteTone}`}
-        >
-          {note}
-        </span>
-      )}
-    </div>
-    {!collapsed && children}
-  </div>
-);
-
-/**
- * The grid every section's rows sit on.
- *
- * Real columns rather than "24 · $3.11" crammed into one, and sized to the
- * number of values a section actually has — a two-value section uses a
- * two-track template so its figures finish flush at the right edge instead of
- * stopping short against an empty third column.
- */
-/** The transactions grid's own shape. "TRANSACTIONS" is a long heading and the
- *  shared three-column template is sized for the estimated section's "Days". */
-const TXN_COLS = "1fr 52px 104px";
-
-const TEMPLATE: Record<number, string> = {
-  2: "1fr 76px",
-  3: "1fr 60px 76px",
-  5: "1fr 44px 58px 58px 50px",
-};
-
-interface Cell {
-  text: string;
-  tone?: string;
-}
-
-/**
- * One delivery, opened up.
- *
- * Everything here is already on the line we keep, so opening a row costs nothing
- * — no fetch, no second call. The collapsed grid answers "what arrived and at
- * what price"; this answers "which invoice, how was it billed, and was any of it
- * free or returned".
- *
- * Vendor is a heading rather than a tile: it is a name of unpredictable length,
- * and a tile is a shape for a number.
- */
-const ReceiptDetail = ({ line }: { line: ReceiptLine }) => {
-  const dispatch = useAppDispatch();
-
-  return (
-    <div className="bg-gray-50 border-l-2 border-brand_navy">
-      <div className="px-2.5 py-1.5 text-[12px] font-medium text-content truncate">
-        {line.vendorName}
-      </div>
-      <Kpis
-        cells={[
-          {
-            label: "Invoice",
-            value: String(line.invoiceId),
-            // The invoice number is already the identity of the thing you would
-            // open, so it is the button — no extra control to explain.
-            onClick: () =>
-              dispatch(
-                openItemReportInvoice({
-                  invoiceId: line.invoiceId,
-                  date: line.date,
-                  vendorName: line.vendorName,
-                  fromUpc: line.productCode,
-                }),
-              ),
-          },
-          {
-            label: "Ext cost",
-            value: formatCurrency2(line.sellingUnits * line.unitCost),
-          },
-          {
-            label: "Ext retail",
-            value:
-              line.retail > 0
-                ? formatCurrency2(line.sellingUnits * line.retail)
-                : "—",
-          },
-        ]}
-      />
-      <Kpis
-        cells={[
-          {
-            label: "Received as",
-            value: describeReceipt(line.sellingUnits, line.cases),
-          },
-          // Flags, not counts — a line is free goods or it isn't. "Yes" takes
-          // the watch tone so the exception is what draws the eye; "No" stays
-          // quiet, which is the answer on almost every delivery.
-          {
-            label: "Free",
-            value: line.free > 0 ? "Yes" : "No",
-            flagged: line.free > 0,
-          },
-          {
-            label: "Returned",
-            value: line.returned > 0 ? "Yes" : "No",
-            flagged: line.returned > 0,
-          },
-        ]}
-      />
-    </div>
-  );
-};
-
-/** Three equal tiles, on the KPI strip the rest of the app uses so a nested
- *  strip still reads as native — with one deliberate variation: the values are
- *  `font-medium`, not the canonical `font-bold`. This strip sits inside a row
- *  that is itself inside a section, and bold at that depth competes with the
- *  headline figures above it. Not drift; leave it. */
-const Kpis = ({
-  cells,
-}: {
-  cells: {
-    label: string;
-    value: string;
-    flagged?: boolean;
-    onClick?: () => void;
-  }[];
-}) => (
-  <div className="grid grid-cols-3 divide-x divide-brand_navy/15 border-t border-brand_navy/15">
-    {cells.map((c) => (
-      <div
-        key={c.label}
-        onClick={c.onClick}
-        className={`px-2 py-1.5 text-center min-w-0 ${
-          c.onClick ? "cursor-pointer hover:bg-brand_navy/[0.06]" : ""
-        }`}
-      >
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-          {c.label}
-        </div>
-        <div
-          className={`text-[12px] font-medium truncate ${
-            c.flagged
-              ? "text-severity_watch_text"
-              : c.onClick
-                ? "text-brand_navy underline underline-offset-2"
-                : "text-content"
-          }`}
-        >
-          {c.value}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const Head = ({ cols, template }: { cols: string[]; template?: string }) => (
-  <div
-    className="grid gap-2.5 pl-1 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
-    style={{ gridTemplateColumns: template ?? TEMPLATE[cols.length] }}
-  >
-    {cols.map((c, i) => (
-      <span key={c} className={i === 0 ? "" : "text-right"}>
-        {c}
-      </span>
-    ))}
-  </div>
-);
-
-/**
- * The foot of a section that is showing less than it holds.
- *
- * The label carries the count, so it discloses that there is more as well as
- * offering it — a section that silently stopped at six was the same shape of
- * problem as a query that silently stopped at one page.
- *
- * Expands in place rather than scrolling inside a fixed height: the rail is
- * already one scroll container, and a second one inside it captures the wheel
- * and hides the sections below. Now that every section folds, the height this
- * costs is the reader's to reclaim.
- */
-const ShowAll = ({
-  total,
-  expanded,
-  onToggle,
-}: {
-  total: number;
-  expanded: boolean;
-  onToggle: () => void;
-}) => (
-  <button
-    onClick={onToggle}
-    className="mt-1 pl-1 text-[12px] font-medium text-brand_navy underline underline-offset-2 hover:opacity-75 transition-opacity"
-  >
-    {expanded ? "Show fewer" : `Show all ${total}`}
-  </button>
-);
-
-const Line = ({
-  cells,
-  zebra,
-  onClick,
-  template,
-}: {
-  cells: Cell[];
-  /** Overrides the width-by-count default. Two three-column sections want
-   *  different shapes, and widening the shared template for one would silently
-   *  reflow the other. */
-  template?: string;
-  /** Explicit rather than `even:` — the delivery rows interleave expansion
-   *  strips, and a CSS nth-child rule would restripe everything below an open
-   *  one. */
-  zebra?: boolean;
-  onClick?: () => void;
-}) => (
-  <div
-    onClick={onClick}
-    className={`grid gap-2.5 pl-1 py-1.5 text-[12px] items-center ${
-      zebra === undefined ? "even:bg-row_stripe" : zebra ? "bg-row_stripe" : ""
-    } ${onClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
-    style={{ gridTemplateColumns: template ?? TEMPLATE[cells.length] }}
-  >
-    {cells.map((c, i) => (
-      <span
-        key={i}
-        className={`tabular-nums ${
-          i === 0
-            ? "text-content truncate"
-            : `text-right font-medium ${c.tone ?? "text-content"}`
-        }`}
-      >
-        {c.text}
-      </span>
-    ))}
-  </div>
-);
 
 const ItemReportRail = ({
   item,
