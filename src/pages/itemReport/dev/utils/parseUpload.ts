@@ -17,22 +17,7 @@
  */
 // Utils
 import { normalizeProductCode } from "../../../../utils/productCode";
-
-export interface ParsedUpload {
-  upcs: string[];
-  /** Department names named by the file, empty when it didn't carry any. Names,
-   *  not ids: the export writes descriptions, and matching those back to ids is
-   *  the caller's job once it has the department list. */
-  departments: string[];
-  /** Lines that held something but yielded no code. Header rows don't count —
-   *  they're consumed above. Exists so the entry card can say a paste was only
-   *  partly understood instead of dropping the rest in silence, which is what
-   *  a space- or semicolon-separated list used to do. */
-  skippedLines: number;
-  /** Values on a pasted list too short to be a code ("697"), set aside and
-   *  named so the card can say so. */
-  tooShort: string[];
-}
+import type { ParsedUpload } from "../interfaces";
 
 /** A UPC is all digits. Everything in these files that isn't — headers, section
  *  titles, descriptions, dollar figures with a decimal point — falls out here,

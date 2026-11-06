@@ -1,15 +1,15 @@
-import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import type {
   Ticket,
   TicketScope,
   TicketStatus,
   TicketStore,
-} from "../../../api/tickets";
+} from "../../../../api/tickets";
 import type {
   QueueTab,
   TicketFilters,
-} from "../../../features/dev/devTicketsSlice";
+} from "../../../../features/dev/devTicketsSlice";
 import {
   PRIORITY_CLASS,
   STATUS_CLASS,
@@ -19,7 +19,7 @@ import {
   snippetOf,
   visibleLabels,
   whenText,
-} from "./ticketsUtils";
+} from "../ticketsUtils";
 import {
   SCOPE_HEADING,
   SCOPE_TEXT,

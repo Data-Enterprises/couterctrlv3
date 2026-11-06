@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import Modal from "../../../components-dev/Modal";
-import { useDevApi } from "../../../hooks/useDevApi";
+import Modal from "../../../../../components-dev/Modal";
+import { useDevApi } from "../../../../../hooks/useDevApi";
 import {
   getTicketStoreOptions,
   ticketFailed,
   type Ticket,
   type TicketStoreOption,
-} from "../../../api/tickets";
-import StoreChecklist from "./StoreChecklist";
+} from "../../../../../api/tickets";
+import StoreChecklist from "../StoreChecklist";
 import { cleanStoreOptions, storesOf } from "./ticketStores";
 
 interface Props {
@@ -49,7 +49,9 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
           setLoadError("The stores for this ticket could not be read.");
           return;
         }
-        const list: TicketStoreOption[] = cleanStoreOptions(resp.data.stores ?? []);
+        const list: TicketStoreOption[] = cleanStoreOptions(
+          resp.data.stores ?? [],
+        );
         setOptions(list);
         // The server's `selected` is the newer answer than the row in hand.
         const on = list.filter((o) => o.selected).map((o) => o.storeid);
@@ -84,8 +86,8 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
           Stores on {ticket.ticket_number}
         </h2>
         <p className="mt-1 text-[12.5px] text-content/85">
-          These decide which managers see the ticket. The change is noted in
-          the thread for the desk, not the client.
+          These decide which managers see the ticket. The change is noted in the
+          thread for the desk, not the client.
         </p>
       </div>
 

@@ -3,8 +3,7 @@ import { rowPricedUnits as pricedUnits } from "../../../../utils/pricedUnits";
 
 // Interfaces
 import type { SubsPricePoint, SubDeptMargin } from "../../../../interfaces";
-import type { ReceiptLine } from "./index";
-import type { CostStep, CostHistory, PriceRead } from "../interfaces";
+import type { CostStep, CostHistory, PriceRead, ReceiptLine } from "../interfaces";
 
 /**
  * The arithmetic behind Item Actions.

@@ -15,6 +15,7 @@ import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../../utils/dates";
 import { formatDate } from "../../../../utils";
 
 // Interfaces
+import type { ReceiptLine, ReportScope } from "../interfaces";
 import type { ItemActionsResp } from "../../../../api/subMargins";
 import type {
   ReceiverListItem,
@@ -30,10 +31,6 @@ import type {
 // Shared with every page that hands an item to this one, so both ends agree
 // on how long the window is. Re-exported for this page's own files.
 export { WINDOW_DAYS, weekEnding };
-
-/** A line received on an invoice — defined in src/interfaces as ReceivedLine,
- *  because itemReportSlice holds it. */
-export type ReceiptLine = ReceivedLine;
 
 /**
  * Fetching for Item Actions.
@@ -73,15 +70,6 @@ const SINGLE_STORE = 1;
  * found, so the extra reach is usually free.
  */
 export const RECEIVING_LOOKBACK_DAYS = 90;
-
-export interface ReportScope {
-  url: string;
-  token: string;
-  storeid: number;
-  /** yyyy-mm-dd, the window the user picked. */
-  start: string;
-  end: string;
-}
 
 /**
  * How a delivery line was billed, in words rather than arithmetic.

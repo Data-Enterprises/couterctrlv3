@@ -1,4 +1,8 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useTicketsCtx } from "./hooks";
+
+// Redux
 import {
   clearFilters,
   openNew,
@@ -6,46 +10,27 @@ import {
   setSearch,
   setTab,
 } from "../../../features/dev/devTicketsSlice";
-import { useTicketsCtx } from "./hooks";
+
+// Utils
 import { priorityCounts, statusCounts } from "./ticketsUtils";
-import { storesOnTickets } from "./ticketStores";
-import TicketInbox from "./TicketInbox";
-import TicketDetail from "./TicketDetail";
-import TicketSidebar from "./TicketSidebar";
-import NewTicketModal from "./NewTicketModal";
-import CloseTicketModal from "./CloseTicketModal";
-import TechsModal from "./TechsModal";
+import { storesOnTickets } from "./utils";
+
+// Componenets
+import TicketInbox from "./components/TicketInbox";
+import TicketDetail from "./components/TicketDetail";
+import TicketSidebar from "./components/TicketSidebar";
+import NewTicketModal from "./components/modals/NewTicketModal";
+import CloseTicketModal from "./components/modals/CloseTicketModal";
+import TechsModal from "./components/modals/TechsModal";
 
 /**
  * The Client Help Desk — one page, two views.
- *
  * Which view someone gets is decided by the server and arrives with the data:
  * `canViewAll` brings the queue, every company's tickets and the internal
  * notes; without it the page is the tickets the client may see, which `scope`
  * names: their own, also their stores', or also their companies'. Nothing here
  * derives that from a user level, because the rule lives server-side and the
  * two would drift the first time a level moved.
- *
- * One route rather than two nav entries. The flags come back on every list and
- * detail response, so the page always knows which of itself to be, and there
- * is one screen to keep in step rather than two.
- *
- * LAYOUT
- * Three columns, in the order you use them: the inbox picks a ticket, the
- * thread is the ticket, and the sidebar is who sent it. Nothing stacks above
- * them — the page title and the tab strip that used to sit there were spending
- * two rows on what the inbox header now says in one, and the thread is the
- * thing that wanted the height.
- *
- * The queue, its two narrowing pickers and the search box all live in the
- * inbox header. They were briefly a rail of their own, which cost a whole
- * column to say five short words and left the thread narrower than the list
- * beside it.
- *
- * Three panels on the page's own ground, the way every other list-and-detail
- * screen in the app is built — rounded, shadowed, each under its own navy
- * header. The sidebar is the least load-bearing column, so it is the one that
- * goes below `xl`.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -97,7 +82,6 @@ const Tickets = () => {
         onRefresh={refresh}
         /*
          * Filing is the client's action.
-         *
          * A ticket takes its company from whoever opens it, so a tech filing
          * one on a client's behalf would file it under ours — the endpoint
          * refuses any other company outright. The button would be a way to
@@ -106,7 +90,6 @@ const Tickets = () => {
         onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
         /*
          * The roster is the desk's own business.
-         *
          * A client has no use for it and no right to it — the endpoint
          * refuses them anyway, so a button would only be a 403 with a label.
          * Changing it still needs the programmer level; the sheet reads

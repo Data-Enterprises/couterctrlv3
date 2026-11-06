@@ -16,14 +16,13 @@ import { unitPrice } from "../../../../utils/pricePoints";
 import { ACTION_LABEL, deliveryGap } from "../utils/verdict";
 import { buildPriceEras, mergePricePoints } from "../utils/priceEras";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind, ReportItem } from "../interfaces";
+import type { ActionKind, ReportItem, ReceiptLine, PeriodLabels } from "../interfaces";
 import { ACTION_TONE } from "../utils/actionTone";
 import { describeReceipt } from "../utils";
 
 // Interfaces
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
 import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
-import type { ReceiptLine } from "../utils";
 
 // Components
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
@@ -54,12 +53,6 @@ const DELTA_THRESHOLD = 10;
 /** Shown in the Unit movement heading before receipts land, so the section
  *  names its own window rather than appearing to cover all time. */
 const MOVEMENT_FALLBACK = 14;
-
-export interface PeriodLabels {
-  tw: string;
-  lw: string;
-  ly: string;
-}
 
 interface Props {
   item: ReportItem | null;

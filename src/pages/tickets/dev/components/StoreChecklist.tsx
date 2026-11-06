@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import Checkbox from "../../../components-dev/Checkbox";
-import type { TicketStoreOption } from "../../../api/tickets";
+import Checkbox from "../../../../components-dev/Checkbox";
+import type { TicketStoreOption } from "../../../../api/tickets";
 import { groupByCompany, matchesStoreQuery } from "./ticketStores";
 
 interface Props {

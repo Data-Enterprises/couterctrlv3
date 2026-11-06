@@ -20,8 +20,7 @@ import { comparableEras } from "./priceEras";
 
 // Interfaces
 import type { ActionKind } from "../../../../interfaces";
-import type { ReceiptLine } from "./index";
-import type { ReportItem, PriceEra, Verdict } from "../interfaces";
+import type { ReportItem, PriceEra, Verdict, ReceiptLine } from "../interfaces";
 
 export const ACTION_LABEL: Record<ActionKind, string> = {
   pending: "Reading…",

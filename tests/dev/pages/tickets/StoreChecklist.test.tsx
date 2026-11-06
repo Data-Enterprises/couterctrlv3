@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import type { TicketStoreOption } from "@/api/tickets";
-import StoreChecklist from "@/pages/tickets/dev/StoreChecklist";
+import StoreChecklist from "@/pages/tickets/dev/components/StoreChecklist";
 
 const option = (
   n: string,

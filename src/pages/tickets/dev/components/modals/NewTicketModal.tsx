@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { shallowEqual } from "react-redux";
-import { useAppSelector } from "../../../hooks";
-import { useDevApi } from "../../../hooks/useDevApi";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { useAppSelector } from "../../../../../hooks";
+import { useDevApi } from "../../../../../hooks/useDevApi";
+import { getStoresAssignedToUserGroup } from "../../../../../api/groups";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import Modal from "../../../components-dev/Modal";
-import TextField from "../../../components-dev/inputs/TextField";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import { openNew } from "../../../features/dev/devTicketsSlice";
+import Modal from "../../../../../components-dev/Modal";
+import TextField from "../../../../../components-dev/inputs/TextField";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import { openNew } from "../../../../../features/dev/devTicketsSlice";
 import {
   getTicketStoreOptions,
   ticketFailed,
   type TicketPriority,
   type TicketStoreOption,
-} from "../../../api/tickets";
-import type { TicketsCtx } from "./hooks";
-import { attachmentProblem, fileSize } from "./ticketsUtils";
+} from "../../../../../api/tickets";
+import type { TicketsCtx } from "../../hooks";
+import { attachmentProblem, fileSize } from "../../ticketsUtils";
 import {
   consolidate,
   getPageCalls,
   groupAsFile,
   withinBudget,
   type CallGroup,
-} from "../../../utils/pageCalls";
+} from "../../../../../utils/pageCalls";
 import {
   originOf,
   pageUsesSearch,
@@ -30,16 +30,16 @@ import {
   scopeOf,
   searchSummary,
   suggestedTitle,
-} from "./ticketOrigin";
-import { pageStoreOf, searchForPage } from "./pageStore";
-import StoreChecklist from "./StoreChecklist";
+} from "../../ticketOrigin";
+import { pageStoreOf, searchForPage } from "../../pageStore";
+import StoreChecklist from "../StoreChecklist";
 import {
   assignedAsOptions,
   cleanStoreOptions,
   initialStorePicks,
   optionsForGroup,
 } from "./ticketStores";
-import Checkbox from "../../../components-dev/Checkbox";
+import Checkbox from "../../../../../components-dev/Checkbox";
 
 /**
  * Filing one.
@@ -176,7 +176,8 @@ const NewTicketModal = ({
         const stores = cleanStoreOptions(resp.data.stores ?? []);
         setOptions(stores);
         setPicked(
-          initialStorePicks({ options: stores, isTech: true, searchedStoreId }).picked,
+          initialStorePicks({ options: stores, isTech: true, searchedStoreId })
+            .picked,
         );
       })
       .catch(() => {
@@ -234,16 +235,16 @@ const NewTicketModal = ({
     };
   }, [groupId]);
 
-  const listed = !groupRead || options === null
-    ? null
-    : groupStores.length && !showAllStores
-      ? optionsForGroup(
-          options,
-          groupStores.map((s) => s.storeid),
-        )
-      : options;
-  const storesAnswered =
-    optionsError !== null || picked.length > 0 || notAbout;
+  const listed =
+    !groupRead || options === null
+      ? null
+      : groupStores.length && !showAllStores
+        ? optionsForGroup(
+            options,
+            groupStores.map((s) => s.storeid),
+          )
+        : options;
+  const storesAnswered = optionsError !== null || picked.length > 0 || notAbout;
   // For a group search, the stores inside it they ticked, which the line at
   // the foot of the first message names as "seen on".
   const narrowedTo = groupStores.filter((s) => picked.includes(s.storeid));
@@ -284,7 +285,9 @@ const NewTicketModal = ({
   const addFiles = (list: FileList | null) => {
     if (!list) return;
     const chosen = Array.from(list);
-    const problem = chosen.map((f) => attachmentProblem(f, limits)).find(Boolean);
+    const problem = chosen
+      .map((f) => attachmentProblem(f, limits))
+      .find(Boolean);
     setFileError(problem ?? null);
     const good = chosen.filter((f) => !attachmentProblem(f, limits));
     setFiles((have) => {
@@ -300,12 +303,9 @@ const NewTicketModal = ({
   const ready =
     title.trim() !== "" && description.trim() !== "" && storesAnswered;
 
-  const priorities = (ctx.lookups?.priorities ?? [
-    "low",
-    "normal",
-    "high",
-    "urgent",
-  ]).map((p) => ({ value: p, label: p[0].toUpperCase() + p.slice(1) }));
+  const priorities = (
+    ctx.lookups?.priorities ?? ["low", "normal", "high", "urgent"]
+  ).map((p) => ({ value: p, label: p[0].toUpperCase() + p.slice(1) }));
 
   // No empty row here: SelectFilter draws one from `placeholder` already.
   const categories = (ctx.lookups?.categories ?? []).map((c) => ({
@@ -333,15 +333,14 @@ const NewTicketModal = ({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto thin-scrollbar px-4 pb-4">
-
         {/*
-          * What came with you from the page.
-          *
-          * Shown rather than asked about. "Is this about your last search?"
-          * makes somebody remember; a line naming the store and the dates
-          * lets them check, and a tick they can clear means the data leaves
-          * only because they let it.
-          */}
+         * What came with you from the page.
+         *
+         * Shown rather than asked about. "Is this about your last search?"
+         * makes somebody remember; a line naming the store and the dates
+         * lets them check, and a tick they can clear means the data leaves
+         * only because they let it.
+         */}
         {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
             <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
@@ -407,8 +406,7 @@ const NewTicketModal = ({
                     a dataset is absent. */}
                 {dropped.length > 0 && (
                   <div className="mt-1.5 text-[11px] text-content/85">
-                    Too large to send —{" "}
-                    {dropped.map((g) => g.label).join(", ")}
+                    Too large to send — {dropped.map((g) => g.label).join(", ")}
                   </div>
                 )}
               </div>
@@ -430,7 +428,9 @@ const NewTicketModal = ({
               plain
               options={priorities}
               value={priority}
-              onChange={(value) => setPriority((value || "normal") as TicketPriority)}
+              onChange={(value) =>
+                setPriority((value || "normal") as TicketPriority)
+              }
               className="w-full"
             />
           </label>
@@ -474,8 +474,8 @@ const NewTicketModal = ({
                     onClick={() => setShowAllStores(true)}
                     className="self-start text-[11.5px] font-medium text-brand_navy_hover underline underline-offset-2"
                   >
-                    Showing the stores in this group. Show all {list.length}{" "}
-                    of yours
+                    Showing the stores in this group. Show all {list.length} of
+                    yours
                   </button>
                 )}
                 {accessPage && (
@@ -564,83 +564,83 @@ const NewTicketModal = ({
       </div>
 
       <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
-          <button
-            type="button"
-            onClick={close}
-            className="text-[12.5px] font-medium px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
-          >
-            Cancel
-          </button>
-          {sendError && (
-            <p role="alert" className="mr-auto text-[11.5px] text-red-700 m-0">
-              {sendError}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={async () => {
-              setSendError(null);
-              const why = await ctx.file(
-                {
-                  title,
-                  /*
-                   * The scope goes under what they wrote, not over it.
-                   *
-                   * It is the first message in the thread, so a tech reads
-                   * the problem in the reporter's own words and then the
-                   * store it happened on — which is the order they need them
-                   * in, and it keeps the client's sentence first on a screen
-                   * that is mostly theirs.
-                   */
-                  description: origin
-                    ? `${description}
+        <button
+          type="button"
+          onClick={close}
+          className="text-[12.5px] font-medium px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+        >
+          Cancel
+        </button>
+        {sendError && (
+          <p role="alert" className="mr-auto text-[11.5px] text-red-700 m-0">
+            {sendError}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={async () => {
+            setSendError(null);
+            const why = await ctx.file(
+              {
+                title,
+                /*
+                 * The scope goes under what they wrote, not over it.
+                 *
+                 * It is the first message in the thread, so a tech reads
+                 * the problem in the reporter's own words and then the
+                 * store it happened on — which is the order they need them
+                 * in, and it keeps the client's sentence first on a screen
+                 * that is mostly theirs.
+                 */
+                description: origin
+                  ? `${description}
 
 —
 ${scopeLine(search, origin, narrowedTo)}`
-                    : description,
-                  priority,
-                  category_id: category ? Number(category) : null,
-                  // The stores are on the ticket as data now, which is what
-                  // the server scopes by. A help-desk ticket carries nothing
-                  // else, so it needs no line or record of its own.
-                  storeids: notAbout ? [] : picked,
-                },
-                origin
-                  ? [
-                      ...files,
-                      ...chosen.map(groupAsFile),
-                      // The page, the search and the dates as a record. The
-                      // stores ride on the ticket; this says what was on screen.
-                      new File(
-                        [
-                          JSON.stringify(
-                            scopeOf(search, origin, narrowedTo),
-                            null,
-                            2,
-                          ),
-                        ],
-                        "scope.json",
-                        { type: "application/json" },
-                      ),
-                    ]
-                  : files,
-                // Filed from another page: there is no pane here to open it
-                // into, so the form closes and the toast is the receipt.
-                onClose,
-              );
-              // A user with no company is told why, and that a manager can
-              // fix it (the server's own words).
-              if (why) setSendError(why);
-            }}
-            disabled={!ready || ctx.working}
-            className="text-[12.5px] font-semibold px-5 py-1.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {ctx.working
-              ? files.length
-                ? "Sending and attaching..."
-                : "Sending..."
-              : "Send it"}
-          </button>
+                  : description,
+                priority,
+                category_id: category ? Number(category) : null,
+                // The stores are on the ticket as data now, which is what
+                // the server scopes by. A help-desk ticket carries nothing
+                // else, so it needs no line or record of its own.
+                storeids: notAbout ? [] : picked,
+              },
+              origin
+                ? [
+                    ...files,
+                    ...chosen.map(groupAsFile),
+                    // The page, the search and the dates as a record. The
+                    // stores ride on the ticket; this says what was on screen.
+                    new File(
+                      [
+                        JSON.stringify(
+                          scopeOf(search, origin, narrowedTo),
+                          null,
+                          2,
+                        ),
+                      ],
+                      "scope.json",
+                      { type: "application/json" },
+                    ),
+                  ]
+                : files,
+              // Filed from another page: there is no pane here to open it
+              // into, so the form closes and the toast is the receipt.
+              onClose,
+            );
+            // A user with no company is told why, and that a manager can
+            // fix it (the server's own words).
+            if (why) setSendError(why);
+          }}
+          disabled={!ready || ctx.working}
+          className="text-[12.5px] font-semibold px-5 py-1.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {ctx.working
+            ? files.length
+              ? "Sending and attaching..."
+              : "Sending..."
+            : "Send it"}
+        </button>
       </div>
     </Modal>
   );

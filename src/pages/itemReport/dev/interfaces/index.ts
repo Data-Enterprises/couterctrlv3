@@ -242,3 +242,43 @@ export interface MergedPrice {
   receipts: number;
   weighed: boolean;
 }
+
+/** A line received on an invoice — defined in src/interfaces as ReceivedLine,
+ *  because itemReportSlice holds it. */
+export type ReceiptLine = ReceivedLine;
+
+export interface ReportScope {
+  url: string;
+  token: string;
+  storeid: number;
+  /** yyyy-mm-dd, the window the user picked. */
+  start: string;
+  end: string;
+}
+
+export interface SheetRow {
+  item: ReportItem;
+  verdict: Verdict;
+}
+
+export interface PeriodLabels {
+  tw: string;
+  lw: string;
+  ly: string;
+}
+
+export interface ParsedUpload {
+  upcs: string[];
+  /** Department names named by the file, empty when it didn't carry any. Names,
+   *  not ids: the export writes descriptions, and matching those back to ids is
+   *  the caller's job once it has the department list. */
+  departments: string[];
+  /** Lines that held something but yielded no code. Header rows don't count —
+   *  they're consumed above. Exists so the entry card can say a paste was only
+   *  partly understood instead of dropping the rest in silence, which is what
+   *  a space- or semicolon-separated list used to do. */
+  skippedLines: number;
+  /** Values on a pasted list too short to be a code ("697"), set aside and
+   *  named so the card can say so. */
+  tooShort: string[];
+}

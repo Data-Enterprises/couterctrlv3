@@ -11,12 +11,8 @@ import {
 
 // Utils
 import { fetchReceiversByItem, toReceiptLineFromSearch } from "../../../../utils/receivers";
-import {
-  fetchInvoices,
-  RECEIVING_LOOKBACK_DAYS,
-  type ReportScope,
-  type ReceiptLine,
-} from "../utils";
+import { fetchInvoices, RECEIVING_LOOKBACK_DAYS } from "../utils";
+import type { ReportScope, ReceiptLine } from "../interfaces";
 
 /**
  * The receiving half of Item Actions.

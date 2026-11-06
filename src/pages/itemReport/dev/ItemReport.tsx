@@ -37,13 +37,13 @@ import {
   weekEnding,
   fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
-  type ReportScope,
 } from "./utils";
 import { buildPriceEras } from "./utils/priceEras";
 import { buildReport, buildRollup } from "./utils/report";
 import { verdictFor } from "./utils/verdict";
 
 // Interfaces
+import type { ReportScope } from "./interfaces";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
 import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";

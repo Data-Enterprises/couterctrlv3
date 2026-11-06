@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { nextTechCode, formatTechCode } from "@/pages/tickets/dev/techCodes";
+import {
+  nextTechCode,
+  formatTechCode,
+} from "@/pages/tickets/dev/components/utils/techCodes";
 import type { TicketTech } from "@/api/tickets";
 
 const tech = (tech_code: string | null, is_active = true): TicketTech =>
@@ -30,7 +33,9 @@ describe("nextTechCode", () => {
 
   it("carries on from a desk numbered by hand", () => {
     // The three live rows were typed, and read 1, 2 and 7.
-    expect(nextTechCode([tech("1"), tech("TECH-002"), tech("007")])).toBe("TECH-008");
+    expect(nextTechCode([tech("1"), tech("TECH-002"), tech("007")])).toBe(
+      "TECH-008",
+    );
   });
 
   it("pads to three and grows past them", () => {

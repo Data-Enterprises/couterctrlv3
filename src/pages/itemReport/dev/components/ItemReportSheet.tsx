@@ -17,10 +17,9 @@ import { formatPct, pillClass } from "../../../../utils/severity";
 import { ACTION_TONE } from "../utils/actionTone";
 import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind, ReportItem, Verdict } from "../interfaces";
+import type { ActionKind, ReportItem, Verdict, ReceiptLine, SheetRow } from "../interfaces";
 
 // Interfaces
-import type { ReceiptLine } from "../utils";
 
 // Components
 import {
@@ -53,11 +52,6 @@ import DetailPopover from "./DetailPopover";
  * a third of its height — the numbers lost their vertical rhythm and the list
  * stopped being scannable, which is the one thing a sheet has to be.
  */
-
-export interface SheetRow {
-  item: ReportItem;
-  verdict: Verdict;
-}
 
 interface Props {
   rows: SheetRow[];

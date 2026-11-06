@@ -1,6 +1,6 @@
-import type { RootState } from "../../../store";
-import type { SearchState } from "../../../features/searchSlice";
-import type { Store } from "../../../interfaces";
+import type { RootState } from "../../../../../../store";
+import type { SearchState } from "../../../../../../features/searchSlice";
+import type { Store } from "../../../../../../interfaces";
 
 /**
  * The store a page picked for itself, and the window it ran, when it has one.
@@ -79,8 +79,6 @@ export const searchForPage = (
     type: "Store",
     selectedStore: store,
     lastStore: store.storeid,
-    ...(own.start && own.end
-      ? { startDate: own.start, endDate: own.end }
-      : {}),
+    ...(own.start && own.end ? { startDate: own.start, endDate: own.end } : {}),
   };
 };

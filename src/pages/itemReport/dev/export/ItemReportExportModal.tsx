@@ -6,11 +6,9 @@ import { rowsToCsv, downloadCsv, fmtNum } from "../../../../utils/csvExport";
 import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
 import { buildPriceEras } from "../utils/priceEras";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind } from "../interfaces";
+import type { ActionKind, SheetRow, ReceiptLine } from "../interfaces";
 
 // Interfaces
-import type { SheetRow } from "../components/ItemReportSheet";
-import type { ReceiptLine } from "../utils";
 
 // Components
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";

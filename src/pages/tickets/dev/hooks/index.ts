@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useDevApi } from "../../../hooks/useDevApi";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../interfaces";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useDevApi } from "../../../../hooks/useDevApi";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import type { JsonError } from "../../../../interfaces";
 import {
   addTicketComment,
   assignTicket,
@@ -21,7 +21,7 @@ import {
   type TicketListResp,
   type TicketPriority,
   type TicketStatus,
-} from "../../../api/tickets";
+} from "../../../../api/tickets";
 import {
   addComment,
   appendComments,
@@ -43,8 +43,8 @@ import {
   startLoad,
   startWork,
   upsertTicket,
-} from "../../../features/dev/devTicketsSlice";
-import { sendFailureText, visibleTickets, tabCounts } from "./ticketsUtils";
+} from "../../../../features/dev/devTicketsSlice";
+import { sendFailureText, visibleTickets, tabCounts } from "../ticketsUtils";
 
 /** The HTTP status of a failed call, from axios or from a test double. */
 const statusOf = (err: unknown) =>
@@ -484,7 +484,10 @@ export const useTicketsCtx = () => {
       }
       return status === 403
         ? "Changing a ticket's stores needs a ticket tech's account."
-        : sendFailureText(err).replace("That did not send", "That did not save");
+        : sendFailureText(err).replace(
+            "That did not send",
+            "That did not save",
+          );
     }
   };
 

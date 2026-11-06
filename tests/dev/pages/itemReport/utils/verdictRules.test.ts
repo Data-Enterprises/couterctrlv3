@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildPriceEras, mergePricePoints } from "@/pages/itemReport/dev/utils/priceEras";
 import { deliveryGap, flatDaysBefore, verdictFor } from "@/pages/itemReport/dev/utils/verdict";
-import type { ReportItem } from "@/pages/itemReport/dev/interfaces";
-import type { ReceiptLine } from "@/pages/itemReport/dev/utils";
+import type { ReportItem, ReceiptLine } from "@/pages/itemReport/dev/interfaces";
 
 /**
  * Two of Item Actions' rules, against the dev board review's own cases.

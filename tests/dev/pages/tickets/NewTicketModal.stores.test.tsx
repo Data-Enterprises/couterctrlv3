@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import type { TicketsCtx } from "@/pages/tickets/dev/hooks";
-import NewTicketModal from "@/pages/tickets/dev/NewTicketModal";
+import NewTicketModal from "@/pages/tickets/dev/components/modals/NewTicketModal";
 
 const storeOptions = vi.fn();
 vi.mock("@/api/tickets", async (importOriginal) => ({
@@ -38,8 +38,22 @@ describe("the stores a new ticket can be about", () => {
         error: 0,
         success: true,
         stores: [
-          { storeid: 301, store_number: "301", store_name: "301 - Food Giant Hayti", company: 4, company_name: "Food Giant", deactivated: false },
-          { storeid: 782, store_number: "782", store_name: "782 - Crossroads", company: null, company_name: null, deactivated: false },
+          {
+            storeid: 301,
+            store_number: "301",
+            store_name: "301 - Food Giant Hayti",
+            company: 4,
+            company_name: "Food Giant",
+            deactivated: false,
+          },
+          {
+            storeid: 782,
+            store_number: "782",
+            store_name: "782 - Crossroads",
+            company: null,
+            company_name: null,
+            deactivated: false,
+          },
         ],
       },
     });
