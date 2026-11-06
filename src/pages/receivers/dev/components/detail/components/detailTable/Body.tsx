@@ -9,8 +9,8 @@ const Body = () => {
 
   return (
     <tbody className="divide-y divide-brand_navy/15 text-[13px]">
-      {state.details.map((item, i) => (
-        <BodyRow key={i} item={item} />
+      {state.details.map((item) => (
+        <BodyRow key={item.line_number} item={item} />
       ))}
     </tbody>
   );

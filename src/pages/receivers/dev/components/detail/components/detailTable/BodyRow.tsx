@@ -10,10 +10,7 @@ interface BodyRowProps {
 
 const BodyRow = ({ item }: BodyRowProps) => {
   return (
-    <tr
-      key={item.line_number}
-      className="even:bg-row_stripe hover:bg-gray-50 transition-colors"
-    >
+    <tr className="even:bg-row_stripe hover:bg-gray-50 transition-colors">
       <td className="px-3 py-2 text-right tabular-nums text-content/85">
         {item.line_number}
       </td>

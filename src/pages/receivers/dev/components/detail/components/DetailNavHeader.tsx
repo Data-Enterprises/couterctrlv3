@@ -18,7 +18,7 @@ const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
         (r) => r.invoiceid.toString() === state.selectedInvoice,
       ) ?? null)
     : null;
-  const hasDetails = !!state.details.length;
+  const hasDetails = state.details.length > 0 && !state.isFetchingDetails;
   return (
     <div
       className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
