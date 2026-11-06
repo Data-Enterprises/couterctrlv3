@@ -82,3 +82,7 @@ export const searchForPage = (
     ...(own.start && own.end ? { startDate: own.start, endDate: own.end } : {}),
   };
 };
+
+/** The roster gets a search box past this many. A desk of three is a list
+ *  somebody can read; a box above it is one more thing to look at. */
+export const SEARCHABLE_FROM = 5;

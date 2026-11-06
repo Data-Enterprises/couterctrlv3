@@ -1,7 +1,12 @@
+// Hooks
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { closeReportIssue } from "../../../features/appSlice";
-import { useTicketsCtx } from "./hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useTicketsCtx } from "../../hooks";
+
+// Redux
+import { closeReportIssue } from "../../../../../features/appSlice";
+
+// Components
 import NewTicketModal from "./NewTicketModal";
 
 /**
@@ -12,13 +17,6 @@ import NewTicketModal from "./NewTicketModal";
  * component: the title bar raises the flag and the title bar is prod-tree,
  * which may not reach a dev page — but `App` is neither tree, so it can hold
  * the door open for both.
- *
- * Sending somebody to the help desk to describe a problem they are looking at
- * is asking them to leave the evidence behind. The form comes to them.
- *
- * It asks for the pickers rather than the queue: a category list and the
- * attachment limits are all it needs, and `load` would pull every ticket the
- * reader can see to get them.
  */
 const ReportIssueModal = () => {
   const dispatch = useAppDispatch();

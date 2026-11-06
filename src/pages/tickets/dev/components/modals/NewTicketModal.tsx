@@ -1,21 +1,23 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import { shallowEqual } from "react-redux";
 import { useAppSelector } from "../../../../../hooks";
 import { useDevApi } from "../../../../../hooks/useDevApi";
-import { getStoresAssignedToUserGroup } from "../../../../../api/groups";
-import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import Modal from "../../../../../components-dev/Modal";
-import TextField from "../../../../../components-dev/inputs/TextField";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import type { TicketsCtx } from "../../hooks";
+
+// Redux
 import { openNew } from "../../../../../features/dev/devTicketsSlice";
+
+// API
+import { getStoresAssignedToUserGroup } from "../../../../../api/groups";
 import {
   getTicketStoreOptions,
   ticketFailed,
   type TicketPriority,
   type TicketStoreOption,
 } from "../../../../../api/tickets";
-import type { TicketsCtx } from "../../hooks";
-import { attachmentProblem, fileSize } from "../../ticketsUtils";
+
+// Utils
 import {
   consolidate,
   getPageCalls,
@@ -23,6 +25,7 @@ import {
   withinBudget,
   type CallGroup,
 } from "../../../../../utils/pageCalls";
+import { attachmentProblem } from "../../ticketsUtils";
 import {
   originOf,
   pageUsesSearch,
@@ -30,32 +33,29 @@ import {
   scopeOf,
   searchSummary,
   suggestedTitle,
-} from "../../ticketOrigin";
-import { pageStoreOf, searchForPage } from "../../pageStore";
-import StoreChecklist from "../StoreChecklist";
+} from "../utils/ticketOrigin";
+import { pageStoreOf, searchForPage } from "./utils";
 import {
   assignedAsOptions,
   cleanStoreOptions,
   initialStorePicks,
   optionsForGroup,
-} from "./ticketStores";
+} from "../../utils";
+
+// Components
+import Modal from "../../../../../components-dev/Modal";
 import Checkbox from "../../../../../components-dev/Checkbox";
+import TextField from "../../../../../components-dev/inputs/TextField";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import StoreChecklist from "../StoreChecklist";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import NewTicketAttachments from "./components/NetTicketAttachments";
 
 /**
- * Filing one.
- *
- * Two fields are required and the rest the queue works out for itself. There
+ * FILING: Two fields are required and the rest the queue works out for itself. There
  * is no company picker: the ticket's company is derived from whoever is
  * filing, and sending one that is not their own is a 400 rather than a silent
  * misfiling — so offering the choice would only be a way to fail.
- *
- * No assignee either. It lands in the queue and a tech takes it.
- *
- * Opened from another page's "Report an issue", it arrives knowing three
- * things nobody had to type: which page, which category that page belongs to,
- * and what was last asked for. The fourth — the response behind it — is
- * offered rather than attached, because it is the client's data and they
- * should see it leave.
  */
 const NewTicketModal = ({
   ctx,
@@ -90,15 +90,10 @@ const NewTicketModal = ({
   );
   const summary = origin ? searchSummary(search, origin.href) : null;
   /**
-   * Everything the page fetched, one entry per endpoint, read once at mount.
-   *
-   * Once, because a call made while the form is open is the form's own doing
+   * Fetched once, because a call made while the form is open is the form's own doing
    * rather than anything the client was looking at. Grouped, because a paged
    * fetch is several calls to one path and listing them separately makes one
    * table look like twelve problems.
-   *
-   * Trimmed to a budget here rather than at send: somebody should not tick a
-   * box for something that is going to be dropped.
    */
   const [{ kept, dropped }] = useState(() =>
     from?.from
@@ -108,28 +103,18 @@ const NewTicketModal = ({
   const [skip, setSkip] = useState<Set<string>>(new Set());
 
   /**
-   * Which stores this is about.
-   *
-   * Asked on every ticket, from a page or from the help desk, because the
+   * REQUIRED: Asked on every ticket, from a page or from the help desk, because the
    * server scopes by it: a Manager sees a ticket that names one of their
    * stores.
    *
    * The list is the signed-in person's own stores, already in the app from
    * sign-in, so opening the form makes no store call. **A tech is the
-   * exception:** they are support, filing for a client who phoned in, so they
-   * are offered every store (`store_options`, which for a tech is every store
-   * -- exactly what create accepts from them). Their own assigned stores are
-   * few or none, and limiting them to those left a tech unable to name the
-   * caller's store.
+   * exception:** they are support, filing for a client who phoned in.
    *
    * The page's search only decides where the list starts: a store search
    * ticks that store, a group search lists the group's stores first, and a
    * page with no search (User Management, Groups, the help desk) starts on
    * all of them.
-   *
-   * One answer is required: stores, or "Not about a store". Someone with only
-   * one store is not asked; it is the answer. Someone with none is told, and
-   * the ticket is filed as not about a store.
    */
   const searchedStoreId =
     origin && pageUsesSearch(origin.href) && search.type === "Store"
@@ -192,8 +177,6 @@ const NewTicketModal = ({
   const [showAllStores, setShowAllStores] = useState(false);
 
   /**
-   * The stores inside the group the page was searching.
-   *
    * A group search says the problem is somewhere in the group, which is not
    * the same as saying it is everywhere in it, so the group's stores are
    * listed first with none ticked. Only the ones that are also the reader's
@@ -276,8 +259,6 @@ const NewTicketModal = ({
   const limits = ctx.lookups?.attachments;
 
   /**
-   * Take what the picker gave, minus what it cannot send.
-   *
    * De-duplicated by name because a picker can be opened repeatedly, and
    * checked here as well as by the endpoint — a ticket should not end up
    * filed with half its evidence missing.
@@ -319,10 +300,6 @@ const NewTicketModal = ({
       onClose={close}
       modalClassName="bg-card_bg w-[620px] max-w-[94vw] max-h-[88vh] flex flex-col"
     >
-      {/* Header, body, footer. The form is taller than a laptop screen once a
-          page has half a dozen datasets on it, so only the middle moves: the
-          heading says what this is and Send it is the control that must never
-          scroll out of reach, and neither is any use halfway up. */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
         <h2 className="text-[17px] font-semibold">New ticket</h2>
         <p className="text-[12.5px] text-content/85 mt-1">
@@ -333,14 +310,7 @@ const NewTicketModal = ({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto thin-scrollbar px-4 pb-4">
-        {/*
-         * What came with you from the page.
-         *
-         * Shown rather than asked about. "Is this about your last search?"
-         * makes somebody remember; a line naming the store and the dates
-         * lets them check, and a tick they can clear means the data leaves
-         * only because they let it.
-         */}
+        {/** What came with you from the page. */}
         {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
             <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
@@ -401,9 +371,6 @@ const NewTicketModal = ({
                 {/* Named rather than silently missing: a tech reading the
                     ticket should know something was too big to send, not
                     wonder why a dataset is absent. */}
-                {/* Named rather than silently missing: a tech reading the
-                    ticket should know something did not come, not wonder why
-                    a dataset is absent. */}
                 {dropped.length > 0 && (
                   <div className="mt-1.5 text-[11px] text-content/85">
                     Too large to send — {dropped.map((g) => g.label).join(", ")}
@@ -504,65 +471,21 @@ const NewTicketModal = ({
           </span>
         </label>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-[12.5px] font-medium">Screenshots</span>
-          <div className="flex items-center gap-3 flex-wrap">
-            <input
-              ref={picker}
-              type="file"
-              multiple
-              accept={limits?.extensions.join(",")}
-              className="hidden"
-              onChange={(e) => addFiles(e.target.files)}
-            />
-            <button
-              type="button"
-              onClick={() => picker.current?.click()}
-              className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
-            >
-              Choose files
-            </button>
-            <span className="text-[11.5px] text-content/85">
-              {limits
-                ? `${limits.extensions.join(" ")} · up to ${fileSize(limits.maxBytes)}`
-                : "A screenshot is usually the most useful thing you can send."}
-            </span>
-          </div>
-
-          {files.map((one) => (
-            <div
-              key={one.name}
-              className="flex items-center gap-2 bg-custom-white border border-brand_line rounded-lg px-3 py-1.5"
-            >
-              <span className="font-mono text-[12px] flex-1 min-w-0 truncate">
-                {one.name}
-              </span>
-              <span className="text-[11.5px] text-content/85">
-                {fileSize(one.size)}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setFiles((have) => have.filter((f) => f.name !== one.name))
-                }
-                aria-label={`Remove ${one.name}`}
-                className="text-content/85 hover:text-content transition-colors"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-
-          {fileError && (
-            <span className="text-[11.5px] text-amber-900">{fileError}</span>
-          )}
-        </div>
+        <NewTicketAttachments
+          picker={picker}
+          limits={limits}
+          addFiles={addFiles}
+          files={files}
+          setFiles={setFiles}
+          fileError={fileError}
+        />
 
         <p className="text-[11.5px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2 m-0">
           It files under your own company and lands in the queue unassigned.
         </p>
       </div>
 
+          {/* Section: Send/Cancel Buttons, own components? */}
       <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
         <button
           type="button"
@@ -583,26 +506,13 @@ const NewTicketModal = ({
             const why = await ctx.file(
               {
                 title,
-                /*
-                 * The scope goes under what they wrote, not over it.
-                 *
-                 * It is the first message in the thread, so a tech reads
-                 * the problem in the reporter's own words and then the
-                 * store it happened on — which is the order they need them
-                 * in, and it keeps the client's sentence first on a screen
-                 * that is mostly theirs.
-                 */
+                /** The scope goes under what they wrote, not over it. It is the first message in the thread, so a tech reads. */
                 description: origin
-                  ? `${description}
-
-—
-${scopeLine(search, origin, narrowedTo)}`
+                  ? `${description} — ${scopeLine(search, origin, narrowedTo)}`
                   : description,
                 priority,
                 category_id: category ? Number(category) : null,
-                // The stores are on the ticket as data now, which is what
-                // the server scopes by. A help-desk ticket carries nothing
-                // else, so it needs no line or record of its own.
+                // The stores are on the ticket as data now
                 storeids: notAbout ? [] : picked,
               },
               origin
@@ -624,12 +534,10 @@ ${scopeLine(search, origin, narrowedTo)}`
                     ),
                   ]
                 : files,
-              // Filed from another page: there is no pane here to open it
-              // into, so the form closes and the toast is the receipt.
+              // Filed from another page: there is no pane here to open it into, so the form closes and the toast is the receipt.
               onClose,
             );
-            // A user with no company is told why, and that a manager can
-            // fix it (the server's own words).
+            // A user with no company is told why, and that a manager can fix it (the server's own words).
             if (why) setSendError(why);
           }}
           disabled={!ready || ctx.working}

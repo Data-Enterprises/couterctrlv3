@@ -1,12 +1,9 @@
+// Hoks
 import { useEffect, useMemo, useState } from "react";
-import Modal from "../../../components-dev/Modal";
-import Checkbox from "../../../components-dev/Checkbox";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import TextField from "../../../components-dev/inputs/TextField";
-import { useDevApi } from "../../../hooks/useDevApi";
-import { nextTechCode } from "./techCodes";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useDevApi } from "../../../../../hooks/useDevApi";
+
+// API
 import {
   createTicketTech,
   listTechCandidates,
@@ -18,23 +15,27 @@ import {
   type TechWriteResp,
   type TicketTech,
   type TicketTechsResp,
-} from "../../../api/tickets";
+} from "../../../../../api/tickets";
+
+// Utils
+import { nextTechCode } from "../utils/techCodes";
+
+// Interfaces
+import type { Mode } from "./interfaces";
+
+// Components
+import Modal from "../../../../../components-dev/Modal";
+import Checkbox from "../../../../../components-dev/Checkbox";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../../../components-dev/filters/TextFilter";
+import TextField from "../../../../../components-dev/inputs/TextField";
+import { SEARCHABLE_FROM } from "./utils";
 
 interface Props {
-  /** Level 9. Without it this is the read-only "On the desk" list. */
-  canManageTechs: boolean;
+  canManageTechs: boolean; //Level 9 only (Programmer)
   onClose: () => void;
-  /** The roster decides who can be assigned, so the page's own assignee
-   *  picker is stale the moment this changes anything. */
   onChanged: () => void;
 }
-
-/** What the sheet is doing. Three states rather than booleans, because they
- *  are mutually exclusive and a pair of flags lets them overlap. */
-type Mode =
-  | { kind: "list" }
-  | { kind: "adding" }
-  | { kind: "standing-down"; tech: TicketTech };
 
 /**
  * The roster.
@@ -51,10 +52,6 @@ type Mode =
  * so nothing here implies. The display name keeps the second line, where
  * recognising a colleague still works.
  */
-/** The roster gets a search box past this many. A desk of three is a list
- *  somebody can read; a box above it is one more thing to look at. */
-const SEARCHABLE_FROM = 5;
-
 const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
   const { url, token } = useDevApi();
   const toast = useToast();
@@ -405,9 +402,9 @@ const StandDown = ({
 
         {last && (
           <div className="rounded-lg bg-severity_watch_bg px-3 py-2.5 text-[12px] leading-relaxed text-severity_watch_text">
-            <b className="font-semibold">They are the last active tech.</b>{" "}
-            With nobody on the desk a new ticket notifies no one. It still
-            arrives and still waits in the queue.
+            <b className="font-semibold">They are the last active tech.</b> With
+            nobody on the desk a new ticket notifies no one. It still arrives
+            and still waits in the queue.
             {holding > 0 && " There is also nobody to hand their work to."}
           </div>
         )}
@@ -548,10 +545,11 @@ const AddTech = ({
             user, so this is an upsert and the id survives. */}
         {picked?.was_a_tech && (
           <div className="rounded-lg bg-severity_healthy_bg px-3 py-2.5 text-[12px] leading-relaxed text-severity_healthy_text">
-            <b className="font-semibold">{picked.username} was a tech before.</b>{" "}
-            Adding them brings back{" "}
-            {picked.previous_tech_code ?? "their row"} with their history,
-            rather than making a second one.
+            <b className="font-semibold">
+              {picked.username} was a tech before.
+            </b>{" "}
+            Adding them brings back {picked.previous_tech_code ?? "their row"}{" "}
+            with their history, rather than making a second one.
           </div>
         )}
       </div>
