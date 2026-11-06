@@ -4,6 +4,7 @@ import {
   downloadCsv,
   fmtNum,
 } from "../../../../../../utils/csvExport";
+import { formatCurrency2 } from "../../../../../../utils";
 
 // Interfaces
 import type {
@@ -23,6 +24,29 @@ export const groupByOptions = (
     { label: "Items", value: String(totalItems) },
     { label: "Vendors", value: String(uniqueVendors) },
     { label: "Operators", value: String(uniqueOperators) },
+  ];
+};
+
+export const kpiStrip = (
+  details: ReceiverDetailsItem[],
+  totals?: ReceiverDetailsTotals,
+) => {
+  return [
+    { label: "Lines", value: String(details.length) },
+    {
+      label: "Cases",
+      value: String(totals?.cases ?? details.reduce((s, d) => s + d.cases, 0)),
+    },
+    {
+      label: "Units",
+      value: String(totals?.units ?? details.reduce((s, d) => s + d.units, 0)),
+    },
+    {
+      label: "Cost",
+      value: formatCurrency2(
+        totals?.ext_cost ?? details.reduce((s, d) => s + d.ext_cost, 0),
+      ),
+    },
   ];
 };
 
