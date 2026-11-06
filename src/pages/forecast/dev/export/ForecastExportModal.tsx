@@ -5,22 +5,16 @@ import { useAppSelector } from "../../../../hooks";
 // Utils
 import { exportData } from "../../../../utils/export";
 import { formatCurrency2 } from "../../../../utils";
-import { rankRows, TIER_LABEL, type Tier } from "../utils/forecastRanking";
+import { rankRows, TIER_LABEL } from "../utils/forecastRanking";
 
 // Interfaces
+import type { ColKey, ModalMode, PresetId, RankedRow } from "./interfaces";
+import type { RankEntry, Tier } from "../interfaces";
 import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
-import type { RankEntry } from "../utils/forecastRanking";
 
 // Components
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-
-/** A row plus its ranking, flattened so `exportData` can read them as fields. */
-type RankedRow = ForecastOutlierRow & {
-  rank: number | "";
-  tier: string;
-  sharePct: string;
-};
 
 /**
  * The grid's whole organising idea is the ranking, so a CSV that drops it
@@ -52,25 +46,6 @@ const withRank = (
  * they're checkboxes rather than radios. Custom is the `200px 1fr` split with a
  * live preview and its own footer.
  */
-
-type ModalMode = "presets" | "custom";
-type PresetId = "selected" | "all" | "notFound";
-type ColKey =
-  | "rank"
-  | "tier"
-  | "sharePct"
-  | "upc"
-  | "description"
-  | "notes"
-  | "qtySold"
-  | "daysActive"
-  | "daysAtPrice"
-  | "forecastWindow"
-  | "adDays"
-  | "fcstPrice"
-  | "adFcst"
-  | "fcstTotal"
-  | "markdownDollars";
 
 const COLS: { key: ColKey; label: string }[] = [
   { key: "rank", label: "Rank" },

@@ -2,8 +2,7 @@
 import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../../../../utils/forecastCalc";
 
 // Interfaces
-import type { PriceHistory } from "../../../../../interfaces";
-import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
+import type { Args, ScenarioRow } from "../interfaces";
 
 /**
  * Price scenarios for one item.
@@ -14,27 +13,6 @@ import type { ForecastOutlierRow } from "../../../../../features/dev/devForecast
  * `estimateDaysActive` fallback for a price with no history, same
  * `forecastUnits` argument order, same `(regularRetail - price) * adFcst`.
  */
-
-export interface ScenarioRow {
-  price: number;
-  /** null when the price was typed rather than drawn from history. */
-  histQty: number | null;
-  daysAtPrice: number;
-  adFcst: number;
-  revenue: number;
-  markdown: number;
-  isCustom: boolean;
-}
-
-interface Args {
-  pricesWithQty: number[][];
-  priceHistory: PriceHistory[];
-  regularRetail: number;
-  selectedRow: ForecastOutlierRow;
-  overallUnits: number;
-  liveAdDays: number;
-  customPrices: number[];
-}
 
 export const buildScenarioRows = ({
   pricesWithQty,

@@ -1,6 +1,7 @@
 // Interfaces
+import type { Exception, ExceptionKind, RankEntry, Tier } from "../interfaces";
 import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
-import type { ForecastTier, PriceHistoryResult } from "../../../../interfaces";
+import type { PriceHistoryResult } from "../../../../interfaces";
 
 /**
  * Ranking for the forecast grid.
@@ -16,24 +17,9 @@ import type { ForecastTier, PriceHistoryResult } from "../../../../interfaces";
  * statements about the *forecast's* reliability or cost, not about the item.
  */
 
-// ForecastTier lives in src/interfaces (a slice holds it); Tier here for short.
-export type Tier = ForecastTier;
-
 /** Cumulative-share cut points. A is the ad, B supports it, C is the tail. */
 const A_CUT = 0.8;
 const B_CUT = 0.95;
-
-export interface RankEntry {
-  /** 1-based position by contribution. The ranking, stated outright. */
-  rank: number;
-  /** Share of the selection's forecast total, 0–1. */
-  share: number;
-  /** Running total through this row once sorted by contribution, 0–1. */
-  cumulative: number;
-  tier: Tier;
-  /** Share of the selection's markdown, 0–1. */
-  markdownShare: number;
-}
 
 /**
  * Rank rows by forecast total, descending.
@@ -145,14 +131,6 @@ export const tierCounts = (ranks: Map<string, RankEntry>) => {
   for (const entry of ranks.values()) counts[entry.tier] += 1;
   return counts;
 };
-
-export type ExceptionKind = "thin" | "untested" | "costly" | "record";
-
-export interface Exception {
-  kind: ExceptionKind;
-  /** Shown on hover — says what was measured, not what to do about it. */
-  detail: string;
-}
 
 /**
  * How much the markdown share has to exceed the revenue share before the row is

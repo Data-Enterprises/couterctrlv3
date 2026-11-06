@@ -16,21 +16,10 @@ import {
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import {
-  rankRows,
-  tierCounts,
-  tierSummary,
-  exceptionsFor,
-  EXCEPTION_LABEL,
-  TIER_LABEL,
-  TIER_STRIPE,
-  TIER_CHIP_ON_NAVY,
-  TIER_CHIP_BASE,
-  TIER_CHIP_ON,
-  type Tier,
-} from "../utils/forecastRanking";
+import { rankRows, tierCounts, tierSummary, exceptionsFor, EXCEPTION_LABEL, TIER_LABEL, TIER_STRIPE, TIER_CHIP_ON_NAVY, TIER_CHIP_BASE, TIER_CHIP_ON } from "../utils/forecastRanking";
 
 // Interfaces
+import type { Tier, SortCol } from "../interfaces";
 import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
 
 // Components
@@ -62,9 +51,6 @@ const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-type SortCol =
-  "qtySold" | "adFcst" | "fcstTotal" | "markdownDollars" | "fcstPrice";
 
 const sortValue = (row: ForecastOutlierRow, col: SortCol) => row[col];
 
