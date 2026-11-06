@@ -26,6 +26,7 @@ import type {
 // Components
 import MultiSelectFilter from "../../../../../components-dev/filters/MultiSelectFilter";
 import InboxHeader from "./components/InboxHeader";
+import QueueTabs from "./components/QueueTabs";
 
 interface Props {
   rows: Ticket[];
@@ -73,22 +74,6 @@ interface Props {
 /** Closed has its own folder in the rail, so it is not one of the statuses
  *  you narrow an open pile by. */
 const STATUSES: TicketStatus[] = ["open", "in_progress", "waiting"];
-
-/**
- * The tabs, worked through in order. Urgent is a button beside Refresh, not
- * a tab; a client has two tabs and no Urgent button.
- */
-const QUEUE: { key: QueueTab; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "unassigned", label: "Unassigned" },
-  { key: "mine", label: "Mine" },
-  { key: "closed", label: "Closed" },
-];
-
-const CLIENT_QUEUE: { key: QueueTab; label: string }[] = [
-  { key: "all", label: "Open" },
-  { key: "closed", label: "Closed" },
-];
 
 const PRIORITIES = [
   { value: "urgent", label: "Urgent" },
@@ -145,34 +130,8 @@ const TicketInbox = ({
       <div className="flex-none border-b border-brand_line p-2.5">
         {/* Tabs, because they are exclusive and the top level of this column. */}
         {/* QueueTabs.tsx: `auto-cols-fr`, so a client's two tabs share the width evenly. */}
-        <div
-          data-help="queue-tabs"
-          role="tablist"
-          className="-mx-2.5 -mt-2.5 mb-2.5 grid auto-cols-fr grid-flow-col border-b border-brand_line px-2.5"
-        >
-          {(isTech ? QUEUE : CLIENT_QUEUE).map((q) => {
-            const active = tab === q.key;
-            return (
-              <button
-                key={q.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => onTab(q.key)}
-                className={`min-w-0 truncate border-b-2 px-1 pb-2 pt-2.5 text-center text-[12.5px] transition-colors ${
-                  active
-                    ? "border-brand_navy font-semibold text-content"
-                    : "border-transparent text-content/85 hover:border-brand_line_2"
-                }`}
-              >
-                {q.label}{" "}
-                <span className="tabular-nums text-content/85">
-                  {counts[q.key]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <QueueTabs isTech={isTech} tab={tab} counts={counts} onTab={onTab} />
+
         {/* InboxFilters.tsx: status and priority filters, plus clear button if narrowed. */}
         <div className="flex items-center gap-1.5">
           <MultiSelectFilter
