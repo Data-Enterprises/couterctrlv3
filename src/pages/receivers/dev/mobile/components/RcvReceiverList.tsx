@@ -29,7 +29,7 @@ import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 import MobilePerfHeader from "../../../../../components-dev/mobile/MobilePerfHeader";
 import BottomSheet from "../../../../../components-dev/BottomSheet";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import GroupByTabs from "./GroupByTabs";
+import SummaryStrip from "./SummaryStrip";
 
 interface Props {
   receivers: ReceiverListItem[];
@@ -131,7 +131,7 @@ const RcvReceiverList = ({
         helpPage="receivers"
       />
 
-      <GroupByTabs receivers={receivers} />
+      <SummaryStrip receivers={receivers} />
       <LocationTabs
         numbers={storeNumbers}
         selected={selectedStoreNumber}
