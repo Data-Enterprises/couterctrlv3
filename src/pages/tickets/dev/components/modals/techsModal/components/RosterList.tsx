@@ -1,13 +1,3 @@
-// Hooks
-import { useDevApi } from "../../../../../../../hooks/useDevApi";
-import { useToast } from "../../../../../../../components/toasts/hooks/useToast";
-
-// API
-import {
-  updateTicketTech,
-  ticketFailed,
-} from "../../../../../../../api/tickets";
-
 // Utils
 import { SEARCHABLE_FROM } from "../../../modals/utils";
 
@@ -19,7 +9,7 @@ import type { TechWriteResp } from "../../../../../../../api/tickets";
 
 // Components
 import TextFilter from "../../../../../../../components-dev/filters/TextFilter";
-import Checkbox from "../../../../../../../components-dev/Checkbox";
+import TechRow from "./TechRow";
 
 interface RosterListProps {
   techs: TicketTech[] | null;
@@ -52,8 +42,6 @@ const RosterList = ({
   setMode,
   onClose,
 }: RosterListProps) => {
-  const { url, token } = useDevApi();
-  const toast = useToast();
   return (
     <>
       <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
@@ -99,68 +87,13 @@ const RosterList = ({
         )}
         {/* TechRow list. the returned map is TechRow.tsx */}
         {shown.map((tech) => (
-          <div
-            key={tech.tech_id}
-            className={`flex items-center gap-3 rounded-lg border border-brand_line px-2.5 py-2 ${
-              tech.is_active ? "bg-custom-white" : "bg-bkg"
-            }`}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-mono text-[12.5px] font-semibold">
-                {tech.username}
-              </span>
-              <span className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px] text-content/85">
-                {tech.tech_code ?? "no code"} · {tech.name}
-                {/* The one failure this sheet cannot fix: the tech row is
-                                one thing, the account behind it another. */}
-                {tech.user_active === 0 && (
-                  <span className="rounded bg-severity_critical_bg px-1.5 py-[1px] font-semibold uppercase tracking-wide text-severity_critical_text">
-                    no sign-in
-                  </span>
-                )}
-              </span>
-            </span>
-
-            <span className="flex-none text-right text-[11px] text-content/85">
-              <b className="block font-display text-[15px] font-bold text-content">
-                {tech.ticket_count}
-              </b>
-              holding
-            </span>
-
-            {canManageTechs && (
-              <Checkbox
-                checked={tech.is_active}
-                ariaLabel={
-                  tech.is_active
-                    ? `Stand ${tech.username} down`
-                    : `Bring ${tech.username} back`
-                }
-                onChange={(on) => {
-                  if (on) {
-                    setWorking(true);
-                    void updateTicketTech(url, token, tech.tech_id, {
-                      is_active: true,
-                    })
-                      .then((resp) => {
-                        const j = resp.data as TechWriteResp;
-                        if (ticketFailed(j)) {
-                          toast.error("That did not stick.");
-                          return;
-                        }
-                        after(j, `${tech.username} is back on the desk`);
-                      })
-                      .catch(() => toast.error("That did not stick."))
-                      .finally(() => setWorking(false));
-                  } else {
-                    // Never without asking: it decides what happens to
-                    // open work, and the answer is not obvious.
-                    setMode({ kind: "standing-down", tech });
-                  }
-                }}
-              />
-            )}
-          </div>
+          <TechRow
+            tech={tech}
+            canManageTechs={canManageTechs}
+            setWorking={setWorking}
+            after={after}
+            setMode={setMode}
+          />
         ))}
 
         {!canManageTechs && techs !== null && (
