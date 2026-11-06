@@ -3,7 +3,9 @@ import reducer, {
   cacheSubDeptProducts,
   patchSubDeptView,
 } from "@/features/dev/devPriceOptSlice";
-import type { ProductSummary } from "@/pages/inventory/dev/utils";
+
+// Interfaces
+import type { ProductSummary } from "@/pages/inventory/dev/interfaces";
 
 const items = (tag: string) =>
   [{ productCode: tag, description: tag }] as unknown as ProductSummary[];

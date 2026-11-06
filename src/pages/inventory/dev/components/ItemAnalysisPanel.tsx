@@ -13,13 +13,13 @@ import {
   suggestionWithheld,
   type ActualPricePoint,
 } from "../../../../utils/pricePoints";
-import { itemCostStats, type ProductSummary } from "../utils";
+import { itemCostStats } from "../utils";
 import { resolveUnitCost } from "../utils/invoiceCost";
 
 // Interfaces
+import type { InvoiceCostState, ProductSummary } from "../interfaces";
 import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
-import type { InvoiceCostState } from "../hooks";
 
 // Components
 import {

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { latestInvoiceCost, resolveUnitCost } from "@/pages/inventory/dev/utils/invoiceCost";
-import { itemCostStats, type ProductSummary } from "@/pages/inventory/dev/utils";
+import { itemCostStats } from "@/pages/inventory/dev/utils";
 import { estimatedPricePoints } from "@/utils/pricePoints";
 import type {
   ReceiverItemSearchReceiver,
   SubDeptMargin,
 } from "@/interfaces";
+
+// Interfaces
+import type { ProductSummary } from "@/pages/inventory/dev/interfaces";
 
 /**
  * COKE 6PK at store 695: the item file said $4.91 a unit, the 10/16 Coke

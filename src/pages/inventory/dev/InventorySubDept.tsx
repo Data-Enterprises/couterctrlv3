@@ -17,19 +17,21 @@ import {
 
 // Utils
 import { formatGoliathDate, formatDate } from "../../../utils";
-import {
-  fetchSubDepts,
-  fetchProducts,
-  type InventoryScope,
-  type ProductSummary,
-  type SubDeptSummary,
-} from "./utils";
+import { fetchSubDepts, fetchProducts } from "./utils";
+
+// Interfaces
+import type {
+  TreeGroup,
+  InventoryScope,
+  ProductSummary,
+  SubDeptSummary,
+} from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
+import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 

@@ -14,20 +14,21 @@ import { patchVendorView } from "../../../features/dev/devPriceOptSlice";
 
 // Utils
 import { formatGoliathDate, formatDate } from "../../../utils";
-import {
-  fetchVendors,
-  fetchVendorTotals,
-  groupProducts,
-  type InventoryScope,
-  type ProductSummary,
-  type VendorSummary,
-} from "./utils";
+import { fetchVendors, fetchVendorTotals, groupProducts } from "./utils";
+
+// Interfaces
+import type {
+  TreeGroup,
+  InventoryScope,
+  ProductSummary,
+  VendorSummary,
+} from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
+import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 

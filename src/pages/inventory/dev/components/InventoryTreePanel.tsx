@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { formatCurrencyCompact } from "../../../../utils";
 
 // Interfaces
+import type { TreeGroup, ProductSummary } from "../interfaces";
 import type { HelpPage } from "../../../../constants/helpPages";
-import type { ProductSummary } from "../utils";
 
 // Components
 import {
@@ -51,16 +51,6 @@ const treeMoney = (n: number) =>
   Math.abs(n) < 1000
     ? `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`
     : formatCurrencyCompact(n);
-
-export interface TreeGroup {
-  id: string;
-  label: string;
-  sales: number;
-  /** Null when the count can't be known until the group is opened, which is
-   *  the department page's situation — `sub_sales` aggregates above the item
-   *  line. Rendered as nothing rather than a misleading zero. */
-  itemCount: number | null;
-}
 
 interface Props {
   title: string;

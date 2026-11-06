@@ -2,19 +2,10 @@
 import { useCallback, useRef, useState } from "react";
 
 // Utils
-import { fetchInvoiceCost, type InvoiceCost } from "../utils/invoiceCost";
+import { fetchInvoiceCost } from "../utils/invoiceCost";
 
 // Interfaces
-import type { InventoryScope } from "../utils";
-
-export interface InvoiceCostState {
-  /** Which UPC `cost` belongs to. The panel checks this before reading, the
-   *  same way it checks the register lines, so a slow answer for the item
-   *  clicked before can't land on the one on screen. */
-  upc: string | null;
-  cost: InvoiceCost | null;
-  loading: boolean;
-}
+import type { InvoiceCostState, InvoiceCost, InventoryScope } from "../interfaces";
 
 const initial: InvoiceCostState = { upc: null, cost: null, loading: false };
 

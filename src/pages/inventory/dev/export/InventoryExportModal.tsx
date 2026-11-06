@@ -8,17 +8,14 @@ import {
   pricePointsFromServer,
   suggestPrice,
 } from "../../../../utils/pricePoints";
-import {
-  itemCostStats,
-  type ProductSummary,
-} from "../utils";
+import { itemCostStats } from "../utils";
 import { resolveUnitCost } from "../utils/invoiceCost";
 
 // Interfaces
+import type { Col, ItemGroup, ModalMode, Row, Source } from "./interfaces";
+import type { TreeGroup, InvoiceCostState, ProductSummary } from "../interfaces";
 import type { ServerPricePoint } from "../../../../api/pricePoints";
 import type { TransactionListItem } from "../../../../interfaces";
-import type { InvoiceCostState } from "../hooks";
-import type { TreeGroup } from "../components/InventoryTreePanel";
 
 // Components
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
@@ -43,17 +40,6 @@ import ResizableModalShell from "../../../../components-dev/modals/ResizableModa
  * for.
  */
 
-type ModalMode = "presets" | "custom";
-type Source = "groups" | "items" | "prices" | "transactions";
-
-/** A group's items, already rolled up. The department page has one of these at
- *  a time; the vendor page has every one of them, since its rows are all in
- *  hand from the start. */
-export interface ItemGroup {
-  label: string;
-  products: ProductSummary[];
-}
-
 interface Props {
   onClose: () => void;
   /** "Department" or "Vendor" — the noun this page groups by. */
@@ -75,16 +61,6 @@ interface Props {
   /** The invoice cost lookup for `selected`, so the file holds its prices
    *  against the same cost as the screen. */
   invoice: InvoiceCostState;
-}
-
-/** Rows are pre-formatted string/number maps rather than typed records, so one
- *  column list and one cell lookup serve all four sources. */
-type Row = Record<string, string | number>;
-
-interface Col {
-  key: string;
-  label: string;
-  defaultOn: boolean;
 }
 
 const PREVIEW_ROWS = 5;

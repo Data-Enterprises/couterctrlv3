@@ -6,8 +6,8 @@ import {
 } from "../../../../utils/receivers";
 
 // Interfaces
+import type { InvoiceCost, ResolvedCost, InventoryScope } from "../interfaces";
 import type { ReceiverItemSearchReceiver } from "../../../../interfaces";
-import type { InventoryScope } from ".";
 
 /**
  * What the store actually paid for an item, off its invoices.
@@ -26,14 +26,6 @@ import type { InventoryScope } from ".";
 export const INVOICE_LOOKBACK_DAYS = 90;
 /** One item rarely has more than a handful of deliveries in 90 days. */
 const MAX_RECEIVERS = 50;
-
-export interface InvoiceCost {
-  /** Per selling unit — the same unit the sales rows count in. */
-  unitCost: number;
-  /** yyyy-mm-dd of the invoice it came from. */
-  date: string;
-  invoiceId: string | number;
-}
 
 /**
  * The most recent invoiced cost for one UPC, on or before `asOf`.
@@ -76,15 +68,6 @@ export const fetchInvoiceCost = async (
   );
   return latestInvoiceCost(receivers, upc, scope.end);
 };
-
-export type CostSource = "invoice" | "item file";
-
-export interface ResolvedCost {
-  unitCost: number | null;
-  source: CostSource;
-  /** Set when `source` is "invoice". */
-  invoice: InvoiceCost | null;
-}
 
 /**
  * Which cost the page shows, and says where it came from.

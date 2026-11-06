@@ -12,6 +12,7 @@ import { calculateCogs } from "../../../../utils/cogs";
 import { netOf } from "../../../../utils/perfPairs";
 
 // Interfaces
+import type { InventoryScope, ItemCostStats, ProductSummary, SubDeptSummary, VendorSummary } from "../interfaces";
 import type {
   SubDeptMargin,
   SubSale,
@@ -34,39 +35,6 @@ import type {
 
 const USE_GROUPS = 0;
 const SINGLE_STORE = 1;
-
-export interface InventoryScope {
-  url: string;
-  token: string;
-  storeid: number;
-  /** yyyy-mm-dd. */
-  start: string;
-  end: string;
-}
-
-export interface SubDeptSummary {
-  id: number;
-  description: string;
-  sales: number;
-  /** Items can't be counted until the department is opened — `subs/sub_sales`
-   *  aggregates above the item line. Null means "not loaded yet", which is why
-   *  the row shows nothing rather than a misleading zero. */
-  itemCount: number | null;
-}
-
-/** One UPC inside a department, rolled up from its daily rows. */
-export interface ProductSummary {
-  productCode: string;
-  description: string;
-  sales: number;
-  qty: number;
-  /** Priced units — pounds on a scale item, else identical to qty. Kept apart
-   *  from `qty` because a scale item's qty counts rings, not what was sold. */
-  units: number;
-  /** The daily rows behind it. Estimated Price Points is computed from these
-   *  with no further fetching. */
-  rows: SubDeptMargin[];
-}
 
 /**
  * The departments that sold in the window.
@@ -169,17 +137,6 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
   return [...byCode.values()].sort((a, b) => b.sales - a.sales);
 };
 
-export interface ItemCostStats {
-  /** Cost of everything sold in the window. */
-  cogs: number;
-  netSales: number;
-  /** Blended across the window, because cost moves. An item bought at two costs
-   *  has no single true unit cost, and the average is the only honest figure to
-   *  hold a price against. Null when nothing sold. */
-  unitCost: number | null;
-  marginPct: number | null;
-}
-
 /**
  * The cost floor under every price on the page.
  *
@@ -235,19 +192,6 @@ export const fetchProducts = async (
   );
 
 /* ------------------------------------------------------------------ vendors */
-
-export interface VendorSummary {
-  vendorId: string;
-  vendorName: string;
-  sales: number;
-  /** Distinct items. Null while the vendor comes from the rollup alone: its
-   *  item counts are per day, and a week's distinct count can't be added up
-   *  from them. Filled in when the item rows land. */
-  itemCount: number | null;
-  /** Every item row this vendor supplied, so opening it costs nothing. Empty
-   *  until the item rows land. */
-  rows: SubDeptMargin[];
-}
 
 /** Rows with no vendor are real — DSD and miscellaneous departments both
  *  produce them — and bucketing them together under one heading is more
