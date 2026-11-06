@@ -1,11 +1,9 @@
+// Hooks
 import { useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import StorePicker from "../../../../components-dev/storePicker/StorePicker";
-import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
-import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
-import { isAdListFile, parseAdListWorkbook } from "../utils/adListParse";
+
+// Redux
 import {
   addUpcs,
   setUpcText,
@@ -13,8 +11,17 @@ import {
   clearUpcs,
   setUploadedAdList,
 } from "../../../../features/dev/devForecastDevSlice";
-import { getStoreName } from "../../../../utils";
 import { isGroupSearch } from "../../../../features/searchSlice";
+
+// Utils
+import { getStoreName } from "../../../../utils";
+import { isAdListFile, parseAdListWorkbook } from "../utils/adListParse";
+
+// Components
+import { XMarkIcon } from "@heroicons/react/20/solid";
+import StorePicker from "../../../../components-dev/storePicker/StorePicker";
+import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
+import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
 
 /**
  * Forecast entry — the search card.

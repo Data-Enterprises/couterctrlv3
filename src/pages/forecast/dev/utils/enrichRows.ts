@@ -1,12 +1,15 @@
-import type { PriceHistoryFromListResp } from "../../../../interfaces";
-import type { AdListData, AdListRow } from "../../../../features/dev/devForecastSlice";
-import { formatRowData, formatSinglePriceRowData } from ".";
+// Utils
 import {
   fitLinearDemand,
   predictQty,
   forecastUnits,
   estimateDaysActive,
 } from "../../../../utils/forecastCalc";
+import { formatRowData, formatSinglePriceRowData } from ".";
+
+// Interfaces
+import type { PriceHistoryFromListResp } from "../../../../interfaces";
+import type { AdListData, AdListRow } from "../../../../features/dev/devForecastSlice";
 
 /**
  * Ad-list enrichment + row formatting, lifted verbatim out of `Forecasting.tsx`

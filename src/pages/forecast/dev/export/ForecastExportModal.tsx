@@ -1,12 +1,19 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppSelector } from "../../../../hooks";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+
+// Utils
 import { exportData } from "../../../../utils/export";
 import { formatCurrency2 } from "../../../../utils";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
 import { rankRows, TIER_LABEL, type Tier } from "../utils/forecastRanking";
+
+// Interfaces
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
 import type { RankEntry } from "../utils/forecastRanking";
+
+// Components
+import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /** A row plus its ranking, flattened so `exportData` can read them as fields. */
 type RankedRow = ForecastOutlierRow & {

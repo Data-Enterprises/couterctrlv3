@@ -1,6 +1,11 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
 import { buildScenarioRows } from "../utils";
+
+// Interfaces
 import type { PriceHistory } from "../../../../../interfaces";
 import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
 

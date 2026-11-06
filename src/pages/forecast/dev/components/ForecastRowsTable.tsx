@@ -1,10 +1,9 @@
+// Hooks
 import { Fragment, useMemo, useState } from "react";
-import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setSelectedUpc,
   setBatchAdDaysRows,
@@ -14,12 +13,9 @@ import {
   clearTierFilter,
   resetRowValues,
 } from "../../../../features/dev/devForecastDevSlice";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
-import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import {
   rankRows,
   tierCounts,
@@ -33,6 +29,19 @@ import {
   TIER_CHIP_ON,
   type Tier,
 } from "../utils/forecastRanking";
+
+// Interfaces
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+
+// Components
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
 /**
  * The forecast grid.

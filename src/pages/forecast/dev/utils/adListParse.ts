@@ -1,4 +1,7 @@
+// Utils
 import * as XLSX from "xlsx";
+
+// Interfaces
 import type { AdListRow } from "../../../../features/dev/devForecastSlice";
 
 /**

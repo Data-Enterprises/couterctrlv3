@@ -1,10 +1,10 @@
+// Hooks
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getHistoryFromList } from "../../../api/priceSim";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Redux
 import { setSelectedGroupStores } from "../../../features/userSlice";
-import { enrichForecastRows } from "./utils/enrichRows";
 import {
   reQuery,
   setIsLoading,
@@ -19,12 +19,23 @@ import {
   appendBatchResults,
   setStoreids,
 } from "../../../features/dev/devForecastDevSlice";
+
+// API
+import { getHistoryFromList } from "../../../api/priceSim";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { enrichForecastRows } from "./utils/enrichRows";
+
+// Interfaces
+import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
+
+// Components
 import ForecastEntry from "./components/ForecastEntry";
 import ForecastListPanel from "./components/ForecastListPanel";
 import ForecastRowsTable from "./components/ForecastRowsTable";
 import ForecastCalcModal from "./calc/ForecastCalcModal";
 import ForecastExportModal from "./export/ForecastExportModal";
-import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 
 /** The API takes 500 UPCs at a time; a longer list is split so the first page
  *  of results is on screen while the rest is still in flight. */

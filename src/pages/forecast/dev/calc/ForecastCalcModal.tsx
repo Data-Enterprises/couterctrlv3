@@ -1,16 +1,23 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+
+// Redux
 import {
   setSelectedUpc,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setItemNotes,
 } from "../../../../features/dev/devForecastDevSlice";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { fitLinearDemand, predictQty } from "../../../../utils/forecastCalc";
 import { forecastUnits } from "../../../../utils/priceSimCalc";
+
+// Components
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import ForecastScenarios from "./components/ForecastScenarios";
 
 /**
