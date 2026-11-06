@@ -1,15 +1,6 @@
 // Utils
-import {
-  PRIORITY_CLASS,
-  STATUS_CLASS,
-  STATUS_LABEL,
-  initialsOf,
-  isUnread,
-  snippetOf,
-  visibleLabels,
-  whenText,
-} from "../../utils/ticketsUtils";
-import { SCOPE_TEXT, storeChipText, storesOf } from "../../utils";
+import { isUnread, snippetOf } from "../../utils/ticketsUtils";
+import { SCOPE_TEXT } from "../../utils";
 
 // Interfaces
 import type {
@@ -27,6 +18,7 @@ import InboxHeader from "./components/InboxHeader";
 import QueueTabs from "./components/QueueTabs";
 import InboxFilters from "./components/InboxFilters";
 import SearchBar from "./components/SearchBar";
+import TicketRow from "./components/TicketRow";
 
 interface Props {
   rows: Ticket[];
@@ -106,11 +98,7 @@ const TicketInbox = ({
       />
 
       <div className="flex-none border-b border-brand_line p-2.5">
-        {/* Tabs, because they are exclusive and the top level of this column. */}
-        {/* QueueTabs.tsx: `auto-cols-fr`, so a client's two tabs share the width evenly. */}
         <QueueTabs isTech={isTech} tab={tab} counts={counts} onTab={onTab} />
-
-        {/* InboxFilters.tsx: status and priority filters, plus clear button if narrowed. */}
         <InboxFilters
           filters={filters}
           onFilters={onFilters}
@@ -120,7 +108,6 @@ const TicketInbox = ({
           storeOptions={storeOptions}
           narrowed={narrowed}
         />
-        {/* SearchBar.tsx */}
         <SearchBar
           search={search}
           onSearch={onSearch}
@@ -133,8 +120,7 @@ const TicketInbox = ({
           pending={pending}
         />
 
-        {/* What this list is, from the server's `scope`, so a manager knows
-            why a coworker's ticket is not here. */}
+        {/* Shows the list of tickets based on user level */}
         {scope && scope !== "all" && (
           <p className="m-0 mt-2 text-[11.5px] text-content/85">
             {SCOPE_TEXT[scope]}
@@ -165,106 +151,22 @@ const TicketInbox = ({
             {loading ? "Reading the queue…" : "Nothing here."}
           </p>
         )}
-        {/* TicketRow.tsx: the rows.map return will be its own component */}
+
         {rows.map((t) => {
           const open = t.id === selectedId;
           const unread = isUnread(t);
           const snippet = snippetOf(t);
           return (
-            <button
+            <TicketRow
               key={t.id}
-              type="button"
-              onClick={() => onSelect(t.id)}
-              aria-current={open}
-              className={`flex w-full gap-2.5 border-b border-brand_line px-2.5 py-2.5 text-left transition-colors ${
-                open ? "bg-row_selected" : "hover:bg-bkg"
-              }`}
-            >
-              {/* The dot's column is held whether or not there is a dot, so a
-                  row does not shift sideways the day unread starts working. */}
-              <span
-                aria-hidden
-                className={`mt-[7px] h-[7px] w-[7px] flex-none rounded-full ${
-                  unread ? "bg-brand_navy" : "bg-transparent"
-                }`}
-              />
-
-              <span className="mt-[1px] flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand_slate text-[10px] font-bold text-custom-white">
-                {initialsOf(t.opened_by_name)}
-              </span>
-
-              <span className="min-w-0 flex-1">
-                {/* The number rides the title: it is how a ticket is named out loud. */}
-                <span className="flex items-baseline gap-2">
-                  <span
-                    className={`min-w-0 flex-1 truncate text-[12.5px] ${
-                      unread ? "font-bold" : "font-semibold"
-                    }`}
-                  >
-                    <span className="font-mono text-[11px] text-content/85">
-                      {t.ticket_number}
-                    </span>{" "}
-                    {t.title}
-                  </span>
-                  <span className="flex-none text-[11px] text-content/85">
-                    {whenText(t.updated_at)}
-                  </span>
-                </span>
-
-                {/* Who to answer: a client's own rows name the tech; a manager's
-                    staff tickets name who filed them. */}
-                <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
-                  {isTech || t.opened_by !== userid
-                    ? t.opened_by_name
-                    : (t.assigned_tech ?? "Unassigned")}
-                </span>
-
-                {snippet && (
-                  <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
-                    {snippet}
-                  </span>
-                )}
-
-                <span className="mt-1.5 flex flex-wrap items-center gap-1">
-                  <span
-                    className={`rounded px-1.5 py-[1px] text-[10px] font-semibold ${STATUS_CLASS[t.status]}`}
-                  >
-                    {STATUS_LABEL[t.status]}
-                  </span>
-                  {t.priority !== "normal" && (
-                    <span
-                      className={`rounded px-1.5 py-[1px] text-[10px] font-semibold ${PRIORITY_CLASS[t.priority]}`}
-                    >
-                      {t.priority}
-                    </span>
-                  )}
-                  {storesOf(t).length > 0 && (
-                    <span
-                      title={storesOf(t)
-                        .map((st) => `#${st.store_number} ${st.store_name}`)
-                        .join(", ")}
-                      className="rounded bg-bkg px-1.5 py-[1px] font-mono text-[10px] text-content/85"
-                    >
-                      {storeChipText(storesOf(t))}
-                    </span>
-                  )}
-                  {isTech && t.company_name && (
-                    <span className="max-w-[120px] truncate rounded bg-bkg px-1.5 py-[1px] text-[10px] text-content/85">
-                      {t.company_name}
-                    </span>
-                  )}
-                  {visibleLabels(t).map((l) => (
-                    <span
-                      key={l.id}
-                      className="max-w-[110px] truncate rounded px-1.5 py-[1px] text-[10px] font-semibold"
-                      style={{ background: `${l.color}22`, color: l.color }}
-                    >
-                      {l.name}
-                    </span>
-                  ))}
-                </span>
-              </span>
-            </button>
+              ticket={t}
+              open={open}
+              isTech={isTech}
+              userid={userid}
+              onSelect={onSelect}
+              unread={unread}
+              snippet={snippet}
+            />
           );
         })}
       </div>
