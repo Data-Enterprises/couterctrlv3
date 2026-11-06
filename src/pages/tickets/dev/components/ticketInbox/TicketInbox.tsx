@@ -15,7 +15,6 @@ import { SCOPE_TEXT, storeChipText, storesOf } from "../../utils";
 import type {
   Ticket,
   TicketScope,
-  TicketStatus,
   TicketStore,
 } from "../../../../../api/tickets";
 import type {
@@ -24,23 +23,17 @@ import type {
 } from "../../../../../features/dev/devTicketsSlice";
 
 // Components
-import MultiSelectFilter from "../../../../../components-dev/filters/MultiSelectFilter";
 import InboxHeader from "./components/InboxHeader";
 import QueueTabs from "./components/QueueTabs";
+import InboxFilters from "./components/InboxFilters";
 
 interface Props {
   rows: Ticket[];
   selectedId: number | null;
   onSelect: (id: number) => void;
-  /** Company and opener are a tech's to read. A client seeing "Bruces
-   *  Foodland" on their own ticket learns nothing. */
   isTech: boolean;
-  /** Which tickets the server is showing this reader. Null from an API older
-   *  than the store tiers. */
   scope: TicketScope | null;
-  /** Whose rows are whose: a Manager's list holds other people's tickets. */
   userid: number;
-  /** Every store on the tickets in hand, for the store filter. */
   storeOptions: TicketStore[];
   loading: boolean;
   tab: QueueTab;
@@ -57,30 +50,14 @@ interface Props {
   filters: TicketFilters;
   onFilters: (next: Partial<TicketFilters>) => void;
   onClearFilters: () => void;
-  /** Counts ride the option labels, so the picker says how much is behind
-   *  each one before it is opened. */
   statusCounts: Record<string, number>;
   priorityCounts: Record<string, number>;
-  /** The queue has moved under us — the button says so rather than a bar. */
   pending: boolean;
   onRefresh: () => void;
-  /** Filing is the client's action; a tech has no button (see Tickets.tsx). */
   onNew?: () => void;
-  /** The roster. Absent on the client view, which has no desk to look at. */
   onTechs?: () => void;
   error: string | null;
 }
-
-/** Closed has its own folder in the rail, so it is not one of the statuses
- *  you narrow an open pile by. */
-const STATUSES: TicketStatus[] = ["open", "in_progress", "waiting"];
-
-const PRIORITIES = [
-  { value: "urgent", label: "Urgent" },
-  { value: "high", label: "High" },
-  { value: "normal", label: "Normal" },
-  { value: "low", label: "Low" },
-];
 
 /**
  * The queue as a column of conversations. The two pickers above the search
@@ -133,57 +110,15 @@ const TicketInbox = ({
         <QueueTabs isTech={isTech} tab={tab} counts={counts} onTab={onTab} />
 
         {/* InboxFilters.tsx: status and priority filters, plus clear button if narrowed. */}
-        <div className="flex items-center gap-1.5">
-          <MultiSelectFilter
-            options={STATUSES.map((s) => ({
-              value: s,
-              label: `${STATUS_LABEL[s]} (${statusCounts[s] ?? 0})`,
-            }))}
-            values={filters.status}
-            onChange={(values) => onFilters({ status: values })}
-            placeholder="Any status"
-            noun="statuses"
-            className="flex-1"
-          />
-          <MultiSelectFilter
-            options={PRIORITIES.map((p) => ({
-              value: p.value,
-              label: `${p.label} (${priorityCounts[p.value] ?? 0})`,
-            }))}
-            values={filters.priority}
-            onChange={(values) => onFilters({ priority: values })}
-            placeholder="Any priority"
-            noun="priorities"
-            className="flex-1"
-          />
-          {narrowed && (
-            <button
-              type="button"
-              onClick={onClearFilters}
-              aria-label="Clear narrowing"
-              title="Clear narrowing"
-              className="flex-none rounded px-1.5 py-0.5 text-[12px] font-semibold text-brand_navy_hover hover:bg-bkg"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        {/* Only when there is a choice to make: one store on every ticket
-            is not a filter, it is a fact. */}
-        {storeOptions.length > 1 && (
-          <MultiSelectFilter
-            options={storeOptions.map((s) => ({
-              value: String(s.storeid),
-              label: `#${s.store_number} ${s.store_name}`,
-            }))}
-            values={filters.stores}
-            onChange={(values) => onFilters({ stores: values })}
-            placeholder="Any store"
-            noun="stores"
-            className="mt-2 w-full"
-          />
-        )}
+        <InboxFilters
+          filters={filters}
+          onFilters={onFilters}
+          onClearFilters={onClearFilters}
+          statusCounts={statusCounts}
+          priorityCounts={priorityCounts}
+          storeOptions={storeOptions}
+          narrowed={narrowed}
+        />
         {/* SearchBar.tsx */}
         <div className="mt-2 flex items-center gap-1.5">
           <label htmlFor="ticket-search" className="sr-only">
