@@ -6,8 +6,8 @@ import {
   setExplorerMobileSearchOpen,
   setExplorerNotice,
 } from "../../../../features/dev/devCashiersSlice";
-import { useCashierSignals } from "../useCashierSignals";
-import { useCashierExplorer, type ExplorerOutcome } from "../useCashierExplorer";
+import { useCashierSignals } from "../hooks";
+import { useCashierExplorer, type ExplorerOutcome } from "./hooks";
 import SignalListMobile from "./SignalListMobile";
 import SignalTransactionsMobile from "./SignalTransactionsMobile";
 

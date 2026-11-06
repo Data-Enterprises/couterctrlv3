@@ -13,8 +13,8 @@ import {
   lensListLabel,
   receiptLinesFor,
   transactionLabel,
-} from "../explorer/lensUtils";
-import { useCashierSignals } from "../useCashierSignals";
+} from "../utils";
+import { useCashierSignals } from "../hooks";
 
 /**
  * One signal's transactions — the drill-down between the signal list and a

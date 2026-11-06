@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import CashiersExportModal from "./explorer/CashiersExportModal";
+import CashiersExportModal from "./components/CashiersExportModal";
 import {
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import { useCashierCtx } from ".";
+import { useCashierCtx, useCashierSignals } from "./hooks";
 import { useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
@@ -27,11 +27,10 @@ import {
   setSelectedSaleType,
 } from "../../../features/dev/devCashiersSlice";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import ExplorerSearch from "./explorer/ExplorerSearch";
-import LensPanel from "./explorer/LensPanel";
-import SignalDetail from "./explorer/SignalDetail";
+import ExplorerSearch from "./components/ExplorerSearch";
+import LensPanel from "./components/LensPanel";
+import SignalDetail from "./components/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
-import { useCashierSignals } from "./useCashierSignals";
 import { isGroupSearch } from "../../../features/searchSlice";
 
 // LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the

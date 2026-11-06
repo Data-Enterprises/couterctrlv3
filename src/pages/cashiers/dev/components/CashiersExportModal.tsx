@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { TransactionListItem } from "../../../../interfaces";
-import type { Signal } from "./lensUtils";
+import type { Signal } from "../utils";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import { groupSignalByTransaction } from "./lensUtils";
+import { groupSignalByTransaction } from "../utils";
 import {
   fmtNum,
   rowsToCsv,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TransactionListItem } from "@/interfaces";
-import { buildSignals, buildTotals, receiptLinesFor } from "@/pages/cashiers/dev/explorer/lensUtils";
+import { buildSignals, buildTotals, receiptLinesFor } from "@/pages/cashiers/dev/utils";
 
 /* Two stores sharing a storeid (685 carries both 369 and 370 in real data),
    plus an unrelated third store. Cashier 12 and lane 3 exist at all of them. */

@@ -13,8 +13,8 @@ import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 import { fmtRangeLabel } from "../../../../utils/dateLabels";
 import { formatCurrency2 } from "../../../../utils";
-import { LENSES } from "../explorer/lensUtils";
-import { useCashierSignals } from "../useCashierSignals";
+import { LENSES } from "../utils";
+import { useCashierSignals } from "../hooks";
 
 /**
  * The explorer's signal list on mobile.

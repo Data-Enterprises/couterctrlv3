@@ -9,9 +9,9 @@ import {
   receiptLinesFor,
   transactionLabel,
   type Signal,
-} from "./lensUtils";
+} from "../utils";
 import { formatCurrency2 } from "../../../../utils";
-import Transaction from "../transactions/Transaction";
+import Transaction from "./Transaction";
 
 interface SignalDetailProps {
   signal: Signal;

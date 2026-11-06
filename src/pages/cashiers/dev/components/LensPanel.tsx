@@ -1,5 +1,5 @@
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import { LENSES, type Signal, type SpreadKind } from "./lensUtils";
+import { LENSES, type Signal, type SpreadKind } from "../utils";
 import { formatCurrency2 } from "../../../../utils";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 
