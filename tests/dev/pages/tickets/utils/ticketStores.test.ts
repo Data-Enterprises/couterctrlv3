@@ -14,7 +14,7 @@ import {
   storeChipText,
   storeFullText,
   storesOnTickets,
-} from "@/pages/tickets/dev/ticketStores";
+} from "@/pages/tickets/dev/utils";
 
 const store = (n: string, id = Number(n) * 10) => ({
   storeid: id,

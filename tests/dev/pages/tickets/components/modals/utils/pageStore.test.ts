@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { initialState } from "@/features/searchSlice";
 import type { SearchState } from "@/features/searchSlice";
 import type { RootState } from "@/store";
-import { pageStoreOf, searchForPage } from "@/pages/tickets/dev/pageStore";
-import { originOf, searchSummary } from "@/pages/tickets/dev/ticketOrigin";
+import { pageStoreOf, searchForPage } from "@/pages/tickets/dev/components/modals/utils";
+import { originOf, searchSummary } from "@/pages/tickets/dev/components/utils/ticketOrigin";
 
 const irvington = {
   storeid: 369,

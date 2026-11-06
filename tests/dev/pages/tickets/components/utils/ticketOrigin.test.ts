@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { emptyGroup } from "@/features/groupSlice";
 import { initialState } from "@/features/searchSlice";
 import type { SearchState } from "@/features/searchSlice";
-import { PAGE_CATEGORY, originOf, scopeLine, scopeOf, searchSummary } from "@/pages/tickets/dev/ticketOrigin";
+import { PAGE_CATEGORY, originOf, scopeLine, scopeOf, searchSummary } from "@/pages/tickets/dev/components/utils/ticketOrigin";
 
 const store = {
   storeid: 369,

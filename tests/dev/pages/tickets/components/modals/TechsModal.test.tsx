@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import * as api from "@/api/tickets";
 import type { TechCandidate, TicketTech } from "@/api/tickets";
-import TechsModal from "@/pages/tickets/dev/TechsModal";
+import TechsModal from "@/pages/tickets/dev/components/modals/TechsModal";
 
 vi.mock("@/api/tickets", async (orig) => ({
   ...(await orig<typeof api>()),
