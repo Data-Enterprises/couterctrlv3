@@ -1,3 +1,4 @@
+// Interfaces
 import type { GrantMode } from "../../../../../../interfaces";
 
 /**

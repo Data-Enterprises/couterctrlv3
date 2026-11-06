@@ -1,3 +1,4 @@
+// Interfaces
 import type { Store } from "../../../../../interfaces";
 
 // A store tagged with which base group it was picked through — used by the

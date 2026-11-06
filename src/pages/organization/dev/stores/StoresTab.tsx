@@ -1,8 +1,15 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupsCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useBaseGroupsCtx } from "../hooks";
+
+// API
 import { getAllUsers, getUserStores } from "../../../../api/user";
+
+// Interfaces
 import type { JsonError, Store, User } from "../../../../interfaces";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import StoresExportModal from "./components/StoresExportModal";
 import StoreUsersPanel from "./components/StoreUsersPanel";

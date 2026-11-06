@@ -1,10 +1,29 @@
+// Hooks
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useOrganizationCtx, useBaseGroupsCtx } from "../../../hooks";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx, useBaseGroupsCtx } from "../../../hooks";
+
+// API
 import {
   getBaseGroups,
   getAllStoresInBaseGroup,
 } from "../../../../../../api/baseGroups";
+import { getBaseGroupsAssignedToUser } from "../../../../../../api/team";
+
+// Utils
+import {
+  heldGroupIds as editorHeldGroupIds,
+  mayChangeGroup,
+  wizardGroups,
+} from "../../../utils";
+import {
+  type AccessPicks,
+  NO_PICKS,
+  heldGroupIds,
+  toggleGroup,
+} from "../../utils";
+
+// Interfaces
 import type {
   BaseGroup,
   CompanyBaseGroup,
@@ -12,18 +31,8 @@ import type {
   Store,
 } from "../../../../../../interfaces";
 import type { SelectableStore } from "../../interfaces";
-import {
-  type AccessPicks,
-  NO_PICKS,
-  heldGroupIds,
-  toggleGroup,
-} from "../../utils";
-import {
-  heldGroupIds as editorHeldGroupIds,
-  mayChangeGroup,
-  wizardGroups,
-} from "../../../utils";
-import { getBaseGroupsAssignedToUser } from "../../../../../../api/team";
+
+// Components
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../../components-dev/Checkbox";

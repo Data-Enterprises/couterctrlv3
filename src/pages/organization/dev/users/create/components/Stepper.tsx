@@ -1,5 +1,8 @@
-import { CheckIcon } from "@heroicons/react/20/solid";
+// Utils
 import { STEP_ORDER, STEP_TITLE, type WizardStep } from "../utils";
+
+// Components
+import { CheckIcon } from "@heroicons/react/20/solid";
 
 /**
  * The four steps, across the top.

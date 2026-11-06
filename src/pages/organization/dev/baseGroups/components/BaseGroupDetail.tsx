@@ -1,31 +1,40 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowDownTrayIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/20/solid";
-import { useBaseGroupsCtx, type StoreSplit } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import type { CompanyBaseGroup, JsonError, User } from "../../../../../interfaces";
+import { useBaseGroupsCtx, type StoreSplit } from "../../hooks";
+import { useMarkUsersStale } from "../../utils/usersStale";
+
+// API
 import {
   updateBaseGroup,
   deleteBaseGroup,
   assignStoreToBaseGroups,
   unassignStoreFromBaseGroup,
 } from "../../../../../api/baseGroups";
+
+// Utils
+import { groupStoresConfirm } from "../../utils/bulkConfirm";
 import {
   callReason,
   summarizeAssign,
   summarizeUnassign,
   type StoreOutcome,
 } from "../utils";
+
+// Interfaces
+import type { CompanyBaseGroup, JsonError, User } from "../../../../../interfaces";
+
+// Components
+import {
+  ArrowDownTrayIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/20/solid";
 import AssignPanel from "../../../../../components-dev/AssignPanel";
 import IconButton from "../../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import BaseGroupExportModal from "./BaseGroupExportModal";
-import { useMarkUsersStale } from "../../utils/usersStale";
-import { groupStoresConfirm } from "../../utils/bulkConfirm";
 
 interface Props {
   group: CompanyBaseGroup;

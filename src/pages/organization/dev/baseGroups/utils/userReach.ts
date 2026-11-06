@@ -1,3 +1,4 @@
+// Interfaces
 import type { BaseGroupUserRow, User } from "../../../../../interfaces";
 
 /**

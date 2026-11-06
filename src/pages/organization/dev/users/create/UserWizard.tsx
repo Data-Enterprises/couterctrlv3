@@ -1,33 +1,8 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import ConfirmModal from "../../../../../components-dev/ConfirmModal";
-import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
-import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { createUser, updateUser } from "../../../../../api/team";
-import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
-import {
-  clearDuplicateSource,
-  markUserInfoSaved,
-  resetUserInfo,
-  setRefresh,
-  setUserCompanyIds,
-  setUserInfo,
-} from "../../../../../features/dev/devUsersSlice";
-import type {
-  CompanyBaseGroup,
-  GrantMode,
-  JsonError,
-  Store,
-} from "../../../../../interfaces";
-import UserFields from "./components/UserFields";
-import AccessPanel from "./components/AccessPanel";
-import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
-import Stepper from "./components/Stepper";
-import { STEP_ORDER, type WizardStep } from "./utils";
+import { useOrganizationCtx } from "../../hooks";
 import { usePanelFit, type PanelFit } from "../../utils/panelFit";
-import StepAccessType from "./components/StepAccessType";
-import StepReview from "./components/StepReview";
 import {
   useSeededPicks,
   useAccessSave,
@@ -39,6 +14,33 @@ import {
   useHeldAccess,
   useExistingAccess,
 } from "./hooks";
+
+// Redux
+import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
+import {
+  clearDuplicateSource,
+  markUserInfoSaved,
+  resetUserInfo,
+  setRefresh,
+  setUserCompanyIds,
+  setUserInfo,
+} from "../../../../../features/dev/devUsersSlice";
+
+// API
+import { createUser, updateUser } from "../../../../../api/team";
+import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
+
+// Utils
+import {
+  accessSets,
+  directStoreIds,
+  emptySelectedGroupIds,
+  groupCompanies,
+  hasChanges,
+  NO_PICKS,
+  type AccessPicks,
+} from "../utils";
+import { STEP_ORDER, type WizardStep } from "./utils";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -49,15 +51,24 @@ import {
   singleStoreNote,
   trimToSingleStore,
 } from "./utils/wizardRules";
-import {
-  accessSets,
-  directStoreIds,
-  emptySelectedGroupIds,
-  groupCompanies,
-  hasChanges,
-  NO_PICKS,
-  type AccessPicks,
-} from "../utils";
+
+// Interfaces
+import type {
+  CompanyBaseGroup,
+  GrantMode,
+  JsonError,
+  Store,
+} from "../../../../../interfaces";
+
+// Components
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
+import UserFields from "./components/UserFields";
+import AccessPanel from "./components/AccessPanel";
+import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
+import Stepper from "./components/Stepper";
+import StepAccessType from "./components/StepAccessType";
+import StepReview from "./components/StepReview";
 
 interface UserWizardProps {
   /**

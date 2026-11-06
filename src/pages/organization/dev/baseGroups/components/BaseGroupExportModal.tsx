@@ -1,6 +1,16 @@
+// Hooks
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { useBaseGroupsCtx } from "../../hooks";
+
+// API
+import { getBaseGroupUsers } from "../../../../../api/baseGroups";
+
+// Utils
+import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
+import { callReason } from "../utils";
+import { withinReachOf } from "../utils/userReach";
+
+// Interfaces
 import type {
   BaseGroupUserRow,
   BaseGroupUsersResp,
@@ -8,11 +18,10 @@ import type {
   Store,
   User,
 } from "../../../../../interfaces";
-import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
-import { getBaseGroupUsers } from "../../../../../api/baseGroups";
-import { useBaseGroupsCtx } from "../../hooks";
-import { callReason } from "../utils";
-import { withinReachOf } from "../utils/userReach";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 
 interface BaseGroupExportModalProps {
   onClose: () => void;

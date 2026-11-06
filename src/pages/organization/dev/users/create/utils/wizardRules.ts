@@ -1,6 +1,9 @@
+// Utils
+import { STEP_ORDER, type WizardStep } from ".";
+
+// Interfaces
 import type { DuplicateSource } from "../../../../../../features/dev/devUsersSlice";
 import type { AccessPicks } from "../../utils";
-import { STEP_ORDER, type WizardStep } from ".";
 
 /**
  * The wizard's rules, as plain functions: which steps are ready, how far the

@@ -1,14 +1,26 @@
+// Hooks
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import type { AccessSets } from "../../utils";
+import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 import { useOrganizationCtx } from "../../../hooks";
+
+// Redux
+import {
+  setSelectedUserStores,
+  setUserCompanyIds,
+} from "../../../../../../features/dev/devUsersSlice";
+
+// API
 import { getAllStoresInBaseGroup } from "../../../../../../api/baseGroups";
-import type {
-  GrantMode,
-  JsonError,
-  Store,
-  BaseGroup,
-  UserGroupPick,
-} from "../../../../../../interfaces";
+import { assignUserToCompany, getUserStores } from "../../../../../../api/user";
+import {
+  assignBaseGroupToUser,
+  deleteUserBaseGroupLink,
+  getBaseGroupsAssignedToUser,
+  getUserGroupPicks,
+} from "../../../../../../api/team";
+import { getCompaniesAssignedToUser } from "../../../../../../api/company";
+
+// Utils
 import {
   heldGroupIds,
   picksForMode,
@@ -17,20 +29,17 @@ import {
   accessModeOf,
   type CarriedAccess,
 } from "../../utils";
-import { assignUserToCompany, getUserStores } from "../../../../../../api/user";
-import {
-  assignBaseGroupToUser,
-  deleteUserBaseGroupLink,
-  getBaseGroupsAssignedToUser,
-  getUserGroupPicks,
-} from "../../../../../../api/team";
+
+// Interfaces
+import type {
+  GrantMode,
+  JsonError,
+  Store,
+  BaseGroup,
+  UserGroupPick,
+} from "../../../../../../interfaces";
+import type { AccessSets } from "../../utils";
 import type { SelectableStore } from "../../interfaces";
-import { useToast } from "../../../../../../components/toasts/hooks/useToast";
-import { getCompaniesAssignedToUser } from "../../../../../../api/company";
-import {
-  setSelectedUserStores,
-  setUserCompanyIds,
-} from "../../../../../../features/dev/devUsersSlice";
 
 /**
  * Edit's picks: seeded from what the person holds, and re-seeded as those

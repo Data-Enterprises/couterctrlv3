@@ -1,9 +1,16 @@
+// Hooks
 import { useMemo, useState } from "react";
-import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../interfaces";
+
+// Utils
 import {
   effectiveStores,
   type AccessPicks,
 } from "../../utils";
+
+// Interfaces
+import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../interfaces";
+
+// Components
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 
 /**

@@ -1,3 +1,4 @@
+// Interfaces
 import type { SkippedUser } from "../../../../../api/storeAccess";
 
 /**

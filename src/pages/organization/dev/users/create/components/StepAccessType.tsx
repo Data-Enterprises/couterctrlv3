@@ -1,4 +1,7 @@
+// Interfaces
 import type { GrantMode } from "../../../../../../interfaces";
+
+// Components
 import GrantModeChip from "./GrantModeChip";
 
 /**

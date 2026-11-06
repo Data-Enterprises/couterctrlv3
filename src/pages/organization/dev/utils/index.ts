@@ -1,5 +1,8 @@
-import type { BaseGroup } from "../../../../interfaces";
+// Utils
 import { isSupportUser } from "../../../../utils/supportUsers";
+
+// Interfaces
+import type { BaseGroup } from "../../../../interfaces";
 
 /**
  * Who sees past their own assignments, and what everyone else sees.

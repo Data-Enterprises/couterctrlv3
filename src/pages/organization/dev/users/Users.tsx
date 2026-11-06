@@ -1,10 +1,15 @@
+// Hooks
 import { useState } from "react";
 import { useOrganizationCtx } from "../hooks";
+
+// Redux
 import {
   resetUserInfo,
   setSelectedUserForm,
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
+
+// Components
 import UserGrid from "./components/UserGrid";
 import UserWizard from "./create/UserWizard";
 

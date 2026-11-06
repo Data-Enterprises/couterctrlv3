@@ -1,10 +1,19 @@
+// Hooks
 import { useState } from "react";
-import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx } from "../../hooks";
+
+// Redux
+import { setRefresh } from "../../../../../features/dev/devUsersSlice";
+
+// API
 import { setTempPassword } from "../../../../../api/security";
 import { resetUserSecurityQuestion } from "../../../../../api/team";
-import { setRefresh } from "../../../../../features/dev/devUsersSlice";
+
+// Interfaces
 import type { JsonError, User } from "../../../../../interfaces";
+
+// Components
 import PasswordInput from "../../../../../components-dev/inputs/PasswordInput";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 

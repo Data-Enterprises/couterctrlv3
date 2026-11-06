@@ -1,22 +1,29 @@
-import { roles } from "../../utils/roles";
+// Hooks
 import { useMemo } from "react";
+import { useOrganizationCtx } from "../../../hooks";
+
+// Utils
+import { roles } from "../../utils/roles";
 import {
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from "@heroicons/react/20/solid";
+  effectiveStores,
+  picksInGroup,
+  type AccessPicks, heldGroupIds } from "../../utils";
+
+// Interfaces
 import type {
   BaseGroup,
   CompanyBaseGroup,
   GrantMode,
   Store,
 } from "../../../../../../interfaces";
-import { useOrganizationCtx } from "../../../hooks";
-import {
-  effectiveStores,
-  picksInGroup,
-  type AccessPicks, heldGroupIds } from "../../utils";
-import GrantModeChip from "./GrantModeChip";
 import type { WizardStep } from "../utils";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/20/solid";
+import GrantModeChip from "./GrantModeChip";
 
 /**
  * What is about to be written, counted.

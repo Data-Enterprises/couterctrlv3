@@ -1,16 +1,23 @@
+// Hooks
 import { useState } from "react";
+import { useOrganizationCtx } from "../../hooks";
+
+// API
+import {
+  setUsersActive,
+  type SetActiveResult,
+} from "../../../../../api/team";
+
+// Interfaces
+import type { JsonError, User } from "../../../../../interfaces";
+
+// Components
 import {
   CheckCircleIcon,
   MinusCircleIcon,
   NoSymbolIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/20/solid";
-import { useOrganizationCtx } from "../../hooks";
-import {
-  setUsersActive,
-  type SetActiveResult,
-} from "../../../../../api/team";
-import type { JsonError, User } from "../../../../../interfaces";
 
 interface SetActiveModalProps {
   /** Exactly the people the button promised — the grid passes what was

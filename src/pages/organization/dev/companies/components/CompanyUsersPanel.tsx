@@ -1,17 +1,19 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { useBaseGroupsCtx } from "../../hooks";
-import { canAdministerUser, companyReach } from "../../utils";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { assignUserToCompany, getAllUsers } from "../../../../../api/user";
-import { peopleConfirm } from "../../utils/bulkConfirm";
+import { useBaseGroupsCtx } from "../../hooks";
 import { useMarkUsersStale } from "../../utils/usersStale";
-import type { JsonError, User } from "../../../../../interfaces";
-import AssignPanel from "../../../../../components-dev/AssignPanel";
-import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 import {
   useCompanyFilterOptions,
   useCompanyFilterPredicate,
 } from "../../utils/companyFilter";
+
+// API
+import { assignUserToCompany, getAllUsers } from "../../../../../api/user";
+
+// Utils
+import { canAdministerUser, companyReach } from "../../utils";
+import { peopleConfirm } from "../../utils/bulkConfirm";
 import {
   planAdd,
   planRemove,
@@ -20,6 +22,13 @@ import {
   type MemberUser,
   type UserOutcome,
 } from "../utils";
+
+// Interfaces
+import type { JsonError, User } from "../../../../../interfaces";
+
+// Components
+import AssignPanel from "../../../../../components-dev/AssignPanel";
+import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
 /**
  * Who holds one company.

@@ -1,8 +1,15 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
+
+// API
 import { getAllUsers } from "../../../../api/user";
+
+// Interfaces
 import type { JsonError, User } from "../../../../interfaces";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import CompanyUsersPanel from "./components/CompanyUsersPanel";
 

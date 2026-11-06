@@ -1,6 +1,52 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
+// Redux
+import {
+  setAllCompanies,
+  setInactiveUsers,
+  setRefresh as setUsersRefresh,
+  setUserLevels,
+  setUsers,
+  setUsersLoad,
+} from "../../../features/dev/devUsersSlice";
+import {
+  setUnsavedWizard,
+  setUsersExportOpen,
+} from "../../../features/dev/devOrganizationSlice";
+
+// API
+import { getAllUsers } from "../../../api/user";
+import { getUserLevels } from "../../../api/team";
+import { getCompanies } from "../../../api/company";
+
+// Utils
+import { PanelFitContext, type PanelFit } from "./utils/panelFit";
+import {
+  filterUsers,
+  filtersApplied,
+  showsInactive,
+} from "./utils/userFilters";
+
+// Interfaces
+import type {
+  CompanyJsonResp,
+  JsonError,
+  User,
+  UserLevelJsonResp,
+} from "../../../interfaces";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
+import ConfirmModal from "../../../components-dev/ConfirmModal";
+import UsersExportModal from "./components/UsersExportModal";
+import Users from "./users/Users";
+import BaseGroups from "./baseGroups/BaseGroups";
+import Companies from "./companies/Companies";
+import StoresTab from "./stores/StoresTab";
 
 /**
  * Owner. Companies, base groups and stores each decide who may see what,
@@ -25,41 +71,6 @@ const TAB_FIT: Record<Tab, PanelFit> = {
   baseGroups: { width: 1320, height: 660 },
   stores: { width: 1320, height: 660 },
 };
-import { PanelFitContext, type PanelFit } from "./utils/panelFit";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type {
-  CompanyJsonResp,
-  JsonError,
-  User,
-  UserLevelJsonResp,
-} from "../../../interfaces";
-import { getAllUsers } from "../../../api/user";
-import { getUserLevels } from "../../../api/team";
-import { getCompanies } from "../../../api/company";
-import {
-  setAllCompanies,
-  setInactiveUsers,
-  setRefresh as setUsersRefresh,
-  setUserLevels,
-  setUsers,
-  setUsersLoad,
-} from "../../../features/dev/devUsersSlice";
-import {
-  setUnsavedWizard,
-  setUsersExportOpen,
-} from "../../../features/dev/devOrganizationSlice";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import UsersExportModal from "./components/UsersExportModal";
-import {
-  filterUsers,
-  filtersApplied,
-  showsInactive,
-} from "./utils/userFilters";
-import Users from "./users/Users";
-import BaseGroups from "./baseGroups/BaseGroups";
-import Companies from "./companies/Companies";
-import StoresTab from "./stores/StoresTab";
 
 type Tab = "users" | "companies" | "baseGroups" | "stores";
 

@@ -1,3 +1,4 @@
+// Interfaces
 import type { User } from "../../../../interfaces";
 import type { UsersGridFilters } from "../../../../features/dev/devOrganizationSlice";
 

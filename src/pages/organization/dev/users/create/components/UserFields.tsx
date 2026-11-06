@@ -1,16 +1,27 @@
+// Hooks
 import { useEffect, type ReactNode } from "react";
-import { CheckIcon } from "@heroicons/react/20/solid";
-import { useOrganizationCtx } from "../../../hooks";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx } from "../../../hooks";
+
+// Redux
 import {
   setAvailableEmailDetails,
   setAvailableUsernameDetails,
   setUserInfo,
 } from "../../../../../../features/dev/devUsersSlice";
+
+// API
 import { checkEmail, checkUsername } from "../../../../../../api/team";
-import type { JsonError } from "../../../../../../interfaces";
+
+// Utils
 import { roles } from "../../utils/roles";
 import { NOT_AVAILABLE, passwordOk, passwordRules } from "../utils/wizardRules";
+
+// Interfaces
+import type { JsonError } from "../../../../../../interfaces";
+
+// Components
+import { CheckIcon } from "@heroicons/react/20/solid";
 import Input from "../../../../../../components-dev/inputs/Input";
 import PasswordInput from "../../../../../../components-dev/inputs/PasswordInput";
 

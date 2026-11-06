@@ -1,13 +1,20 @@
+// Hooks
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
+import { getCompanies } from "../../../../api/company";
+
+// Utils
 // The same authority Admin gates company creation and deletion on: who may act
 // on the tenancy itself. Assigning any company to any user is that same power,
 // so it answers to that constant rather than to a second copy of the number.
 import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
-import { useEffect, useState } from "react";
-import { getCompanies } from "../../../../api/company";
 import { seesEverything } from "../utils";
+
+// Interfaces
 import type { Company, JsonError, Store } from "../../../../interfaces";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 export const useOrganizationCtx = () => {
   const dispatch = useAppDispatch();

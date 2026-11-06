@@ -1,3 +1,4 @@
+// Interfaces
 import type { GrantMode, Store } from "../../../../../interfaces";
 import type { SelectableStore } from "../interfaces";
 

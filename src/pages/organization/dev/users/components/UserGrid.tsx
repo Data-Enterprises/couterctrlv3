@@ -1,16 +1,9 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import {
-  PencilIcon,
-  TrashIcon,
-  PlusIcon,
-  ArrowPathIcon,
-  KeyIcon,
-  DocumentDuplicateIcon,
-  UserMinusIcon,
-  UserPlusIcon,
-} from "@heroicons/react/20/solid";
-import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx } from "../../hooks";
+
+// Redux
 import {
   setRefresh,
   setSelectedUserForm,
@@ -22,25 +15,14 @@ import {
 import {
   setUsersGridFilter,
 } from "../../../../../features/dev/devOrganizationSlice";
+
+// API
 import {
   getBaseGroupsAssignedToUser,
   getUserGroupPicks,
 } from "../../../../../api/team";
-import type {
-  BaseGroup,
-  JsonError,
-  Store,
-  User,
-  UserGroupPick,
-} from "../../../../../interfaces";
-import { accessModeOf } from "../utils";
-import { roles } from "../utils/roles";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
-import TextFilter from "../../../../../components-dev/filters/TextFilter";
-import IconButton from "../../../../../components-dev/IconButton";
-import Checkbox from "../../../../../components-dev/Checkbox";
-import SetActiveModal from "./SetActiveModal";
-import SecurityTab from "./SecurityTab";
+
+// Utils
 import {
   accessLabel,
   filterUsers,
@@ -49,8 +31,37 @@ import {
   type UserSort,
   type UserSortKey,
 } from "../../utils/userFilters";
+import { accessModeOf } from "../utils";
+import { roles } from "../utils/roles";
+
+// Interfaces
+import type {
+  BaseGroup,
+  JsonError,
+  Store,
+  User,
+  UserGroupPick,
+} from "../../../../../interfaces";
+
+// Components
+import {
+  PencilIcon,
+  TrashIcon,
+  PlusIcon,
+  ArrowPathIcon,
+  KeyIcon,
+  DocumentDuplicateIcon,
+  UserMinusIcon,
+  UserPlusIcon,
+} from "@heroicons/react/20/solid";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../../../components-dev/filters/TextFilter";
+import IconButton from "../../../../../components-dev/IconButton";
+import Checkbox from "../../../../../components-dev/Checkbox";
 import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
+import SetActiveModal from "./SetActiveModal";
+import SecurityTab from "./SecurityTab";
 
 interface UserGridProps {
   onOpenCreate: () => void;

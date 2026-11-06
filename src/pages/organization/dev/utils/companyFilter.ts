@@ -1,4 +1,7 @@
+// Hooks
 import { useMemo } from "react";
+
+// Interfaces
 import type { User } from "../../../../interfaces";
 
 /**

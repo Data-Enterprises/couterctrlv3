@@ -1,6 +1,14 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBaseGroupsCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useBaseGroupsCtx } from "../../hooks";
+import { useMarkUsersStale } from "../../utils/usersStale";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../../utils/companyFilter";
+
+// API
 import {
   assignStoreToUsers,
   getStoreUsers,
@@ -8,20 +16,21 @@ import {
   type StoreCandidateRow,
   type StoreUserRow,
 } from "../../../../../api/storeAccess";
-import type { JsonError, Store, User } from "../../../../../interfaces";
-import AssignPanel from "../../../../../components-dev/AssignPanel";
-import { useMarkUsersStale } from "../../utils/usersStale";
+
+// Utils
 import { peopleConfirm } from "../../utils/bulkConfirm";
-import CompanyFilterSelect from "../../components/CompanyFilterSelect";
-import {
-  useCompanyFilterOptions,
-  useCompanyFilterPredicate,
-} from "../../utils/companyFilter";
 import {
   summarizeAssign,
   summarizeUnassign,
   viaLabel,
 } from "../utils";
+
+// Interfaces
+import type { JsonError, Store, User } from "../../../../../interfaces";
+
+// Components
+import AssignPanel from "../../../../../components-dev/AssignPanel";
+import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
 /**
  * Who holds one store.

@@ -1,6 +1,14 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBaseGroupsCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useBaseGroupsCtx } from "../../hooks";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../../utils/companyFilter";
+import { useMarkUsersStale } from "../../utils/usersStale";
+
+// API
 import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
@@ -9,7 +17,14 @@ import {
   getAllStoresInBaseGroup,
   getBaseGroupUsers,
 } from "../../../../../api/baseGroups";
+
+// Utils
+import { peopleConfirm } from "../../utils/bulkConfirm";
 import { accessTypeLabel, grantFor } from "../utils/grantFor";
+import { callReason } from "../utils";
+import { withinReachOf } from "../utils/userReach";
+
+// Interfaces
 import type {
   BaseGroupUserRow,
   BaseGroupUsersResp,
@@ -17,16 +32,10 @@ import type {
   JsonError,
   User,
 } from "../../../../../interfaces";
+
+// Components
 import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
-import {
-  useCompanyFilterOptions,
-  useCompanyFilterPredicate,
-} from "../../utils/companyFilter";
-import { callReason } from "../utils";
-import { withinReachOf } from "../utils/userReach";
-import { useMarkUsersStale } from "../../utils/usersStale";
-import { peopleConfirm } from "../../utils/bulkConfirm";
 
 interface Props {
   group: CompanyBaseGroup;

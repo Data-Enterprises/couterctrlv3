@@ -1,8 +1,15 @@
+// Hooks
 import { useState } from "react";
-import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { Store } from "../../../../../interfaces";
+
+// Utils
 import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
+
+// Interfaces
+import type { Store } from "../../../../../interfaces";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 
 interface StoresExportModalProps {
   onClose: () => void;

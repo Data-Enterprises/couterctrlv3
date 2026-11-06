@@ -1,7 +1,29 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "../hooks";
+
+// API
+import { getAllUsers } from "../../../../api/user";
+import {
+  assignBaseGroupToUser,
+  getBaseGroupsAssignedToUser,
+} from "../../../../api/team";
+import {
+  getBaseGroups,
+  getAllStoresInBaseGroup,
+  createBaseGroup,
+} from "../../../../api/baseGroups";
+
+// Utils
+import {
+  companiesWithHeldGroups,
+  heldGroupIds,
+  visibleCompanyList,
+  visibleGroups,
+} from "../utils";
+
+// Interfaces
 import type {
   BaseGroup,
   CompanyBaseGroup,
@@ -9,22 +31,9 @@ import type {
   Store,
   User,
 } from "../../../../interfaces";
-import { getAllUsers } from "../../../../api/user";
-import {
-  assignBaseGroupToUser,
-  getBaseGroupsAssignedToUser,
-} from "../../../../api/team";
-import {
-  companiesWithHeldGroups,
-  heldGroupIds,
-  visibleCompanyList,
-  visibleGroups,
-} from "../utils";
-import {
-  getBaseGroups,
-  getAllStoresInBaseGroup,
-  createBaseGroup,
-} from "../../../../api/baseGroups";
+
+// Components
+import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import BaseGroupDetail from "./components/BaseGroupDetail";
