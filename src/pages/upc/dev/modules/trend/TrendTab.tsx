@@ -4,7 +4,6 @@ import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import {
   setDevTrendLoading,
-  // setDevTrendPeriods, // parked with the Window input row — re-enable together
   mergeDevTrends,
   setDevTrendWindow,
   setDevUpcItems,
@@ -19,9 +18,6 @@ import { getTrendStatus, impactUnits } from "./trendStats";
 import { trendRequest } from "./utils/trendWindow";
 import TrendLeftList from "./components/TrendLeftList";
 import TrendDetailPanel from "./components/TrendDetailPanel";
-
-// Parked with the Window input row below — re-enable together.
-// const WINDOW_OPTIONS = [30, 60, 90, 120, 180, 365];
 
 const TrendTab = () => {
   const ctx = useUpcDevCtx();
@@ -100,12 +96,6 @@ const TrendTab = () => {
     load();
   }, [ctx.activeTab, missingKey, retryTick]);
 
-  // Parked with the Window input row below — re-enable together.
-  // const handleWindowChange = (periods: number) => {
-  //   dispatch(setDevTrendPeriods(periods));
-  //   fetchTrends(periods);
-  // };
-
   const rows = useMemo(() => {
     const src =
       ctx.selectedUpcs.length > 0
@@ -155,26 +145,6 @@ const TrendTab = () => {
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
-      {/* Window input parked for now — re-enable when ready.
-      <div className="flex items-center justify-end gap-1.5 px-3 py-2 border-b border-gray-100 flex-shrink-0">
-        <label className="flex items-center gap-1.5 text-[10px] text-content">
-          Window
-          <select
-            value={ctx.trendPeriods}
-            onChange={(e) => handleWindowChange(Number(e.target.value))}
-            className="text-[10px] pl-1.5 pr-4 py-1 rounded border border-content/20 bg-custom-white"
-            style={{ outline: "none", boxShadow: "none" }}
-          >
-            {WINDOW_OPTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}d
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      */}
-
       <div className="flex-1 overflow-hidden flex min-h-0">
         <TrendLeftList
           rows={rows}
