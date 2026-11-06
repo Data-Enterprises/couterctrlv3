@@ -165,7 +165,6 @@ const Organization = () => {
           (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
         );
         // in place to double check the api is working so we don't mess with live users
-        // const realInactiveUsers = j.inactive_users;
         ctx.dispatch(
           setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
         );
