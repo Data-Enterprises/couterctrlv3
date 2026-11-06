@@ -17,7 +17,7 @@ import { storesOnTickets } from "./utils";
 
 // Components
 import TicketInbox from "./components/TicketInbox";
-import TicketDetail from "./components/TicketDetail";
+import TicketDetail from "./components/ticketDetail/TicketDetail";
 import TicketSidebar from "./components/TicketSidebar";
 import NewTicketModal from "./components/modals/NewTicketModal";
 import CloseTicketModal from "./components/modals/CloseTicketModal";
