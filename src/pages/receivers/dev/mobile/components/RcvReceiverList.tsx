@@ -7,13 +7,8 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { getReceiverDetails } from "../../../../../api/receivers";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import {
-  fmtDate,
-  gmColor,
-  handleExport,
-  toApiDate,
-} from "./utils";
+import { formatCurrency2 } from "../../../../../utils";
+import { fmtDate, handleExport, toApiDate } from "./utils";
 
 // Interfaces
 import type {
@@ -29,7 +24,11 @@ import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 import MobilePerfHeader from "../../../../../components-dev/mobile/MobilePerfHeader";
 import BottomSheet from "../../../../../components-dev/BottomSheet";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import SummaryStrip from "./SummaryStrip";
+import SummaryStrip from "./components/SummaryStrip";
+import ReceiverDateGroup from "./components/ReceiverDateGroup";
+import SheetKpiStrip from "./components/SheetKpiStrip";
+import LineItemsHeader from "./components/LineItemsHeader";
+import LineItemRows from "./components/LineItemRows";
 
 interface Props {
   receivers: ReceiverListItem[];
@@ -43,9 +42,6 @@ interface Props {
 }
 
 // Date → Invoice collapsible list, mirroring the desktop dev ReceiverListPanel
-// layout — replaces the old two-screen Vendor-list → Receiver-list drill-down
-// with a single screen grouped by date, tapping an invoice opens the same
-// line-items BottomSheet directly.
 const RcvReceiverList = ({
   receivers,
   storeName,
@@ -143,58 +139,12 @@ const RcvReceiverList = ({
         {grouped.map((group) => {
           const isOpen = openDates.has(group.date);
           return (
-            <div key={group.date}>
-              <button
-                onClick={() => toggleDate(group.date)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-custom-white text-left active:bg-gray-50 gap-3"
-              >
-                <span className="text-[12px] font-medium text-content">
-                  {fmtDate(group.date)}
-                </span>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-[10px] text-content/95 tabular-nums">
-                    {group.items.length}{" "}
-                    {group.items.length === 1 ? "invoice" : "invoices"}
-                  </span>
-                  <svg
-                    className="w-4 h-4 text-content/95 transition-transform"
-                    style={{
-                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-                    }}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </div>
-              </button>
-
-              {isOpen && (
-                <div className="bg-gray-50 divide-y divide-brand_navy/15">
-                  {group.items.map((r) => (
-                    <button
-                      key={`${r.invoiceid}-${r.invoice_date}`}
-                      onClick={() => handleReceiverTap(r)}
-                      className="w-full flex items-center pl-6 pr-3 py-2.5 text-left active:bg-gray-100 gap-3"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[12px] font-medium text-content truncate">
-                          #{r.invoiceid}
-                          <span className="ml-2 text-[11px] text-content/95 truncate">
-                            {r.vendor_name}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-content/95 mt-0.5">
-                          {r.items} items
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ReceiverDateGroup
+              group={group}
+              isOpen={isOpen}
+              toggleDate={toggleDate}
+              handleReceiverTap={handleReceiverTap}
+            />
           );
         })}
       </div>
@@ -231,91 +181,9 @@ const RcvReceiverList = ({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-4 border-b border-gray-100">
-                {[
-                  { label: "Lines", value: String(details.length) },
-                  {
-                    label: "Cases",
-                    value: String(
-                      totals?.cases ?? details.reduce((s, d) => s + d.cases, 0),
-                    ),
-                  },
-                  {
-                    label: "Units",
-                    value: String(
-                      totals?.units ?? details.reduce((s, d) => s + d.units, 0),
-                    ),
-                  },
-                  {
-                    label: "Cost",
-                    value: formatCurrency2(
-                      totals?.ext_cost ??
-                        details.reduce((s, d) => s + d.ext_cost, 0),
-                    ),
-                  },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
-                  >
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
-                      {label}
-                    </div>
-                    <div className="text-[11px] font-bold text-content mt-0.5 tabular-nums">
-                      {value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                className="grid px-3 py-1.5 bg-gray-50 border-b border-gray-100"
-                style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
-              >
-                {["Description", "Cases", "Units", "Cost", "GM%"].map(
-                  (h, i) => (
-                    <div
-                      key={h}
-                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i > 0 ? "text-right" : ""}`}
-                    >
-                      {h}
-                    </div>
-                  ),
-                )}
-              </div>
-
-              <div className="overflow-y-auto max-h-[320px]">
-                {details.map((item, i) => (
-                  <div
-                    key={i}
-                    className="grid px-3 py-1.5 border-b border-gray-50 items-center"
-                    style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
-                  >
-                    <div className="min-w-0 pr-1">
-                      <div className="text-[10px] text-content truncate">
-                        {item.product_description}
-                      </div>
-                      <div className="text-[10px] text-content/95">
-                        {item.product_code}
-                      </div>
-                    </div>
-                    <div className="text-[10px] text-content text-right tabular-nums">
-                      {item.cases}
-                    </div>
-                    <div className="text-[10px] text-content text-right tabular-nums">
-                      {item.units}
-                    </div>
-                    <div className="text-[10px] font-semibold text-content text-right tabular-nums">
-                      {formatCurrency2(item.ext_cost)}
-                    </div>
-                    <div
-                      className={`text-[10px] font-bold text-right tabular-nums ${gmColor(item.gm)}`}
-                    >
-                      {formatBigNumber(item.gm, 2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <SheetKpiStrip details={details} totals={totals} />
+              <LineItemsHeader />
+              <LineItemRows details={details} />
 
               <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 bg-gray-50">
                 <span className="text-[10px] text-content/95 tabular-nums">

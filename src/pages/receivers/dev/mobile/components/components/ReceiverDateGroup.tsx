@@ -1,5 +1,10 @@
+// Utils
+import { fmtDate } from "../utils";
+
+// Interfaces
 import type { ReceiverListItem } from "@/interfaces";
-import { fmtDate } from "./utils";
+
+// Components
 import InvoiceRow from "./InvoiceRow";
 
 interface Props {

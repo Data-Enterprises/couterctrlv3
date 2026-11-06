@@ -1,5 +1,5 @@
 // Interfaces
-import type { ReceiverListItem } from "../../../../../interfaces";
+import type { ReceiverListItem } from "../../../../../../interfaces";
 
 interface Props {
   r: ReceiverListItem;

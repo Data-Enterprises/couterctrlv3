@@ -1,8 +1,8 @@
 // Utils
-import { groupByOptions } from "./utils";
+import { groupByOptions } from "../utils";
 
 // Interfaces
-import type { ReceiverListItem } from "../../../../../interfaces";
+import type { ReceiverListItem } from "../../../../../../interfaces";
 
 interface Props {
   receivers: ReceiverListItem[];

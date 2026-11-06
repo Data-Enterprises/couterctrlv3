@@ -29,7 +29,7 @@ export const groupByOptions = (
 
 export const kpiStrip = (
   details: ReceiverDetailsItem[],
-  totals?: ReceiverDetailsTotals,
+  totals?: ReceiverDetailsTotals | null,
 ) => {
   return [
     { label: "Lines", value: String(details.length) },

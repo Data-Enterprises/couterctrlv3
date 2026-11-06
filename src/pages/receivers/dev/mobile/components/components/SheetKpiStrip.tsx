@@ -1,12 +1,12 @@
 // Utils
-import { kpiStrip } from "./utils";
+import { kpiStrip } from "../utils";
 
 // Interfaces
 import type { ReceiverDetailsItem, ReceiverDetailsTotals } from "@/interfaces";
 
 interface Props {
   details: ReceiverDetailsItem[];
-  totals?: ReceiverDetailsTotals;
+  totals?: ReceiverDetailsTotals | null;
 }
 
 const SheetKpiStrip = ({ details, totals }: Props) => {

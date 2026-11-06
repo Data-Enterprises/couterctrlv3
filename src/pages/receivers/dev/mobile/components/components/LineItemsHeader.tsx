@@ -1,5 +1,5 @@
 // Utils
-import { lineItemHeaders } from "./utils";
+import { lineItemHeaders } from "../utils";
 
 const LineItemsHeader = () => {
   return (
