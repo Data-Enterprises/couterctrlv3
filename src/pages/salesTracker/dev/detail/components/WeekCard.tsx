@@ -1,11 +1,16 @@
-import { ChevronRightIcon, StarIcon } from "@heroicons/react/20/solid";
+// Utils
 import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
 import { orDash, changeTone, signedPct } from "../../utils/trackerTone";
 import { WEEK_GRID, DAY_GRID, NUM } from "../../utils/trackerColumns";
+import { basisWord, type TrackerBasis } from "../../utils";
+
+// Interfaces
+import type { WeekTotal } from "../../utils/trackerTotals";
+
+// Components
+import { ChevronRightIcon, StarIcon } from "@heroicons/react/20/solid";
 import TrendLine, { type TrendSeries } from "../../../../../components-dev/charts/TrendLine";
 import VsLy from "../../components/VsLy";
-import { basisWord, type TrackerBasis } from "../../utils";
-import type { WeekTotal } from "../../utils/trackerTotals";
 
 interface WeekCardProps {
   week: WeekTotal;

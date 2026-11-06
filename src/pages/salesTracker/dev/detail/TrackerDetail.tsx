@@ -1,13 +1,22 @@
+// Hooks
 import { useMemo } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+
+// Redux
 import { toggleWeek, setAllWeeksOpen } from "../../../../features/dev/devSalesTrackerSlice";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { changeTone, signed, signedPct, orDash } from "../utils/trackerTone";
-import WeekCard from "./components/WeekCard";
 import { exportTracker } from "./utils";
+
+// Interfaces
 import type { SubDeptTotal } from "../utils/trackerTotals";
 import type { WindowPlan } from "../utils";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import WeekCard from "./components/WeekCard";
 
 interface TrackerDetailProps {
   row: SubDeptTotal;

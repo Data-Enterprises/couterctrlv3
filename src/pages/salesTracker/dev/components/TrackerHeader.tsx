@@ -1,13 +1,18 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
+import { signedPct } from "../utils/trackerTone";
+
+// Interfaces
+import type { TrackerBasis } from "../utils";
+
+// Components
 import {
   MagnifyingGlassIcon,
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
-import type { TrackerBasis } from "../utils";
-import { formatCurrencyCompact } from "../../../../utils";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ComingSoonHelp from "../../../../components-dev/ComingSoonHelp";
-import { signedPct } from "../utils/trackerTone";
 
 interface TrackerHeaderProps {
   /** What the comparison figures are measured against. */

@@ -1,9 +1,16 @@
+// Hooks
 import { memo } from "react";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { orDash } from "../utils/trackerTone";
 import { SUB_GRID, NUM } from "../utils/trackerColumns";
-import VsLy from "./VsLy";
+
+// Interfaces
 import type { SubDeptTotal } from "../utils/trackerTotals";
+
+// Components
+import VsLy from "./VsLy";
 
 interface SubDeptRowProps {
   row: SubDeptTotal;

@@ -1,4 +1,5 @@
-﻿import type { SubSale } from "../../../../interfaces";
+// Interfaces
+import type { SubSale } from "../../../../interfaces";
 import type { WindowPlan } from ".";
 
 /**

@@ -1,13 +1,11 @@
+// Hooks
 import { useState, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setStartDate } from "../../../features/searchSlice";
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import EmptyPrompt from "../../../components-dev/EmptyPrompt";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
+
+// Redux
+import { setStartDate, isGroupSearch } from "../../../features/searchSlice";
 import {
   setHasSearched,
   setLoading,
@@ -21,10 +19,9 @@ import {
   setSubFilter,
   reQueryTracker,
 } from "../../../features/dev/devSalesTrackerSlice";
-import TrackerEntryCard from "./components/TrackerEntryCard";
-import TrackerHeader from "./components/TrackerHeader";
-import SubDeptRow from "./components/SubDeptRow";
-import TrackerDetail from "./detail/TrackerDetail";
+
+// Utils
+import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
 import {
   fetchLySubSales,
   fetchSubSales,
@@ -43,9 +40,18 @@ import {
   type SubDeptTotal,
 } from "./utils/trackerTotals";
 import { orDash } from "./utils/trackerTone";
-import VsLy from "./components/VsLy";
 import { SUB_GRID, NUM } from "./utils/trackerColumns";
-import { isGroupSearch } from "../../../features/searchSlice";
+
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
+import TrackerEntryCard from "./components/TrackerEntryCard";
+import TrackerHeader from "./components/TrackerHeader";
+import SubDeptRow from "./components/SubDeptRow";
+import TrackerDetail from "./detail/TrackerDetail";
+import VsLy from "./components/VsLy";
 
 type SortColumn = "dept" | "ty" | "ly" | "ats" | "dollar";
 

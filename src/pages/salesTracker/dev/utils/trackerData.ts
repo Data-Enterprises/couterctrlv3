@@ -1,9 +1,14 @@
+// API
 import { getSalesTracker, getSubs } from "../../../../api/sales";
+
+// Utils
 import { createRequestQueue } from "../../../../utils/requestQueue";
-import type { WindowPlan } from ".";
 import { fetchAllPages } from "../../../../utils/paging";
-import type { SubSale, SubSalesJsonResp } from "../../../../interfaces";
 import { countedRows } from "../../../../utils/hashSubs";
+
+// Interfaces
+import type { SubSale, SubSalesJsonResp } from "../../../../interfaces";
+import type { WindowPlan } from ".";
 
 /**
  * Sub-department rows for one store or group over a window.

@@ -1,8 +1,15 @@
-import SearchCard from "../../../../components-dev/SearchCard";
+// Hooks
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+
+// Redux
 import { setStartDate } from "../../../../features/searchSlice";
+
+// Utils
 import { formatGoliathDate } from "../../../../utils";
 import { isoToDisplay, rangeForWeeks } from "../utils";
+
+// Components
+import SearchCard from "../../../../components-dev/SearchCard";
 
 interface TrackerEntryCardProps {
   onSearch: () => void;
