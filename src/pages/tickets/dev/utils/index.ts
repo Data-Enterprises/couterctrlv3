@@ -1,12 +1,10 @@
-// API
+// Interfaces
 import type {
   Ticket,
   TicketScope,
   TicketStore,
   TicketStoreOption,
 } from "../../../../api/tickets";
-
-// Interfaces
 import type { Store } from "../../../../interfaces";
 import type { StoreCompanyGroup } from "../interfaces";
 

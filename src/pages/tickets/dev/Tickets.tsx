@@ -34,8 +34,7 @@ import TechsModal from "./components/modals/TechsModal";
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
-  // Local, not in the slice: it is a sheet somebody opened, not a fact about
-  // the queue, and nothing else on the page needs to know it is up.
+  // Local because nothing else on the page needs to know it is up.
   const [techsOpen, setTechsOpen] = useState(false);
 
   useEffect(() => {

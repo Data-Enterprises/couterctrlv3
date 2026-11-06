@@ -1,10 +1,11 @@
+// Utils
+import { weekEnding } from "../../../../../../utils/dates";
+import { formatDateSimple } from "../../../../../../utils";
+
 // Interfaces
 import type { SearchState } from "../../../../../../features/searchSlice";
 import type { DateShape, PickedStore, TicketOrigin } from "../interfaces";
 
-// Utils
-import { weekEnding } from "../../../../../../utils/dates";
-import { formatDateSimple } from "../../../../../../utils";
 
 /**
  * Page to ticket category, by the nav's own href.

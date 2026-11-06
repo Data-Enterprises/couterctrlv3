@@ -1,9 +1,12 @@
+// Utils
+import { storesOf } from ".";
+
+// Interfaces
 import type { Ticket, TicketStatus } from "../../../../api/tickets";
 import type {
   QueueTab,
   TicketFilters,
 } from "../../../../features/dev/devTicketsSlice";
-import { storesOf } from ".";
 
 /**
  * The filtering behind the tabs and the search box.
