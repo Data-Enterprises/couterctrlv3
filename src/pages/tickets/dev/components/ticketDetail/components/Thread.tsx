@@ -8,7 +8,8 @@ import type {
 } from "../../../../../../api/tickets";
 
 // Components
-import { ChevronUpIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import { PaperClipIcon } from "@heroicons/react/24/outline";
+import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import CommentBubble from "./CommentBubble";
 
 interface ThreadProps {
