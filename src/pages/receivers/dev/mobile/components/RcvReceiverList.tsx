@@ -1,20 +1,35 @@
+// Hooks
 import { useMemo, useState } from "react";
-import LocationTabs from "../../../../components-dev/filters/LocationTabs";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import { useAppSelector } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { getReceiverDetails } from "../../../../api/receivers";
-import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { useAppSelector } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+
+// API
+import { getReceiverDetails } from "../../../../../api/receivers";
+
+// Utils
+import { formatCurrency2, formatBigNumber } from "../../../../../utils";
+import {
+  fmtDate,
+  gmColor,
+  handleExport,
+  toApiDate,
+} from "./utils";
+
+// Interfaces
 import type {
   ReceiverListItem,
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
   ReceiverDetailsResponse,
   JsonError,
-} from "../../../../interfaces";
-import BottomSheet from "../../../../components-dev/BottomSheet";
-import { rowsToCsv, downloadCsv, fmtNum } from "../../../../utils/csvExport";
+} from "../../../../../interfaces";
+
+// Components
+import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
+import MobilePerfHeader from "../../../../../components-dev/mobile/MobilePerfHeader";
+import BottomSheet from "../../../../../components-dev/BottomSheet";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import GroupByTabs from "./GroupByTabs";
 
 interface Props {
   receivers: ReceiverListItem[];
@@ -26,27 +41,6 @@ interface Props {
   selectedStoreNumber: string | null;
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
-
-const fmtDate = (dateStr: string) => {
-  if (!dateStr) return "";
-  const trimmed = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
-  return new Date(`${trimmed}T12:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const toApiDate = (dateStr: string) => {
-  const trimmed = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
-  const [y, m, d] = trimmed.split("-");
-  return `${parseInt(m)}/${parseInt(d)}/${y}`;
-};
-
-const gmColor = (gm: number) => {
-  if (gm >= 30) return "text-emerald-600";
-  if (gm >= 25) return "text-amber-600";
-  return "text-red-500";
-};
 
 // Date → Invoice collapsible list, mirroring the desktop dev ReceiverListPanel
 // layout — replaces the old two-screen Vendor-list → Receiver-list drill-down
@@ -71,10 +65,6 @@ const RcvReceiverList = ({
   const [details, setDetails] = useState<ReceiverDetailsItem[]>([]);
   const [totals, setTotals] = useState<ReceiverDetailsTotals | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-
-  const totalItems = receivers.reduce((s, r) => s + r.items, 0);
-  const uniqueVendors = new Set(receivers.map((r) => r.vendorid)).size;
-  const uniqueOperators = new Set(receivers.map((r) => r.cashier_number)).size;
 
   const toggleDate = (key: string) =>
     setOpenDates((prev) => {
@@ -131,46 +121,6 @@ const RcvReceiverList = ({
     setTotals(null);
   };
 
-  const handleExport = () => {
-    if (!details.length || !selectedReceiver) return;
-    const headers = [
-      "Line #",
-      "UPC",
-      "Description",
-      "Cases",
-      "Units",
-      "Ext Cost",
-      "Ext Retail",
-      "GM%",
-    ];
-    const rows = [
-      ...details.map((r) => [
-        r.line_number,
-        r.product_code,
-        r.product_description,
-        r.cases,
-        r.units,
-        fmtNum(r.ext_cost),
-        fmtNum(r.ext_retail),
-        fmtNum(r.gm),
-      ]),
-      [],
-      [
-        "",
-        "",
-        "TOTALS",
-        totals?.cases ?? "",
-        totals?.units ?? "",
-        totals?.ext_cost != null ? fmtNum(totals.ext_cost) : "",
-        totals?.ext_retail != null ? fmtNum(totals.ext_retail) : "",
-        "",
-      ],
-    ];
-    const csv = rowsToCsv(headers, rows);
-    const filename = `receiver_${selectedReceiver.vendorid}_${selectedReceiver.invoice_date}.csv`;
-    downloadCsv(csv, filename);
-  };
-
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-gray-50">
       <MobilePerfHeader
@@ -181,27 +131,7 @@ const RcvReceiverList = ({
         helpPage="receivers"
       />
 
-      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
-        {[
-          { label: "Receivers", value: String(receivers.length) },
-          { label: "Items", value: String(totalItems) },
-          { label: "Vendors", value: String(uniqueVendors) },
-          { label: "Operators", value: String(uniqueOperators) },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
-          >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
-              {label}
-            </div>
-            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
-
+      <GroupByTabs receivers={receivers} />
       <LocationTabs
         numbers={storeNumbers}
         selected={selectedStoreNumber}
@@ -286,7 +216,7 @@ const RcvReceiverList = ({
             </div>
             {details.length > 0 && (
               <button
-                onClick={handleExport}
+                onClick={() => handleExport(details, totals, selectedReceiver)}
                 className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />

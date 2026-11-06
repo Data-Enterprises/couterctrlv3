@@ -1,22 +1,40 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../../hooks";
 import { useReceiversState } from "../hooks/useReceiversState";
 import { useReceiversActions } from "../hooks/useReceiversActions";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
 import { getReceiversList } from "../../../../api/receivers";
+
+// Utils
+import {
+  applyStoreNumberToName,
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
+
+// Interfaces
 import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
+
+// Components
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
-import RcvReceiverList from "./RcvReceiverList";
+import RcvReceiverList from "./components/RcvReceiverList";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 
 type Screen = "entry" | "list";
 
 const fmtSearchDate = (mdy: string) => {
   const [m, d, y] = mdy.split("/");
-  return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`)
-    .toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return new Date(
+    `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`,
+  ).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
 const ReceiversMobile = () => {
@@ -92,9 +110,6 @@ const ReceiversMobile = () => {
       .finally(() => dispatch(actions.setIsFetchingList(false)));
   };
 
-  // Re-open the search card without clearing already-loaded data — the
-  // "already loaded" shortcut button lets the user jump straight back
-  // instead of forcing a re-fetch if this was tapped by accident.
   const handleOpenSearch = () => {
     setScreen("entry");
   };
@@ -140,7 +155,9 @@ const ReceiversMobile = () => {
           onSearch={handleSearch}
           loading={rcv.isFetchingList}
           loadingMessage="Finding receivers..."
-          datePicker={<DatePickers showBtn={false} handleQuery={handleSearch} />}
+          datePicker={
+            <DatePickers showBtn={false} handleQuery={handleSearch} />
+          }
           notice={
             rcv.noReceivers
               ? "No receivers came back for this search."
@@ -151,7 +168,10 @@ const ReceiversMobile = () => {
             <button
               onClick={handleBackToResults}
               className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
+              style={{
+                background: "rgb(var(--color-brand-navy) / 0.07)",
+                borderRadius: 10,
+              }}
             >
               <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
               <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
