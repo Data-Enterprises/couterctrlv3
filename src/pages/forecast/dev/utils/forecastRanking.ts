@@ -1,5 +1,5 @@
-import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice";
-import type { ForecastTier, PriceHistoryResult } from "../../../interfaces";
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+import type { ForecastTier, PriceHistoryResult } from "../../../../interfaces";
 
 /**
  * Ranking for the forecast grid.

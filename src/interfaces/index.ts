@@ -2831,7 +2831,7 @@ export type ActionKey =
 // Forecast
 //////////////////////////////////////////////////////////////
 
-/** ABC tier on cumulative share of the forecast (see pages/forecast/dev/forecastRanking). */
+/** ABC tier on cumulative share of the forecast (see pages/forecast/dev/utils/forecastRanking). */
 export type ForecastTier = "A" | "B" | "C";
 
 //////////////////////////////////////////////////////////////

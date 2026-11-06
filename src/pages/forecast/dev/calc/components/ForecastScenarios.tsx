@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { formatCurrency2 } from "../../../utils";
-import { buildScenarioRows } from "./scenarioRows";
-import type { PriceHistory } from "../../../interfaces";
-import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice";
+import { formatCurrency2 } from "../../../../../utils";
+import { buildScenarioRows } from "../utils";
+import type { PriceHistory } from "../../../../../interfaces";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
 
 /**
  * Price scenarios for the open item.

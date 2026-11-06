@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import {
   setSelectedUpc,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setItemNotes,
-} from "../../../features/dev/devForecastDevSlice";
-import { formatCurrency2 } from "../../../utils";
-import { fitLinearDemand, predictQty } from "../../../utils/forecastCalc";
-import { forecastUnits } from "../../../utils/priceSimCalc";
-import ForecastScenarios from "./ForecastScenarios";
+} from "../../../../features/dev/devForecastDevSlice";
+import { formatCurrency2 } from "../../../../utils";
+import { fitLinearDemand, predictQty } from "../../../../utils/forecastCalc";
+import { forecastUnits } from "../../../../utils/priceSimCalc";
+import ForecastScenarios from "./components/ForecastScenarios";
 
 /**
  * The per-item popup, opened by double-clicking a row.

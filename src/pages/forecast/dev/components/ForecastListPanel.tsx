@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   toggleCheckedUpc,
   setCheckedUpcs,
   setListFilter,
-} from "../../../features/dev/devForecastDevSlice";
-import { formatCurrency2 } from "../../../utils";
+} from "../../../../features/dev/devForecastDevSlice";
+import { formatCurrency2 } from "../../../../utils";
 
 /**
  * The item panel.

@@ -1,5 +1,5 @@
-import type { PriceHistoryResult } from "../../../interfaces";
-import { fitLinearDemand, predictQty, forecastUnits } from "../../../utils/forecastCalc";
+import type { PriceHistoryResult } from "../../../../interfaces";
+import { fitLinearDemand, predictQty, forecastUnits } from "../../../../utils/forecastCalc";
 
 export const formatRowData = (data: PriceHistoryResult[]) => {
   return data.map((item) => {
