@@ -1,5 +1,6 @@
 // Interfaces
 import type { SearchState } from "../../../../../../features/searchSlice";
+import type { DateShape, PickedStore, TicketOrigin } from "../interfaces";
 
 // Utils
 import { weekEnding } from "../../../../../../utils/dates";
@@ -45,17 +46,6 @@ export const PAGE_CATEGORY: Record<string, string> = {
   quicksight: "Analyses",
 };
 
-export interface TicketOrigin {
-  /** The page's own name, as the nav calls it. */
-  page: string | null;
-  /** The nav section it sits under — Performance, Analytics, Data, Config. */
-  area: string | null;
-  /** The matching ticket category's name, or null where there is no honest
-   *  match. Resolved to an id against the lookups at the point of use. */
-  category: string | null;
-  href: string;
-}
-
 /**
  * What the title bar handed over, as somewhere a ticket can come from.
  *
@@ -88,8 +78,6 @@ export const originOf = (from: {
  * seven, and its startDate and endDate say nothing about what is on screen.
  * Printing those two on a Sales ticket is printing a range nobody searched.
  */
-type DateShape = "range" | "single" | "week" | "none";
-
 const PAGE_DATES: Record<string, DateShape> = {
   sales: "week",
   "sales-tracker": "week",
@@ -208,11 +196,6 @@ export const searchSummary = (
  * answer it: two stores share a storeid when they are two locations of one
  * business, and a number is how you tell 369 from 370.
  */
-export type PickedStore = {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-};
 
 export const scopeOf = (
   search: SearchState,
