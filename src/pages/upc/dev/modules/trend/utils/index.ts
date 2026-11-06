@@ -1,13 +1,11 @@
 // Utils
-import { accelerationFactor, impactUnits, type TrendStatus } from "../trendStats";
+import { accelerationFactor, impactUnits } from "../trendStats";
 import { activeRatePct } from "./trendWindow";
 
 // Interfaces
+import type { TrendPhrase, TrendTone, TrendStatus } from "../interfaces";
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
-
-export type TrendTone = "up" | "down" | "flat" | "muted";
-export type TrendPhrase = { text: string; tone: TrendTone };
 
 // Trend already has a real categorical diagnosis, unlike Sales Comp/Price Opt
 // where a phrase had to be synthesized from raw signals — the list phrase is

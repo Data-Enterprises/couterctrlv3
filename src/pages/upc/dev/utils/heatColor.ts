@@ -1,4 +1,5 @@
-export type HeatStyle = { bg: string; color: string };
+// Interfaces
+import type { HeatStyle } from "../interfaces";
 
 const HEAT: HeatStyle[] = [
   { bg: "transparent", color: "#9ca3af" },

@@ -2,15 +2,8 @@
 import { isWeighted } from "../../../../../utils/pricedUnits";
 
 // Interfaces
+import type { PriceOptRowSummary, PricePoint } from "./interfaces";
 import type { UpcPriceOpt } from "../../../../../interfaces";
-
-export type PricePoint = {
-  price: number;
-  qty: number;
-  /** Pounds, for a scale item. Zero on everything sold by the each. */
-  weight: number;
-  revenue: number;
-};
 
 // One row per unique price — the raw API rows can repeat the same price
 // (e.g. across separate periods), so qty/weight/revenue are summed per price
@@ -84,19 +77,6 @@ export function elasticityFromPoints(
   if (pctPriceChange === 0) return null;
   return pctQtyChange / pctPriceChange;
 }
-
-export type PriceOptRowSummary = {
-  code: string;
-  desc: string;
-  points: PricePoint[];
-  bestPrice: number;
-  /** Volume at the best price, in this item's own unit. */
-  bestUnits: number;
-  bestRevenue: number;
-  /** Sold by the pound — what `bestUnits` and every point's figure mean. */
-  weighted: boolean;
-  elasticity: number | null;
-};
 
 // Single source of truth for a row's numbers, shared by the left list and
 // the detail panel so they can never drift out of sync. Best price is the

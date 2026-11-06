@@ -1,9 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { getStatusPhrase, type StatusTone } from "../utils";
+import { getStatusPhrase } from "../utils";
 
 // Interfaces
-import type { UpcSalesCompStats } from "../salesCompStats";
+import type { StatusTone, UpcSalesCompStats } from "../interfaces";
 
 interface Props {
   stats: UpcSalesCompStats[];

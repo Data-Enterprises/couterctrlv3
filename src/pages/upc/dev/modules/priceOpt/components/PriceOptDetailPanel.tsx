@@ -1,9 +1,10 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { formatBestUnits, type PriceOptRowSummary } from "../priceOptStats";
+import { formatBestUnits } from "../priceOptStats";
 import { getPriceOptPhrase, getPriceOptInsight } from "../utils";
 
 // Interfaces
+import type { PriceOptRowSummary } from "../interfaces";
 import type { KpiCell } from "../../../interfaces";
 
 // Components

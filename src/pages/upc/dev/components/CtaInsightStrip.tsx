@@ -1,6 +1,9 @@
 // Hooks
 import { useState } from "react";
 
+// Interfaces
+import type { CtaTone } from "../interfaces";
+
 // Components
 import {
   CheckCircleIcon,
@@ -9,8 +12,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/16/solid";
-
-export type CtaTone = "up" | "down" | "flat" | "muted";
 
 interface Props {
   title: string;

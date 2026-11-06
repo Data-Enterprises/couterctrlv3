@@ -1,15 +1,11 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { heatStyle } from "../../../utils/heatColor";
-import {
-  DAYS,
-  DAY_SHORT,
-  fmtWeekRange,
-  type UpcSalesCompStats,
-} from "../salesCompStats";
+import { DAYS, DAY_SHORT, fmtWeekRange } from "../salesCompStats";
 import { getStatusPhrase, getStatusInsight } from "../utils";
 
 // Interfaces
+import type { UpcSalesCompStats } from "../interfaces";
 import type { KpiCell } from "../../../interfaces";
 
 // Components

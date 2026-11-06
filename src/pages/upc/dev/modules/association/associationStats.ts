@@ -1,4 +1,5 @@
 // Interfaces
+import type { DepartmentCount } from "./interfaces";
 import type { AssociationItem, AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
 
 /** A seed set as one string: the UPCs sorted and joined, so the same set ticked
@@ -36,12 +37,6 @@ export function getDisplayItems(items: AssociationItem[], excludeUpc?: string | 
 export function getQueryDepartments(items: AssociationItem[]): Set<number> {
   return new Set(items.filter((i) => i.is_seed).map((i) => i.sub_department));
 }
-
-// deptId is the numeric sub_department, kept alongside the display label so
-// callers can check membership against getQueryDepartments' Set<number>
-// (e.g. to split cross-sub-dept vs. same-as-seed) without string-matching
-// descriptions, which aren't guaranteed to be a reliable join key.
-export type DepartmentCount = { deptId: number; label: string; count: number; revenue: number };
 
 // How many displayed companions fall in each sub department, and how much
 // revenue they generated, sorted by count descending. Shared by the

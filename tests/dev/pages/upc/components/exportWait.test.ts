@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { exportWaitReason, type ExportWaitInput } from "@/pages/upc/dev/components/exportWait";
+import { exportWaitReason } from "@/pages/upc/dev/components/exportWait";
+
+// Interfaces
+import type { ExportWaitInput } from "@/pages/upc/dev/interfaces";
 
 const base: ExportWaitInput = {
   tab: "salesComp",

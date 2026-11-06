@@ -1,13 +1,10 @@
-export type StatusTone = "up" | "down" | "flat" | "muted";
-export type StatusPhrase = { text: string; tone: StatusTone };
+// Interfaces
+import type { Direction, StatusPhrase, Trajectory } from "../interfaces";
 
 // Matches the flat-band convention SalesCompKpis already uses for bucketing
 // WoW into up/flat/down — reused here so both signals agree on what counts
 // as a real move vs. noise.
 const FLAT_THRESHOLD = 1;
-
-type Direction = "up" | "flat" | "down";
-type Trajectory = "improving" | "flat" | "declining";
 
 function classifyDirection(pct: number): Direction {
   return pct > FLAT_THRESHOLD ? "up" : pct < -FLAT_THRESHOLD ? "down" : "flat";

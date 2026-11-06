@@ -1,8 +1,5 @@
 // Interfaces
-import type { PricePoint } from "../priceOptStats";
-
-export type PriceOptTone = "up" | "down" | "flat" | "muted";
-export type PriceOptPhrase = { text: string; tone: PriceOptTone };
+import type { PriceOptPhrase, PricePoint } from "../interfaces";
 
 // Elasticity magnitude at or above this reads as "highly" price-sensitive —
 // a starting threshold, not a validated cutoff. Revisit once there's a real

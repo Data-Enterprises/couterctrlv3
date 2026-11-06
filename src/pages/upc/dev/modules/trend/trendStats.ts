@@ -1,14 +1,7 @@
 // Interfaces
+import type { TrendStatus } from "./interfaces";
 import type { UpcTrend } from "../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
-
-export type TrendStatus =
-  | "accelerating"
-  | "declining"
-  | "stopped"
-  | "reduced-availability"
-  | "growing"
-  | "new";
 
 /** The statuses that mean the item is selling less: what "Declining items"
  *  counts and the Declining export holds. */

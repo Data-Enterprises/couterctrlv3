@@ -6,6 +6,7 @@ import { formatCurrency2 } from "../../../../../../utils";
 import { sortByAttachRateDesc } from "../associationStats";
 
 // Interfaces
+import type { SortCol } from "../interfaces";
 import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSlice";
 
 // Components
@@ -20,8 +21,6 @@ interface Props {
 }
 
 const COLS = "1fr 110px 60px 70px 80px 70px 75px";
-
-type SortCol = "qty" | "basket_count" | "revenue" | "avg_price";
 
 const getSortValue = (item: AssociationItem, col: SortCol) => item[col];
 

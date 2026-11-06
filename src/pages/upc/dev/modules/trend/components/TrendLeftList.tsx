@@ -1,8 +1,9 @@
 // Utils
-import { impactUnits, type TrendStatus } from "../trendStats";
-import { getTrendPhrase, type TrendTone } from "../utils";
+import { impactUnits } from "../trendStats";
+import { getTrendPhrase } from "../utils";
 
 // Interfaces
+import type { TrendTone, TrendStatus } from "../interfaces";
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 

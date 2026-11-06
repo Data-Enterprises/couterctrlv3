@@ -3,7 +3,7 @@ import { formatCurrency2 } from "../../../../../../utils";
 import { formatPricedUnitsShort } from "../../../../../../utils/pricedUnits";
 
 // Interfaces
-import type { PricePoint } from "../priceOptStats";
+import type { PricePoint } from "../interfaces";
 
 interface Props {
   points: PricePoint[];

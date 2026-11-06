@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { UpcSalesComp } from "@/interfaces";
-import {
-  combineSalesCompRows,
-  computeUpcSalesCompStats,
-  weekdayCounts,
-  type SalesCompRange,
-} from "@/pages/upc/dev/modules/salesComp/salesCompStats";
+import { combineSalesCompRows, computeUpcSalesCompStats, weekdayCounts } from "@/pages/upc/dev/modules/salesComp/salesCompStats";
 import { getSalesCompKpis } from "@/pages/upc/dev/modules/salesComp/SalesCompKpis";
+
+// Interfaces
+import type { SalesCompRange } from "@/pages/upc/dev/modules/salesComp/interfaces";
 
 const week = (
   wk: string,

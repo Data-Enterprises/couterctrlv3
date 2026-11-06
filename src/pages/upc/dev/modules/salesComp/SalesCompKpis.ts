@@ -1,16 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import {
-  computeUpcSalesCompStats,
-  salesCompCodes,
-  weekdayCounts,
-  weeksIn,
-  DAYS,
-  DAY_SHORT,
-  type SalesCompRange,
-} from "./salesCompStats";
+import { computeUpcSalesCompStats, salesCompCodes, weekdayCounts, weeksIn, DAYS, DAY_SHORT } from "./salesCompStats";
 
 // Interfaces
+import type { SalesCompRange } from "./interfaces";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import type { KpiCell } from "../../interfaces";
 

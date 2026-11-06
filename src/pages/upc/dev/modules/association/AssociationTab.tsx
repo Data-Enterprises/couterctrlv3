@@ -28,6 +28,9 @@ import { upcQueue } from "../../upcQueue";
 import { failureReason } from "../../utils";
 import { buildSeedKey, seedDataFor } from "./associationStats";
 
+// Interfaces
+import type { ContextMenuState } from "./interfaces";
+
 // Components
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import AssociationLeftPanel from "./components/AssociationLeftPanel";
@@ -46,8 +49,6 @@ const fmtDate = (d: string) => {
   const [m, day, y] = d.split("/");
   return `${y}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
-
-type ContextMenuState = { x: number; y: number; upc: string };
 
 const AssociationTab = () => {
   const ctx = useUpcDevCtx();

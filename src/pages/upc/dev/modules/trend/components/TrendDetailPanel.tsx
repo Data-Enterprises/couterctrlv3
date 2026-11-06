@@ -4,10 +4,10 @@ import { getTrendPhrase, getTrendInsight } from "../utils";
 import { activeRatePct, isWeakBaseline, isSmallSample } from "../utils/trendWindow";
 
 // Interfaces
+import type { TrendStatus } from "../interfaces";
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 import type { KpiCell } from "../../../interfaces";
-import type { TrendStatus } from "../trendStats";
 
 // Components
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
