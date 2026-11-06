@@ -6,6 +6,8 @@ import { formatCurrency2 } from "../../../../../../utils";
 const DetailKpiStrip = () => {
   const totals = useAppSelector((s) => s.dev.receivers.totals[0] ?? null);
 
+  if (!totals) return null;
+
   return (
     <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
       <div className="px-4 py-2 text-center">
