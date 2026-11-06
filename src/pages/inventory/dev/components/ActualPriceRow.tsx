@@ -1,8 +1,15 @@
+// Hooks
 import { useState } from "react";
-import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+
+// Utils
 import { formatCurrency2, formatDate } from "../../../../utils";
+
+// Interfaces
 import type { ActualPricePoint } from "../../../../utils/pricePoints";
 import type { TransactionListItem } from "../../../../interfaces";
+
+// Components
+import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 
 /**
  * One actual price point, and the receipts behind it on demand.

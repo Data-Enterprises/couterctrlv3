@@ -1,20 +1,19 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
   useStoreName,
 } from "../../../hooks";
-import { patchVendorView } from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, formatDate } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
-import InventoryExportModal from "./export/InventoryExportModal";
-import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useInvoiceCost } from "./hooks";
+
+// Redux
+import { patchVendorView } from "../../../features/dev/devPriceOptSlice";
+
+// Utils
+import { formatGoliathDate, formatDate } from "../../../utils";
 import {
   fetchVendors,
   fetchVendorTotals,
@@ -23,6 +22,14 @@ import {
   type ProductSummary,
   type VendorSummary,
 } from "./utils";
+
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
+import DatePickers from "../../../components-dev/datePickers/DatePickers";
+import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
+import InventoryExportModal from "./export/InventoryExportModal";
+import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
 /**
  * Price Opt — Vendor.

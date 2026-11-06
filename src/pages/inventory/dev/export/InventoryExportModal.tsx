@@ -1,21 +1,28 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+
+// Utils
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import {
   estimatedPricePoints,
   pricePointsFromServer,
   suggestPrice,
 } from "../../../../utils/pricePoints";
-import type { ServerPricePoint } from "../../../../api/pricePoints";
 import {
   itemCostStats,
   type ProductSummary,
 } from "../utils";
 import { resolveUnitCost } from "../utils/invoiceCost";
+
+// Interfaces
+import type { ServerPricePoint } from "../../../../api/pricePoints";
+import type { TransactionListItem } from "../../../../interfaces";
 import type { InvoiceCostState } from "../hooks";
 import type { TreeGroup } from "../components/InventoryTreePanel";
-import type { TransactionListItem } from "../../../../interfaces";
+
+// Components
+import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /**
  * CSV export for both Price Opt pages.

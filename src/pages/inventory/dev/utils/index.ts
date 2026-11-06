@@ -1,4 +1,8 @@
+// API
 import { getSubDepts } from "../../../../api/subMargins";
+import { getRollup } from "../../../../api/rollup";
+
+// Utils
 import { fetchAllPages } from "../../../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
 import { calculateCogs } from "../../../../utils/cogs";
@@ -6,7 +10,8 @@ import { calculateCogs } from "../../../../utils/cogs";
 // summed raw total_sales and read 6-7% above Top 200 and Item Lookup for
 // the same item and week (dev board review, finding E).
 import { netOf } from "../../../../utils/perfPairs";
-import { getRollup } from "../../../../api/rollup";
+
+// Interfaces
 import type {
   SubDeptMargin,
   SubSale,

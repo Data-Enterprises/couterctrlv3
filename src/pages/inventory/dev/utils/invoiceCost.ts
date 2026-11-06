@@ -1,9 +1,12 @@
-import type { ReceiverItemSearchReceiver } from "../../../../interfaces";
+// Utils
 import { normalizeProductCode } from "../../../../utils/productCode";
 import {
   fetchReceiversByItem,
   toReceiptLineFromSearch,
 } from "../../../../utils/receivers";
+
+// Interfaces
+import type { ReceiverItemSearchReceiver } from "../../../../interfaces";
 import type { InventoryScope } from ".";
 
 /**

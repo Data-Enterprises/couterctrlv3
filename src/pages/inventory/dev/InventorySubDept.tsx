@@ -1,23 +1,22 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
   useStoreName,
 } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { usePricePoints } from "../../../hooks/usePricePoints";
+import { useInvoiceCost } from "./hooks";
+
+// Redux
 import {
   patchSubDeptView,
   cacheSubDeptProducts,
 } from "../../../features/dev/devPriceOptSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+
+// Utils
 import { formatGoliathDate, formatDate } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
-import InventoryExportModal from "./export/InventoryExportModal";
-import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
-import { usePricePoints } from "../../../hooks/usePricePoints";
-import { useInvoiceCost } from "./hooks";
 import {
   fetchSubDepts,
   fetchProducts,
@@ -25,6 +24,14 @@ import {
   type ProductSummary,
   type SubDeptSummary,
 } from "./utils";
+
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
+import DatePickers from "../../../components-dev/datePickers/DatePickers";
+import InventoryTreePanel, { type TreeGroup } from "./components/InventoryTreePanel";
+import InventoryExportModal from "./export/InventoryExportModal";
+import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
 /**
  * Price Opt — Sub Department.

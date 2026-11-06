@@ -1,10 +1,8 @@
-import { netOf } from "../../../../utils/perfPairs";
+// Hooks
 import { useMemo } from "react";
-import {
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  ArrowTrendingUpIcon,
-} from "@heroicons/react/20/solid";
+
+// Utils
+import { netOf } from "../../../../utils/perfPairs";
 import { formatCurrency2 } from "../../../../utils";
 import {
   estimatedPricePoints,
@@ -15,12 +13,21 @@ import {
   suggestionWithheld,
   type ActualPricePoint,
 } from "../../../../utils/pricePoints";
-import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary } from "../utils";
+import { resolveUnitCost } from "../utils/invoiceCost";
+
+// Interfaces
 import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
-import { resolveUnitCost } from "../utils/invoiceCost";
 import type { InvoiceCostState } from "../hooks";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  ArrowTrendingUpIcon,
+} from "@heroicons/react/20/solid";
+import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 
 /**
  * One item, read two ways — and only one of them gets a vote.

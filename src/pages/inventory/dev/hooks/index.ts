@@ -1,5 +1,10 @@
+// Hooks
 import { useCallback, useRef, useState } from "react";
+
+// Utils
 import { fetchInvoiceCost, type InvoiceCost } from "../utils/invoiceCost";
+
+// Interfaces
 import type { InventoryScope } from "../utils";
 
 export interface InvoiceCostState {
