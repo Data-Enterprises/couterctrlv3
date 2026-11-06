@@ -1,5 +1,5 @@
 // Interfaces
-import type { TicketTech } from "@/api/tickets";
+import type { TicketTech } from "../../../../../../api/tickets";
 
 /** What the sheet is doing. Three states rather than booleans, because they
  *  are mutually exclusive and a pair of flags lets them overlap. */

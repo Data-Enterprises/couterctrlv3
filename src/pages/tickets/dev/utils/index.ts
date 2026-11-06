@@ -8,6 +8,7 @@ import type {
 
 // Interfaces
 import type { Store } from "../../../../interfaces";
+import type { StoreCompanyGroup } from "../interfaces";
 
 /**
  * The stores a ticket is about, and who that lets see it.
@@ -116,12 +117,6 @@ export const cleanStoreOptions = (
     store_name: o.store_name ?? "",
     company_name: o.company_name ?? "",
   }));
-
-export interface StoreCompanyGroup {
-  company: number | null;
-  company_name: string;
-  stores: TicketStoreOption[];
-}
 
 /**
  * The picker's list, a block per company.

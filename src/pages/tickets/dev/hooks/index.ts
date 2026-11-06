@@ -1,27 +1,10 @@
+// Hooks
 import { useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useDevApi } from "../../../../hooks/useDevApi";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../../interfaces";
-import {
-  addTicketComment,
-  assignTicket,
-  createTicket,
-  getAttachmentUrl,
-  getTicket,
-  getTicketAssignees,
-  getTicketLookups,
-  listTickets,
-  setTicketStatus,
-  setTicketStores,
-  ticketFailed,
-  uploadTicketAttachment,
-  type Ticket,
-  type TicketDetailResp,
-  type TicketListResp,
-  type TicketPriority,
-  type TicketStatus,
-} from "../../../../api/tickets";
+
+// Redux
 import {
   addComment,
   appendComments,
@@ -44,11 +27,38 @@ import {
   startWork,
   upsertTicket,
 } from "../../../../features/dev/devTicketsSlice";
+
+// API
+import {
+  addTicketComment,
+  assignTicket,
+  createTicket,
+  getAttachmentUrl,
+  getTicket,
+  getTicketAssignees,
+  getTicketLookups,
+  listTickets,
+  setTicketStatus,
+  setTicketStores,
+  ticketFailed,
+  uploadTicketAttachment,
+  type Ticket,
+  type TicketDetailResp,
+  type TicketListResp,
+  type TicketPriority,
+  type TicketStatus,
+} from "../../../../api/tickets";
+
+// Utils
 import {
   sendFailureText,
   visibleTickets,
   tabCounts,
 } from "../utils/ticketsUtils";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
 
 /** The HTTP status of a failed call, from axios or from a test double. */
 const statusOf = (err: unknown) =>
