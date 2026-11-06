@@ -51,6 +51,7 @@ export const kpiStrip = (
 };
 
 export const lineItemHeaders = ["Description", "Cases", "Units", "Cost", "GM%"];
+export const LINE_GRID = "1fr 38px 38px 50px 34px";
 
 export const fmtDate = (dateStr: string) => {
   if (!dateStr) return "";

@@ -140,6 +140,7 @@ const RcvReceiverList = ({
           const isOpen = openDates.has(group.date);
           return (
             <ReceiverDateGroup
+              key={group.date}
               group={group}
               isOpen={isOpen}
               toggleDate={toggleDate}

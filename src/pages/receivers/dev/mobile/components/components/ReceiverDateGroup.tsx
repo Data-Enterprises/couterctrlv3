@@ -2,12 +2,12 @@
 import { fmtDate } from "../utils";
 
 // Interfaces
-import type { ReceiverListItem } from "@/interfaces";
+import type { ReceiverListItem } from "../../../../../../interfaces";
 
 // Components
 import InvoiceRow from "./InvoiceRow";
 
-interface Props {
+interface ReceiverDateGroupProps {
   group: {
     date: string;
     items: ReceiverListItem[];
@@ -22,7 +22,7 @@ const ReceiverDateGroup = ({
   group,
   toggleDate,
   handleReceiverTap,
-}: Props) => {
+}: ReceiverDateGroupProps) => {
   return (
     <div>
       <button

@@ -1,11 +1,11 @@
 // Interfaces
 import type { ReceiverListItem } from "../../../../../../interfaces";
 
-interface Props {
+interface InvoiceRowProps {
   r: ReceiverListItem;
 }
 
-const InvoiceRow = ({ r }: Props) => {
+const InvoiceRow = ({ r }: InvoiceRowProps) => {
   return (
     <div className="flex-1 min-w-0">
       <div className="text-[12px] font-medium text-content truncate">

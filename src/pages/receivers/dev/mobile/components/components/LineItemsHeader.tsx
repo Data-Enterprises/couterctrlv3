@@ -1,11 +1,11 @@
 // Utils
-import { lineItemHeaders } from "../utils";
+import { lineItemHeaders, LINE_GRID } from "../utils";
 
 const LineItemsHeader = () => {
   return (
     <div
       className="grid px-3 py-1.5 bg-gray-50 border-b border-gray-100"
-      style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
+      style={{ gridTemplateColumns: LINE_GRID }}
     >
       {lineItemHeaders.map((h, i) => (
         <div

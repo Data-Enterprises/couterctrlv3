@@ -1,6 +1,6 @@
 // Utils
-import { gmColor } from "../utils";
-import { formatBigNumber, formatCurrency2 } from "@/utils";
+import { gmColor, LINE_GRID } from "../utils";
+import { formatBigNumber, formatCurrency2 } from "../../../../../../utils";
 
 // Interfaces
 import type { ReceiverDetailsItem } from "../../../../../../interfaces";
@@ -16,7 +16,7 @@ const LineItemRows = ({ details }: LineItemRowProps) => {
         <div
           key={i}
           className="grid px-3 py-1.5 border-b border-gray-50 items-center"
-          style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
+          style={{ gridTemplateColumns: LINE_GRID }}
         >
           <div className="min-w-0 pr-1">
             <div className="text-[10px] text-content truncate">

@@ -2,14 +2,14 @@
 import { kpiStrip } from "../utils";
 
 // Interfaces
-import type { ReceiverDetailsItem, ReceiverDetailsTotals } from "@/interfaces";
+import type { ReceiverDetailsItem, ReceiverDetailsTotals } from "../../../../../../interfaces";
 
-interface Props {
+interface SheetKpiStripProps {
   details: ReceiverDetailsItem[];
   totals?: ReceiverDetailsTotals | null;
 }
 
-const SheetKpiStrip = ({ details, totals }: Props) => {
+const SheetKpiStrip = ({ details, totals }: SheetKpiStripProps) => {
   return (
     <div className="grid grid-cols-4 border-b border-gray-100">
       {kpiStrip(details, totals).map(({ label, value }) => (

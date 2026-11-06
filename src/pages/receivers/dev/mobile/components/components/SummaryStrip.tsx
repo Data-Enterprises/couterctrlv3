@@ -4,11 +4,11 @@ import { groupByOptions } from "../utils";
 // Interfaces
 import type { ReceiverListItem } from "../../../../../../interfaces";
 
-interface Props {
+interface SummaryStripProps {
   receivers: ReceiverListItem[];
 }
 
-const SummaryStrip = ({ receivers }: Props) => {
+const SummaryStrip = ({ receivers }: SummaryStripProps) => {
   const totalItems = receivers.reduce((s, r) => s + r.items, 0);
   const uniqueVendors = new Set(receivers.map((r) => r.vendorid)).size;
   const uniqueOperators = new Set(receivers.map((r) => r.cashier_number)).size;
@@ -21,7 +21,10 @@ const SummaryStrip = ({ receivers }: Props) => {
         uniqueVendors,
         uniqueOperators,
       ).map(({ label, value }) => (
-        <div className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
+        <div
+          key={label}
+          className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
+        >
           <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
             {label}
           </div>
