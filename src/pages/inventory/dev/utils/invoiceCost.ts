@@ -1,10 +1,10 @@
-import type { ReceiverItemSearchReceiver } from "../../../interfaces";
-import { normalizeProductCode } from "../../../utils/productCode";
+import type { ReceiverItemSearchReceiver } from "../../../../interfaces";
+import { normalizeProductCode } from "../../../../utils/productCode";
 import {
   fetchReceiversByItem,
   toReceiptLineFromSearch,
-} from "../../../utils/receivers";
-import type { InventoryScope } from "./inventoryData";
+} from "../../../../utils/receivers";
+import type { InventoryScope } from ".";
 
 /**
  * What the store actually paid for an item, off its invoices.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { latestInvoiceCost, resolveUnitCost } from "@/pages/inventory/dev/invoiceCost";
-import { itemCostStats, type ProductSummary } from "@/pages/inventory/dev/inventoryData";
+import { latestInvoiceCost, resolveUnitCost } from "@/pages/inventory/dev/utils/invoiceCost";
+import { itemCostStats, type ProductSummary } from "@/pages/inventory/dev/utils";
 import { estimatedPricePoints } from "@/utils/pricePoints";
 import type {
   ReceiverItemSearchReceiver,

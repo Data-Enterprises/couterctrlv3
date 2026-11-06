@@ -18,7 +18,7 @@ import { describe, expect, it } from "vitest";
 const ALLOWED: Record<string, string> = {
   "components-dev/scanner/useScanGun.ts:modelLookup":
     "the device's model name, not anybody's data",
-  "pages/inventory/dev/ItemAnalysisPanel.tsx:NO_ROWS":
+  "pages/inventory/dev/components/ItemAnalysisPanel.tsx:NO_ROWS":
     "a shared empty array, never written to",
   "pages/sales/dev/storePanel/subDepts/hooks/index.ts:inFlightItems":
     "keys of requests still on the wire, emptied as each one lands",

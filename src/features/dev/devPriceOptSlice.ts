@@ -3,7 +3,7 @@ import type {
   ProductSummary,
   SubDeptSummary,
   VendorSummary,
-} from "../../pages/inventory/dev/inventoryData";
+} from "../../pages/inventory/dev/utils";
 
 /**
  * What the two Price Opt pages have already loaded, kept across navigation.

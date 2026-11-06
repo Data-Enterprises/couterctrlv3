@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { fetchInvoiceCost, type InvoiceCost } from "./invoiceCost";
-import type { InventoryScope } from "./inventoryData";
+import { fetchInvoiceCost, type InvoiceCost } from "../utils/invoiceCost";
+import type { InventoryScope } from "../utils";
 
 export interface InvoiceCostState {
   /** Which UPC `cost` belongs to. The panel checks this before reading, the

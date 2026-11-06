@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import type { HelpPage } from "../../../constants/helpPages";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import type { HelpPage } from "../../../../constants/helpPages";
 import {
   ChevronRightIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrencyCompact } from "../../../utils";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import HeaderIconButton from "../../../components-dev/HeaderIconButton";
-import type { ProductSummary } from "./inventoryData";
+import { formatCurrencyCompact } from "../../../../utils";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
+import type { ProductSummary } from "../utils";
 
 /**
  * Groups, and the items inside the one that's open.

@@ -1,11 +1,11 @@
-import { netOf } from "../../../utils/perfPairs";
+import { netOf } from "../../../../utils/perfPairs";
 import { useMemo } from "react";
 import {
   ExclamationTriangleIcon,
   InformationCircleIcon,
   ArrowTrendingUpIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2 } from "../../../../utils";
 import {
   estimatedPricePoints,
   pricePointsFromServer,
@@ -14,13 +14,13 @@ import {
   suggestPrice,
   suggestionWithheld,
   type ActualPricePoint,
-} from "../../../utils/pricePoints";
+} from "../../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
-import { itemCostStats, type ProductSummary } from "./inventoryData";
-import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
-import type { PricePointsState } from "../../../hooks/usePricePoints";
-import { resolveUnitCost } from "./invoiceCost";
-import type { InvoiceCostState } from "./useInvoiceCost";
+import { itemCostStats, type ProductSummary } from "../utils";
+import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
+import type { PricePointsState } from "../../../../hooks/usePricePoints";
+import { resolveUnitCost } from "../utils/invoiceCost";
+import type { InvoiceCostState } from "../hooks";
 
 /**
  * One item, read two ways — and only one of them gets a vote.

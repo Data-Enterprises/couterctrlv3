@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupProducts } from "@/pages/inventory/dev/inventoryData";
+import { groupProducts } from "@/pages/inventory/dev/utils";
 import type { SubDeptMargin } from "@/interfaces";
 
 const row = (over: Partial<SubDeptMargin>): SubDeptMargin =>

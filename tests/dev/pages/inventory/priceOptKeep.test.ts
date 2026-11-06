@@ -21,7 +21,7 @@ vi.mock("@/utils/marginRows", () => ({
 }));
 
 import { fetchSubDeptRowsSafe } from "@/utils/marginRows";
-import { fetchVendors } from "@/pages/inventory/dev/inventoryData";
+import { fetchVendors } from "@/pages/inventory/dev/utils";
 
 const scope = {
   url: "https://dev-api/",
