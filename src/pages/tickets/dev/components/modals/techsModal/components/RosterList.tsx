@@ -4,8 +4,7 @@ import { SEARCHABLE_FROM } from "../../../modals/utils";
 // Interfaces
 import type { Mode } from "../../interfaces";
 import type { SetStateAction } from "react";
-import type { TicketTech } from "../../../../../../../api/tickets";
-import type { TechWriteResp } from "../../../../../../../api/tickets";
+import type { TechWriteResp, TicketTech } from "../../../../../../../api/tickets";
 
 // Components
 import TextFilter from "../../../../../../../components-dev/filters/TextFilter";
@@ -85,9 +84,9 @@ const RosterList = ({
               : "Nobody is on the desk."}
           </p>
         )}
-        {/* TechRow list. the returned map is TechRow.tsx */}
         {shown.map((tech) => (
           <TechRow
+            key={tech.tech_id}
             tech={tech}
             canManageTechs={canManageTechs}
             setWorking={setWorking}

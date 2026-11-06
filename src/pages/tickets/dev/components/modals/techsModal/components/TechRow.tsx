@@ -11,8 +11,7 @@ import {
 // Interfaces
 import type { Mode } from "../../interfaces";
 import type { SetStateAction } from "react";
-import type { TicketTech } from "../../../../../../../api/tickets";
-import type { TechWriteResp } from "../../../../../../../api/tickets";
+import type { TechWriteResp, TicketTech } from "../../../../../../../api/tickets";
 
 // Components
 import Checkbox from "../../../../../../../components-dev/Checkbox";
@@ -36,7 +35,6 @@ const TechRow = ({
   const toast = useToast();
   return (
     <div
-      key={tech.tech_id}
       className={`flex items-center gap-3 rounded-lg border border-brand_line px-2.5 py-2 ${
         tech.is_active ? "bg-custom-white" : "bg-bkg"
       }`}

@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 import { useDevApi } from "../../../../../../hooks/useDevApi";
 
@@ -17,20 +17,14 @@ import {
   type TicketTechsResp,
 } from "../../../../../../api/tickets";
 
-// Utils
-import { nextTechCode } from "../utils/techCodes";
-import { SEARCHABLE_FROM } from "../utils";
-
 // Interfaces
 import type { Mode } from "../interfaces";
 
 // Components
 import Modal from "../../../../../../components-dev/Modal";
-import Checkbox from "../../../../../../components-dev/Checkbox";
-import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
-import TextFilter from "../../../../../../components-dev/filters/TextFilter";
-import TextField from "../../../../../../components-dev/inputs/TextField";
 import StandDown from "./components/StandDown";
+import AddTech from "./components/AddTech";
+import RosterList from "./components/RosterList";
 
 interface Props {
   canManageTechs: boolean; //Level 9 only (Programmer)
@@ -117,141 +111,21 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
       modalClassName="bg-card_bg flex max-h-[86vh] w-[600px] max-w-[94vw] flex-col overflow-hidden"
     >
       {mode.kind === "list" && (
-        <>
-          <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
-            <h2 className="text-[15.5px] font-semibold">
-              {canManageTechs ? "Ticket techs" : "On the desk"}
-            </h2>
-            <p className="mt-1 text-[12px] text-content/85">
-              Who tickets can be assigned to.
-              {techs ? ` ${active.length} active.` : ""}
-            </p>
-          </div>
-
-          {/* A search only once the desk is past a handful of techs. */}
-          {roster.length > SEARCHABLE_FROM && (
-            <div className="flex-shrink-0 px-4 pb-2">
-              <TextFilter
-                value={query}
-                onChange={setQuery}
-                placeholder="Find a tech by name or code…"
-              />
-            </div>
-          )}
-
-          <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto thin-scrollbar px-4 pb-4">
-            {problem && (
-              <div className="rounded-lg border border-severity_watch_text/25 bg-severity_watch_bg px-3 py-2 text-[12px] text-severity_watch_text">
-                {problem}
-              </div>
-            )}
-
-            {techs === null && !problem && (
-              <p className="py-6 text-center text-[12.5px] text-content/85">
-                Reading the roster…
-              </p>
-            )}
-
-            {techs !== null && shown.length === 0 && (
-              <p className="py-6 text-center text-[12.5px] text-content/85">
-                {needle
-                  ? `Nobody on the desk matches “${query.trim()}”.`
-                  : "Nobody is on the desk."}
-              </p>
-            )}
-            {/* TechRow list. the returned map is TechRow.tsx */}
-            {shown.map((tech) => (
-              <div
-                key={tech.tech_id}
-                className={`flex items-center gap-3 rounded-lg border border-brand_line px-2.5 py-2 ${
-                  tech.is_active ? "bg-custom-white" : "bg-bkg"
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-mono text-[12.5px] font-semibold">
-                    {tech.username}
-                  </span>
-                  <span className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px] text-content/85">
-                    {tech.tech_code ?? "no code"} · {tech.name}
-                    {/* The one failure this sheet cannot fix: the tech row is
-                        one thing, the account behind it another. */}
-                    {tech.user_active === 0 && (
-                      <span className="rounded bg-severity_critical_bg px-1.5 py-[1px] font-semibold uppercase tracking-wide text-severity_critical_text">
-                        no sign-in
-                      </span>
-                    )}
-                  </span>
-                </span>
-
-                <span className="flex-none text-right text-[11px] text-content/85">
-                  <b className="block font-display text-[15px] font-bold text-content">
-                    {tech.ticket_count}
-                  </b>
-                  holding
-                </span>
-
-                {canManageTechs && (
-                  <Checkbox
-                    checked={tech.is_active}
-                    ariaLabel={
-                      tech.is_active
-                        ? `Stand ${tech.username} down`
-                        : `Bring ${tech.username} back`
-                    }
-                    onChange={(on) => {
-                      if (on) {
-                        setWorking(true);
-                        void updateTicketTech(url, token, tech.tech_id, {
-                          is_active: true,
-                        })
-                          .then((resp) => {
-                            const j = resp.data as TechWriteResp;
-                            if (ticketFailed(j)) {
-                              toast.error("That did not stick.");
-                              return;
-                            }
-                            after(j, `${tech.username} is back on the desk`);
-                          })
-                          .catch(() => toast.error("That did not stick."))
-                          .finally(() => setWorking(false));
-                      } else {
-                        // Never without asking: it decides what happens to
-                        // open work, and the answer is not obvious.
-                        setMode({ kind: "standing-down", tech });
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-
-            {!canManageTechs && techs !== null && (
-              <p className="mt-2 text-[12px] text-content/85">
-                Adding or standing down a tech is a programmer's job.
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-shrink-0 items-center gap-2 border-t border-brand_line px-4 py-3">
-            {canManageTechs && (
-              <button
-                type="button"
-                onClick={() => setMode({ kind: "adding" })}
-                className="rounded-lg bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover"
-              >
-                Add a tech
-              </button>
-            )}
-            <div className="flex-1" />
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-brand_line_2 px-4 py-1.5 text-[12.5px] font-medium transition-colors hover:border-brand_slate"
-            >
-              Close
-            </button>
-          </div>
-        </>
+        <RosterList
+          techs={techs}
+          active={active}
+          shown={shown}
+          canManageTechs={canManageTechs}
+          roster={roster}
+          query={query}
+          setQuery={setQuery}
+          problem={problem}
+          needle={needle}
+          setWorking={setWorking}
+          after={after}
+          setMode={setMode}
+          onClose={onClose}
+        />
       )}
 
       {mode.kind === "standing-down" && (
@@ -316,141 +190,6 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
         />
       )}
     </Modal>
-  );
-};
-
-/**
- * Putting somebody on the desk. The list is the server's: active support staff
- * not already on it.
- */
-const AddTech = ({
-  candidates,
-  techs,
-  working,
-  onCancel,
-  onConfirm,
-}: {
-  candidates: TechCandidate[];
-  /** Every tech on the desk, stood down ones included -- the codes already
-   *  taken, which is what makes the next one knowable. */
-  techs: TicketTech[];
-  working: boolean;
-  onCancel: () => void;
-  onConfirm: (body: {
-    userid: number;
-    display_name?: string;
-    tech_code?: string;
-  }) => void;
-}) => {
-  const [userid, setUserid] = useState("");
-  const [shownAs, setShownAs] = useState("");
-  const picked = candidates.find((c) => String(c.userid) === userid);
-
-  const nextCode = useMemo(() => nextTechCode(techs), [techs]);
-  /**
-   * The code this tech will have, shown and not typed. A returning tech shows
-   * their own row's code, since adding them brings that row back.
-   */
-  const codeValue = picked?.was_a_tech
-    ? (picked.previous_tech_code ?? nextCode)
-    : nextCode;
-
-  return (
-    <>
-      <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
-        <h2 className="text-[15.5px] font-semibold">Add a tech</h2>
-        <p className="mt-1 text-[12px] text-content/85">
-          Support staff only — anyone on the company domain.
-        </p>
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto thin-scrollbar px-4 pb-4">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[12.5px] font-medium">Who</span>
-          <SelectFilter
-            plain
-            searchable
-            searchPlaceholder="Find a name…"
-            placeholder="Nobody yet"
-            options={candidates.map((c) => ({
-              value: String(c.userid),
-              label: `${c.username} · ${c.name}${c.was_a_tech ? " · was a tech" : ""}`,
-            }))}
-            value={userid}
-            onChange={setUserid}
-            className="w-full"
-          />
-        </label>
-
-        {candidates.length === 0 && (
-          <p className="text-[12px] text-content/85">
-            Everybody eligible is already on the desk.
-          </p>
-        )}
-
-        <div className="flex gap-2.5">
-          <div className="flex-1">
-            <TextField
-              label="Shown as"
-              value={shownAs}
-              placeholder={picked?.name ?? "their own name"}
-              onChange={setShownAs}
-            />
-          </div>
-          {/* Sits level with "Shown as" but is plainly not an input. */}
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="text-[12px] font-medium text-content">Code</span>
-            <span className="flex items-center rounded border border-brand_line bg-bkg px-1.5 py-1">
-              <span className="text-[12px] font-medium tabular-nums text-content">
-                {codeValue}
-              </span>
-            </span>
-            <span className="text-[11px] text-content/55">
-              {picked?.was_a_tech ? "The code on their row" : "The next one"}
-            </span>
-          </div>
-        </div>
-
-        {/* Said before the press rather than discovered after it: one row per
-            user, so this is an upsert and the id survives. */}
-        {picked?.was_a_tech && (
-          <div className="rounded-lg bg-severity_healthy_bg px-3 py-2.5 text-[12px] leading-relaxed text-severity_healthy_text">
-            <b className="font-semibold">
-              {picked.username} was a tech before.
-            </b>{" "}
-            Adding them brings back {picked.previous_tech_code ?? "their row"}{" "}
-            with their history, rather than making a second one.
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-shrink-0 items-center gap-2 border-t border-brand_line px-4 py-3">
-        <div className="flex-1" />
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-brand_line_2 px-4 py-1.5 text-[12.5px] font-medium transition-colors hover:border-brand_slate"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          disabled={working || !picked}
-          onClick={() =>
-            picked &&
-            /* The code is shown, not sent: the server generates it at insert,
-               so two people adding at once get two numbers. */
-            onConfirm({
-              userid: picked.userid,
-              ...(shownAs.trim() ? { display_name: shownAs.trim() } : {}),
-            })
-          }
-          className="rounded-lg bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-40"
-        >
-          {working ? "Adding…" : picked?.was_a_tech ? "Bring back" : "Add"}
-        </button>
-      </div>
-    </>
   );
 };
 
