@@ -10,10 +10,6 @@ export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "cashier", label: "Cashier" },
   { key: "item", label: "Item" },
   { key: "terminal", label: "Terminal" },
-  // Hour is parked, not deleted — the grouping/labelling below still handles
-  // it, so re-enabling is a one-line change once the time-of-day read is
-  // worth surfacing.
-  // { key: "hour", label: "Hour" },
 ];
 
 // "Is this one person, or is it the item/lane?" — the flag that decides
