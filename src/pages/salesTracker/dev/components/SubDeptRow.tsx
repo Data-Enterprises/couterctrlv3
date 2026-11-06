@@ -19,22 +19,15 @@ interface SubDeptRowProps {
 }
 
 /**
- * One sub department, totalled across the window.
- *
- * Four cells: the name, this year, last year, ATS, and the comparison — which
- * is one cell carrying dollars and percent together rather than two coloured
- * columns competing for the eye. See `VsLy`.
- *
- * Weight does the hierarchy: this year is the figure being read, so it is
- * semibold; last year and ATS are context at regular weight. No severity dot,
- * because nothing here is graded.
+ * One sub department, totalled across the window: the name, this year, last
+ * year, ATS, and the comparison (one cell, see `VsLy`). This year is semibold;
+ * the rest is context. Nothing is graded.
  */
 const SubDeptRow = ({ row, isSelected, onClick }: SubDeptRowProps) => (
   <button
     onClick={() => onClick(row.id)}
-    // The left accent is drawn inset rather than as a border: a 2px border on
-    // the row and none on the header would shift every cell 2px out of line
-    // with the column above it.
+    // The left accent is drawn inset, not as a border, so cells stay in line
+    // with the header.
     className={`w-full grid items-center gap-3.5 px-4 py-3 text-left transition-colors border-b border-b-brand_navy/15 ${
       isSelected
         ? "bg-row_selected shadow-[inset_2px_0_0_0_rgb(var(--color-row-selected-border))]"

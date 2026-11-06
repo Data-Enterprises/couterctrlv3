@@ -11,17 +11,9 @@ import type { TrackerScope, WindowPlan } from "../interfaces";
 import type { SubSale, SubSalesJsonResp } from "../../../../interfaces";
 
 /**
- * Sub-department rows for one store or group over a window.
- *
- * `subs/sub_sales` pages at a fixed size in date order, and over a multi-week
- * window a single store runs well past one page. Reading page 1 alone silently
- * drops the **end** of the window — the most recent weeks, the ones anybody
- * looking at a tracker cares about most — so every read goes through
- * `fetchAllPages`.
- *
- * `consolidated: 0` is required rather than incidental: consolidating drops
- * `sale_date`, and without a date per row there is nothing to bucket into weeks
- * or days.
+ * Sub-department rows for one store or group over a window. Every read is
+ * paged (`fetchAllPages`): page 1 alone drops the most recent weeks.
+ * `consolidated: 0` is required: consolidating drops `sale_date`.
  */
 export const fetchSubSales = async (
   url: string,
@@ -62,36 +54,16 @@ export const fetchSubSales = async (
   });
 
   /**
-   * Fuel, lottery and cash accounts come out here.
-   *
-   * The tracker totals these rows and sets the result against the store
-   * figures the Sales header shows, and `sales/weekly` leaves hash
-   * sub departments out. Keeping them would put a store's fuel into a week
-   * that the header beside it does not count -- the same disagreement the
-   * store comparison had, $79,943 of it on one Brooks store.
-   *
-   * Dropped at the fetch rather than at each total, because the tracker sums
-   * these rows in several places and one of them would eventually be missed.
+   * Fuel, lottery and cash accounts (hash sub depts) come out here, at the
+   * fetch, so totals match the Sales header (`sales/weekly` leaves them out).
    */
   return countedRows(rows);
 };
 
 /**
- * The last-year leg, which is allowed to come back with nothing.
- *
- * A store that opened this year has no last year, and the endpoint says so
- * with `error: 1` and a message rather than an empty list — which the fetch
- * above turns into a throw. Both legs run in one `Promise.all`, so that threw
- * away THIS year's rows as well: a new store loaded nothing at all and was
- * told "no LY records" over an empty screen.
- *
- * Nothing downstream needs last year to exist. Every column that reads it
- * already draws a dash when it is missing, which is the same thing the ledger
- * does for a store with no history.
- *
- * It swallows a genuine LY failure too, and deliberately: the tracker is a
- * this-year view with last year beside it, and losing the comparison is worth
- * less than losing the week.
+ * The last-year leg, allowed to come back with nothing: a new store gets
+ * `error: 1`, and throwing would lose this year's rows too. Missing LY shows
+ * as dashes. A genuine LY failure is swallowed as well, on purpose.
  */
 export const fetchLySubSales = (
   url: string,
@@ -113,52 +85,24 @@ export const fetchLySubSales = (
   ).catch(() => []);
 
 /**
- * EXPERIMENT, dev only. `subs/sales_tracker` against `subs/sub_sales`.
- *
- * `sub_sales` answers a whole window in two paged requests, and on a 12-week,
- * five-store group one of those pages took 38 seconds — 296kB at roughly
- * 8kB/s, so query time rather than transfer. `sales_tracker` takes an explicit
- * date list, is unpaged, and drops the store columns a grouped tracker never
- * reads.
- *
- * The split is one request per period per week — 7 dates each — rather than
- * one per week carrying both. Total server work is identical either way, since
- * cost is linear in store-days; what the split buys is a smaller unit of work
- * (so the store-day guard is nowhere near tripping), and a shape where TY and
- * LY can later be rendered independently. The measured cost of splitting was
- * 1-7%, all of it fixed per-request overhead.
- *
- * Concurrency is 4, not higher. The ALB listener is plain HTTP, so there is no
- * HTTP/2 multiplexing and the browser caps at 6 connections per origin —
- * saturating all six would stall every other call in the app behind a tracker
- * that runs for half a minute. Four leaves two for everything else, and above
- * six does nothing but queue in the browser instead.
+ * EXPERIMENT, dev only: `subs/sales_tracker` (explicit dates, unpaged, no store
+ * columns) instead of `subs/sub_sales`, whose pages took up to 38s. One request
+ * per period per batch of weeks. Concurrency 4: the ALB is plain HTTP (no
+ * HTTP/2), the browser allows 6 connections per origin, and 4 leaves 2 for the
+ * rest of the app.
  */
 const trackerQueue = createRequestQueue({ concurrency: 4 });
 
 /**
- * Weeks per request. Two, so a request carries fourteen dates.
- *
- * Purely a transport decision: rows come back keyed by `sale_date` and are
- * bucketed through the plan, so how the dates are grouped into requests cannot
- * change a figure. Server cost is linear in store-days and identical either
- * way — what changes is how many times the fixed per-request overhead is paid,
- * which at 52 weeks is 52 requests instead of 104.
- *
- * The ceiling is the endpoint's store-day budget, not the client. At seven
- * dates a request stays under it to about 171 stores; at fourteen, about 85.
- * Both are far beyond any real group, but the headroom halves each time this
- * doubles, so it is worth knowing which number moved if a 400 ever appears.
- *
- * TY and LY stay in separate requests regardless. Combining them would halve
- * the count again and give up the one thing the split is for — being able to
- * render this year before last year arrives.
+ * Weeks per request: two (fourteen dates). Transport only: rows are bucketed
+ * by `sale_date`, so grouping can't change a figure. The ceiling is the
+ * endpoint's store-day budget (~85 stores at fourteen dates). TY and LY stay
+ * separate, so this year can render first.
  */
 const WEEKS_PER_REQUEST = 2;
 
-/** The message the endpoint sends when a request exceeds its store-day budget.
- *  It arrives as a 400 with a structured detail, and it tells the caller how to
- *  split — worth surfacing rather than flattening to "request failed". */
+/** The endpoint's message when a request exceeds its store-day budget (a 400
+ *  with structured detail saying how to split), surfaced as is. */
 const trackerError = (err: unknown): string => {
   const detail = (
     err as { response?: { data?: { detail?: unknown; msg?: string } } }
@@ -187,16 +131,9 @@ const trackerCall = async (
 };
 
 /**
- * A whole window, one request per period per week.
- *
- * The LY dates come from the plan's pairs rather than from shifting the week's
- * endpoints, so a week containing a holiday asks for the days its own pairing
- * uses. Deduped because a holiday can pull two TY days onto one LY date, and
- * the endpoint would return that day once regardless.
- *
- * `startRun` is the staleness guard: a re-search abandons the previous
- * window's queued and in-flight jobs, so twenty-four requests from a search
- * the user has already replaced cannot land on top of the new one.
+ * A whole window, one request per period per batch of weeks. LY dates come
+ * from the plan's pairs (holiday-safe), deduped. `startRun` abandons a
+ * replaced search's queued and in-flight jobs.
  */
 export const fetchTrackerWindow = async (
   scope: TrackerScope,
@@ -236,9 +173,8 @@ export const fetchTrackerWindow = async (
         const call = trackerQueue.enqueue(job.key, () =>
           trackerCall(scope, job.dates),
         );
-        // A last-year batch that comes back empty-handed is a store with no
-        // last year, which is not a reason to lose the window. A this-year
-        // batch failing still is.
+        // An empty last-year batch is a store with no last year; a this-year
+        // failure still fails.
         const leg =
           job.period === "ly"
             ? call.catch((): SubSale[] => [])
@@ -251,9 +187,8 @@ export const fetchTrackerWindow = async (
       }),
     );
 
-    // A null anywhere means this window was superseded mid-flight. Returning
-    // null rather than a partial set keeps the caller from writing half a
-    // window into state and presenting it as a whole one.
+    // Any null means the window was superseded; null, not a partial set, so
+    // half a window is never written.
     if (results.some((r) => r.rows === null)) return null;
 
     return {

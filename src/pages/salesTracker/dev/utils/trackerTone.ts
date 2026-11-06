@@ -1,13 +1,6 @@
 /**
- * Colour on the sign of a change, the way the legacy tracker did it.
- *
- * There is no threshold and no severity here: a department is up or it is down,
- * and the page does not rank how badly. That is the whole point of the tracker
- * as against the graded Performance pages — it reports movement, it does not
- * triage it.
- *
- * `null` means there was nothing to compare against, which is not the same as
- * no change and must not read as neutral-good.
+ * Colour on the sign of a change: up or down, no threshold or severity.
+ * `null` means nothing to compare against, which must not read as good.
  */
 export const changeTone = (v: number | null) => {
   if (v === null) return "text-content";
@@ -17,14 +10,8 @@ export const changeTone = (v: number | null) => {
 };
 
 /**
- * The filled pill the Performance rows use for a delta.
- *
- * Exactly one figure per row wears this. It is the anchor the eye lands on
- * first, so giving it to two columns at once — which is where this page
- * started — leaves the row with no reading order at all.
- *
- * A missing comparison gets the neutral fill rather than no pill, so the column
- * keeps its shape down the list instead of gapping.
+ * The filled pill for a delta: exactly one figure per row wears it. A missing
+ * comparison gets the neutral fill, so the column keeps its shape.
  */
 export const changePill = (v: number | null) => {
   if (v === null) return "bg-gray-100 text-content";
@@ -42,11 +29,8 @@ export const signedPct = (v: number | null) =>
   v === null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 
 /**
- * An unsigned figure that may not exist.
- *
- * ATS is the case: a day with no transactions has no average transaction, and
- * rendering `$0.00` asserts one — a claim the reader cannot tell apart from a
- * real average that happened to be nothing.
+ * An unsigned figure that may not exist (ATS: no transactions means no average,
+ * not `$0.00`).
  */
 export const orDash = (v: number | null, fmt: (n: number) => string) =>
   v === null ? "—" : fmt(v);

@@ -13,20 +13,13 @@ interface VsLyProps {
   /** Row level. `sub` for the department list, `day` one step down. */
   size?: "sub" | "day";
   /**
-   * Green/red on the sign. Off for rows inside an open week: seven coloured
-   * day rows under a coloured week line turns the card into a block of red and
-   * green, and the colour stops meaning anything. The sign still reads, and
-   * the week line above keeps the colour that matters.
+   * Green/red on the sign. Off for day rows inside an open week, so the week
+   * line keeps the colour that matters.
    */
   colored?: boolean;
   /**
-   * Filled pill carrying an `LY` label, matching the panel header's
-   * `LY +1.25%`.
-   *
-   * Two jobs. It names what the figure is measured against, which plain
-   * coloured text never did. And it fills its column, so the sales figure
-   * beside it has something to sit against — right-aligned bare text left a
-   * band of dead space and the sales figure looked stranded.
+   * A filled pill with an `LY` label, matching the panel header: it names the
+   * basis and fills its column.
    */
   variant?: "plain" | "pill";
   /** What the figure is measured against. Names the pill and the tooltip. */
@@ -34,16 +27,9 @@ interface VsLyProps {
 }
 
 /**
- * The comparison to last year, dollars and percent in one cell.
- *
- * They were two columns, each coloured, which gave every row two competing
- * anchors and put the loudest one — a filled pill — on the percentage. The
- * percentage is the less useful of the two here: a small department can post a
- * four-figure percent on a few dollars, and on a page about where the money
- * went that reads as the biggest number on screen.
- *
- * So: dollars lead at full weight, the percent follows in the same colour at a
- * step down, and one divider makes them read as one fact rather than two.
+ * The comparison to last year, dollars and percent in one cell: dollars lead
+ * at full weight, the percent follows a step down (a small department's
+ * percent can be huge on a few dollars).
  */
 const PILL_FILL = (v: number | null) => {
   if (v === null) return "bg-gray-100 text-content";

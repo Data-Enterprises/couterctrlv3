@@ -5,35 +5,20 @@ import { sameWeekDayLastYear } from "../../../../utils";
 import type { DayPair, TrackerBasis, WeekBucket, WindowPlan } from "../interfaces";
 
 /**
- * Week bucketing for the tracker, and the TY-to-LY day pairing underneath it.
+ * Week bucketing for the tracker, and the TY-to-LY day pairing under it. Two
+ * rules:
  *
- * Both of the legacy tracker's comparison bugs lived in this step, so the two
- * rules it exists to enforce are worth stating outright:
+ * 1. **A row belongs to the week its own date falls in** (never by position).
+ * 2. **A TY day is paired with its LY partner by date**, so one missing day
+ *    can't desync the rest.
  *
- * 1. **A row belongs to the week its own date falls in.** The legacy
- *    `WeekCards` ran `chunkData` over a positional array of dates while the
- *    fetch concatenated pages in resolution order — any window wide enough to
- *    page put days in the wrong week, silently.
- * 2. **A TY day is paired with its LY partner by date.** The legacy code
- *    paired `lyWeekCards[idx]` against `tyWeekCards[idx]`, so one missing LY
- *    day desynced every week after it.
- *
- * Everything downstream indexes through the maps built here rather than
- * walking arrays in parallel, which makes both mistakes unavailable rather
- * than merely avoided.
+ * Everything downstream indexes through the maps built here.
  */
 
 /**
- * Shifts a `yyyy-mm-dd` string by whole days, entirely in UTC.
- *
- * Deliberately not the shared `addDays`. That parses the string as UTC midnight
- * and then mutates it with `getDate`/`setDate`, which are **local** — so west
- * of Greenwich the date is already the previous day before any arithmetic
- * happens, and everything comes back a day early. That is what made the week
- * presets reach one day too far back.
- *
- * Parsing the parts and working through `Date.UTC` keeps the calendar date the
- * only thing in play, which is all a sales date ever is.
+ * Shifts a `yyyy-mm-dd` string by whole days, entirely in UTC. Not the shared
+ * `addDays`, which mixes UTC parsing with local setters and comes back a day
+ * early in the US.
  */
 export const shiftDays = (date: string, days: number): string => {
   const [y, m, d] = date.split("T")[0].split("-").map(Number);
@@ -43,13 +28,8 @@ export const shiftDays = (date: string, days: number): string => {
 };
 
 /**
- * `yyyy-mm-dd` to the `m/d/yyyy` the search slice holds, by string surgery.
- *
- * Deliberately not the shared `formatDate`. That does `new Date("2026-07-27")`,
- * which parses as UTC midnight, then reads it back with local `getDate()` —
- * west of Greenwich that is still the 26th, so every preset landed a day early.
- * Lives here beside `shiftDays` because both exist for the same reason and
- * anything that shifts a tracker date needs this on the way back out.
+ * `yyyy-mm-dd` to the search slice's `m/d/yyyy`, by string surgery. Not the
+ * shared `formatDate`, which parses UTC and reads local, a day early in the US.
  */
 export const isoToDisplay = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
@@ -62,34 +42,22 @@ export const basisWord = (basis: TrackerBasis) =>
   basis === "LW" ? "last week" : "last year";
 
 /**
- * How a TY day finds its partner.
- *
- * Last year snaps a holiday to its real date last year rather than shifting
- * by weekday — Thanksgiving against Thanksgiving, not against the fourth
- * Thursday's calendar neighbour. Last week has no such rule to apply: it
- * means the same weekday seven days ago and nothing else, which is also why
- * it can never collide.
+ * How a TY day finds its partner: last year snaps a holiday to its real date
+ * (Thanksgiving against Thanksgiving); last week is the same weekday seven days
+ * ago, so it never collides.
  */
 const partnerOf = (tyDate: string, basis: TrackerBasis) =>
   basis === "LW" ? shiftDays(tyDate, -7) : sameWeekDayLastYear(tyDate).date;
 
-/** The start date that gives `weeks` whole weeks ending on `endDate`. Used by
- *  the entry card's presets, which fill the two date inputs rather than
- *  bypassing them. */
+/** The start date giving `weeks` whole weeks ending on `endDate`, for the
+ *  entry card's presets. */
 export const rangeForWeeks = (endDate: string, weeks: number) =>
   shiftDays(endDate, -(weeks * 7 - 1));
 
 /**
- * The range's week buckets, oldest first.
- *
- * Weeks are chunked forward from the start date, so the **last** bucket is the
- * one that comes up short on a range that isn't a multiple of seven. Chunking
- * backwards from the end would put the partial week first, which reads as a
- * missing week rather than an incomplete one — and would move every week
- * boundary the moment somebody nudged the start date by a day.
- *
- * A bucket therefore carries between one and seven dates. Nothing downstream
- * may assume seven.
+ * The range's week buckets, oldest first, chunked forward from the start date,
+ * so the last bucket is the short one. A bucket holds one to seven dates;
+ * nothing downstream may assume seven.
  */
 export const buildWeekBuckets = (
   startDate: string,
@@ -119,14 +87,9 @@ export const buildWeekBuckets = (
 };
 
 /**
- * The full fetch-and-compare plan for a window.
- *
- * The LY range is the min and max of every individually shifted day rather
- * than the two endpoints shifted on their own. Shifting only the endpoints
- * breaks whenever one of them is a holiday: that end snaps to the holiday's
- * real date last year while the other takes a plain weekday shift, and the
- * range no longer covers the days the pairing actually asks for. Sales hit
- * this on July 4th and fixed it the same way.
+ * The full fetch-and-compare plan for a window. The LY range is the min and
+ * max of every shifted day, not the two endpoints shifted alone (which breaks
+ * when an end is a holiday, as Sales found on July 4th).
  */
 export const buildWindowPlan = (
   startDate: string,
@@ -176,13 +139,8 @@ export const buildWindowPlan = (
 };
 
 /**
- * Buckets dated rows by their own date.
- *
- * `dateOf` exists because the endpoints disagree about the shape: `getWeekly`
- * returns a bare `yyyy-mm-dd` on some rows and a full timestamp on others, so
- * every caller has to slice before comparing. Rows falling outside the plan
- * are dropped rather than forced into the nearest bucket — a date the plan
- * doesn't know about is a fetch that overran its window, not a week.
+ * Buckets dated rows by their own date. `dateOf` slices because `getWeekly`
+ * returns both bare dates and timestamps. Rows outside the plan are dropped.
  */
 export const bucketByDate = <T>(
   rows: T[],

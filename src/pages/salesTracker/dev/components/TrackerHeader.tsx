@@ -31,13 +31,8 @@ interface TrackerHeaderProps {
 }
 
 /**
- * The tracker's left-panel header.
- *
- * Structurally the Sales ledger header — same navy block, same two rows, same
- * 22px bordered buttons and hairline divider — with the graded controls
- * removed. There is no threshold input and no Sales/Qty toggle because the
- * tracker grades nothing and reports dollars only; leaving either in place
- * would promise a behaviour the page does not have.
+ * The tracker's left-panel header: the Sales ledger header's structure, without
+ * the graded controls (no threshold, no Sales/Qty toggle; dollars only).
  */
 const TrackerHeader = ({
   basis,
@@ -100,10 +95,8 @@ const TrackerHeader = ({
 
         <div className="flex-1" />
 
-        {/* The window, and the two controls that change it.
-            Minus is free — the rows stay held and the window simply narrows,
-            so a week that comes back off a later plus costs no request. Plus
-            fetches only the week being added. */}
+        {/* The window and its two controls: minus narrows it (rows are kept),
+            plus fetches only the week added. */}
         <div data-help="window" className="flex items-center gap-1 flex-shrink-0">
           <button
             type="button"

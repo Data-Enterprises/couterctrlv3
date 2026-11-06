@@ -24,11 +24,8 @@ interface TrackerDetailProps {
 }
 
 /**
- * The selected sub department, week by week.
- *
- * Header and KPI strip follow the Performance panel theme, but the header is
- * navy rather than severity-tinted: nothing on this page is graded, so there is
- * no severity to tint it with.
+ * The selected sub department, week by week, in the Performance panel theme
+ * with a navy header (nothing here is graded).
  */
 const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
   // The plan knows which period it paired against; nothing else needs to.
@@ -99,9 +96,8 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             ATS Sales
           </div>
-          {/* Always the transaction count. This used to read "per department
-              only" for the roll-up, which contradicted the totals row beneath
-              it now that the roll-up sums transactions like legacy does. */}
+          {/* Always the transaction count, roll-up included (summed as
+              legacy does). */}
           <div className="text-[10px] font-bold text-content mb-0.5">
             {row.trans.toLocaleString()} trans
           </div>
@@ -128,9 +124,8 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             % vs {basis}
           </div>
-          {/* Names how many weeks the comparison actually rests on, which is
-              not always the window length — weeks with no last-year partner sit
-              out of both sides. "day matched" said nothing a reader could use. */}
+          {/* How many weeks the comparison rests on: weeks with no last-year
+              partner sit out of both sides. */}
           <div className="text-[10px] font-bold text-content mb-0.5">
             {comparableWeeks} of {row.weeks.length} compared
           </div>

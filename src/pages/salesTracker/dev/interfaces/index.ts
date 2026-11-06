@@ -1,16 +1,9 @@
 // Interfaces
 
 /**
- * Which period the window is measured against.
- *
- * Last year is the default and the better comparison: it carries the season
- * with it. Last week is the fallback for a store that has no last year — one
- * that opened this year, or changed system — because a tracker with an empty
- * comparison column is a tracker with nothing to say.
- *
- * It is one basis for the whole window, never a mix. A column headed LY whose
- * rows are sometimes last week is a column that lies, and the figure it holds
- * cannot be read without checking which row it came from.
+ * Which period the window is measured against: last year (the default; it
+ * carries the season), or last week for a store with no last year. One basis
+ * for the whole window, never a mix.
  */
 export type TrackerBasis = "LY" | "LW";
 
@@ -47,14 +40,9 @@ export type WindowPlan = {
    *  one LY date — see `collisions`. */
   byLyDate: Map<string, DayPair[]>;
   /**
-   * TY dates sharing an LY partner with another TY date.
-   *
-   * `sameWeekDayLastYear` snaps a holiday to the actual holiday date last
-   * year rather than shifting by weekday, so in a window containing one the
-   * shifted neighbour can land on the same LY date. Both TY days would then
-   * compare against the same LY figure, inflating one of them. The UI flags
-   * these rather than silently averaging: the comparison is genuinely
-   * ambiguous and the user is better placed to judge it.
+   * TY dates sharing an LY partner with another TY date: `sameWeekDayLastYear`
+   * snaps a holiday to its real date, so a neighbour can collide. Flagged in
+   * the UI rather than averaged.
    */
   collisions: string[];
 };
@@ -78,9 +66,8 @@ export type DayTotal = {
   ats: number | null;
   dollarChange: number | null;
   pctChange: number | null;
-  /** No rows came back for this date. Legacy stitched these in afterwards by
-   *  walking for gaps; here every date in the window is enumerated up front by
-   *  the plan, so a quiet day is a zero rather than a hole. */
+  /** No rows came back for this date. Every date is enumerated up front, so a
+   *  quiet day is a zero, not a hole. */
   noSales: boolean;
 };
 
@@ -98,12 +85,8 @@ export type WeekTotal = {
   dollarChange: number | null;
   pctChange: number | null;
   /**
-   * How the week's days split, so a closed card can say more than its total.
-   *
-   * A week down four percent reads the same whether every day was down four,
-   * or six days were flat and Saturday fell off a cliff — and those are
-   * different problems. Only days with a last-year partner are counted; a day
-   * with nothing to compare is neither good nor bad.
+   * How the week's days split (up, down, worst), so a closed card says more than
+   * its total. Only days with a last-year partner count.
    */
   upDays: number;
   downDays: number;

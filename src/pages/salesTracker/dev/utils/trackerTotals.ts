@@ -3,38 +3,20 @@ import type { DayTotal, SubDeptTotal, WeekTotal, WindowPlan } from "../interface
 import type { SubSale } from "../../../../interfaces";
 
 /**
- * Sub-department totals for the tracker, shaped the way the legacy tracker
- * shaped them: this year against last year, day-matched, with no grading of
- * any kind. A number is green above zero and red below, and that is the whole
- * verdict the page offers.
+ * Sub-department totals for the tracker: this year against last year,
+ * day-matched, ungraded, at three levels (department, week, day).
  *
- * Three levels, because that is how the question gets asked: which department
- * moved, which week it moved in, and which day inside that week.
- *
- * **Net is `total_sales - total_tax` on both sides.** The legacy page took LY
- * net of tax but TY raw (`salesLY = total_sales - total_tax` against
- * `salesTY = week.total_sales`), so every department's dollar and percentage
- * change carried this year's tax on the TY side and read better than it was.
- * Matching the two sides is a deliberate correction, and it means these figures
- * come in below the old page's.
+ * **Net is `total_sales - total_tax` on both sides.** Legacy took LY net but TY
+ * raw, so these come in below the old page's, deliberately.
  */
 
 const net = (r: SubSale) => r.total_sales - r.total_tax;
 
 /**
- * Average transaction size, or `null` where there isn't one.
- *
- * Sales over `transaction_count`, summed at whatever level is being shown —
- * the same calculation the legacy tracker makes at every level (`TotalsGrid`
- * for a department, `TotalsGridLvlThree` for a day).
- *
- * A basket touching four departments counts in all four, so an
- * all-department ATS reads lower than the average basket at the till. That is
- * how the old page has always reported it and the two must agree.
- *
- * Null rather than zero when there are no transactions. A closed day has no
- * average transaction, and `$0.00` claims one — a figure the reader has no way
- * to tell apart from a real average that happened to be nothing.
+ * Average transaction size, or `null` with no transactions. Sales over
+ * `transaction_count` at the level shown, as legacy does; a basket in four
+ * departments counts in all four, so an all-department ATS reads low, matching
+ * the old page.
  */
 const atsOf = (sales: number, trans: number): number | null =>
   trans > 0 ? sales / trans : null;
@@ -51,9 +33,8 @@ export const buildSubDeptTotals = (
 ): SubDeptTotal[] => {
   type DayAcc = { ty: number; ly: number | null; trans: number; seen: boolean };
 
-  // department -> tyDate -> accumulator. Keyed on the TY date so a row lands in
-  // the day it happened, and the LY side is reached through the plan's pairing
-  // rather than by position.
+  // department -> tyDate -> accumulator, keyed on the TY date; the LY side is
+  // reached through the plan's pairing.
   const byDept = new Map<number, { desc: string; days: Map<string, DayAcc> }>();
 
   const blankDay = (): DayAcc => ({ ty: 0, ly: null, trans: 0, seen: false });
@@ -175,26 +156,16 @@ export const buildSubDeptTotals = (
           ...changes(tyForCompare, salesLy),
         };
       })
-      // Sub-department number order, which is the order these are numbered in
-      // the back office and the order every other report prints them in.
-      // Alphabetical put Bakery above Grocery and made the list unrecognisable
-      // to anyone who knows the departments by their numbers.
+      // Sub-department number order, as the back office and every other report
+      // number them.
       .sort((a, b) => a.id - b.id)
   );
 };
 
 /**
- * Every department rolled into one series, so the right panel has something to
- * show before a department is picked.
- *
- * Built by summing the day cells rather than by re-reading the rows, so it
- * cannot drift from the list beside it.
- *
- * ATS sums `transaction_count` and divides, the same way the legacy tracker
- * does at every level it aggregates. A basket touching four departments is
- * counted in all four, so a whole-group ATS reads lower than the average basket
- * at the till - but this is the figure the old page has always shown, and
- * agreeing with it matters more than the objection.
+ * Every department rolled into one series for the right panel, summed from the
+ * day cells so it matches the list. ATS sums `transaction_count` and divides,
+ * as legacy does.
  */
 export const allDeptsTotal = (
   rows: SubDeptTotal[],
@@ -283,16 +254,4 @@ export const allDeptsTotal = (
   };
 };
 
-/**
- * Deleted on purpose — use `allDeptsTotal` for window totals.
- *
- * There used to be a `windowTotals` here that summed the department rows and
- * excluded a whole department from the comparison whenever it had no last-year
- * history at all. `allDeptsTotal` excludes at the **day** level and aggregates
- * upward, so the two disagreed: on one real store the panel header read
- * "GAP -$2,504.22" beside a TY and an LY figure that differed by +$8,046.99.
- *
- * A page that reports two different answers to "how far ahead are we" is worse
- * than one that reports the harder-to-defend answer, so there is now one
- * computation and both panels read from it.
- */
+/** Window totals come from `allDeptsTotal`: one computation both panels read. */

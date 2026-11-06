@@ -40,19 +40,9 @@ const TY_COLOR = "rgb(var(--color-brand-navy))";
 const LY_COLOR = "#8aa4c4";
 
 /**
- * One week of a sub department, with its days underneath.
- *
- * Closed, the card is one line: which week, the dates, what it took, and how
- * that compares. A column of these is a scannable list of weeks.
- *
- * Open, it leads with the day story — "5 days up · 2 down · worst day Sun 8/2
- * −15.06%", the sentence a manager can act on — then the chart, the days, and
- * a totals footer.
- *
- * Open, the chart runs the full width and the days are a table with a totals
- * footer. They were cards carrying four labelled figures each — twenty-eight
- * repeated labels per week, which is most of what made the panel noisy. A
- * header row says each label once and the footer makes the days visibly add up.
+ * One week of a sub department. Closed: one line (week, dates, takings,
+ * comparison). Open: the day story ("5 days up · 2 down · worst day Sun 8/2
+ * −15.06%"), the chart, then the days as a table with a totals footer.
  */
 const WeekCard = ({
   week,
@@ -71,9 +61,7 @@ const WeekCard = ({
       points: week.days.map((d) => (d.noSales ? null : d.salesTy)),
     },
     {
-      // Dashed, not merely lighter. Two shades of the same hue stop being
-      // distinguishable exactly where the lines cross, which is the point on
-      // the chart most worth reading.
+      // Dashed, not lighter: two shades of one hue blur where the lines cross.
       id: basis === "LW" ? "Last week" : "Last year",
       color: LY_COLOR,
       dashed: true,
@@ -82,10 +70,8 @@ const WeekCard = ({
   ];
 
   return (
-    // `flex-shrink-0` is load-bearing: these are flex children of a scrolling
-    // column, and the default `flex-shrink: 1` makes every card compress to fit
-    // rather than the column overflowing — then each is clipped by its own
-    // `overflow-hidden`. Refusing to shrink is what makes the panel scroll.
+    // `flex-shrink-0` is load-bearing: without it the cards compress to fit and
+    // clip, instead of the column scrolling.
     <div
       className={`flex-shrink-0 rounded-lg border overflow-hidden bg-custom-white ${
         expanded ? "border-row_selected_border" : "border-gray-200"
@@ -132,9 +118,7 @@ const WeekCard = ({
 
       {expanded && (
         <>
-          {/* The day story sits inside the open card. On every closed card it
-              doubled the height of the list for a sentence you only act on once
-              you are already looking at that week. */}
+          {/* The day story sits inside the open card only. */}
           <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-gray-100 bg-gray-50">
             {week.comparedDays === 0 ? (
               <span className="text-content">

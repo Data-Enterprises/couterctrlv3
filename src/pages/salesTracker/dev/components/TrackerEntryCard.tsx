@@ -17,19 +17,13 @@ interface TrackerEntryCardProps {
   notice?: string;
 }
 
-/** Shortcut spans. A free week count invited 3 or 40, neither of which
- *  produces a readable tracker; these fill the two date inputs rather than
- *  bypassing them, so what ran is always visible in the dates themselves. */
+/** Shortcut spans that fill the two date inputs, so what ran is always visible
+ *  in the dates. */
 const WEEK_PRESETS = [4, 8, 12, 26];
 
 /**
- * Entry point for the tracker.
- *
- * Start and end dates rather than a single date, matching the live page: a
- * range like 7/13 to 8/23 is a span somebody actually asks for, and a week
- * count cannot express it. The presets are shortcuts over the same two inputs —
- * pressing one writes the dates, so there is no hidden second way of saying
- * what period is loaded.
+ * Entry point for the tracker: start and end dates (a range like 7/13 to 8/23),
+ * with presets that write those same dates.
  */
 const TrackerEntryCard = ({
   onSearch,

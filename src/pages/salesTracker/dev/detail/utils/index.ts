@@ -12,10 +12,8 @@ const esc = (v: string | number) => {
 const num = (v: number | null, dp = 2) => (v === null ? "" : v.toFixed(dp));
 
 /**
- * The open department as a spreadsheet: a row per week, then a row per day.
- *
- * Plain blob and an anchor click, never `navigator.share` — the share path
- * fails silently on mobile and leaves the user believing a file was written.
+ * The open department as a spreadsheet: a row per week, then per day. Blob and
+ * an anchor click, never `navigator.share` (it fails silently on mobile).
  */
 export const exportTracker = ({ row, scopeLabel, plan }: ExportArgs) => {
   const lines: string[] = [];
