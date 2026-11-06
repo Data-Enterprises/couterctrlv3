@@ -1,10 +1,13 @@
+// API
 import type {
   Ticket,
   TicketScope,
   TicketStore,
   TicketStoreOption,
-} from "../../../api/tickets";
-import type { Store } from "../../../interfaces";
+} from "../../../../api/tickets";
+
+// Interfaces
+import type { Store } from "../../../../interfaces";
 
 /**
  * The stores a ticket is about, and who that lets see it.

@@ -25,7 +25,7 @@ import {
   SCOPE_TEXT,
   storeChipText,
   storesOf,
-} from "./ticketStores";
+} from "../utils";
 
 interface Props {
   rows: Ticket[];

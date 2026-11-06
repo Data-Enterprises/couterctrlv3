@@ -1,15 +1,6 @@
-import type { SearchState } from "../../../features/searchSlice";
-import { weekEnding } from "../../../utils/dates";
-import { formatDateSimple } from "../../../utils";
-
-/**
- * Where a ticket is being filed from, and what the page was showing.
- *
- * A client on a page hits a problem. Everything needed to open the ticket for
- * them is already on hand — the nav knows which page they are on and which
- * area it belongs to, and the shared search slice knows what they had asked
- * for. Neither needs a call.
- */
+import type { SearchState } from "../../../../../features/searchSlice";
+import { weekEnding } from "../../../../../utils/dates";
+import { formatDateSimple } from "../../../../../utils";
 
 /**
  * Page to ticket category, by the nav's own href.
@@ -20,11 +11,6 @@ import { formatDateSimple } from "../../../utils";
  * receiving side; User Management, Groups, Admin and Settings are all who can
  * see what. Only the help desk itself (`tickets`) and Home name no category:
  * a ticket filed from there is about nothing in particular.
- *
- * The names are matched against the server's `ticket_categories` at the point
- * of use. A name the server does not hold leaves the category unset, never a
- * wrong one, so the rows have to exist before this reaches anybody
- * (docs/ticket-categories-2026-10-29.md). Chat, Teams and Tickets are retired.
  */
 export const PAGE_CATEGORY: Record<string, string> = {
   sales: "Sales",
@@ -98,12 +84,6 @@ export const originOf = (from: {
  * is a week: it takes `singleDate` as the week's last day and works back
  * seven, and its startDate and endDate say nothing about what is on screen.
  * Printing those two on a Sales ticket is printing a range nobody searched.
- *
- * `SearchCard` has always taken this as a prop from the page, because the
- * page is what knows. This map is the same answer for pages that are not
- * rendering a search card at the moment somebody reports a problem.
- *
- * Unlisted means a plain start-to-end range, which is the common case.
  */
 type DateShape = "range" | "single" | "week" | "none";
 
@@ -161,10 +141,6 @@ export const pageUsesSearch = (href: string) => !NO_SEARCH.has(href);
  * way. Running the ISO formatter over an already-formatted date is what
  * printed "undefined/undefined/9/27/2026" — it split on "-", found no parts,
  * and pasted the undefineds in front.
- *
- * Splitting rather than parsing throughout: handing either shape to
- * `new Date` invites the midnight-UTC shift that lands a date a day early
- * west of Greenwich.
  */
 const day = (value: string) => {
   if (!value) return "";
@@ -221,35 +197,6 @@ export const searchSummary = (
 };
 
 /**
- * TODO — the second half of the evidence: what the page ENDED UP with.
- *
- * The attachments are raw responses, grouped per endpoint. Capturing every
- * call on the page covers paged endpoints as a side effect — `fetchAllPages`
- * asks for each page over axios, so each page is captured and they group back
- * together. What is still missing is the ASSEMBLED result: that object is
- * built in JavaScript and never crosses the wire, and neither does anything
- * the page computed from it.
- *
- * The assembled set is in Redux, and the dev slices are already keyed
- * (store/devReducers.ts), so the map is a sibling of PAGE_CATEGORY above:
- *
- *   "sub-dept-margins" -> subMargin      "upc-upload"  -> upcDev
- *   "loss-prevention"  -> lossPrevention  "item-lookup" -> item
- *
- * Both are worth sending, because they answer different questions: the slice
- * is what the page ended up showing, the raw call is what the server actually
- * said, and when the transform is the bug the slice shows only the symptom.
- *
- * Three things to settle when this is picked up:
- *   - a page can have two slices (Sub Dept Margins is subMargin on desktop
- *     and itemPerf on mobile)
- *   - a whole slice carries more than the page's own data — tickets holds
- *     every company's queue for a tech, users and organization hold people
- *   - size: a slice is bigger than one response, so this probably wants
- *     named keys per page rather than the whole thing
- */
-
-/**
  * The scope the ticket was filed under, as a record rather than a sentence.
  *
  * The panel showed the store and the dates and then sent neither — a tech
@@ -257,10 +204,6 @@ export const searchSummary = (
  * miscalculation that is the whole question, and the name on its own does not
  * answer it: two stores share a storeid when they are two locations of one
  * business, and a number is how you tell 369 from 370.
- *
- * Both halves go on the ticket. The line reads in the thread, where the tech
- * is already looking; the record rides along as a file, because storeid and
- * company are what a query needs and nobody wants them in prose.
  */
 export type PickedStore = {
   storeid: number;
@@ -271,8 +214,6 @@ export type PickedStore = {
 export const scopeOf = (
   search: SearchState,
   origin: TicketOrigin,
-  /** For a group search, the stores inside it the client is actually looking
-   *  at. Empty means the whole group, which is what the search was. */
   stores: PickedStore[] = [],
 ): Record<string, unknown> =>
   // A page with no search behind it has nothing to scope: no store, no
