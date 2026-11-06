@@ -37,7 +37,7 @@ import type {
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import FilterBar from "../../../../../components-dev/filters/FilterBar";
-import RListItemRows from "./components/RListItemRow";
+import RListItemRows from "./components/RListItemRows";
 import ListNavyHeader from "./components/ListNavyHeader";
 
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
