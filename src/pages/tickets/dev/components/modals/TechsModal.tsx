@@ -18,7 +18,7 @@ import {
 } from "../../../../../api/tickets";
 
 // Utils
-import { nextTechCode } from "../utils/techCodes";
+import { nextTechCode } from "./utils/techCodes";
 
 // Interfaces
 import type { Mode } from "./interfaces";
