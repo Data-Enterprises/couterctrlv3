@@ -190,8 +190,7 @@ const Organization = () => {
   /** What the open view asked for, else what the tab is worth. */
   const size = fit ?? TAB_FIT[tab];
 
-  // No tab to show. This fell back to a "userGroups" tab that no longer
-  // exists and then read a size it doesn't have.
+  // No tab to show for this level.
   if (tabs.length === 0) {
     return (
       <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 flex justify-center">

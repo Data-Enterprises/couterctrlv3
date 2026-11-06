@@ -61,7 +61,7 @@ const BaseGroupDetail = ({
   const [subTab, setSubTab] = useState<"stores" | "users">("stores");
 
   // Another group opened: start it fresh. A rename is the same group, so it
-  // keeps its sub-tab (it used to jump back to Stores).
+  // keeps its sub-tab.
   useEffect(() => {
     setEditing(false);
     setConfirmDelete(false);
@@ -200,8 +200,8 @@ const BaseGroupDetail = ({
             autoFocus
             value={nameDraft}
             onChange={(e) => setNameDraft(e.target.value)}
-            // Saved once, on blur: Enter blurs (it used to save as well,
-            // so a rename went out twice) and Escape blurs without saving.
+            // Saved once, on blur: Enter blurs (so a rename goes out once) and
+            // Escape blurs without saving.
             onBlur={handleSave}
             onKeyDown={(e) => {
               if (e.key === "Enter") e.currentTarget.blur();

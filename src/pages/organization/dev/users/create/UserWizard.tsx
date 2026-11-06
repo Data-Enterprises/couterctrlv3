@@ -567,8 +567,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </div>
       )}
 
-      {/* A read that failed used to become an empty list, so the person
-          looked as though they held nothing. */}
+      {/* A failed read says so, rather than showing the person holding
+          nothing. */}
       {editing && held.failed.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
           <div className="flex-1 min-w-[260px] text-[11.5px] text-content leading-snug">
