@@ -3,7 +3,7 @@ import type {
   QueueTab,
   TicketFilters,
 } from "../../../features/dev/devTicketsSlice";
-import { storesOf } from "./ticketStores";
+import { storesOf } from "./utils";
 
 /**
  * The filtering behind the tabs and the search box.
