@@ -5,6 +5,8 @@ import type {
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
 } from "../../../../../interfaces";
+import type { ModalMode, MetricSelection } from "./interfaces";
+import { AGG_OPTIONS, DIMS, METRICS, PREVIEW_ROWS, buildDetailsCsv } from "./utils";
 import {
   fmtNum,
   rowsToCsv,
@@ -12,8 +14,6 @@ import {
   aggregateRows,
 } from "../../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../../utils/csvExport";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ReceiversExportModalProps {
   onClose: () => void;
@@ -23,105 +23,6 @@ interface ReceiversExportModalProps {
   details: ReceiverDetailsItem[];
   totals: ReceiverDetailsTotals | null;
 }
-
-type ModalMode = "presets" | "custom";
-
-interface DimDef {
-  key: string;
-  label: string;
-}
-interface MetricDef {
-  key: string;
-  label: string;
-}
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
-}
-
-// ─── Preset builder ───────────────────────────────────────────────────────────
-
-const buildDetailsCsv = (
-  details: ReceiverDetailsItem[],
-  label: string,
-  totals: ReceiverDetailsTotals | null,
-) => {
-  const headers = [
-    "Line #",
-    "UPC",
-    "Description",
-    "Cases",
-    "Units",
-    "U Cost",
-    "Ext Cost",
-    "Retail",
-    "Ext Retail",
-    "GM",
-    "Free",
-    "Return",
-  ];
-  const rows = details.map((d) => [
-    d.line_number,
-    d.product_code,
-    d.product_description,
-    d.cases,
-    d.units,
-    fmtNum(d.ucost),
-    fmtNum(d.ext_cost),
-    fmtNum(d.retail),
-    fmtNum(d.ext_retail),
-    fmtNum(d.gm),
-    d.free,
-    d.return,
-  ]);
-  if (totals) {
-    rows.push([]);
-    rows.push([
-      "",
-      "",
-      "TOTALS",
-      totals.cases,
-      totals.units,
-      fmtNum(totals.ucost),
-      fmtNum(totals.ext_cost),
-      fmtNum(totals.retail),
-      fmtNum(totals.ext_retail),
-      "",
-      "",
-      "",
-    ]);
-  }
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
-
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const DIMS: DimDef[] = [
-  { key: "product_code", label: "UPC" },
-  { key: "product_description", label: "Description" },
-];
-
-const METRICS: MetricDef[] = [
-  { key: "cases", label: "Cases" },
-  { key: "units", label: "Units" },
-  { key: "ucost", label: "U Cost" },
-  { key: "ext_cost", label: "Ext Cost" },
-  { key: "retail", label: "Retail" },
-  { key: "ext_retail", label: "Ext Retail" },
-  { key: "gm", label: "GM" },
-];
-
-const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum", label: "Sum" },
-  { value: "avg", label: "Avg" },
-  { value: "min", label: "Min" },
-  { value: "max", label: "Max" },
-  { value: "count", label: "Count" },
-];
-
-const PREVIEW_ROWS = 5;
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 const ReceiversExportModal = ({
   onClose,
