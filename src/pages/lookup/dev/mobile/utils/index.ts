@@ -1,5 +1,6 @@
 // Interfaces
-import type { DayBucket } from "../../utils";
+import type { DayBucket } from "../../interfaces";
+import type { WindowTotals } from "../interfaces";
 
 /**
  * The figures the report layout reads, none of which the table layout needed.
@@ -8,21 +9,6 @@ import type { DayBucket } from "../../utils";
  * rendering, and out of `lookupMetrics` so removing the dev view later takes
  * this file with it rather than leaving orphans behind.
  */
-
-export interface WindowTotals {
-  revenue: number;
-  /** Priced units — pounds on a scale item. */
-  units: number;
-  cost: number;
-  /** Days that actually sold, not days in the window. Every per-day average
-   *  divides by this: a fortnight with one selling day averages that day's
-   *  takings, not a fourteenth of them. */
-  sellingDays: number;
-  /** Days in the window, selling or not. */
-  windowDays: number;
-  /** A cost was on file for at least one day. */
-  hasCost: boolean;
-}
 
 export const windowTotals = (buckets: DayBucket[]): WindowTotals => ({
   revenue: buckets.reduce((acc, b) => acc + b.revenue, 0),

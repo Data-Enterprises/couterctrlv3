@@ -22,8 +22,8 @@ import {
 } from "./utils";
 
 // Interfaces
+import type { DayBucket, MarginResult, TrendResult } from "../interfaces";
 import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
-import type { DayBucket, MarginResult, TrendResult } from "../utils";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";

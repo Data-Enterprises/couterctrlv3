@@ -2,7 +2,7 @@
 import { dayNumber } from "../utils";
 
 // Interfaces
-import type { DayBucket } from "../../utils";
+import type { DayBucket } from "../../interfaces";
 
 // Components
 import { TY_COLOR, UNSCOPED_OPACITY } from "../../../../../components-dev/mobile/perf/perfColors";

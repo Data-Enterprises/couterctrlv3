@@ -4,7 +4,7 @@ import { dayUnitCost, formatUnits } from "../../utils";
 import { dayLabel, dayMargin } from "../utils";
 
 // Interfaces
-import type { DayBucket } from "../../utils";
+import type { DayBucket } from "../../interfaces";
 
 // Components
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";

@@ -9,8 +9,8 @@ import {
 } from "../../utils";
 
 // Interfaces
+import type { DayBucket, MarginResult, TrendResult } from "../../interfaces";
 import type { SaleTypeSummary } from "../../../../../features/dev/devItemLookupSlice";
-import type { MarginResult, DayBucket, TrendResult } from "../../utils";
 
 // Components
 import {

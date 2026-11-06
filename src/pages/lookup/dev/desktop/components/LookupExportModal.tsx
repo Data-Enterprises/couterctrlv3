@@ -11,8 +11,9 @@ import {
 } from "../../utils";
 
 // Interfaces
+import type { DayBucket } from "../../interfaces";
+import type { BatchColKey, BatchRow, ColDef, DailyColKey, ModalMode, Preset, SaleTypeColKey, SaleTypeRow } from "../interfaces";
 import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
-import type { DayBucket } from "../../utils";
 
 // Components
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
@@ -27,34 +28,6 @@ interface LookupExportModalProps {
   /** Current item sells by weight — the daily Weight column is filled. */
   weighed: boolean;
   onClose: () => void;
-}
-
-type ModalMode = "presets" | "custom";
-type Preset = "batch" | "daily" | "saleTypes";
-type BatchColKey =
-  | "upc"
-  | "description"
-  | "marginPct"
-  | "avgSoldAt"
-  | "listPrice"
-  | "caseCost"
-  | "totalQty"
-  | "daysSold";
-type DailyColKey =
-  | "date"
-  | "saleType"
-  | "qty"
-  | "weight"
-  | "revenue"
-  | "cost"
-  | "caseCost"
-  | "listPrice"
-  | "marginPct";
-
-interface ColDef {
-  key: string;
-  label: string;
-  defaultOn: boolean;
 }
 
 const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }[] = [
@@ -80,16 +53,6 @@ const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }[] = [
   { key: "marginPct", label: "Margin %", defaultOn: true },
 ];
 
-type SaleTypeColKey =
-  | "upc"
-  | "description"
-  | "saleType"
-  | "days"
-  | "revenue"
-  | "qty"
-  | "weight"
-  | "pctOfSales";
-
 const SALE_TYPE_COLS: { key: SaleTypeColKey; label: string; defaultOn: boolean }[] = [
   { key: "upc", label: "UPC", defaultOn: true },
   { key: "description", label: "Description", defaultOn: true },
@@ -100,19 +63,6 @@ const SALE_TYPE_COLS: { key: SaleTypeColKey; label: string; defaultOn: boolean }
   { key: "weight", label: "Weight (lb)", defaultOn: true },
   { key: "pctOfSales", label: "% of sales", defaultOn: true },
 ];
-
-interface SaleTypeRow {
-  upc: string;
-  description: string;
-  saleType: string;
-  days: number;
-  revenue: number;
-  qty: number;
-  /** Null on an each-priced item, which has no weight to report. */
-  weight: number | null;
-  /** Null on the Sale row itself. */
-  pctOfSales: number | null;
-}
 
 /** One row per loaded item per sale type, Sale first. Built from every line
  *  type, not the Sale-only history the batch summary uses. */
@@ -158,17 +108,6 @@ const saleTypeCell = (row: SaleTypeRow, key: SaleTypeColKey): string | number =>
 };
 
 const PREVIEW_ROWS = 5;
-
-interface BatchRow {
-  upc: string;
-  description: string;
-  marginPct: number | null;
-  avgSoldAt: number;
-  listPrice: number;
-  caseCost: number;
-  totalQty: number;
-  daysSold: number;
-}
 
 const buildBatchRows = (queue: QueueItem[]): BatchRow[] =>
   queue

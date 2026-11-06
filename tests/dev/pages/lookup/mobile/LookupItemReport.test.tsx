@@ -4,8 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import LookupItemReport from "@/pages/lookup/dev/mobile/LookupItemReport";
-import type { DayBucket, MarginResult, TrendResult } from "@/pages/lookup/dev/utils";
 import type { ItemLookupHistory } from "@/features/dev/devItemLookupSlice";
+
+// Interfaces
+import type { DayBucket, MarginResult, TrendResult } from "@/pages/lookup/dev/interfaces";
 
 const bucket = (date: string, revenue: number, units: number): DayBucket => ({
   date,
