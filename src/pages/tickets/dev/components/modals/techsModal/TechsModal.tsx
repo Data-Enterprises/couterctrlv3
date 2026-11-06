@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { useDevApi } from "../../../../../hooks/useDevApi";
+import { useToast } from "../../../../../../components/toasts/hooks/useToast";
+import { useDevApi } from "../../../../../../hooks/useDevApi";
 
 // API
 import {
@@ -15,21 +15,21 @@ import {
   type TechWriteResp,
   type TicketTech,
   type TicketTechsResp,
-} from "../../../../../api/tickets";
+} from "../../../../../../api/tickets";
 
 // Utils
-import { nextTechCode } from "./utils/techCodes";
-import { SEARCHABLE_FROM } from "./utils";
+import { nextTechCode } from "../utils/techCodes";
+import { SEARCHABLE_FROM } from "../utils";
 
 // Interfaces
-import type { Mode } from "./interfaces";
+import type { Mode } from "../interfaces";
 
 // Components
-import Modal from "../../../../../components-dev/Modal";
-import Checkbox from "../../../../../components-dev/Checkbox";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
-import TextFilter from "../../../../../components-dev/filters/TextFilter";
-import TextField from "../../../../../components-dev/inputs/TextField";
+import Modal from "../../../../../../components-dev/Modal";
+import Checkbox from "../../../../../../components-dev/Checkbox";
+import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../../../../components-dev/filters/TextFilter";
+import TextField from "../../../../../../components-dev/inputs/TextField";
 
 interface Props {
   canManageTechs: boolean; //Level 9 only (Programmer)
@@ -158,7 +158,7 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
                   : "Nobody is on the desk."}
               </p>
             )}
-
+            {/* TechRow list. the returned map is TechRow.tsx */}
             {shown.map((tech) => (
               <div
                 key={tech.tech_id}

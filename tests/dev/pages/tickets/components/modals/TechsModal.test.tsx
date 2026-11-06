@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import * as api from "@/api/tickets";
 import type { TechCandidate, TicketTech } from "@/api/tickets";
-import TechsModal from "@/pages/tickets/dev/components/modals/TechsModal";
+import TechsModal from "@/pages/tickets/dev/components/modals/techsModal/TechsModal";
 
 vi.mock("@/api/tickets", async (orig) => ({
   ...(await orig<typeof api>()),
@@ -174,13 +174,13 @@ describe("standing a tech down", () => {
 
     // The count the roster showed, said again where the decision is made.
     expect(screen.getByText(/4 open tickets/)).toBeTruthy();
-    expect(screen.getByText(/anything left with them stops moving/)).toBeTruthy();
+    expect(
+      screen.getByText(/anything left with them stops moving/),
+    ).toBeTruthy();
 
     // The other active tech is the hand-over, and leaving it is a real
     // answer rather than an empty field.
-    await user.click(
-      screen.getByRole("button", { name: /Hand them to/ }),
-    );
+    await user.click(screen.getByRole("button", { name: /Hand them to/ }));
     expect(screen.getByText("mreed · holding 1")).toBeTruthy();
 
     // Nothing has been written yet: the switch asks, it does not act.
@@ -200,9 +200,7 @@ describe("standing a tech down", () => {
     // With nobody else active there is nowhere to hand the work, so the
     // picker is not drawn — an empty one would read as an option.
     expect(screen.getByText(/nobody to hand their work to/)).toBeTruthy();
-    expect(
-      screen.queryByRole("button", { name: /Hand them to/ }),
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /Hand them to/ })).toBeNull();
   });
 
   it("sends the hand-over with the stand-down, as one change", async () => {
@@ -221,9 +219,7 @@ describe("standing a tech down", () => {
     await user.click(
       await screen.findByRole("checkbox", { name: "Stand snelson down" }),
     );
-    await user.click(
-      screen.getByRole("button", { name: /Hand them to/ }),
-    );
+    await user.click(screen.getByRole("button", { name: /Hand them to/ }));
     await user.click(screen.getByRole("button", { name: "mreed · holding 1" }));
     await user.click(screen.getByRole("button", { name: "Stand down" }));
 
@@ -309,7 +305,9 @@ describe("adding a tech", () => {
     );
     show([tech()], {
       canManageTechs: true,
-      candidates: [candidate({ userid: 45, username: "bkerr", name: "B Kerr" })],
+      candidates: [
+        candidate({ userid: 45, username: "bkerr", name: "B Kerr" }),
+      ],
     });
 
     await user.click(await screen.findByRole("button", { name: "Add a tech" }));
@@ -329,7 +327,9 @@ describe("adding a tech", () => {
     // A desk numbered by hand, the way the live rows are.
     show([tech({ tech_code: "1" }), tech({ tech_code: "7" })], {
       canManageTechs: true,
-      candidates: [candidate({ userid: 45, username: "bkerr", name: "B Kerr" })],
+      candidates: [
+        candidate({ userid: 45, username: "bkerr", name: "B Kerr" }),
+      ],
     });
 
     await user.click(await screen.findByRole("button", { name: "Add a tech" }));

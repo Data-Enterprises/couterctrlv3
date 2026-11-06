@@ -21,7 +21,7 @@ import TicketDetail from "./components/ticketDetail/TicketDetail";
 import TicketSidebar from "./components/TicketSidebar";
 import NewTicketModal from "./components/modals/NewTicketModal";
 import CloseTicketModal from "./components/modals/CloseTicketModal";
-import TechsModal from "./components/modals/TechsModal";
+import TechsModal from "./components/modals/techsModal/TechsModal";
 
 /**
  * The Client Help Desk: one page, two views, and the server picks which
