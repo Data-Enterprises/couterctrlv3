@@ -6,8 +6,7 @@ import { formatCurrency2 } from "../../../../../../utils";
 import { EDITABLE, isAdded, isBlank, isEdited } from "../../../utils/orderEdit";
 
 // Interfaces
-import type { DraftLine, EditableField, LinePatch } from "../../../utils/orderEdit";
-import type { SubDeptOption, VendorOption } from "../../../interfaces";
+import type { SubDeptOption, VendorOption, DraftLine, EditableField, LinePatch } from "../../../interfaces";
 
 // Components
 import {

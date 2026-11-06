@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { availableOptions, markAvailability } from "@/pages/orders/dev/utils/orderFilters";
+import {
+  availableOptions,
+  markAvailability,
+} from "@/pages/orders/dev/utils/orderFilters";
 import type { AllOrder } from "@/interfaces";
 
 const line = (over: Partial<AllOrder>): AllOrder =>

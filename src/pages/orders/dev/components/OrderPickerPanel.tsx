@@ -2,7 +2,10 @@
 import { useMemo, type ReactNode } from "react";
 
 // Utils
-import { matchesPick, type OrderDoc } from "../utils/orderEdit";
+import { matchesPick } from "../utils/orderEdit";
+
+// Interfaces
+import type { OrderDoc } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";

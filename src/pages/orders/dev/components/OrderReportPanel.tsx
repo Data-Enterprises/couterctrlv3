@@ -3,10 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { lineFlags, type GridSort, type SortKey } from "../utils/ordersRows";
+import { lineFlags } from "../utils/ordersRows";
 import { FLAG_DOT, FLAG_TITLE } from "./utils";
 
 // Interfaces
+import type { GridSort, SortKey } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 
 // Components

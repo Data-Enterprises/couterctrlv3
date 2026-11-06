@@ -2,7 +2,7 @@
 import { FIELD_LABEL } from "../../../utils/orderEdit";
 
 // Interfaces
-import type { DraftLine, EditableField } from "../../../utils/orderEdit";
+import type { DraftLine, EditableField } from "../../../interfaces";
 
 /**
  * One typable field.

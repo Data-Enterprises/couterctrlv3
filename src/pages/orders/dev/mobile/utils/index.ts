@@ -4,9 +4,7 @@ import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
 // Interfaces
 import type { AllOrder } from "../../../../../interfaces";
 import type { AggFn } from "../../../../../utils/csvExport";
-
-interface DimDef { key: string; label: string }
-interface MetricDef { key: string; label: string }
+import type { DimDef, MetricDef } from "../interfaces";
 
 const fmtDate = (iso: string) => {
   const [y, m, d] = iso.split("T")[0].split("-");

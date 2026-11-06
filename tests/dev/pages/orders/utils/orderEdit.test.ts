@@ -33,10 +33,9 @@ import {
   startDraft,
   validate,
   visibleLines,
-  type DraftLine,
-  type LinePatch,
 } from "@/pages/orders/dev/utils/orderEdit";
 import type { AllOrder } from "@/interfaces";
+import type { DraftLine, LinePatch } from "@/pages/orders/dev/interfaces";
 
 /**
  * A line as `all_orders` sends it, plus the three columns the endpoint returns

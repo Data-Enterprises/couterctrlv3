@@ -2,7 +2,7 @@
 import { perCase, unitCostOf } from "../../../utils/orderEdit";
 
 // Interfaces
-import type { DraftLine } from "../../../utils/orderEdit";
+import type { DraftLine } from "../../../interfaces";
 
 /**
  * Unit cost — typed here, stored as the case cost it implies.

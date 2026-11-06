@@ -31,6 +31,7 @@ import { getCogs, getERet } from "../utils";
 
 // Interfaces
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
+import type { MobileStep } from "./interfaces";
 
 // Components
 import SearchCard from "../../../../components-dev/SearchCard";
@@ -39,8 +40,6 @@ import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
-
-type MobileStep = "available" | "list";
 
 const fmtExportDate = (iso: string) => {
   const [y, m, d] = iso.split("T")[0].split("-");

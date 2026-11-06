@@ -4,10 +4,15 @@ import {
   itemStoreRows,
   itemsInScope,
   workingOrder,
-  type ProblemItem,
 } from "@/pages/orders/dev/utils/problemItems";
-import { buildDocs, stageUnitCost, startDraft, applyUnitCost } from "@/pages/orders/dev/utils/orderEdit";
+import {
+  buildDocs,
+  stageUnitCost,
+  startDraft,
+  applyUnitCost,
+} from "@/pages/orders/dev/utils/orderEdit";
 import type { AllOrder } from "@/interfaces";
+import type { ProblemItem } from "@/pages/orders/dev/interfaces";
 
 const PIZZA = "004470036114";
 const BOLO = "3560009007";

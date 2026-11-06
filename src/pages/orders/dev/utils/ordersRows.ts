@@ -1,15 +1,10 @@
 // Interfaces
+import type { SortKey } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 import type {
   OrderFlag,
   OrdersFilters,
 } from "../../../../features/dev/devOrdersSlice";
-import type { SortState } from "../../../../utils/useTriStateSort";
-
-export type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
-
-/** Null is the list's own order, which is what the tri-state cycle returns to. */
-export type GridSort = SortState<SortKey>;
 
 /**
  * What is wrong with a line's cost, if anything.

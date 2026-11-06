@@ -1,4 +1,5 @@
 // Interfaces
+import type { OrdersFilterState, FilterKey, Available } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 
 /**
@@ -18,21 +19,6 @@ import type { AllOrder } from "../../../../interfaces";
  * read them all off; the rows are walked once per filter instead, which is
  * six passes over a few thousand rows and costs nothing a reader notices.
  */
-
-export interface OrdersFilterState {
-  orderTypes: string[];
-  storeNumbers: string[];
-  dates: string[];
-  subIds: number[];
-  productCodes: string[];
-  orderIds: number[];
-}
-
-export type FilterKey = keyof OrdersFilterState;
-
-/** Every reachable value, per filter, as strings — which is what the
- *  controls hold, whatever the row's own type is. */
-export type Available = Record<FilterKey, Set<string>>;
 
 const passes = (
   o: AllOrder,

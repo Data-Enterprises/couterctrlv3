@@ -2,10 +2,11 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import { workingOrder, type ProblemItem } from "../utils/problemItems";
+import { workingOrder } from "../utils/problemItems";
 import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./utils";
 
 // Interfaces
+import type { ProblemItem } from "../interfaces";
 import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 
 // Components

@@ -7,11 +7,10 @@ import {
   recompute,
   startDraft,
   unitCostOf,
-  type OrderDoc,
-  type OrderDraft,
 } from "./orderEdit";
 
 // Interfaces
+import type { OrderDraft, ProblemItem, Figures, ItemStoreRow } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 
@@ -29,33 +28,6 @@ import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 /** Missing cost is the cause and high margin its usual symptom, so the cause
  *  is read first. */
 const FLAG_ORDER: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];
-
-export interface ProblemItem {
-  code: string;
-  /** The first real description any of its lines carries — some arrive null. */
-  desc: string;
-  /**
-   * What is wrong with it, in reading order. Empty for an item that is only
-   * here because a search found it.
-   *
-   * High margin is read from lines that HAVE a cost. A line with no cost
-   * rings 100%, so on Browse every missing-cost line is a high-margin line
-   * too — and here that meant the High margin filter led with the same
-   * missing-cost items Missing cost did, sorted first at 100%, so clicking it
-   * appeared to change nothing. A missing cost is listed once, as what it is.
-   *
-   * Read from the lines as loaded, not as staged: an item stays in the list
-   * after it is fixed, marked as staged, so the session's work stays visible.
-   */
-  flags: OrderFlag[];
-  stores: number;
-  orders: number;
-  /** The highest margin any of its costed lines rings, for ordering the
-   *  high-margin items worst first. Null when none has retail to measure. */
-  topMargin: number | null;
-  /** Orders of this item holding a cost change not yet submitted. */
-  staged: number;
-}
 
 const marginOf = (eRet: number, cogs: number) =>
   eRet > 0 ? ((eRet - cogs) / eRet) * 100 : null;
@@ -162,33 +134,6 @@ export const workingOrder = (
       a.code.localeCompare(b.code),
   );
 };
-
-/** What the item's lines on one order come to. */
-export interface Figures {
-  /** The unit cost behind the case cost. Here so the column somebody types
-   *  into previews like every other one: case size is per store, so one
-   *  typed unit cost is one number here and a different case cost there. */
-  unitCost: number;
-  caseCost: number;
-  extCost: number;
-  margin: number | null;
-}
-
-/** One order carrying the item, as the Problems tab shows it. */
-export interface ItemStoreRow {
-  doc: OrderDoc;
-  /** The item's lines on this order — usually one. */
-  lineNumbers: number[];
-  /** As loaded. Zero means ordered by the unit: case cost IS the unit cost. */
-  casesize: number;
-  qty: number;
-  unitNow: number;
-  now: Figures;
-  /** At the typed unit cost. Null while nothing valid is typed. */
-  after: Figures | null;
-  /** Whether staging would change anything on this order. */
-  changes: boolean;
-}
 
 /**
  * Every order in scope carrying the item, with its figures now and at the

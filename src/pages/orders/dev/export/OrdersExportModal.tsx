@@ -3,10 +3,11 @@ import { useMemo, useState } from "react";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Utils
-import { buildRows, type SortKey } from "../utils/ordersRows";
+import { buildRows } from "../utils/ordersRows";
 import { ORDER_EXPORT_COLUMNS } from "./utils";
 
 // Interfaces
+import type { SortKey } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
 

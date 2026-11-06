@@ -7,18 +7,13 @@ import { formatCurrency2, resolveStoreName } from "../../../../utils";
 // Interfaces
 import type { AllOrder, Store } from "../../../../interfaces";
 import type { SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { OrderSelection } from "./interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
-
-export type OrderSelection = {
-  storeid: number;
-  storenumber: string;
-  orderId: number;
-};
 
 interface Props {
   orders: AllOrder[];

@@ -9,6 +9,7 @@ import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { ModalMode, ExportDataset, MetricSelection } from "./interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
@@ -22,14 +23,6 @@ interface OrdersExportSheetProps {
   allOrders: AllOrder[];
   selectedOrderItems: AllOrder[];
   selectedOrder: SelectedOrder;
-}
-
-type ModalMode = "presets" | "custom";
-type ExportDataset = "all" | "selected" | "subDepts";
-
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
 }
 
 const OrdersExportSheet = ({

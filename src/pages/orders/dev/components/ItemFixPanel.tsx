@@ -3,17 +3,12 @@ import { useMemo, useState } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import {
-  commonUnit,
-  itemStoreRows,
-  type Figures,
-  type ProblemItem,
-} from "../utils/problemItems";
+import { commonUnit, itemStoreRows } from "../utils/problemItems";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
 
 // Interfaces
+import type { Figures, ProblemItem, OrderDraft } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
-import type { OrderDraft } from "../utils/orderEdit";
 
 // Components
 import { InformationCircleIcon } from "@heroicons/react/16/solid";

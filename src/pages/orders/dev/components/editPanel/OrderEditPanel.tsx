@@ -16,13 +16,7 @@ import {
 import { fmtOrderDate, padStoreNumber } from "./utils";
 
 // Interfaces
-import type {
-  DraftLine,
-  EditableField,
-  LinePatch,
-  OrderDraft,
-} from "../../utils/orderEdit";
-import type { EditSearch, SubDeptOption, VendorOption } from "../../interfaces";
+import type { EditSearch, SubDeptOption, VendorOption, DraftLine, EditableField, LinePatch, OrderDraft } from "../../interfaces";
 
 // Components
 import { PlusIcon } from "@heroicons/react/16/solid";

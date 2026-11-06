@@ -2,6 +2,7 @@
 import { getCogs, getERet } from ".";
 
 // Interfaces
+import type { EditableField, OrderDoc, DraftLine, OrderDraft, OrderPick, LinePatch, Check, StagePreview } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 
 /**
@@ -38,52 +39,12 @@ export const EDITABLE = [
   "base_cost",
   "active_retail_price",
 ] as const;
-export type EditableField = (typeof EDITABLE)[number];
 
 export const FIELD_LABEL: Record<EditableField, string> = {
   qty: "Qty",
   weight: "Weight",
   base_cost: "Case cost",
   active_retail_price: "Retail",
-};
-
-/** One order: one store, one date, one order number. */
-export type OrderDoc = {
-  key: string;
-  storeid: number;
-  storenumber: string;
-  storename: string;
-  /** ISO, exactly as it arrived — the backend reformats it itself. */
-  order_date: string;
-  order_id: number;
-  order_type: string;
-  lineCount: number;
-};
-
-export type DraftLine = AllOrder & {
-  /**
-   * The three editable values as they arrived, for the revert and the "was"
-   * note. Null on a line added here, which has nothing to go back to.
-   */
-  original: Pick<AllOrder, EditableField> | null;
-};
-
-export type OrderDraft = {
-  doc: OrderDoc;
-  lines: DraftLine[];
-  /**
-   * Bumped when a value is replaced from outside the field it lives in — a
-   * revert, or the lookup filling an added line.
-   *
-   * The three editable cells are uncontrolled inputs, because a controlled
-   * number input rewrites what is in the box on every keystroke: it moves the
-   * caret to the end mid-number and formatting a half-typed "5" to "5.00"
-   * makes the next digit land in the wrong place. Uncontrolled means React
-   * has to be told when the value changed underneath it, which is what this
-   * is for — the cells key on it, so a revert remounts them and a keystroke
-   * does not.
-   */
-  resetNonce: number;
 };
 
 export const isAdded = (l: DraftLine) => l.original === null;
@@ -127,15 +88,6 @@ export const blankLines = (d: OrderDraft) => d.lines.filter(isBlank);
 export const docKey = (
   o: Pick<AllOrder, "storeid" | "storenumber" | "order_id" | "order_date">,
 ) => `${o.storeid}|${o.storenumber}|${o.order_id}|${o.order_date}`;
-
-/**
- * What the Edit-mode left panel is narrowed to. An empty string is "any".
- */
-export interface OrderPick {
-  storeNumber: string;
-  orderDate: string;
-  orderType: string;
-}
 
 export const NO_PICK: OrderPick = { storeNumber: "", orderDate: "", orderType: "" };
 
@@ -408,31 +360,6 @@ export const appendLine = (
 });
 
 /**
- * What can be written onto an added line.
- *
- * Everything on it is typed or picked: the UPC, the description, the sub
- * department and the vendor. The item lookup fills the same fields when it
- * finds the code, which is why this is one shape rather than a lookup path
- * and a manual one that could drift apart.
- */
-export type LinePatch = Partial<
-  Pick<
-    AllOrder,
-    | "product_code"
-    | "description"
-    | "sub_department"
-    | "sub_department_description"
-    | "vendor_id"
-    | "vendor_name"
-    | "base_cost"
-    | "net_cost"
-    | "active_retail_price"
-    | "casesize"
-    | "scalable"
-  >
->;
-
-/**
  * Write fields onto a line.
  *
  * `bumpReset` is for a write the fields themselves did not make — the lookup
@@ -457,8 +384,6 @@ export const dropLine = (draft: OrderDraft, lineNumber: number): OrderDraft => (
     (l) => !(isAdded(l) && l.line_number === lineNumber),
   ),
 });
-
-export type Check = { id: string; label: string; ok: boolean };
 
 /**
  * The four conditions the endpoint rejects on, plus the one this page adds.
@@ -651,16 +576,6 @@ export const canEditOrders = (
 };
 
 /* ── one cost, every store ─────────────────────────────────────────────── */
-
-/** One order Fix cost would change, for the modal's per-store list. */
-export type StagePreview = {
-  doc: OrderDoc;
-  /** The item's lines on this order — usually one. */
-  lineNumbers: number[];
-  casesize: number;
-  /** What the case cost becomes at the typed unit cost. */
-  newCaseCost: number;
-};
 
 /** The item's lines, grouped by the order they belong to. */
 const linesByDoc = (rows: AllOrder[]) => {
