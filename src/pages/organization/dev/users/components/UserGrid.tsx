@@ -71,9 +71,8 @@ const formatDate = (dateStr: string | null) => {
 const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  // The filter bar persists in organizationSlice (not local useState) so
-  // switching to Create/Detail and back — or navigating away entirely —
-  // doesn't wipe out selections the admin already made.
+  // The filter bar persists in organizationSlice, so leaving for Add/Edit (or
+  // the page) and coming back keeps the admin's selections.
   const {
     companyFilter,
     statusFilter,
@@ -101,20 +100,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const setEmailFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ emailFilter: v }));
   /**
-   * Who is ticked, by id. Kept across filter changes so narrowing the list
-   * and widening it again does not lose a selection — but only what is
-   * ticked AND on screen is ever acted on (`selectedShown`), so nobody a
-   * filter hid can ride along into a deactivation they were never shown in.
+   * Who is ticked, by id, kept across filter changes. Only ticked AND shown
+   * (`selectedShown`) is acted on, so nobody hidden by a filter rides along.
    */
   const [selected, setSelected] = useState<Set<number>>(new Set());
   /**
-   * Picking people for a bulk deactivate (or reactivate), on purpose.
-   *
-   * The checkboxes only exist in this mode, and the mode is entered from a
-   * button that names the action. A checkbox column with no heading said what
-   * it was for only once something was ticked, so the grid read as if every
-   * row could be ticked for some unstated reason. Starting from the action
-   * means every box already means "this person".
+   * Picking people for a bulk deactivate or reactivate. The checkboxes exist
+   * only in this mode, entered from a button that names the action.
    */
   const [selecting, setSelecting] = useState(false);
   /** The confirmation, open: who it names and which way. One modal for one
@@ -124,10 +116,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     active: 0 | 1;
   } | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
-  // Draft text for the Username/Email column-header filters — matches the
-  // draft/applied split used by every other ColFilter consumer in the app
-  // (e.g. AssociationItemsTable.tsx's draftDesc/appliedDesc): typing doesn't
-  // filter live, only committing via ColFilter's Apply button does.
+  // Draft text for the Username/Email header filters: typing doesn't filter
+  // live, only ColFilter's Apply does.
   const [draftUsernameFilter, setDraftUsernameFilter] = useState(usernameFilter);
   const [draftEmailFilter, setDraftEmailFilter] = useState(emailFilter);
   const showInactive = statusFilter === "inactive";
@@ -232,19 +222,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   );
 
   /**
-   * The companies actually present in this grid, with how many people are in
-   * each.
-   *
-   * It used to list the viewer's own companies, which was wrong in both
-   * directions once programmers could be handed any company: it offered
-   * companies nobody in the list belongs to, and hid the ones that people in
-   * the list DO belong to but the viewer does not. Either way an option could
-   * filter to nothing, or a company sitting in front of you had no option.
-   *
-   * Reading them off the rows keeps every option matching at least one person,
-   * for every level, and needs no second source to stay in step. A company
-   * with nobody in it is absent — which is the same answer the filter would
-   * have given.
+   * The companies present in this grid, with how many people are in each, so
+   * every option matches at least one person.
    */
   const companyOptions = useMemo(() => {
     const counts = new Map<number, { name: string; count: number }>();
@@ -273,30 +252,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   };
 
   /**
-   * Duplicate: read what the source actually holds, stash it for the wizard
-   * to pre-fill, then open it. Role, level, access type and assignments copy;
-   * identity (name, username, email, password) always stays blank.
+   * Duplicate: read what the source holds, stash it for the wizard to pre-fill,
+   * then open it. Role, level, access type and assignments copy; identity
+   * (name, username, email, password) stays blank.
    *
-   * ### Read, not reconstructed
-   *
-   * This used to fetch every held group's whole roster — one call per group —
-   * and cross-reference the source's stores against them to GUESS which group
-   * each store came through. Then any store no roster explained was filed
-   * under "the first group in that store's company". Both guesses could hand
-   * the copy more than the source had: a store in two groups became two
-   * picks, and a direct assignment became an invented group pick nobody ever
-   * chose. And the access type was not copied at all, because guessing `all`
-   * would over-grant.
-   *
-   * None of that is a guess any more. `base_groups_assigned_to_user_split`
-   * carries each held group's mode, and `user_group_picks` says exactly which
-   * stores were picked and through which group. Two calls, whatever the
-   * number of groups.
-   *
-   * **Direct assignments do not copy.** A store no group explains was never
-   * granted by this screen and cannot be granted by it either — it has no
-   * group to travel in. That is a property of the source, not something a
-   * duplicate should manufacture.
+   * Read, not guessed: `base_groups_assigned_to_user_split` gives each held
+   * group's mode and `user_group_picks` the exact stores per group.
+   * **Direct assignments do not copy**: no group carries them.
    */
   const handleDuplicate = async (u: User) => {
     try {
@@ -459,10 +421,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </button>
       </div>
 
-      {/* While picking, from the first moment rather than the first tick: it
-          says what the boxes are for before anyone has to guess. It sits
-          between the filters and the grid so the count is read next to the
-          rows it counts. */}
+      {/* Shown from the moment picking starts, between the filters and the
+          grid, so the count sits next to the rows it counts. */}
       {selecting && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
           <span className="text-[12.5px] font-semibold text-brand_navy">
@@ -508,9 +468,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       )}
 
       <div className="border border-gray-100 rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
-        {/* min-w floors the columns: narrower than this the card scrolls
-            rather than crushing cells into each other. Header and rows are
-            separate grids, so they must share one scroller to stay aligned. */}
+        {/* min-w floors the columns (narrower scrolls). Header and rows are
+            separate grids, so they share one scroller to stay aligned. */}
         <div className="min-w-[1000px] flex-1 min-h-0 flex flex-col">
           <div
             className={`grid ${
@@ -654,11 +613,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                           title="Password & security"
                           onClick={() => setSecurityUser(u)}
                         />
-                        {/* Deactivate, as it always was underneath — the old
-                            label said Delete and its confirm said "can't be
-                            undone", while the row it removed sat one filter
-                            away under Inactive with a Reactivate button.
-                            Hidden on your own row: the server refuses it. */}
+                        {/* Deactivate (reversible from Inactive). Hidden on
+                            your own row: the server refuses it. */}
                         {u.id !== ctx.userid && (
                           <IconButton
                             icon={TrashIcon}

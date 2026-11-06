@@ -1,16 +1,8 @@
 /**
- * "East (Houchens) has no stores picked."
- *
- * A group held By store with nothing picked grants nobody anything. The
- * server accepts it — "holds the group, picked nothing yet" — but on this
- * screen it is nearly always an accident: untick every store in East and
- * forget East is still ticked. So it is named before the save is tried.
- *
- * Takes resolved labels rather than ids. The panel can only name a group
- * whose company it has loaded, so left to itself it says "Group 54" for
- * anything the reader has not browsed to — which is the one case this notice
- * exists for, since a group you are looking at is one whose name is on screen
- * anyway.
+ * "East (Houchens) has no stores picked." A group held By store with nothing
+ * picked grants nothing; the server accepts it, but here it is nearly always
+ * an accident. Takes resolved labels, since the panel can only name groups it
+ * has loaded.
  */
 const EmptyPicksNotice = ({ labels }: { labels: string[] }) => {
   if (labels.length === 0) return null;

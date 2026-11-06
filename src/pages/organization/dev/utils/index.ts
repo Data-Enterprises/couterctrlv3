@@ -6,76 +6,42 @@ import type { CompanyRef } from "../interfaces";
 import type { BaseGroup } from "../../../../interfaces";
 
 /**
- * Who sees past their own assignments, and what everyone else sees.
- *
- * One definition, because three tabs ask the same question and two of them
- * used to answer it in their own words.
- *
- * **Level 9, or DCR support.** A programmer is setting up other people's
- * tenancies and holds none of them. Support is not a programmer — they change
- * nothing about the tenancy — but assignment-based scoping works against them
- * specifically: they field calls about stores they will never be assigned to.
- * See `utils/supportUsers`, which is honest that an email allowlist is the
- * wrong long-term home for the second half of this.
+ * Who sees past their own assignments: level 9, or DCR support. A programmer
+ * sets up tenancies they hold none of; support fields calls about stores they
+ * are never assigned (see `utils/supportUsers`).
  */
 export const seesEverything = (userLevel: number, email: string) =>
   userLevel === 9 || isSupportUser(email);
 
 /**
- * Which family a company is in: its parent's id, or its own when it has none.
- *
- * The same rule the backend scopes `users/` by, `coalesce(parent_company_id,
- * id)`. Houchens is five companies on the books -- Houchens (1), Food Giant
- * (4), Sonic (6), Ace (17) and Brooks (21) -- and one organisation in
- * practice: the other four point at 1, so all five are family 1. Everybody
- * else stands alone. DCR (5) is not in it: DCR staff reach everyone through
- * `seesEverything`, not through a family.
- *
- * This replaced a hardcoded `COMPANY_FAMILIES` list (22 Oct), which needed
- * editing before anybody could administer a sixth Houchens company. A missing
- * `parent_company_id` -- an API without the change -- reads as standing
- * alone, which narrows rather than widens.
+ * Which family a company is in: its parent's id, or its own when it has none,
+ * the backend's `coalesce(parent_company_id, id)`. Houchens (1), Food Giant (4),
+ * Sonic (6), Ace (17) and Brooks (21) are family 1; everyone else stands alone.
+ * DCR (5) is not in it. A missing `parent_company_id` reads as standing alone.
  */
 export const familyOf = (c: CompanyRef): number => c.parent_company_id ?? c.company;
 
 /**
- * The families the viewer administers through, given the companies they hold.
- *
- * Holding Food Giant reaches Sonic, because both are family 1; holding Bruces
- * reaches Bruces.
+ * The families the viewer administers through: holding Food Giant reaches
+ * Sonic (both family 1); holding Bruces reaches Bruces.
  */
 export const companyReach = (viewerCompanies: CompanyRef[]): Set<number> =>
   new Set(viewerCompanies.map(familyOf));
 
 /**
- * Whether the signed-in user may administer this person at all.
- *
- * The Companies tab builds its candidate column from every user the server
- * returns, which is every user on the system. A Bruces manager was therefore
- * offered four hundred people to add to Bruces, Houchens staff among them --
- * and `assign_user_to_company` takes a bare userid with no ownership check, so
- * the offer was real. Somebody could pull a person out of a company they have
- * nothing to do with.
+ * Whether the signed-in user may administer this person at all. The server's
+ * `assign_user_to_company` takes a bare userid with no ownership check, so
+ * this gate is what stops someone moving people out of another company.
  *
  * Three ways in, and no others:
  *
- *  - **Sees everything.** Level 9 and DCR support, by the same rule the rest
- *    of this file uses. A programmer setting up a tenancy holds none of it.
- *  - **Holds no company.** A new account belongs to nobody yet, and putting it
- *    somewhere is the whole of onboarding. Nobody loses anything when it moves,
- *    which is what makes it safe for any manager to pick up.
+ *  - **Sees everything.** Level 9 and DCR support (`seesEverything`).
+ *  - **Holds no company.** A new account is anyone's to onboard.
  *  - **Is inside the viewer's reach.** In a family one of the viewer's
- *    companies is in -- see `companyReach`. Not the company on screen: one
- *    person can administer several, and a Houchens manager works across the
- *    five.
+ *    companies is in (`companyReach`), not just the company on screen.
  *
- * The level guard is separate and still applies: this says which people are
- * yours to touch, `user_level <= ctx.userLevel` says you cannot reach above
- * yourself. Both have to pass.
- *
- * Note what this does NOT narrow: the right-hand column. Somebody already in
- * the company you are looking at holds it, so they are in your reach by
- * definition -- the gate can only ever shorten the candidate list.
+ * The level guard (`user_level <= ctx.userLevel`) still applies; both must pass.
+ * Only the candidate list is narrowed: people already in the company are in reach.
  */
 export const canAdministerUser = (
   candidateCompanies: CompanyRef[],
@@ -88,37 +54,23 @@ export const canAdministerUser = (
 };
 
 /**
- * The base groups somebody may administer.
- *
- * `base_groups_assigned_to_user` returns every group in the person's
- * companies with `active` saying whether they hold it — so the rows are both
- * halves of the answer, and which half to use is the whole question.
- *
- * Holding the company is not enough. An owner at Houchens who holds East and
- * HC North administers those two; Conventional is in the same company and is
- * not theirs to hand out. Anything else lets somebody grant access they do
- * not have themselves, which is the shape of a privilege escalation even when
- * nobody means it that way.
+ * The base groups somebody may administer: the ones they hold (`active`),
+ * not every group in their companies. Holding the company is not enough;
+ * anything else lets someone grant access they don't have.
  */
 export const heldGroupIds = (rows: BaseGroup[]): Set<number> =>
   new Set(rows.filter((g) => g.active === 1).map((g) => g.id));
 
 /**
- * Companies worth listing at all.
- *
- * A company whose every group is somebody else's is a row that opens onto
- * nothing. Derived from the same rows rather than a second call: each carries
- * its own `company`.
+ * Companies worth listing: those with at least one group on offer, from the
+ * same rows (each carries its `company`).
  */
 export const companiesWithHeldGroups = (rows: BaseGroup[]): Set<number> =>
   new Set(rows.filter((g) => g.active === 1).map((g) => g.company));
 
 /**
- * Narrow a company's groups to the ones on offer.
- *
- * `canSeeAll` short-circuits rather than being folded into the set, so the
- * everything-case never depends on a fetch having landed — a programmer with
- * an empty `held` still sees every group, instead of briefly seeing none.
+ * Narrow a company's groups to the ones on offer. `canSeeAll` short-circuits,
+ * so a programmer sees every group even before `held` has loaded.
  */
 export const visibleGroups = <T extends { id: number }>(
   groups: T[],
@@ -127,10 +79,8 @@ export const visibleGroups = <T extends { id: number }>(
 ): T[] => (canSeeAll ? groups : groups.filter((g) => held.has(g.id)));
 
 /**
- * Narrow a list of companies the same way.
- *
- * `held` empty and `canSeeAll` false gives an empty list, which is the right
- * answer: somebody holding no base groups has none to administer.
+ * Narrow a list of companies the same way. Nothing held and not `canSeeAll`
+ * gives an empty list: no base groups, none to administer.
  */
 export const visibleCompanyList = <T extends { id: number }>(
   companies: T[],
@@ -140,15 +90,10 @@ export const visibleCompanyList = <T extends { id: number }>(
   canSeeAll ? companies : companies.filter((c) => withHeld.has(c.id));
 
 /**
- * The groups the Add/Edit wizard lists for a company, by the same rule as the
- * Base Groups tab: everything for someone who sees everything, otherwise the
- * groups the editor holds. The wizard used to list every group in the
- * company, so a level-5 manager could grant groups they could neither see nor
- * manage on the Base Groups tab.
- *
- * A group the person being edited already holds is listed whoever the editor
- * is, so it isn't silently dropped from the screen; `mayChange` says whether
- * the editor may touch it, and the wizard shows it read-only when not.
+ * The groups the Add/Edit wizard lists for a company, by the Base Groups tab's
+ * rule: everything for someone who sees everything, else the groups the editor
+ * holds. A group the edited person already holds is always listed; `mayChange`
+ * says whether the editor may touch it (read-only when not).
  */
 export const wizardGroups = <T extends { id: number }>(
   groups: T[],

@@ -25,19 +25,10 @@ import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
 /**
- * Who holds one company.
- *
- * Both columns are built from the users already loaded rather than fetched per
- * company, because `GET users/` returns each user's whole `companies` list —
- * which is also the thing that makes the writes safe. See
- * `companyMembership`: `assign_user_to_company` replaces, so every call has to
- * carry the user's full resulting list, not the one company this screen is
- * about.
- *
- * Users above the acting user's own level are kept out of both columns, the
- * same guard the base group users tab applies. The endpoint takes a bare
- * userid with no level check, so this is the only thing stopping a level 7
- * rearranging a level 9.
+ * Who holds one company, built from the users already loaded: each carries its
+ * whole `companies` list, which every write must send (`assign_user_to_company`
+ * replaces; see `companies/utils`). Users above the acting level are kept off
+ * both columns: the endpoint checks no levels.
  */
 const CompanyUsersPanel = ({
   company,
@@ -65,13 +56,8 @@ const CompanyUsersPanel = ({
   );
 
   /**
-   * Who this person may move at all.
-   *
-   * Two guards, and both have to pass: the level one stops a 7 rearranging a
-   * 9, and the company one stops a manager at one company handing themselves
-   * somebody from another. Before the second, this column listed every user on
-   * the system -- a Bruces manager was offered Houchens staff, and the write
-   * behind the button would have gone through.
+   * Who this person may move at all. Both guards must pass: level (a 7 can't
+   * move a 9) and company reach (`mayAdminister`).
    */
   const reachable = useMemo(
     () =>
@@ -102,13 +88,8 @@ const CompanyUsersPanel = ({
   );
 
   /**
-   * An email domain actually present in the left column, for the search hint.
-   *
-   * A made-up example teaches nothing — somebody reads "@example.com", takes
-   * it as filler and types a name anyway. Naming the commonest domain in the
-   * list they are looking at makes it a thing to try. Falls back to no
-   * example when the addresses have nothing in common, which is its own
-   * answer: there is no domain worth suggesting.
+   * The commonest email domain in the left column, for the search hint; none
+   * when the addresses share nothing.
    */
   const commonDomain = useMemo(() => {
     const counts = new Map<string, number>();
@@ -137,12 +118,8 @@ const CompanyUsersPanel = ({
   const heldPredicate = useCompanyFilterPredicate(reachable, heldFilter);
 
   /**
-   * Send a plan.
-   *
-   * One call per user, `allSettled`, because these are independent writes with
-   * no transaction around them and the first refusal must not hide the rest.
-   * The refetch afterwards means the columns show what the server holds rather
-   * than what was asked of it.
+   * Send a plan: one call per user, `allSettled` so one refusal can't hide the
+   * rest, then refetch so the columns show what the server holds.
    */
   const run = async (plans: CompanyPlan[], direction: "in" | "out") => {
     if (plans.length === 0) {
@@ -181,10 +158,9 @@ const CompanyUsersPanel = ({
   };
 
   /**
-   * The people as the server holds them now, for the plan. `assign_user_to_
-   * company` replaces a person's whole list, so a plan built from the rows on
-   * screen would undo a change made since they were read (in another tab, by
-   * someone else). Read fresh at the moment of the write.
+   * The people as the server holds them now, read fresh at the moment of the
+   * write: `assign_user_to_company` replaces a person's whole list, so a plan
+   * from stale rows could undo someone else's change.
    */
   const freshMembers = async (ids: number[]) => {
     const resp = await getAllUsers(ctx.url, ctx.token);
@@ -250,9 +226,8 @@ const CompanyUsersPanel = ({
         those granted.
       </p>
 
-      {/* Says why the left column is short before somebody decides the search
-          is broken. Only for people it actually narrows — a programmer sees
-          everyone and would read this as a limit that is not there. */}
+      {/* Says why the left column is short, for those it narrows (not
+          programmers, who see everyone). */}
       {!ctx.canSeeAllCompanies && (
         <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
           You can add people from{" "}
@@ -269,9 +244,8 @@ const CompanyUsersPanel = ({
         rightItems={assigned.map(toItem)}
         onAssign={handleAssign}
         onUnassign={handleUnassign}
-        // Assign all and Unassign all take what each column is showing,
-        // search included. They used to take the whole list (a legacy
-        // parity choice), so one person left by a search still meant all 272.
+        // Assign all and Unassign all take what each column shows, search
+        // included.
         moving={moving}
         confirmBulk={(direction, ids) =>
           peopleConfirm({ direction, ids, me: ctx.userid, what: company.name, always: true })

@@ -15,15 +15,9 @@ export const NO_CARRY: CarriedAccess = {
 };
 
 /**
- * The stores held with no group behind them at all: granted on the Stores
- * tab, or from before groups granted anything. Effective stores labels these
- * Direct ("no group change can take it away").
- *
- * `carried.stores` is wider than that: it also holds the rosters of groups
- * held By group, which have no pick behind them either. Labelling those
- * Direct meant unticking the group (or switching to By store and unticking
- * a store) left them listed and counted, though the save does remove them.
- * So any store in a held group's roster is left out here.
+ * Stores held with no group behind them (granted on the Stores tab, or from
+ * before groups), which Effective stores labels Direct. Stores in a held
+ * group's roster are left out, since `carried.stores` holds those too.
  */
 export const directStoreIds = (
   carried: CarriedAccess,
@@ -37,12 +31,8 @@ export const directStoreIds = (
 };
 
 /**
- * Holding nothing.
- *
- * `selected` rather than `all` because it is the narrower claim, and this is
- * what Clear all lands on. Callers that know the person's answer spread their
- * own mode over it — the wizard from the Access type step, Edit from what the
- * person already holds — so the default is only ever a floor.
+ * Holding nothing, as `selected` (the narrower claim); what Clear all lands
+ * on. Callers spread the person's real mode over it.
  */
 export const NO_PICKS: AccessPicks = {
   companies: [],
@@ -55,20 +45,9 @@ const uniq = (ids: number[]) =>
   Array.from(new Set(ids.filter((id) => Number.isFinite(id) && id !== 0)));
 
 /**
- * A person's one access type, read back from the groups they hold.
- *
- * `all` only when every held group says `all`. The column is physically per
- * link, so a hand-edited or pre-split row could still produce a mix; nothing
- * on these screens creates one, and `selected` is the reading that cannot
- * silently widen somebody — a group read as `selected` keeps its picks, while
- * one read as `all` would hand over every store in it and every store added
- * to it afterwards.
- *
- * Edit and Duplicate both read it here, so the two can never disagree about
- * which kind of person they are looking at.
- *
- * `mode` is null only for a group the person does not hold; the endpoint's
- * default is the safe reading either way.
+ * A person's one access type, from the groups they hold: `all` only when every
+ * held group says `all`, else `selected`, the reading that cannot widen anyone.
+ * Edit and Duplicate both read it here. `mode` is null only for a group not held.
  */
 export const accessModeOf = (
   held: { mode: GrantMode | null }[],
@@ -82,30 +61,18 @@ export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
   picks.stores.filter((s) => s.base_group === groupid);
 
 /**
- * Every group the person should end up holding.
- *
- * A group counts as held when it was ticked in its own right, OR when a store
- * was ticked inside it — ticking stores in East and never ticking East itself
- * still means East, held as `selected`.
- *
- * Exported because every screen that DESCRIBES the access has to count the
- * same groups this saves. The panel's counter and summary and the review step
- * counted ticked groups only, so a store ticked in an unticked group read
- * "0 base groups" and "This person will not see any stores" while Create
- * would have saved the group with that store (dev board review, finding AK).
- * Ticked groups come first, in the order they were ticked.
+ * Every group the person should end up holding: ticked in its own right, or
+ * implied by a ticked store inside it (held as `selected`). Exported so every
+ * screen describing the access counts the same groups the save writes. Ticked
+ * groups come first, in tick order.
  */
 export const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
 
 /**
- * Tick or untick a group in its own column.
- *
- * Held means held either way, ticked or implied by a picked store, which is
- * what the box shows. Unticking drops the group and its picked stores.
- * Ticking adds the roster given (empty By group, or for a single-store
- * person) **merged** with what is already picked under the group: it was
- * appended, so a group with one store already picked showed "11 of 10".
+ * Tick or untick a group in its own column. Unticking drops the group and its
+ * picked stores; ticking adds the given roster **merged** with what is already
+ * picked under it.
  */
 export const toggleGroup = (
   picks: AccessPicks,
@@ -132,22 +99,13 @@ export const toggleGroup = (
 /**
  * The same picks, held the other way.
  *
- * **To `all`:** nothing but the mode changes. Ticks are left exactly where
- * they are, so flipping back and forth does not lose a selection somebody
- * just made — they simply stop being sent while the mode is `all`.
+ * **To `all`:** only the mode changes; ticks stay, so flipping back loses
+ * nothing.
  *
- * **To `selected`:** every held group that has no ticks gets its whole roster
- * ticked. This is the case that matters. A group held as `all` has no picks
- * behind it — `user_group_picks` returns no rows for one, and the absence IS
- * the answer — so switching a person to By store with nothing ticked would
- * read as "picked nothing" and take away every store they have. Starting from
- * the full roster makes the switch a no-op until somebody unticks, which is
- * what the switch is for: dropping two stores out of a group, not starting
- * over.
- *
- * A group whose roster has not loaded contributes nothing rather than an
- * empty tick list, so a half-loaded panel cannot silently narrow anybody.
- * Callers fetch the rosters first; `useAccessMode` does.
+ * **To `selected`:** every held group with no ticks gets its whole roster
+ * ticked. A group held as `all` has no picks behind it, so without this the
+ * switch would read as "picked nothing" and strip every store. A group whose
+ * roster hasn't loaded contributes nothing; `useAccessMode` fetches them first.
  */
 export const picksForMode = (
   picks: AccessPicks,
@@ -168,10 +126,8 @@ export const picksForMode = (
 };
 
 /**
- * Each base group's company, keyed by group id.
- *
- * Flattened from the panel's per-company group lists, which is the only place
- * the pairing exists on the client.
+ * Each base group's company, keyed by group id, from the panel's per-company
+ * group lists.
  */
 export const groupCompanies = (
   companyGroups: Record<number, { id: number; company: number }[]>,
@@ -186,12 +142,8 @@ export const groupCompanies = (
 };
 
 /**
- * The lists exactly as they go to the endpoints.
- *
- * Zeros and nulls are dropped rather than sent: a store created without its
- * base-group link carries `base_group` as null, and passing that through put
- * a null in the middle of an id array the backend then had to make sense of.
- * Those stores become `directStoreIds` instead, which is what they are.
+ * The lists exactly as they go to the endpoints. Zeros and nulls are dropped:
+ * a store with no base-group link (null) goes to `directStoreIds` instead.
  */
 export const accessSets = (
   picks: AccessPicks,
@@ -202,12 +154,9 @@ export const accessSets = (
     ...carried.companies,
     ...picks.companies,
     ...picks.stores.map((s) => s.company),
-    // **A held group brings its company with it.** Without this, granting a
-    // group in `all` mode added no company at all — there are no picked
-    // stores in that mode to contribute one — and both
-    // `base_groups_assigned_to_user` and its `_split` twin filter on
-    // `company_link`. The grant wrote its rows and then no screen could see
-    // the group, which reads exactly like the stores never arriving.
+    // **A held group brings its company with it.** Without it, an `all` grant
+    // added no company, and the group's reads filter on `company_link`, so no
+    // screen could see the group.
     ...heldGroupIds(picks).map((id) => groupCompany[id]),
   ]),
   grants: heldGroupIds(picks)
@@ -223,11 +172,8 @@ export const accessSets = (
 });
 
 /**
- * Groups held before and not now.
- *
- * Revocation has to be explicit, because the grant call only ever writes the
- * groups it is given. A group dropped from the panel and never mentioned
- * again would otherwise stay granted.
+ * Groups held before and not now. Revocation must be explicit: the grant call
+ * only writes the groups it is given.
  */
 export const revokedGroupIds = (
   next: AccessSets,
@@ -241,16 +187,8 @@ export const revokedGroupIds = (
 };
 
 /**
- * Groups that cannot be saved as they stand.
- *
- * A group held as `selected` with nothing selected grants no stores. The
- * endpoint allows it — it reads as "holds the group, has picked nothing out
- * of it yet", which is a legitimate halfway house — but it is almost never
- * what somebody meant on this screen, so it is named here and the save blocks
- * on it rather than writing a grant that gives nobody anything.
- *
- * (An older comment here claimed the endpoint answers 400 for this. It does
- * not, and has not for some time.)
+ * Groups that cannot be saved as they stand: held as `selected` with nothing
+ * picked. The endpoint allows it, but it grants nothing, so the save blocks.
  */
 export const emptySelectedGroupIds = (sets: AccessSets): number[] =>
   sets.grants
@@ -259,17 +197,8 @@ export const emptySelectedGroupIds = (sets: AccessSets): number[] =>
 
 /**
  * Every store the picks add up to, with the group that accounts for each.
- *
- * `rosters` is each group's full store list, which only the panel has — the
- * group grant itself names no stores when the mode is `all`, so the roster is
- * the only way to say what "all" currently amounts to. A group with no roster
- * loaded contributes nothing rather than guessing at zero stores, so a count
- * built from this is honest about still loading.
- *
- * One row per store, not per grant: two groups can both contain store 053 and
- * the person has it once. The lowest group id wins so the attribution does not
- * change between renders. Every group is held the same way now, so there is no
- * longer a stronger claim to prefer between two groups that both have it.
+ * `rosters` says what `all` amounts to; a group with no roster loaded adds
+ * nothing. One row per store; when two groups hold it, the lowest group id wins.
  */
 export const effectiveStores = (
   picks: AccessPicks,
@@ -309,14 +238,8 @@ const sameGrant = (a: GroupGrant, b: GroupGrant) =>
   same(a.storeids, b.storeids);
 
 /**
- * Which groups actually moved, and whether the companies did.
- *
- * One Save button, one call per group that changed. Re-granting every group
- * every time is harmless in result — each call replaces that group — but it
- * means ticking one store in East rewrites South as well, and each rewrite
- * deletes and re-inserts rows that were already right.
- *
- * Order inside `storeids` is not compared, because the endpoint sorts them.
+ * Which groups moved, and whether the companies did, so Save writes one call
+ * per changed group only. `storeids` order is not compared (the endpoint sorts).
  */
 export const changedGrants = (
   next: AccessSets,

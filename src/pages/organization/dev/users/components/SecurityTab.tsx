@@ -21,10 +21,8 @@ interface SecurityTabProps {
   user: User;
 }
 
-// Takes the target user as a prop rather than reading ctx.selectedUserId/
-// ctx.userInfo — this is opened directly from the Users grid row action now,
-// not from within the edit-user detail view, so there's no "currently
-// selected for editing" state to piggyback on.
+// Takes the target user as a prop: it opens from the grid's row action, so
+// there is no "selected for editing" state to read.
 const SecurityTab = ({ user }: SecurityTabProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();

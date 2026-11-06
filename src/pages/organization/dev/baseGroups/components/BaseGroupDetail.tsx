@@ -137,18 +137,9 @@ const BaseGroupDetail = ({
   const [moving, setMoving] = useState(false);
 
   /**
-   * Move a selection in or out, one store per call.
-   *
-   * The `groups/` endpoints take one store and do the real work with it —
-   * handing it to everyone holding the group as `all`, or taking it back off
-   * everyone nothing else accounts for. The older `stores/*_link` pair this
-   * replaced wrote `store_base_group_link` and stopped, so a store added to a
-   * group reached nobody who held it.
-   *
-   * `allSettled`, because a dual-list move is several independent writes with
-   * no transaction around them: the first refusal must not hide the ones that
-   * worked. The refetch afterwards means the lists show what the server holds
-   * rather than what was asked of it.
+   * Move a selection in or out, one store per call. The `groups/` endpoints
+   * also hand the store to (or take it back from) everyone holding the group.
+   * `allSettled`, so one refusal can't hide the moves that worked; then refetch.
    */
   const moveStores = async (
     ids: number[],
@@ -267,10 +258,8 @@ const BaseGroupDetail = ({
           <div className="text-[11.5px] text-content/85">Loading…</div>
         ) : (
           <div data-help="assign" className="w-full">
-            {/* A move is one call per store and hands the stores out to every
-                user holding this group automatically, so it is neither
-                instant nor only about this screen. Saying so beats a list
-                that sits still. */}
+            {/* One call per store, and each reaches every user holding this
+                group, so say it is working. */}
             <div className="h-4 mb-1">
               {moving && (
                 <span className="text-[11px] font-semibold text-content/85">

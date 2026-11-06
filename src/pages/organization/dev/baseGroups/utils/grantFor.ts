@@ -2,15 +2,9 @@
 import type { GrantMode, User } from "../../../../../interfaces";
 
 /**
- * How a group added on its Users sub-tab is granted to one person: in their
- * own access type.
- *
- * It was always By group, so a By store person came out Mixed: their next
- * Edit read them as By store, showed the new group with no store picked, and
- * blocked Save until stores were picked. Now a By store person gets the group
- * By store with every store it holds today picked, and everyone else gets it
- * By group as before. Someone with no type on file, or already Mixed, keeps
- * the old By group grant.
+ * How a group added on its Users sub-tab is granted to one person: a By store
+ * person gets it By store with every store it holds today picked; everyone
+ * else (no type on file, or Mixed included) gets it By group.
  */
 export const grantFor = (
   user: Pick<User, "access_mode"> | undefined,

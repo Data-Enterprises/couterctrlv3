@@ -5,35 +5,17 @@ import type { GrantMode } from "../../../../../../interfaces";
 import GrantModeChip from "./GrantModeChip";
 
 /**
- * How this person gets stores, before any store is picked.
+ * How this person gets stores, asked before any store is picked: each card
+ * states the consequence ("New stores: show up automatically" or "must be added
+ * by hand").
  *
- * The question used to be invisible: every group was handed over as a fixed
- * list, so "will this person see the next store we open" had one answer and
- * nobody chose it. It is asked first now, because it is the thing that is
- * hard to notice later — a fixed grant looks exactly like an auto one until a
- * store is added and somebody cannot see it.
+ * **It is the person's answer, not a default:** every group they hold is
+ * written in this mode. In Edit, changing it rewrites every held group;
+ * switching to By store starts with every current store ticked, and the review
+ * step says so before saving.
  *
- * Each card states the consequence rather than describing the setting. "New
- * stores: show up automatically" against "must be added by hand" is the whole
- * difference, and it is what somebody is actually choosing between.
- *
- * **It is the person's answer, not a default.** Every base group they hold is
- * written in this mode; the assignments step has no per-group override. It
- * used to — each group carried its own Auto / Pick stores toggle — and that
- * made "is this person by group or by store" a question with no answer.
- *
- * In Edit, changing it rewrites every group the person holds. Switching to
- * By store starts with every store they currently have ticked, so nothing is
- * lost until somebody unticks; the review step says so before anything is
- * saved.
- *
- * ### The single-store role
- *
- * By group is shown and greyed, never hidden. A card that silently goes
- * missing for some people reads as a bug; one that says why it is
- * unavailable answers the question before anyone asks it. The reason sits on
- * the card itself, not in a note under the grid, so it is read where the eye
- * already is.
+ * For the single-store role, By group is shown greyed with its reason, never
+ * hidden.
  */
 const OPTIONS: {
   mode: GrantMode;
@@ -73,9 +55,8 @@ const StepAccessType = ({
   onChange: (next: GrantMode) => void;
   /** The person being created, so the question names them. */
   who: string;
-  /** The single-store role cannot hold a whole group — the server refuses it
-   *  outright — so By group is greyed with its reason rather than offered
-   *  and rejected. */
+  /** The single-store role can't hold a whole group (the server refuses), so
+   *  By group is greyed with its reason. */
   singleStoreOnly: boolean;
   /** An existing person, whose access type is a change rather than a first
    *  answer. Only the sentence under the heading differs. */

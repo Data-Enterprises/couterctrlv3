@@ -105,12 +105,8 @@ const BaseGroupExportModal = ({
     });
 
   /**
-   * The group's users, read when the window opens.
-   *
-   * The Users tab keeps its own copy and only loads it when that tab is
-   * opened, so the export asks for itself: one call, the same one the tab
-   * makes. Narrowed by the same level rule, so nobody lands in a file whom
-   * the screen would not have shown.
+   * The group's users, read when the window opens (the Users tab's copy may
+   * not be loaded), narrowed by the same level rule as the screen.
    */
   const [people, setPeople] = useState<{
     assigned: BaseGroupUserRow[];

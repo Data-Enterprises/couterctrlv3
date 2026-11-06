@@ -14,16 +14,9 @@ import TextFilter from "../../../../components-dev/filters/TextFilter";
 import CompanyUsersPanel from "./components/CompanyUsersPanel";
 
 /**
- * User Management → Companies: who holds each company.
- *
- * Deliberately *only* that. The Admin page already creates, renames and
- * deletes companies, and which stores a company owns is a column on `stores`
- * that nothing here is safe to move — changing it orphans the store's base
- * group memberships in its old company and leaves that company's users still
- * seeing it. That wants its own endpoint and its own screen.
- *
- * So this is the one job the existing endpoints already do cleanly: the
- * user ↔ company link, in the same shape as the base group users tab.
+ * User Management → Companies: who holds each company, and only that. Admin
+ * creates and renames companies; moving a store between companies would orphan
+ * its base group memberships, so it is not done here.
  */
 const Companies = () => {
   const ctx = useBaseGroupsCtx();

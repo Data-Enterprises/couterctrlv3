@@ -8,17 +8,8 @@ import type { WizardStep } from "../interfaces";
 import { CheckIcon } from "@heroicons/react/20/solid";
 
 /**
- * The four steps, across the top.
- *
- * Horizontal rather than a side rail: it is a progress indicator, and the
- * thing a reader wants from it — how far along, how much left — is read along
- * a line. A rail down the side spends a column of the widest screen in the
- * app on four words.
- *
- * A finished step is clickable and an unreached one is not. Going back to
- * change an answer is normal; skipping ahead past a step that gates the next
- * one is not -- including a step reached earlier and emptied since, which is
- * what `limit` stops.
+ * The four steps, across the top. A finished step is clickable, an unreached
+ * one is not; `limit` stops skipping past a step emptied since it was reached.
  */
 const Stepper = ({
   current,

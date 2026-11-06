@@ -7,9 +7,8 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getCompanies } from "../../../../api/company";
 
 // Utils
-// The same authority Admin gates company creation and deletion on: who may act
-// on the tenancy itself. Assigning any company to any user is that same power,
-// so it answers to that constant rather than to a second copy of the number.
+// Assigning any company to any user is the same power Admin gates company
+// create and delete on, so it answers to the same constant.
 import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
 import { seesEverything } from "../utils";
 
@@ -89,12 +88,8 @@ export const useOrganizationCtx = () => {
 };
 
 /**
- * What the Base Groups tab needs.
- *
- * Base groups are access only: a group is a set of stores, and assigning a
- * user to it grants them those stores. Nothing is shared or copied into the
- * user's own store groups — that is Shared Groups, a tab on the Groups page
- * with its own router.
+ * What the Base Groups tab needs. A base group is access only: assigning a user
+ * grants its stores; nothing is shared into their own groups (that is Shared Groups).
  */
 export const useBaseGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);
@@ -114,10 +109,9 @@ export const useBaseGroupsCtx = () => {
 };
 
 /**
- * The companies this tab lists: the whole directory for programmers and DCR
- * support (fetched only for them), the user's own companies otherwise. The
- * base group calls take a bare company id with no ownership check on the
- * server, so the directory is never fetched for anyone else.
+ * The companies this tab lists: every company for programmers and DCR support,
+ * their own for everyone else. The base group calls take a bare company id with
+ * no server ownership check, so the directory is never fetched for anyone else.
  */
 export const useBaseGroupCompanies = () => {
   const ctx = useBaseGroupsCtx();

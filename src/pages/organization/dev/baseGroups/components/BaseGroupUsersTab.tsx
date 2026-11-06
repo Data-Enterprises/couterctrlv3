@@ -42,14 +42,11 @@ interface Props {
   users: User[];
 }
 
-// Assigning a user to a base group is an access grant and nothing more: it
-// writes the base group link (groups/assign_base_group_to_user) and removing
-// it deletes that link. Nothing is copied into the user's own store groups —
-// sharing is Shared Groups' job.
+// Assigning a user to a base group is an access grant only: it writes the
+// base group link, and removing it deletes the link.
 //
-// Both columns come from groups/base_group_users in one call. That endpoint
-// doesn't carry user levels, so `users` (the full list, which does) is used to
-// keep anyone above the acting user's own level off both columns, as before.
+// Both columns come from groups/base_group_users, which carries no levels, so
+// `users` (which does) keeps anyone above the acting user's level off both.
 const BaseGroupUsersTab = ({ group, users }: Props) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
@@ -104,16 +101,9 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
   const levelsKnown = users.length > 0;
 
   /**
-   * Run one call per user and say what happened.
-   *
-   * `allSettled`, not `all`: the server refuses some of these with a 400 —
-   * a single-store user cannot be handed a whole group — and that throws.
-   * Under `Promise.all` one refusal abandoned the whole batch and reported
-   * "Request failed with status code 400", which is both wrong (the others
-   * may well have worked) and useless (it does not say why).
-   *
-   * The reason comes out of FastAPI's `detail`, which never reaches a
-   * `.then`. See `callReason`.
+   * One call per user, `allSettled`: the server refuses some with a 400 (a
+   * single-store user can't take a whole group), and one refusal must not sink
+   * the batch. The reason comes from FastAPI's `detail`; see `callReason`.
    */
   const run = async (
     ids: number[],
@@ -157,10 +147,8 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
   };
 
   /**
-   * Each person gets the group in their own access type (grantFor): By group
-   * as before, or By store with every store the group holds today picked.
-   * Always By group made a By store person Mixed. The roster is read once,
-   * fresh, at the moment of assigning.
+   * Each person gets the group in their own access type (`grantFor`). The
+   * roster is read fresh at the moment of assigning.
    */
   const handleAssign = async (ids: number[]) => {
     const anyByStore = ids.some(
@@ -220,10 +208,8 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
       .join(" · "),
   });
 
-  // A base group belongs to one company, and the people who should be in it
-  // nearly always already hold that company — so the same narrowing that
-  // serves the Companies tab serves this one. Fed the reachable candidates
-  // only, so it can hide rows but never reveal any.
+  // A base group's people nearly always hold its company already, so the
+  // company filter helps here too. Fed reachable candidates only.
   const [heldFilter, setHeldFilter] = useState("");
   const candidateIds = useMemo(
     () => unassigned.filter(withinReach).map((r) => r.userid),

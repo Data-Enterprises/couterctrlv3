@@ -136,16 +136,8 @@ const BaseGroups = () => {
   const allCompanies = useBaseGroupCompanies();
 
   /**
-   * Holding a company is not enough to administer every group in it.
-   *
-   * An owner at Houchens who holds East and HC North administers those two;
-   * Conventional belongs to the same company and is not theirs to hand out.
-   * Letting them would be handing out access they do not have themselves,
-   * which is privilege escalation however little anyone meant it that way.
-   *
-   * Not fetched for someone who sees everything: the answer would not narrow
-   * anything, and asking for it would make the page wait on a call it is
-   * going to ignore.
+   * The groups the viewer holds: holding a company is not enough to administer
+   * every group in it. Not fetched for someone who sees everything.
    */
   const loadMyGroups = useCallback(() => {
     if (ctx.canSeeAllCompanies) return;
@@ -164,9 +156,8 @@ const BaseGroups = () => {
   /** A create is running: the modal's Create waits for it. */
   const [creating, setCreating] = useState(false);
   /**
-   * A group just created by someone who doesn't see everything. The list
-   * shows only groups you hold, so the new one vanished with nothing on
-   * screen to say why; this says so, and offers to hold it in one step.
+   * A group just created by someone who doesn't see everything: the list shows
+   * only held groups, so say where it went and offer to hold it.
    */
   const [created, setCreated] = useState<{
     id: number;
@@ -221,9 +212,8 @@ const BaseGroups = () => {
       );
   }, [ctx.url, ctx.token]);
 
-  // Guards against the search-triggered "expand every company" effect below
-  // firing a duplicate request for a company whose first request is still
-  // in flight (e.g. clearing and re-typing a search quickly).
+  // Stops the search's "expand every company" effect asking again for a
+  // company whose first request is still in flight.
   const fetchingGroups = useRef<Set<number>>(new Set());
 
   const fetchGroups = (companyId: number) => {

@@ -7,9 +7,8 @@ import type { StepReadiness } from "../interfaces";
 import type { DuplicateSource } from "../../../../../../features/dev/devUsersSlice";
 
 /**
- * The wizard's rules, as plain functions: which steps are ready, how far the
- * step bar may jump, and why Create is off. Kept out of the component so they
- * can be read and tested on their own.
+ * The wizard's rules as plain functions, testable on their own: which steps
+ * are ready, how far the step bar may jump, and why Create is off.
  */
 
 export const readiness = ({
@@ -32,17 +31,14 @@ export const readiness = ({
     identity,
     type: !switching,
     assignments,
-    // Review is ready only when everything it reviews is. It used to be
-    // `true`, so the step bar could reach it past a step that had been
-    // emptied, and Create user made somebody with no access.
+    // Review is ready only when everything it reviews is.
     review: identity && !switching && assignments,
   };
 };
 
 /**
  * The furthest step the step bar may jump to: up to and including the first
- * step that isn't ready. Going back to fix a step is always possible;
- * skipping past it is not.
+ * step that isn't ready.
  */
 export const reachableLimit = (ready: StepReadiness): number => {
   const firstNotReady = STEP_ORDER.findIndex(
@@ -67,12 +63,9 @@ export const createBlockReason = (
 };
 
 /**
- * Why Save changes is off in Edit, or null when it can save.
- *
- * Each half of an Edit answers for itself: a details-only change needs only
- * valid details, and an access change needs Assignments ready. Save used to
- * need both whatever had changed, so someone with no company or group could
- * not have their name or email fixed, and the button was just grey.
+ * Why Save changes is off in Edit, or null when it can save. Each half answers
+ * for itself: a details-only change needs valid details; an access change needs
+ * Assignments ready.
  */
 export const editBlockReason = ({
   ready,
@@ -104,8 +97,7 @@ export const editBlockReason = ({
 
 /**
  * The companies a duplicate starts with: every company the source holds, then
- * any its groups imply. Companies used to come from the groups alone, so a
- * company the source held with no group in it didn't carry over.
+ * any its groups imply.
  */
 export const duplicateCompanies = (source: DuplicateSource): number[] =>
   Array.from(
@@ -143,9 +135,8 @@ export const singleStoreNote = (
 };
 
 /**
- * The password rules User info lists, as one list for the form and for the
- * check. They were only displayed: "a" was accepted (the backend's
- * create_user doesn't enforce them either; that half is yours).
+ * The password rules User info lists, used for both the form and the check.
+ * The backend's create_user doesn't enforce them.
  */
 export const passwordRules = (pw: string) => [
   { met: pw.length >= 12, label: "At least 12 characters" },

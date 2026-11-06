@@ -5,18 +5,9 @@ import { useMemo } from "react";
 import type { User } from "../../../../interfaces";
 
 /**
- * "Show me the people who already hold company X."
- *
- * The same question on all three assign tabs — Companies, Base groups and
- * Stores — because it is the same job each time: a new company, group or
- * store is nearly always staffed from a set that already exists somewhere,
- * and the company is the thing that names that set. Picking twelve people out
- * of four hundred by typing their names is the work this removes.
- *
- * It filters **candidates**, never permissions. Each tab decides who is
- * reachable (its own level guard) and hands this only what the signed-in user
- * may already act on, so nothing here can widen what somebody can see. All it
- * does is hide rows.
+ * "Show me the people who already hold company X", on all three assign tabs.
+ * It filters candidates, never permissions: each tab passes only who the
+ * viewer may already act on, so this can only hide rows.
  */
 
 /** Holds nothing at all. A string because a select deals in strings, and no
@@ -26,22 +17,12 @@ export const NO_COMPANY = "none";
 const companiesOf = (u: User | undefined) => u?.companies ?? [];
 
 /**
- * The companies worth offering, built from the people actually listed.
+ * The companies worth offering, built from the people listed.
  *
- * Not from every company on the system: an option that can only ever return
- * an empty column is a dead end, and this list is for finding people rather
- * than for browsing the tenancy.
- *
- * `exclude` drops the company the screen is already about — on the Companies
- * tab every candidate is by definition not in it, so offering it would be a
- * filter that matches nobody.
- *
- * `reach` drops companies the viewer does not administer. A candidate can hold
- * two companies, only one of which is yours — somebody in both Houchens and
- * B and T is yours to work with through Houchens, and listing "B and T (1)"
- * offered a filter for a company the viewer has no business in and named its
- * headcount while doing it. Omit it for a viewer who sees everything; there is
- * nothing to narrow then.
+ * `exclude` drops the company the screen is about (no candidate is in it).
+ * `reach` drops companies the viewer does not administer: someone in Houchens
+ * and B and T is yours through Houchens, but B and T is not yours to filter by.
+ * Omit `reach` for a viewer who sees everything.
  */
 export const useCompanyFilterOptions = (
   users: User[],
@@ -74,21 +55,16 @@ export const useCompanyFilterOptions = (
       .map(([id, { name, n }]) => ({ value: String(id), label: `${name} (${n})` }))
       .sort((a, b) => a.label.localeCompare(b.label));
 
-    // Its own option, because somebody holding nothing is invisible to every
-    // other filter here and is exactly who an onboarding pass is looking for.
-    // Never dropped by `reach`: an account belonging to nobody is everybody's
-    // to pick up.
+    // Its own option: someone holding nothing is who onboarding looks for, and
+    // `reach` never drops them, since an account with no company is anyone's.
     return orphans > 0
       ? [{ value: NO_COMPANY, label: `No company (${orphans})` }, ...options]
       : options;
   }, [users, candidateIds, exclude, reach]);
 
 /**
- * The predicate for `AssignPanel`'s `leftPredicate`.
- *
- * Undefined when nothing is selected, which the panel reads as "no narrowing"
- * — rather than a predicate that returns true for everything, so the panel
- * can tell the two apart.
+ * The predicate for `AssignPanel`'s `leftPredicate`. Undefined when nothing is
+ * picked, so the panel can tell "no narrowing" from "matches everything".
  */
 export const useCompanyFilterPredicate = (users: User[], value: string) =>
   useMemo(() => {

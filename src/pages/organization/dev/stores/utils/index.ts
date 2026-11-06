@@ -3,14 +3,9 @@ import type { StoreUserResult, Summary } from "../interfaces";
 import type { SkippedUser } from "../../../../../api/storeAccess";
 
 /**
- * Turning one store-assignment call into one sentence.
- *
- * Both endpoints return `changed` and `skipped` rather than a count, because
- * here the partial result is the ordinary one: unassigning refuses anybody who
- * holds the store through a base group, and that refusal is the point rather
- * than an error. A count would say four of seven and leave the reader to
- * guess which three and why — when what they need is the name of the group to
- * go and change.
+ * Turning one store-assignment call into one sentence. Partial results are
+ * normal here (unassigning refuses base-group holders), so the summary names
+ * the groups to change rather than giving a count.
  */
 
 const plural = (n: number, one: string, many = `${one}s`) =>
@@ -93,11 +88,8 @@ export const summarizeUnassign = (
 };
 
 /**
- * What the row's `via` should say.
- *
- * `direct` is deliberately a word rather than a blank: a blank reads as
- * missing data, and this is the opposite — the most durable kind of grant
- * there is, the one no group can take back.
+ * What the row's `via` says. `direct` is a word, not a blank: it is the grant
+ * no group can take back.
  */
 export const viaLabel = (via: string | null): string =>
   via === null || via === "" ? "direct" : via;

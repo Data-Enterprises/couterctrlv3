@@ -50,21 +50,14 @@ import Companies from "./companies/Companies";
 import StoresTab from "./stores/StoresTab";
 
 /**
- * Owner. Companies, base groups and stores each decide who may see what,
- * which is an administrator's job rather than a manager's. Levels run
- * 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
+ * Owner: who may see what is an administrator's job, not a manager's.
+ * Levels run 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
  */
 const OWNER_LEVEL = 7;
 
 /**
- * What each tab is worth before its content says otherwise.
- *
- * The three access tabs are a list beside a panel and want the width; the
- * users grid is a table and wants a little less. Heights are explicit because
- * every one of these scrolls internally — their columns and grids have no
- * natural height to hug, so `auto` would collapse them to nothing. A view
- * that knows better overrides this with `usePanelFit`, which is how the Add
- * user wizard gets its own size per step.
+ * Each tab's size until its content asks otherwise (`usePanelFit`). Heights
+ * are explicit: every tab scrolls inside, so `auto` would collapse it.
  */
 const TAB_FIT: Record<Tab, PanelFit> = {
   users: { width: 1200, height: 660 },
@@ -74,22 +67,17 @@ const TAB_FIT: Record<Tab, PanelFit> = {
 };
 
 /**
- * The tabs, in order, and the lowest level that sees each. `null` is everyone.
+ * The tabs, in order, and the lowest level that sees each (`null` is everyone).
  *
  * - Users: managers and up.
  * - Companies, Base Groups and Stores: owners and up.
  *
- * Below level 5 there is no tab at all, and the page says so (the nav hides
- * it, but `/team` and a typed address still reach it).
+ * Below level 5 there is no tab, and the page says so (an address still reaches it).
  */
 const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
-  // Owner and up for all three. Each decides who may see what — the company
-  // boundary, the groups inside it, and the stores themselves — which is an
-  // administrator's job and not a manager's.
-  //
-  // Companies sits first because it is the outer boundary: a group only
-  // reaches somebody who holds the company it belongs to.
+  // Owner and up for all three. Companies comes first: it is the outer
+  // boundary, since a group only reaches people who hold its company.
   { id: "companies", label: "Companies", minLevel: OWNER_LEVEL },
   { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
   { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
@@ -109,23 +97,13 @@ const Organization = () => {
     else setTab(next);
   };
   /**
-   * The size the open view asks for.
-   *
-   * The panel used to be a dragged rectangle whose size was remembered, which
-   * meant every view inherited whatever shape the last one was left in — the
-   * Add user wizard opened as a column of fields against an acre of empty
-   * card at the remembered 1600px. Nothing here is a canvas somebody needs
-   * more room on; each view has a size that fits it, so each view says what
-   * that is and the panel takes it.
+   * The size the open view asks for; each view has one that fits it.
    */
   const [fit, setFit] = useState<PanelFit | null>(null);
   const canSeeUsers = tabs.some((t) => t.id === "users");
 
-  // usersSlice is shared with the legacy Team page (no forked slice), so
-  // switching Live -> Preview mounts this component with whatever
-  // refresh/users state legacy last left behind — often refresh:false,
-  // which would skip the fetch below entirely and show stale/legacy-shaped
-  // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
+  // usersSlice is shared with the legacy Team page, which can leave
+  // refresh:false behind and skip the fetch; so fetch fresh on every mount.
   useEffect(() => {
     if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
     // An export window left open on a previous visit stays shut until asked.
@@ -183,10 +161,8 @@ const Organization = () => {
         if (j.error === 0) ctx.dispatch(setUserLevels(j.levels));
       })
       .catch((err: JsonError) => toast.error(err.message));
-    // Programmers assign companies they do not themselves hold — setting up a
-    // new client is exactly that case. Everybody else keeps being offered the
-    // companies on their own account, which is all they have any business
-    // handing out, so this call is not made for them at all.
+    // Only programmers fetch every company: they assign ones they don't hold.
+    // Everyone else is offered the companies on their own account.
     if (ctx.isProgrammer) {
       getCompanies(ctx.url, ctx.token)
         .then((resp) => {
@@ -200,16 +176,13 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
-  // Desktop only: no tablet or phone layout (a tablet or phone that reaches
-  // the page by address gets this one). The mobile layout for User Management
-  // and groups is being reworked, so dev has none for now.
+  // Desktop only: dev has no tablet or phone layout for User Management yet.
 
   const exportable = tab === "users" || tab === "stores";
 
   /**
-   * The users export, from here rather than inside the grid: the grid isn't
-   * mounted while Add or Edit is open, so the header's Export did nothing
-   * then. Same list and filters the grid shows, from the slice.
+   * The users export lives here, not in the grid: the grid isn't mounted while
+   * Add or Edit is open. Same list and filters as the grid, from the slice.
    */
   const exportInactive = showsInactive(ctx.usersGridFilters);
   const exportSource = exportInactive ? ctx.inactiveUsers : ctx.users;

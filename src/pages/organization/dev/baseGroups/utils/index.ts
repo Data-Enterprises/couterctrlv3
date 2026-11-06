@@ -4,19 +4,10 @@ import type { MembershipSummary, StoreOutcome } from "../interfaces";
 /**
  * Moving stores in and out of a base group, and saying what it did.
  *
- * The dual list hands over a whole selection; the endpoints take one store at
- * a time. So this fans out, and then has to turn N results into one sentence —
- * which is where the care is, because the two endpoints count different
- * things and summing both the same way would misreport one of them.
- *
- * - **`granted_to_users`** is the number of people holding the *group* as
- *   `all`. It is the same number on every call in a fan-out, so it is taken
- *   once. Summed, four stores into a group with twelve auto holders would
- *   claim forty-eight people gained access.
- * - **`revoked_from_users`** is the number of people who lost *that store*.
- *   Different per store, so it sums — but what it sums to is grants removed,
- *   not people, and a person losing three stores counts three times. The
- *   wording has to say so.
+ * - **`granted_to_users`** is the people holding the group as `all`: the same
+ *   on every call in a fan-out, so it is taken once, never summed.
+ * - **`revoked_from_users`** is the people who lost that store: it sums, but
+ *   to grants removed, not people, and the wording says so.
  */
 
 const plural = (n: number, one: string, many = `${one}s`) =>
@@ -117,12 +108,8 @@ export const summarizeUnassign = (
 };
 
 /**
- * The reason out of a failed call.
- *
- * The company guard answers 400 with FastAPI's `detail`, not a body with
- * `error: 1`, so axios throws and the message never reaches a `.then`. Reading
- * only `err.message` there would report "Request failed with status code 400"
- * to somebody who needs to be told the store is in another company.
+ * The reason out of a failed call. The company guard answers 400 with FastAPI's
+ * `detail`, so axios throws and the message is read from there.
  */
 export const callReason = (err: unknown): string => {
   const e = err as {

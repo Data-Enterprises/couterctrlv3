@@ -2,12 +2,8 @@
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 
 /**
- * "Any company", or one of them — the narrowing that all three assign tabs
- * share. Its own file so the hooks beside it in `companyFilter` stay
- * fast-refresh friendly.
- *
- * Renders nothing when there is nothing to choose between: a dropdown whose
- * only option is "Any" is a control that cannot do anything.
+ * "Any company", or one of them: the filter all three assign tabs share.
+ * Renders nothing when there is only "Any" to pick.
  */
 const CompanyFilterSelect = ({
   value,

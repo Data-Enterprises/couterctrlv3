@@ -4,33 +4,18 @@ import type { CompanyPlan, MemberUser, MembershipSummary, UserOutcome } from "..
 /**
  * Moving users in and out of a company.
  *
- * ### The thing that makes this delicate
- *
- * `users/assign_user_to_company` **replaces**. It deletes every `company_link`
- * row the user has and inserts the list it was given. So a screen organised
- * around one company cannot send that company — it has to send the user's
- * whole resulting list, every time.
- *
- * Send `[thisCompany]` and the user silently loses every other company they
- * hold. Nothing errors, the panel refreshes looking correct, and the damage
- * only shows up when somebody notices a user can no longer see half their
- * stores. That is the entire reason this module exists rather than the calls
- * being made inline.
- *
- * The full list is already on hand: `GET users/` returns each user with their
- * `companies`, so nothing has to be fetched per company to do this safely.
+ * `users/assign_user_to_company` **replaces**: it deletes every `company_link`
+ * row the user has and inserts the list given. So every call must send the
+ * user's whole resulting list; sending `[thisCompany]` silently strips every
+ * other company they hold. `GET users/` already carries each user's list.
  */
 
 const uniq = (ids: number[]) =>
   Array.from(new Set(ids.filter((id) => Number.isFinite(id) && id > 0)));
 
 /**
- * Add a company to each user who does not already hold it.
- *
- * Users who already hold it are left out rather than re-sent: the call would
- * be a no-op in result, but it still deletes and re-inserts every row that
- * user has, and a fan-out that reports "12 users assigned" when 9 of them
- * already were is a count nobody can act on.
+ * Add a company to each user who does not already hold it. Holders are left
+ * out, so the count reported is the people actually changed.
  */
 export const planAdd = (
   users: MemberUser[],
@@ -44,8 +29,7 @@ export const planAdd = (
     }));
 
 /** Drop a company from each user who holds it, keeping the rest of their
- *  list intact. A user left holding none is allowed — removing the last one
- *  is a real thing to want, and the endpoint accepts an empty list. */
+ *  list. Leaving someone with none is allowed (the endpoint accepts []). */
 export const planRemove = (
   users: MemberUser[],
   companyid: number,
@@ -57,9 +41,8 @@ export const planRemove = (
       companies: uniq(u.companies.filter((id) => id !== companyid)),
     }));
 
-/** Users who would be left holding no company at all. Not blocked — their
- *  base groups simply stop showing on the admin screens, which read through
- *  `company_link` — but worth being able to name. */
+/** Users who would be left holding no company at all. Allowed, but their
+ *  base groups stop showing on the admin screens, so worth naming. */
 export const leftWithNothing = (plans: CompanyPlan[]): number[] =>
   plans.filter((p) => p.companies.length === 0).map((p) => p.userid);
 

@@ -24,16 +24,9 @@ import {
 import GrantModeChip from "./GrantModeChip";
 
 /**
- * What is about to be written, counted.
- *
- * The old wizard's review step showed back the name and email somebody had
- * typed two screens earlier, which is why it was dropped. This one earns the
- * screen by answering the question the form cannot: **how many stores does
- * this add up to, and which of them will keep arriving on their own.**
- *
- * Every section links back to the step that set it. A review you can only
- * leave by the Back button makes somebody walk three screens to change one
- * answer.
+ * What is about to be written, counted: how many stores it adds up to, and
+ * which will keep arriving on their own. Every section links back to the step
+ * that set it.
  */
 const StepReview = ({
   picks,
@@ -46,18 +39,15 @@ const StepReview = ({
   heldGroups = [],
 }: {
   picks: AccessPicks;
-  /** The companies that will actually be written — ticked ones plus the one
-   *  every held group belongs to. Not `picks.companies`, which counted only
-   *  the ticks and read 0 beside a group that plainly had a company. */
+  /** The companies actually written: ticked ones plus each held group's
+   *  company. */
   companyIds: number[];
   companyGroups: Record<number, CompanyBaseGroup[]>;
   groupStores: Record<number, Store[]>;
   onGoTo: (step: WizardStep) => void;
   /**
-   * Edit only: how the person held their groups before this session. When it
-   * differs from `picks.mode` the save rewrites every group they hold, and
-   * this is where that gets said — once the groups are known, rather than
-   * the instant the card is clicked on the Access type step.
+   * Edit only: how the person held their groups before. When it differs from
+   * `picks.mode`, the save rewrites every group they hold, and this says so.
    */
   modeBefore?: GrantMode;
   /** Edit only: the person had no access type on file, so this save sets it. */
@@ -90,9 +80,7 @@ const StepReview = ({
     [picks, groupStores],
   );
 
-  // What Create saves: ticked groups plus any a ticked store implies. The
-  // review counted ticked groups only, so a store picked inside an unticked
-  // group read "No base groups" here while it would have been saved (AK).
+  // What Create saves: ticked groups plus any a ticked store implies.
   const held = heldGroupIds(picks);
   // One mode for the person, so every held group lands in one of these.
   const autoGroups = picks.mode === "all" ? held : [];
@@ -105,9 +93,8 @@ const StepReview = ({
   const name = `${info.first_name} ${info.last_name}`.trim() || info.username;
   const initials =
     `${info.first_name?.charAt(0) ?? ""}${info.last_name?.charAt(0) ?? ""}`.toUpperCase();
-  // `role` is stored as its option value ("1"), so the review showed
-  // "1 · Basic User". Read it back through the same list the picker offers
-  // (finding AL).
+  // `role` is stored as its option value ("1"), so read it back through the
+  // picker's own list.
   const roleName =
     roles.find((r) => r.value === String(info.role))?.label ?? info.role;
   const roleLevel = [roleName, ctx.userLevels.find((l) => l.id === info.user_level)?.name]

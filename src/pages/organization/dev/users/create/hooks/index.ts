@@ -35,15 +35,9 @@ import type {
 } from "../../../../../../interfaces";
 
 /**
- * Edit's picks: seeded from what the person holds, and re-seeded as those
- * reads land (they arrive a moment apart).
- *
- * **Except after a save that stopped part way.** The page re-reads what was
- * saved, and that used to re-seed the picks too: the admin's unsaved changes
- * were replaced by what had saved, nothing differed any more, and Save
- * changes went grey while the banner said to press it. `keepPicks` stops the
- * re-seed, so the re-read moves only the "before" side, and what didn't save
- * stays different and is what Save changes sends.
+ * Edit's picks: seeded from what the person holds, re-seeded as those reads
+ * land. After a save that stopped part way, `keepPicks` stops the re-seed, so
+ * the admin's unsaved changes stay and Save changes still has them to send.
  */
 export const useSeededPicks = (
   editing: boolean,
@@ -66,20 +60,10 @@ export const useSeededPicks = (
 };
 
 /**
- * Changing how a person holds their groups.
- *
- * The arithmetic is `picksForMode`, which is pure and tested. What this adds
- * is the one thing it cannot do for itself: **make sure the rosters are
- * there first.**
- *
- * Switching to By store ticks each held group's whole roster, so the switch
- * starts as a no-op and the admin unticks from there. A roster that has not
- * loaded contributes nothing — which, left alone, would quietly take every
- * store off a group the panel simply had not browsed to yet. So every held
- * group's roster is fetched before the switch is applied, not after.
- *
- * Fetched rosters are handed back to the caller's `groupStores` as well, so
- * the panel that renders the new ticks does not fetch the same lists again.
+ * Changing how a person holds their groups (`picksForMode`), after making sure
+ * every held group's roster is loaded: an unloaded roster contributes nothing,
+ * which would strip that group's stores. Fetched rosters go back to the
+ * caller's `groupStores`.
  */
 export const useAccessMode = () => {
   const ctx = useOrganizationCtx();
@@ -149,38 +133,17 @@ export const STEP_LABEL: Record<AccessStep, string> = {
 };
 
 /**
- * Writing a person's access, shared by Add and Edit.
+ * Writing a person's access, shared by Add (after `create_user`) and Edit.
  *
- * Add runs `create_user` first and then this; Edit runs this on its own. One
- * routine either way, so the two cannot drift — the old wizard and the three
- * edit tabs each had their own copy of this sequence.
- *
- * ### Order, and why it is this order
- *
- * 1. **Companies**, because a base group belongs to one and a grant outside
- *    the person's companies grants nothing.
+ * Order:
+ * 1. **Companies**: a grant outside the person's companies grants nothing.
  * 2. **Grants**, one call per group, each replacing what that group gave.
- * 3. **Revocations**, after the grants and not before. The endpoint only
- *    removes a store when no other group the person *currently holds* still
- *    accounts for it, so a store moving from East to South survives if South
- *    is granted first. Revoke first and the same move loses the store for the
- *    moment in between — and permanently if the grant then fails.
+ * 3. **Revocations**, after the grants: a store is only removed when no group
+ *    the person currently holds accounts for it, so East → South keeps it.
  *
- * There is no fourth step. Nothing here writes `assigned` directly: a store
- * granted that way has no provenance, so no later group change could revoke
- * it, and re-sending such a list after a revocation would put back precisely
- * what the revocation removed.
- *
- * ### One call per group
- *
- * `assign_base_group_to_user` takes a list of group ids but a single mode and
- * a single store list, so a person holding East as `all` and South as
- * `selected` cannot be written in one call. Each group goes on its own, which
- * also means a failure names the group it failed on.
- *
- * A group the panel never showed is never sent. The call replaces one group
- * at a time, so silence about a group leaves it exactly as it was — which is
- * the only correct thing to do with picks this editor could not see.
+ * Nothing writes `assigned` directly: such a store could never be revoked.
+ * One call per group, because the endpoint takes one mode and one store list.
+ * A group the panel never showed is never sent, so it is left as it was.
  */
 export const useAccessSave = () => {
   const ctx = useOrganizationCtx();
@@ -203,9 +166,8 @@ export const useAccessSave = () => {
         reason,
       });
 
-      /** A body with a non-zero `error` is a failure, not a success with a
-       *  note — it used to be a bare return with no toast, so the common case
-       *  (an account created with no access) looked like nothing happening. */
+      /** A body with a non-zero `error` is a failure (with a toast), not a
+       *  success. */
       const run = async (
         step: AccessStep,
         call: () => Promise<{ data: { error: number; msg?: string } }>,
@@ -285,12 +247,8 @@ export const outcomeSentence = (outcome: AccessOutcome) => {
 };
 
 /**
- * A "before" holding nothing, for a person who holds nothing yet.
- *
- * Add user passes this so every grant reads as changed. A retry passes the
- * same `before` it used the first time instead: each call replaces its own
- * group, so re-running the same diff writes the same result, and keeping the
- * real `before` keeps any revocations in the retry too.
+ * A "before" holding nothing, so every grant on Add reads as changed. A retry
+ * reuses its real `before`, keeping its revocations.
  */
 export const NOTHING_HELD: AccessSets = {
   companyIds: [],
@@ -298,36 +256,17 @@ export const NOTHING_HELD: AccessSets = {
 };
 
 /**
- * What the selected user already holds.
+ * What the selected user already holds, with two things kept out of the
+ * panel's reach:
  *
- * ### Two kinds of thing are kept out of the panel's reach
+ * - **Companies this editor can't see.** The company save REPLACES, so they
+ *   are carried and added back at save time. Clear all leaves them alone.
+ * - **Stores no base group explains** (direct `assigned` rows). Carried, shown
+ *   as `direct`, never re-sent.
  *
- * **Companies this editor cannot see.** Every column is scoped — a level 7 is
- * offered their own companies and the stores inside them — while the company
- * save REPLACES. An id merely absent from the screen would be removed by the
- * next save, so it is carried and added back at save time. `Clear all` empties
- * the picks and leaves the carried set alone, which is right: you cannot clear
- * what you were never shown.
- *
- * **Stores no base group explains.** These are direct assignments — rows in
- * `assigned` with no `assigned_via` behind them, from before groups granted
- * anything, or written by hand. Nothing on this screen granted them and no
- * group change can revoke them, so they are carried rather than picked: they
- * show in the effective list as `direct` and are never re-sent.
- *
- * ### Where the picks come from now
- *
- * `groupPicks` is `/groups/user_group_picks`, which says which stores were
- * selected and through which group. Before it existed this hook tagged every
- * store with group 0 and left a comment admitting the guess — a store from
- * `users/stores` carried no group, and inventing one assigned a group nobody
- * chose. The provenance is real now, so the guess is gone.
- *
- * `heldGroups` is passed in rather than read from the base-group slice. The
- * dev slice's `setUserBaseGroups` is dispatched by nothing in this tree — only
- * the legacy pages fill their own copy — so `activeBaseGroups` was always
- * empty here. Every user looked as though they held no groups, which made the
- * panel show nothing and a save re-grant everything.
+ * Picks come from `/groups/user_group_picks` (which stores, through which
+ * group). `heldGroups` is passed in: the dev base-group slice is never filled
+ * in this tree.
  */
 export const useExistingAccess = (
   heldGroups: BaseGroup[],
@@ -362,9 +301,8 @@ export const useExistingAccess = (
      *  own. Shared with Duplicate, so the two cannot disagree. */
     const mode = accessModeOf(visibleGroups);
 
-    /** Only picks for groups this editor can see. A pick inside a company they
-     *  cannot reach belongs to a group they cannot send, so showing it would
-     *  offer an edit that never leaves. */
+    /** Only picks for groups this editor can see: a group they can't send
+     *  is not theirs to edit. */
     const pickedStores: SelectableStore[] = groupPicks
       .filter((p) => heldIds.has(p.groupid))
       .map((p) => {
@@ -422,22 +360,10 @@ export const failedReadsText = (failed: HeldRead[]) => {
 };
 
 /**
- * The things the grid row does not carry: the base groups a person holds and
- * how, their stores, which group each picked store came through, and their
- * companies as stored.
- *
- * All are needed before Edit can be seeded. Without the groups the screen
- * shows an empty panel for somebody who holds plenty — the bug that made a
- * freshly granted group look like it had never saved. Without the picks every
- * store looks direct, and the save then revokes nothing.
- *
- * **A read that fails says so.** A failed read used to become an empty list,
- * so the person looked as though they held nothing, and a save from that
- * screen would have acted on it. Now `failed` names it, the wizard shows an
- * error with Retry, and Save stays off until `loaded`.
- *
- * `userid` of 0 loads nothing, which is what Add user passes: a person who
- * does not exist yet holds nothing to read back.
+ * What the grid row doesn't carry: the groups a person holds and how, their
+ * stores, each pick's group, and their stored companies. All are needed before
+ * Edit can be seeded. **A failed read says so**: the wizard shows Retry, and
+ * Save stays off until `loaded`. `userid` 0 (Add) loads nothing.
  */
 export const useHeldAccess = (userid: number) => {
   const toast = useToast();
@@ -491,10 +417,8 @@ export const useHeldAccess = (userid: number) => {
       })
       .catch(fail("stores", "stores"));
 
-    // The companies from the server, not the grid row the Edit was opened
-    // from: the company save replaces the whole list, so it has to start from
-    // what is really stored. A row read before a change on the Companies tab
-    // would otherwise undo that change.
+    // The companies from the server, not the grid row: the company save
+    // replaces the whole list, so it must start from what is stored.
     getCompaniesAssignedToUser(ctx.url, ctx.token, userid)
       .then((resp) => {
         const j = resp.data;

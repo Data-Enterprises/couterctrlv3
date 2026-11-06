@@ -27,24 +27,17 @@ import PasswordInput from "../../../../../../components-dev/inputs/PasswordInput
 
 interface UserFieldsProps {
   /**
-   * Told whether the identity half is complete, so the page that owns the
-   * submit can decide for itself. The fields carry no button of their own:
-   * the wizard's footer owns Continue, and it answers to these fields on step
-   * one and to the access panel on step three.
+   * Told whether the identity half is complete, so the wizard's footer (which
+   * owns Continue) can decide.
    */
   onValidityChange?: (valid: boolean) => void;
   /**
-   * Editing somebody who already exists. Three things change and nothing
-   * else, so Edit reads as the same form filled in:
+   * Editing somebody who already exists; only these change:
    *
-   * - **Username is fixed.** `update_user` finds the row by it, so it is the
-   *   one field that cannot be edited through that call.
-   * - **No Security section.** Edit does not set a password; the key icon in
-   *   the users list does, with its own rules and its own confirmation.
-   * - **Their own email is not "taken".** It is checked like any other
-   *   address, but an unchanged one says so instead of reporting itself.
-   * - **A name that was blank may stay blank.** Some people were made with
-   *   no first or last name; requiring one blocked fixing their email.
+   * - **Username is fixed:** `update_user` finds the row by it.
+   * - **No Security section:** passwords are set from the users list's key icon.
+   * - **Their own email is not "taken":** an unchanged one says so.
+   * - **A blank name may stay blank,** so their email can still be fixed.
    */
   editing?: {
     userid: number;
@@ -54,11 +47,7 @@ interface UserFieldsProps {
 }
 
 /**
- * One block of the form: what it is on the left, the fields on the right.
- *
- * The left column says why the section exists rather than repeating the field
- * labels — "What this user can do across the app" tells you more about Role
- * and Level than the word Authorization does.
+ * One block of the form: what it is for on the left, the fields on the right.
  */
 const Section = ({
   title,
@@ -171,9 +160,8 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
   };
 
   /**
-   * User info is complete. In Add the password has to meet the rules listed
-   * beside it, and a username or email the check called Not available holds
-   * Continue: both used to be displayed and not enforced.
+   * User info is complete. In Add the password must meet the listed rules, and
+   * a username or email marked Not available holds Continue.
    */
   const canContinue =
     ctx.userInfo.username.trim() !== "" &&

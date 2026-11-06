@@ -34,25 +34,12 @@ interface SetActiveModalProps {
 /**
  * Deactivate or reactivate several people at once, after naming every one.
  *
- * ### Two states, one list
+ * Before: the list is exactly who will be sent. After: each row says what
+ * happened (changed, already so, refused with a reason, or not found);
+ * partial success is normal, so the result stays until dismissed.
  *
- * **Before:** the list is the promise. Every name that will be sent is on it,
- * with their level, and the button counts them. Nothing is sent until it is
- * pressed.
- *
- * **After:** the same list, each row now saying what happened to that person.
- * `users/set_active` reports every name in exactly one of four ways —
- * changed, already in that state, refused with a reason, or not found — and
- * partial success is the normal case: one person outside your companies does
- * not stop the other nine. A toast saying "Done" would hide exactly the rows
- * that need reading, so the result stays on screen until it is dismissed.
- *
- * ### What it does not do
- *
- * Nothing but `users.active` moves. Companies, base groups and stores are
- * kept, so reactivating gives somebody back exactly what they had — and the
- * copy says so, because "deactivate" next to a list of colleagues reads as
- * far more final than it is.
+ * Only `users.active` moves: companies, base groups and stores are kept, so
+ * reactivating restores exactly what they had.
  */
 const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
   const ctx = useOrganizationCtx();

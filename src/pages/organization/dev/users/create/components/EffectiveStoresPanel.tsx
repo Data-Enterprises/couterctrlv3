@@ -12,24 +12,9 @@ import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../inter
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 
 /**
- * What the person can actually see, and why.
- *
- * The `why` is the reason this panel exists. A list of stores answers "can
- * they open Somerset", which the old Stores tab already did. It cannot answer
- * "what happens when we open another one" — and that is the question the
- * grants above are really setting, so the screen that sets them has to show
- * its own consequence.
- *
- * Read only on purpose. Everything here is derived from the grants in the
- * panel beside it; a control here would be a second way to express the same
- * thing, and the two would disagree.
- *
- * ### Unsaved grants are included
- *
- * It reads from the picks as they stand, not from what is saved, so switching
- * to By group shows the stores that arrive the moment Save is pressed. A
- * preview that only caught up afterwards would make the mode control feel
- * like it had done nothing.
+ * What the person can actually see, and why (which group grants each store,
+ * or Direct). Read only: it is derived from the grants beside it. Reads the
+ * picks as they stand, unsaved changes included.
  */
 const EffectiveStoresPanel = ({
   picks,
@@ -122,9 +107,8 @@ const EffectiveStoresPanel = ({
     : rows;
 
   return (
-    // A column inside the access card, and a card in its own right: the grey
-    // ground made it read as scenery beside the three columns that do the
-    // work, when it is the answer they add up to.
+    // A column inside the access card, and a card in its own right: it is the
+    // answer the three columns add up to.
     <div className="h-full flex flex-col min-h-0 bg-custom-white">
       <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-baseline justify-between gap-2 mb-1.5">
@@ -153,9 +137,8 @@ const EffectiveStoresPanel = ({
               <span className="truncate flex-1" title={store?.store_name ?? ""}>
                 {store?.store_name ?? `Store ${r.storeid}`}
               </span>
-              {/* Where it comes from, in one word rather than a column of
-                  its own: the group that grants it, or Direct when nothing
-                  does and no group change can take it away. */}
+              {/* Where it comes from: the granting group, or Direct when no
+                  group does (and no group change can take it away). */}
               <span
                 className="text-[10.5px] font-semibold text-content/85 flex-shrink-0 truncate max-w-[42%]"
                 title={

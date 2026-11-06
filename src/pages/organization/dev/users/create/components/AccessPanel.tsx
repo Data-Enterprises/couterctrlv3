@@ -43,28 +43,20 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
-  /** Locks the person to one store in total. The single-store role cannot
-   *  hold a whole group — the server refuses it — so the Access type step
-   *  greys By group out and this panel never sees `all` for one. */
+  /** Locks the person to one store in total. The single-store role can't
+   *  hold a whole group (the server refuses), so this never sees `all`. */
   singleStoreOnly?: boolean;
   /**
    * Each group's full roster, lifted so a caller can count what `all` adds up
-   * to — the grant itself names no stores in that mode, so the roster is the
-   * only source for the number. Lifted for the same reason `companyGroups`
-   * is: Review needs it and must not fetch it a second time.
+   * to (that grant names no stores), and so Review doesn't fetch it again.
    */
   groupStores: Record<number, Store[]>;
   onGroupStoresChange: (
     updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
   ) => void;
   /**
-   * A fourth column inside the same card — Edit user puts the effective store
-   * list there.
-   *
-   * In the card rather than beside it because it is the consequence of the
-   * three columns to its left, and a reader comparing "what I ticked" against
-   * "what that adds up to" should not be crossing a gap between two panels to
-   * do it.
+   * A fourth column inside the same card: Edit user puts the effective store
+   * list there, beside the picks it adds up from.
    */
   rightColumn?: ReactNode;
   /** Hide the built-in summary strip, for a caller supplying its own footer
@@ -80,34 +72,18 @@ interface AccessPanelProps {
 
 /**
  * Three-column drill-down: companies → base groups in the active company →
- * stores for every group the admin has expanded.
+ * stores for every expanded group (several can stay open at once).
+ * `companyGroups` stays lifted so Review can name groups too.
  *
- * Replaces the old single-column accordion, but keeps its one genuinely
- * useful trait — several groups can stay expanded and stacked at once in the
- * third column — scoped to one company's groups instead of spanning the whole
- * page, so companies and groups no longer scroll out of view while picking
- * stores. `companyGroups` stays lifted to the caller so Review can resolve
- * base group names too.
+ * `picks.mode` is the person's answer from the Access type step, for every
+ * group here:
  *
- * ### What `picks.mode` decides here
+ * - **By group** (`all`): the whole group and any store added later; the
+ *   third column is a read-only preview.
+ * - **By store** (`selected`): only what is ticked; a store added later does
+ *   *not* reach this person.
  *
- * It is the person's answer from the Access type step, and it applies to
- * every group on the screen:
- *
- * - **By group** (`all`) — the whole group, and any store added to it later.
- *   The third column becomes a read-only preview, because there is nothing to
- *   pick: the answer is "all of them, including the ones that do not exist
- *   yet".
- * - **By store** (`selected`) — only what is ticked. The third column gets
- *   checkboxes, and a store added to the group later does *not* reach this
- *   person.
- *
- * **There is no per-group control.** Each group used to carry its own Auto /
- * Pick stores toggle beside its chip, on the reasoning that one group could
- * differ from the rest. In practice it made the person's access type a
- * question with no single answer, the choice was invisible on a finished
- * screen, and the duplicate action had nothing it could safely copy. The chip
- * stays — it says how this group is held — and the toggle is gone.
+ * **There is no per-group control.** The chip says how a group is held.
  */
 const AccessPanel = ({
   picks,
@@ -127,9 +103,9 @@ const AccessPanel = ({
   const scope = useBaseGroupsCtx();
 
   /**
-   * The groups the editor holds: below level 9 (and DCR support), the only
-   * ones they may hand out, by the Base Groups tab's rule (`../../scoping`).
-   * Null until read; until then nothing is changeable, which narrows.
+   * The groups the editor holds: below level 9 (and DCR support), the only ones
+   * they may hand out, by the Base Groups tab's rule (the page's `utils`).
+   * Null until read; until then nothing is changeable.
    */
   const [editorHeld, setEditorHeld] = useState<Set<number> | null>(null);
   useEffect(() => {
@@ -151,10 +127,9 @@ const AccessPanel = ({
   const mayChange = (id: number) => mayChangeGroup(id, scope.canSeeAllCompanies, mine);
 
   /**
-   * Who may be handed what. A programmer is setting up other people's
-   * companies and holds none of them; everyone else may only pass on what is
-   * already on their own account. The two sources name the id differently —
-   * `Company.id` against `UserCompany.company` — so they are flattened here.
+   * Who may be handed what: a programmer may give any company; everyone else
+   * only what is on their own account. Flattens `Company.id` and
+   * `UserCompany.company`, which name the id differently.
    */
   const companyList = ctx.isProgrammer
     ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
@@ -171,10 +146,8 @@ const AccessPanel = ({
     onPicksChange({ ...picks, stores });
 
   /**
-   * A company or a group ticked in its own right, rather than inferred from a
-   * store. Ticking East means East — not whichever group each East store
-   * happens to point at — and a company with no stores yet can still be given
-   * to somebody, which is the case that had no answer before.
+   * A company or group ticked in its own right, not inferred from a store, so
+   * ticking East means East, and a company with no stores can still be given.
    */
   const toggleIn = (list: number[], id: number) =>
     list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
@@ -183,15 +156,9 @@ const AccessPanel = ({
     onPicksChange({ ...picks, companies: toggleIn(picks.companies, id) });
 
   /**
-   * Unticking a group drops its ticked stores with it. Leaving them behind
-   * would keep the group held, since a ticked store holds its own group.
-   *
-   * Ticking one while the person is held By store ticks its whole roster
-   * with it, for the same reason the mode switch does: a held group with
-   * nothing picked grants nobody anything, and "I ticked East and East did
-   * not arrive" is not a state worth being able to reach by accident. A
-   * single-store person gets no roster — they may hold exactly one store, and
-   * which one is the next thing they pick.
+   * Unticking a group drops its ticked stores too (a ticked store holds its
+   * group). Ticking one while By store ticks its whole roster, as the mode
+   * switch does; a single-store person gets no roster, they pick one store next.
    */
   const toggleGroupPick = (id: number) => {
     if (!mayChange(id)) return;
@@ -206,18 +173,15 @@ const AccessPanel = ({
   // Which groups are selected for viewing — drives the middle column's
   // highlight and which groups get a section in the stores column at all.
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
-  // Purely which groups' store lists are visually collapsed within the stores
-  // column — independent of expandedGroups. Clicking a section's own header
-  // toggles this (a real accordion: the header stays, only its body hides),
-  // and never touches whether the group is held.
+  // Which groups' store lists are collapsed in the stores column: display
+  // only, independent of expandedGroups and of what is held.
   const [collapsedSections, setCollapsedSections] = useState<Set<number>>(
     new Set(),
   );
   const [groupSearch, setGroupSearch] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
-  // Controlled value for the "Jump to selected" dropdown — always resets to
-  // "" right after a pick. It is a scroll-to shortcut among already-expanded
-  // groups, not a display filter, so it never competes with expandedGroups.
+  // The "Jump to selected" dropdown's value, reset to "" after each pick: a
+  // scroll shortcut, not a filter.
   const [storeGroupFilter, setStoreGroupFilter] = useState("");
 
   useEffect(() => {
@@ -279,10 +243,8 @@ const AccessPanel = ({
       });
   };
 
-  // Eagerly fetch every group's roster once its company becomes active, so
-  // the middle column can show real "X of Y" counts before any group is
-  // expanded — the old accordion only fetched on first expand, but this
-  // layout needs totals up front to be useful.
+  // Fetch every group's roster once its company is active, so the middle
+  // column can show "X of Y" before any group is expanded.
   useEffect(() => {
     if (!activeCompany) return;
     const groups = companyGroups[activeCompany];
@@ -516,9 +478,8 @@ const AccessPanel = ({
                     </button>
                   </div>
 
-                  {/* Only once the group is actually held — the question
-                      "how" has no meaning before "whether". The chip reports
-                      the person's access type; it is not a control. */}
+                  {/* Only once the group is held. The chip reports the
+                      person's access type; it is not a control. */}
                   {held && (
                     <div className="flex items-center gap-1 mt-1.5 ml-6">
                       <GrantModeChip mode={mode} />
@@ -566,10 +527,8 @@ const AccessPanel = ({
             {openGroups.map((group) => {
               const held = heldSet.has(group.id);
               const mode = picks.mode;
-              // By group means no store is ever picked one at a time, so no
-              // group's stores get checkboxes: a held group shows them all
-              // ticked, and one opened only to look shows a plain list. A live
-              // box there used to hold the whole group from one tick.
+              // By group: no store is picked one at a time, so no checkboxes;
+              // a held group shows all ticked, one opened to look a plain list.
               const preview = mode === "all";
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
@@ -635,11 +594,8 @@ const AccessPanel = ({
                           (sel) => sel.storeid === s.storeid,
                         );
                         return preview ? (
-                          // Held: ticked and disabled, not plain text. Every
-                          // store here IS included, and an unticked row beside
-                          // a held group reads as "not granted", the opposite
-                          // of what Auto means. Not held: no box at all, since
-                          // there is nothing to tick in By group.
+                          // Held: ticked and disabled, since every store is
+                          // included. Not held: no box, nothing to tick.
                           <div
                             key={s.storeid}
                             className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
@@ -709,18 +665,15 @@ const AccessPanel = ({
       <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[12px] font-semibold text-content">
-            {/* No company tally: a held group carries its own company now, so
-                a count of ticks would read 0 beside a group that plainly has
-                one. Review shows what is actually written. */}
+            {/* No company tally: a held group carries its own company. Review
+                shows what is written. */}
             {held.length} base group
             {held.length === 1 ? "" : "s"}, {selectedStores.length}{" "}
             store{selectedStores.length === 1 ? "" : "s"} picked
           </span>
           <button
-            // Clears the picks, not the answer: the access type was chosen
-            // on its own step and stays chosen.
-            // Clears what the editor may change; a group that isn't theirs
-            // stays as the person holds it.
+            // Clears the picks, not the access type. A group that isn't the
+            // editor's stays as the person holds it.
             onClick={() =>
               onPicksChange({
                 ...NO_PICKS,

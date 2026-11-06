@@ -33,30 +33,20 @@ import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
 /**
- * Who holds one store.
+ * Who holds one store. Unlike the other two tabs, **a grant made here is
+ * fixed**: an `assigned` row with no group behind it, shown as `direct` in
+ * Edit user, which no group change can revoke.
  *
- * The third of the three tabs that answer "who may see what", and the one
- * that behaves differently from its siblings in a way worth being loud about:
- * **a grant made here is fixed.** It writes an `assigned` row with no group
- * behind it, so no group change can ever revoke it, and Edit user shows it as
- * `direct`. Companies and Base Groups hand over something a group can later
- * take back; this does not.
- *
- * The other asymmetry is on the way out. A user who holds this store through
- * a base group cannot be removed here — the server refuses and names the
- * group. Deleting the row would leave the group link, the group's membership
- * and the store all intact with nothing re-adding it: the removal would look
- * like it worked, and the next re-grant of that group would quietly undo it.
- * So the panel reports the refusal and points at the group.
+ * A user who holds the store through a base group can't be removed here: the
+ * server refuses and names the group, since the next re-grant would undo it.
  */
 const StoreUsersPanel = ({
   store,
   users,
 }: {
   store: Store;
-  /** The full user list, for the level guard. The endpoint takes a bare
-   *  userid and checks no levels, so this is what stops a level 7
-   *  rearranging a 9. */
+  /** The full user list, for the level guard: the endpoint checks no levels,
+   *  so this stops a level 7 rearranging a 9. */
   users: User[];
 }) => {
   const ctx = useBaseGroupsCtx();
@@ -104,24 +94,16 @@ const StoreUsersPanel = ({
   );
 
   /**
-   * Whether this person is the viewer's to see and change.
-   *
-   * **Fails closed.** A userid with no level behind it is hidden rather than
-   * shown: the endpoint takes a bare userid and checks no levels, so this is
-   * the only thing standing between a level 7 and a level 9's access, and a
-   * guard that defaults to "probably fine" is not a guard. An unknown level
-   * only happens when the user list has not arrived, or when it somehow does
-   * not contain somebody the store does — and in both cases showing them is
-   * the wrong way to be wrong.
+   * Whether this person is the viewer's to see and change. **Fails closed**:
+   * a userid with no known level is hidden, since this is the only level check.
    */
   const withinReach = (r: { userid: number }) => {
     const level = levelOf.get(r.userid);
     return level !== undefined && level <= ctx.userLevel;
   };
 
-  /** Until the list lands every level is unknown, so every row would be
-   *  hidden — which reads as "this store has nobody" rather than "still
-   *  loading". Say the second one. */
+  /** Until the user list lands every row is hidden, so say "loading" rather
+   *  than "nobody". */
   const levelsKnown = users.length > 0;
 
   const run = async (userids: number[], direction: "in" | "out") => {
@@ -161,10 +143,8 @@ const StoreUsersPanel = ({
     sublabel: `${viaLabel(r.via)}${r.email ? ` · ${r.email}` : ""}`,
   }));
 
-  // A store belongs to a company, and whoever should reach it almost always
-  // holds that company already. Same narrowing as the other two assign tabs,
-  // over the reachable candidates only -- it hides rows, it never reveals
-  // any.
+  // The store's people nearly always hold its company, so the company filter
+  // helps here too, over reachable candidates only.
   const [heldFilter, setHeldFilter] = useState("");
   const candidateIds = useMemo(
     () => unassigned.filter(withinReach).map((r) => r.userid),

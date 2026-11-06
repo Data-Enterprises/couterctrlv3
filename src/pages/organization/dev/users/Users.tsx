@@ -29,9 +29,8 @@ const Users = () => {
     ctx.dispatch(setSelectedUserForm(""));
   };
 
-  // Edit is Add, filled in — the same four steps. Somebody above your own
-  // level is not yours to edit, so their row opens nothing rather than a form
-  // whose every save the server would refuse.
+  // Edit is Add, filled in: the same four steps. Someone above your own level
+  // is not yours to edit, so their row opens nothing.
   if (isDetail) {
     const target = ctx.users.find((u) => u.id === ctx.selectedUserId);
     if (!target || target.user_level > ctx.userLevel) return null;

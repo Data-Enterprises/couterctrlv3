@@ -20,21 +20,11 @@ interface Props {
 }
 
 /**
- * User Management → Stores: who holds each store.
+ * User Management → Stores: who holds each store, with the same panel as
+ * Companies and Base Groups.
  *
- * Was a read-only directory of the stores the signed-in person could reach.
- * It is the same list, now with the panel the Companies and Base Groups tabs
- * have, because "who can see this store" is the same question those two ask
- * one level up and there was nowhere to ask it directly.
- *
- * ### What the list contains
- *
- * Programmers and DCR support get every store; everyone else gets the ones
- * they hold. That is the rule the other two tabs follow — you cannot hand out
- * access you do not have yourself — and the directory already worked that way
- * for a different reason: it was open to every level, so it deliberately
- * listed nothing beyond the viewer's own reach. Now that the tab is owner and
- * up, the people who are meant to see everything can.
+ * Programmers and DCR support get every store; everyone else the ones they
+ * hold, since you can't hand out access you don't have.
  */
 const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
   const ctx = useBaseGroupsCtx();
@@ -70,14 +60,9 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
   useEffect(loadStores, [loadStores]);
 
   /**
-   * Every user, for the level guard inside the panel.
-   *
-   * Deliberately unscoped, unlike the grid's own list. This is not what gets
-   * displayed — the columns come from `store_users`, which the server scopes
-   * to the store's company — it is only the source of truth for *levels*.
-   * Scoping it would mean a userid the store has and this list does not, and
-   * the guard fails closed, so a legitimate person would silently vanish from
-   * the panel. More levels known is strictly safer here.
+   * Every user, unscoped, as the level guard's source of truth only (the
+   * columns come from `store_users`). The guard fails closed, so a scoped list
+   * would hide legitimate people.
    */
   useEffect(() => {
     getAllUsers(ctx.url, ctx.token)

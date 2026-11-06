@@ -10,11 +10,8 @@ export const NO_COMPANY_VALUE = "none";
 export const showsInactive = (f: UsersGridFilters) => f.statusFilter === "inactive";
 
 /**
- * The users grid's filters, as one function.
- *
- * Lifted out of the grid so the header's Export can apply them while Add or
- * Edit is open: the export window used to live inside the grid, which isn't
- * mounted then, so Export did nothing.
+ * The users grid's filters, as one function, so the header's Export can apply
+ * them while Add or Edit is open (the grid isn't mounted then).
  */
 export const filterUsers = (users: User[], f: UsersGridFilters): User[] => {
   const lowerText = f.searchText.toLowerCase();
@@ -75,9 +72,7 @@ export const accessLabel = (mode: User["access_mode"]) =>
 
 /**
  * Whether any of the grid's filters narrows the list. The status filter picks
- * the list itself (active or inactive), so it doesn't count. The export used
- * to compare counts instead, so a filter that happened to match everyone read
- * as "No filters currently applied".
+ * the list itself (active or inactive), so it doesn't count.
  */
 export const filtersApplied = (f: UsersGridFilters) =>
   [
@@ -91,10 +86,8 @@ export const filtersApplied = (f: UsersGridFilters) =>
   ].some((v) => v !== "");
 
 /**
- * The grid in a column's order. Rows came in API order with no way to sort.
- * Text compares as words; a missing value (no last visit, no role) goes last
- * either way, so the people who have never signed in don't lead a list
- * sorted by last visit.
+ * The grid in a column's order. Text compares as words; a missing value (no
+ * last visit, no role) goes last either way.
  */
 export const sortUsers = (
   users: User[],
