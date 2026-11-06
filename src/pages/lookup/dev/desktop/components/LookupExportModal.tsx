@@ -1,15 +1,22 @@
+// Hooks
 import { useMemo, useState } from "react";
-import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
+
+// Utils
+import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
 import {
   buildSaleTypeBreakdown,
   computeMargin,
   dayMarginPct,
   dayUnitCost,
 } from "../../utils";
-import type { DayBucket } from "../../utils";
+
+// Interfaces
 import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
-import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
+import type { DayBucket } from "../../utils";
+
+// Components
+import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 
 interface LookupExportModalProps {
   queue: QueueItem[];

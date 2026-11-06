@@ -1,9 +1,12 @@
-import PageInfoButton from "../../../../../components-dev/PageInfoButton";
+// Interfaces
+import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
+
+// Components
 import {
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 
 interface LookupQueuePanelProps {

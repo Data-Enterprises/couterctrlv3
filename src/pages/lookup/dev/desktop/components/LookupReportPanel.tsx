@@ -1,12 +1,5 @@
-import {
-  ArrowDownTrayIcon,
-  ArrowTrendingDownIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/20/solid";
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
-import type { SaleTypeSummary } from "../../../../../features/dev/devItemLookupSlice";
-import SaleTypeBreakdown from "./SaleTypeBreakdown";
-import type { MarginResult, DayBucket, TrendResult } from "../../utils";
 import {
   computeActiveGap,
   dayMarginPct,
@@ -14,6 +7,18 @@ import {
   formatUnits,
   hasSaleTypeBreakdown,
 } from "../../utils";
+
+// Interfaces
+import type { SaleTypeSummary } from "../../../../../features/dev/devItemLookupSlice";
+import type { MarginResult, DayBucket, TrendResult } from "../../utils";
+
+// Components
+import {
+  ArrowDownTrayIcon,
+  ArrowTrendingDownIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/20/solid";
+import SaleTypeBreakdown from "./SaleTypeBreakdown";
 
 interface LookupReportPanelProps {
   description: string;

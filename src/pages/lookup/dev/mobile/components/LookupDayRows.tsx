@@ -1,7 +1,12 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
-import type { DayBucket } from "../../utils";
 import { dayUnitCost, formatUnits } from "../../utils";
 import { dayLabel, dayMargin } from "../utils";
+
+// Interfaces
+import type { DayBucket } from "../../utils";
+
+// Components
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 
 interface Props {

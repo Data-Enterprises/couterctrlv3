@@ -1,8 +1,8 @@
+// Hooks
 import { useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
-import type { DayBucket, MarginResult, TrendResult } from "../utils";
 import {
   buildDayBuckets,
   buildSaleTypeBreakdown,
@@ -20,11 +20,18 @@ import {
   vsSellingAverage,
   windowTotals,
 } from "./utils";
-import ItemDayChart from "./components/ItemDayChart";
-import LookupDayRows from "./components/LookupDayRows";
+
+// Interfaces
+import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
+import type { DayBucket, MarginResult, TrendResult } from "../utils";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import InfoButton from "../../../../components-dev/InfoButton";
 import InfoModal from "../../../../components-dev/InfoModal";
+import ItemDayChart from "./components/ItemDayChart";
+import LookupDayRows from "./components/LookupDayRows";
 
 interface Props {
   description: string;

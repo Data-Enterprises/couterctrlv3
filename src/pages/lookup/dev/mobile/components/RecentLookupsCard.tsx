@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../../../../hooks";
+
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
 import { formatUnits } from "../../utils";
 

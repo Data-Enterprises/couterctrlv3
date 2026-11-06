@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../../hooks";
+
+// Components
 import ItemLookupMobile from "./mobile/ItemLookupMobile";
 import ItemLookupDesktop from "./desktop/ItemLookupDesktop";
 

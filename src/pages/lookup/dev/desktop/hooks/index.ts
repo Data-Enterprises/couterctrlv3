@@ -1,7 +1,9 @@
+// Hooks
 import { useCallback, useRef } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { getItemLookupSingleStore } from "../../../../../api/itemLookup";
+
+// Redux
 import {
   addRecentLookup,
   setLookupQueue,
@@ -10,12 +12,19 @@ import {
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
 } from "../../../../../features/dev/devItemLookupSlice";
-import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
+
+// API
+import { getItemLookupSingleStore } from "../../../../../api/itemLookup";
+
+// Utils
 import { isSaleRow } from "../../../../../utils/saleType";
 import {
   scopeToStoreNumber,
   storeNumbersIn,
 } from "../../../../../utils/storeIdentity";
+import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
+
+// Interfaces
 import type { ItemLookupHistory } from "../../../../../features/dev/devItemLookupSlice";
 
 // The lookup is fetched by storeid, so a co-located storeid returns both

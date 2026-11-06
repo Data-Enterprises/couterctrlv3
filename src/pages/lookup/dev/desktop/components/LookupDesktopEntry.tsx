@@ -1,11 +1,16 @@
+// Hooks
 import { useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
   useStoreName,
 } from "../../../../../hooks";
-import SingleSelect from "../../../../../components-dev/SingleSelect";
+
+// Redux
 import { setSelectedStore } from "../../../../../features/dev/devItemLookupSlice";
+
+// Components
+import SingleSelect from "../../../../../components-dev/SingleSelect";
 
 interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;

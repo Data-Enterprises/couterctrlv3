@@ -1,6 +1,9 @@
-import type { SaleTypeSummary } from "../../../../../features/dev/devItemLookupSlice";
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
 import { formatUnits, hasSaleTypeBreakdown } from "../../utils";
+
+// Interfaces
+import type { SaleTypeSummary } from "../../../../../features/dev/devItemLookupSlice";
 
 interface SaleTypeBreakdownProps {
   saleTypes: SaleTypeSummary[];

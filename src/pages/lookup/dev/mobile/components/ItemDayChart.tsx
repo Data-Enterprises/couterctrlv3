@@ -1,5 +1,10 @@
-import type { DayBucket } from "../../utils";
+// Utils
 import { dayNumber } from "../utils";
+
+// Interfaces
+import type { DayBucket } from "../../utils";
+
+// Components
 import { TY_COLOR, UNSCOPED_OPACITY } from "../../../../../components-dev/mobile/perf/perfColors";
 
 interface Props {

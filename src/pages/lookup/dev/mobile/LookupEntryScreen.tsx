@@ -1,11 +1,16 @@
+// Hooks
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
+import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
+
+// Redux
 import { setSelectedStore } from "../../../../features/dev/devItemLookupSlice";
 import { setError } from "../../../../features/itemScanSlice";
+
+// Components
+import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import ScannerView from "../../../../components-dev/scanner/ScannerView";
-import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
 import RecentLookupsStrip from "./components/RecentLookupsStrip";
 import RecentLookupsCard from "./components/RecentLookupsCard";
 
