@@ -30,7 +30,7 @@ import SheetKpiStrip from "./components/SheetKpiStrip";
 import LineItemsHeader from "./components/LineItemsHeader";
 import LineItemRows from "./components/LineItemRows";
 
-interface Props {
+interface RcvReceiverListProps {
   receivers: ReceiverListItem[];
   storeName: string;
   dateRangeLabel: string;
@@ -51,7 +51,7 @@ const RcvReceiverList = ({
   dateRangeLabel,
   storeid,
   onSearch,
-}: Props) => {
+}: RcvReceiverListProps) => {
   const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);
 
