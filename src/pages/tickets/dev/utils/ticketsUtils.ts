@@ -9,8 +9,6 @@ import type {
 } from "../../../../features/dev/devTicketsSlice";
 
 /**
- * The filtering behind the tabs and the search box.
- *
  * All of it runs on rows already in hand: the endpoint sends every field these
  * need, so switching tabs costs nothing and a queue stays responsive while a
  * tech reads down it. Only status and company are worth a round trip, and the
@@ -26,8 +24,6 @@ export const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 /**
- * Chip colours, from the app's own tokens.
- *
  * Four states have to be told apart at a glance, so they differ in lightness
  * as well as hue — `waiting` and `open` are the pair most often confused, and
  * they sit at opposite ends of that range.
@@ -47,8 +43,6 @@ export const PRIORITY_CLASS: Record<string, string> = {
 };
 
 /**
- * Is this one mine?
- *
  * Compares `assignee_id` — the tech as a users.id — against the signed-in
  * user. `assigned_tech_id` is the same person in the ticket_techs id space and
  * comparing it works for exactly one tech by coincidence.
@@ -101,8 +95,6 @@ const holds = (value: string | null, term: string) =>
   (value ?? "").toLowerCase().includes(term.trim().toLowerCase());
 
 /**
- * The column filters.
- *
  * An empty list means every one of them rather than none — the same reading
  * the export page's filters use, and the one people expect from a column
  * heading they have not touched.
@@ -160,8 +152,6 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
 });
 
 /**
- * A server timestamp, as a moment.
- *
  * The tickets API sends UTC with no zone on it (`2026-10-21T22:32:10.299190`),
  * and JavaScript reads a zone-less date-time as LOCAL time. So every ticket
  * read five hours ahead in Central -- TCK-35, sent at 5:32 PM, showed 10:32
@@ -177,8 +167,6 @@ export const parseServerTime = (iso: string): number => {
 };
 
 /**
- * Why a new ticket did not send, in words the sender can act on.
- *
  * A ticket is filed under a company (`tickets.company` is NOT NULL since 22
  * Oct), so somebody with no company has nowhere to file one. The server
  * answers 400 with a `detail` that says so and says what to do — ask a
@@ -235,8 +223,6 @@ export const stampText = (iso: string) => {
 };
 
 /**
- * What kind of fix closed it, if anything says.
- *
  * Closing stores the resolution type as a reserved `type:` label rather than a
  * column, so it rides along on the ticket like any other label. The lookups
  * hide those from the picker — they are written by closing, not chosen by
@@ -255,8 +241,6 @@ export const fileSize = (bytes: number) =>
     : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
 /**
- * Why this file cannot be attached, or null.
- *
  * The endpoint checks the extension AND the declared type, so a .exe labelled
  * image/png is refused there. This is the same check one step earlier, to save
  * someone a 413 after the upload.
@@ -278,8 +262,6 @@ export const attachmentProblem = (
 };
 
 /**
- * Initials for the inbox avatar.
- *
  * Two letters from the ends of the name, so "Randall Nunez" is RN and a
  * single-word name still gets something. Mirrors the TitleBar avatar, which
  * is the only other place in the app that draws one.
@@ -293,10 +275,6 @@ export const initialsOf = (name: string | null) => {
 };
 
 /**
- * The two fields the inbox row has room for and the list endpoint does not
- * send yet: a preview of the newest reply, and whether this reader has seen
- * it.
- *
  * Read through here rather than off the row so there is one place to delete
  * the cast when they arrive. A snippet needs the list query to carry the last
  * comment; unread needs a per-user read marker, which is a real table and not
@@ -331,8 +309,6 @@ export const priorityCounts = (tickets: Ticket[]) => {
 };
 
 /**
- * Everything else this person has filed, newest first.
- *
  * The queue is already in memory and already holds every company a tech can
  * see, so "their other tickets" costs no call — it is the list filtered by
  * the opener, minus the one being read.
@@ -364,8 +340,6 @@ export const openerStats = (tickets: Ticket[], ticket: Ticket) => {
 };
 
 /**
- * The labels meant for a reader.
- *
  * `type:` is reserved: it carries the resolution and is read by
  * `resolutionLabel`, which renders it as a word in the closed strip. Drawn
  * raw it reads as "type:fixed", which is a database row on the screen.

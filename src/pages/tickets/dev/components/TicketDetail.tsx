@@ -1,6 +1,5 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import type { TicketsCtx } from "../hooks";
 
 // Redux
 import { openClosing } from "../../../../features/dev/devTicketsSlice";
@@ -20,6 +19,7 @@ import {
 import { storeFullText, storesOf } from "../utils";
 
 // Interfaces
+import type { TicketsCtx } from "../hooks";
 import type { TicketStatus } from "../../../../api/tickets";
 
 // Components
