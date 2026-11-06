@@ -1,9 +1,9 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
-import { useOrdersCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { getAllOrders, getAvailableOrders } from "../../../../api/orders";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+import { useOrdersCtx } from "../hooks";
+
+// Redux
 import { setSelectedGroupStores } from "../../../../features/userSlice";
 import {
   setAllOrders,
@@ -18,16 +18,27 @@ import {
   type GroupedOrderCard,
   type UniqueSub,
 } from "../../../../features/dev/devOrdersSlice";
-import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
-import { getCogs, getERet } from "../utils";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
+import { getAllOrders, getAvailableOrders } from "../../../../api/orders";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+
+// Utils
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
+import { getCogs, getERet } from "../utils";
+
+// Interfaces
+import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
+
+// Components
 import SearchCard from "../../../../components-dev/SearchCard";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
-import { isGroupSearch } from "../../../../features/searchSlice";
 
 type MobileStep = "available" | "list";
 

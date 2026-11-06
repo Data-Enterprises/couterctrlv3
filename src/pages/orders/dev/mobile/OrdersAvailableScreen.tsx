@@ -1,10 +1,15 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
+
+// Interfaces
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
 interface Props {
   cards: GroupedOrderCard[];

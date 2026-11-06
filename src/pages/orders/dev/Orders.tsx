@@ -1,10 +1,10 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getAllOrders, updateOrderFile } from "../../../api/orders";
-import { getItemLookupSingleStore } from "../../../api/itemLookup";
-import { getSubDeptCatalog } from "../../../api/subDeptExclusions";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { useOrdersCtx } from "./hooks";
+
+// Redux
 import {
   setAllOrders,
   setLoadingAllOrders,
@@ -17,18 +17,18 @@ import {
   type UniqueSub,
 } from "../../../features/dev/devOrdersSlice";
 import { setSelectedGroupStores } from "../../../features/userSlice";
-import type {
-  AllOrderResp,
-  JsonError,
-  Store,
-  UpdateFileResp,
-} from "../../../interfaces";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getAllOrders, updateOrderFile } from "../../../api/orders";
+import { getItemLookupSingleStore } from "../../../api/itemLookup";
+import { getSubDeptCatalog } from "../../../api/subDeptExclusions";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { formatGoliathDate } from "../../../utils";
 import { getCogs, getERet } from "./utils";
 import { buildRows } from "./utils/ordersRows";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import type { SortKey } from "./utils/ordersRows";
-import { formatGoliathDate } from "../../../utils";
-
 import {
   addedLines,
   appendLine,
@@ -56,7 +56,18 @@ import {
   applySent,
   docKey,
 } from "./utils/orderEdit";
+import { itemsInScope, workingOrder } from "./utils/problemItems";
 
+// Interfaces
+import type {
+  AllOrderResp,
+  JsonError,
+  Store,
+  UpdateFileResp,
+} from "../../../interfaces";
+import type { SortKey } from "./utils/ordersRows";
+
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
 import OrderPickerPanel from "./components/OrderPickerPanel";
 import OrderEditPanel, {
@@ -67,11 +78,9 @@ import SubmitReceipt from "./components/SubmitReceipt";
 import OrdersExportModal from "./export/OrdersExportModal";
 import ProblemList from "./components/ProblemList";
 import ItemFixPanel from "./components/ItemFixPanel";
-import { itemsInScope, workingOrder } from "./utils/problemItems";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
-import { isGroupSearch } from "../../../features/searchSlice";
 
 /**
  * Orders, as one fetch and a configuration.

@@ -1,3 +1,4 @@
+// Interfaces
 import type { UpdateFileResp } from "../../../../interfaces";
 
 interface Props {

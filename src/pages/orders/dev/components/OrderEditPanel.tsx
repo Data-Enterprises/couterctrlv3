@@ -1,12 +1,7 @@
+// Hooks
 import { Fragment, useEffect, useMemo, useRef } from "react";
-import {
-  PlusIcon,
-  XMarkIcon,
-  CheckIcon,
-  ArrowUturnLeftIcon,
-} from "@heroicons/react/16/solid";
-import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import {
   EDITABLE,
@@ -28,6 +23,16 @@ import {
   type LinePatch,
   type OrderDraft,
 } from "../utils/orderEdit";
+
+// Components
+import {
+  PlusIcon,
+  XMarkIcon,
+  CheckIcon,
+  ArrowUturnLeftIcon,
+} from "@heroicons/react/16/solid";
+import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
 export type EditSearch = { code: string; desc: string; onlyChanged: boolean };
 export type VendorOption = { id: string; name: string };

@@ -1,5 +1,8 @@
-import type { AllOrder } from "../../../../../interfaces";
+// Utils
 import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
+
+// Interfaces
+import type { AllOrder } from "../../../../../interfaces";
 import type { AggFn } from "../../../../../utils/csvExport";
 
 interface DimDef { key: string; label: string }

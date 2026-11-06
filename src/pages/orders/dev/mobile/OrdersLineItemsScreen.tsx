@@ -1,8 +1,12 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { AllOrder } from "../../../../interfaces";
-import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import type { Store } from "../../../../interfaces";
+// Utils
 import { formatCurrency2, resolveStoreName } from "../../../../utils";
+
+// Interfaces
+import type { AllOrder, Store } from "../../../../interfaces";
+import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   orders: AllOrder[];

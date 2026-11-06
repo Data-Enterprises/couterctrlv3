@@ -1,5 +1,8 @@
-import type { AllOrder } from "../../../../interfaces";
+// Utils
 import { getCogs, getERet } from ".";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
 
 /**
  * Editing an order, as data.

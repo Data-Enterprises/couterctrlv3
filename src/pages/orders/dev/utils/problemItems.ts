@@ -1,5 +1,4 @@
-import type { AllOrder } from "../../../../interfaces";
-import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
+// Utils
 import { lineFlags } from "./ordersRows";
 import {
   buildDocs,
@@ -11,6 +10,10 @@ import {
   type OrderDoc,
   type OrderDraft,
 } from "./orderEdit";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 
 /**
  * The Problems tab: the items whose cost looks wrong, one row per UPC, across

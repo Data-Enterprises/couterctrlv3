@@ -1,11 +1,18 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { AllOrder } from "../../../../interfaces";
-import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
+
+// Utils
 import { buildRows, type SortKey } from "../utils/ordersRows";
 import { ORDER_EXPORT_COLUMNS } from "./utils";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 
 interface Props {
   /** Every line the search returned, before any filter. */

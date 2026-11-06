@@ -1,11 +1,8 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { InformationCircleIcon } from "@heroicons/react/16/solid";
-import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import Checkbox from "../../../../components-dev/Checkbox";
-import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder } from "../../../../interfaces";
-import type { OrderDraft } from "../utils/orderEdit";
 import {
   commonUnit,
   itemStoreRows,
@@ -13,6 +10,16 @@ import {
   type ProblemItem,
 } from "../utils/problemItems";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+import type { OrderDraft } from "../utils/orderEdit";
+
+// Components
+import { InformationCircleIcon } from "@heroicons/react/16/solid";
+import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
+import Checkbox from "../../../../components-dev/Checkbox";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import { Band } from "./OrderEditPanel";
 
 interface Props {

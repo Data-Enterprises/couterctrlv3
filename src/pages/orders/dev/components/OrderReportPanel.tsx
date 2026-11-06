@@ -1,12 +1,19 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { lineFlags, type GridSort, type SortKey } from "../utils/ordersRows";
+import { FLAG_DOT, FLAG_TITLE } from "./utils";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder } from "../../../../interfaces";
-import { lineFlags, type GridSort, type SortKey } from "../utils/ordersRows";
-import { FLAG_DOT, FLAG_TITLE } from "./utils";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */

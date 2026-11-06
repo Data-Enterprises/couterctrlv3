@@ -1,18 +1,27 @@
+// Hooks
 import { useMemo } from "react";
-import { availableOptions, markAvailability } from "../utils/orderFilters";
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import type { AllOrder } from "../../../../interfaces";
+
+// Redux
 import {
   ORDER_FLAGS,
   type OrderFlag,
   type OrdersFilters,
 } from "../../../../features/dev/devOrdersSlice";
+
+// Utils
+import { availableOptions, markAvailability } from "../utils/orderFilters";
 import { lineFlags } from "../utils/ordersRows";
+import { FLAG_LABEL, FLAG_ON } from "./utils";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
+import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 
-import { FLAG_LABEL, FLAG_ON } from "./utils";
 interface Props {
   /** Every line item in the search, before any filter. */
   lines: AllOrder[];

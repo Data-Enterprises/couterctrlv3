@@ -1,11 +1,18 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import BottomSheet from "../../../../components-dev/BottomSheet";
+
+// Utils
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
+
+// Interfaces
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import BottomSheet from "../../../../components-dev/BottomSheet";
 
 interface OrdersExportSheetProps {
   onClose: () => void;

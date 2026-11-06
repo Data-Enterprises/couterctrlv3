@@ -4,7 +4,7 @@
  * All that is left here. The ag-grid column definitions and the grid
  * theme went with the ag-grid grid itself — the dev report panel draws a
  * plain table, and the export takes its columns from
- * `ordersExportColumns.ts`.
+ * `export/utils`.
  */
 export const getCogs = (
   base_cost: number,
