@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
-import { formatCurrency2, formatBigNumber, formatDate } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import { useAppSelector } from "../../../../../hooks";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  formatDate,
+} from "../../../../../utils";
+import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import ReceiversExportModal from "./ReceiversExportModal";
+import ReceiversExportModal from "../modal/ReceiversExportModal";
 
 const ReceiverDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
@@ -57,7 +61,8 @@ const ReceiverDetailPanel = () => {
         </div>
         {hasDetails && (
           <div className="flex items-center gap-3 mt-0.5">
-            <button data-help="export"
+            <button
+              data-help="export"
               onClick={() => setExportOpen(true)}
               title="Export CSV"
               className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
@@ -173,7 +178,10 @@ const ReceiverDetailPanel = () => {
 
           {/* Table */}
           <div className="flex-1 overflow-auto thin-scrollbar">
-            <table data-help="lines" className="w-full border-collapse text-[12px]">
+            <table
+              data-help="lines"
+              className="w-full border-collapse text-[12px]"
+            >
               <thead>
                 <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                   <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
@@ -267,7 +275,9 @@ const ReceiverDetailPanel = () => {
                   <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
                     <td className="px-3 py-2"></td>
                     <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2 text-right text-content/85">Totals</td>
+                    <td className="px-3 py-2 text-right text-content/85">
+                      Totals
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {totals.cases}
                     </td>

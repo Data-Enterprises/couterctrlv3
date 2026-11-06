@@ -32,8 +32,8 @@ import type { JsonError, ReceiverListResponse } from "../../../interfaces";
 // Components
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import ReceiverListPanel from "./components/ReceiverListPanel";
-import ReceiverDetailPanel from "./components/ReceiverDetailPanel";
+import ReceiverListPanel from "./components/list/ReceiverListPanel";
+import ReceiverDetailPanel from "./components/detail/ReceiverDetailPanel";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import ReceiversMobile from "./mobile/ReceiversMobile";
 

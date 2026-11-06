@@ -1,12 +1,12 @@
-import PageInfoButton from "../../../components-dev/PageInfoButton";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import { useState, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
-import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getReceiverDetails } from "../../../api/receivers";
+import { useAppSelector, useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { getReceiverDetails } from "../../../../../api/receivers";
 import {
   setIsFetchingDetails,
   setSelectedInvoice,
@@ -14,13 +14,13 @@ import {
   setTotals,
   setSelectedStoreNumber,
   setListGridData,
-} from "../../../features/dev/devReceiversSlice";
-import { formatDate } from "../../../utils";
-import { applyStoreNumberToName, scopeToStoreNumber } from "../../../utils/storeIdentity";
-import LocationTabs from "../../../components-dev/filters/LocationTabs";
-import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import FilterBar from "../../../components-dev/filters/FilterBar";
+} from "../../../../../features/dev/devReceiversSlice";
+import { formatDate } from "../../../../../utils";
+import { applyStoreNumberToName, scopeToStoreNumber } from "../../../../../utils/storeIdentity";
+import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
+import type { JsonError, ReceiverDetailsResponse } from "../../../../../interfaces";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import FilterBar from "../../../../../components-dev/filters/FilterBar";
 
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const toast = useToast();
