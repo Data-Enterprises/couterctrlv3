@@ -1,17 +1,24 @@
+// Hooks
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { TransactionListItem } from "../../../../interfaces";
-import type { Signal } from "../utils";
-import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import { groupSignalByTransaction } from "../utils";
+
+// Utils
 import {
   fmtNum,
   rowsToCsv,
   downloadCsv,
   aggregateRows,
 } from "../../../../utils/csvExport";
+import { groupSignalByTransaction } from "../utils";
+
+// Interfaces
+import type { TransactionListItem } from "../../../../interfaces";
+import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { Signal } from "../utils";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 interface CashiersExportModalProps {
   onClose: () => void;

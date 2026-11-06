@@ -1,9 +1,18 @@
-import type { TransactionListItem } from "../../../../interfaces";
+// Hooks
+import { useAppSelector } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// API
+import { emailTransaction } from "../../../../api/lossPrevention";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { exportData } from "../../../../utils/export";
-import { useAppSelector } from "../../../../hooks";
-import { emailTransaction } from "../../../../api/lossPrevention";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Interfaces
+import type { TransactionListItem } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 const chipStyle = {

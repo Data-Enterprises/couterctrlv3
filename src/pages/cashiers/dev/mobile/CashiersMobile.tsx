@@ -1,13 +1,18 @@
+// Hooks
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import SearchCard from "../../../../components-dev/SearchCard";
+import { useCashierSignals } from "../hooks";
+import { useCashierExplorer, type ExplorerOutcome } from "./hooks";
+
+// Redux
 import {
   closeExplorerSignal,
   setExplorerMobileSearchOpen,
   setExplorerNotice,
 } from "../../../../features/dev/devCashiersSlice";
-import { useCashierSignals } from "../hooks";
-import { useCashierExplorer, type ExplorerOutcome } from "./hooks";
+
+// Components
+import SearchCard from "../../../../components-dev/SearchCard";
 import SignalListMobile from "./SignalListMobile";
 import SignalTransactionsMobile from "./SignalTransactionsMobile";
 

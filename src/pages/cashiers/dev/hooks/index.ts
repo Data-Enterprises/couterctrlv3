@@ -1,5 +1,8 @@
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+// Hooks
 import { useMemo } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+
+// Utils
 import { getStoreName } from "../../../../utils";
 import {
   buildTransactionLengths,

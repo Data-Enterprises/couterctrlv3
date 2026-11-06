@@ -1,6 +1,11 @@
-import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import { LENSES, type Signal, type SpreadKind } from "../utils";
+// Utils
 import { formatCurrency2 } from "../../../../utils";
+import { LENSES, type Signal, type SpreadKind } from "../utils";
+
+// Interfaces
+import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 
 interface LensPanelProps {

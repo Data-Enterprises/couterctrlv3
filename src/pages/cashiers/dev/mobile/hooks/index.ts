@@ -1,11 +1,8 @@
+// Hooks
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { getStoreName, formatGoliathDate } from "../../../../../utils";
-import {
-  getSaleTypes,
-  getCashierTable,
-  getTransactionList,
-} from "../../../../../api/lossPrevention";
+
+// Redux
 import {
   setExplorerLoading,
   setExplorerMessage,
@@ -16,9 +13,21 @@ import {
   setSelectedSaleType,
   beginExplorerRequest,
 } from "../../../../../features/dev/devCashiersSlice";
-import type { JsonError, TransactionListItem } from "../../../../../interfaces";
-import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
 import { isGroupSearch } from "../../../../../features/searchSlice";
+
+// API
+import {
+  getSaleTypes,
+  getCashierTable,
+  getTransactionList,
+} from "../../../../../api/lossPrevention";
+
+// Utils
+import { getStoreName, formatGoliathDate } from "../../../../../utils";
+import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
+
+// Interfaces
+import type { JsonError, TransactionListItem } from "../../../../../interfaces";
 
 /**
  * The explorer's two-stage fetch, used by the mobile explorer.

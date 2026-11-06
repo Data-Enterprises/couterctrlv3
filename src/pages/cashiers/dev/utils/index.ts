@@ -1,4 +1,7 @@
+// Utils
 import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+
+// Interfaces
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 

@@ -1,5 +1,8 @@
-import StorePicker from "../../../../components-dev/storePicker/StorePicker";
+// Hooks
 import { useSearchPick } from "../../../../hooks";
+
+// Components
+import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";

@@ -1,20 +1,10 @@
+// Hooks
 import { useMemo, useState } from "react";
-import CashiersExportModal from "./components/CashiersExportModal";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
-import { useCashierCtx, useCashierSignals } from "./hooks";
 import { useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
-import {
-  getSaleTypes,
-  getCashierTable,
-  getTransactionList,
-} from "../../../api/lossPrevention";
-import type { JsonError, TransactionListItem } from "../../../interfaces";
-import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
+import { useCashierCtx, useCashierSignals } from "./hooks";
+
+// Redux
 import {
   setExplorerSaleTypes,
   setExplorerException,
@@ -26,12 +16,33 @@ import {
   setExplorerRows,
   setSelectedSaleType,
 } from "../../../features/dev/devCashiersSlice";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import {
+  getSaleTypes,
+  getCashierTable,
+  getTransactionList,
+} from "../../../api/lossPrevention";
+
+// Utils
+import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
+
+// Interfaces
+import type { JsonError, TransactionListItem } from "../../../interfaces";
+import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
+
+// Components
+import {
+  ArrowDownTrayIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import CashiersExportModal from "./components/CashiersExportModal";
 import ExplorerSearch from "./components/ExplorerSearch";
 import LensPanel from "./components/LensPanel";
 import SignalDetail from "./components/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
-import { isGroupSearch } from "../../../features/searchSlice";
 
 // LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
 // explorer uses the same ceiling rather than inventing a second notion of

@@ -1,7 +1,8 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
-import type { TransactionListItem } from "../../../../interfaces";
-import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
 import {
   describeSignal,
   formatClock,
@@ -10,7 +11,13 @@ import {
   transactionLabel,
   type Signal,
 } from "../utils";
-import { formatCurrency2 } from "../../../../utils";
+
+// Interfaces
+import type { TransactionListItem } from "../../../../interfaces";
+import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
+
+// Components
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 import Transaction from "./Transaction";
 
 interface SignalDetailProps {

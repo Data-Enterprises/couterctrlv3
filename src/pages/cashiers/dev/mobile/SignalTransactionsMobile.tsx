@@ -1,11 +1,13 @@
+// Hooks
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useCashierSignals } from "../hooks";
+
+// Redux
 import { setExplorerReceipt } from "../../../../features/dev/devCashiersSlice";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import BottomSheet from "../../../../components-dev/BottomSheet";
-import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
-import Transaction from "../../../../components-dev/transactions/Transaction";
 import {
   describeSignal,
   groupSignalByTransaction,
@@ -14,7 +16,12 @@ import {
   receiptLinesFor,
   transactionLabel,
 } from "../utils";
-import { useCashierSignals } from "../hooks";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import BottomSheet from "../../../../components-dev/BottomSheet";
+import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
+import Transaction from "../../../../components-dev/transactions/Transaction";
 
 /**
  * One signal's transactions — the drill-down between the signal list and a

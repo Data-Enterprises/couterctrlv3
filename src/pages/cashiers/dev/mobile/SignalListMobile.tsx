@@ -1,20 +1,27 @@
+// Hooks
 import { useState } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
+import { useCashierSignals } from "../hooks";
+
+// Redux
 import {
   setExplorerLens,
   openExplorerSignal,
 } from "../../../../features/dev/devCashiersSlice";
+
+// Utils
+import { fmtRangeLabel } from "../../../../utils/dateLabels";
+import { formatCurrency2 } from "../../../../utils";
+import { LENSES } from "../utils";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import InfoModal from "../../../../components-dev/InfoModal";
 import MobileSortChips from "../../../../components-dev/mobile/MobileSortChips";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
-import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
-import { fmtRangeLabel } from "../../../../utils/dateLabels";
-import { formatCurrency2 } from "../../../../utils";
-import { LENSES } from "../utils";
-import { useCashierSignals } from "../hooks";
 
 /**
  * The explorer's signal list on mobile.
