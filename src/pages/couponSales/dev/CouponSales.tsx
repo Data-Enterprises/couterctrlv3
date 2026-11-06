@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useCouponSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../../hooks/useApiContext";
 
@@ -81,7 +82,7 @@ const CouponSales = () => {
     selectedStoreKey,
     exportOpen,
     mobileLines,
-  } = useAppSelector((s) => s.dev.couponSales);
+  } = useCouponSalesCtx();
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 

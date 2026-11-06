@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCouponSalesCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Redux
@@ -45,10 +46,15 @@ interface Props {
 
 const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
   const dispatch = useAppDispatch();
-  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
+  const {
+    threshold: rawThreshold,
+    trendThreshold: rawTrendThreshold,
+    metric,
+    tierFilter,
+    storeFilter,
+    selectedStoreKey,
+  } = useCouponSalesCtx();
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
-  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.dev.couponSales.metric);
   const isTrend = metric === "trend";
   const activeRaw = isTrend ? rawTrendThreshold : rawThreshold;
 
@@ -58,9 +64,6 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
     rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
   );
   if (rawTrendThreshold !== null) lastValidTrendRef.current = rawTrendThreshold;
-  const tierFilter = useAppSelector((s) => s.dev.couponSales.tierFilter);
-  const storeFilter = useAppSelector((s) => s.dev.couponSales.storeFilter);
-  const selectedStoreKey = useAppSelector((s) => s.dev.couponSales.selectedStoreKey);
 
   // Clearing the numeric input dispatches null; grading deliberately holds the
   // last valid amount so rows don't reshuffle mid-edit. The slider has to sit

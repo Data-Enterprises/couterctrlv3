@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useCouponSalesCtx } from "../hooks";
 
 // Redux
 import {
@@ -47,8 +48,13 @@ type Scope = "store" | "all";
 
 const CpnSalesExportModal = ({ storeCoupons }: Props) => {
   const dispatch = useAppDispatch();
-  const allCoupons = useAppSelector((s) => s.dev.couponSales.coupons);
-  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
+  const {
+    coupons: allCoupons,
+    threshold: rawThreshold,
+    trendThreshold: rawTrendThreshold,
+    metric,
+    baselineCoupons,
+  } = useCouponSalesCtx();
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const threshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
@@ -67,9 +73,6 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
 
   const source = scope === "all" ? allCoupons : storeCoupons;
 
-  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.dev.couponSales.metric);
-  const baselineCoupons = useAppSelector((s) => s.dev.couponSales.baselineCoupons);
   // Scope selection drives the baseline the same way it drives the source, so
   // an all-stores export grades against the all-stores baseline.
   const grading = useMemo(
