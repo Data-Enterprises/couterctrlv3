@@ -7,7 +7,6 @@ import {
   DIMS,
   METRICS,
   PREVIEW_ROWS,
-  buildDetailsCsv,
   defaultMetrics,
   mapColumns,
 } from "./utils";
@@ -30,6 +29,7 @@ import type {
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ModalHeader from "./components/ModalHeader";
+import ModalPresetMode from "./components/ModalPresetMode";
 
 interface ReceiversExportModalProps {
   onClose: () => void;
@@ -113,16 +113,6 @@ const ReceiversExportModal = ({
     return { aggRows: display, columns };
   }, [flatRows, groupBy, metrics]);
 
-  const handlePresetDownload = () => {
-    const label = `${vendorName} — Invoice ${invoiceId} (Ref #${referenceNumber})`;
-    const safeName = vendorName.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(
-      buildDetailsCsv(details, label, totals),
-      `${safeName}_${invoiceId}.csv`,
-    );
-    onClose();
-  };
-
   const handleCustomDownload = () => {
     if (!columns.length || !aggRows.length) return;
     const headers = columns.map((c) => c.label);
@@ -144,7 +134,6 @@ const ReceiversExportModal = ({
       defaultWidth={1140}
       defaultHeight={960}
     >
-      {/* Header */}
       <ModalHeader
         vendorName={vendorName}
         referenceNumber={referenceNumber}
@@ -155,49 +144,14 @@ const ReceiversExportModal = ({
 
       {/* ── PRESETS MODE ── */}
       {mode === "presets" && (
-        <>
-          <div className="px-4 pt-4 pb-2 space-y-3">
-            <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium">
-              Select data to include
-            </p>
-
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked
-                readOnly
-                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-              />
-              <div>
-                <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
-                  Line Items
-                </p>
-                <p className="text-[11px] text-content/50 mt-0.5">
-                  {details.length} line items for {vendorName} — Invoice{" "}
-                  {invoiceId}
-                  {totals && ` · Cases ${totals.cases} · Units ${totals.units}`}
-                </p>
-              </div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-            <button
-              onClick={onClose}
-              className="text-[12px] text-content/50 hover:text-content transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handlePresetDownload}
-              disabled={details.length === 0}
-              className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              Download CSV
-            </button>
-          </div>
-        </>
+        <ModalPresetMode
+          onClose={onClose}
+          vendorName={vendorName}
+          invoiceId={invoiceId}
+          referenceNumber={referenceNumber}
+          details={details}
+          totals={totals}
+        />
       )}
 
       {/* ── CUSTOM MODE ── */}
