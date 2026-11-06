@@ -109,8 +109,7 @@ const ItemAnalysisPanel = ({
     () => classifyPattern(act, mixed),
     [act, mixed],
   );
-  // Weighed items have per-pound prices on both sides now, so the notice that
-  // withheld their suggestion (finding A's stop-gap) is gone.
+  // Weighed items have per-pound prices on both sides, so they get a suggestion too.
   const suggestion = useMemo(() => suggestPrice(act), [act]);
   const withheld = suggestionWithheld(act);
 
