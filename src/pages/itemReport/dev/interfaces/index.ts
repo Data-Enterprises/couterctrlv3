@@ -1,5 +1,10 @@
 // Interfaces
-import type { SubsPricePoint, SubDeptMargin, ActionKind } from "../../../../interfaces";
+import type {
+  SubsPricePoint,
+  SubDeptMargin,
+  ActionKind,
+  ReceivedLine,
+} from "../../../../interfaces";
 
 // Defined in src/interfaces: Item Report actions. Re-exported for this page's files.
 export type { ActionKind } from "../../../../interfaces";

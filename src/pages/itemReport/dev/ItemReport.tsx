@@ -43,7 +43,7 @@ import { buildReport, buildRollup } from "./utils/report";
 import { verdictFor } from "./utils/verdict";
 
 // Interfaces
-import type { ReportScope } from "./interfaces";
+import type { ReportScope, SheetRow } from "./interfaces";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
 import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";
@@ -52,7 +52,7 @@ import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import ItemReportEntry from "./components/ItemReportEntry";
 import InvoiceSheet from "./components/InvoiceSheet";
-import ItemReportSheet, { type SheetRow } from "./components/ItemReportSheet";
+import ItemReportSheet from "./components/ItemReportSheet";
 import ItemReportRail from "./rail/ItemReportRail";
 import ItemReportExportModal from "./export/ItemReportExportModal";
 

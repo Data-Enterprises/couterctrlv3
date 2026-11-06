@@ -25,7 +25,6 @@ import type {
   SubDeptMargin,
   SubMarginsPricePointsResp,
   SubsPricePoint,
-  ReceivedLine,
 } from "../../../../interfaces";
 
 // Shared with every page that hands an item to this one, so both ends agree

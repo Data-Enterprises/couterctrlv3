@@ -17,7 +17,7 @@ import { formatPct, pillClass } from "../../../../utils/severity";
 import { ACTION_TONE } from "../utils/actionTone";
 import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind, ReportItem, Verdict, ReceiptLine, SheetRow } from "../interfaces";
+import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interfaces";
 
 // Interfaces
 
