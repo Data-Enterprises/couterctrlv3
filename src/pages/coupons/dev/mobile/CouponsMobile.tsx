@@ -17,6 +17,8 @@ import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 
 // Interfaces
+import type { GroupTab } from "../interfaces";
+import type { Screen } from "./interfaces";
 import type {
   CouponsResponse,
   CouponItem,
@@ -29,10 +31,6 @@ import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
-
-export type GroupTab = "subdept" | "date" | "cashier";
-
-type Screen = "entry" | "stores" | "overview" | "detail";
 
 const fmtSearchDate = (mdy: string) => {
   const [m, d, y] = mdy.split("/");

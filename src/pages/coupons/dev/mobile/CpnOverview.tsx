@@ -6,7 +6,7 @@ import { sumCouponAmount } from "../../../../utils/couponValue";
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
-import type { GroupTab } from "./CouponsMobile";
+import type { GroupTab } from "../interfaces";
 
 // Components
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";

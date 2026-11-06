@@ -16,6 +16,7 @@ import {
 } from "../utils";
 
 // Interfaces
+import type { MetricSelection, ModalMode } from "../interfaces";
 import type { CouponItem } from "../../../../interfaces";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
@@ -28,13 +29,6 @@ interface CouponsExportModalProps {
   title: string;
   subtitle: string;
   rows: CouponItem[];
-}
-
-type ModalMode = "presets" | "custom";
-
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
 }
 
 const PREVIEW_ROWS = 5;

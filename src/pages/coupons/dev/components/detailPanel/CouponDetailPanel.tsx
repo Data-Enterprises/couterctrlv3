@@ -16,6 +16,8 @@ import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue
 import { formatCurrency2, formatDate } from "../../../../../utils";
 
 // Interfaces
+import type { GroupTab } from "../../interfaces";
+import type { GroupedSection } from "./interfaces";
 import type { JsonError } from "../../../../../interfaces";
 
 // Components
@@ -38,21 +40,11 @@ interface CouponDetailPanelProps {
   sortMetric: "amount" | "qty";
 }
 
-type GroupTab = "subdept" | "date" | "cashier";
-
 const GROUP_TABS: { key: GroupTab; label: string }[] = [
   { key: "subdept", label: "Sub dept" },
   { key: "date", label: "Date" },
   { key: "cashier", label: "Cashier" },
 ];
-
-type GroupedSection = {
-  key: string;
-  label: string;
-  count: number;
-  total: number;
-  rows: any[];
-};
 
 const fmtThreshold = (t: ThresholdValue | null, prefix = ""): string => {
   if (!t) return "";

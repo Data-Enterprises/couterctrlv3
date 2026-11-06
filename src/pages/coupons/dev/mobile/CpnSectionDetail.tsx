@@ -14,6 +14,7 @@ import { formatCurrency2, formatDate } from "../../../../utils";
 import { couponValueOf } from "../../../../utils/couponValue";
 
 // Interfaces
+import type { AggRow, AggUse } from "./interfaces";
 import type { CouponItem, JsonError } from "../../../../interfaces";
 
 // Components
@@ -35,24 +36,6 @@ interface Props {
   sortMetric: "amount" | "qty";
   onBack: () => void;
 }
-
-type AggUse = {
-  sale_id: number;
-  sale_date: string;
-  cashier_name: string;
-  terminal: string;
-  storeid: number;
-  amount: number;
-  row: CouponItem;
-};
-
-type AggRow = {
-  product_code: string;
-  product_description: string;
-  count: number;
-  total: number;
-  uses: AggUse[];
-};
 
 const buildSaleId = (row: CouponItem) => {
   const [y, m, d] = row.sale_date.split("T")[0].split("-");
