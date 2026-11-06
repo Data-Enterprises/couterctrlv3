@@ -1,14 +1,8 @@
 // Utils
-import { basisWord, type WindowPlan } from "../../utils";
+import { basisWord } from "../../utils";
 
 // Interfaces
-import type { SubDeptTotal } from "../../utils/trackerTotals";
-
-interface ExportArgs {
-  row: SubDeptTotal;
-  scopeLabel: string;
-  plan: WindowPlan;
-}
+import type { ExportArgs } from "../interfaces";
 
 const esc = (v: string | number) => {
   const s = String(v);

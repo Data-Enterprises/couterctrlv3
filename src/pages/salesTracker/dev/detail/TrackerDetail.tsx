@@ -11,8 +11,7 @@ import { changeTone, signed, signedPct, orDash } from "../utils/trackerTone";
 import { exportTracker } from "./utils";
 
 // Interfaces
-import type { SubDeptTotal } from "../utils/trackerTotals";
-import type { WindowPlan } from "../utils";
+import type { SubDeptTotal, WindowPlan } from "../interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";

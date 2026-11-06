@@ -7,7 +7,7 @@ import { orDash } from "../utils/trackerTone";
 import { SUB_GRID, NUM } from "../utils/trackerColumns";
 
 // Interfaces
-import type { SubDeptTotal } from "../utils/trackerTotals";
+import type { SubDeptTotal } from "../interfaces";
 
 // Components
 import VsLy from "./VsLy";

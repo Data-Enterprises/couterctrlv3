@@ -7,8 +7,8 @@ import { fetchAllPages } from "../../../../utils/paging";
 import { countedRows } from "../../../../utils/hashSubs";
 
 // Interfaces
+import type { TrackerScope, WindowPlan } from "../interfaces";
 import type { SubSale, SubSalesJsonResp } from "../../../../interfaces";
-import type { WindowPlan } from ".";
 
 /**
  * Sub-department rows for one store or group over a window.
@@ -155,14 +155,6 @@ const trackerQueue = createRequestQueue({ concurrency: 4 });
  * render this year before last year arrives.
  */
 const WEEKS_PER_REQUEST = 2;
-
-export interface TrackerScope {
-  url: string;
-  token: string;
-  useGroups: number;
-  searchValue: number;
-  singleStore: number;
-}
 
 /** The message the endpoint sends when a request exceeds its store-day budget.
  *  It arrives as a 400 with a structured detail, and it tells the caller how to

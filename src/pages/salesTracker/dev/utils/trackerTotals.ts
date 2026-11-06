@@ -1,6 +1,6 @@
 // Interfaces
+import type { DayTotal, SubDeptTotal, WeekTotal, WindowPlan } from "../interfaces";
 import type { SubSale } from "../../../../interfaces";
-import type { WindowPlan } from ".";
 
 /**
  * Sub-department totals for the tracker, shaped the way the legacy tracker
@@ -18,64 +18,6 @@ import type { WindowPlan } from ".";
  * Matching the two sides is a deliberate correction, and it means these figures
  * come in below the old page's.
  */
-
-export type DayTotal = {
-  date: string;
-  lyDate: string;
-  salesTy: number;
-  /** null where last year has no matching day at all — distinct from a day
-   *  that genuinely took nothing. */
-  salesLy: number | null;
-  trans: number;
-  ats: number | null;
-  dollarChange: number | null;
-  pctChange: number | null;
-  /** No rows came back for this date. Legacy stitched these in afterwards by
-   *  walking for gaps; here every date in the window is enumerated up front by
-   *  the plan, so a quiet day is a zero rather than a hole. */
-  noSales: boolean;
-};
-
-export type WeekTotal = {
-  index: number;
-  start: string;
-  end: string;
-  /** In order. Usually seven — but a range that isn't a multiple of seven
-   *  leaves the last bucket short, so nothing here may assume it. */
-  days: DayTotal[];
-  salesTy: number;
-  salesLy: number | null;
-  trans: number;
-  ats: number | null;
-  dollarChange: number | null;
-  pctChange: number | null;
-  /**
-   * How the week's days split, so a closed card can say more than its total.
-   *
-   * A week down four percent reads the same whether every day was down four,
-   * or six days were flat and Saturday fell off a cliff — and those are
-   * different problems. Only days with a last-year partner are counted; a day
-   * with nothing to compare is neither good nor bad.
-   */
-  upDays: number;
-  downDays: number;
-  comparedDays: number;
-  /** The day that cost the most money. Ranked on dollars, like every other
-   *  "worst" on this page, so the label can't disagree with the sort. */
-  worstDay: DayTotal | null;
-};
-
-export type SubDeptTotal = {
-  id: number;
-  desc: string;
-  weeks: WeekTotal[];
-  salesTy: number;
-  salesLy: number | null;
-  trans: number;
-  ats: number | null;
-  dollarChange: number | null;
-  pctChange: number | null;
-};
 
 const net = (r: SubSale) => r.total_sales - r.total_tax;
 

@@ -3,7 +3,7 @@ import { formatCurrencyCompact } from "../../../../utils";
 import { signedPct } from "../utils/trackerTone";
 
 // Interfaces
-import type { TrackerBasis } from "../utils";
+import type { TrackerBasis } from "../interfaces";
 
 // Components
 import {

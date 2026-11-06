@@ -5,7 +5,9 @@
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubSale } from "../../interfaces";
-import type { TrackerBasis } from "../../pages/salesTracker/dev/utils";
+
+// Interfaces
+import type { TrackerBasis } from "../../pages/salesTracker/dev/interfaces";
 
 /**
  * Sales Tracker page state.

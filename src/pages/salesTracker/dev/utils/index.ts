@@ -1,6 +1,9 @@
 // Utils
 import { sameWeekDayLastYear } from "../../../../utils";
 
+// Interfaces
+import type { DayPair, TrackerBasis, WeekBucket, WindowPlan } from "../interfaces";
+
 /**
  * Week bucketing for the tracker, and the TY-to-LY day pairing underneath it.
  *
@@ -53,20 +56,6 @@ export const isoToDisplay = (iso: string) => {
   return `${m}/${d}/${y}`;
 };
 
-/**
- * Which period the window is measured against.
- *
- * Last year is the default and the better comparison: it carries the season
- * with it. Last week is the fallback for a store that has no last year — one
- * that opened this year, or changed system — because a tracker with an empty
- * comparison column is a tracker with nothing to say.
- *
- * It is one basis for the whole window, never a mix. A column headed LY whose
- * rows are sometimes last week is a column that lies, and the figure it holds
- * cannot be read without checking which row it came from.
- */
-export type TrackerBasis = "LY" | "LW";
-
 /** The same thing in prose. The label itself is the basis — "LY Sales",
  *  "vs LW" — so only sentences need this. */
 export const basisWord = (basis: TrackerBasis) =>
@@ -83,51 +72,6 @@ export const basisWord = (basis: TrackerBasis) =>
  */
 const partnerOf = (tyDate: string, basis: TrackerBasis) =>
   basis === "LW" ? shiftDays(tyDate, -7) : sameWeekDayLastYear(tyDate).date;
-
-export type WeekBucket = {
-  index: number;
-  start: string;
-  end: string;
-  /** The seven TY dates, ascending. */
-  dates: string[];
-};
-
-export type DayPair = {
-  tyDate: string;
-  /** The day this one is compared against — last year's partner, or last
-   *  week's, depending on the plan's basis. */
-  lyDate: string;
-  weekIndex: number;
-  /** 0-6 within the bucket. Fixed at build time so the Days grid keeps a
-   *  stable column even where a holiday shifts the LY partner's weekday. */
-  slot: number;
-};
-
-export type WindowPlan = {
-  /** What `lyDate`, `lyStart` and `lyEnd` mean on this plan. */
-  basis: TrackerBasis;
-  weeks: WeekBucket[];
-  pairs: DayPair[];
-  tyStart: string;
-  tyEnd: string;
-  lyStart: string;
-  lyEnd: string;
-  byTyDate: Map<string, DayPair>;
-  /** Keyed by LY date. An array because a holiday can pull two TY days onto
-   *  one LY date — see `collisions`. */
-  byLyDate: Map<string, DayPair[]>;
-  /**
-   * TY dates sharing an LY partner with another TY date.
-   *
-   * `sameWeekDayLastYear` snaps a holiday to the actual holiday date last
-   * year rather than shifting by weekday, so in a window containing one the
-   * shifted neighbour can land on the same LY date. Both TY days would then
-   * compare against the same LY figure, inflating one of them. The UI flags
-   * these rather than silently averaging: the comparison is genuinely
-   * ambiguous and the user is better placed to judge it.
-   */
-  collisions: string[];
-};
 
 /** The start date that gives `weeks` whole weeks ending on `endDate`. Used by
  *  the entry card's presets, which fill the two date inputs rather than

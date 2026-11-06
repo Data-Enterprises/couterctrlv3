@@ -1,8 +1,11 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { basisWord, type TrackerBasis } from "../utils";
+import { basisWord } from "../utils";
 import { changeTone, signed, signedPct } from "../utils/trackerTone";
 import { NUM } from "../utils/trackerColumns";
+
+// Interfaces
+import type { TrackerBasis } from "../interfaces";
 
 interface VsLyProps {
   dollarChange: number | null;

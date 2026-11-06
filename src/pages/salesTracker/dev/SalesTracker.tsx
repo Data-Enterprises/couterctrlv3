@@ -27,20 +27,13 @@ import {
   fetchSubSales,
   fetchTrackerWindow,
 } from "./utils/trackerData";
-import {
-  basisWord,
-  buildWindowPlan,
-  isoToDisplay,
-  shiftDays,
-  type TrackerBasis,
-} from "./utils";
-import {
-  buildSubDeptTotals,
-  allDeptsTotal,
-  type SubDeptTotal,
-} from "./utils/trackerTotals";
+import { basisWord, buildWindowPlan, isoToDisplay, shiftDays } from "./utils";
+import { buildSubDeptTotals, allDeptsTotal } from "./utils/trackerTotals";
 import { orDash } from "./utils/trackerTone";
 import { SUB_GRID, NUM } from "./utils/trackerColumns";
+
+// Interfaces
+import type { SortColumn, SubDeptTotal, TrackerBasis } from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -52,8 +45,6 @@ import TrackerHeader from "./components/TrackerHeader";
 import SubDeptRow from "./components/SubDeptRow";
 import TrackerDetail from "./detail/TrackerDetail";
 import VsLy from "./components/VsLy";
-
-type SortColumn = "dept" | "ty" | "ly" | "ats" | "dollar";
 
 const shortLabel = (d: string) => {
   const dt = new Date(d + "T12:00:00");

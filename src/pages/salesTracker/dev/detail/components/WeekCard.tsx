@@ -2,10 +2,10 @@
 import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
 import { orDash, changeTone, signedPct } from "../../utils/trackerTone";
 import { WEEK_GRID, DAY_GRID, NUM } from "../../utils/trackerColumns";
-import { basisWord, type TrackerBasis } from "../../utils";
+import { basisWord } from "../../utils";
 
 // Interfaces
-import type { WeekTotal } from "../../utils/trackerTotals";
+import type { WeekTotal, TrackerBasis } from "../../interfaces";
 
 // Components
 import { ChevronRightIcon, StarIcon } from "@heroicons/react/20/solid";
