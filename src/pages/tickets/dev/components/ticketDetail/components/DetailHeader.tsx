@@ -8,7 +8,6 @@ import {
 // Interfaces
 import type { Ticket } from "../../../../../../api/tickets";
 
-
 interface DetailHeaderProps {
   ticket: Ticket;
 }

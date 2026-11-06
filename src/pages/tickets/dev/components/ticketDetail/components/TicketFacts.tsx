@@ -7,7 +7,7 @@ import {
 import { storeFullText, storesOf } from "../../../utils";
 
 // Interfaces
-import type { Ticket } from "@/api/tickets";
+import type { Ticket } from "../../../../../../api/tickets";
 
 interface TicketFactsProps {
   ticket: Ticket;

@@ -1,5 +1,8 @@
-import CheckBox from "@/components-dev/inputs/CheckBox";
+// Interfaces
 import type { RefObject, SetStateAction } from "react";
+
+// Components
+import CheckBox from "@/components-dev/inputs/CheckBox";
 
 interface ComposerProps {
   draft: string;

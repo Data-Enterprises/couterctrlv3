@@ -6,6 +6,7 @@ import type {
   TicketAttachment,
   TicketComment,
 } from "../../../../../../api/tickets";
+import type { Dispatch, RefObject, SetStateAction } from "react"
 
 // Components
 import { PaperClipIcon } from "@heroicons/react/24/outline";
@@ -13,15 +14,15 @@ import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import CommentBubble from "./CommentBubble";
 
 interface ThreadProps {
-  thread: React.RefObject<HTMLDivElement | null>;
-  wasAtBottom: React.RefObject<boolean>;
+  thread: RefObject<HTMLDivElement | null>;
+  wasAtBottom: RefObject<boolean>;
   attachments: TicketAttachment[];
   comments: TicketComment[];
   userid: number;
   detailLoading: boolean;
   openAttachment: (attachmentId: number) => void;
   filesOpen: boolean;
-  setFilesOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setFilesOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const Thread = ({

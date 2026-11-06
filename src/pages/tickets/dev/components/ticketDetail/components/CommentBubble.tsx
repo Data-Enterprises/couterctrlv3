@@ -2,17 +2,16 @@
 import { stampText } from "../../../utils/ticketsUtils";
 
 // Interfaces
-import type { TicketComment} from "../../../../../../api/tickets";
+import type { TicketComment } from "../../../../../../api/tickets";
 
 interface CommentBubbleProps {
-    comment: TicketComment;
-    mine: boolean;
+  comment: TicketComment;
+  mine: boolean;
 }
 
 const CommentBubble = ({ comment, mine }: CommentBubbleProps) => {
   return (
     <div
-      key={comment.id}
       className={`flex flex-col gap-1 max-w-[82%] ${
         mine ? "self-end items-end" : "self-start items-start"
       }`}
