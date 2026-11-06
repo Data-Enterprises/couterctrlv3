@@ -62,9 +62,8 @@ const CouponListPanel = ({
       (c) => c.storeid,
       (c) => c.store_number,
     );
-    // Rows are collected per store first, then totalled with
-    // sumCouponAmount — a running `total + c.coupon_amount` can't dedupe the
-    // transaction-level fallback. See utils/couponValue.
+    // Collected per store, then totalled with sumCouponAmount: a running add
+    // can't dedupe the transaction-level fallback (see utils/couponValue).
     const map = new Map<string, { name: string; rows: typeof state.coupons }>();
     state.coupons.forEach((c) => {
       const id = `${c.storeid}__${c.store_number}`;

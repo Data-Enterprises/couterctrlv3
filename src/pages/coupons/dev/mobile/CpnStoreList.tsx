@@ -42,9 +42,8 @@ const CpnStoreList = ({
   onSearch,
 }: Props) => {
   const [exportOpen, setExportOpen] = useState(false);
-  // Store names come from assignedStores, never the coupon payload — see
-  // utils/getStoreName. groupStores covers stores in the searched group that
-  // aren't personally assigned to this user, matching CouponListPanel.
+  // Store names come from assignedStores, never the coupon payload; groupStores
+  // covers searched-group stores this user isn't assigned to.
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -119,9 +118,8 @@ const CpnStoreList = ({
               onExport={() => setExportOpen(true)}
             />
 
-            {/* Group-wide row, matching desktop's "All stores". Without it the
-                group total is visible on the card above but not explorable —
-                you could only ever drill into one store at a time. */}
+            {/* Group-wide row, matching desktop's "All stores", so the group
+                total can be drilled into. */}
             <CpnSectionRow
               label="All stores"
               count={coupons.length}

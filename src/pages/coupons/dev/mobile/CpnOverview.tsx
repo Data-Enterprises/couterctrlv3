@@ -25,10 +25,8 @@ interface Props {
   selectedTab: GroupTab;
   onTabChange: (tab: GroupTab) => void;
   onSectionSelect: (key: string, label: string) => void;
-  /** The store list on a group search, the search card on a single store —
-   *  `CouponsMobile` decides which, the same way it decides whether a store
-   *  list exists at all. A drill has one way back, so there is no separate
-   *  search control here. */
+  /** The store list on a group search, the search card on a single store;
+   *  `CouponsMobile` decides which. */
   onBack: () => void;
 }
 
@@ -109,16 +107,9 @@ const CpnOverview = ({
 
   return (
     <>
-      {/* A drill level, so it wears the same wrapper every other mobile drill
-          does — the back control, the scope line and start-at-the-top all come
-          with it. The three group-bys ARE its tabs: Sub dept, Date and
-          Cashier are three readings of one week, which is exactly what this
-          component's tab row is for.
-
-          Back goes to the store list on a group search and to the search card
-          on a single store, because a single store has no list behind it —
-          the same fork `CouponsMobile` already makes to decide whether the
-          store list is shown at all. */}
+      {/* A drill level in the shared mobile wrapper; Sub dept, Date and
+          Cashier are its tabs. Back goes to the store list on a group search,
+          to the search card on a single store. */}
       <MobilePerfDetail
         tabs={TABS}
         active={selectedTab}

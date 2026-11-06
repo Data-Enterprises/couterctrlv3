@@ -6,9 +6,8 @@ import { withResolvedCouponAmount } from "../../../../utils/couponValue";
 import type { CouponItem } from "../../../../interfaces";
 
 export const buildPresetCsv = (rows: CouponItem[], label: string) => {
-  // coupon_amount can be null with the figure in store_coupon/vendor_coupon,
-  // and that fallback is transaction-level — resolved here so a reader summing
-  // the column gets the same total the page shows. See utils/couponValue.
+  // coupon_amount can be null with the figure in store_coupon/vendor_coupon
+  // (a transaction-level fallback); resolved here so the file matches the page.
   const resolved = withResolvedCouponAmount(rows);
   const headers = ["Store #", "Store", "Date", "Trans", "Cpn Type", "Cpn Amt", "UPC", "Description", "Cashier #", "Cashier", "Customer ID", "Sub Dept"];
   const data = resolved.map((r) => [

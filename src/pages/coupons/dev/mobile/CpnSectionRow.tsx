@@ -12,16 +12,8 @@ interface Props {
 }
 
 /**
- * One grouped row — a store, a sub department, a date, a cashier.
- *
- * The count used to float unlabelled between the name and the money, which
- * read as a second amount at a glance. It now carries its own word on the
- * second line beside the average, the same shape the Cashiers and Performance
- * rows use: the name and the figure you scan on line one, the detail that
- * qualifies them on line two.
- *
- * Average is derived rather than passed: it is total over count and nothing
- * else, and a caller computing it is a caller that can compute it differently.
+ * One grouped row: a store, a sub department, a date or a cashier. The count
+ * sits on line two beside the average, which is derived as total over count.
  */
 const CpnSectionRow = ({ label, count, total, onClick }: Props) => (
   <button

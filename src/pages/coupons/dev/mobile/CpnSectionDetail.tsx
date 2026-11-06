@@ -62,9 +62,8 @@ const CpnSectionDetail = ({
   const aggRows = useMemo((): AggRow[] => {
     const map = new Map<string, AggRow>();
     coupons.forEach((c) => {
-      // `!= null`, not truthiness — matching CouponDetailPanel. A product_code
-      // of 0 is a real code; a falsy check silently regroups those rows under
-      // their description instead, splitting one UPC across two rows.
+      // `!= null`, not truthiness, as on desktop: a product_code of 0 is a
+      // real code, and a falsy check would split one UPC across two rows.
       const key =
         c.product_code != null
           ? String(Math.round(Number(c.product_code)))
@@ -194,11 +193,8 @@ const CpnSectionDetail = ({
   const txNet = txGross - txCoupons;
   const txTotal = txNet + txTax;
 
-  // The deepest level, and the same wrapper the two above it use. One tab:
-  // MobilePerfDetail renders no tab row for a single entry, which is right —
-  // there is one reading of a section and a lone tab would be a label
-  // pretending to be a control. The tab it came FROM names the level, and the
-  // section itself is the scope.
+  // The deepest level, in the same wrapper. One tab, so no tab row is drawn;
+  // the tab it came from names the level.
   return (
     <>
     <MobilePerfDetail

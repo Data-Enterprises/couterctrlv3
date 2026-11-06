@@ -85,9 +85,8 @@ const CouponsMobile = () => {
     dispatch(actions.setCoupons([]));
     dispatch(actions.setIsFetching(true));
     dispatch(actions.setNoCouponsFound(false));
-    // A group search can return stores this user isn't personally assigned to.
-    // Desktop loads them here so store names resolve for those rows; without
-    // it mobile fell back to the coupon payload's own store_name.
+    // A group search can return stores this user isn't assigned to; loading
+    // them here lets those rows' store names resolve.
     if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
         .then((resp) => {
@@ -169,13 +168,11 @@ const CouponsMobile = () => {
     return filteredCoupons;
   }, [filteredCoupons, selectedSection, selectedTab]);
 
-  // Names come from assignedStores/groupStores, never the coupon payload, then
-  // get the on-screen location's number written back in — co-located stores
-  // share one storeid and therefore one assignedStores record.
+  // Names come from assignedStores/groupStores, never the coupon payload, with
+  // the location's number written in: co-located stores share one storeid.
   const storeName = useMemo(() => {
-    // Group mode with nothing picked is the "All stores" view, so the group is
-    // the subject. A single-store search has no store list to pick from, so the
-    // scope is whatever was searched.
+    // Group mode with nothing picked is "All stores", so the group is the
+    // subject; a single-store search's scope is what was searched.
     const storeid = selectedStoreId ?? (isGroup ? null : Number(ctx.lastStore));
     if (storeid === null) return (selectedGroup as any)?.group_name ?? "Group";
 

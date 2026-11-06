@@ -12,19 +12,9 @@ interface Props {
 }
 
 /**
- * The coupon figures for whatever is in scope.
- *
- * One component rather than the identical four-column strip the store list,
- * the overview and the section detail each carried their own copy of — three
- * places to change a figure, and three chances to change two of them.
- *
- * Value takes the headline and the other three become tiles. The strip gave
- * all four equal weight, which is a layout with no opinion: this is the
- * Coupons page, coupon value is what it is about, and a count of products is
- * context for that number rather than a peer of it.
- *
- * Totals are summed through `sumCouponAmount`, never a running add — the
- * transaction-level fallback has to be deduped first. See utils/couponValue.
+ * The coupon figures for whatever is in scope: value as the headline, the
+ * other three as tiles. Totals go through `sumCouponAmount`, never a running
+ * add, so the transaction-level fallback is deduped (see utils/couponValue).
  */
 const CpnTotalsCard = ({ coupons, caption }: Props) => {
   const total = sumCouponAmount(coupons);
