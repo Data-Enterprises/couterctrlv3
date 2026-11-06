@@ -25,7 +25,7 @@ import {
   withinBudget,
   type CallGroup,
 } from "../../../../../utils/pageCalls";
-import { attachmentProblem } from "../../ticketsUtils";
+import { attachmentProblem } from "../../utils/ticketsUtils";
 import {
   originOf,
   pageUsesSearch,
@@ -33,7 +33,7 @@ import {
   scopeOf,
   searchSummary,
   suggestedTitle,
-} from "../utils/ticketOrigin";
+} from "./utils/ticketOrigin";
 import { pageStoreOf, searchForPage } from "./utils";
 import {
   assignedAsOptions,
@@ -485,7 +485,7 @@ const NewTicketModal = ({
         </p>
       </div>
 
-          {/* Section: Send/Cancel Buttons, own components? */}
+      {/* Section: Send/Cancel Buttons, own components? */}
       <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
         <button
           type="button"

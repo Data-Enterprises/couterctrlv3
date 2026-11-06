@@ -11,12 +11,9 @@ import {
   tabCounts,
   visibleTickets,
   whenText,
-} from "@/pages/tickets/dev/ticketsUtils";
+} from "@/pages/tickets/dev/utils/ticketsUtils";
 import type { Ticket } from "@/api/tickets";
-import {
-  noFilters,
-  type TicketFilters,
-} from "@/features/dev/devTicketsSlice";
+import { noFilters, type TicketFilters } from "@/features/dev/devTicketsSlice";
 
 const ticket = (over: Partial<Ticket> = {}): Ticket =>
   ({
@@ -71,7 +68,9 @@ describe("what each tab shows", () => {
     expect(visibleTickets(rows, "all", "", 517).map((t) => t.id)).toEqual([
       1, 2, 3,
     ]);
-    expect(visibleTickets(rows, "closed", "", 517).map((t) => t.id)).toEqual([4]);
+    expect(visibleTickets(rows, "closed", "", 517).map((t) => t.id)).toEqual([
+      4,
+    ]);
   });
 
   it("counts each tab the way the tab filters", () => {
@@ -114,11 +113,12 @@ describe("how long ago", () => {
 
 describe("a file the help desk will not take", () => {
   const limits = { maxBytes: 26214400, extensions: [".png", ".csv"] };
-  const file = (name: string, size: number) =>
-    ({ name, size }) as File;
+  const file = (name: string, size: number) => ({ name, size }) as File;
 
   it("turns away the wrong kind before the upload, not after a 413", () => {
-    expect(attachmentProblem(file("payload.exe", 100), limits)).toMatch(/\.exe/);
+    expect(attachmentProblem(file("payload.exe", 100), limits)).toMatch(
+      /\.exe/,
+    );
     expect(attachmentProblem(file("shot.png", 100), limits)).toBeNull();
   });
 
@@ -131,9 +131,30 @@ describe("a file the help desk will not take", () => {
 
 describe("the column filters", () => {
   const rows = [
-    ticket({ id: 1, status: "open", company_name: "Houchens", priority: "high", assigned_tech: null, opened_by_name: "Mike Bedingfield" }),
-    ticket({ id: 2, status: "in_progress", company_name: "Grocery Basket", priority: "normal", assigned_tech: "Mike Tech", opened_by_name: "Admin Chick" }),
-    ticket({ id: 3, status: "waiting", company_name: "Food Giant", priority: "urgent", assigned_tech: "Stephen Tech", opened_by_name: "Manager Chick" }),
+    ticket({
+      id: 1,
+      status: "open",
+      company_name: "Houchens",
+      priority: "high",
+      assigned_tech: null,
+      opened_by_name: "Mike Bedingfield",
+    }),
+    ticket({
+      id: 2,
+      status: "in_progress",
+      company_name: "Grocery Basket",
+      priority: "normal",
+      assigned_tech: "Mike Tech",
+      opened_by_name: "Admin Chick",
+    }),
+    ticket({
+      id: 3,
+      status: "waiting",
+      company_name: "Food Giant",
+      priority: "urgent",
+      assigned_tech: "Stephen Tech",
+      opened_by_name: "Manager Chick",
+    }),
   ];
   const filters = (over: Partial<TicketFilters> = {}): TicketFilters => ({
     ...noFilters,
@@ -252,7 +273,10 @@ describe("sendFailureText", () => {
   it("does not read out a detail from anything but a 400", () => {
     const err = {
       message: "Request failed with status code 500",
-      response: { status: 500, data: { detail: "Traceback (most recent call last)" } },
+      response: {
+        status: 500,
+        data: { detail: "Traceback (most recent call last)" },
+      },
     };
     expect(sendFailureText(err)).toBe(
       "That did not send: Request failed with status code 500",

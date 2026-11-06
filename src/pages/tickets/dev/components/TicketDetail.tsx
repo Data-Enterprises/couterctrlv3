@@ -18,7 +18,7 @@ import {
   visibleLabels,
   stampText,
   whenText,
-} from "../ticketsUtils";
+} from "../utils/ticketsUtils";
 import { storeFullText, storesOf } from "../utils";
 
 /**

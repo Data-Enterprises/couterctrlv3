@@ -1,9 +1,9 @@
-import type { Ticket, TicketStatus } from "../../../api/tickets";
+import type { Ticket, TicketStatus } from "../../../../api/tickets";
 import type {
   QueueTab,
   TicketFilters,
-} from "../../../features/dev/devTicketsSlice";
-import { storesOf } from "./utils";
+} from "../../../../features/dev/devTicketsSlice";
+import { storesOf } from ".";
 
 /**
  * The filtering behind the tabs and the search box.
@@ -148,9 +148,11 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
   all: tickets.filter((t) => t.status !== "closed").length,
   unassigned: tickets.filter((t) => t.status !== "closed" && isUnassigned(t))
     .length,
-  mine: tickets.filter((t) => t.status !== "closed" && isMine(t, userid)).length,
-  urgent: tickets.filter((t) => t.status !== "closed" && t.priority === "urgent")
+  mine: tickets.filter((t) => t.status !== "closed" && isMine(t, userid))
     .length,
+  urgent: tickets.filter(
+    (t) => t.status !== "closed" && t.priority === "urgent",
+  ).length,
   closed: tickets.filter((t) => t.status === "closed").length,
 });
 

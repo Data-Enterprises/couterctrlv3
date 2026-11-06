@@ -6,7 +6,7 @@ import {
   STATUS_CLASS,
   STATUS_LABEL,
   whenText,
-} from "../ticketsUtils";
+} from "../utils/ticketsUtils";
 
 // Interfaces
 import type { Ticket } from "../../../../api/tickets";

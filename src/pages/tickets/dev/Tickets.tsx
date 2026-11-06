@@ -12,7 +12,7 @@ import {
 } from "../../../features/dev/devTicketsSlice";
 
 // Utils
-import { priorityCounts, statusCounts } from "./ticketsUtils";
+import { priorityCounts, statusCounts } from "./utils/ticketsUtils";
 import { storesOnTickets } from "./utils";
 
 // Componenets

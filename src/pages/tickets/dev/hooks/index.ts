@@ -44,7 +44,11 @@ import {
   startWork,
   upsertTicket,
 } from "../../../../features/dev/devTicketsSlice";
-import { sendFailureText, visibleTickets, tabCounts } from "../ticketsUtils";
+import {
+  sendFailureText,
+  visibleTickets,
+  tabCounts,
+} from "../utils/ticketsUtils";
 
 /** The HTTP status of a failed call, from axios or from a test double. */
 const statusOf = (err: unknown) =>

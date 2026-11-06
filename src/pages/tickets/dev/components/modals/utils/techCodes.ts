@@ -1,4 +1,5 @@
-import type { TicketTech } from "../../../../../api/tickets";
+// Interfaces
+import type { TicketTech } from "../../../../../../api/tickets";
 
 /** How a tech code is written: TECH- and three digits, padded. */
 export const TECH_CODE_PREFIX = "TECH-";

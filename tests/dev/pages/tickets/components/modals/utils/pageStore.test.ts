@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import { initialState } from "@/features/searchSlice";
 import type { SearchState } from "@/features/searchSlice";
 import type { RootState } from "@/store";
-import { pageStoreOf, searchForPage } from "@/pages/tickets/dev/components/modals/utils";
-import { originOf, searchSummary } from "@/pages/tickets/dev/components/utils/ticketOrigin";
+import {
+  pageStoreOf,
+  searchForPage,
+} from "@/pages/tickets/dev/components/modals/utils";
+import {
+  originOf,
+  searchSummary,
+} from "@/pages/tickets/dev/components/modals/utils/ticketOrigin";
 
 const irvington = {
   storeid: 369,
@@ -29,8 +35,10 @@ const onSales: SearchState = {
   singleDate: "11/2/2026",
 };
 
-const withItemActions = (scope: { storeid: number; start: string; end: string } | null, storeId = 0) =>
-  ({ dev: { itemReport: { scope, storeId } } }) as unknown as RootState;
+const withItemActions = (
+  scope: { storeid: number; start: string; end: string } | null,
+  storeId = 0,
+) => ({ dev: { itemReport: { scope, storeId } } }) as unknown as RootState;
 
 const ticketLine = (state: RootState, href: string) => {
   const own = pageStoreOf(state, href);
@@ -42,7 +50,11 @@ const ticketLine = (state: RootState, href: string) => {
 
 describe("a ticket from a page with its own store picker", () => {
   it("names the store the page ran, not the one open on Sales", () => {
-    const state = withItemActions({ storeid: 512, start: "2026-10-27", end: "2026-11-02" });
+    const state = withItemActions({
+      storeid: 512,
+      start: "2026-10-27",
+      end: "2026-11-02",
+    });
     expect(ticketLine(state, "item-report")).toMatch(/^IGA BOWLING GREEN 014/);
   });
 
@@ -51,7 +63,9 @@ describe("a ticket from a page with its own store picker", () => {
   });
 
   it("falls back to the picker before a run", () => {
-    expect(ticketLine(withItemActions(null, 512), "item-report")).toMatch(/^IGA BOWLING GREEN/);
+    expect(ticketLine(withItemActions(null, 512), "item-report")).toMatch(
+      /^IGA BOWLING GREEN/,
+    );
   });
 
   it("carries the page's own window into the record", () => {

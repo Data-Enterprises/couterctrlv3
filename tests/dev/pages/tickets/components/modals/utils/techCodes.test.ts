@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   nextTechCode,
   formatTechCode,
-} from "@/pages/tickets/dev/components/utils/techCodes";
+} from "@/pages/tickets/dev/components/modals/utils/techCodes";
 import type { TicketTech } from "@/api/tickets";
 
 const tech = (tech_code: string | null, is_active = true): TicketTech =>

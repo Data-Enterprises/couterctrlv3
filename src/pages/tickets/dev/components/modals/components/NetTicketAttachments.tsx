@@ -1,6 +1,6 @@
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { fileSize } from "../../../ticketsUtils";
+import { fileSize } from "../../../utils/ticketsUtils";
 
 interface NewTicketAttachmentsProps {
   picker: React.RefObject<HTMLInputElement | null>;

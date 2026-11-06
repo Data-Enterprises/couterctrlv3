@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { emptyGroup } from "@/features/groupSlice";
 import { initialState } from "@/features/searchSlice";
 import type { SearchState } from "@/features/searchSlice";
-import { PAGE_CATEGORY, originOf, scopeLine, scopeOf, searchSummary } from "@/pages/tickets/dev/components/utils/ticketOrigin";
+import {
+  PAGE_CATEGORY,
+  originOf,
+  scopeLine,
+  scopeOf,
+  searchSummary,
+} from "@/pages/tickets/dev/components/modals/utils/ticketOrigin";
 
 const store = {
   storeid: 369,
@@ -92,7 +98,10 @@ describe("searchSummary", () => {
 
   it("says nothing when nothing has been searched", () => {
     expect(
-      searchSummary(searching({ selectedStore: { ...store, store_name: "" } }), "sales"),
+      searchSummary(
+        searching({ selectedStore: { ...store, store_name: "" } }),
+        "sales",
+      ),
     ).toBeNull();
   });
 });
@@ -160,13 +169,32 @@ describe("every page files under a category", () => {
   // The nav's hrefs on 29 Oct 2026, less Home, the help desk and the
   // placeholders. A page added to the nav belongs here and in PAGE_CATEGORY.
   const pages = [
-    "admin", "cashiers", "categories", "coupon-sales", "coupons", "data-export",
+    "admin",
+    "cashiers",
+    "categories",
+    "coupon-sales",
+    "coupons",
+    "data-export",
     "forecasting",
-    "groups", "inventory-sub-department", "inventory-vendor", "invoices",
-    "item-lookup", "item-report", "loss-prevention", "lp-actions", "orders",
-    "quicksight", "receivers", "sales", "sales-tracker",
-    "settings", "sub-dept-margins", "upc-scanner", "upc-upload",
-    "user-management", "vendors",
+    "groups",
+    "inventory-sub-department",
+    "inventory-vendor",
+    "invoices",
+    "item-lookup",
+    "item-report",
+    "loss-prevention",
+    "lp-actions",
+    "orders",
+    "quicksight",
+    "receivers",
+    "sales",
+    "sales-tracker",
+    "settings",
+    "sub-dept-margins",
+    "upc-scanner",
+    "upc-upload",
+    "user-management",
+    "vendors",
   ];
 
   it.each(pages)("%s has one", (href) => {
@@ -175,7 +203,8 @@ describe("every page files under a category", () => {
 
   it("names only the fourteen, and never a retired one", () => {
     const used = new Set(Object.values(PAGE_CATEGORY));
-    for (const gone of ["Chat", "Teams", "Tickets", "Receivers"]) expect(used.has(gone)).toBe(false);
+    for (const gone of ["Chat", "Teams", "Tickets", "Receivers"])
+      expect(used.has(gone)).toBe(false);
     expect(used.size).toBe(13); // the fourteenth, Other, is picked by hand
   });
 
@@ -183,4 +212,3 @@ describe("every page files under a category", () => {
     expect(originOf({ reportFrom: "/tickets" }).category).toBeNull();
   });
 });
-

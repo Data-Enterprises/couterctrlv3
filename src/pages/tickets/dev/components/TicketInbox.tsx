@@ -19,13 +19,8 @@ import {
   snippetOf,
   visibleLabels,
   whenText,
-} from "../ticketsUtils";
-import {
-  SCOPE_HEADING,
-  SCOPE_TEXT,
-  storeChipText,
-  storesOf,
-} from "../utils";
+} from "../utils/ticketsUtils";
+import { SCOPE_HEADING, SCOPE_TEXT, storeChipText, storesOf } from "../utils";
 
 interface Props {
   rows: Ticket[];
