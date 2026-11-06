@@ -139,7 +139,7 @@ const TicketInbox = ({
 
   return (
     <div className="flex h-full w-[379px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg xl:w-[410px] 2xl:w-[460px]">
-      {/* One row: Urgent and Refresh sit beside the search box they act on. */}
+      {/* InboxHeader.tsx: One row: Urgent and Refresh sit beside the search box they act on. */}
       <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 py-2.5 flex items-end gap-3">
         <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
           {isTech ? "Queue" : scope ? SCOPE_HEADING[scope] : "Your tickets"}
@@ -171,7 +171,7 @@ const TicketInbox = ({
 
       <div className="flex-none border-b border-brand_line p-2.5">
         {/* Tabs, because they are exclusive and the top level of this column. */}
-        {/* `auto-cols-fr`, so a client's two tabs share the width evenly. */}
+        {/* QueueTabs.tsx: `auto-cols-fr`, so a client's two tabs share the width evenly. */}
         <div
           data-help="queue-tabs"
           role="tablist"
@@ -200,7 +200,7 @@ const TicketInbox = ({
             );
           })}
         </div>
-
+        {/* InboxFilters.tsx: status and priority filters, plus clear button if narrowed. */}
         <div className="flex items-center gap-1.5">
           <MultiSelectFilter
             options={STATUSES.map((s) => ({
@@ -252,7 +252,7 @@ const TicketInbox = ({
             className="mt-2 w-full"
           />
         )}
-
+        {/* SearchBar.tsx */}
         <div className="mt-2 flex items-center gap-1.5">
           <label htmlFor="ticket-search" className="sr-only">
             Search tickets
@@ -337,7 +337,7 @@ const TicketInbox = ({
             {loading ? "Reading the queue…" : "Nothing here."}
           </p>
         )}
-
+        {/* TicketRow.tsx: the rows.map return will be its own component */}
         {rows.map((t) => {
           const open = t.id === selectedId;
           const unread = isUnread(t);
