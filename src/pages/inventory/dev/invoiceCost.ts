@@ -3,7 +3,7 @@ import { normalizeProductCode } from "../../../utils/productCode";
 import {
   fetchReceiversByItem,
   toReceiptLineFromSearch,
-} from "../../itemReport/dev/itemReportData";
+} from "../../../utils/receivers";
 import type { InventoryScope } from "./inventoryData";
 
 /**

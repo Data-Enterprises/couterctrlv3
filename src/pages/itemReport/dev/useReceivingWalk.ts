@@ -7,12 +7,11 @@ import {
 } from "../../../features/dev/devItemReportSlice";
 import {
   fetchInvoices,
-  fetchReceiversByItem,
-  toReceiptLineFromSearch,
   RECEIVING_LOOKBACK_DAYS,
   type ReportScope,
   type ReceiptLine,
 } from "./itemReportData";
+import { fetchReceiversByItem, toReceiptLineFromSearch } from "../../../utils/receivers";
 
 /**
  * The receiving half of Item Actions.
