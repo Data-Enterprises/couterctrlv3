@@ -5,6 +5,7 @@ import { useState } from "react";
 import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
 
 // Interfaces
+import type { ExportDataset } from "../interfaces";
 import type { Store } from "../../../../../interfaces";
 
 // Components
@@ -16,8 +17,6 @@ interface StoresExportModalProps {
   allStores: Store[];
   filteredStores: Store[];
 }
-
-type ExportDataset = "all" | "filtered";
 
 const buildStoresCsv = (stores: Store[], label: string) => {
   const headers = ["Store ID", "Store #", "Store Name", "Company ID", "Company Name"];

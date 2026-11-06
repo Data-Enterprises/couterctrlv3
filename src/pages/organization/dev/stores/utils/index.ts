@@ -1,4 +1,5 @@
 // Interfaces
+import type { StoreUserResult, Summary } from "../interfaces";
 import type { SkippedUser } from "../../../../../api/storeAccess";
 
 /**
@@ -11,16 +12,6 @@ import type { SkippedUser } from "../../../../../api/storeAccess";
  * guess which three and why — when what they need is the name of the group to
  * go and change.
  */
-
-export interface StoreUserResult {
-  changed: number[];
-  skipped: SkippedUser[];
-}
-
-export interface Summary {
-  tone: "success" | "error";
-  text: string;
-}
 
 const plural = (n: number, one: string, many = `${one}s`) =>
   `${n} ${n === 1 ? one : many}`;

@@ -2,19 +2,19 @@
 import { useEffect, useRef, useState } from "react";
 
 // Utils
-import { STATUS_LABEL, attachmentProblem } from "../utils/ticketsUtils";
+import { STATUS_LABEL, attachmentProblem } from "../../utils/ticketsUtils";
 
 // Interfaces
-import type { TicketsCtx } from "../hooks";
+import type { TicketsCtx } from "../../hooks";
 
 // Components
-import CheckBox from "../../../../components-dev/inputs/CheckBox";
-import EditStoresModal from "./modals/EditStoresModal";
-import DetailHeader from "./ticketDetail/components/DetailHeader";
-import TicketFacts from "./ticketDetail/components/TicketFacts";
-import ManageBar from "./ticketDetail/components/ManageBar";
-import ClosedStrip from "./ticketDetail/components/ClosedStrip";
-import Thread from "./ticketDetail/components/Thread";
+import CheckBox from "../../../../../components-dev/inputs/CheckBox";
+import EditStoresModal from "../modals/EditStoresModal";
+import DetailHeader from "./components/DetailHeader";
+import TicketFacts from "./components/TicketFacts";
+import ManageBar from "./components/ManageBar";
+import ClosedStrip from "./components/ClosedStrip";
+import Thread from "./components/Thread";
 
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
