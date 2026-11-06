@@ -1,25 +1,20 @@
+// Hooks
 import { useMemo, useState } from "react";
-import {
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+
+// Redux
 import {
   setItemReportActionFilter,
   setItemReportUpcFilter,
   setItemReportDescFilter,
   setItemReportDeptFilter,
   setItemReportVendorFilter,
-} from "../../../features/dev/devItemReportSlice";
-import { formatCurrencyCompact } from "../../../utils";
-import { formatPct, pillClass } from "../../../utils/severity";
-import ColFilter from "../../../components-dev/filters/ColFilter";
-import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import HeaderIconButton from "../../../components-dev/HeaderIconButton";
-import { ACTION_TONE } from "./actionTone";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import DetailPopover from "./DetailPopover";
+} from "../../../../features/dev/devItemReportSlice";
+
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
+import { formatPct, pillClass } from "../../../../utils/severity";
+import { ACTION_TONE } from "../utils/actionTone";
 import {
   ACTION_LABEL,
   ACTION_RANK,
@@ -27,8 +22,22 @@ import {
   type ActionKind,
   type ReportItem,
   type Verdict,
-} from "./itemReportMetrics";
-import type { ReceiptLine } from "./itemReportData";
+} from "../utils/metrics";
+
+// Interfaces
+import type { ReceiptLine } from "../utils";
+
+// Components
+import {
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/20/solid";
+import ColFilter from "../../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import DetailPopover from "./DetailPopover";
 
 /**
  * The report itself: one row per item, its action, and the evidence for it.

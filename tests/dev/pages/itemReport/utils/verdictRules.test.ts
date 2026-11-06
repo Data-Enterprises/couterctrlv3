@@ -6,8 +6,8 @@ import {
   flatDaysBefore,
   verdictFor,
   type ReportItem,
-} from "@/pages/itemReport/dev/itemReportMetrics";
-import type { ReceiptLine } from "@/pages/itemReport/dev/itemReportData";
+} from "@/pages/itemReport/dev/utils/metrics";
+import type { ReceiptLine } from "@/pages/itemReport/dev/utils";
 
 /**
  * Two of Item Actions' rules, against the dev board review's own cases.

@@ -15,8 +15,8 @@
  * Pasted text is run through the same parser — a paste is just a file that
  * skipped the disk.
  */
-
-import { normalizeProductCode } from "../../../utils/productCode";
+// Utils
+import { normalizeProductCode } from "../../../../utils/productCode";
 
 export interface ParsedUpload {
   upcs: string[];

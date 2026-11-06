@@ -1,4 +1,7 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
+
+// Components
 import { XMarkIcon } from "@heroicons/react/16/solid";
 
 /**

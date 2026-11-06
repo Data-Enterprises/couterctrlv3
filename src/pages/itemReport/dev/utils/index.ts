@@ -1,22 +1,21 @@
-import {
-  getReceiversList,
-  getReceiverDetails,
-} from "../../../api/receivers";
-import { normalizeProductCode } from "../../../utils/productCode";
-import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+// API
+import { getReceiversList, getReceiverDetails } from "../../../../api/receivers";
 import {
   getItemActions,
   getSubMarginsWithPricePoints,
   ITEM_ACTIONS_MAX_CODES,
-  type ItemActionsResp,
-} from "../../../api/subMargins";
-import { fetchAllPages, inBatches } from "../../../utils/paging";
-import { LW_OFFSET, shiftIso } from "../../../utils/grading";
-import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../utils/dates";
-// Shared with every page that hands an item to this one, so both ends agree
-// on how long the window is. Re-exported for this page's own files.
-export { WINDOW_DAYS, weekEnding };
-import { formatDate } from "../../../utils";
+} from "../../../../api/subMargins";
+
+// Utils
+import { normalizeProductCode } from "../../../../utils/productCode";
+import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import { fetchAllPages, inBatches } from "../../../../utils/paging";
+import { LW_OFFSET, shiftIso } from "../../../../utils/grading";
+import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../../utils/dates";
+import { formatDate } from "../../../../utils";
+
+// Interfaces
+import type { ItemActionsResp } from "../../../../api/subMargins";
 import type {
   ReceiverListItem,
   ReceiverListResponse,
@@ -25,8 +24,13 @@ import type {
   SubDeptMargin,
   SubMarginsPricePointsResp,
   SubsPricePoint,
-} from "../../../interfaces";
-import type { ReceivedLine } from "../../../interfaces";
+  ReceivedLine,
+} from "../../../../interfaces";
+
+// Shared with every page that hands an item to this one, so both ends agree
+// on how long the window is. Re-exported for this page's own files.
+export { WINDOW_DAYS, weekEnding };
+
 /** A line received on an invoice — defined in src/interfaces as ReceivedLine,
  *  because itemReportSlice holds it. */
 export type ReceiptLine = ReceivedLine;

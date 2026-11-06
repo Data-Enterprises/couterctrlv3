@@ -1,11 +1,12 @@
+// Hooks
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatDateSimple } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
-import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import { useReceivingWalk } from "./hooks";
+
+// Redux
 import {
   setItemReportStoreId,
   setItemReportLoading,
@@ -21,16 +22,12 @@ import {
   setItemReportInvoiceLines,
   setItemReportInvoiceError,
 } from "../../../features/dev/devItemReportSlice";
-import ItemReportEntry from "./ItemReportEntry";
-import InvoiceSheet from "./InvoiceSheet";
-import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
-import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";
+
+// Utils
+import { formatDateSimple } from "../../../utils";
 import { collectCriticalItems } from "../../../utils/itemGrading";
 import { scopeToStoreNumber } from "../../../utils/storeIdentity";
-import ItemReportSheet, { type SheetRow } from "./ItemReportSheet";
-import ItemReportRail from "./ItemReportRail";
-import ItemReportExportModal from "./ItemReportExportModal";
-import { useReceivingWalk } from "./useReceivingWalk";
+import { normalizeProductCode } from "../../../utils/productCode";
 import {
   fetchAllItemRows,
   fetchItemRowsForCodes,
@@ -41,14 +38,26 @@ import {
   fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
   type ReportScope,
-} from "./itemReportData";
-import { normalizeProductCode } from "../../../utils/productCode";
+} from "./utils";
 import {
   buildPriceEras,
   buildReport,
   buildRollup,
   verdictFor,
-} from "./itemReportMetrics";
+} from "./utils/metrics";
+
+// Interfaces
+import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
+import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";
+
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import ItemReportEntry from "./components/ItemReportEntry";
+import InvoiceSheet from "./components/InvoiceSheet";
+import ItemReportSheet, { type SheetRow } from "./components/ItemReportSheet";
+import ItemReportRail from "./rail/ItemReportRail";
+import ItemReportExportModal from "./export/ItemReportExportModal";
 
 /**
  * Item Actions — a critical list, diagnosed and handed over.

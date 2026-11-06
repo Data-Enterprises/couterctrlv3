@@ -1,13 +1,20 @@
+// Hooks
 import { useMemo, useRef, useEffect } from "react";
+
+// Utils
+import { formatCurrency2, formatDateSimple } from "../../../../utils";
+import { normalizeProductCode } from "../../../../utils/productCode";
+import { describeReceipt } from "../utils";
+import { ACTION_TONE } from "../utils/actionTone";
+
+// Interfaces
+import type { ReceiverDetailsItem } from "../../../../interfaces";
+import type { ActionKind } from "../utils/metrics";
+
+// Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import { formatCurrency2, formatDateSimple } from "../../../utils";
-import { describeReceipt } from "./itemReportData";
-import { normalizeProductCode } from "../../../utils/productCode";
-import { ACTION_TONE } from "./actionTone";
-import type { ActionKind } from "./itemReportMetrics";
-import type { ReceiverDetailsItem } from "../../../interfaces";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
 /**
  * One delivery, in full.

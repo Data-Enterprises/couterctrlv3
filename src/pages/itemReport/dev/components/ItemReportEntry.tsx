@@ -1,18 +1,27 @@
+// Hooks
 import { useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   setPendingUpload,
   clearPendingUpload,
   setPendingUpcText,
   addPendingUpcs,
   removePendingUpc,
-} from "../../../features/dev/devItemReportSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { parseUpload } from "./parseUpload";
-import { RECEIVING_LOOKBACK_DAYS, WINDOW_DAYS } from "./itemReportData";
-import type { Store } from "../../../interfaces";
+} from "../../../../features/dev/devItemReportSlice";
+
+// Utils
+import { parseUpload } from "../utils/parseUpload";
+import { RECEIVING_LOOKBACK_DAYS, WINDOW_DAYS } from "../utils";
+
+// Interfaces
+import type { Store } from "../../../../interfaces";
+
+// Components
+import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
+import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 
 /**
  * The entry screen: a store, a week, and a list of UPCs.

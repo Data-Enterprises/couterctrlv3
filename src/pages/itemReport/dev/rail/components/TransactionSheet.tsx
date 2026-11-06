@@ -1,14 +1,23 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useAppSelector } from "../../../../../hooks";
+
+// API
+import { getTransactionList } from "../../../../../api/lossPrevention";
+
+// Utils
+import { fetchAllPages } from "../../../../../utils/paging";
+import { formatCurrency2, formatDateSimple } from "../../../../../utils";
+import { ACTION_TONE } from "../../utils/actionTone";
+
+// Interfaces
+import type { TransactionListItem } from "../../../../../interfaces";
+import type { ActionKind } from "../../utils/metrics";
+
+// Components
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import { useAppSelector } from "../../../hooks";
-import { getTransactionList } from "../../../api/lossPrevention";
-import { fetchAllPages } from "../../../utils/paging";
-import { formatCurrency2, formatDateSimple } from "../../../utils";
-import { ACTION_TONE } from "./actionTone";
-import type { ActionKind } from "./itemReportMetrics";
-import type { TransactionListItem } from "../../../interfaces";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
+import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 
 /**
  * The sales behind one price, and the basket behind one sale.

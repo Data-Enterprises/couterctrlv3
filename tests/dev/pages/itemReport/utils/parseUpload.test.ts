@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseUpload } from "@/pages/itemReport/dev/parseUpload";
+import { parseUpload } from "@/pages/itemReport/dev/utils/parseUpload";
 
 describe("parseUpload — pasted lists", () => {
   it("keeps every code on a comma-separated line", () => {

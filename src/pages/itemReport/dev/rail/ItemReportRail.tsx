@@ -1,17 +1,18 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+
+// Redux
 import {
   setItemReportExpandedReceipt,
   openItemReportInvoice,
   toggleItemReportSection,
-} from "../../../features/dev/devItemReportSlice";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
-import { formatCurrency2, formatDateSimple } from "../../../utils";
-import { formatPct, pillClass } from "../../../utils/severity";
-import { unitPrice } from "../../../utils/pricePoints";
-import type { PricePointsState } from "../../../hooks/usePricePoints";
-import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+} from "../../../../features/dev/devItemReportSlice";
+
+// Utils
+import { formatCurrency2, formatDateSimple } from "../../../../utils";
+import { formatPct, pillClass } from "../../../../utils/severity";
+import { unitPrice } from "../../../../utils/pricePoints";
 import {
   ACTION_LABEL,
   buildPriceEras,
@@ -20,12 +21,20 @@ import {
   mergePricePoints,
   type ActionKind,
   type ReportItem,
-} from "./itemReportMetrics";
-import { ACTION_TONE } from "./actionTone";
-import DetailPopover from "./DetailPopover";
-import { describeReceipt } from "./itemReportData";
-import type { ReceiptLine } from "./itemReportData";
-import TransactionSheet from "./TransactionSheet";
+} from "../utils/metrics";
+import { ACTION_TONE } from "../utils/actionTone";
+import { describeReceipt } from "../utils";
+
+// Interfaces
+import type { PricePointsState } from "../../../../hooks/usePricePoints";
+import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
+import type { ReceiptLine } from "../utils";
+
+// Components
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import DetailPopover from "../components/DetailPopover";
+import TransactionSheet from "./components/TransactionSheet";
 
 /**
  * The detail beside the sheet: what arrived, what moved, what it rang at.
