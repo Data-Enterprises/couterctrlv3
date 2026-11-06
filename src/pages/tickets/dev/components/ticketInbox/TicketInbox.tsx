@@ -8,8 +8,13 @@ import {
   snippetOf,
   visibleLabels,
   whenText,
-} from "../utils/ticketsUtils";
-import { SCOPE_HEADING, SCOPE_TEXT, storeChipText, storesOf } from "../utils";
+} from "../../utils/ticketsUtils";
+import {
+  SCOPE_HEADING,
+  SCOPE_TEXT,
+  storeChipText,
+  storesOf,
+} from "../../utils";
 
 // Interfaces
 import type {
@@ -17,15 +22,15 @@ import type {
   TicketScope,
   TicketStatus,
   TicketStore,
-} from "../../../../api/tickets";
+} from "../../../../../api/tickets";
 import type {
   QueueTab,
   TicketFilters,
-} from "../../../../features/dev/devTicketsSlice";
+} from "../../../../../features/dev/devTicketsSlice";
 
 // Components
-import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import MultiSelectFilter from "../../../../../components-dev/filters/MultiSelectFilter";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 
 interface Props {
   rows: Ticket[];

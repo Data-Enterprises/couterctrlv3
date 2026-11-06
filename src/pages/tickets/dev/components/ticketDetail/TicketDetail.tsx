@@ -8,13 +8,13 @@ import { STATUS_LABEL, attachmentProblem } from "../../utils/ticketsUtils";
 import type { TicketsCtx } from "../../hooks";
 
 // Components
-import CheckBox from "../../../../../components-dev/inputs/CheckBox";
 import EditStoresModal from "../modals/EditStoresModal";
 import DetailHeader from "./components/DetailHeader";
 import TicketFacts from "./components/TicketFacts";
 import ManageBar from "./components/ManageBar";
 import ClosedStrip from "./components/ClosedStrip";
 import Thread from "./components/Thread";
+import Composer from "./components/Composer";
 
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
@@ -157,61 +157,19 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
        * the strip above; a client files a new ticket.
        */}
       {!closed && (
-        <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
-          <label htmlFor="ticket-reply" className="sr-only">
-            Write a reply
-          </label>
-          <textarea
-            id="ticket-reply"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            rows={2}
-            placeholder={
-              ctx.isTech
-                ? "Write a reply, or an internal note"
-                : "Write a reply — a screenshot is usually the most useful thing you can send"
-            }
-            className="w-full border border-brand_line rounded-lg px-3 py-2 text-[13.5px] resize-none bg-custom-white"
-          />
-          <div data-help="reply" className="flex items-center gap-3 flex-wrap">
-            {ctx.canManage && (
-              <CheckBox
-                id={2}
-                idExtension="internal-note"
-                label="Internal note"
-                value={internal}
-                onChange={(value) => setInternal(Boolean(value))}
-                className="text-[12.5px] cursor-pointer select-none"
-              />
-            )}
-            <div className="flex-1" />
-            {fileError && (
-              <span className="text-[11.5px] text-amber-900">{fileError}</span>
-            )}
-            <input
-              ref={picker}
-              type="file"
-              className="hidden"
-              onChange={(e) => chooseFile(e.target.files?.[0])}
-            />
-            <button
-              type="button"
-              onClick={() => picker.current?.click()}
-              disabled={ctx.working}
-              className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
-            >
-              Attach
-            </button>
-            <button
-              type="button"
-              onClick={send}
-              disabled={ctx.working || draft.trim() === ""}
-              className="text-[12.5px] font-semibold px-4 py-1.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-40"
-            >
-              {internal ? "Post note" : "Reply"}
-            </button>
-          </div>
-        </div>
+        <Composer
+          draft={draft}
+          setDraft={setDraft}
+          isTech={ctx.isTech}
+          canManage={ctx.canManage}
+          internal={internal}
+          setInternal={setInternal}
+          fileError={fileError}
+          picker={picker}
+          chooseFile={chooseFile}
+          working={ctx.working}
+          send={send}
+        />
       )}
       {storesOpen && ctx.canManage && (
         <EditStoresModal

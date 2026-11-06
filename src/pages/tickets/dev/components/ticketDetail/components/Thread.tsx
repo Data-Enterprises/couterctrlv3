@@ -1,9 +1,15 @@
-import type { TicketAttachment, TicketComment} from "../../../../../../api/tickets";
+// Utils
+import { fileSize } from "../../../utils/ticketsUtils";
 
+// Interfaces
+import type {
+  TicketAttachment,
+  TicketComment,
+} from "../../../../../../api/tickets";
 
-import { fileSize, stampText } from "../../../utils/ticketsUtils";
-
+// Components
 import { ChevronUpIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import CommentBubble from "./CommentBubble";
 
 interface ThreadProps {
   thread: React.RefObject<HTMLDivElement | null>;
@@ -37,56 +43,18 @@ const Thread = ({
           wasAtBottom.current =
             box.scrollHeight - box.scrollTop - box.clientHeight < 80;
         }}
-        // Leaves room for the collapsed Files bar, so it never covers the
-        // newest message.
+        // Leaves room for the collapsed Files bar, so it never covers the newest message.
         className={`h-full overflow-y-auto thin-scrollbar px-4 pt-3 flex flex-col gap-3 ${
           attachments.length > 0 ? "pb-14" : "pb-3"
         }`}
       >
-        {comments.map((comment) => {
-          /*
-           * Yours on the right, theirs on the left. An internal note keeps
-           * its amber on either side: a different audience, not a speaker.
-           */
-          const mine = comment.userid === userid;
-          return (
-            <div
-              key={comment.id}
-              className={`flex flex-col gap-1 max-w-[82%] ${
-                mine ? "self-end items-end" : "self-start items-start"
-              }`}
-            >
-              <div className="flex items-baseline gap-2 flex-wrap px-1">
-                <span className="text-[12.5px] font-semibold">
-                  {mine ? "You" : comment.author_name}
-                </span>
-                <span className="text-[11px] text-content/85">
-                  {stampText(comment.created_at)}
-                </span>
-              </div>
-              <div
-                className={`rounded-2xl px-3.5 py-2.5 ${
-                  mine ? "rounded-br-sm" : "rounded-bl-sm"
-                } ${
-                  comment.is_internal
-                    ? "bg-amber-50 border border-amber-200"
-                    : mine
-                      ? "bg-brand_navy text-custom-white"
-                      : "bg-row_selected border border-brand_line"
-                }`}
-              >
-                {comment.is_internal && (
-                  <div className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-900 mb-1">
-                    Internal note — never sent to a client
-                  </div>
-                )}
-                <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap m-0">
-                  {comment.comment}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+        {comments.map((comment) => (
+          <CommentBubble
+            key={comment.id}
+            comment={comment}
+            mine={comment.userid === userid}
+          />
+        ))}
 
         {comments.length === 0 && !detailLoading && (
           <p className="text-[12.5px] text-content/85">
@@ -113,11 +81,6 @@ const Thread = ({
               }`}
             />
           </button>
-
-          {/*
-           * 0fr to 1fr rather than a height, so a list of any length opens
-           * at the same speed without being measured.
-           */}
           <div
             className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
             style={{ gridTemplateRows: filesOpen ? "1fr" : "0fr" }}
