@@ -2,8 +2,19 @@ import type {
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
 } from "../../../../../../interfaces";
-import { fmtNum, rowsToCsv, type AggFn } from "../../../../../../utils/csvExport";
-import type { DimDef, MetricDef } from "../interfaces";
+import {
+  fmtNum,
+  rowsToCsv,
+  type AggFn,
+} from "../../../../../../utils/csvExport";
+import type {
+  DimDef,
+  MappedColumn,
+  MetricDef,
+  ModalMode,
+  ActiveMetric,
+  MetricSelection,
+} from "../interfaces";
 
 /**
  *
@@ -90,3 +101,29 @@ export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
 ];
 
 export const PREVIEW_ROWS = 5;
+
+export const modalModes: ModalMode[] = ["presets", "custom"];
+
+export const mapColumns = (
+  dims: DimDef[],
+  metrics: ActiveMetric[],
+): MappedColumn[] => {
+  const activeDims = dims.map((d) => ({ key: d.key, label: d.label }));
+
+  const activeMetrics = metrics.map((m) => ({
+    key: `${m.fn}__${m.key}`,
+    label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
+  }));
+
+  return [...activeDims, ...activeMetrics];
+};
+
+export const defaultMetrics = new Map<string, MetricSelection>([
+  ["cases", { fn: "sum", enabled: false }],
+  ["units", { fn: "sum", enabled: false }],
+  ["ucost", { fn: "avg", enabled: false }],
+  ["ext_cost", { fn: "sum", enabled: false }],
+  ["retail", { fn: "avg", enabled: false }],
+  ["ext_retail", { fn: "sum", enabled: false }],
+  ["gm", { fn: "avg", enabled: false }],
+]);

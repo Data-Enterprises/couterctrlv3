@@ -1,12 +1,16 @@
+// Hooks
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type {
-  ReceiverDetailsItem,
-  ReceiverDetailsTotals,
-} from "../../../../../interfaces";
-import type { ModalMode, MetricSelection } from "./interfaces";
-import { AGG_OPTIONS, DIMS, METRICS, PREVIEW_ROWS, buildDetailsCsv } from "./utils";
+
+// Utils
+import {
+  AGG_OPTIONS,
+  DIMS,
+  METRICS,
+  PREVIEW_ROWS,
+  buildDetailsCsv,
+  defaultMetrics,
+  mapColumns,
+} from "./utils";
 import {
   fmtNum,
   rowsToCsv,
@@ -14,6 +18,18 @@ import {
   aggregateRows,
 } from "../../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../../utils/csvExport";
+
+// Interfaces
+import type { ModalMode, MetricSelection, ActiveMetric } from "./interfaces";
+import type {
+  ReceiverDetailsItem,
+  ReceiverDetailsTotals,
+} from "../../../../../interfaces";
+
+// Components
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ModalHeader from "./components/ModalHeader";
 
 interface ReceiversExportModalProps {
   onClose: () => void;
@@ -36,17 +52,8 @@ const ReceiversExportModal = ({
 
   // Custom builder state — no default selections
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
-  const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
-    new Map([
-      ["cases", { fn: "sum", enabled: false }],
-      ["units", { fn: "sum", enabled: false }],
-      ["ucost", { fn: "avg", enabled: false }],
-      ["ext_cost", { fn: "sum", enabled: false }],
-      ["retail", { fn: "avg", enabled: false }],
-      ["ext_retail", { fn: "sum", enabled: false }],
-      ["gm", { fn: "avg", enabled: false }],
-    ]),
-  );
+  const [metrics, setMetrics] =
+    useState<Map<string, MetricSelection>>(defaultMetrics);
 
   const toggleGroupBy = (key: string) =>
     setGroupBy((prev) => {
@@ -78,7 +85,7 @@ const ReceiversExportModal = ({
 
   const { aggRows, columns } = useMemo(() => {
     const activeDims = DIMS.filter((d) => groupBy.has(d.key));
-    const activeMetrics = METRICS.map((m) => ({
+    const activeMetrics: ActiveMetric[] = METRICS.map((m) => ({
       ...m,
       sel: metrics.get(m.key),
     }))
@@ -102,14 +109,7 @@ const ReceiversExportModal = ({
       return out;
     });
 
-    const columns = [
-      ...activeDims.map((d) => ({ key: d.key, label: d.label })),
-      ...activeMetrics.map((m) => ({
-        key: `${m.fn}__${m.key}`,
-        label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
-      })),
-    ];
-
+    const columns = mapColumns(activeDims, activeMetrics);
     return { aggRows: display, columns };
   }, [flatRows, groupBy, metrics]);
 
@@ -145,37 +145,13 @@ const ReceiversExportModal = ({
       defaultHeight={960}
     >
       {/* Header */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
-        <div>
-          <p className="text-custom-white text-[13px] font-semibold">
-            Export CSV
-          </p>
-          <p className="text-custom-white/55 text-[10px] mt-0.5">
-            {vendorName} — Ref #{referenceNumber}
-          </p>
-        </div>
-        <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
-          {(["presets", "custom"] as ModalMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                mode === m
-                  ? "bg-custom-white text-brand_navy"
-                  : "text-custom-white/70 hover:text-custom-white"
-              }`}
-            >
-              {m === "presets" ? "Presets" : "Custom"}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={onClose}
-          className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
-        >
-          <XMarkIcon className="w-4 h-4" />
-        </button>
-      </div>
+      <ModalHeader
+        vendorName={vendorName}
+        referenceNumber={referenceNumber}
+        mode={mode}
+        setMode={setMode}
+        onClose={onClose}
+      />
 
       {/* ── PRESETS MODE ── */}
       {mode === "presets" && (
