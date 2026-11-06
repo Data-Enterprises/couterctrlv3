@@ -6,6 +6,7 @@ import { formatDateSimple } from "../../../../../../utils";
 import type { SearchState } from "../../../../../../features/searchSlice";
 import type { DateShape, PickedStore, TicketOrigin } from "../interfaces";
 
+
 /**
  * Page to ticket category, by the nav's own href.
  *
@@ -159,6 +160,8 @@ const datesFor = (search: SearchState, shape: DateShape): string => {
 };
 
 /**
+ * What they had asked for, in one line.
+ *
  * Shown rather than asked about: "is this about your last search?" makes
  * somebody remember, and a line naming the store and the dates lets them
  * check. Returns null when nothing has been searched, so the offer does not
@@ -186,6 +189,8 @@ export const searchSummary = (
 };
 
 /**
+ * The scope the ticket was filed under, as a record rather than a sentence.
+ *
  * The panel showed the store and the dates and then sent neither — a tech
  * opened "Issue on Sales" with no idea which store it was about. For a
  * miscalculation that is the whole question, and the name on its own does not
@@ -198,6 +203,8 @@ export const scopeOf = (
   origin: TicketOrigin,
   stores: PickedStore[] = [],
 ): Record<string, unknown> =>
+  // A page with no search behind it has nothing to scope: no store, no
+  // group, no dates. The session's last search is about some other page.
   !pageUsesSearch(origin.href)
     ? { page: origin.page ?? origin.href, area: origin.area, search_type: null }
     : {
@@ -236,6 +243,8 @@ export const scopeOf = (
       };
 
 /**
+ * The same thing in a sentence, for the foot of the first message.
+ *
  * Carries the store number and the id as well as the name: the name is how
  * somebody says which store, and the other two are how anybody looks it up.
  */
