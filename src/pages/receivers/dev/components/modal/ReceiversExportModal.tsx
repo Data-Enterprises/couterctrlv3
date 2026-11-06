@@ -14,8 +14,9 @@ import {
   rowsToCsv,
   downloadCsv,
   aggregateRows,
+  type AggFn,
+  type AggRow,
 } from "../../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../../utils/csvExport";
 
 // Interfaces
 import type { ModalMode, MetricSelection, ActiveMetric } from "./interfaces";

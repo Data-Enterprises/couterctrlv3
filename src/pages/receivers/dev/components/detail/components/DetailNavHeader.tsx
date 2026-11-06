@@ -4,7 +4,7 @@ import { useAppSelector } from "../../../../../../hooks";
 // Utils
 import { formatDate } from "../../../../../../utils";
 
-// Icons
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface DetailNavyHeaderProps {

@@ -1,12 +1,15 @@
-import type {
-  ReceiverDetailsItem,
-  ReceiverDetailsTotals,
-} from "../../../../../../interfaces";
+// Utils
 import {
   fmtNum,
   rowsToCsv,
   type AggFn,
 } from "../../../../../../utils/csvExport";
+
+// Interfaces
+import type {
+  ReceiverDetailsItem,
+  ReceiverDetailsTotals,
+} from "../../../../../../interfaces";
 import type {
   DimDef,
   MappedColumn,
@@ -16,13 +19,6 @@ import type {
   MetricSelection,
 } from "../interfaces";
 
-/**
- *
- * @param details
- * @param label
- * @param totals
- * @returns
- */
 export const buildDetailsCsv = (
   details: ReceiverDetailsItem[],
   label: string,

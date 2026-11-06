@@ -1,3 +1,4 @@
+// Interfaces
 import type { MappedColumn } from "../interfaces";
 
 const CustomColTh = ({ column }: { column: MappedColumn }) => {

@@ -1,5 +1,7 @@
+// Utils
 import { modalModes } from "../utils";
 
+// Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
 
 interface ModalHeaderProps {

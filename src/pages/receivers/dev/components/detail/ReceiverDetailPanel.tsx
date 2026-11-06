@@ -5,7 +5,7 @@ import { useAppSelector } from "../../../../../hooks";
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 import ReceiversExportModal from "../modal/ReceiversExportModal";
-import DetailNavyHeader from "./components/DetailNaveHeader";
+import DetailNavyHeader from "./components/DetailNavHeader";
 import DetailTable from "./components/detailTable/DetailTable";
 import NoReceiver from "./components/NoReceiver";
 import DetailKpiStrip from "./components/DetailKpiStrip";

@@ -1,11 +1,15 @@
 // Utils
-import { DIMS, PREVIEW_ROWS } from "../utils";
+import { DIMS, PREVIEW_ROWS, AGG_OPTIONS, METRICS } from "../utils";
+import type { AggFn, AggRow } from "../../../../../../utils/csvExport";
 
 // Interfaces
-import type { ReceiverDetailsItem } from "@/interfaces";
+import type { ReceiverDetailsItem } from "../../../../../../interfaces";
+import type { MappedColumn, MetricSelection } from "../interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import CustomColTh from "./CustomColTh";
+import CustomModeTable from "./CustomModeTable";
 
 interface ModalCustomModeProps {
   canCustomDownload: boolean;
@@ -23,12 +27,6 @@ interface ModalCustomModeProps {
   columns: MappedColumn[];
   handleCustomDownload: () => void;
 }
-
-import type { MappedColumn, MetricSelection } from "../interfaces";
-import { AGG_OPTIONS, METRICS } from "../utils";
-import type { AggFn, AggRow } from "@/utils/csvExport";
-import CustomColTh from "./CustomColTh";
-import CustomModeTable from "./CustomModeTable";
 
 const ModalCustomMode = ({
   canCustomDownload,
