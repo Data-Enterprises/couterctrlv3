@@ -13,8 +13,6 @@ export const getCogs = (
   weight: number,
   casesize: number,
 ) => {
-  // const { base_cost, qty, scalable, weight, casesize } = data;
-
   // Prevents NaN and infinites
   if (!base_cost) {
     return 0;
@@ -57,8 +55,6 @@ export const getERet = (
   active_retail_price: number,
   scalable: number,
 ) => {
-  // const { qty, weight, active_retail_price, scalable } = data;
-
   if (scalable > 0) {
     if (!weight || weight === 0) {
       return active_retail_price * qty;
