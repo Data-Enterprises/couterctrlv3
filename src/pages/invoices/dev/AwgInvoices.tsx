@@ -382,7 +382,7 @@ const AwgInvoices = () => {
               onClick={() => fileInputRef.current?.click()}
               aria-label="Read another file"
               title="Read another file — or drop one anywhere on this page"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/85 hover:bg-bkg"
+              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 hover:bg-bkg"
             >
               <DocumentArrowUpIcon className="h-3.5 w-3.5" />
             </button>
@@ -425,7 +425,7 @@ const AwgInvoices = () => {
                 store chooser needed more -- a store name is longer than
                 anything typed in here. 280 fits its own placeholder. */}
             <div className="flex w-[280px] flex-none items-center gap-2 rounded-lg bg-bkg px-3">
-              <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+              <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
               <input
                 id="awg-invoice-filter"
                 value={textFilter}
@@ -476,7 +476,7 @@ const AwgInvoices = () => {
                 className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
                   nothingBilledOnly
                     ? "border-brand_navy bg-brand_navy text-custom-white"
-                    : "border-gray-200 bg-custom-white text-content/85"
+                    : "border-gray-200 bg-custom-white text-content/95"
                 }`}
               >
                 Nothing billed ({nothingBilledCount})
@@ -613,7 +613,7 @@ const AwgInvoices = () => {
             ))}
 
             {visible.length === 0 && (
-              <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/85">
+              <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/95">
                 {nothingBilledOnly && (failedOnly || overTenCentsOnly)
                   ? "Invoices that billed nothing have nothing to check."
                   : overTenCentsOnly

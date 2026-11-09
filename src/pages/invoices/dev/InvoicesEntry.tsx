@@ -34,7 +34,7 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
           <p className="text-custom-white text-[13px] font-semibold">
             AWG Invoices
           </p>
-          <p className="text-custom-white/85 text-[12px]">
+          <p className="text-custom-white/95 text-[12px]">
             Drop an AWG electronic invoice file to read it. Every line is
             checked against the invoice&rsquo;s own printed totals before
             anything is shown.
@@ -69,7 +69,7 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
           <span className="text-[13px] font-medium text-content">
             Drop a file here, or click to choose one
           </span>
-          <span className="text-[11.5px] text-content/85">
+          <span className="text-[11.5px] text-content/95">
             Nothing is uploaded — the file is read in this browser.
           </span>
         </button>

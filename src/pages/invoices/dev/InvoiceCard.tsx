@@ -133,7 +133,7 @@ const InvoiceCard = ({
         className="block w-full text-left hover:bg-bkg"
       >
         <span className="flex items-center gap-3 px-3.5 py-2.5">
-          <Chevron className="h-4 w-4 flex-none text-content/85" />
+          <Chevron className="h-4 w-4 flex-none text-content/95" />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-display text-[13.5px] font-bold text-content">
               Invoice {row.invoiceNbr}
@@ -149,7 +149,7 @@ const InvoiceCard = ({
             <span
               className={`inline-block whitespace-nowrap rounded px-2 py-1 text-[11px] font-bold ${
                 row.status === "nothingBilled"
-                  ? "bg-bkg text-content/85"
+                  ? "bg-bkg text-content/95"
                   : row.reconciled
                     ? "bg-severity_healthy_bg text-severity_healthy_text"
                     : "bg-severity_critical_bg text-severity_critical_text"
@@ -283,7 +283,7 @@ const InvoiceCard = ({
                     <span
                       className={`text-right ${
                         check.ok
-                          ? "text-content/85"
+                          ? "text-content/95"
                           : "font-semibold text-severity_critical_text"
                       }`}
                     >
@@ -315,13 +315,13 @@ const InvoiceCard = ({
                     key={index}
                     className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-gray-100 px-2 py-1.5 text-[12px] last:border-b-0"
                   >
-                    <span className="font-mono text-content/85">
+                    <span className="font-mono text-content/95">
                       {exception.itemCode}
                     </span>
                     <span className="truncate text-content">
                       {exception.description}
                     </span>
-                    <span className="truncate text-content/85">
+                    <span className="truncate text-content/95">
                       {exception.reason}
                     </span>
                   </div>
@@ -337,7 +337,7 @@ const InvoiceCard = ({
                 <span className="font-mono text-[11px] uppercase tracking-wider text-content">
                   Lines
                 </span>
-                <span className="text-[11px] text-content/85">
+                <span className="text-[11px] text-content/95">
                   Click a value to correct it
                 </span>
               </div>
@@ -394,7 +394,7 @@ const InvoiceCard = ({
                         className="grid items-center gap-2.5 border-b border-gray-100 py-0.5 odd:bg-row_stripe"
                         style={{ gridTemplateColumns: LINE_COLS }}
                       >
-                        <span className="px-1 text-[11px] tabular-nums text-content/85">
+                        <span className="px-1 text-[11px] tabular-nums text-content/95">
                           {line.lineNumber}
                         </span>
                         {cell("item_desc", "item", line.description)}
