@@ -82,3 +82,13 @@ export const formatSinglePriceRowData = (data: PriceHistoryResult[]) => {
   });
 };
 
+/** The entry card's small outlined buttons. */
+export const PILL =
+  "px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors";
+
+/** The UPCs in pasted text: split on any separator, digits only. */
+export const parseUpcs = (text: string): string[] =>
+  text
+    .split(/[\n,;\r\t ]+/)
+    .map((u) => u.trim())
+    .filter((u) => u.length > 0 && /^\d+$/.test(u));

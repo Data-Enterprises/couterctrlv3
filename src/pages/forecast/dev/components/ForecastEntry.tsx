@@ -16,28 +16,13 @@ import { isGroupSearch } from "../../../../features/searchSlice";
 // Utils
 import { getStoreName } from "../../../../utils";
 import { isAdListFile, parseAdListWorkbook } from "../utils/adListParse";
+import { parseUpcs, PILL } from "../utils";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
-
-/**
- * Forecast entry: UPC List's search card with one date (the endpoint walks 90
- * days back from it) and an AD list upload. AD prices are injected into the
- * price history before fitting, so they change every figure; their items carry
- * an AD badge.
- */
-
-const PILL =
-  "px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors";
-
-const parseUpcs = (text: string): string[] =>
-  text
-    .split(/[\n,;\r\t ]+/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0 && /^\d+$/.test(u));
 
 interface Props {
   onSearch: () => void;
@@ -51,6 +36,12 @@ interface Props {
   notice?: string;
 }
 
+/**
+ * Forecast entry: UPC List's search card with one date (the endpoint walks 90
+ * days back from it) and an AD list upload. AD prices are injected into the
+ * price history before fitting, so they change every figure; their items carry
+ * an AD badge.
+ */
 const ForecastEntry = ({
   onSearch,
   isLoading,

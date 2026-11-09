@@ -16,6 +16,7 @@ import {
 
 // Utils
 import { RECENTS_INLINE } from "../utils";
+import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 
 // Components
 import {
@@ -25,7 +26,6 @@ import {
 } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../../components-dev/BottomSheet";
 import ScannerView from "../../../../../components-dev/scanner/ScannerView";
-import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 import MarginRowList from "./MarginRowList";
 import RecentRow from "./RecentRow";
 import ItemPerfInfoSheet from "./ItemPerfInfoSheet";

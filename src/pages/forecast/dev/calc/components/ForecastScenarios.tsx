@@ -3,22 +3,11 @@ import { useState } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import { buildScenarioRows } from "../utils";
+import { buildScenarioRows, COLS, HEAD } from "../utils";
 
 // Interfaces
 import type { PriceHistory } from "../../../../../interfaces";
 import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
-
-/**
- * Price scenarios for the open item: legacy `ScenarioTable`'s figures (both
- * call `buildScenarioRows`), with the main grid's column names (Ad fcst,
- * Total).
- */
-
-const COLS = "1fr 60px 44px 60px 84px 84px 56px";
-
-const HEAD =
-  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0";
 
 interface Props {
   pricesWithQty: number[][];
@@ -34,6 +23,11 @@ interface Props {
   onSetAdDays: (days: number) => void;
 }
 
+/**
+ * Price scenarios for the open item: legacy `ScenarioTable`'s figures (both
+ * call `buildScenarioRows`), with the main grid's column names (Ad fcst,
+ * Total).
+ */
 const ForecastScenarios = ({
   pricesWithQty,
   priceHistory,
@@ -65,10 +59,9 @@ const ForecastScenarios = ({
   const handleAdd = () => {
     const val = parseFloat(customInput);
     if (isNaN(val) || val <= 0) return;
-    const exists = [
-      ...pricesWithQty.map((pq) => pq[0]),
-      ...customPrices,
-    ].some((p) => Math.abs(p - val) < 0.001);
+    const exists = [...pricesWithQty.map((pq) => pq[0]), ...customPrices].some(
+      (p) => Math.abs(p - val) < 0.001,
+    );
     if (!exists) onAddCustomPrice(val);
     setCustomInput("");
   };

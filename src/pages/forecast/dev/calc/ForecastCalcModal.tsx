@@ -14,6 +14,7 @@ import {
 import { formatCurrency2 } from "../../../../utils";
 import { fitLinearDemand, predictQty } from "../../../../utils/forecastCalc";
 import { forecastUnits } from "../../../../utils/priceSimCalc";
+import { FIELD_LABEL, SECTION, SECTION_HEAD } from "./utils";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -27,12 +28,6 @@ import ForecastScenarios from "./components/ForecastScenarios";
  * price history. The maths is legacy's, unchanged (`fitLinearDemand`,
  * `predictQty`, `forecastUnits`, shared `buildScenarioRows`).
  */
-
-const SECTION = "border border-gray-200 rounded-lg overflow-hidden";
-const SECTION_HEAD =
-  "px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[11px] font-semibold uppercase tracking-wide text-content/80";
-const FIELD_LABEL = "text-[11px] font-medium text-content/85 ml-0.5";
-
 const ForecastCalcModal = () => {
   const dispatch = useAppDispatch();
   const { selectedUpc, forecastResults, rowData } = useAppSelector(
