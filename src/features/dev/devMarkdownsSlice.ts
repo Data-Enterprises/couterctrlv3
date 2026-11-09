@@ -50,7 +50,7 @@ const devMarkdownsSlice = createSlice({
     },
     setProgress: (
       state,
-      action: PayloadAction<{ page: number; total: number }>,
+      action: PayloadAction<{ page: number; total: number } | null>,
     ) => {
       state.progress = action.payload;
     },
@@ -67,5 +67,7 @@ export const {
   setLoading,
   setProgress,
   resetMarkdownsSlice,
+  setNotice,
+  clearMarkdownFilters,
 } = devMarkdownsSlice.actions;
 export default devMarkdownsSlice.reducer;

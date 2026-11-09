@@ -51,14 +51,13 @@ export interface MarkdownResponse {
   markdowns: MarkdownItem[];
 }
 
-
-export type MarkdownFilters = {
-    type: MarkdownType[] | null;
-    storeNumbers: string[];
-    dates: string[]
-    subIds: number[];
-    categories: number[];
-    vendorIds: string[];
-    search: string,
-    minPercent: number | null;
-}
+export interface MarkdownFilters {
+  type: MarkdownType[] | null;
+  storeNumbers: string[];
+  dates: string[];
+  subIds: number[];
+  categories: number[];
+  vendorIds: string[];
+  search: string;
+  minPercent: number | null;
+};
