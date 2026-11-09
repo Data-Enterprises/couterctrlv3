@@ -47,6 +47,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import SortHeader from "../../../components-dev/SortHeader";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import TrackerEntryCard from "./components/TrackerEntryCard";
 import TrackerHeader from "./components/TrackerHeader";
 import SubDeptRow from "./components/SubDeptRow";
@@ -535,17 +536,9 @@ const SalesTracker = () => {
       )}
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TrackerEntryCard onSearch={fetchTracker} loading={loading} />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <TrackerEntryCard onSearch={fetchTracker} loading={loading} />
+        </SearchPopup>
       )}
     </div>
   );
