@@ -1,5 +1,5 @@
 // Hooks
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useDevApi } from "../../../../hooks/useDevApi";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -18,6 +18,7 @@ import { getMarkdowns } from "../../../../api/markdowns";
 
 // Utils
 import { formatGoliathDate } from "../../../../utils";
+import { filterRows, sortRows } from "../utils";
 
 // Interfaces
 import type { MarkdownItem, MarkdownResponse } from "../../../../interfaces/markdowns";
@@ -29,9 +30,8 @@ import type { MarkdownItem, MarkdownResponse } from "../../../../interfaces/mark
 export const useMarkdownsCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useDevApi();
-  const { type, startDate, endDate, lastStore, lastGroup } = useAppSelector(
-    (state) => state.search,
-  );
+  const { type, startDate, endDate, lastStore, lastGroup, selectedStore, selectedGroup } =
+    useAppSelector((state) => state.search);
   const markdowns = useAppSelector((state) => state.dev.markdowns);
 
   return {
@@ -43,8 +43,21 @@ export const useMarkdownsCtx = () => {
     endDate,
     lastStore,
     lastGroup,
-    ...markdowns, // markdowns, loading, progress, notice, filters
+    /** The store or group searched, as the panel headers name it. */
+    scopeLabel: isGroupSearch(type)
+      ? (selectedGroup?.group_name ?? "Group")
+      : (selectedStore?.store_name ?? "Store"),
+    ...markdowns, // markdowns, loading, progress, notice, filters, sort
   };
+};
+
+/** The rows the grid and the export show: filtered, then sorted. */
+export const useVisibleMarkdowns = () => {
+  const { markdowns, filters, sort } = useMarkdownsCtx();
+  return useMemo(
+    () => sortRows(filterRows(markdowns, filters), sort),
+    [markdowns, filters, sort],
+  );
 };
 
 /**
