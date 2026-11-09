@@ -21,6 +21,7 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
+  DocumentArrowDownIcon,
   QrCodeIcon,
 } from "@heroicons/react/16/solid";
 import {
@@ -635,6 +636,17 @@ export const categories: NavCategory[] = [
         userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
+      },
+      {
+        name: "Markdowns",
+        href: "markdowns",
+        icon: DocumentArrowDownIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true
       },
       // Commented out for publish — `suggested/order_weight` is dev-API only.
       // Restore this entry, the ScaleIcon import and the route in main.tsx

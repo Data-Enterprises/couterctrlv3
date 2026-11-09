@@ -41,6 +41,7 @@ import {
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
+import Markdowns from "./pages/markdowns/Markdowns.tsx";
 import { armPageCalls } from "./utils/pageCalls.ts";
 import { armSessionGuard } from "./utils/sessionGuard.ts";
 
@@ -104,6 +105,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
+                <Route path="markdowns" element={<Markdowns />} />
                 {/* A last_route saved in user prefs can name a page that no
                     longer exists; land on Sales rather than a blank outlet. */}
                 <Route path="*" element={<Navigate to="/sales" replace />} />

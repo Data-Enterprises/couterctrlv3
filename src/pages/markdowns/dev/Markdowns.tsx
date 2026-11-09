@@ -1,8 +1,8 @@
 // Hooks
-import { useLoadMarkdowns, useMarkdownsCtx } from "../hooks";
+import { useLoadMarkdowns, useMarkdownsCtx } from "./hooks";
 
 // Components
-import SearchCard from "../../../../components-dev/SearchCard";
+import SearchCard from "../../../components-dev/SearchCard";
 
 /** The Markdowns page: the search card until markdowns are loaded, then the
  *  filters beside the grid. */
