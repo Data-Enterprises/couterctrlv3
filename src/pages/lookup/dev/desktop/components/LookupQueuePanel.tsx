@@ -173,7 +173,7 @@ const LookupQueuePanel = ({
               />
               <div>
                 <div className="text-[11.5px] text-content">{item.upc}</div>
-                <div className="text-[9.5px] text-gray-400">
+                <div className="text-[9.5px] text-brand_slate">
                   {item.status === "loading" ? "Loading…" : "Queued"}
                 </div>
               </div>

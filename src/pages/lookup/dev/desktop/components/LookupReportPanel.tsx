@@ -99,10 +99,10 @@ const LookupReportPanel = ({
               Margin
             </div>
             <div
-              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}
+              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-delta_negative_text" : "text-delta_positive_text"}`}
             >
               {margin.costMissing ? (
-                <span className="text-[12px] font-semibold text-gray-500">
+                <span className="text-[12px] font-semibold text-brand_slate">
                   No cost on file
                 </span>
               ) : margin.marginPct !== null ? (
@@ -125,7 +125,7 @@ const LookupReportPanel = ({
               Avg sold at / {margin.weighed ? "lb" : "unit"}
             </div>
             <div
-              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-content"}`}
+              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-delta_negative_text" : "text-content"}`}
             >
               {formatCurrency2(margin.avgSoldAt)}
             </div>
@@ -136,7 +136,7 @@ const LookupReportPanel = ({
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {margin.costMissing ? (
-                <span className="text-[12px] font-semibold text-gray-500">
+                <span className="text-[12px] font-semibold text-brand_slate">
                   No cost on file
                 </span>
               ) : (
@@ -160,7 +160,7 @@ const LookupReportPanel = ({
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {daysSold}{" "}
-              <span className="text-[11px] font-medium text-gray-400">
+              <span className="text-[11px] font-medium text-brand_slate">
                 of 14
               </span>
             </div>
@@ -173,12 +173,12 @@ const LookupReportPanel = ({
               {longestGap > 0 ? (
                 <>
                   {longestGap}{" "}
-                  <span className="text-[11px] font-medium text-gray-400">
+                  <span className="text-[11px] font-medium text-brand_slate">
                     days
                   </span>
                 </>
               ) : (
-                <span className="text-gray-400">None</span>
+                <span className="text-brand_slate">None</span>
               )}
             </div>
           </div>
@@ -188,9 +188,9 @@ const LookupReportPanel = ({
         {(trend.isSlowing || activeGapDays >= 2) && (
           <div className="px-4 pt-3 flex items-center gap-2 flex-shrink-0">
             {trend.isSlowing && (
-              <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-amber-50 rounded-lg min-w-0">
-                <ArrowTrendingDownIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
-                <span className="text-[11.5px] text-amber-900 truncate">
+              <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-severity_watch_bg rounded-lg min-w-0">
+                <ArrowTrendingDownIcon className="w-4 h-4 text-severity_watch_text flex-shrink-0" />
+                <span className="text-[11.5px] text-severity_watch_text truncate">
                   Slowing down - {formatUnits(trend.firstHalfUnits, margin.weighed)}
                   {margin.weighed ? "" : " units"} first week,{" "}
                   {formatUnits(trend.secondHalfUnits, margin.weighed)}
@@ -199,9 +199,9 @@ const LookupReportPanel = ({
               </div>
             )}
             {activeGapDays >= 2 && (
-              <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-red-50 rounded-lg min-w-0">
-                <ExclamationTriangleIcon className="w-4 h-4 text-red-700 flex-shrink-0" />
-                <span className="text-[11.5px] text-red-800 truncate">
+              <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-severity_critical_bg rounded-lg min-w-0">
+                <ExclamationTriangleIcon className="w-4 h-4 text-severity_critical_text flex-shrink-0" />
+                <span className="text-[11.5px] text-severity_critical_text truncate">
                   No sales in the last {activeGapDays} days
                 </span>
               </div>
@@ -275,48 +275,48 @@ const LookupReportPanel = ({
                 className={`grid px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
                 style={salesGrid}
               >
-                <span className={b.hasSale ? "text-content" : "text-gray-400"}>
+                <span className={b.hasSale ? "text-content" : "text-content/95"}>
                   {b.label}
                 </span>
                 <span
-                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/95"}`}
                 >
                   {b.hasSale ? b.qty.toLocaleString() : "—"}
                 </span>
                 {margin.weighed && (
                   <span
-                    className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                    className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/95"}`}
                   >
                     {b.hasSale ? formatUnits(b.units, true) : "—"}
                   </span>
                 )}
                 <span
-                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/95"}`}
                 >
                   {b.hasSale ? formatCurrency2(b.revenue) : "—"}
                 </span>
                 <span
-                  className={`text-right tabular-nums ${b.hasSale && !noCost ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale && !noCost ? "text-content" : "text-content/95"}`}
                 >
                   {noCost ? "No cost" : b.hasSale ? formatCurrency2(b.cost) : "—"}
                 </span>
                 <span
-                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/95"}`}
                 >
                   {caseCost !== null ? formatCurrency2(caseCost) : "—"}
                 </span>
                 <span
-                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/95"}`}
                 >
                   {b.hasSale ? formatCurrency2(b.listPrice) : "—"}
                 </span>
                 <span
                   className={`text-right tabular-nums font-medium ${
                     !b.hasSale
-                      ? "text-gray-400"
+                      ? "text-content/95"
                       : isNeg
-                        ? "text-red-700"
-                        : "text-emerald-700"
+                        ? "text-delta_negative_text"
+                        : "text-delta_positive_text"
                   }`}
                 >
                   {pct !== null ? `${pct.toFixed(2)}%` : "—"}

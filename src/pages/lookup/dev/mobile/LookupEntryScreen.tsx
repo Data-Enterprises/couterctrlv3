@@ -114,14 +114,14 @@ const LookupEntryScreen = ({
                   Close camera
                 </button>
                 {error.length > 0 && (
-                  <div className="absolute left-2 right-2 bottom-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  <div className="absolute left-2 right-2 bottom-2 bg-brand_danger_bg border border-brand_danger_line rounded-lg px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <ExclamationTriangleIcon className="w-3.5 h-3.5 text-red-700" />
-                      <span className="text-[12px] font-medium text-red-800">
+                      <ExclamationTriangleIcon className="w-3.5 h-3.5 text-brand_danger" />
+                      <span className="text-[12px] font-medium text-brand_danger">
                         Couldn't read that clearly
                       </span>
                     </div>
-                    <p className="text-[11px] text-red-700 mt-0.5 mb-2">
+                    <p className="text-[11px] text-brand_danger mt-0.5 mb-2">
                       Hold steady and try again, or enter the code above.
                     </p>
                     <button

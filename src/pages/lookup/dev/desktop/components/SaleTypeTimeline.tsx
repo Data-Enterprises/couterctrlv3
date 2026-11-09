@@ -37,7 +37,7 @@ const SaleTypeTimeline = ({
         <div
           key={b.date}
           className={`grid px-2 py-2 text-[12px] tabular-nums border-b border-gray-50 ${
-            b.hasSale ? "even:bg-row_stripe text-content" : "bg-gray-50/60 text-gray-400"
+            b.hasSale ? "even:bg-row_stripe text-content" : "bg-gray-50/60 text-content/95"
           }`}
           style={grid}
           aria-label={b.hasSale ? `${saleType} on ${b.label}` : undefined}

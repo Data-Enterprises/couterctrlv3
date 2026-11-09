@@ -382,14 +382,14 @@ const LookupItemReport = ({
           {/* Window-level readings, hidden while a day is scoped (they
               describe the fortnight, not the day). */}
           {!day && isSale && trend.isSlowing && (
-            <p className="border-t border-amber-200 bg-amber-50 px-3.5 py-2 text-[11.5px] font-semibold text-amber-900">
+            <p className="border-t border-severity_watch_text/20 bg-severity_watch_bg px-3.5 py-2 text-[11.5px] font-semibold text-severity_watch_text">
               Slowing down — {formatUnits(trend.firstHalfUnits, weighed)} the
               first week, {formatUnits(trend.secondHalfUnits, weighed)} this
               week.
             </p>
           )}
           {!day && isSale && activeGapDays >= 2 && (
-            <p className="border-t border-amber-200 bg-amber-50 px-3.5 py-2 text-[11.5px] font-semibold text-amber-900">
+            <p className="border-t border-severity_watch_text/20 bg-severity_watch_bg px-3.5 py-2 text-[11.5px] font-semibold text-severity_watch_text">
               No sales in the last {activeGapDays} days.
             </p>
           )}
