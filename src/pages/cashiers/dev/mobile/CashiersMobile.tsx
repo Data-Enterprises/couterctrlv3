@@ -11,6 +11,9 @@ import {
   setExplorerNotice,
 } from "../../../../features/dev/devCashiersSlice";
 
+// Utils
+import { NOTICES } from "./utils";
+
 // Interfaces
 import type { ExplorerOutcome } from "./interfaces";
 
@@ -18,12 +21,6 @@ import type { ExplorerOutcome } from "./interfaces";
 import SearchCard from "../../../../components-dev/SearchCard";
 import SignalListMobile from "./SignalListMobile";
 import SignalTransactionsMobile from "./SignalTransactionsMobile";
-
-const NOTICES: Partial<Record<ExplorerOutcome, string>> = {
-  empty:
-    "Nothing found for that search — try a different store, group, or week.",
-  error: "Couldn't load that search. Check your connection and try again.",
-};
 
 /**
  * Cashiers on mobile: the signal explorer, with the desktop's two-stage fetch

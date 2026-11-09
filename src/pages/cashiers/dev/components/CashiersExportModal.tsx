@@ -3,18 +3,28 @@ import { useState, useMemo } from "react";
 
 // Utils
 import {
-  fmtNum,
   rowsToCsv,
   downloadCsv,
   aggregateRows,
 } from "../../../../utils/csvExport";
-import { groupSignalByTransaction } from "../utils";
+import {
+  AGG_OPTIONS,
+  buildLinesCsv,
+  buildSignalsCsv,
+  buildTransactionsCsv,
+  DIMS,
+  groupSignalByTransaction,
+  LENS_LABEL,
+  METRICS,
+  PREVIEW_ROWS,
+  toAggRows,
+} from "../utils";
 
 // Interfaces
 import type { Dataset, ModalMode, Signal } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { AggFn } from "../../../../utils/csvExport";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
@@ -34,168 +44,8 @@ interface CashiersExportModalProps {
   transactionLengths: Record<string, number>;
 }
 
-const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum", label: "Sum" },
-  { value: "avg", label: "Avg" },
-  { value: "min", label: "Min" },
-  { value: "max", label: "Max" },
-  { value: "count", label: "Count" },
-];
-
-const PREVIEW_ROWS = 12;
-
-const LENS_LABEL: Record<ExplorerLens, string> = {
-  store: "Store",
-  cashier: "Cashier",
-  item: "Item",
-  terminal: "Terminal",
-  // Hour is still in the ExplorerLens union but commented out of LENSES —
-  // labelled here so the record stays exhaustive if it comes back.
-  hour: "Hour",
-};
-
-const fmtDate = (iso: string) => {
-  const d = iso.split("T")[0].split("-");
-  return `${d[1]}/${d[2]}/${d[0]}`;
-};
-
-// ─── Preset builders ──────────────────────────────────────────────────────────
-
-const buildSignalsCsv = (signals: Signal[], lens: ExplorerLens) => {
-  const headers = [
-    LENS_LABEL[lens],
-    "Detail",
-    "Exception Lines",
-    "Transactions",
-    "Cashiers",
-    "Items",
-    "Amount",
-    "Last Line",
-    "Top Item",
-    "Spread",
-  ];
-  const data = signals.map((s) => [
-    s.label,
-    s.sublabel,
-    s.count,
-    s.transactions,
-    s.cashiers,
-    s.items,
-    fmtNum(s.amount),
-    s.lastLineCount,
-    s.topItem ? `${s.topItem.label} (${s.topItem.count})` : "",
-    s.spreadLabel,
-  ]);
-  return rowsToCsv(headers, data);
-};
-
-const buildTransactionsCsv = (
-  signals: Signal[],
-  lengths: Record<string, number>,
-  lens: ExplorerLens,
-) => {
-  const headers = [
-    LENS_LABEL[lens],
-    "Sale ID",
-    "Date",
-    "Start Time",
-    "Cashier #",
-    "Cashier Name",
-    "Exception Lines",
-    "Total Lines",
-    "Qty",
-    "Amount",
-    "Ends Transaction",
-  ];
-  const data = signals.flatMap((s) =>
-    groupSignalByTransaction(s, lengths).map((t) => [
-      s.label,
-      t.saleId,
-      fmtDate(t.saleDate),
-      t.startTime,
-      t.cashierNumber,
-      t.cashierName,
-      t.lineCount,
-      t.totalLines,
-      t.qty,
-      fmtNum(t.amount),
-      t.hasLastLine ? "Yes" : "No",
-    ]),
-  );
-  return rowsToCsv(headers, data);
-};
-
-const buildLinesCsv = (rows: TransactionListItem[]) => {
-  const headers = [
-    "Sale ID",
-    "Trans ID",
-    "Date",
-    "Store #",
-    "Store Name",
-    "Terminal",
-    "Cashier #",
-    "Cashier Name",
-    "Line #",
-    "UPC",
-    "Description",
-    "Qty",
-    "Sale Type",
-    "Total Sales",
-  ];
-  const data = rows.map((r) => [
-    r.sale_id,
-    r.transaction_id,
-    fmtDate(r.sale_date),
-    r.store_number,
-    r.store_name,
-    r.terminal,
-    r.cashier_number,
-    r.cashier_name,
-    r.line_number,
-    r.product_code,
-    r.product_description ?? "",
-    r.qty ?? 0,
-    r.sale_type,
-    fmtNum(r.total_sales),
-  ]);
-  return rowsToCsv(headers, data);
-};
-
-// ─── Custom mode ──────────────────────────────────────────────────────────────
 // Custom aggregates the exception LINES, the only granular dataset (signals
 // and transactions are already roll-ups).
-
-const DIMS: { key: string; label: string }[] = [
-  { key: "store", label: "Store" },
-  { key: "cashier", label: "Cashier" },
-  { key: "terminal", label: "Terminal" },
-  { key: "item", label: "Item" },
-  { key: "date", label: "Date" },
-  { key: "saleType", label: "Sale Type" },
-];
-
-const METRICS: { key: string; label: string }[] = [
-  { key: "amount", label: "Amount" },
-  { key: "qty", label: "Qty" },
-  { key: "lineNumber", label: "Line #" },
-  { key: "lines", label: "Exception Lines" },
-];
-
-const toAggRows = (rows: TransactionListItem[]): AggRow[] =>
-  rows.map((r) => ({
-    store: `${r.store_number} — ${r.store_name}`,
-    cashier: `${r.cashier_number} — ${r.cashier_name}`,
-    terminal: r.terminal,
-    item: `${r.product_code} — ${r.product_description ?? ""}`,
-    date: fmtDate(r.sale_date),
-    saleType: r.sale_type,
-    amount: r.total_sales,
-    qty: r.qty ?? 0,
-    lineNumber: r.line_number,
-    // Counting rows is the natural "how many exceptions" metric, and count
-    // needs a column to count.
-    lines: 1,
-  }));
 
 const CashiersExportModal = ({
   onClose,

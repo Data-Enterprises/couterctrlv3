@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useCashierSignals } from "../hooks";
 
@@ -22,6 +22,7 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import Transaction from "../../../../components-dev/transactions/Transaction";
+import Meta from "./components/Meta";
 
 /**
  * One signal's transactions, between the signal list and a receipt: a screen
@@ -29,24 +30,6 @@ import Transaction from "../../../../components-dev/transactions/Transaction";
  * The band under the header is `describeSignal()`, the explorer's reading of
  * what the signal means.
  */
-
-/**
- * One labelled figure on a row's second line; the label is set apart by case
- * and letter-spacing, not opacity.
- */
-const Meta = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <>
-    <span className="uppercase tracking-wider">{label}</span>{" "}
-    <span className="font-semibold text-content">{children}</span>
-  </>
-);
-
 const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
   const {
     explorerSignalKey,

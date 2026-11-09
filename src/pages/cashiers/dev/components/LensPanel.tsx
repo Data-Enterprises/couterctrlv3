@@ -1,9 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { LENSES } from "../utils";
+import { LENS_COLUMN_LABEL, LENSES, SPREAD_STYLES } from "../utils";
 
 // Interfaces
-import type { Signal, SpreadKind } from "../interfaces";
+import type { Signal } from "../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 
 // Components
@@ -18,23 +18,6 @@ interface LensPanelProps {
   search: string;
   onSearchChange: (v: string) => void;
 }
-
-const LENS_COLUMN_LABEL: Record<ExplorerLens, string> = {
-  store: "Store",
-  cashier: "Cashier",
-  item: "Item",
-  terminal: "Terminal",
-  hour: "Hour",
-};
-
-// One cashier owning every hit reads as behaviour; spread across many, an
-// item or lane problem. Only those two ends are coloured.
-const SPREAD_STYLES: Record<SpreadKind, string> = {
-  single: "bg-red-50 text-red-700",
-  narrow: "bg-red-50 text-red-700",
-  wide: "bg-amber-50 text-amber-800",
-  unmapped: "bg-amber-50 text-amber-800",
-};
 
 const LensPanel = ({
   lens,

@@ -8,6 +8,7 @@ import { emailTransaction } from "../../../../api/lossPrevention";
 // Utils
 import { formatCurrency2 } from "../../../../utils";
 import { exportData } from "../../../../utils/export";
+import { chipStyle, fmtTime } from "../utils";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../interfaces";
@@ -15,21 +16,11 @@ import type { TransactionListItem } from "../../../../interfaces";
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-interface Props {
+interface TransactionProps {
   trans: TransactionListItem[];
 }
 
-const fmtTime = (raw: string) => {
-  const s = raw.length === 5 ? "0" + raw : raw;
-  return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
-};
-
-const Transaction = ({ trans }: Props) => {
+const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
   const { selectedSaleType } = useAppSelector((s) => s.dev.cashier);

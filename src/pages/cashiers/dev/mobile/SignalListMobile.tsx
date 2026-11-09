@@ -14,6 +14,7 @@ import {
 import { fmtRangeLabel } from "../../../../utils/dateLabels";
 import { formatCurrency2 } from "../../../../utils";
 import { LENSES } from "../utils";
+import { SPREAD_CLASS } from "./utils";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
@@ -23,14 +24,7 @@ import MobileSortChips from "../../../../components-dev/mobile/MobileSortChips";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
 
-/**
- * The explorer's signal list on mobile, in the Performance chrome. Not graded:
- * each row carries `signal.spreadLabel` instead of severity. No comparison
- * bars: `useCashierExplorer` fetches one window. The badge is `spreadFor`'s
- * own text (items on the Cashier lens, cashiers elsewhere).
- */
-
-interface Props {
+interface SignalListMobileProps {
   /** Exception types this store/week actually returned, from preflight. */
   saleTypes: string[];
   onExceptionChange: (saleType: string) => void;
@@ -40,23 +34,18 @@ interface Props {
 }
 
 /**
- * Neutral fills: spread is a classification, not a verdict, so no red/amber/
- * green. `unmapped` is navy, the page's emphasis.
+ * The explorer's signal list on mobile, in the Performance chrome. Not graded:
+ * each row carries `signal.spreadLabel` instead of severity. No comparison
+ * bars: `useCashierExplorer` fetches one window. The badge is `spreadFor`'s
+ * own text (items on the Cashier lens, cashiers elsewhere).
  */
-const SPREAD_CLASS: Record<string, string> = {
-  single: "bg-gray-100 text-content border-brand_line",
-  narrow: "bg-gray-100 text-content border-brand_line",
-  wide: "bg-brand_navy/10 text-brand_navy border-brand_navy/20",
-  unmapped: "bg-brand_navy/10 text-brand_navy border-brand_navy/20",
-};
-
 const SignalListMobile = ({
   saleTypes,
   onExceptionChange,
   onSearch,
   start,
   end,
-}: Props) => {
+}: SignalListMobileProps) => {
   const dispatch = useAppDispatch();
   const scopeLabel = useSearchScopeLabel();
   const {

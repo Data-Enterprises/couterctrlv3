@@ -1,10 +1,12 @@
 // Utils
 import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
 
 // Interfaces
 import type { ExplorerTotals, Signal, SignalTransaction, SpreadKind, StoreNameResolver } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
 export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "store", label: "Store" },
@@ -345,3 +347,225 @@ export const buildTotals = (rows: TransactionListItem[]): ExplorerTotals => ({
   cashiers: distinct(rows, cashierKeyOf),
   items: distinct(rows, (r) => String(r.product_code)),
 });
+
+// LP grades against "the prior 2 weeks" (lossPrevention/lpInfo.ts), so the
+// explorer uses the same ceiling, which also bounds the group fetch.
+export const MAX_RANGE_DAYS = 14;
+
+// A group query can span hundreds of stores. Past this many transactions the
+// receipt fetch stops being interactive, so it's capped and the user is told.
+export const MAX_TRANSACTIONS = 1500;
+
+/** Days from start to end, both counted; 0 when either date is unreadable. */
+export const dayDiff = (start: string, end: string) => {
+  const a = new Date(start).getTime();
+  const b = new Date(end).getTime();
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return Math.round(Math.abs(b - a) / 86400000) + 1;
+};
+
+/** How a custom export combines a figure. */
+export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
+  { value: "sum", label: "Sum" },
+  { value: "avg", label: "Avg" },
+  { value: "min", label: "Min" },
+  { value: "max", label: "Max" },
+  { value: "count", label: "Count" },
+];
+
+/** How many rows the custom preview shows. */
+export const PREVIEW_ROWS = 12;
+
+/** Each lens's name as an export column heading. */
+export const LENS_LABEL: Record<ExplorerLens, string> = {
+  store: "Store",
+  cashier: "Cashier",
+  item: "Item",
+  terminal: "Terminal",
+  // Hour is still in the ExplorerLens union but commented out of LENSES —
+  // labelled here so the record stays exhaustive if it comes back.
+  hour: "Hour",
+};
+
+/** A yyyy-mm-dd date as mm/dd/yyyy. */
+export const fmtDate = (iso: string) => {
+  const d = iso.split("T")[0].split("-");
+  return `${d[1]}/${d[2]}/${d[0]}`;
+};
+
+/** The Signals preset as CSV, one row per signal. */
+export const buildSignalsCsv = (signals: Signal[], lens: ExplorerLens) => {
+  const headers = [
+    LENS_LABEL[lens],
+    "Detail",
+    "Exception Lines",
+    "Transactions",
+    "Cashiers",
+    "Items",
+    "Amount",
+    "Last Line",
+    "Top Item",
+    "Spread",
+  ];
+  const data = signals.map((s) => [
+    s.label,
+    s.sublabel,
+    s.count,
+    s.transactions,
+    s.cashiers,
+    s.items,
+    fmtNum(s.amount),
+    s.lastLineCount,
+    s.topItem ? `${s.topItem.label} (${s.topItem.count})` : "",
+    s.spreadLabel,
+  ]);
+  return rowsToCsv(headers, data);
+};
+
+/** The Transactions preset as CSV, one row per transaction behind each signal. */
+export const buildTransactionsCsv = (
+  signals: Signal[],
+  lengths: Record<string, number>,
+  lens: ExplorerLens,
+) => {
+  const headers = [
+    LENS_LABEL[lens],
+    "Sale ID",
+    "Date",
+    "Start Time",
+    "Cashier #",
+    "Cashier Name",
+    "Exception Lines",
+    "Total Lines",
+    "Qty",
+    "Amount",
+    "Ends Transaction",
+  ];
+  const data = signals.flatMap((s) =>
+    groupSignalByTransaction(s, lengths).map((t) => [
+      s.label,
+      t.saleId,
+      fmtDate(t.saleDate),
+      t.startTime,
+      t.cashierNumber,
+      t.cashierName,
+      t.lineCount,
+      t.totalLines,
+      t.qty,
+      fmtNum(t.amount),
+      t.hasLastLine ? "Yes" : "No",
+    ]),
+  );
+  return rowsToCsv(headers, data);
+};
+
+/** The Lines preset as CSV, one row per receipt line. */
+export const buildLinesCsv = (rows: TransactionListItem[]) => {
+  const headers = [
+    "Sale ID",
+    "Trans ID",
+    "Date",
+    "Store #",
+    "Store Name",
+    "Terminal",
+    "Cashier #",
+    "Cashier Name",
+    "Line #",
+    "UPC",
+    "Description",
+    "Qty",
+    "Sale Type",
+    "Total Sales",
+  ];
+  const data = rows.map((r) => [
+    r.sale_id,
+    r.transaction_id,
+    fmtDate(r.sale_date),
+    r.store_number,
+    r.store_name,
+    r.terminal,
+    r.cashier_number,
+    r.cashier_name,
+    r.line_number,
+    r.product_code,
+    r.product_description ?? "",
+    r.qty ?? 0,
+    r.sale_type,
+    fmtNum(r.total_sales),
+  ]);
+  return rowsToCsv(headers, data);
+};
+
+/** The dimensions a custom export can group by. */
+export const DIMS: { key: string; label: string }[] = [
+  { key: "store", label: "Store" },
+  { key: "cashier", label: "Cashier" },
+  { key: "terminal", label: "Terminal" },
+  { key: "item", label: "Item" },
+  { key: "date", label: "Date" },
+  { key: "saleType", label: "Sale Type" },
+];
+
+/** The figures a custom export can total. */
+export const METRICS: { key: string; label: string }[] = [
+  { key: "amount", label: "Amount" },
+  { key: "qty", label: "Qty" },
+  { key: "lineNumber", label: "Line #" },
+  { key: "lines", label: "Exception Lines" },
+];
+
+/** Receipt lines as the custom export's flat rows. */
+export const toAggRows = (rows: TransactionListItem[]): AggRow[] =>
+  rows.map((r) => ({
+    store: `${r.store_number} — ${r.store_name}`,
+    cashier: `${r.cashier_number} — ${r.cashier_name}`,
+    terminal: r.terminal,
+    item: `${r.product_code} — ${r.product_description ?? ""}`,
+    date: fmtDate(r.sale_date),
+    saleType: r.sale_type,
+    amount: r.total_sales,
+    qty: r.qty ?? 0,
+    lineNumber: r.line_number,
+    // Counting rows is the natural "how many exceptions" metric, and count
+    // needs a column to count.
+    lines: 1,
+  }));
+
+/** Each lens's name as the list's first column heading. */
+export const LENS_COLUMN_LABEL: Record<ExplorerLens, string> = {
+  store: "Store",
+  cashier: "Cashier",
+  item: "Item",
+  terminal: "Terminal",
+  hour: "Hour",
+};
+
+// One cashier owning every hit reads as behaviour; spread across many, an
+// item or lane problem. Only those two ends are coloured.
+export const SPREAD_STYLES: Record<SpreadKind, string> = {
+  single: "bg-red-50 text-red-700",
+  narrow: "bg-red-50 text-red-700",
+  wide: "bg-amber-50 text-amber-800",
+  unmapped: "bg-amber-50 text-amber-800",
+};
+
+// Scalable items come back with fractional qty (weight), so only show decimals
+// when there actually are any.
+export const formatQty = (qty: number) =>
+  Number.isInteger(qty) ? String(qty) : qty.toFixed(2);
+
+/** The signal detail table's columns. */
+export const GRID_COLS =
+  "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
+
+/** The sunken navy fill of a transaction's chips. */
+export const chipStyle = {
+  background: "rgb(var(--color-brand-navy) / 0.06)",
+  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
+};
+
+/** An hhmmss time (leading zero optional) as hh:mm:ss. */
+export const fmtTime = (raw: string) => {
+  const s = raw.length === 5 ? "0" + raw : raw;
+  return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
+};

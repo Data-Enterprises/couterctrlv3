@@ -3,7 +3,15 @@ import { useMemo, useState } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { describeSignal, formatClock, groupSignalByTransaction, receiptLinesFor, transactionLabel } from "../utils";
+import {
+  describeSignal,
+  formatClock,
+  formatQty,
+  GRID_COLS,
+  groupSignalByTransaction,
+  receiptLinesFor,
+  transactionLabel,
+} from "../utils";
 
 // Interfaces
 import type { SortCol, Signal } from "../interfaces";
@@ -20,14 +28,6 @@ interface SignalDetailProps {
   allRows: TransactionListItem[];
   transactionLengths: Record<string, number>;
 }
-
-// Scalable items come back with fractional qty (weight), so only show decimals
-// when there actually are any.
-const formatQty = (qty: number) =>
-  Number.isInteger(qty) ? String(qty) : qty.toFixed(2);
-
-const GRID_COLS =
-  "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
 
 const SignalDetail = ({
   signal,

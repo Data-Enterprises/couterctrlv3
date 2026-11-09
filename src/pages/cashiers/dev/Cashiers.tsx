@@ -27,6 +27,7 @@ import {
 
 // Utils
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
+import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
 
 // Interfaces
 import type { JsonError, TransactionListItem } from "../../../interfaces";
@@ -43,20 +44,6 @@ import ExplorerSearch from "./components/ExplorerSearch";
 import LensPanel from "./components/LensPanel";
 import SignalDetail from "./components/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
-
-// LP grades against "the prior 2 weeks" (lossPrevention/lpInfo.ts), so the
-// explorer uses the same ceiling, which also bounds the group fetch.
-const MAX_RANGE_DAYS = 14;
-// A group query can span hundreds of stores. Past this many transactions the
-// receipt fetch stops being interactive, so it's capped and the user is told.
-const MAX_TRANSACTIONS = 1500;
-
-const dayDiff = (start: string, end: string) => {
-  const a = new Date(start).getTime();
-  const b = new Date(end).getTime();
-  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
-  return Math.round(Math.abs(b - a) / 86400000) + 1;
-};
 
 const Cashiers = () => {
   const toast = useToast();
