@@ -2,9 +2,8 @@
 import { useState } from "react";
 
 // Utils
-import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
-import { roles } from "../users/utils/roles";
-import { accessLabel } from "../utils/userFilters";
+import { downloadCsv } from "../../../../utils/csvExport";
+import { buildUsersCsv } from "../utils";
 
 // Interfaces
 import type { ExportDataset } from "../interfaces";
@@ -23,45 +22,6 @@ interface UsersExportModalProps {
   /** Any of the grid's filters is narrowing the list (see filtersApplied). */
   filtersActive: boolean;
 }
-
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return "N/A";
-  const split = dateStr.split("-");
-  return `${split[1]}/${split[2]}/${split[0]}`;
-};
-
-const buildUsersCsv = (
-  users: User[],
-  userLevels: UserLevel[],
-  label: string,
-) => {
-  const renderRoleText = (role: number | null) =>
-    roles.find((r) => r.value == role)?.label ?? "";
-  const renderLvlText = (lvl: number) =>
-    userLevels.find((l) => l.id === lvl)?.name ?? "N/A";
-
-  const headers = [
-    "Username",
-    "First name",
-    "Last name",
-    "Email",
-    "Role",
-    "Level",
-    "Access",
-    "Last visited",
-  ];
-  const rows = users.map((u) => [
-    u.username,
-    u.first_name || "",
-    u.last_name || "",
-    u.email ?? "",
-    renderRoleText(u.role),
-    renderLvlText(u.user_level),
-    accessLabel(u.access_mode),
-    formatDate(u.last_visit),
-  ]);
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
 
 const UsersExportModal = ({
   onClose,

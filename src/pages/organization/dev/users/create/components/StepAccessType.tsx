@@ -1,3 +1,6 @@
+// Utils
+import { OPTIONS } from "../utils";
+
 // Interfaces
 import type { GrantMode } from "../../../../../../interfaces";
 
@@ -17,32 +20,6 @@ import GrantModeChip from "./GrantModeChip";
  * For the single-store role, By group is shown greyed with its reason, never
  * hidden.
  */
-const OPTIONS: {
-  mode: GrantMode;
-  title: string;
-  desc: string;
-  newStores: string;
-  pick: string;
-  best: string;
-}[] = [
-  {
-    mode: "all",
-    title: "By group",
-    desc: "They see every store in the base groups you pick.",
-    newStores: "Show up automatically",
-    pick: "Base groups",
-    best: "Managers, buyers, corporate",
-  },
-  {
-    mode: "selected",
-    title: "By store",
-    desc: "They see only the stores you pick, nothing more.",
-    newStores: "Must be added by hand",
-    pick: "Individual stores",
-    best: "Single store, small multi-store",
-  },
-];
-
 const StepAccessType = ({
   value,
   onChange,

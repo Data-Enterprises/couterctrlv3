@@ -1,6 +1,10 @@
+// Utils
+import { rowsToCsv } from "../../../../../utils/csvExport";
+
 // Interfaces
 import type { StoreUserResult, Summary } from "../interfaces";
 import type { SkippedUser } from "../../../../../api/storeAccess";
+import type { Store } from "../../../../../interfaces";
 
 /**
  * Turning one store-assignment call into one sentence. Partial results are
@@ -93,3 +97,16 @@ export const summarizeUnassign = (
  */
 export const viaLabel = (via: string | null): string =>
   via === null || via === "" ? "direct" : via;
+
+/** The stores export as CSV. */
+export const buildStoresCsv = (stores: Store[], label: string) => {
+  const headers = ["Store ID", "Store #", "Store Name", "Company ID", "Company Name"];
+  const rows = stores.map((s) => [
+    s.storeid,
+    s.store_number,
+    s.store_name,
+    s.company,
+    s.company_name,
+  ]);
+  return `${label}\n${rowsToCsv(headers, rows)}`;
+};

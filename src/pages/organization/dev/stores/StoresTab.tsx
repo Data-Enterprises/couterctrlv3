@@ -14,7 +14,7 @@ import TextFilter from "../../../../components-dev/filters/TextFilter";
 import StoresExportModal from "./components/StoresExportModal";
 import StoreUsersPanel from "./components/StoreUsersPanel";
 
-interface Props {
+interface StoresTabProps {
   exportOpen: boolean;
   onCloseExport: () => void;
 }
@@ -26,7 +26,7 @@ interface Props {
  * Programmers and DCR support get every store; everyone else the ones they
  * hold, since you can't hand out access you don't have.
  */
-const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
+const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
 

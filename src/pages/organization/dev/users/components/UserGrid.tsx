@@ -24,7 +24,7 @@ import {
 
 // Utils
 import { accessLabel, filterUsers, NO_COMPANY_VALUE, sortUsers } from "../../utils/userFilters";
-import { accessModeOf } from "../utils";
+import { accessModeOf, formatDate } from "../utils";
 import { roles } from "../utils/roles";
 
 // Interfaces
@@ -60,13 +60,6 @@ import SecurityTab from "./SecurityTab";
 interface UserGridProps {
   onOpenCreate: () => void;
 }
-
-
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return "N/A";
-  const split = dateStr.split("-");
-  return `${split[1]}/${split[2]}/${split[0]}`;
-};
 
 const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const toast = useToast();

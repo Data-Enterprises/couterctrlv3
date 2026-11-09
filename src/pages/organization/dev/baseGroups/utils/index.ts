@@ -1,5 +1,9 @@
+// Utils
+import { rowsToCsv } from "../../../../../utils/csvExport";
+
 // Interfaces
 import type { MembershipSummary, StoreOutcome } from "../interfaces";
+import type { BaseGroupUserRow, Store, User } from "../../../../../interfaces";
 
 /**
  * Moving stores in and out of a base group, and saying what it did.
@@ -122,4 +126,25 @@ export const callReason = (err: unknown): string => {
     e.message ??
     "The server refused it."
   );
+};
+
+/** A base group's stores as CSV. */
+export const buildStoresCsv = (stores: Store[], label: string) => {
+  const headers = ["Store ID", "Store #", "Store Name"];
+  const rows = stores.map((s) => [s.storeid, s.store_number, s.store_name]);
+  return `${label}\n${rowsToCsv(headers, rows)}`;
+};
+
+/** A base group's users as CSV. */
+export const buildUsersCsv = (
+  rows: BaseGroupUserRow[],
+  byId: Map<number, User>,
+  label: string,
+) => {
+  const headers = ["Username", "First Name", "Last Name", "Email"];
+  const body = rows.map((r) => {
+    const u = byId.get(r.userid);
+    return [r.username, u?.first_name ?? "", u?.last_name ?? "", r.email ?? u?.email ?? ""];
+  });
+  return `${label}\n${rowsToCsv(headers, body)}`;
 };

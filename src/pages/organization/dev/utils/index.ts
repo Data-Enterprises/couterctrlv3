@@ -1,9 +1,12 @@
 // Utils
 import { isSupportUser } from "../../../../utils/supportUsers";
+import { roles } from "../users/utils/roles";
+import { accessLabel } from "./userFilters";
+import { rowsToCsv } from "../../../../utils/csvExport";
 
 // Interfaces
-import type { CompanyRef } from "../interfaces";
-import type { BaseGroup } from "../../../../interfaces";
+import type { CompanyRef, PanelFit, Tab } from "../interfaces";
+import type { BaseGroup, User, UserLevel } from "../../../../interfaces";
 
 /**
  * Who sees past their own assignments: level 9, or DCR support. A programmer
@@ -111,3 +114,78 @@ export const mayChangeGroup = (
   canSeeAll: boolean,
   editorHeld: Set<number>,
 ): boolean => canSeeAll || editorHeld.has(id);
+
+/** A yyyy-mm-dd date as mm/dd/yyyy, or N/A when missing. */
+export const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return "N/A";
+  const split = dateStr.split("-");
+  return `${split[1]}/${split[2]}/${split[0]}`;
+};
+
+/** The users export as CSV, roles named. */
+export const buildUsersCsv = (
+  users: User[],
+  userLevels: UserLevel[],
+  label: string,
+) => {
+  const renderRoleText = (role: number | null) =>
+    roles.find((r) => r.value == role)?.label ?? "";
+  const renderLvlText = (lvl: number) =>
+    userLevels.find((l) => l.id === lvl)?.name ?? "N/A";
+
+  const headers = [
+    "Username",
+    "First name",
+    "Last name",
+    "Email",
+    "Role",
+    "Level",
+    "Access",
+    "Last visited",
+  ];
+  const rows = users.map((u) => [
+    u.username,
+    u.first_name || "",
+    u.last_name || "",
+    u.email ?? "",
+    renderRoleText(u.role),
+    renderLvlText(u.user_level),
+    accessLabel(u.access_mode),
+    formatDate(u.last_visit),
+  ]);
+  return `${label}\n${rowsToCsv(headers, rows)}`;
+};
+
+/**
+ * Owner: who may see what is an administrator's job, not a manager's.
+ * Levels run 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
+ */
+export const OWNER_LEVEL = 7;
+
+/**
+ * Each tab's size until its content asks otherwise (`usePanelFit`). Heights
+ * are explicit: every tab scrolls inside, so `auto` would collapse it.
+ */
+export const TAB_FIT: Record<Tab, PanelFit> = {
+  users: { width: 1200, height: 660 },
+  companies: { width: 1320, height: 660 },
+  baseGroups: { width: 1320, height: 660 },
+  stores: { width: 1320, height: 660 },
+};
+
+/**
+ * The tabs, in order, and the lowest level that sees each (`null` is everyone).
+ *
+ * - Users: managers and up.
+ * - Companies, Base Groups and Stores: owners and up.
+ *
+ * Below level 5 there is no tab, and the page says so (an address still reaches it).
+ */
+export const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
+  { id: "users", label: "Users", minLevel: 5 },
+  // Owner and up for all three. Companies comes first: it is the outer
+  // boundary, since a group only reaches people who hold its company.
+  { id: "companies", label: "Companies", minLevel: OWNER_LEVEL },
+  { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
+  { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
+];

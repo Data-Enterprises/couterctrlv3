@@ -32,7 +32,7 @@ import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import BaseGroupExportModal from "./BaseGroupExportModal";
 
-interface Props {
+interface BaseGroupDetailProps {
   group: CompanyBaseGroup;
   companyName: string;
   stores: StoreSplit | undefined;
@@ -50,7 +50,7 @@ const BaseGroupDetail = ({
   onRefetchStores,
   onDeleted,
   onRenamed,
-}: Props) => {
+}: BaseGroupDetailProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();

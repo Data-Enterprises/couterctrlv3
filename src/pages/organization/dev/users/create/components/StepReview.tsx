@@ -21,7 +21,8 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon,
 } from "@heroicons/react/20/solid";
-import GrantModeChip from "./GrantModeChip";
+import ReviewSection from "./ReviewSection";
+import Row from "./Row";
 
 /**
  * What is about to be written, counted: how many stores it adds up to, and
@@ -181,7 +182,7 @@ const StepReview = ({
           </div>
         </div>
 
-        <Section
+        <ReviewSection
           title="Access type"
           onEdit={() => onGoTo("type")}
           empty={held.length === 0 ? "Nothing picked yet" : null}
@@ -197,9 +198,9 @@ const StepReview = ({
               mode={autoGroups.length > 0 ? "all" : "selected"}
             />
           )}
-        </Section>
+        </ReviewSection>
 
-        <Section
+        <ReviewSection
           title="Base groups"
           onEdit={() => onGoTo("assignments")}
           empty={
@@ -223,9 +224,9 @@ const StepReview = ({
               />
             );
           })}
-        </Section>
+        </ReviewSection>
 
-        <Section
+        <ReviewSection
           title="Companies"
           onEdit={() => onGoTo("assignments")}
           empty={companyIds.length === 0 ? "None" : null}
@@ -233,7 +234,7 @@ const StepReview = ({
           {companyIds.length > 0 && (
             <Row value={companyIds.map((id) => companyName(id)).join(", ")} />
           )}
-        </Section>
+        </ReviewSection>
 
         {autoGroups.length > 0 && (
           <div className="flex gap-2.5 items-start m-5 px-3.5 py-3 rounded-lg bg-filter_active">
@@ -252,62 +253,5 @@ const StepReview = ({
     </div>
   );
 };
-
-/** One titled block with its own way back to the step that set it. */
-const Section = ({
-  title,
-  onEdit,
-  empty,
-  children,
-}: {
-  title: string;
-  onEdit: () => void;
-  empty: string | null;
-  children?: React.ReactNode;
-}) => (
-  <div className="flex flex-wrap gap-x-8 gap-y-3 px-5 py-4 border-b border-gray-100">
-    <div className="flex-1 min-w-[160px] max-w-[200px]">
-      <h3 className="text-[12.5px] font-bold text-content m-0">{title}</h3>
-      <button
-        onClick={onEdit}
-        className="text-[11.5px] font-semibold text-brand_navy hover:underline mt-0.5"
-      >
-        Edit
-      </button>
-    </div>
-    <div className="flex-[999] min-w-[300px] flex flex-col gap-1.5">
-      {empty ? (
-        <span className="text-[12.5px] text-content/85">{empty}</span>
-      ) : (
-        children
-      )}
-    </div>
-  </div>
-);
-
-const Row = ({
-  label,
-  value,
-  meta,
-  mode,
-}: {
-  label?: string;
-  value: string;
-  meta?: string;
-  mode?: "all" | "selected";
-}) => (
-  <div className="flex flex-wrap justify-between items-center gap-2 text-[12.5px] py-0.5">
-    <span className="min-w-0">
-      {label && <span className="text-content/85">{label} </span>}
-      <span className="font-semibold text-content">{value}</span>
-    </span>
-    {(meta || mode) && (
-      <span className="flex items-center gap-2 flex-shrink-0">
-        {meta && <span className="text-[11.5px] text-content/85">{meta}</span>}
-        {mode && <GrantModeChip mode={mode} />}
-      </span>
-    )}
-  </div>
-);
 
 export default StepReview;

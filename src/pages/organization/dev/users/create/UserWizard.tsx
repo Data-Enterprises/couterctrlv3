@@ -22,7 +22,7 @@ import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 
 // Utils
 import { accessSets, directStoreIds, emptySelectedGroupIds, groupCompanies, hasChanges, NO_PICKS } from "../utils";
-import { STEP_ORDER } from "./utils";
+import { identityOf, isSingleStoreRole, STEP_FIT, STEP_ORDER } from "./utils";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -35,7 +35,6 @@ import {
 } from "./utils/wizardRules";
 
 // Interfaces
-import type { PanelFit } from "../../interfaces";
 import type { AccessPicks } from "../interfaces";
 import type { AccessOutcome, WizardStep } from "./interfaces";
 import type {
@@ -64,38 +63,6 @@ interface UserWizardProps {
   onComplete: () => void;
   onCancel: () => void;
 }
-
-/**
- * The panel size for each step. Every step gets a real height, not `auto`: with
- * the viewport cap, `auto` never forms a scroll container, so tall steps clipped.
- * Widths are what each step needs.
- */
-const STEP_FIT: Record<WizardStep, PanelFit> = {
-  identity: { width: 1180, height: 680 },
-  // 680, like User info: at 560 its two cards scrolled in a short box.
-  type: { width: 1020, height: 680 },
-  assignments: { width: 1360, height: 700 },
-  review: { width: 1100, height: 700 },
-};
-
-/**
- * The single-store role as the form holds it: `role` is the option value from
- * `roles` stored as a number, and `1` is Single Store, the server's
- * `SINGLE_STORE_ROLE`.
- */
-const isSingleStoreRole = (role: unknown) => Number(role) === 1;
-
-/** The identity fields `update_user` writes, for telling whether any moved. */
-const identityOf = (info: {
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: number | string;
-  user_level: number;
-}) =>
-  [info.first_name, info.last_name, info.email, String(info.role), info.user_level].join(
-    "\u0000",
-  );
 
 /**
  * Add user and Edit user, in four steps. Access type gets its own step, before

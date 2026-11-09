@@ -8,17 +8,15 @@ import {
   type SetActiveResult,
 } from "../../../../../api/team";
 
+// Utils
+import { capitalise } from "../utils";
+
 // Interfaces
 import type { Outcome } from "../interfaces";
 import type { JsonError, User } from "../../../../../interfaces";
 
 // Components
-import {
-  CheckCircleIcon,
-  MinusCircleIcon,
-  NoSymbolIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/20/solid";
+import OutcomeIcon from "./OutcomeIcon";
 
 interface SetActiveModalProps {
   /** Exactly the people the button promised — the grid passes what was
@@ -213,25 +211,6 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
       </div>
     </div>
   );
-};
-
-/** Server reasons are lower-case phrases ("above your level") written to be
- *  read; on their own in a column they want a capital. */
-const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-const OutcomeIcon = ({ outcome }: { outcome: Outcome | null }) => {
-  const cls = "w-4 h-4 flex-shrink-0";
-  if (outcome === null) return null;
-  switch (outcome.kind) {
-    case "changed":
-      return <CheckCircleIcon className={`${cls} text-brand_navy`} />;
-    case "unchanged":
-      return <MinusCircleIcon className={`${cls} text-content/95`} />;
-    case "refused":
-      return <NoSymbolIcon className={`${cls} text-brand_danger`} />;
-    case "not_found":
-      return <ExclamationCircleIcon className={`${cls} text-brand_danger`} />;
-  }
 };
 
 export default SetActiveModal;

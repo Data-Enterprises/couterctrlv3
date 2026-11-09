@@ -262,3 +262,14 @@ export const hasChanges = (next: AccessSets, before: AccessSets) => {
   const c = changedSets(next, before);
   return c.companies || c.grants.length > 0 || c.revoke.length > 0;
 };
+
+/** Server reasons are lower-case phrases ("above your level") written to be
+ *  read; on their own in a column they want a capital. */
+export const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** A yyyy-mm-dd date as mm/dd/yyyy, or N/A when missing. */
+export const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return "N/A";
+  const split = dateStr.split("-");
+  return `${split[1]}/${split[2]}/${split[0]}`;
+};

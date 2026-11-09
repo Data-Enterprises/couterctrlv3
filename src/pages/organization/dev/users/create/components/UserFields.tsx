@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 import { useOrganizationCtx } from "../../../hooks";
 
@@ -16,14 +16,16 @@ import { checkEmail, checkUsername } from "../../../../../../api/team";
 // Utils
 import { roles } from "../../utils/roles";
 import { NOT_AVAILABLE, passwordOk, passwordRules } from "../utils/wizardRules";
+import { nextUp } from "../utils";
 
 // Interfaces
 import type { JsonError } from "../../../../../../interfaces";
 
 // Components
-import { CheckIcon } from "@heroicons/react/20/solid";
 import Input from "../../../../../../components-dev/inputs/Input";
 import PasswordInput from "../../../../../../components-dev/inputs/PasswordInput";
+import Section from "./Section";
+import Rule from "./Rule";
 
 interface UserFieldsProps {
   /**
@@ -45,56 +47,6 @@ interface UserFieldsProps {
     blankNames?: { first: boolean; last: boolean };
   };
 }
-
-/**
- * One block of the form: what it is for on the left, the fields on the right.
- */
-const Section = ({
-  title,
-  desc,
-  last = false,
-  children,
-}: {
-  title: string;
-  desc: string;
-  last?: boolean;
-  children: ReactNode;
-}) => (
-  <div
-    className={`flex flex-wrap gap-x-8 gap-y-3 px-5 py-3.5 ${
-      last ? "" : "border-b border-gray-100"
-    }`}
-  >
-    <div className="flex-1 min-w-[150px] max-w-[200px]">
-      <h3 className="text-[12.5px] font-bold text-content m-0">{title}</h3>
-      <p className="text-[11.5px] text-content/85 leading-snug mt-1 mb-0">
-        {desc}
-      </p>
-    </div>
-    <div className="flex-[999] min-w-[300px] grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {children}
-    </div>
-  </div>
-);
-
-/** A rule, and whether the password meets it yet. Live rather than a static
- *  list: a tick that never moves is decoration. */
-const Rule = ({ met, children }: { met: boolean; children: ReactNode }) => (
-  <div className="flex items-center gap-2 text-[12px] py-1">
-    <CheckIcon
-      className={`w-4 h-4 flex-shrink-0 ${
-        met ? "text-severity_healthy_text" : "text-content/85 opacity-40"
-      }`}
-    />
-    <span className={met ? "text-content" : "text-content/85"}>{children}</span>
-  </div>
-);
-
-const nextUp = (editing: boolean) => [
-  { t: "Access type", d: "by group or by store" },
-  { t: "Assignments", d: "pick groups or stores" },
-  { t: "Review", d: editing ? "check and save" : "check and create" },
-];
 
 const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
   const toast = useToast();

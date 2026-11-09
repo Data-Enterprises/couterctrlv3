@@ -29,6 +29,7 @@ import {
   filtersApplied,
   showsInactive,
 } from "./utils/userFilters";
+import { OWNER_LEVEL, TAB_FIT, TABS } from "./utils";
 
 // Interfaces
 import type { Tab, PanelFit } from "./interfaces";
@@ -48,40 +49,6 @@ import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
 import StoresTab from "./stores/StoresTab";
-
-/**
- * Owner: who may see what is an administrator's job, not a manager's.
- * Levels run 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
- */
-const OWNER_LEVEL = 7;
-
-/**
- * Each tab's size until its content asks otherwise (`usePanelFit`). Heights
- * are explicit: every tab scrolls inside, so `auto` would collapse it.
- */
-const TAB_FIT: Record<Tab, PanelFit> = {
-  users: { width: 1200, height: 660 },
-  companies: { width: 1320, height: 660 },
-  baseGroups: { width: 1320, height: 660 },
-  stores: { width: 1320, height: 660 },
-};
-
-/**
- * The tabs, in order, and the lowest level that sees each (`null` is everyone).
- *
- * - Users: managers and up.
- * - Companies, Base Groups and Stores: owners and up.
- *
- * Below level 5 there is no tab, and the page says so (an address still reaches it).
- */
-const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
-  { id: "users", label: "Users", minLevel: 5 },
-  // Owner and up for all three. Companies comes first: it is the outer
-  // boundary, since a group only reaches people who hold its company.
-  { id: "companies", label: "Companies", minLevel: OWNER_LEVEL },
-  { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
-  { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
-];
 
 const Organization = () => {
   const toast = useToast();

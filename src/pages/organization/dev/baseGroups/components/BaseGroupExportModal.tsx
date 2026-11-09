@@ -1,13 +1,13 @@
 // Hooks
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBaseGroupsCtx } from "../../hooks";
 
 // API
 import { getBaseGroupUsers } from "../../../../../api/baseGroups";
 
 // Utils
-import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
-import { callReason } from "../utils";
+import { downloadCsv } from "../../../../../utils/csvExport";
+import { buildStoresCsv, buildUsersCsv, callReason } from "../utils";
 import { withinReachOf } from "../utils/userReach";
 
 // Interfaces
@@ -23,6 +23,7 @@ import type {
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
+import Option from "./Option";
 
 interface BaseGroupExportModalProps {
   onClose: () => void;
@@ -33,58 +34,6 @@ interface BaseGroupExportModalProps {
   /** Every user, with levels: the group's user rows carry none. */
   users: User[];
 }
-
-const buildStoresCsv = (stores: Store[], label: string) => {
-  const headers = ["Store ID", "Store #", "Store Name"];
-  const rows = stores.map((s) => [s.storeid, s.store_number, s.store_name]);
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
-
-const buildUsersCsv = (
-  rows: BaseGroupUserRow[],
-  byId: Map<number, User>,
-  label: string,
-) => {
-  const headers = ["Username", "First Name", "Last Name", "Email"];
-  const body = rows.map((r) => {
-    const u = byId.get(r.userid);
-    return [r.username, u?.first_name ?? "", u?.last_name ?? "", r.email ?? u?.email ?? ""];
-  });
-  return `${label}\n${rowsToCsv(headers, body)}`;
-};
-
-/** One tickable dataset: a label, and what it holds or why it can't. */
-const Option = ({
-  checked,
-  disabled,
-  onToggle,
-  title,
-  detail,
-}: {
-  checked: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-  title: string;
-  detail: ReactNode;
-}) => (
-  <label
-    className={`flex items-start gap-3 ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"} group`}
-  >
-    <input
-      type="checkbox"
-      checked={checked}
-      disabled={disabled}
-      onChange={onToggle}
-      className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-    />
-    <div>
-      <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
-        {title}
-      </p>
-      <p className="text-[12px] text-content mt-0.5">{detail}</p>
-    </div>
-  </label>
-);
 
 const BaseGroupExportModal = ({
   onClose,

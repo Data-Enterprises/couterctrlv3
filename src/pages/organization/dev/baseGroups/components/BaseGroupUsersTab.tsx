@@ -37,7 +37,7 @@ import type {
 import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
-interface Props {
+interface BaseGroupUsersTabProps {
   group: CompanyBaseGroup;
   users: User[];
 }
@@ -47,7 +47,7 @@ interface Props {
 //
 // Both columns come from groups/base_group_users, which carries no levels, so
 // `users` (which does) keeps anyone above the acting user's level off both.
-const BaseGroupUsersTab = ({ group, users }: Props) => {
+const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();

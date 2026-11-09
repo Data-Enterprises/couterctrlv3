@@ -2,7 +2,8 @@
 import { useState } from "react";
 
 // Utils
-import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";
+import { downloadCsv } from "../../../../../utils/csvExport";
+import { buildStoresCsv } from "../utils";
 
 // Interfaces
 import type { ExportDataset } from "../interfaces";
@@ -17,18 +18,6 @@ interface StoresExportModalProps {
   allStores: Store[];
   filteredStores: Store[];
 }
-
-const buildStoresCsv = (stores: Store[], label: string) => {
-  const headers = ["Store ID", "Store #", "Store Name", "Company ID", "Company Name"];
-  const rows = stores.map((s) => [
-    s.storeid,
-    s.store_number,
-    s.store_name,
-    s.company,
-    s.company_name,
-  ]);
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
 
 const StoresExportModal = ({ onClose, allStores, filteredStores }: StoresExportModalProps) => {
   const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
