@@ -51,13 +51,20 @@ export interface MarkdownResponse {
   markdowns: MarkdownItem[];
 }
 
+/** The Markdowns page's filters, each built from the rows that came back.
+ *  An empty list means all. */
 export interface MarkdownFilters {
-  types: MarkdownType[] | null;
+  types: MarkdownType[];
   storeNumbers: string[];
   dates: string[];
   subIds: number[];
   categories: number[];
   vendorIds: string[];
-  search: string;
+  productCodes: string[];
+  userIds: string[];
+  /** Keep rows marked down by at least this percent; null = any. */
   minPercent: number | null;
-};
+}
+
+/** A column the Markdowns grid can sort on. */
+export type MarkdownSortKey = keyof MarkdownItem;
