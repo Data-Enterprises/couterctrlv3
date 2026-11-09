@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowPathIcon,
   ChevronRightIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoButton from "../../../components-dev/InfoButton";
 import HelpPanel from "../../../components-dev/help/HelpPanel";
 import { HELP_CONTENT } from "../../../components-dev/help/content";
 import Checkbox from "../../../components-dev/Checkbox";
@@ -73,7 +73,7 @@ const Row = ({
 }) => (
   <div
     className={`rounded-lg overflow-hidden flex flex-col flex-shrink-0 border ${
-      warn ? "bg-amber-50 border-amber-300" : "bg-card_bg border-brand_line"
+      warn ? "bg-severity_watch_bg border-severity_watch_text/20" : "bg-card_bg border-brand_line"
     }`}
   >
     <button
@@ -84,19 +84,19 @@ const Row = ({
     >
       <ChevronRightIcon
         className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${
-          warn ? "text-amber-900" : "text-content/95"
+          warn ? "text-severity_watch_text" : "text-content/95"
         } ${isOpen ? "rotate-90" : ""}`}
       />
       <span
         className={`text-[13px] font-semibold flex-1 ${
-          warn ? "text-amber-900" : ""
+          warn ? "text-severity_watch_text" : ""
         }`}
       >
         {label}
       </span>
       <span
         className={`text-[12px] ${
-          warn ? "text-amber-900 font-semibold" : "text-content/95"
+          warn ? "text-severity_watch_text font-semibold" : "text-content/95"
         }`}
       >
         {summary}
@@ -494,15 +494,11 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
           Configuration
         </span>
-        <button
-          type="button"
+        <InfoButton
+          variant="light"
           onClick={() => setHelp(true)}
           title="How this page works"
-          aria-label="How this page works"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
-        >
-          <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-        </button>
+        />
         <button
           type="button"
           onClick={() => {
@@ -816,7 +812,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
           </div>
 
           {ctx.productCodes.length > 0 && ctx.productDescriptions.length > 0 && (
-            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+            <span className="text-[11.5px] text-severity_watch_text bg-severity_watch_bg border border-severity_watch_text/20 rounded px-2 py-1.5">
               Both are filled, so a line has to match a code AND a word. Clear
               one to widen it.
             </span>
@@ -838,7 +834,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
           {ctx.aggregating && (
-            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+            <span className="text-[11.5px] text-severity_watch_text bg-severity_watch_bg border border-severity_watch_text/20 rounded px-2 py-1.5">
               This file is a summary, so its columns are the keys and the
               measures. Clear those to go back to exporting the lines.
             </span>
@@ -853,7 +849,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             <div
               className={`flex items-center gap-2 rounded-lg px-2 py-1.5 border ${
                 piiOn
-                  ? "bg-amber-50 border-amber-200"
+                  ? "bg-severity_watch_bg border-severity_watch_text/20"
                   : "bg-custom-white border-brand_line"
               }`}
             >
@@ -874,7 +870,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 }
               />
               {piiOn && (
-                <span className="text-[9.5px] font-semibold tracking-wide text-amber-900">
+                <span className="text-[9.5px] font-semibold tracking-wide text-severity_watch_text">
                   IN THE FILE
                 </span>
               )}
@@ -894,7 +890,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 checked={ctx.selectedColumns.includes(c.name)}
                 onChange={() => ctx.dispatch(toggleColumn(c.name))}
                 className={`w-full py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
-                  isPii(c.name) ? "bg-amber-50" : ""
+                  isPii(c.name) ? "bg-severity_watch_bg" : ""
                 }`}
                 label={
                   <span className="flex items-center gap-2 w-full min-w-0">
@@ -902,7 +898,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                       {c.name}
                     </span>
                     {isPii(c.name) && (
-                      <span className="text-[9.5px] font-semibold tracking-wide text-amber-900">
+                      <span className="text-[9.5px] font-semibold tracking-wide text-severity_watch_text">
                         PERSONAL
                       </span>
                     )}
@@ -941,7 +937,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             Ticking one makes the file a summary.
           </span>
           {ctx.groupBy.length === 0 && ctx.measureItems.length > 0 && (
-            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+            <span className="text-[11.5px] text-severity_watch_text bg-severity_watch_bg border border-severity_watch_text/20 rounded px-2 py-1.5">
               There are measures but nothing to group them by, so the export
               has nothing to put in a row. Pick a key — storeid for one row per
               store, product_code for one per item.
@@ -983,7 +979,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 checked={ctx.groupBy.includes(c.name)}
                 onChange={() => ctx.dispatch(toggleGroupBy(c.name))}
                 className={`w-full py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
-                  isPii(c.name) ? "bg-amber-50" : ""
+                  isPii(c.name) ? "bg-severity_watch_bg" : ""
                 }`}
                 label={
                   <span className="flex items-center gap-2 w-full min-w-0">
@@ -1181,7 +1177,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             placeholder={ctx.source.filePrefix}
             hint={
               fileName && !PREFIX_OK.test(fileName) ? (
-                <span className="text-amber-900">
+                <span className="text-severity_watch_text">
                   Letters, digits, - and _ only, up to 60. It names the build's
                   folder, so a dot is refused rather than cleaned up.
                 </span>

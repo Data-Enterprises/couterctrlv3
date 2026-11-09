@@ -72,7 +72,7 @@ const SavedExportsModal = () => {
         </div>
 
         {ctx.savedError && (
-          <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12px] text-amber-900">
+          <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 text-[12px] text-severity_watch_text">
             {ctx.savedError}
           </div>
         )}

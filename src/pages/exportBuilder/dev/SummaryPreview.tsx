@@ -45,8 +45,8 @@ const SummaryPreview = () => {
         </span>
       </div>
 
-      <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex-shrink-0">
-        <span className="text-[11.5px] text-amber-900">
+      <div className="px-4 py-2 bg-severity_watch_bg border-b border-severity_watch_text/20 flex-shrink-0">
+        <span className="text-[11.5px] text-severity_watch_text">
           Sample numbers, from {ctx.visibleRows.length} line
           {ctx.visibleRows.length === 1 ? "" : "s"}. The file is built from the
           whole range.
@@ -76,7 +76,7 @@ const SummaryPreview = () => {
                       key={c}
                       className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${
                         isPii(c)
-                          ? "bg-amber-50 text-amber-900"
+                          ? "bg-severity_watch_bg text-severity_watch_text"
                           : isKey
                             ? "bg-row_selected text-content"
                             : "bg-filter_active text-content"

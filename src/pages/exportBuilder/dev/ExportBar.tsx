@@ -69,14 +69,14 @@ const ExportBar = () => {
       <div
         className={`flex-shrink-0 rounded-xl px-4 py-3 border ${
           ctx.staleBuild
-            ? "bg-amber-50 border-amber-300"
+            ? "bg-severity_watch_bg border-severity_watch_text/20"
             : "bg-card_bg border-brand_green"
         }`}
       >
         {/* A file left on screen while the configuration moves under it looks
             like the answer and is not. */}
         {ctx.staleBuild && (
-          <div className="text-[12px] font-semibold text-amber-900 mb-2">
+          <div className="text-[12px] font-semibold text-severity_watch_text mb-2">
             The configuration has changed since this file was built — it does
             not match what is on screen. Build export again for a file that
             does.
@@ -103,7 +103,7 @@ const ExportBar = () => {
               </div>
             </div>
             <div className="text-right mr-1">
-              <div className="text-[11.5px] font-semibold text-amber-900">
+              <div className="text-[11.5px] font-semibold text-severity_watch_text">
                 Link expires in {ctx.urlExpiresInMinutes} min
               </div>
               <div className="text-[11px] text-content/95 mt-0.5">
@@ -191,7 +191,7 @@ const ExportBar = () => {
           </div>
         )}
         {ctx.exportError && (
-          <div className="flex items-center gap-1.5 mt-1.5 text-[11.5px] text-amber-200">
+          <div className="flex items-center gap-1.5 mt-1.5 text-[11.5px] text-severity_watch_bg">
             <ClockIcon className="w-3.5 h-3.5 flex-shrink-0" />
             {ctx.exportError}
           </div>
@@ -242,7 +242,7 @@ const ExportBar = () => {
           Build export
         </button>
         {ctx.blocked && (
-          <span className="text-[11px] text-amber-200 text-right max-w-[34ch]">
+          <span className="text-[11px] text-severity_watch_bg text-right max-w-[34ch]">
             {ctx.blocked}
           </span>
         )}

@@ -123,7 +123,7 @@ const CsvPreview = () => {
                       drag.isDragging(i)
                         ? "shadow-lg bg-filter_active text-content"
                         : isPii(c.name)
-                          ? "bg-amber-50 text-amber-900"
+                          ? "bg-severity_watch_bg text-severity_watch_text"
                           : "bg-row_selected text-content"
                     }`}
                   >

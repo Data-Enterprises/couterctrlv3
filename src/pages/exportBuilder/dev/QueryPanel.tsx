@@ -228,11 +228,11 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
       className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden"
     >
       {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
-        <div className="bg-amber-100 border-b border-amber-300 px-3 py-2">
-          <span className="text-[12.5px] font-semibold text-amber-900">
+        <div className="bg-severity_watch_bg border-b border-severity_watch_text/20 px-3 py-2">
+          <span className="text-[12.5px] font-semibold text-severity_watch_text">
             This summary has no key to group by.
           </span>{" "}
-          <span className="text-[12.5px] text-amber-900/95">
+          <span className="text-[12.5px] text-severity_watch_text">
             Measures need rows to sit in, so the export refuses a summary
             without at least one. Pick one under <strong>Group By</strong> on
             the left — storeid for one row per store, product_code for one per
@@ -275,7 +275,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
           </span>
         )}
         {edited ? (
-          <span className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+          <span className="text-[11px] text-severity_watch_text bg-severity_watch_bg border border-severity_watch_text/20 rounded px-1.5 py-0.5">
             Edited — the file below is still the configuration's
           </span>
         ) : null}
@@ -407,19 +407,19 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
           {edited ? "Ctrl+Enter applies it" : ""}
         </span>
         {ctx.queriesError && (
-          <span className="text-[11.5px] text-amber-900">
+          <span className="text-[11.5px] text-severity_watch_text">
             {ctx.queriesError}
           </span>
         )}
       </div>
 
       {error && (
-        <div className="bg-amber-50 border-t border-amber-200 px-3 py-2">
-          <div className="text-[12.5px] font-semibold text-amber-900">
+        <div className="bg-severity_watch_bg border-t border-severity_watch_text/20 px-3 py-2">
+          <div className="text-[12.5px] font-semibold text-severity_watch_text">
             {error.message}
           </div>
           {error.hint && (
-            <div className="text-[11.5px] text-amber-900/95 mt-1">
+            <div className="text-[11.5px] text-severity_watch_text mt-1">
               {error.hint}
             </div>
           )}
@@ -429,11 +429,11 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
       {plan && (
         plan.leftBehind.length > 0 && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2">
-          <div className="text-[11.5px] font-semibold text-amber-900">
+          <div className="text-[11.5px] font-semibold text-severity_watch_text">
             Not carried over
           </div>
           {plan.leftBehind.map((line, i) => (
-            <div key={i} className="text-[11.5px] text-amber-900/95">
+            <div key={i} className="text-[11.5px] text-severity_watch_text">
               · {line}
             </div>
           ))}
