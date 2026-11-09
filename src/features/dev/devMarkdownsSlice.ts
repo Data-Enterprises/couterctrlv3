@@ -1,18 +1,31 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { MarkdownItem, MarkdownType } from "../../interfaces/markdowns";
+import type { MarkdownItem, MarkdownFilters } from "../../interfaces/markdowns";
 
 interface DevMarkdownsState {
   markdowns: MarkdownItem[];
-  type: MarkdownType | null;
   loading: boolean;
-  progress: { page: number; total: number };
+  progress: { page: number; total: number } | null;
+  notice: string | null;
+  filters: MarkdownFilters;
 }
+
+const emptyFilters: MarkdownFilters = {
+  type: null,
+  storeNumbers: [],
+  dates: [],
+  subIds: [],
+  categories: [],
+  vendorIds: [],
+  search: "",
+  minPercent: null,
+};
 
 const initialState: DevMarkdownsState = {
   markdowns: [],
-  type: null,
   loading: false,
-  progress: { page: 0, total: 0 },
+  progress: null,
+  notice: null,
+  filters: emptyFilters,
 };
 
 const devMarkdownsSlice = createSlice({
@@ -22,11 +35,18 @@ const devMarkdownsSlice = createSlice({
     setMarkdowns: (state, action: PayloadAction<MarkdownItem[]>) => {
       state.markdowns = action.payload;
     },
-    setType: (state, action: PayloadAction<MarkdownType | null>) => {
-      state.type = action.payload;
+    /** Any of the filters; the rest stay as they are. */
+    setMarkdownFilters: (
+      state,
+      action: PayloadAction<Partial<MarkdownFilters>>,
+    ) => {
+      state.filters = { ...state.filters, ...action.payload };
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
+    },
+    clearMarkdownFilters: (state) => {
+      state.filters = emptyFilters;
     },
     setProgress: (
       state,
@@ -34,13 +54,16 @@ const devMarkdownsSlice = createSlice({
     ) => {
       state.progress = action.payload;
     },
+    setNotice: (state, action: PayloadAction<string | null>) => {
+      state.notice = action.payload;
+    },
     resetMarkdownsSlice: () => initialState,
   },
 });
 
 export const {
   setMarkdowns,
-  setType,
+  setMarkdownFilters,
   setLoading,
   setProgress,
   resetMarkdownsSlice,

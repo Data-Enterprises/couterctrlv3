@@ -50,3 +50,15 @@ export interface MarkdownResponse {
   count: number;
   markdowns: MarkdownItem[];
 }
+
+
+export type MarkdownFilters = {
+    type: MarkdownType[] | null;
+    storeNumbers: string[];
+    dates: string[]
+    subIds: number[];
+    categories: number[];
+    vendorIds: string[];
+    search: string,
+    minPercent: number | null;
+}

@@ -39,6 +39,7 @@ const legacyModules = import.meta.glob("../legacy/features/*Slice.{ts,tsx}", { e
  * that never made it into prod, whose page reads undefined.
  */
 const DEV_ONLY_SLICES = new Set([
+  "markdowns",
   "exportBuilder",
   // What the Sales comparison has already fetched. The comparison itself is
   // dev-only, so there is nothing in prod for it to be a twin of.
