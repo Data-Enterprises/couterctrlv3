@@ -190,17 +190,17 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
           {activeDetails.length > 0 && (
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Sales</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Sales</span>
                 <span className="text-[13px] font-medium text-custom-white">{formatCurrencyCompact(totalSales)}</span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Trans</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Trans</span>
                 <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalTrans, 0)}</span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Qty</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Qty</span>
                 <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalItems, 0)}</span>
               </div>
             </>
@@ -211,13 +211,13 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button data-help="search"
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="Search stores"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <div className="flex-1" />
-          <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/35 flex-shrink-0">Exception activity vs baseline</span>
+          <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/95 flex-shrink-0">Exception activity vs baseline</span>
           <div className="relative flex-shrink-0">
             <PageInfoButton page="loss-prevention" />
           </div>
@@ -297,14 +297,14 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
             <LoadingIndicator message="Loading stores..." />
           </div>
         ) : activeDetails.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
             {selectedSaleType ? "No stores found" : "Select an exception type"}
           </div>
         ) : (
           <>
             <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
               <span className="w-2.5 flex-shrink-0" />
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Store
               </span>
               <div data-help="sort" className="flex items-center gap-[14px]">
@@ -349,7 +349,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
             <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar">
               {visibleStores.length === 0 ? (
-                <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
+                <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
                   No stores match
                 </div>
               ) : (

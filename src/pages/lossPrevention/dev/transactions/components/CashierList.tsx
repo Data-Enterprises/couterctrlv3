@@ -38,11 +38,11 @@ const CashierList = ({
       style={{ width: 286, flexShrink: 0 }}
     >
       {fetchingCashierTransactions && cashierGrades.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-[10px] text-content/30">
+        <div className="flex-1 flex items-center justify-center text-[10px] text-content/95">
           Loading cashiers…
         </div>
       ) : cashierGrades.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-[10px] text-content/30">
+        <div className="flex-1 flex items-center justify-center text-[10px] text-content/95">
           No cashier data
         </div>
       ) : (
@@ -87,7 +87,7 @@ const CashierList = ({
                 (h, i) => (
                   <div
                     key={h}
-                    className={`px-2 py-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 ${i > 0 ? "text-right" : ""}`}
+                    className={`px-2 py-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 ${i > 0 ? "text-right" : ""}`}
                   >
                     {h}
                   </div>

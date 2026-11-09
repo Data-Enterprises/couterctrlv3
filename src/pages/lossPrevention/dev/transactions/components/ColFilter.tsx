@@ -82,7 +82,7 @@ const ColFilter = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="text-[8px] text-brand_navy/50 hover:text-brand_navy leading-none flex-shrink-0 ml-0.5"
+              className="text-[8px] text-brand_navy/95 hover:text-brand_navy leading-none flex-shrink-0 ml-0.5"
             >
               ✕
             </button>

@@ -211,7 +211,7 @@ const LPExportModal = ({
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-custom-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
+            <p className="text-custom-white/95 text-[10px] mt-0.5">{storeName} — {saleType}</p>
           </div>
           <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
@@ -219,14 +219,14 @@ const LPExportModal = ({
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/70 hover:text-custom-white"
+                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
+          <button onClick={onClose} className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -235,7 +235,7 @@ const LPExportModal = ({
         {mode === "presets" && (
           <>
             <div className="px-4 pt-4 pb-2 space-y-3">
-              <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium">Select data to include</p>
+              <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium">Select data to include</p>
 
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
@@ -246,7 +246,7 @@ const LPExportModal = ({
                 />
                 <div>
                   <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">Transaction List</p>
-                  <p className="text-[11px] text-content/50 mt-0.5">{transactions.length} transactions currently in view (filters applied)</p>
+                  <p className="text-[11px] text-content/95 mt-0.5">{transactions.length} transactions currently in view (filters applied)</p>
                 </div>
               </label>
 
@@ -267,7 +267,7 @@ const LPExportModal = ({
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Cashier Summary</p>
-                  <p className="text-[11px] text-content/50 mt-0.5 mb-1.5">{cashierGrades.length} cashiers with severity, totals, and avg ticket</p>
+                  <p className="text-[11px] text-content/95 mt-0.5 mb-1.5">{cashierGrades.length} cashiers with severity, totals, and avg ticket</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {(
                       [
@@ -281,7 +281,7 @@ const LPExportModal = ({
                         key={sev}
                         onClick={() => toggleCashierSev(sev)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          cashierSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content/50"
+                          cashierSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content/95"
                         }`}
                       >
                         {label}
@@ -293,7 +293,7 @@ const LPExportModal = ({
             </div>
 
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-              <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>
+              <button onClick={onClose} className="text-[12px] text-content/95 hover:text-content transition-colors">Cancel</button>
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
@@ -316,7 +316,7 @@ const LPExportModal = ({
 
                 {/* Source */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Data Source</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Data Source</p>
                   <div className="flex flex-col gap-1.5">
                     {(["transactions", "cashiers"] as CustomSource[]).map((s) => (
                       <label key={s} className="flex items-center gap-2 cursor-pointer">
@@ -334,7 +334,7 @@ const LPExportModal = ({
 
                 {/* Group by */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Group By</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</p>
                   <div className="space-y-1.5">
                     {dims.map((d) => (
                       <label key={d.key} className="flex items-center gap-2 cursor-pointer">
@@ -352,7 +352,7 @@ const LPExportModal = ({
 
                 {/* Metrics */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Metrics</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</p>
                   <div className="space-y-2">
                     {mDefs.map((m) => {
                       const sel = metrics.get(m.key)!;
@@ -364,7 +364,7 @@ const LPExportModal = ({
                             onChange={() => toggleMetric(m.key)}
                             className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
-                          <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
+                          <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                           <select
                             value={sel.fn}
                             disabled={!sel.enabled}
@@ -386,8 +386,8 @@ const LPExportModal = ({
               {/* Right: preview */}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content/60 uppercase tracking-wide">Preview</p>
-                  <span className="text-[10px] text-content/40">
+                  <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">Preview</p>
+                  <span className="text-[10px] text-content/95">
                     {aggRows.length === 0
                       ? "No data — select at least one group or metric"
                       : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
@@ -396,7 +396,7 @@ const LPExportModal = ({
 
                 {columns.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content/40 leading-relaxed">
+                    <p className="text-[12px] text-content/95 leading-relaxed">
                       Select at least one group-by dimension<br />or metric to see a preview.
                     </p>
                   </div>
@@ -406,7 +406,7 @@ const LPExportModal = ({
                       <thead className="sticky top-0 bg-gray-50 z-10">
                         <tr>
                           {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content/55 font-semibold border-b border-gray-100 whitespace-nowrap">
+                            <th key={c.key} className="text-left px-3 py-2 text-content/95 font-semibold border-b border-gray-100 whitespace-nowrap">
                               {c.label}
                             </th>
                           ))}
@@ -416,7 +416,7 @@ const LPExportModal = ({
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
                           <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
-                              <td key={c.key} className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50">
+                              <td key={c.key} className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
                               </td>
                             ))}
@@ -424,7 +424,7 @@ const LPExportModal = ({
                         ))}
                         {aggRows.length > PREVIEW_ROWS && (
                           <tr>
-                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content/35 italic">
+                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content/95 italic">
                               + {aggRows.length - PREVIEW_ROWS} more rows in download…
                             </td>
                           </tr>
@@ -437,7 +437,7 @@ const LPExportModal = ({
             </div>
 
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>
+              <button onClick={onClose} className="text-[12px] text-content/95 hover:text-content transition-colors">Cancel</button>
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
