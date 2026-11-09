@@ -1,6 +1,7 @@
 // Hooks
 import { useState, useMemo } from "react";
-import { useAppSelector, useStoreName } from "../../../../hooks";
+import { useStoreName } from "../../../../hooks";
+import { useCouponContext } from "../hooks";
 
 // Redux
 import { isGroupSearch } from "../../../../features/searchSlice";
@@ -33,26 +34,24 @@ const CouponListPanel = ({
   onSortMetric,
   onOpenSearch,
 }: CouponListPanelProps) => {
-  const state = useAppSelector((s) => s.dev.coupons);
-  const search = useAppSelector((s) => s.search);
-  const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const ctx = useCouponContext();
+  const { selectedGroup, assignedStores } = ctx;
+  const groupStores = ctx.selectedGroupStores;
 
   const [query, setQuery] = useState("");
 
-  const storeName = useStoreName(Number(search.lastStore));
-  const isGroup = isGroupSearch(search.type);
+  const storeName = useStoreName(Number(ctx.lastStore));
+  const isGroup = isGroupSearch(ctx.type);
 
   const fmtRangePart = (mdy: string, withYear = false) => {
     const [m, d, y] = mdy.split("/");
     return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
   };
-  const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
+  const dateLabel = `${fmtRangePart(ctx.startDate)} – ${fmtRangePart(ctx.endDate, true)}`;
 
   const totalAmount = useMemo(
-    () => sumCouponAmount(state.coupons),
-    [state.coupons],
+    () => sumCouponAmount(ctx.coupons),
+    [ctx.coupons],
   );
 
   // All modes: flat store list sorted by amount desc
@@ -60,14 +59,14 @@ const CouponListPanel = ({
     // Keyed on storeid + store_number, not storeid alone — a few storeids
     // cover two physical locations. See utils/storeIdentity.
     const numbersById = numbersByStoreId(
-      state.coupons,
+      ctx.coupons,
       (c) => c.storeid,
       (c) => c.store_number,
     );
     // Collected per store, then totalled with sumCouponAmount: a running add
     // can't dedupe the transaction-level fallback (see utils/couponValue).
-    const map = new Map<string, { name: string; rows: typeof state.coupons }>();
-    state.coupons.forEach((c) => {
+    const map = new Map<string, { name: string; rows: typeof ctx.coupons }>();
+    ctx.coupons.forEach((c) => {
       const id = `${c.storeid}__${c.store_number}`;
       const cur = map.get(id);
       if (cur) {
@@ -98,7 +97,7 @@ const CouponListPanel = ({
       .sort((a, b) =>
         sortMetric === "qty" ? b.count - a.count : b.total - a.total,
       );
-  }, [state.coupons, assignedStores, storeName, sortMetric]);
+  }, [ctx.coupons, assignedStores, storeName, sortMetric]);
 
   const filtered = query
     ? storeItems.filter((i) =>
@@ -124,13 +123,13 @@ const CouponListPanel = ({
             {dateLabel}
           </span>
           <div className="flex-1" />
-          {state.coupons.length > 0 && (
+          {ctx.coupons.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
               <span className="text-custom-white text-[10px] uppercase tracking-wide">
                 Records
               </span>
               <span className="text-[13px] font-medium text-custom-white">
-                {state.coupons.length}
+                {ctx.coupons.length}
               </span>
             </div>
           )}
@@ -155,7 +154,7 @@ const CouponListPanel = ({
               )}
             </div>
           )}
-          {!isGroup && search.lastStore && (
+          {!isGroup && ctx.lastStore && (
             <span className="text-[11px] font-medium text-custom-white truncate">
               {storeName}
             </span>
@@ -229,7 +228,7 @@ const CouponListPanel = ({
                 </span>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-[11px] text-content/45">
-                    {state.coupons.length}
+                    {ctx.coupons.length}
                   </span>
                   <span className="text-[11px] font-medium text-content/70">
                     {formatCurrency2(totalAmount)}

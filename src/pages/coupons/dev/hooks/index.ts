@@ -1,10 +1,12 @@
 // Hooks
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 
 // Redux
 import * as couponActions from "../../../../features/dev/devCouponSlice";
 
+/** Coupons' flat context: the slice, the search and the app values every part reads. */
 export const useCouponContext = () => {
+  const dispatch = useAppDispatch();
   const {
     coupons,
     isFetching,
@@ -16,13 +18,17 @@ export const useCouponContext = () => {
     subDeptMobileFilter,
     uniqueDateMobileFilter,
     showSubsMobileFilter,
+    receiptLines,
   } = useAppSelector((state) => state.dev.coupons);
-  const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
-    (state) => state.search,
+  const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
+    useAppSelector((state) => state.search);
+  const { selectedGroupStores, assignedStores } = useAppSelector(
+    (state) => state.user,
   );
   const { url, token, isMobile } = useAppSelector((state) => state.app);
 
   return {
+    dispatch,
     url,
     token,
     coupons,
@@ -41,6 +47,10 @@ export const useCouponContext = () => {
     subDeptMobileFilter,
     uniqueDateMobileFilter,
     showSubsMobileFilter,
+    receiptLines,
+    selectedGroup,
+    selectedGroupStores,
+    assignedStores,
   };
 };
 

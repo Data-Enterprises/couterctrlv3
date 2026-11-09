@@ -1,6 +1,7 @@
 // Hooks
 import { useState, useMemo, useEffect } from "react";
-import { useAppSelector, useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useStoreName } from "../../../../../hooks";
+import { useCouponContext } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -43,14 +44,11 @@ const CouponDetailPanel = ({
   sortMetric,
 }: CouponDetailPanelProps) => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
-  const state = useAppSelector((s) => s.dev.coupons);
-  const search = useAppSelector((s) => s.search);
-  const context = useAppSelector((s) => s.app);
-  const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
-  const isGroup = isGroupSearch(search.type);
-  const storeName = useStoreName(Number(search.lastStore));
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const ctx = useCouponContext();
+  const { dispatch, selectedGroup } = ctx;
+  const isGroup = isGroupSearch(ctx.type);
+  const storeName = useStoreName(Number(ctx.lastStore));
+  const assignedStores = ctx.assignedStores;
 
   const [exportOpen, setExportOpen] = useState(false);
   const [groupTab, setGroupTab] = useState<GroupTab>("subdept");
@@ -85,7 +83,7 @@ const CouponDetailPanel = ({
           selectedStoreNumber,
           [
             ...new Set(
-              state.coupons
+              ctx.coupons
                 .filter((c) => String(c.storeid) === selectedStoreId)
                 .map((c) => c.store_number),
             ),
@@ -97,16 +95,16 @@ const CouponDetailPanel = ({
     const [m, d, y] = mdy.split("/");
     return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
   };
-  const dateRangeLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
+  const dateRangeLabel = `${fmtRangePart(ctx.startDate)} – ${fmtRangePart(ctx.endDate, true)}`;
 
   const visibleRows = useMemo(() => {
-    if (!selectedKey) return state.coupons;
-    return state.coupons.filter(
+    if (!selectedKey) return ctx.coupons;
+    return ctx.coupons.filter(
       (c) =>
         String(c.storeid) === selectedStoreId &&
         c.store_number === selectedStoreNumber,
     );
-  }, [state.coupons, selectedKey, selectedStoreId, selectedStoreNumber]);
+  }, [ctx.coupons, selectedKey, selectedStoreId, selectedStoreNumber]);
 
   // Reset selection when scope or tab changes
   useEffect(() => {
@@ -333,8 +331,8 @@ const CouponDetailPanel = ({
     setSelectedSaleId(saleId);
     dispatch(setCouponReceiptLines([]));
     getCashierTransaction(
-      context.url,
-      context.token,
+      ctx.url,
+      ctx.token,
       row.sale_date,
       saleId,
       row.storeid,
@@ -394,7 +392,7 @@ const CouponDetailPanel = ({
   };
 
   // Transaction data
-  const txLines: any[] = state.receiptLines;
+  const txLines: any[] = ctx.receiptLines;
   const txMeta = txLines[0] ?? null;
   const saleLines = txLines.filter(
     (r: any) => r.sale_type === "Sale" && r.is_coupon !== 1,
@@ -467,7 +465,7 @@ const CouponDetailPanel = ({
       />
 
       {/* KPI strip */}
-      {!state.isFetching && totalCoupons > 0 && (
+      {!ctx.isFetching && totalCoupons > 0 && (
         <KpiStrip
           totalCoupons={totalCoupons}
           totalAmount={totalAmount}
@@ -478,13 +476,13 @@ const CouponDetailPanel = ({
         />
       )}
 
-      {state.isFetching && (
+      {ctx.isFetching && (
         <div className="flex-1 relative min-h-0">
           <LoadingIndicator message="Loading coupons..." />
         </div>
       )}
 
-      {!state.isFetching && (
+      {!ctx.isFetching && (
         <>
           {/* Tab bar — full width row */}
           <GroupTabs groupTab={groupTab} onTab={setGroupTab} />
