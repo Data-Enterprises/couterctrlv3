@@ -4,7 +4,12 @@
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { AllOrder, AvailableOrder } from "../../interfaces";
+import type { AllOrder, AvailableOrder, UpdateFileResp } from "../../interfaces";
+import type {
+  EditSearch,
+  OrderDraft,
+  SubDeptOption,
+} from "../../pages/orders/dev/interfaces";
 
 export type OrderStatus = "open" | "closed" | "";
 export type UniqueSub = {
@@ -94,6 +99,49 @@ export type SelectedOrder = {
   orderId: number;
 } | null;
 
+/**
+ * Edit mode's working state. Kept when the page is left, so unsent edits are
+ * still there on return; a new search drops the drafts, whose lines are gone.
+ */
+export interface OrdersEdit {
+  editing: boolean;
+  /** A draft per order, by `OrderDoc.key`, and which one is open. */
+  drafts: Record<string, OrderDraft>;
+  openKey: string | null;
+  /** The edit-mode picker's narrowing. An empty string is "any". */
+  pickStore: string;
+  pickDate: string;
+  pickType: string;
+  leftTab: "orders" | "problems";
+  /** The Problems item open on the right, and the ones marked "looked, fine". */
+  problemCode: string | null;
+  skipped: string[];
+  search: EditSearch;
+  /** Each store's sub departments, asked for once per store. */
+  subDeptsByStore: Record<number, SubDeptOption[]>;
+  /** The last Submit's answer and what it sent, for the receipt. */
+  receipt: UpdateFileResp | null;
+  submittedCounts: { orders: number; edited: number; added: number };
+}
+
+export const EMPTY_EDIT_SEARCH: EditSearch = { code: "", desc: "", onlyChanged: false };
+
+const initialEdit: OrdersEdit = {
+  editing: false,
+  drafts: {},
+  openKey: null,
+  pickStore: "",
+  pickDate: "",
+  pickType: "",
+  leftTab: "orders",
+  problemCode: null,
+  skipped: [],
+  search: EMPTY_EDIT_SEARCH,
+  subDeptsByStore: {},
+  receipt: null,
+  submittedCounts: { orders: 0, edited: 0, added: 0 },
+};
+
 interface OrdersState {
   availableOrders: AvailableOrder[];
   groupedAvailableOrders: GroupedOrderCard[];
@@ -116,6 +164,7 @@ interface OrdersState {
   subIdsFilter: number[];
   uniqueSubs: UniqueSub[];
   filters: OrdersFilters;
+  edit: OrdersEdit;
 }
 
 const initialState: OrdersState = {
@@ -140,6 +189,7 @@ const initialState: OrdersState = {
   subIdsFilter: [],
   uniqueSubs: [],
   filters: EMPTY_ORDERS_FILTERS,
+  edit: initialEdit,
 };
 
 const ordersSlice = createSlice({
@@ -246,6 +296,41 @@ const ordersSlice = createSlice({
     clearOrdersFilters: (state) => {
       state.filters = EMPTY_ORDERS_FILTERS;
     },
+    /** Any of edit mode's plain fields. */
+    patchOrdersEdit: (state, action: PayloadAction<Partial<OrdersEdit>>) => {
+      state.edit = { ...state.edit, ...action.payload };
+    },
+    setOrderDrafts: (state, action: PayloadAction<Record<string, OrderDraft>>) => {
+      state.edit.drafts = action.payload;
+    },
+    /** Writes one order's draft without changing which one is open. */
+    storeOrderDraft: (state, action: PayloadAction<OrderDraft>) => {
+      state.edit.drafts[action.payload.doc.key] = action.payload;
+    },
+    /** Writes one order's draft and opens it. */
+    openOrderDraft: (state, action: PayloadAction<OrderDraft>) => {
+      state.edit.drafts[action.payload.doc.key] = action.payload;
+      state.edit.openKey = action.payload.doc.key;
+    },
+    /** A sent order is no longer waiting to go; the one open when Submit was
+     *  pressed stays, for the receipt. */
+    dropSentDraft: (
+      state,
+      action: PayloadAction<{ key: string; openKey: string | null }>,
+    ) => {
+      const { key, openKey } = action.payload;
+      if (key !== openKey) delete state.edit.drafts[key];
+    },
+    clearOrderDrafts: (state) => {
+      state.edit.drafts = {};
+      state.edit.openKey = null;
+    },
+    addStoreSubDepts: (
+      state,
+      action: PayloadAction<{ storeid: number; options: SubDeptOption[] }>,
+    ) => {
+      state.edit.subDeptsByStore[action.payload.storeid] = action.payload.options;
+    },
     resetOrdersState: () => initialState,
   },
 });
@@ -275,5 +360,12 @@ export const {
   setOrdersFilter,
   setOrdersMarginOver,
   clearOrdersFilters,
+  patchOrdersEdit,
+  setOrderDrafts,
+  storeOrderDraft,
+  openOrderDraft,
+  dropSentDraft,
+  clearOrderDrafts,
+  addStoreSubDepts,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

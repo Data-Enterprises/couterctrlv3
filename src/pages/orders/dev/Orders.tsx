@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
-import { useOrdersCtx } from "./hooks";
+import { useOrderDraftActions, useOrdersCtx } from "./hooks";
 
 // Redux
 import {
@@ -13,6 +13,11 @@ import {
   clearOrdersFilters,
   setOrdersMarginOver,
   setUniqueSubs,
+  patchOrdersEdit,
+  dropSentDraft,
+  addStoreSubDepts,
+  EMPTY_EDIT_SEARCH,
+  type OrdersEdit,
   type OrdersFilters,
   type UniqueSub,
 } from "../../../features/dev/devOrdersSlice";
@@ -60,7 +65,7 @@ import type {
   Store,
   UpdateFileResp,
 } from "../../../interfaces";
-import type { EditSearch, SubDeptOption, DraftLine, EditableField, LinePatch, OrderDoc, OrderDraft, SortKey } from "./interfaces";
+import type { EditSearch, DraftLine, EditableField, LinePatch, OrderDoc, OrderDraft, SortKey } from "./interfaces";
 
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
@@ -105,31 +110,21 @@ const Orders = () => {
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   /**
-   * Edit mode, and the one order it is editing.
-   *
-   * The draft lives here rather than in the slice for the same reason the
-   * filtering does: it is one page's working copy of rows the slice already
-   * holds, and a reducer per keystroke buys nothing. It is dropped when the
-   * search reloads, because the lines it was built from are gone.
+   * Edit mode's working state lives in the slice (`edit`), so unsent edits,
+   * the open order, the pickers and the Problems tab are still there after
+   * leaving the page. A draft per order: Fix cost changes every order the
+   * filters hit, and switching orders must not throw away the last one's
+   * changes. A new search drops the drafts, whose lines are gone.
    */
-  const [editing, setEditing] = useState(false);
-  /**
-   * A draft per order, and which one is open.
-   *
-   * It used to be one draft, because a save carries one order. Fix cost
-   * changes every order the filters hit, so those changes have to live
-   * somewhere until they are submitted — and switching to another order must
-   * not throw away the one you just changed. Each order keeps its own draft
-   * here; the edit panel shows whichever is open.
-   */
-  const [drafts, setDrafts] = useState<Record<string, OrderDraft>>({});
-  /** What the last Submit sent, for the receipt — it can be many orders. */
-  const [submittedCounts, setSubmittedCounts] = useState({
-    orders: 0,
-    edited: 0,
-    added: 0,
-  });
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  const edit = ctx.edit;
+  const patchEdit = (p: Partial<OrdersEdit>) => ctx.dispatch(patchOrdersEdit(p));
+  const draftActions = useOrderDraftActions();
+  const { editing, drafts, openKey, submittedCounts, receipt } = edit;
+  const setEditing = (editing: boolean) => patchEdit({ editing });
+  const setOpenKey = (openKey: string | null) => patchEdit({ openKey });
+  const setReceipt = (receipt: UpdateFileResp | null) => patchEdit({ receipt });
+  const setSubmittedCounts = (submittedCounts: OrdersEdit["submittedCounts"]) =>
+    patchEdit({ submittedCounts });
   const draft = openKey ? (drafts[openKey] ?? null) : null;
 
   /**
@@ -137,7 +132,8 @@ const Orders = () => {
    * so every handler that edits a line is unchanged.
    *
    * A value opens that order (adding it if it is new); a function edits the
-   * open one; null drops them all, which is what a reloaded search needs.
+   * one open when the handler was made; null drops them all, which is what a
+   * reloaded search needs.
    */
   const setDraft = (
     next:
@@ -145,21 +141,9 @@ const Orders = () => {
       | null
       | ((d: OrderDraft | null) => OrderDraft | null),
   ) => {
-    if (next === null) {
-      setDrafts({});
-      setOpenKey(null);
-      return;
-    }
-    if (typeof next === "function") {
-      setDrafts((ds) => {
-        if (!openKey) return ds;
-        const updated = next(ds[openKey] ?? null);
-        return updated ? { ...ds, [openKey]: updated } : ds;
-      });
-      return;
-    }
-    setDrafts((ds) => ({ ...ds, [next.doc.key]: next }));
-    setOpenKey(next.doc.key);
+    if (next === null) draftActions.clearDrafts();
+    else if (typeof next === "function") draftActions.editDraft(openKey, next);
+    else draftActions.openDraft(next);
   };
 
   /** Every order with something to send, open or not. */
@@ -167,21 +151,24 @@ const Orders = () => {
     (d) => changedLines(d).length > 0,
   );
   const changedKeys = new Set(changedDrafts.map((d) => d.doc.key));
-  const [pickStore, setPickStore] = useState("");
-  const [pickDate, setPickDate] = useState("");
-  const [pickType, setPickType] = useState("");
+  const { pickStore, pickDate, pickType } = edit;
+  const setPickStore = (pickStore: string) => patchEdit({ pickStore });
+  const setPickDate = (pickDate: string) => patchEdit({ pickDate });
+  const setPickType = (pickType: string) => patchEdit({ pickType });
 
   /**
    * The Problems tab.
    *
    * `problemCode` is the item open on the right while the tab is showing.
-   * `skipped` is session-only and never saved: a high margin is sometimes
+   * `skipped` is session-only and never sent: a high margin is sometimes
    * the real price, and Skip is how somebody says "looked, it's fine" without
    * that becoming a rule anyone has to undo later.
    */
-  const [leftTab, setLeftTab] = useState<"orders" | "problems">("orders");
-  const [problemCode, setProblemCode] = useState<string | null>(null);
-  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const { leftTab, problemCode } = edit;
+  const setLeftTab = (leftTab: OrdersEdit["leftTab"]) => patchEdit({ leftTab });
+  const setProblemCode = (problemCode: string | null) => patchEdit({ problemCode });
+  const skipped = useMemo(() => new Set(edit.skipped), [edit.skipped]);
+  const setSkipped = (next: Set<string>) => patchEdit({ skipped: [...next] });
 
   /**
    * What the Problems tab works across: every loaded order.
@@ -242,7 +229,7 @@ const Orders = () => {
     const rows = problemScope.filter(
       (o) => String(o.product_code) === problemCode && keySet.has(docKey(o)),
     );
-    setDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
+    draftActions.editDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
 
@@ -252,11 +239,8 @@ const Orders = () => {
     setSkipped(nextSkipped);
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
-  const [editSearch, setEditSearch] = useState<EditSearch>({
-    code: "",
-    desc: "",
-    onlyChanged: false,
-  });
+  const editSearch = edit.search;
+  const setEditSearch = (search: EditSearch) => patchEdit({ search });
   /**
    * The line being filled in, which is not on the order yet.
    *
@@ -273,17 +257,14 @@ const Orders = () => {
   const [pendingNonce, setPendingNonce] = useState(0);
   const [lookingUp, setLookingUp] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<UpdateFileResp | null>(null);
   /**
-   * The sub departments each store has, by storeid.
+   * The sub departments each store has, by storeid (in the slice).
    *
    * Asked for once per store and kept, because the answer does not change
    * while somebody edits an order and the catalog is a grouped scan of
    * `sales_partitioned` — not a thing to re-ask on every added line.
    */
-  const [subDeptsByStore, setSubDeptsByStore] = useState<
-    Record<number, SubDeptOption[]>
-  >({});
+  const subDeptsByStore = edit.subDeptsByStore;
   const [loadingSubDepts, setLoadingSubDepts] = useState(false);
   /**
    * The grid's sort lives here rather than in the panel.
@@ -428,13 +409,13 @@ const Orders = () => {
     if (doc.key === openKey) return;
     // An order that already has changes — from an earlier visit or from Fix
     // cost — opens with them rather than being started over.
-    setDrafts((ds) =>
+    draftActions.editDrafts((ds) =>
       ds[doc.key] ? ds : { ...ds, [doc.key]: startDraft(doc, ctx.allOrders) },
     );
     setOpenKey(doc.key);
     setPending(null);
     setReceipt(null);
-    setEditSearch({ code: "", desc: "", onlyChanged: false });
+    setEditSearch(EMPTY_EDIT_SEARCH);
   };
 
   const handleField = (
@@ -466,12 +447,14 @@ const Orders = () => {
             seen.set(r.sub_department, r.sub_department_description);
           }
         }
-        setSubDeptsByStore((prev) => ({
-          ...prev,
-          [storeid]: [...seen.entries()]
-            .map(([id, name]) => ({ id, name }))
-            .sort((a, b) => a.name.localeCompare(b.name)),
-        }));
+        ctx.dispatch(
+          addStoreSubDepts({
+            storeid,
+            options: [...seen.entries()]
+              .map(([id, name]) => ({ id, name }))
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          }),
+        );
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLoadingSubDepts(false));
@@ -623,10 +606,7 @@ const Orders = () => {
         // the flags and "Edit again" all go back to the pre-edit costs.
         lines = applySent(lines, d);
         // Sent — so it is no longer a change waiting to go.
-        setDrafts((ds) => {
-          const { [d.doc.key]: _sent, ...rest } = ds;
-          return d.doc.key === openKey ? ds : rest;
-        });
+        ctx.dispatch(dropSentDraft({ key: d.doc.key, openKey }));
       } catch (err) {
         failed.push(
           `${d.doc.storenumber} order ${d.doc.order_id}: ${(err as JsonError).message}`,
