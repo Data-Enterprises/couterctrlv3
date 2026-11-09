@@ -1,66 +1,29 @@
+// Hooks
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+
+// Redux
 import {
   setNotSellingStatus,
   setNsDescFilter,
   setNsUpcFilter,
 } from "../../../features/dev/devSuggestedSlice";
+
+// Utils
 import { fmtLb, lostLb } from ".";
-import ColFilter from "../../../components-dev/filters/ColFilter";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import SortHeader from "../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
-import type { NotSellingItem, NotSellingStatus } from "../../../interfaces";
+import { SORT_TH, STATUS_PILL, STATUSES, TH } from "./utils";
+
+// Interfaces
+import type { NotSellingItem } from "../../../interfaces";
 import type { NotSellingFilter } from "../../../features/dev/devSuggestedSlice";
+import type { NotSellingSortCol } from "./interfaces";
 
-const TH =
-  "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
-const SORT_TH =
-  "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
-
-type SortCol = "prior" | "recent" | "change" | "lost";
-
-/** Severity, in the order a reader should care: a line that stopped outright is
- *  worse news than one that slowed, and a dead line is a cleanup job. */
-const STATUS_PILL: Record<NotSellingStatus, string> = {
-  stopped: "bg-severity_critical_bg text-severity_critical_text",
-  declining: "bg-severity_watch_bg text-severity_watch_text",
-  dead: "bg-gray-200 text-content/85",
-};
-
-/**
- * Opens on `declining`, and that ordering is the argument for the whole tab.
- *
- * Dead and stopped are visible to anyone paying attention — a case with nothing
- * in it, a line that has not scanned in a month. An item still moving at half
- * its old rate looks fine on a shelf and is being PRODUCED to the old level,
- * rotting the difference every day, and nothing else on this page surfaces it.
- */
-const STATUSES: { key: NotSellingFilter; label: string; blurb: string }[] = [
-  {
-    key: "all",
-    label: "All",
-    blurb:
-      "Everything that has stopped or slowed in this department, worst first. The Status column says which is which.",
-  },
-  {
-    key: "declining",
-    label: "Declining",
-    blurb:
-      "Still selling, but well down on its own earlier rate — production has not followed it down.",
-  },
-  {
-    key: "stopped",
-    label: "Stopped",
-    blurb: "Sold in the earlier half of the lookback, nothing in the recent half.",
-  },
-  {
-    key: "dead",
-    label: "Dead",
-    blurb: "Carried, but no recorded weight in either half of the window.",
-  },
-];
+// Components
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 
 const NotSellingTab = ({
   subDepartment,
@@ -68,7 +31,7 @@ const NotSellingTab = ({
   subDepartment: number | null;
 }) => {
   const ctx = useSuggestedCtx();
-  const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
+  const { sort, handleSort, applySort } = useTriStateSort<NotSellingSortCol>();
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(
     null,
   );

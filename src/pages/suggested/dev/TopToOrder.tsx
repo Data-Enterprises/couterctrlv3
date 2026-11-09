@@ -1,17 +1,28 @@
+// Hooks
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+
+// Redux
 import {
   setSheetKey,
   setTopDescFilter,
   setTopDeptFilter,
 } from "../../../features/dev/devSuggestedSlice";
+
+// Utils
 import { deptLabel, fmtLb, fmtLbOrDash } from ".";
-import ColFilter from "../../../components-dev/filters/ColFilter";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import SortHeader from "../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import { SORT_TH, TH, TOP_N } from "./utils";
+
+// Interfaces
 import type { SuggestedItem } from "../../../interfaces";
+import type { TopToOrderSortCol } from "./interfaces";
+
+// Components
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 
 /**
  * The store's heaviest lines, before a department is picked.
@@ -33,18 +44,9 @@ import type { SuggestedItem } from "../../../interfaces";
  * Clicking a row jumps to that item's department, which is the reason the
  * Department column is a column rather than a caption.
  */
-const TOP_N = 25;
-
-const TH =
-  "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
-const SORT_TH =
-  "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
-
-type SortCol = "daily" | "order";
-
 const TopToOrder = () => {
   const ctx = useSuggestedCtx();
-  const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
+  const { sort, handleSort, applySort } = useTriStateSort<TopToOrderSortCol>();
   const [draftDesc, setDraftDesc] = useState("");
   const [draftDept, setDraftDept] = useState("");
   const [ctxMenu, setCtxMenu] = useState<{

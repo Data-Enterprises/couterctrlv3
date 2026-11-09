@@ -1,3 +1,13 @@
+// Interfaces
+import type { BarTooltipRow } from "./interfaces";
+
+interface BarTooltipProps {
+  /** Horizontal anchor, 0–100, in the chart's own box. */
+  xPct: number;
+  title: string;
+  rows: BarTooltipRow[];
+}
+
 /**
  * The hover readout both bar charts on this page share.
  *
@@ -13,21 +23,7 @@
  * Follows the LP case charts' tooltip shell — same border, surface and shadow —
  * at this page's 12px floor rather than their 11px.
  */
-export interface BarTooltipRow {
-  label: string;
-  value: string;
-  /** Dimmed, for the supporting line under the headline figure. */
-  soft?: boolean;
-}
-
-interface Props {
-  /** Horizontal anchor, 0–100, in the chart's own box. */
-  xPct: number;
-  title: string;
-  rows: BarTooltipRow[];
-}
-
-const BarTooltip = ({ xPct, title, rows }: Props) => {
+const BarTooltip = ({ xPct, title, rows }: BarTooltipProps) => {
   const shift = xPct < 18 ? "0%" : xPct > 82 ? "-100%" : "-50%";
 
   return (

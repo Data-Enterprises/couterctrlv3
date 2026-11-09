@@ -1,7 +1,15 @@
+// Hooks
 import { useMemo, useState } from "react";
+
+// Utils
 import { fmtLb, dayLabel } from ".";
-import BarTooltip from "./BarTooltip";
+import { isWeekend } from "./utils";
+
+// Interfaces
 import type { SuggestedDailyPoint } from "../../../interfaces";
+
+// Components
+import BarTooltip from "./BarTooltip";
 
 /**
  * What the department actually moved, day by day.
@@ -27,14 +35,6 @@ interface SoldPerDayStripProps {
   daily: SuggestedDailyPoint[];
   dailyAvg: number;
 }
-
-/** Sat/Sun. The weekend build is the single biggest shape in perishable
- *  volume, and tinting it stops a reader mistaking the weekly sawtooth for
- *  something going wrong. */
-const isWeekend = (iso: string) => {
-  const d = new Date(`${iso}T12:00:00`).getDay();
-  return d === 0 || d === 6;
-};
 
 const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
   const [hover, setHover] = useState<number | null>(null);

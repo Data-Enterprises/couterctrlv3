@@ -1,6 +1,9 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useSuggestedCtx } from "./hooks";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+
+// Redux
 import {
   setExportOpen,
   setUpcFilter,
@@ -8,8 +11,9 @@ import {
   setActionFilter,
   setSelectedDay,
   setActiveTab,
-  type SuggestedTab,
 } from "../../../features/dev/devSuggestedSlice";
+
+// Utils
 import {
   coverDates,
   dayLabel,
@@ -27,48 +31,33 @@ import {
   ACTION_TONE_FOR,
   ACTION_ORDER,
 } from ".";
-import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
-import TopToOrder from "./TopToOrder";
-import ProductionTab from "./ProductionTab";
-import NotSellingTab from "./NotSellingTab";
-import ColFilter from "../../../components-dev/filters/ColFilter";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import SortHeader from "../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import { SheetSkeleton } from "./Skeletons";
-import KpiTileGrid, { type KpiCell } from "../../../components-dev/KpiTileGrid";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
-import WorkingPopover from "./WorkingPopover";
+import { SORT_TH, TABS, TH } from "./utils";
+
+// Interfaces
 import type {
   DowRates,
   NotSellingItem,
   SuggestedItem,
 } from "../../../interfaces";
+import type { OrderSheetSortCol } from "./interfaces";
 
-const TH =
-  "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
-/**
- * The sort button's own look — typography only, no padding: the `th` already
- * carries it, and repeating it here indented the label inside its own cell.
- *
- * `w-full justify-end` rather than `ml-auto`: a button is inline-block inside a
- * table cell, so it never filled the header and the cell's `text-right` had
- * nothing to push. It has to stretch before it can align.
- */
-const SORT_TH =
-  "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
-
-type SortCol = "daily" | "demand" | "waste" | "markdown" | "order";
-
-const TABS: { key: SuggestedTab; label: string }[] = [
-  { key: "order", label: "Order" },
-  { key: "production", label: "Production" },
-  { key: "notSelling", label: "Not selling" },
-];
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
+import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
+import TopToOrder from "./TopToOrder";
+import ProductionTab from "./ProductionTab";
+import NotSellingTab from "./NotSellingTab";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../components-dev/SortHeader";
+import SheetSkeleton from "./SheetSkeleton";
+import KpiTileGrid, { type KpiCell } from "../../../components-dev/KpiTileGrid";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import WorkingPopover from "./WorkingPopover";
 
 const OrderSheetPanel = () => {
   const ctx = useSuggestedCtx();
-  const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
+  const { sort, handleSort, applySort } = useTriStateSort<OrderSheetSortCol>();
   const [draftUpc, setDraftUpc] = useState("");
   const [draftDesc, setDraftDesc] = useState("");
   const [ctxMenu, setCtxMenu] = useState<{

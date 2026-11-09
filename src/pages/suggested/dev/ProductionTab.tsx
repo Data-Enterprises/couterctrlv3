@@ -1,15 +1,19 @@
+// Hooks
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
+
+// Utils
 import { buildBenchmark, deptLabel, fmtLb, median } from ".";
 import { dailyKey } from "../../../interfaces";
-import SoldPerDayStrip from "./SoldPerDayStrip";
-import BarTooltip from "./BarTooltip";
 import { getStoreName } from "../../../utils";
+import { DAYS, SHORT } from "./utils";
+
+// Interfaces
 import type { SuggestedGroupRow } from "../../../interfaces";
 
-/** Sunday first, matching the `dow_rates` keys and Postgres' extract(dow). */
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// Components
+import SoldPerDayStrip from "./SoldPerDayStrip";
+import BarTooltip from "./BarTooltip";
 
 /**
  * What this department produces, what it actually sold, and how that compares.

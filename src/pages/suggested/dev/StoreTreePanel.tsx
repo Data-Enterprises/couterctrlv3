@@ -1,24 +1,28 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useSuggestedCtx } from "./hooks";
+
+// Redux
 import {
   setStoreSearch,
   toggleExpandedStore,
   type SheetKey,
 } from "../../../features/dev/devSuggestedSlice";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// Utils
 import { deptLabel, fmtLb0, rollupByStore } from ".";
 import { getStoreName } from "../../../utils";
-import { isGroupSearch } from "../../../features/searchSlice";
+import { DEPT_COLS, STORE_COLS } from "./utils";
+
+// Components
+import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import PanelFrame from "./PanelFrame";
 import FilterBar from "../../../components-dev/filters/FilterBar";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import InfoButton from "../../../components-dev/InfoButton";
 import SuggestedHelpModal from "./SuggestedHelpModal";
-import { StoreListSkeleton } from "./Skeletons";
-
-/** Header and rows share these, so a column cannot drift from its label. */
-const STORE_COLS = "grid-cols-[1fr_56px_72px_32px]";
-const DEPT_COLS = "grid-cols-[1fr_56px_72px]";
+import StoreListSkeleton from "./StoreListSkeleton";
 
 /**
  * Store, then department, then the sheet.

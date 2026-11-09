@@ -1,8 +1,16 @@
+// Hooks
 import { useEffect, useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/16/solid";
+
+// Utils
 import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from ".";
+
+// Interfaces
 import type { SuggestedAction } from ".";
 import type { DowRates, SuggestedItem } from "../../../interfaces";
+
+// Components
+import { XMarkIcon } from "@heroicons/react/16/solid";
+import Row from "./components/Row";
 
 /**
  * How this row's number was arrived at, for this row.
@@ -17,7 +25,7 @@ import type { DowRates, SuggestedItem } from "../../../interfaces";
  * its own suggested weight, a rounding difference reads as the model being
  * wrong.
  */
-interface Props {
+interface WorkingPopoverProps {
   x: number;
   y: number;
   item: SuggestedItem;
@@ -31,33 +39,6 @@ interface Props {
   onClose: () => void;
 }
 
-const Row = ({
-  k,
-  v,
-  strong,
-  soft,
-}: {
-  k: string;
-  v: string;
-  strong?: boolean;
-  soft?: boolean;
-}) => (
-  <div className="flex items-baseline justify-between gap-6 px-3 py-1.5">
-    <span
-      className={`text-[12px] ${strong ? "font-semibold text-content" : soft ? "text-content/85" : "text-content"}`}
-    >
-      {k}
-    </span>
-    <span
-      className={`text-[12px] tabular-nums ${
-        strong ? "font-bold text-brand_navy text-[13px]" : "text-content"
-      }`}
-    >
-      {v}
-    </span>
-  </div>
-);
-
 const WorkingPopover = ({
   x,
   y,
@@ -67,7 +48,7 @@ const WorkingPopover = ({
   coverDays,
   action,
   onClose,
-}: Props) => {
+}: WorkingPopoverProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
