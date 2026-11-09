@@ -9,10 +9,12 @@ import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact }
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { severityDotClass } from "../../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../utils/grading";
+import { SEV_RANK } from "../utils";
 
 // Interfaces
 import type { CashierDetails } from "../../../../interfaces";
-import type { Severity, SevFilter } from "../../../../utils/severity";
+import type { SevFilter } from "../../../../utils/severity";
+import type { LpSortCol } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
@@ -22,9 +24,7 @@ import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 
-const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
-
-interface Props {
+interface LPStorePanelProps {
   loading: boolean;
   onSaleTypeSelect: (saleType: string) => void;
   onStoreSelect: (detail: CashierDetails) => void;
@@ -34,11 +34,7 @@ interface Props {
   onDaySelect: (day: string | null) => void;
 }
 
-/** Sortable columns. Total $ / Avg $ only render when the sale type carries
- *  an amount, but naming them here costs nothing and keeps the union whole. */
-type LpSortCol = "trans" | "qty" | "amount" | "avg";
-
-const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: Props) => {
+const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: LPStorePanelProps) => {
   const cashier = useLossPreventionCtx();
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);

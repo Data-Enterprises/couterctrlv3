@@ -41,14 +41,14 @@ import ReceiptView from "./components/ReceiptView";
 import TransactionFilters from "./components/TransactionFilters";
 import TransactionRows from "./components/TransactionRows";
 
-interface Props {
+interface LPTransactionPanelProps {
   onTransactionClick: (overview: TransactionOverview) => void;
   onShowAll: (filtered: TransactionListItem[]) => void;
 }
 
 /** The open store's LP report: its figures, its days, its graded cashiers and
  *  their transactions or one receipt. */
-const LPTransactionPanel = ({ onTransactionClick }: Props) => {
+const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => {
   const dispatch = useAppDispatch();
   const cashier = useLossPreventionCtx();
   const search = useAppSelector((s) => s.search);

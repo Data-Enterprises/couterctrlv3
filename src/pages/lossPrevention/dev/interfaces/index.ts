@@ -30,3 +30,7 @@ export interface PeerAverages {
   sales: number;
   avgTicket: number;
 }
+
+/** Sortable columns. Total $ / Avg $ only render when the sale type carries
+ *  an amount, but naming them here costs nothing and keeps the union whole. */
+export type LpSortCol = "trans" | "qty" | "amount" | "avg";

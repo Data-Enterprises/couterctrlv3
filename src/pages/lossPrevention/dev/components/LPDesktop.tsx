@@ -63,11 +63,11 @@ import SearchCard from "../../../../components-dev/SearchCard";
 import LPTransactionPanel from "../transactions/LPTransactionPanel";
 import LPStorePanel from "./LPStorePanel";
 
-interface Props {
+interface LPDesktopProps {
   getSaleTypes: () => void;
 }
 
-const LPDesktop = ({ getSaleTypes }: Props) => {
+const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
   const toast = useToast();
   const params = useApiContext();
   const { apiEnv } = useAppSelector((state) => state.app);

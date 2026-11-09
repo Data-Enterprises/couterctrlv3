@@ -3,17 +3,32 @@ import { useState, useMemo } from "react";
 
 // Utils
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import {
+  AGG_OPTIONS,
+  buildCashiersCsv,
+  buildTransactionsCsv,
+  CASHIER_DIMS,
+  CASHIER_METRICS,
+  fmtDate,
+  PREVIEW_ROWS,
+  TRANS_DIMS,
+  TRANS_METRICS,
+} from "./utils";
 
 // Interfaces
 import type { TransactionOverview } from "../../../../interfaces";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import type { CashierGrade, CashierSeverity } from "../interfaces";
+import type {
+  CustomSource,
+  ExportDataset,
+  MetricSelection,
+  ModalMode,
+} from "./interfaces";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface LPExportModalProps {
   onClose: () => void;
@@ -23,93 +38,6 @@ interface LPExportModalProps {
   transactions: TransactionOverview[];  // filtered list currently in view
   cashierGrades: CashierGrade[];
 }
-
-type ModalMode = "presets" | "custom";
-type ExportDataset = "transactions" | "cashiers";
-type CustomSource = "transactions" | "cashiers";
-
-interface DimDef    { key: string; label: string }
-interface MetricDef { key: string; label: string }
-interface MetricSelection { fn: AggFn; enabled: boolean }
-
-// ─── Formatting ───────────────────────────────────────────────────────────────
-
-const fmtDate = (iso: string) => {
-  const d = iso.split("T")[0].split("-");
-  return `${d[1]}/${d[2]}/${d[0]}`;
-};
-
-// ─── Preset builders ──────────────────────────────────────────────────────────
-
-const buildTransactionsCsv = (rows: TransactionOverview[]) => {
-  const headers = ["Trans ID", "Date", "Cashier #", "Cashier Name", "Store #", "Sale Type", "Items", "Total Sales"];
-  const data = rows.map((o) => [
-    o.transaction_id,
-    fmtDate(o.sale_date),
-    o.cashier_number,
-    o.cashier_name,
-    o.store_number,
-    o.sale_type,
-    o.qty,
-    fmtNum(o.total_sales),
-  ]);
-  return rowsToCsv(headers, data);
-};
-
-const buildCashiersCsv = (grades: CashierGrade[], sevs: Set<CashierSeverity>) => {
-  const headers = ["Cashier #", "Cashier Name", "Store #", "Severity", "Transactions", "Items", "Total Sales", "Avg Ticket"];
-  const data = grades.filter((g) => sevs.has(g.severity)).map((g) => [
-    g.cashier_number,
-    g.cashier_name,
-    g.store_number,
-    g.severity,
-    g.trans.value,
-    g.qty.value,
-    fmtNum(g.sales.value),
-    fmtNum(g.avgTicket.value),
-  ]);
-  return rowsToCsv(headers, data);
-};
-
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const TRANS_DIMS: DimDef[] = [
-  { key: "cashier_name",  label: "Cashier Name" },
-  { key: "cashier_number", label: "Cashier #" },
-  { key: "sale_date",     label: "Date" },
-  { key: "sale_type",     label: "Sale Type" },
-  { key: "store_number",  label: "Store #" },
-];
-
-const TRANS_METRICS: MetricDef[] = [
-  { key: "qty",         label: "Items" },
-  { key: "total_sales", label: "Total Sales" },
-];
-
-const CASHIER_DIMS: DimDef[] = [
-  { key: "cashier_name",  label: "Cashier Name" },
-  { key: "severity",      label: "Severity" },
-  { key: "store_number",  label: "Store #" },
-];
-
-const CASHIER_METRICS: MetricDef[] = [
-  { key: "trans_value",      label: "Transactions" },
-  { key: "qty_value",        label: "Items" },
-  { key: "sales_value",      label: "Total Sales" },
-  { key: "avgTicket_value",  label: "Avg Ticket" },
-];
-
-const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum",   label: "Sum" },
-  { value: "avg",   label: "Avg" },
-  { value: "min",   label: "Min" },
-  { value: "max",   label: "Max" },
-  { value: "count", label: "Count" },
-];
-
-const PREVIEW_ROWS = 5;
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 const LPExportModal = ({
   onClose,
