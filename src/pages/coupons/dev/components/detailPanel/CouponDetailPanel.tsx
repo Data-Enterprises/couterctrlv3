@@ -1,5 +1,5 @@
 // Hooks
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useStoreName } from "../../../../../hooks";
 import { useCouponContext } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
@@ -125,17 +125,23 @@ const CouponDetailPanel = ({
     dispatch(setCouponReceiptLines([]));
   }, [selectedKey, groupTab]);
 
-  // Clear transaction + column filters when section changes
+  // Clear transaction + column filters when section changes. The filters are
+  // cleared only on a real change: they live in Redux so they survive leaving
+  // the page, and this effect also runs on every mount (twice under StrictMode).
+  const lastSection = useRef(selectedSection);
   useEffect(() => {
     setSelectedSaleId("");
-    setDraftProduct("");
-    setAppliedProduct("");
-    setDraftUpc("");
-    setAppliedUpc("");
-    setDraftSubDept("");
-    setAppliedSubDept("");
-    setDraftAmount(null);
-    setAppliedAmount(null);
+    if (lastSection.current !== selectedSection) {
+      setDraftProduct("");
+      setAppliedProduct("");
+      setDraftUpc("");
+      setAppliedUpc("");
+      setDraftSubDept("");
+      setAppliedSubDept("");
+      setDraftAmount(null);
+      setAppliedAmount(null);
+    }
+    lastSection.current = selectedSection;
     setExpandedCoupons(new Set());
     dispatch(setCouponReceiptLines([]));
   }, [selectedSection]);
