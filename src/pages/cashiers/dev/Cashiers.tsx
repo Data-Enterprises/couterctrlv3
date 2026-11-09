@@ -45,6 +45,8 @@ import LensPanel from "./components/LensPanel";
 import SignalDetail from "./components/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
 
+/** The Cashiers page: the exception explorer entry card, then the loaded exceptions with a KPI strip,
+ *  a lens list of signals (by cashier, store, item and so on) and the transactions behind the picked one, with CSV export. */
 const Cashiers = () => {
   const toast = useToast();
   const ctx = useCashierCtx();

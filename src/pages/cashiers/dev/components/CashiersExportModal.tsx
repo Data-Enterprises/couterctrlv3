@@ -44,9 +44,9 @@ interface CashiersExportModalProps {
   transactionLengths: Record<string, number>;
 }
 
-// Custom aggregates the exception LINES, the only granular dataset (signals
-// and transactions are already roll-ups).
-
+/** The Cashiers Export CSV modal, in Presets and Custom modes. Presets export the signals list, transactions or
+ *  exception lines; Custom aggregates the exception lines (the only granular dataset, since signals and
+ *  transactions are already roll-ups) by chosen group-by dimensions and metrics. */
 const CashiersExportModal = ({
   onClose,
   scopeLabel,

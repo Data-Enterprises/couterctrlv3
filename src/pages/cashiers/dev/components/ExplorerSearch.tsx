@@ -21,9 +21,9 @@ interface ExplorerSearchProps {
   onBack?: () => void;
 }
 
-// Entry point for the exception explorer, in two stages: cashiers/preflight
-// needs the dates and scope first, so the dropdown only offers exceptions that
-// return something.
+/** The Cashiers entry card for the exception explorer, in two stages: pick the store or group and dates, then an
+ *  exception type. Cashiers/preflight needs the dates and scope first, so the dropdown only offers exceptions
+ *  that return something. */
 const ExplorerSearch = ({
   saleTypes,
   exception,

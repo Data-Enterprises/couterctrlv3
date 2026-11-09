@@ -20,6 +20,7 @@ interface TransactionProps {
   trans: TransactionListItem[];
 }
 
+/** One transaction's receipt: its date and time, every line, and the sales, tax, void or refund and total figures. */
 const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
   const context = useAppSelector((s) => s.app);

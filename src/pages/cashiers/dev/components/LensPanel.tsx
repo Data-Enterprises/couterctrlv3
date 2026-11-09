@@ -19,6 +19,7 @@ interface LensPanelProps {
   onSearchChange: (v: string) => void;
 }
 
+/** The explorer's left list: lens buttons, a search box and the signal rows for the chosen lens, with the picked row highlighted. */
 const LensPanel = ({
   lens,
   onLensChange,

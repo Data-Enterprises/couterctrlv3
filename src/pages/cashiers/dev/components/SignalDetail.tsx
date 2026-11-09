@@ -29,6 +29,8 @@ interface SignalDetailProps {
   transactionLengths: Record<string, number>;
 }
 
+/** The explorer's right panel for the picked signal: a sortable list of its transactions, and the receipt of one
+ *  when it is opened. Remounted per signal so an open receipt does not carry over. */
 const SignalDetail = ({
   signal,
   lens,
