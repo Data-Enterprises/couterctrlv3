@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch } from "../../../../../hooks";
 import { useSalesCtx, useSalesState } from "../../hooks";
 import { useSubDeptItems } from "./hooks";
@@ -12,6 +12,10 @@ import {
 
 // Utils
 import { buildDeptRows } from "./utils";
+
+// Interfaces
+import type { SevFilter } from "../../utils/index";
+import type { DeptSortState, ItemSortState } from "./interfaces";
 
 // Components
 import SubDeptSignalList from "./components/SubDeptSignalList";
@@ -51,6 +55,22 @@ const PopupSubDeptList = ({
   if (subDeptThreshold != null) thresholdRef.current = subDeptThreshold;
   const threshold = thresholdRef.current;
 
+  // Kept here, above the empty-day return, so filters, sorts and the insight
+  // survive a day with no rows.
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [deptSort, setDeptSort] = useState<DeptSortState>(null);
+  const [ctaOpen, setCtaOpen] = useState(false);
+  const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
+  const [itemTextFilter, setItemTextFilter] = useState("");
+  // "" shows active and inactive together: the question is almost always
+  // "what sold here", not "what still sells".
+  const [itemActiveFilter, setItemActiveFilter] = useState("");
+  const [itemSort, setItemSort] = useState<ItemSortState>(null);
+
+  useEffect(() => {
+    setItemSevFilter("all");
+  }, [selectedSubDeptId]);
+
   const { rows, coverage } = useMemo(
     () => buildDeptRows(subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric),
     [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric],
@@ -79,7 +99,15 @@ const PopupSubDeptList = ({
 
   return (
     <div className="flex h-full">
-      <SubDeptSignalList rows={rows} coverage={coverage} threshold={threshold} />
+      <SubDeptSignalList
+        rows={rows}
+        coverage={coverage}
+        threshold={threshold}
+        sevFilter={sevFilter}
+        setSevFilter={setSevFilter}
+        deptSort={deptSort}
+        setDeptSort={setDeptSort}
+      />
       <SubDeptDetailPanel
         selected={selected}
         coverage={coverage}
@@ -88,6 +116,16 @@ const PopupSubDeptList = ({
         twDateLabel={twDateLabel}
         lwDateLabel={lwDateLabel}
         lyDateLabel={lyDateLabel}
+        ctaOpen={ctaOpen}
+        setCtaOpen={setCtaOpen}
+        itemSevFilter={itemSevFilter}
+        setItemSevFilter={setItemSevFilter}
+        itemTextFilter={itemTextFilter}
+        setItemTextFilter={setItemTextFilter}
+        itemActiveFilter={itemActiveFilter}
+        setItemActiveFilter={setItemActiveFilter}
+        itemSort={itemSort}
+        setItemSort={setItemSort}
       />
     </div>
   );

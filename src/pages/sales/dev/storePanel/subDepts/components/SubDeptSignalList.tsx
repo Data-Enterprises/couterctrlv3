@@ -1,5 +1,4 @@
 // Hooks
-import { useState } from "react";
 import { useAppDispatch } from "../../../../../../hooks";
 import { useSalesCtx } from "../../../hooks";
 
@@ -13,6 +12,7 @@ import { deptSeverity, nextDeptSort, sortDeptRows } from "../utils";
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
+import type { Dispatch, SetStateAction } from "react";
 import type { DeptRow, DeptSortColumn, DeptSortState } from "../interfaces";
 
 // Components
@@ -25,6 +25,10 @@ interface SubDeptSignalListProps {
   rows: DeptRow[];
   coverage: Coverage;
   threshold: number;
+  sevFilter: SevFilter;
+  setSevFilter: (v: SevFilter) => void;
+  deptSort: DeptSortState;
+  setDeptSort: Dispatch<SetStateAction<DeptSortState>>;
 }
 
 const HEAD =
@@ -38,12 +42,18 @@ const HEAD =
  * on a window under about 1200px the percentage alone left nothing for the
  * names. The detail side gives ground first.
  */
-const SubDeptSignalList = ({ rows, coverage, threshold }: SubDeptSignalListProps) => {
+const SubDeptSignalList = ({
+  rows,
+  coverage,
+  threshold,
+  sevFilter,
+  setSevFilter,
+  deptSort,
+  setDeptSort,
+}: SubDeptSignalListProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric, subDeptThreshold } = useSalesCtx();
   const isQty = gradingMetric === "qty";
-  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
-  const [deptSort, setDeptSort] = useState<DeptSortState>(null);
 
   const sevOf = (r: DeptRow) => deptSeverity(r, coverage, threshold, gradingMetric);
   const counts = {

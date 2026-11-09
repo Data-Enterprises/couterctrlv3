@@ -1,9 +1,13 @@
 ﻿// Hooks
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useSalesCtx, useSalesState } from "../../hooks";
 
 // Utils
 import { buildHourRows } from "./utils";
+
+// Interfaces
+import type { SevFilter } from "../../utils/index";
+import type { HourSortState } from "./interfaces";
 
 // Components
 import HourSignalList from "./components/HourSignalList";
@@ -31,6 +35,13 @@ const PopupHourlyView = ({
   if (hourlyThreshold != null) thresholdRef.current = hourlyThreshold;
   const threshold = thresholdRef.current;
 
+  // Kept here, above the empty-day return, so the filter, sort and open
+  // toggles survive a day with no rows.
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [hourSort, setHourSort] = useState<HourSortState>(null);
+  const [ctaOpen, setCtaOpen] = useState(false);
+  const [chartOpen, setChartOpen] = useState(false);
+
   const { rows, coverage } = useMemo(
     () =>
       buildHourRows(
@@ -56,7 +67,15 @@ const PopupHourlyView = ({
 
   return (
     <div className="flex h-full">
-      <HourSignalList rows={rows} coverage={coverage} threshold={threshold} />
+      <HourSignalList
+        rows={rows}
+        coverage={coverage}
+        threshold={threshold}
+        sevFilter={sevFilter}
+        setSevFilter={setSevFilter}
+        hourSort={hourSort}
+        setHourSort={setHourSort}
+      />
       <HourDetailPanel
         selected={selected}
         coverage={coverage}
@@ -64,6 +83,10 @@ const PopupHourlyView = ({
         twDateLabel={twDateLabel}
         lwDateLabel={lwDateLabel}
         lyDateLabel={lyDateLabel}
+        ctaOpen={ctaOpen}
+        setCtaOpen={setCtaOpen}
+        chartOpen={chartOpen}
+        setChartOpen={setChartOpen}
       />
     </div>
   );

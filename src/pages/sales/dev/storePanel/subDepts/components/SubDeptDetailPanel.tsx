@@ -16,6 +16,7 @@ import { getCta, nextItemSort, searchItems, sortItems } from "../utils";
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
+import type { Dispatch, SetStateAction } from "react";
 import type { DeptRow, ItemMenu, ItemSortColumn, ItemSortState } from "../interfaces";
 
 // Components
@@ -34,6 +35,16 @@ interface SubDeptDetailPanelProps {
   twDateLabel: string;
   lwDateLabel: string;
   lyDateLabel: string;
+  ctaOpen: boolean;
+  setCtaOpen: Dispatch<SetStateAction<boolean>>;
+  itemSevFilter: SevFilter;
+  setItemSevFilter: (v: SevFilter) => void;
+  itemTextFilter: string;
+  setItemTextFilter: (v: string) => void;
+  itemActiveFilter: string;
+  setItemActiveFilter: (v: string) => void;
+  itemSort: ItemSortState;
+  setItemSort: Dispatch<SetStateAction<ItemSortState>>;
 }
 
 /**
@@ -49,6 +60,16 @@ const SubDeptDetailPanel = ({
   twDateLabel,
   lwDateLabel,
   lyDateLabel,
+  ctaOpen,
+  setCtaOpen,
+  itemSevFilter,
+  setItemSevFilter,
+  itemTextFilter,
+  setItemTextFilter,
+  itemActiveFilter,
+  setItemActiveFilter,
+  itemSort,
+  setItemSort,
 }: SubDeptDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const {
@@ -65,18 +86,7 @@ const SubDeptDetailPanel = ({
   if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
   const itemThreshold = itemThresholdRef.current;
 
-  const [ctaOpen, setCtaOpen] = useState(false);
-  const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
-  const [itemTextFilter, setItemTextFilter] = useState("");
-  // "" shows active and inactive together: the question is almost always
-  // "what sold here", not "what still sells".
-  const [itemActiveFilter, setItemActiveFilter] = useState("");
-  const [itemSort, setItemSort] = useState<ItemSortState>(null);
   const [ctxMenu, setCtxMenu] = useState<ItemMenu>(null);
-
-  useEffect(() => {
-    setItemSevFilter("all");
-  }, [selectedId]);
 
   const baseItems = useMemo(
     () =>

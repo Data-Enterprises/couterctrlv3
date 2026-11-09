@@ -1,5 +1,5 @@
 // Hooks
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSalesCtx } from "../../../hooks";
 
 // Utils
@@ -8,6 +8,7 @@ import { buildWeekHourDays, formatHourRange, getCta } from "../utils";
 
 // Interfaces
 import type { Coverage } from "../../../utils/ledgerUtils";
+import type { Dispatch, SetStateAction } from "react";
 import type { HourRow } from "../interfaces";
 
 // Components
@@ -29,6 +30,10 @@ interface HourDetailPanelProps {
   twDateLabel: string;
   lwDateLabel: string;
   lyDateLabel: string;
+  ctaOpen: boolean;
+  setCtaOpen: Dispatch<SetStateAction<boolean>>;
+  chartOpen: boolean;
+  setChartOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const basket = (net: number, trans: number) => (trans > 0 ? net / trans : 0);
@@ -42,11 +47,13 @@ const HourDetailPanel = ({
   twDateLabel,
   lwDateLabel,
   lyDateLabel,
+  ctaOpen,
+  setCtaOpen,
+  chartOpen,
+  setChartOpen,
 }: HourDetailPanelProps) => {
   const { gradingMetric, selectedHour, rawHourly, rawLWHourly, rawLYHourly } =
     useSalesCtx();
-  const [ctaOpen, setCtaOpen] = useState(false);
-  const [chartOpen, setChartOpen] = useState(false);
 
   const weekHourDays = useMemo(
     () =>

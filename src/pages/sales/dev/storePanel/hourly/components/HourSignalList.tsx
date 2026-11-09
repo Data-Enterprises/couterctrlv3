@@ -1,5 +1,4 @@
 // Hooks
-import { useState } from "react";
 import { useAppDispatch } from "../../../../../../hooks";
 import { useSalesCtx } from "../../../hooks";
 
@@ -13,6 +12,7 @@ import { hourSeverity, nextHourSort, sortHourRows } from "../utils";
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
+import type { Dispatch, SetStateAction } from "react";
 import type { HourRow, HourSortColumn, HourSortState } from "../interfaces";
 
 // Components
@@ -25,6 +25,10 @@ interface HourSignalListProps {
   rows: HourRow[];
   coverage: Coverage;
   threshold: number;
+  sevFilter: SevFilter;
+  setSevFilter: (v: SevFilter) => void;
+  hourSort: HourSortState;
+  setHourSort: Dispatch<SetStateAction<HourSortState>>;
 }
 
 const HEAD =
@@ -32,12 +36,18 @@ const HEAD =
 
 /** The left panel: the store's hours, worst first, with grade chips, the
  *  threshold and sortable columns. */
-const HourSignalList = ({ rows, coverage, threshold }: HourSignalListProps) => {
+const HourSignalList = ({
+  rows,
+  coverage,
+  threshold,
+  sevFilter,
+  setSevFilter,
+  hourSort,
+  setHourSort,
+}: HourSignalListProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric, hourlyThreshold } = useSalesCtx();
   const isQty = gradingMetric === "qty";
-  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
-  const [hourSort, setHourSort] = useState<HourSortState>(null);
 
   const sevOf = (r: HourRow) => hourSeverity(r, coverage, threshold, gradingMetric);
   const counts = {
