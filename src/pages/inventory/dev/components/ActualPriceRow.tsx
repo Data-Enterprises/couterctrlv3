@@ -75,7 +75,7 @@ const ActualPriceRow = ({
           {fmtQty(point.qty)}
         </span>
         <span
-          className={`text-right tabular-nums font-medium ${point.marginPct < 0 ? "text-red-700" : "text-emerald-700"}`}
+          className={`text-right tabular-nums font-medium ${point.marginPct < 0 ? "text-delta_negative_text" : "text-delta_positive_text"}`}
         >
           {point.marginPct.toFixed(1)}%
         </span>

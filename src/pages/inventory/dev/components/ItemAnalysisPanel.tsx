@@ -189,8 +189,8 @@ const ItemAnalysisPanel = ({
                 totals.marginPct === null
                   ? "text-content"
                   : totals.marginPct < 0
-                    ? "text-red-800"
-                    : "text-emerald-800"
+                    ? "text-delta_negative_text"
+                    : "text-delta_positive_text"
               }`}
             >
               {totals.marginPct !== null
@@ -212,7 +212,7 @@ const ItemAnalysisPanel = ({
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {actual.loading && isCurrent ? (
-                <span className="text-gray-400">…</span>
+                <span className="text-content/95">…</span>
               ) : (
                 totals.trans
               )}
@@ -253,7 +253,7 @@ const ItemAnalysisPanel = ({
                 {/* A price can be the fastest mover and still lose money on
                     every unit. That has to outrank everything else on the row. */}
                 {suggestion.best.point.marginPerUnit < 0 && (
-                  <span className="text-[11px] px-1.5 py-px rounded bg-red-100 text-red-900 font-medium">
+                  <span className="text-[11px] px-1.5 py-px rounded bg-severity_critical_bg text-severity_critical_text font-medium">
                     Below cost
                   </span>
                 )}
@@ -279,8 +279,8 @@ const ItemAnalysisPanel = ({
                   <span
                     className={`px-1.5 py-px rounded font-medium ${
                       suggestion.profitDelta >= 0
-                        ? "bg-emerald-100 text-emerald-900"
-                        : "bg-red-100 text-red-900"
+                        ? "bg-delta_positive_bg text-delta_positive_text"
+                        : "bg-delta_negative_bg text-delta_negative_text"
                     }`}
                   >
                     {suggestion.profitDelta >= 0 ? "+" : "−"}
@@ -306,16 +306,16 @@ const ItemAnalysisPanel = ({
           <div className="px-4 pt-3 flex-shrink-0">
             <div
               className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg ${
-                pattern.concerning ? "bg-amber-50" : "bg-gray-50"
+                pattern.concerning ? "bg-severity_watch_bg" : "bg-gray-50"
               }`}
             >
               {pattern.concerning ? (
-                <ExclamationTriangleIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
+                <ExclamationTriangleIcon className="w-4 h-4 text-severity_watch_text flex-shrink-0" />
               ) : (
                 <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
               )}
               <span
-                className={`text-[12.5px] truncate ${pattern.concerning ? "text-amber-900" : "text-content"}`}
+                className={`text-[12.5px] truncate ${pattern.concerning ? "text-severity_watch_text" : "text-content"}`}
               >
                 <span className="font-medium">{pattern.title}</span> —{" "}
                 {pattern.detail}
@@ -365,7 +365,7 @@ const ItemAnalysisPanel = ({
                     {p.units % 1 === 0 ? p.units : p.units.toFixed(2)}
                   </span>
                   <span
-                    className={`text-right tabular-nums font-medium ${p.marginPct < 0 ? "text-red-700" : "text-emerald-700"}`}
+                    className={`text-right tabular-nums font-medium ${p.marginPct < 0 ? "text-delta_negative_text" : "text-delta_positive_text"}`}
                   >
                     {p.marginPct.toFixed(1)}%
                   </span>
@@ -407,9 +407,9 @@ const ItemAnalysisPanel = ({
             )}
 
             {isCurrent && actual.error && (
-              <div className="flex items-start gap-1.5 px-2.5 py-2 rounded-lg bg-amber-50">
-                <ExclamationTriangleIcon className="w-4 h-4 text-amber-800 flex-shrink-0 mt-px" />
-                <span className="text-[12.5px] text-amber-900">
+              <div className="flex items-start gap-1.5 px-2.5 py-2 rounded-lg bg-severity_watch_bg">
+                <ExclamationTriangleIcon className="w-4 h-4 text-severity_watch_text flex-shrink-0 mt-px" />
+                <span className="text-[12.5px] text-severity_watch_text">
                   {actual.error}
                 </span>
               </div>
