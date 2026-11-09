@@ -24,7 +24,7 @@ const SeverityBadge = ({ severity, showBackground = true }: SeverityBadgeProps) 
     }
     title={severity ? undefined : "Not graded"}
   >
-    {severity === null && <MinusCircleIcon className="w-3 h-3 text-gray-400" />}
+    {severity === null && <MinusCircleIcon className="w-3 h-3 text-brand_slate" />}
     {severity === "critical" && (
       <ExclamationTriangleIcon
         className="w-3 h-3"

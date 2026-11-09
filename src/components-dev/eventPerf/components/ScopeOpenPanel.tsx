@@ -40,7 +40,7 @@ const ScopeOpenPanel = () => {
           <span className="inline-flex items-center gap-1.5">
             <span
               className="h-2 w-3.5 rounded-sm"
-              style={{ background: "#5a6c84" }}
+              style={{ background: "rgb(var(--color-brand-slate))" }}
             />
             Prior 2-wk avg
           </span>
@@ -57,7 +57,7 @@ const ScopeOpenPanel = () => {
         <button
           type="button"
           onClick={() => dispatch(openEventDetail(true))}
-          className="flex w-full items-center justify-center gap-1 rounded-lg bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
+          className="flex w-full items-center justify-center gap-1 rounded-lg bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white active:bg-brand_navy_hover"
         >
           View details
           <ChevronRightIcon className="h-4 w-4" />

@@ -6,8 +6,8 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoButton from "../InfoButton";
 
 interface MobilePerfCardProps {
   /** What this row is — a store, a sub department, a vendor, a category. */
@@ -101,14 +101,12 @@ const MobilePerfCard = ({
             {when}
           </span>
           {onInfo && (
-            <button
-              type="button"
+            <InfoButton
+              variant="light"
               onClick={onInfo}
-              aria-label="What this page shows"
-              className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
-            >
-              <QuestionMarkCircleIcon className="h-5 w-5" />
-            </button>
+              title="What this page shows"
+              className="-mr-1 flex-none"
+            />
           )}
         </div>
       )}

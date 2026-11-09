@@ -18,8 +18,8 @@ export const renderStamps = (item: TransactionListItem) => {
 
 /** A line's type badge colour: grey when void, blue for tender, amber otherwise. */
 export const typeBadgeClass = (isVoid: boolean, saleType: string) => {
-  if (isVoid) return "bg-gray-100 text-gray-500";
+  if (isVoid) return "bg-row_stripe text-brand_slate";
   return saleType === "Tender"
     ? "bg-blue-100 text-blue-800"
-    : "bg-amber-100 text-amber-800";
+    : "bg-severity_watch_bg text-severity_watch_text";
 };

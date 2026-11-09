@@ -93,7 +93,7 @@ const SingleStoreSearchCard = ({
           style={loading ? { visibility: "hidden" } : undefined}
         >
           {notice && (
-            <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+            <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-severity_watch_text text-[11.5px] leading-snug">
               {notice}
             </div>
           )}

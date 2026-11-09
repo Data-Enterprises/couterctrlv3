@@ -85,7 +85,7 @@ const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
           placeholder="tjsmith"
         />
         {problem && (
-          <p role="alert" className="text-[12px] text-red-700 m-0">
+          <p role="alert" className="text-[12px] text-brand_danger m-0">
             {problem}
           </p>
         )}

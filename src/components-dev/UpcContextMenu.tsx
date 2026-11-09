@@ -58,7 +58,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
     >
       {upc && (
         <div className="px-3 py-1.5 border-b border-gray-100">
-          <div className="text-[9px] font-semibold uppercase tracking-wide text-gray-400">UPC</div>
+          <div className="text-[9px] font-semibold uppercase tracking-wide text-brand_slate">UPC</div>
           <div className="text-[12px] font-semibold text-content tabular-nums">{upc}</div>
         </div>
       )}
@@ -75,7 +75,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
         >
           <span>{item.label}</span>
           {item.count !== null && (
-            <span className="text-[10px] text-gray-400 tabular-nums">{item.count}</span>
+            <span className="text-[10px] text-brand_slate tabular-nums">{item.count}</span>
           )}
         </button>
       ))}
