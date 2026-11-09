@@ -83,9 +83,9 @@ Put a file in the **lowest folder that contains everything that uses it**.
   lowest folder that uses them, even when only one file uses them. For example, Forecasting's
   `COLS`, `HEAD` and `PILL` and its `parseUpcs` are in `utils/` (26a7b7f5). New code is written
   this way.
-  - Older component files still break the shape. On 9 Nov 2026, 169 of 552 dev component files
-    held, between them, 372 constants or functions, 62 extra components and 47 extra types. Bring
-    them in line in move commits of their own, never inside a logic change.
+  - Since 9 Nov 2026 every in-scope dev component file has this shape (5dc7b8bd). The exceptions
+    are Upc List's Movement files, which wait for the `item_movement` merge, and the level-9-only
+    pages. Bring those in line in move commits of their own, never inside a logic change.
   - A doc comment stays above the thing it describes: the component's comment stays with the
     component, and each moved constant gets one line of its own.
 - Don't create empty folders.
