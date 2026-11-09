@@ -92,11 +92,11 @@ const LensPanel = ({
                   title={`${s.count} exception lines across ${s.transactions} transactions`}
                 >
                   {s.count}
-                  <span className="text-content/70"> · {s.transactions}</span>
+                  <span className="text-content/95"> · {s.transactions}</span>
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 mt-0.5">
-                <span className="text-[10.5px] text-content/70 truncate">
+                <span className="text-[10.5px] text-content/95 truncate">
                   {s.sublabel ? `${s.sublabel} · ` : ""}
                   {formatCurrency2(s.amount)}
                 </span>

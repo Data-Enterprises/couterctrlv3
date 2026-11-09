@@ -102,7 +102,7 @@ const SignalDetail = ({
         <div className="text-[13.5px] font-medium text-content">
           {signal.label}
         </div>
-        <div className="text-[11px] text-content/70 mt-0.5">
+        <div className="text-[11px] text-content/95 mt-0.5">
           {signal.count} exception {signal.count === 1 ? "line" : "lines"} ·{" "}
           {signal.transactions}{" "}
           {signal.transactions === 1 ? "transaction" : "transactions"} ·{" "}
@@ -121,7 +121,7 @@ const SignalDetail = ({
             >
               ← Back
             </button>
-            <span className="text-[11px] text-content/70">
+            <span className="text-[11px] text-content/95">
               Transaction {transactionLabel(openTransaction!)}
             </span>
           </div>
@@ -162,7 +162,7 @@ const SignalDetail = ({
                 <button
                   key={label}
                   onClick={() => handleSort(col)}
-                  className={`flex items-center gap-0.5 uppercase tracking-wide text-content/85 hover:text-content transition-colors ${align}`}
+                  className={`flex items-center gap-0.5 uppercase tracking-wide text-content/95 hover:text-content transition-colors ${align}`}
                 >
                   {label}
                   {sort?.col === col &&

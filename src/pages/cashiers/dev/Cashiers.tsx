@@ -279,7 +279,7 @@ const Cashiers = () => {
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Cashiers
           </span>
-          <span className="text-custom-white/85 text-[12px] truncate">
+          <span className="text-custom-white/95 text-[12px] truncate">
             {explorerScopeLabel} · {ctx.startDate} – {ctx.endDate} ·{" "}
             {explorerFetchedException}
           </span>
@@ -292,14 +292,14 @@ const Cashiers = () => {
           <button data-help="search"
             onClick={() => setSearchOpen(true)}
             title="New search"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setExportOpen(true)}
             title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
@@ -324,7 +324,7 @@ const Cashiers = () => {
               key={kpi.label}
               className="px-3 py-2 border-r border-gray-100 last:border-r-0"
             >
-              <div className="text-[11px] text-content/85">{kpi.label}</div>
+              <div className="text-[11px] text-content/95">{kpi.label}</div>
               <div className="text-[16px] font-medium text-content">
                 {kpi.value}
               </div>
@@ -337,7 +337,7 @@ const Cashiers = () => {
             <LoadingIndicator message={explorerMessage || "Loading…"} />
           </div>
         ) : exceptionRows.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/60">
+          <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/95">
             No {explorerFetchedException.toLowerCase()} transactions in this
             range
           </div>
@@ -366,7 +366,7 @@ const Cashiers = () => {
                 transactionLengths={transactionLengths}
               />
             ) : (
-              <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/60 px-6 text-center">
+              <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/95 px-6 text-center">
                 Select a row to see the transactions behind it
               </div>
             )}

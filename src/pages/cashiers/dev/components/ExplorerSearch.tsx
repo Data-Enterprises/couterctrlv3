@@ -48,7 +48,7 @@ const ExplorerSearch = ({
           <h2 className="text-base font-semibold text-content">
             Explore exceptions
           </h2>
-          <p className="text-[12px] text-content/60 mt-1">
+          <p className="text-[12px] text-content/95 mt-1">
             Pick a scope and date range, then choose an exception to break down
             by cashier, item, lane, or hour.
           </p>
@@ -81,7 +81,7 @@ const ExplorerSearch = ({
 
         {hasSaleTypes && (
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-content/70">
+            <span className="text-[11px] font-medium text-content/95">
               Exception
             </span>
             <SelectFilter
@@ -111,7 +111,7 @@ const ExplorerSearch = ({
         {onBack && (
           <button
             onClick={onBack}
-            className="w-full py-2 text-[12px] font-medium text-content/70 hover:text-content transition-colors"
+            className="w-full py-2 text-[12px] font-medium text-content/95 hover:text-content transition-colors"
           >
             Back to results
           </button>

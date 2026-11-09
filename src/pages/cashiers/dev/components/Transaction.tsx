@@ -174,7 +174,7 @@ const Transaction = ({ trans }: TransactionProps) => {
             <div className="text-[13px] font-medium text-brand_navy">
               {first.cashier_name}
             </div>
-            <div className="text-[11px] text-content/70 mt-0.5">
+            <div className="text-[11px] text-content/95 mt-0.5">
               #{saleId} · {fmtDate}
             </div>
           </div>
@@ -205,7 +205,7 @@ const Transaction = ({ trans }: TransactionProps) => {
               className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
               style={chipStyle}
             >
-              <span className="text-[10px] text-content/60">{label}</span>
+              <span className="text-[10px] text-content/95">{label}</span>
               <span className="text-[11px] font-semibold text-content">
                 {value}
               </span>
@@ -224,7 +224,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
             <div
               key={h}
-              className="text-[9px] font-semibold uppercase tracking-wide text-content/55"
+              className="text-[9px] font-semibold uppercase tracking-wide text-content/95"
               style={{ textAlign: i >= 2 ? "right" : "left" }}
             >
               {h}
@@ -242,22 +242,22 @@ const Transaction = ({ trans }: TransactionProps) => {
               className="grid gap-2 py-1.5 border-b border-gray-50 items-center"
               style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
             >
-              <div className="text-[9px] text-content/65 truncate">
+              <div className="text-[9px] text-content/95 truncate">
                 {item.product_code || "—"}
               </div>
               <div className="text-[10px] text-content truncate">
                 {item.product_description}
               </div>
-              <div className="text-[10px] text-content/75 text-right">
+              <div className="text-[10px] text-content/95 text-right">
                 {item.qty ?? 0}
               </div>
               <div
-                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-red-500" : "text-content"}`}
+                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-red-500" : "text-content"}`}
               >
                 {formatCurrency2(item.net_sales)}
               </div>
               <div className="flex items-center justify-end">
-                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-gray-100 text-content/65">
+                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-gray-100 text-content/95">
                   {item.sale_type}
                 </span>
               </div>
@@ -272,14 +272,14 @@ const Transaction = ({ trans }: TransactionProps) => {
         >
           <div style={{ minWidth: 160 }}>
             <div className="flex justify-between text-[10px] py-0.5">
-              <span className="text-content/65">Net sales</span>
+              <span className="text-content/95">Net sales</span>
               <span className="font-medium text-content">
                 {formatCurrency2(netSales)}
               </span>
             </div>
             {totalTax > 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Tax</span>
+                <span className="text-content/95">Tax</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(totalTax)}
                 </span>
@@ -287,7 +287,7 @@ const Transaction = ({ trans }: TransactionProps) => {
             )}
             {voidAmount !== 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Voided</span>
+                <span className="text-content/95">Voided</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(voidAmount)}
                 </span>
@@ -295,7 +295,7 @@ const Transaction = ({ trans }: TransactionProps) => {
             )}
             {refundAmount !== 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Refunded</span>
+                <span className="text-content/95">Refunded</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(refundAmount)}
                 </span>
