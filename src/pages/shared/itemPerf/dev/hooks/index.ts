@@ -1,5 +1,5 @@
 // Hooks
-import { createContext, useContext, useDeferredValue, useEffect, useMemo } from "react";
+import { createContext, useContext, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
@@ -44,6 +44,7 @@ import {
 } from "../utils/itemPerfData";
 
 // Interfaces
+import type { UIEvent } from "react";
 import type { JsonError } from "../../../../../interfaces";
 import type { ItemDimension, MarginSort } from "../../../../../features/dev/devItemPerfSlice";
 import type { MarginRow, PricedRow } from "../utils/itemPerfData";
@@ -561,4 +562,38 @@ export const useItemPerfCtx = () => {
   const v = useContext(ItemPerfCtx);
   if (!v) throw new Error("useItemPerfCtx outside ItemPerfMobile");
   return v;
+};
+
+/**
+ * Search and the store list used to share one scroller, so going straight
+ * from one to the other kept the offset. This keeps that: the screen last on,
+ * and where the shared scroller was left.
+ */
+export const useScrollCarry = (screen: ItemPerfScreen | null) => {
+  const lastScreen = useRef(screen);
+  const offset = useRef(0);
+  // A parent's layout effect runs after its children's, so a screen mounting
+  // in the same commit still reads the screen it came from.
+  useLayoutEffect(() => {
+    lastScreen.current = screen;
+  }, [screen]);
+  return useMemo(() => ({ lastScreen, offset }), []);
+};
+
+/** A search or list screen's scroller, put where the other one left off when
+ *  arriving straight from it (`from`). */
+export const useCarriedScroll = (from: ItemPerfScreen) => {
+  const { scrollCarry } = useItemPerfCtx();
+  const scroller = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    if (scrollCarry.lastScreen.current === from)
+      el.scrollTop = scrollCarry.offset.current;
+    scrollCarry.offset.current = el.scrollTop;
+  }, [scrollCarry, from]);
+  const onScroll = (e: UIEvent<HTMLDivElement>) => {
+    scrollCarry.offset.current = e.currentTarget.scrollTop;
+  };
+  return { scroller, onScroll };
 };

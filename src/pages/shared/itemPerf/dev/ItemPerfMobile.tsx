@@ -1,7 +1,7 @@
 // Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../../hooks";
-import { ItemPerfCtx, useItemPerfLoad, useItemPerfView } from "./hooks";
+import { ItemPerfCtx, useItemPerfLoad, useItemPerfView, useScrollCarry } from "./hooks";
 
 // Interfaces
 import type { ItemDimension } from "../../../../features/dev/devItemPerfSlice";
@@ -66,9 +66,10 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     !mine || !perf.hasSearched || (!perf.loading && perf.itemsTy.length === 0)
       ? null
       : view.screen;
+  const scrollCarry = useScrollCarry(screen);
 
   return (
-    <ItemPerfCtx.Provider value={{ ...view, groupFilter, setGroupFilter }}>
+    <ItemPerfCtx.Provider value={{ ...view, groupFilter, setGroupFilter, scrollCarry }}>
       {screen === null ? (
         <ItemPerfSearchCard title={title} onSearch={fetchItems} />
       ) : screen === "item" ? (

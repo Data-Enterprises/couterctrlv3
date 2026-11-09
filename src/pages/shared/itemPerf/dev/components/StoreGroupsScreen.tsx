@@ -1,7 +1,7 @@
 // Hooks
 import { useLayoutEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useCarriedScroll, useItemPerfCtx } from "../hooks";
 
 // Redux
 import {
@@ -44,7 +44,7 @@ const StoreGroupsScreen = () => {
     shown,
   } = useItemPerfCtx();
 
-  const scroller = useRef<HTMLDivElement>(null);
+  const { scroller, onScroll } = useCarriedScroll("search");
   const openCard = useRef<HTMLDivElement>(null);
 
   /**
@@ -80,7 +80,7 @@ const StoreGroupsScreen = () => {
       )}
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── the store ───────────────────────────────────────── */}
           {/* Not a card in the accordion: the store's breakdown IS the list

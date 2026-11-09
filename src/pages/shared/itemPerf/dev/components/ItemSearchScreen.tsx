@@ -1,6 +1,6 @@
 // Hooks
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useCarriedScroll, useItemPerfCtx } from "../hooks";
 import { useScanGun } from "../../../../../components-dev/scanner/useScanGun";
 
 // Redux
@@ -39,6 +39,7 @@ const ItemSearchScreen = () => {
   // A scan gun trigger pull does what a camera read does: the code becomes
   // the query and the camera closes.
   const searchGun = useScanGun((upc) => dispatch(scannedUpc(upc)));
+  const { scroller, onScroll } = useCarriedScroll("list");
 
   /**
    * What the blue button does once there is something in the field.
@@ -132,7 +133,7 @@ const ItemSearchScreen = () => {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {perf.scannerOpen && (
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white p-3 shadow-md">
