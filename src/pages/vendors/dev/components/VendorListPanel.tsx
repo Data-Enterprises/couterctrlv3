@@ -24,12 +24,9 @@ import {
 import { formatCurrency2, formatCurrencyCompact } from "../../../../utils";
 import { fmtCompactRange } from "../../../../utils/dateLabels";
 import {
-  severityDotClass,
   comparisonPillClass,
   headerDeltaPill,
   PCT_COL_W,
-  formatPct,
-  type Severity,
 } from "../../../../utils/severity";
 import {
   pctChange,
@@ -37,7 +34,19 @@ import {
   isCompleteCoverage,
   type Tier,
 } from "../../../../utils/grading";
-import { getVendorTier, vendorDelta, marginPct } from "../utils";
+import {
+  getVendorTier,
+  vendorDelta,
+  marginPct,
+  TOGGLE_OPTS,
+  fmtDelta,
+  dotFor,
+  CHIP_BASE,
+  CHIP_ON,
+} from "../utils";
+
+// Interfaces
+import type { ListSortCol } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
@@ -50,54 +59,14 @@ import ThresholdFilter, {
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import VendorRow from "./VendorRow";
 
-const TOGGLE_OPTS = [
-  { key: "margin" as const, label: "Margin" },
-  { key: "sales" as const, label: "Sales" },
-];
-
-/** Margin deltas are POINTS, sales deltas are PERCENT — never interchangeable,
- *  so the suffix is part of the number. Same split Sub Dept Margins makes. */
-const fmtDelta = (d: number | null, isMargin: boolean) =>
-  d === null
-    ? "—"
-    : isMargin
-      ? `${d >= 0 ? "+" : ""}${d.toFixed(2)} pts`
-      : formatPct(d);
-
-/** Ungraded has no severity equivalent, so it falls back to the neutral dot
- *  rather than borrowing a colour that would imply a verdict. */
-const dotFor = (tier: Tier) =>
-  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
-
-/** Written out in full because Tailwind scans source text and never sees a
- *  class assembled at runtime. */
-const CHIP_BASE: Record<Tier, string> = {
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-  watch: "bg-severity_watch_bg text-severity_watch_text",
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-content/70",
-};
-
-const CHIP_ON: Record<Tier, string> = {
-  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
-  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
-  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
-  ungraded: "ring-2 ring-gray-400/40 shadow-sm",
-};
-
-/** Sortable columns. With none active the list keeps its own worst-grade
- *  -first order, which is the point of a Performance page — see
- *  useTriStateSort. */
-type ListSortCol = "ty" | "lw" | "ly";
-
-interface Props {
+interface VendorListPanelProps {
   onSearchOpen: () => void;
   /** Re-presents the cached search as one co-located location, or all of
    *  them combined. No refetch — see useVendorSearch. */
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
+const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelProps) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const vend = useVendorsCtx();

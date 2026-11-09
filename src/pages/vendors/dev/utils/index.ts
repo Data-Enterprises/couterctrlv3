@@ -1,8 +1,8 @@
 // Utils
 import { onlyStoreNumber } from "../../../../utils/storeIdentity";
-import { marginPct } from "../../../../utils/grading";
-import { calculateCogs } from "../../../../utils/cogs";
 import {
+  marginPct,
+  type Tier,
   LW_OFFSET,
   LY_OFFSET,
   isoOf,
@@ -12,11 +12,23 @@ import {
   coverageOf,
   gradeBasis,
 } from "../../../../utils/grading";
+import { calculateCogs } from "../../../../utils/cogs";
+import {
+  formatPct,
+  type Severity,
+  severityDotClass,
+  severityHeaderBgClass,
+} from "../../../../utils/severity";
 
 // Interfaces
-import type { SubDeptMargin } from "../../../../interfaces";
+import type {
+  SubDeptMargin,
+  VendorMetric,
+  VendorRow,
+  VendorDay,
+  VendorTier,
+} from "../../../../interfaces";
 import type { RollupRow } from "../../../../api/rollup";
-import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../../interfaces";
 
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
 export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../../interfaces";
@@ -315,3 +327,47 @@ export const rowsForVendor = (rows: SubDeptMargin[], vendorId: string) =>
 /** Every TW date in the search, sorted — the spine day-matching aligns onto. */
 export const datesOf = (rows: { sale_date: string }[]): string[] =>
   [...new Set(rows.map((m) => isoOf(m.sale_date)))].sort();
+
+/** Ungraded has no severity colour of its own, so the header falls back to the
+ *  navy every other panel uses rather than borrowing a verdict colour. */
+export const headerBg = (tier: Tier) =>
+  tier === "ungraded"
+    ? "bg-brand_navy"
+    : severityHeaderBgClass[tier as Severity];
+
+/** The list's Margin / Sales toggle. */
+export const TOGGLE_OPTS = [
+  { key: "margin" as const, label: "Margin" },
+  { key: "sales" as const, label: "Sales" },
+];
+
+/** Margin deltas are POINTS, sales deltas are PERCENT — never interchangeable,
+ *  so the suffix is part of the number. Same split Sub Dept Margins makes. */
+export const fmtDelta = (d: number | null, isMargin: boolean) =>
+  d === null
+    ? "—"
+    : isMargin
+      ? `${d >= 0 ? "+" : ""}${d.toFixed(2)} pts`
+      : formatPct(d);
+
+/** Ungraded has no severity equivalent, so it falls back to the neutral dot
+ *  rather than borrowing a colour that would imply a verdict. */
+export const dotFor = (tier: Tier) =>
+  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
+
+/** Written out in full because Tailwind scans source text and never sees a
+ *  class assembled at runtime. */
+export const CHIP_BASE: Record<Tier, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  ungraded: "bg-gray-100 text-content/70",
+};
+
+/** The ring a tier chip wears while its filter is on. */
+export const CHIP_ON: Record<Tier, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+  ungraded: "ring-2 ring-gray-400/40 shadow-sm",
+};
