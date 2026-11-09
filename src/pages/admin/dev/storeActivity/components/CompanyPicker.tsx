@@ -54,7 +54,7 @@ const CompanyPicker = ({
                   mode === "select"
                     ? "cursor-pointer hover:bg-gray-50"
                     : "cursor-default"
-                } ${isCollision ? "bg-red-50 text-red-800" : "text-content"}`}
+                } ${isCollision ? "bg-brand_danger_bg text-brand_danger" : "text-content"}`}
                 style={
                   isSelected
                     ? {
