@@ -1,5 +1,4 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -43,9 +42,8 @@ const StoreActivityComp = ({
   setExportOpen,
 }: StoreActivityCompProps) => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
-  const { startDate, endDate } = useAppSelector((state) => state.search);
+  const { dispatch, startDate, endDate } = context;
   const hasData = context.companyStoresActivity.length > 0;
 
   const handleCompanySelect = (id: number) => {

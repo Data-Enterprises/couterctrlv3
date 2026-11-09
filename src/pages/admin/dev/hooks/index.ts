@@ -23,6 +23,7 @@ import { ADMIN_MIN_LEVEL } from "../utils";
 export const useAdminPageCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const {
     userid,
     userLevel,
@@ -109,6 +110,9 @@ export const useAdminPageCtx = () => {
     dispatch,
     url,
     token,
+    /** The search dates Store activity runs on. */
+    startDate,
+    endDate,
     userid,
     userLevel,
     /** The companies the signed-in person holds, as the login response gave

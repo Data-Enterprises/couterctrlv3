@@ -1,6 +1,5 @@
 // Hooks
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -32,8 +31,8 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
  *  Accounts below the access level see a "not available" notice instead. */
 const Admin = () => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
+  const { dispatch } = context;
   const [exportOpen, setExportOpen] = useState(false);
   const panel = adminPanel[context.adminForm] ?? adminPanel.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({

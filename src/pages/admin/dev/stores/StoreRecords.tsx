@@ -1,6 +1,5 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch } from "../../../../hooks";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -48,7 +47,7 @@ import StoreRow from "./components/StoreRow";
 const StoreRecords = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
-  const dispatch = useAppDispatch();
+  const { dispatch } = context;
   const {
     storeRecords: stores,
     storeSearch: search,
