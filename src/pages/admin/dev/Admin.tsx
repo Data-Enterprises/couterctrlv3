@@ -148,7 +148,7 @@ const Admin = () => {
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
-          {adminTabs.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => dispatch(setAdminForm(tab.id))}
