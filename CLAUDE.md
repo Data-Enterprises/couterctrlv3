@@ -71,6 +71,10 @@ Put a file in the **lowest folder that contains everything that uses it**.
 
 - **Never import another page's folder.** If two pages need something, move it to the shared
   library. When a shared file ends up with one user, move it down into that user.
+- **A whole screen shared by pages** lives in the library as its own folder with the page layout
+  inside it: the phone Item Perf and Event Perf screens are `src/components-dev/itemPerf` and
+  `src/components-dev/eventPerf` (8c4b4b35). `src/pages/shared/*/prod` are their prod copies, left
+  for promotion; don't add dev code under `pages/shared`.
 - **Helpers are grouped by kind, one file per kind per folder:**
   - `utils/index.ts` holds plain functions and constants;
   - `hooks/index.ts` holds hooks;
@@ -214,17 +218,94 @@ npx eslint <files or folders touched>
 npx vitest run --coverage.enabled=false
 npm run check:tests
 node scripts/check-split.mjs <page>
-npm run audit:theme
+npm run audit:theme          # must end TOTAL: 0 hit(s)
 npm run build
 ```
 
 `tsc --noEmit` proves nothing here, because the root tsconfig compiles nothing. **Don't start the
 app or a dev server.** It is tested by hand.
 
-## 11. Also
+## 11. Theme
 
-- **Theme:** use tokens only (no raw white or hex in classes), never text below `/95` opacity, and
-  write Tailwind classes out literally. The rules are in `docs/theme-reference.md`.
+Every dev screen, desktop and phone, follows these rules. `npm run audit:theme` checks them across
+`src/pages` and `src/components-dev` and must end with `TOTAL: 0 hit(s)` (it exits 1 otherwise).
+Fix the code; add an audit exception only for a colour no token can stand for, and give the reason
+in the rule's `skip`.
+
+**Where colours come from.** A colour is a token: defined once in `src/index.css` (`:root`, an RGB
+triplet such as `--color-brand-navy: 30 42 74;`), named in `tailwind.config.js`, used as a class
+(`bg-brand_navy`, `text-brand_navy/85`). Where a class can't be used (an inline `style`, a computed
+width), write `rgb(var(--color-brand-navy) / 0.12)`. Never a raw hex, never `bg-white` /
+`text-white` (use `custom-white`), never a Tailwind grey for text.
+
+| Job | Tokens |
+|---|---|
+| The app's navy (headers, buttons, rails, focus) | `brand_navy`, `brand_navy_hover` (`portal_navy` is the public portal and login only) |
+| Page ground / card / lighter fill | `bkg` / `custom-white` / `brand_paper` |
+| Row selection (always the pair) | `bg-row_selected` + `border-row_selected_border` |
+| "This filter is narrowing the list" | `filter_active` + `filter_active_border` |
+| Zebra stripes, hairlines | `row_stripe`; `brand_line`, `brand_line_2` |
+| Body text | `text-content` |
+| Small mono labels, timestamps, fact keys | `text-brand_slate` (`brand_slate_2` one step lighter) |
+| Placeholders | `placeholder:text-brand_placeholder` |
+
+**Meaning colours: three families, three jobs, never interchangeable.**
+
+| Meaning | Tokens |
+|---|---|
+| A grade against a threshold (crit / watch / ok) | `severity_critical_*`, `severity_watch_*`, `severity_healthy_*` (`_bg`, `_text`) |
+| Direction of change (up / down, vs LW / LY) | `delta_positive_*`, `delta_negative_*` |
+| Form errors, validation, failed or destructive actions | `brand_danger`, `brand_danger_bg`, `brand_danger_line` |
+| A notice or "heads up" box | `bg-severity_watch_bg text-severity_watch_text border-severity_watch_text/20` |
+
+Pick the token for what the colour **means**, not the nearest hue. Hand-written pale fills and dark
+texts (`bg-red-100`, `text-amber-800`, `bg-emerald-50`) are brighter than the tokens and don't follow
+a token change. Saturated 400–600 dots and bars (`bg-red-500`) are a separate, deliberate register and
+are fine. Direction is not severity: Loss Prevention's "up" is bad, so it is `delta_negative`.
+
+**Text is never below `/95` opacity**, desktop and phone (`text-content/95`, never `/85` or `/60`).
+These screens are read standing in a shop. `disabled:`, `placeholder:`, `hover:`, `focus:` and
+`active:` states may dim, and so may a lone separator glyph (`·`, `|`). Fills and borders may go as
+light as they like (`border-brand_navy/15`, `bg-brand_navy/[0.06]`).
+
+**Modals blur, they don't darken:** `fixed inset-0 backdrop-blur-sm`, never `bg-black/40`.
+
+**Tailwind classes are literal.** Tailwind reads the source, so a class built at runtime
+(`` `bg-severity_${sev}_bg` ``) is never emitted. Write each one out:
+`sev === "critical" ? "bg-severity_critical_bg" : "bg-severity_healthy_bg"`.
+
+**Use the shared parts, don't hand-roll them:**
+- the `?` button: `src/components-dev/InfoButton.tsx` (`variant="light"` or navy), or
+  `PageInfoButton` in a page header;
+- severity helpers: `pillClass`, `severityDotClass`, `chipClass`, `formatPct` in `src/utils/severity.ts`;
+- tooltips: `src/components-dev/tooltip` (see §12);
+- an icon button in a navy header: `HeaderIconButton`.
+
+**Desktop panels.** A navy left-panel header is `bg-brand_navy rounded-t-xl` with `px-4 pt-1 pb-2.5`
+(list panels of two rows use `px-3 pt-1 pb-2.5`). A two-row navy header separates its rows with exactly
+`pt-1.5 mt-1 border-t border-custom-white/[0.08]`.
+
+**Phone screens** (the `mobile/` folders):
+- Font floor `text-[10px]`; `text-[9.5px]` only for mono uppercase captions. Never italic.
+- Mobile Performance pages show no severity chips, dots or pills.
+- Content sits in `<section>` cards: `rounded-2xl border border-gray-200 bg-custom-white shadow-md`,
+  stacked with `gap-3` inside `p-3`. A filter goes inside the card it filters; navigation goes in a bar
+  under the header.
+- **Back:** going back a level is `MobileBackLink` ("‹ Back to stores", top-left of a white header;
+  `MobilePerfDetail` draws it from `backLabel`). Leaving a re-search is the search card's own
+  `onBack` / `backLabel`, which draws `SearchBackButton` ("← Back to results"). A navy header
+  (`MobilePerfHeader`) keeps its chevron `HeaderIconButton`. Never a fourth kind.
+- Building blocks, in `src/components-dev/mobile`: `MobilePerfCard` (a row that opens in place;
+  expanding is not navigation), `MobilePerfDetail` (a breakdown as its own screen), `PerfCardHeader`,
+  `MobileSortChips`, `PairedBars`, `PerfDayChart`. `KpiTileGrid` is desktop only.
+
+**Audit exceptions** (each carries its reason in `scripts/theme-audit.mjs`): `src/pages/home` (the
+public portal and login shell, one copy shared with prod, with the portal palette), Upc List's heat
+ramp (`heatColor.ts`), the hourly chart's series colours, LP Actions' caution strip, and `InfoButton`
+itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
+
+## 12. Also
+
 - **Tooltips:** use `src/components-dev/tooltip` (`CursorTip`); a plain `title` works in dev code.
   Never hand-roll one.
 - **UI copy:** no explanatory filler in cards; users know POS terms. Separators are ` | `.
@@ -246,6 +327,8 @@ app or a dev server.** It is tested by hand.
       guards, text and classes are carried over exactly
 - [ ] State and effects moved into a child still reset and run when they did before (check unmounts,
       early returns and mount effects)
+- [ ] Colours are tokens for what they mean; text at `/95` or more; classes literal; shared parts
+      (InfoButton, MobileBackLink, SearchBackButton, tooltip) rather than hand-rolled
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
 - [ ] Verification is green
