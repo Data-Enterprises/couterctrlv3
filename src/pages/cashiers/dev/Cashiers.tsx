@@ -285,7 +285,7 @@ const Cashiers = () => {
           </span>
           <div className="flex-1" />
           {truncated > 0 && (
-            <span className="text-amber-200 text-[10.5px] flex-shrink-0">
+            <span className="text-custom-white/95 text-[10.5px] flex-shrink-0">
               capped — {truncated} older transactions not loaded
             </span>
           )}

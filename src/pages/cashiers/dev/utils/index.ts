@@ -543,10 +543,10 @@ export const LENS_COLUMN_LABEL: Record<ExplorerLens, string> = {
 // One cashier owning every hit reads as behaviour; spread across many, an
 // item or lane problem. Only those two ends are coloured.
 export const SPREAD_STYLES: Record<SpreadKind, string> = {
-  single: "bg-red-50 text-red-700",
-  narrow: "bg-red-50 text-red-700",
-  wide: "bg-amber-50 text-amber-800",
-  unmapped: "bg-amber-50 text-amber-800",
+  single: "bg-severity_critical_bg text-severity_critical_text",
+  narrow: "bg-severity_critical_bg text-severity_critical_text",
+  wide: "bg-severity_watch_bg text-severity_watch_text",
+  unmapped: "bg-severity_watch_bg text-severity_watch_text",
 };
 
 // Scalable items come back with fractional qty (weight), so only show decimals

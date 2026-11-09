@@ -133,12 +133,12 @@ const SignalDetail = ({
         <>
           <div
             className={`px-4 py-2 border-b border-gray-100 flex-shrink-0 ${
-              isBehaviour ? "bg-red-50" : "bg-amber-50"
+              isBehaviour ? "bg-severity_critical_bg" : "bg-severity_watch_bg"
             }`}
           >
             <p
               className={`text-[11.5px] leading-relaxed ${
-                isBehaviour ? "text-red-800" : "text-amber-900"
+                isBehaviour ? "text-severity_critical_text" : "text-severity_watch_text"
               }`}
             >
               {finding}
@@ -196,7 +196,7 @@ const SignalDetail = ({
                 <div className="truncate">
                   {t.cashierName || `#${t.cashierNumber}`}
                 </div>
-                <div className={t.hasLastLine ? "text-red-700 font-medium" : ""}>
+                <div className={t.hasLastLine ? "text-delta_negative_text font-medium" : ""}>
                   {t.lineCount} of {t.totalLines}
                   {t.hasLastLine ? " · last" : ""}
                 </div>
