@@ -17,6 +17,7 @@ interface ModalPresetModeProps {
   handlePresetDownload: () => void;
 }
 
+/** The export modal's Presets tab: the Line Items option with its count and totals, and Cancel and Download CSV buttons. */
 const ModalPresetMode = ({
   onClose,
   vendorName,

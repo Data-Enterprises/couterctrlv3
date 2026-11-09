@@ -17,6 +17,8 @@ interface ReceiverDateGroupProps {
   handleReceiverTap: (receiver: ReceiverListItem) => void;
 }
 
+/** One date in the phone receiver list: a collapsible row with its invoice count,
+ *  opening to that day's invoices, each tappable to open the receiver. */
 const ReceiverDateGroup = ({
   isOpen,
   group,

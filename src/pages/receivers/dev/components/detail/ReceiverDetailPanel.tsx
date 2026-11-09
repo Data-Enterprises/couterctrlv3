@@ -10,6 +10,8 @@ import DetailTable from "./components/detailTable/DetailTable";
 import NoReceiver from "./components/NoReceiver";
 import DetailKpiStrip from "./components/DetailKpiStrip";
 
+/** The right-hand receiver detail panel: header, then an empty state, a loading indicator, or the totals strip and line-item table.
+ *  Also opens the CSV export modal for the selected receiver. */
 const ReceiverDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
   const state = useAppSelector((s) => s.dev.receivers);

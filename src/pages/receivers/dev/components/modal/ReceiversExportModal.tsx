@@ -40,6 +40,8 @@ interface ReceiversExportModalProps {
   totals: ReceiverDetailsTotals | null;
 }
 
+/** The CSV export pop-up for one receiver's line items.
+ *  Presets downloads the line items as they are; Custom groups them by chosen fields and metrics with a live preview. */
 const ReceiversExportModal = ({
   onClose,
   vendorName,

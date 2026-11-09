@@ -28,6 +28,8 @@ interface ModalCustomModeProps {
   handleCustomDownload: () => void;
 }
 
+/** The export modal's Custom tab: Group By and Metrics pickers on the left, a live preview table on the right,
+ *  and Cancel and Download CSV buttons. */
 const ModalCustomMode = ({
   canCustomDownload,
   onClose,

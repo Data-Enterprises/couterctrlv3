@@ -8,6 +8,7 @@ interface BodyRowProps {
   item: ReceiverDetailsItem;
 }
 
+/** One line item of a receiver: line number, UPC, description, quantities, costs, retail, GM, free and return. */
 const BodyRow = ({ item }: BodyRowProps) => {
   return (
     <tr className="even:bg-row_stripe hover:bg-gray-50 transition-colors">

@@ -19,6 +19,8 @@ interface RListItemRowsProps {
   getSelectedDetails: (invoiceid: number, transDate: string) => void;
 }
 
+/** One date group in the receiver list: a collapsible date row with its receiver count,
+ *  opening to that day's invoice rows under a column heading. */
 const RListItemRows = ({
   group,
   toggleDate,

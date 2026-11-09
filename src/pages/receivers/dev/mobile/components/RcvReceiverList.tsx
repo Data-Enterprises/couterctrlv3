@@ -41,7 +41,8 @@ interface RcvReceiverListProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-// Date → Invoice collapsible list, mirroring the desktop dev ReceiverListPanel
+/** The phone receiver list: collapsible dates opening to invoices, mirroring the desktop dev ReceiverListPanel,
+ *  with a summary strip and store-number tabs. Tapping an invoice opens a bottom sheet with its line items and an export button. */
 const RcvReceiverList = ({
   receivers,
   storeName,

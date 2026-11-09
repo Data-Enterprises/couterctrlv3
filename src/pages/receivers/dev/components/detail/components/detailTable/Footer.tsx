@@ -4,6 +4,7 @@ import { useAppSelector } from "../../../../../../../hooks";
 // Utils
 import { formatCurrency2 } from "../../../../../../../utils";
 
+/** The sticky Totals row at the bottom of the receiver line-item table. */
 const Footer = () => {
   const totals = useAppSelector((s) => s.dev.receivers.totals[0] ?? null);
 

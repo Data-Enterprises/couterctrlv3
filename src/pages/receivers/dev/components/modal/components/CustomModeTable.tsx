@@ -7,6 +7,8 @@ interface CustomModeTableProps {
   PREVIEW_ROWS: number;
 }
 
+/** The body of the custom export preview: the first rows of the grouped results,
+ *  then a note of how many more rows the download holds. */
 const CustomModeTable = ({
   aggRows,
   columns,

@@ -9,6 +9,7 @@ interface SheetKpiStripProps {
   totals?: ReceiverDetailsTotals | null;
 }
 
+/** The four-figure KPI strip at the top of the phone receiver sheet, built from its line items and totals. */
 const SheetKpiStrip = ({ details, totals }: SheetKpiStripProps) => {
   return (
     <div className="grid grid-cols-4 border-b border-gray-100">

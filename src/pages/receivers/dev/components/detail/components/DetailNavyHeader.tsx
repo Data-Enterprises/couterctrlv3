@@ -11,6 +11,8 @@ interface DetailNavyHeaderProps {
   setExportOpen: () => void;
 }
 
+/** The navy header of the receiver detail: vendor, cashier and date of the selected receiver.
+ *  Once its line items load it adds the export button and the invoice, reference and item counts. */
 const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
   const state = useAppSelector((s) => s.dev.receivers);
   const selectedReceiver = state.selectedInvoice

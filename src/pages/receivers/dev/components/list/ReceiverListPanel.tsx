@@ -40,6 +40,8 @@ import FilterBar from "../../../../../components-dev/filters/FilterBar";
 import RListItemRows from "./components/RListItemRows";
 import ListNavyHeader from "./components/ListNavyHeader";
 
+/** The left receiver list panel: header, store-number tabs, vendor and date filters, and receivers grouped by date.
+ *  Clicking an invoice loads its line items into the detail panel. */
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const toast = useToast();
   const dispatch = useAppDispatch();

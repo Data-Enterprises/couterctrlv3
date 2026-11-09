@@ -3,6 +3,8 @@ import { useAppSelector } from "../../../../../../hooks";
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 
+/** The receiver detail's totals strip: cases, units, unit cost, extended cost, retail and extended retail.
+ *  Draws nothing until the totals have loaded. */
 const DetailKpiStrip = () => {
   const totals = useAppSelector((s) => s.dev.receivers.totals[0] ?? null);
 

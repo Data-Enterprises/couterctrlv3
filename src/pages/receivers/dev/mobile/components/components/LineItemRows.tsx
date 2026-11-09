@@ -9,6 +9,7 @@ interface LineItemRowsProps {
   details: ReceiverDetailsItem[];
 }
 
+/** The scrollable line items of a receiver on the phone: description and UPC, cases, units, ext cost and GM. */
 const LineItemRows = ({ details }: LineItemRowsProps) => {
   return (
     <div className="overflow-y-auto max-h-[320px]">

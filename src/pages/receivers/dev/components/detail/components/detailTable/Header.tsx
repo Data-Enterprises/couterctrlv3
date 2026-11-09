@@ -1,3 +1,4 @@
+/** The sticky column headings of the receiver line-item table. */
 const Header = () => {
   return (
     <thead>

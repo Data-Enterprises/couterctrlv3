@@ -7,6 +7,7 @@ interface ItemInnerRowProps {
   getDetails: () => void;
 }
 
+/** One invoice row in the receiver list: invoice number, item count and vendor, highlighted when selected. */
 const ItemInnerRow = ({ item, getDetails, isSel }: ItemInnerRowProps) => {
   return (
     <button

@@ -5,6 +5,7 @@ interface InvoiceRowProps {
   r: ReceiverListItem;
 }
 
+/** The phone receiver list's invoice label: invoice number, vendor and item count. */
 const InvoiceRow = ({ r }: InvoiceRowProps) => {
   return (
     <div className="flex-1 min-w-0">

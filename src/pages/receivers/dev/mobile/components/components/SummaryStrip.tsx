@@ -8,6 +8,8 @@ interface SummaryStripProps {
   receivers: ReceiverListItem[];
 }
 
+/** The four-figure summary strip above the phone receiver list, worked out from the loaded receivers
+ *  (item total, unique vendors and unique operators among them). */
 const SummaryStrip = ({ receivers }: SummaryStripProps) => {
   const totalItems = receivers.reduce((s, r) => s + r.items, 0);
   const uniqueVendors = new Set(receivers.map((r) => r.vendorid)).size;

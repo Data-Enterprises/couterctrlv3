@@ -6,6 +6,7 @@ import Body from "./Body";
 import Footer from "./Footer";
 import Header from "./Header";
 
+/** The scrollable line-item table of a receiver: header, rows, and a totals footer once totals exist. */
 const DetailTable = () => {
   const totals = useAppSelector((s) => s.dev.receivers.totals[0] ?? null);
   return (

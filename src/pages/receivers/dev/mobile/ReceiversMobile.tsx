@@ -30,6 +30,8 @@ import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import RcvReceiverList from "./components/RcvReceiverList";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 
+/** The phone Receivers page: a store and date search card that loads the receivers,
+ *  then the receiver list, with a way back to the search and a Back to results button. */
 const ReceiversMobile = () => {
   const dispatch = useAppDispatch();
   const rcv = useReceiversState();

@@ -1,3 +1,4 @@
+/** The empty state of the receiver detail, asking the user to pick a receiver from the list. */
 const NoReceiver = () => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-1">

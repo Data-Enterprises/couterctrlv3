@@ -37,6 +37,8 @@ import ReceiverDetailPanel from "./components/detail/ReceiverDetailPanel";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import ReceiversMobile from "./mobile/ReceiversMobile";
 
+/** The Receivers page: a store and date search card, then the receiver list beside its detail panel.
+ *  Shows a loading state, a no-results card, and the phone view on mobile. */
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

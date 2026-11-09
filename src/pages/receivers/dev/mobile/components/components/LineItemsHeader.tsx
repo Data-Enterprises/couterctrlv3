@@ -1,6 +1,7 @@
 // Utils
 import { lineItemHeaders, LINE_GRID } from "../utils";
 
+/** The column headings above the phone receiver's line items. */
 const LineItemsHeader = () => {
   return (
     <div

@@ -12,6 +12,7 @@ interface ModalHeaderProps {
   onClose: () => void;
 }
 
+/** The export modal's navy header: title with vendor and reference number, the Presets/Custom switch and a close button. */
 const ModalHeader = ({
   vendorName,
   referenceNumber,

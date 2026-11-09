@@ -13,6 +13,8 @@ interface ListNavyHeaderProps {
   storeName: string;
 }
 
+/** The navy header of the receiver list: title, date range and receiver total, plus the re-search button,
+ *  store name and page info button. */
 const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
   const state = useAppSelector((s) => s.dev.receivers);
   const search = useAppSelector((s) => s.search);
