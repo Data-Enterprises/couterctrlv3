@@ -1,11 +1,9 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
+import { useTicketsCtx } from "../../hooks";
 
 // Utils
 import { STATUS_LABEL, attachmentProblem } from "../../utils/ticketsUtils";
-
-// Interfaces
-import type { TicketsCtx } from "../../hooks";
 
 // Components
 import EditStoresModal from "../modals/EditStoresModal";
@@ -17,7 +15,8 @@ import Thread from "./components/Thread";
 import Composer from "./components/Composer";
 
 /** The open ticket's pane: header, facts, manage bar, closed strip, thread and reply box. It polls for new comments every five seconds and keeps the thread scrolled to the newest one. */
-const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
+const TicketDetail = () => {
+  const ctx = useTicketsCtx();
   const [draft, setDraft] = useState("");
   const [internal, setInternal] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);

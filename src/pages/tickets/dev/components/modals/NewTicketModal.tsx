@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
 import { useDevApi } from "../../../../../hooks/useDevApi";
+import { useTicketsCtx } from "../../hooks";
 
 // Redux
 import { shallowEqual } from "react-redux";
@@ -41,9 +42,6 @@ import {
 } from "./utils/ticketOrigin";
 import { pageStoreOf, searchForPage } from "./utils";
 
-// Interfaces
-import type { TicketsCtx } from "../../hooks";
-
 // Components
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../../../components-dev/Modal";
@@ -58,11 +56,9 @@ import NewTicketAttachments from "./components/NewTicketAttachments";
  * company picker: the server takes the filer's company and refuses any other.
  */
 const NewTicketModal = ({
-  ctx,
   from,
   onClose,
 }: {
-  ctx: TicketsCtx;
   /** Where the reporter was when they raised it. Absent when the form is
    *  opened from the help desk itself, which is nowhere in particular. */
   from?: { from: string; page?: string; area?: string } | null;
@@ -70,6 +66,7 @@ const NewTicketModal = ({
    *  queue, so the caller says what closing means. */
   onClose?: () => void;
 }) => {
+  const ctx = useTicketsCtx();
   const { url, token } = useDevApi();
 
   const origin = from?.from

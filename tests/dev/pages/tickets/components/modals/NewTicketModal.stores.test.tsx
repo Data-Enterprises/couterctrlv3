@@ -11,6 +11,13 @@ vi.mock("@/api/tickets", async (importOriginal) => ({
   getTicketStoreOptions: (...args: unknown[]) => storeOptions(...args),
 }));
 
+// The modal reads the help desk's context itself; each test sets what it returns.
+let ctx: TicketsCtx;
+vi.mock("@/pages/tickets/dev/hooks", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/pages/tickets/dev/hooks")>()),
+  useTicketsCtx: () => ctx,
+}));
+
 const ctxFor = (isTech: boolean, store: ReturnType<typeof setupStore>) =>
   ({
     isTech,
@@ -23,9 +30,10 @@ const ctxFor = (isTech: boolean, store: ReturnType<typeof setupStore>) =>
 
 const show = (isTech: boolean) => {
   const store = setupStore();
+  ctx = ctxFor(isTech, store);
   render(
     <Provider store={store}>
-      <NewTicketModal ctx={ctxFor(isTech, store)} />
+      <NewTicketModal />
     </Provider>,
   );
 };

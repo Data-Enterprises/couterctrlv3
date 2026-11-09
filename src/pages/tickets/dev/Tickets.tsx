@@ -88,7 +88,7 @@ const Tickets = () => {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <TicketDetail ctx={ctx} />
+        <TicketDetail />
       </div>
 
       {ctx.detail && (
@@ -110,8 +110,8 @@ const Tickets = () => {
           onChanged={ctx.loadAssignees}
         />
       )}
-      {ctx.newOpen && <NewTicketModal ctx={ctx} />}
-      {ctx.closingOpen && <CloseTicketModal ctx={ctx} />}
+      {ctx.newOpen && <NewTicketModal />}
+      {ctx.closingOpen && <CloseTicketModal />}
     </div>
   );
 };

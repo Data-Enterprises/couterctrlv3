@@ -26,7 +26,6 @@ const ReportIssueModal = () => {
 
   return (
     <NewTicketModal
-      ctx={ctx}
       from={from}
       onClose={() => dispatch(closeReportIssue())}
     />

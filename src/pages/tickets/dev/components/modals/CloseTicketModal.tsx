@@ -1,11 +1,9 @@
 // Hooks
 import { useState } from "react";
+import { useTicketsCtx } from "../../hooks";
 
 // Redux
 import { openClosing } from "../../../../../features/dev/devTicketsSlice";
-
-// Interfaces
-import type { TicketsCtx } from "../../hooks";
 
 // Components
 import Modal from "../../../../../components-dev/Modal";
@@ -15,7 +13,8 @@ import ClosedOptions from "./components/ClosedOptions";
  * The resolution is required (the endpoint answers 400 without it) and posts
  * to the thread as a visible reply, which is how the client hears what was done.
  */
-const CloseTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
+const CloseTicketModal = () => {
+  const ctx = useTicketsCtx();
   const [resolution, setResolution] = useState("");
   const [kind, setKind] = useState("fixed");
 
