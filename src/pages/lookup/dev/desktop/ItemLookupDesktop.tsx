@@ -15,6 +15,7 @@ import {
 } from "../utils";
 
 // Components
+import SearchPopup from "../../../../components-dev/SearchPopup";
 import LookupDesktopEntry from "./components/LookupDesktopEntry";
 import LookupQueuePanel from "./components/LookupQueuePanel";
 import LookupReportPanel from "./components/LookupReportPanel";
@@ -84,14 +85,9 @@ const ItemLookupDesktop = () => {
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <LookupDesktopEntry onSearch={handleSearch} />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <LookupDesktopEntry onSearch={handleSearch} />
+        </SearchPopup>
       )}
 
       <LookupQueuePanel
