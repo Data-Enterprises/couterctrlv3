@@ -9,7 +9,7 @@ import type { UpcSalesCompStats } from "../interfaces";
 import type { KpiCell } from "../../../interfaces";
 
 // Components
-import KpiTileGrid from "../../../components/KpiTileGrid";
+import KpiTileGrid from "../../../../../../components-dev/KpiTileGrid";
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
 
 interface SalesCompDetailPanelProps {

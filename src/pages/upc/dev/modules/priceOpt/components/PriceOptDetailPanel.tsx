@@ -9,7 +9,7 @@ import type { KpiCell } from "../../../interfaces";
 
 // Components
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
-import KpiTileGrid from "../../../components/KpiTileGrid";
+import KpiTileGrid from "../../../../../../components-dev/KpiTileGrid";
 import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
 
 interface PriceOptDetailPanelProps {

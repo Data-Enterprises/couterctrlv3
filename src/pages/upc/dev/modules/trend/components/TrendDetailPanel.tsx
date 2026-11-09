@@ -11,7 +11,7 @@ import type { KpiCell } from "../../../interfaces";
 
 // Components
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
-import KpiTileGrid from "../../../components/KpiTileGrid";
+import KpiTileGrid from "../../../../../../components-dev/KpiTileGrid";
 import BeforeAfterBar from "./BeforeAfterBar";
 import BeforeAfterLegend from "./BeforeAfterLegend";
 import TrendBeforeAfterTile from "./TrendBeforeAfterTile";
