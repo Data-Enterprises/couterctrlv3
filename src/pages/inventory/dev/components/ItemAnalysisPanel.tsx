@@ -164,7 +164,7 @@ const ItemAnalysisPanel = ({
             </div>
             {/* Where the figure came from: the two sources can differ by a
                 dollar a unit. */}
-            <div className="text-[11px] text-content/85 leading-tight mt-0.5">
+            <div className="text-[11px] text-content/95 leading-tight mt-0.5">
               {cost.source === "invoice" && cost.invoice
                 ? `invoice ${cost.invoice.date.slice(5).replace("-", "/")}`
                 : invoice.loading && invoice.upc === product.productCode
@@ -225,7 +225,7 @@ const ItemAnalysisPanel = ({
         {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
-              <InformationCircleIcon className="w-4 h-4 text-content/85 flex-shrink-0 mt-px" />
+              <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0 mt-px" />
               <p className="text-[13px] text-content leading-snug">{withheld}</p>
             </div>
           </div>
@@ -291,7 +291,7 @@ const ItemAnalysisPanel = ({
               )}
 
               {suggestion.isCheapest && !suggestion.isCurrent && (
-                <div className="mt-1.5 text-[11.5px] text-blue-900/85">
+                <div className="mt-1.5 text-[11.5px] text-blue-900/95">
                   This is also the lowest price on record — volume at the
                   cheapest price is expected, not a finding.
                 </div>
@@ -312,7 +312,7 @@ const ItemAnalysisPanel = ({
               {pattern.concerning ? (
                 <ExclamationTriangleIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
               ) : (
-                <InformationCircleIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+                <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
               )}
               <span
                 className={`text-[12.5px] truncate ${pattern.concerning ? "text-amber-900" : "text-content"}`}
@@ -336,7 +336,7 @@ const ItemAnalysisPanel = ({
               <span className="text-[12px] font-semibold text-content">
                 Daily average
               </span>
-              <span className="text-[11px] text-content/85">
+              <span className="text-[11px] text-content/95">
                 a day&rsquo;s sales &divide; its units
               </span>
             </div>
@@ -360,7 +360,7 @@ const ItemAnalysisPanel = ({
                   <span className="tabular-nums text-content">
                     {formatCurrency2(p.price)}
                   </span>
-                  <span className="text-content/85">{p.priceType}</span>
+                  <span className="text-content/95">{p.priceType}</span>
                   <span className="text-right tabular-nums text-content">
                     {p.units % 1 === 0 ? p.units : p.units.toFixed(2)}
                   </span>
@@ -376,7 +376,7 @@ const ItemAnalysisPanel = ({
               );
             })}
             {estimated.length === 0 && (
-              <div className="py-6 text-center text-[12.5px] text-content/85">
+              <div className="py-6 text-center text-[12.5px] text-content/95">
                 No sales rows in this window
               </div>
             )}
@@ -401,7 +401,7 @@ const ItemAnalysisPanel = ({
             </div>
 
             {actual.loading && isCurrent && (
-              <div className="py-6 text-center text-[12.5px] text-content/85">
+              <div className="py-6 text-center text-[12.5px] text-content/95">
                 Reading registers…
               </div>
             )}
@@ -418,7 +418,7 @@ const ItemAnalysisPanel = ({
             {isCurrent && !actual.loading && !actual.error && (
               <>
                 {act.exact.length === 0 && act.averaged.length === 0 && (
-                  <div className="py-6 text-center text-[12.5px] text-content/85">
+                  <div className="py-6 text-center text-[12.5px] text-content/95">
                     No register lines matched this item
                   </div>
                 )}

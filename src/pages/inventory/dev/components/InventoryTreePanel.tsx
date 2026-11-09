@@ -137,9 +137,9 @@ const InventoryTreePanel = ({
                   }`}
                 >
                   {isOpen ? (
-                    <ChevronDownIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
+                    <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
                   ) : (
-                    <ChevronRightIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
+                    <ChevronRightIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
                   )}
                   <span
                     className={`flex-1 min-w-0 truncate text-[13px] ${isOpen ? "font-semibold text-content" : "text-content"}`}
@@ -147,11 +147,11 @@ const InventoryTreePanel = ({
                     {g.label}
                   </span>
                   {g.itemCount !== null && (
-                    <span className="text-[11px] text-content/85 tabular-nums flex-shrink-0">
+                    <span className="text-[11px] text-content/95 tabular-nums flex-shrink-0">
                       {g.itemCount}
                     </span>
                   )}
-                  <span className="text-[11px] text-content/85 tabular-nums flex-shrink-0">
+                  <span className="text-[11px] text-content/95 tabular-nums flex-shrink-0">
                     {treeMoney(g.sales)}
                   </span>
                 </button>
@@ -159,12 +159,12 @@ const InventoryTreePanel = ({
                 {isOpen && (
                   <div className="pb-1">
                     {productsLoading && (
-                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/85">
+                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/95">
                         Loading items…
                       </div>
                     )}
                     {!productsLoading && visibleProducts.length === 0 && (
-                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/85">
+                      <div className="pl-8 pr-3 py-2 text-[12px] text-content/95">
                         No items matched
                       </div>
                     )}
@@ -191,7 +191,7 @@ const InventoryTreePanel = ({
                           </span>
                           <span
                             className={`text-[11px] tabular-nums flex-shrink-0 ${
-                              isSel ? "text-blue-900" : "text-content/85"
+                              isSel ? "text-blue-900" : "text-content/95"
                             }`}
                           >
                             {treeMoney(p.sales)}

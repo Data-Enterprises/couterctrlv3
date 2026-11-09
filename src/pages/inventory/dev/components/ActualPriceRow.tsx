@@ -50,7 +50,7 @@ const ActualPriceRow = ({
         >
           {formatCurrency2(point.price)}
         </span>
-        <span className="text-content/85">{point.priceType}</span>
+        <span className="text-content/95">{point.priceType}</span>
 
         {/* The count is the control — it's the number you'd point at when
             asking "which nineteen?". */}
@@ -90,7 +90,7 @@ const ActualPriceRow = ({
       {open && (
         <div className="bg-brand_navy/[0.03] border-b border-gray-100 pl-5 pr-2 py-1.5">
           <div
-            className="grid py-1 text-[10px] font-medium uppercase tracking-wide text-content/85"
+            className="grid py-1 text-[10px] font-medium uppercase tracking-wide text-content/95"
             style={{ gridTemplateColumns: TXN_COLS }}
           >
             <span>Date</span>
@@ -100,7 +100,7 @@ const ActualPriceRow = ({
             <span className="text-right">Amount</span>
           </div>
           {lines === null && (
-            <div className="py-1.5 text-[12.5px] text-content/85">
+            <div className="py-1.5 text-[12.5px] text-content/95">
               {receiptsError
                 ? `Could not read the receipts: ${receiptsError}`
                 : receiptsLoading
@@ -109,7 +109,7 @@ const ActualPriceRow = ({
             </div>
           )}
           {lines !== null && lines.length === 0 && (
-            <div className="py-1.5 text-[12.5px] text-content/85">
+            <div className="py-1.5 text-[12.5px] text-content/95">
               No receipt line matched this price exactly.
             </div>
           )}
@@ -122,12 +122,12 @@ const ActualPriceRow = ({
               <span className="text-content tabular-nums">
                 {formatDate(t.sale_date)}
               </span>
-              <span className="text-content/85 tabular-nums truncate pr-2">
+              <span className="text-content/95 tabular-nums truncate pr-2">
                 {transactionLabel(t.sale_id)}
                 {t.terminal ? ` · T${t.terminal}` : ""}
               </span>
               <span
-                className="text-content/85 truncate pr-2"
+                className="text-content/95 truncate pr-2"
                 title={t.cashier_name}
               >
                 {t.cashier_name || t.cashier_number}

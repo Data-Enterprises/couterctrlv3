@@ -303,7 +303,7 @@ const InventoryVendor = () => {
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
             <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">
-              <p className="text-[14px] text-content/85">
+              <p className="text-[14px] text-content/95">
                 Open a vendor and pick an item
               </p>
             </div>
