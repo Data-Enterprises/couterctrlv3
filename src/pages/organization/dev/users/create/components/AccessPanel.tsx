@@ -465,7 +465,7 @@ const AccessPanel = ({
                       <div className="text-[12.5px] font-semibold text-content truncate">
                         {group.name}
                       </div>
-                      <div className="text-[10.5px] text-content/85">
+                      <div className="text-[10.5px] text-content/95">
                         {total === undefined
                           ? "Loading…"
                           : held && mode === "all"
@@ -520,7 +520,7 @@ const AccessPanel = ({
           </div>
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {openGroups.length === 0 && (
-              <div className="flex items-center justify-center h-full text-[11px] text-content/85 p-6 text-center">
+              <div className="flex items-center justify-center h-full text-[11px] text-content/95 p-6 text-center">
                 Pick a base group to see its stores
               </div>
             )}
@@ -546,7 +546,7 @@ const AccessPanel = ({
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span
-                        className={`text-[10px] text-content/85 flex-shrink-0 transition-transform ${
+                        className={`text-[10px] text-content/95 flex-shrink-0 transition-transform ${
                           isCollapsed ? "" : "rotate-90"
                         }`}
                       >
@@ -583,7 +583,7 @@ const AccessPanel = ({
                   {!isCollapsed && (
                     <div className="px-2 divide-y divide-brand_navy/15">
                       {preview && (
-                        <p className="text-[10.5px] text-content/85 leading-snug px-1 py-1.5">
+                        <p className="text-[10.5px] text-content/95 leading-snug px-1 py-1.5">
                           {held
                             ? "Read only — this person has the whole group. Stores added to it later will appear for them automatically."
                             : "Viewing only. Tick the group to give them every store in it, or choose By store on the Access type step to pick stores one at a time."}
@@ -598,7 +598,7 @@ const AccessPanel = ({
                           // included. Not held: no box, nothing to tick.
                           <div
                             key={s.storeid}
-                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
+                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/95"
                           >
                             {held && (
                               <Checkbox
@@ -632,7 +632,7 @@ const AccessPanel = ({
                         );
                       })}
                       {groupStores[group.id] === undefined && (
-                        <div className="py-3 text-[11px] text-content/85 text-center">
+                        <div className="py-3 text-[11px] text-content/95 text-center">
                           Loading…
                         </div>
                       )}
@@ -688,11 +688,11 @@ const AccessPanel = ({
           </button>
         </div>
         {held.length === 0 ? (
-          <div className="text-[11.5px] text-content/85">
+          <div className="text-[11.5px] text-content/95">
             Nothing selected yet
           </div>
         ) : (
-          <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
+          <div className="text-[11.5px] text-content/95 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
             {held.map((id, i) => {
               const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
               const mode = picks.mode;

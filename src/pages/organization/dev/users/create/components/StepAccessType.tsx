@@ -46,7 +46,7 @@ const StepAccessType = ({
     <h2 className="text-[17px] font-bold text-content m-0">
       How should {who || "this user"} get their stores?
     </h2>
-    <p className="text-[12.5px] text-content/85 mt-1 mb-4">
+    <p className="text-[12.5px] text-content/95 mt-1 mb-4">
       {typeUnset
         ? "No access type is set for this user yet. Pick one and save to set it for every base group they hold."
         : editing
@@ -96,7 +96,7 @@ const StepAccessType = ({
                   </span>
                   <GrantModeChip mode={opt.mode} />
                 </div>
-                <p className="text-[12.5px] text-content/85 leading-snug mt-1.5">
+                <p className="text-[12.5px] text-content/95 leading-snug mt-1.5">
                   {disabled
                     ? "Not available for the single store role. A single-store account holds exactly one store, and a whole group grants every store in it, including ones added later."
                     : opt.desc}
@@ -109,13 +109,13 @@ const StepAccessType = ({
                 disabled ? "opacity-50" : ""
               }`}
             >
-              <dt className="text-content/85">New stores</dt>
+              <dt className="text-content/95">New stores</dt>
               <dd className="m-0 font-semibold text-content">
                 {opt.newStores}
               </dd>
-              <dt className="text-content/85">You'll pick</dt>
+              <dt className="text-content/95">You'll pick</dt>
               <dd className="m-0 font-semibold text-content">{opt.pick}</dd>
-              <dt className="text-content/85">Best for</dt>
+              <dt className="text-content/95">Best for</dt>
               <dd className="m-0 text-content">{opt.best}</dd>
             </dl>
           </button>

@@ -51,7 +51,7 @@ const Stepper = ({
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-[12.5px] font-bold flex-shrink-0 border-2 ${
                   done || isCurrent
                     ? "bg-brand_navy border-brand_navy text-custom-white"
-                    : "bg-custom-white border-brand_line_2 text-content/85"
+                    : "bg-custom-white border-brand_line_2 text-content/95"
                 }`}
               >
                 {done ? <CheckIcon className="w-4 h-4" /> : i + 1}
@@ -62,7 +62,7 @@ const Stepper = ({
                     ? "font-bold text-content"
                     : done
                       ? "font-semibold text-content"
-                      : "font-medium text-content/85"
+                      : "font-medium text-content/95"
                 }`}
               >
                 {STEP_TITLE[step]}

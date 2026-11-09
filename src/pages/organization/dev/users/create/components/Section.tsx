@@ -22,7 +22,7 @@ const Section = ({
   >
     <div className="flex-1 min-w-[150px] max-w-[200px]">
       <h3 className="text-[12.5px] font-bold text-content m-0">{title}</h3>
-      <p className="text-[11.5px] text-content/85 leading-snug mt-1 mb-0">
+      <p className="text-[11.5px] text-content/95 leading-snug mt-1 mb-0">
         {desc}
       </p>
     </div>

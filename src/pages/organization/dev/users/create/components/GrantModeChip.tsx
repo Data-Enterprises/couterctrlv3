@@ -21,7 +21,7 @@ const GrantModeChip = ({
     className={`inline-block text-[9.5px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full flex-shrink-0 ${
       mode === "all"
         ? "bg-filter_active text-brand_navy"
-        : "bg-row_stripe text-content/85"
+        : "bg-row_stripe text-content/95"
     } ${className}`}
   >
     {mode === "all" ? "auto" : "fixed"}

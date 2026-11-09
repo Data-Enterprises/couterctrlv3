@@ -238,7 +238,7 @@ const BaseGroupDetail = ({
           onClick={() => setExportOpen(true)}
         />
       </div>
-      <div className="text-[11.5px] text-content/85 mb-2">{companyName}</div>
+      <div className="text-[11.5px] text-content/95 mb-2">{companyName}</div>
 
       <div data-help="group-tabs" className="flex border-b border-gray-100 mb-4">
         {(["stores", "users"] as const).map((t) => (
@@ -258,14 +258,14 @@ const BaseGroupDetail = ({
 
       {subTab === "stores" &&
         (!stores ? (
-          <div className="text-[11.5px] text-content/85">Loading…</div>
+          <div className="text-[11.5px] text-content/95">Loading…</div>
         ) : (
           <div data-help="assign" className="w-full">
             {/* One call per store, and each reaches every user holding this
                 group, so say it is working. */}
             <div className="h-4 mb-1">
               {moving && (
-                <span className="text-[11px] font-semibold text-content/85">
+                <span className="text-[11px] font-semibold text-content/95">
                   Moving stores, and updating who can see them…
                 </span>
               )}

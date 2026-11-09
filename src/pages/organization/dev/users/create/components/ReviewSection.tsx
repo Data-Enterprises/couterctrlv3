@@ -22,7 +22,7 @@ const ReviewSection = ({
     </div>
     <div className="flex-[999] min-w-[300px] flex flex-col gap-1.5">
       {empty ? (
-        <span className="text-[12.5px] text-content/85">{empty}</span>
+        <span className="text-[12.5px] text-content/95">{empty}</span>
       ) : (
         children
       )}

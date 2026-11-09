@@ -27,7 +27,7 @@ const NewGroupModal = ({
           New base group
         </div>
         <div className="mb-2.5">
-          <label className="text-[11px] text-content/60 block mb-1">
+          <label className="text-[11px] text-content/95 block mb-1">
             Group name
           </label>
           <input
@@ -38,7 +38,7 @@ const NewGroupModal = ({
           />
         </div>
         <div className="mb-4">
-          <label className="text-[11px] text-content/60 block mb-1">
+          <label className="text-[11px] text-content/95 block mb-1">
             Company
           </label>
           <SelectFilter

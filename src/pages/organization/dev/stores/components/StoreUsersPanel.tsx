@@ -168,16 +168,16 @@ const StoreUsersPanel = ({
           <span className="text-[15px] font-semibold text-content">
             {store.store_number}
           </span>
-          <span className="text-[12.5px] text-content/85 ml-2 truncate">
+          <span className="text-[12.5px] text-content/95 ml-2 truncate">
             {store.store_name}
           </span>
         </div>
-        <span className="h-4 text-[11px] font-semibold text-content/85 flex-shrink-0">
+        <span className="h-4 text-[11px] font-semibold text-content/95 flex-shrink-0">
           {moving ? "Saving…" : loading ? "Loading…" : ""}
         </span>
       </div>
 
-      <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
+      <p className="text-[11.5px] text-content/95 leading-snug mb-2 max-w-[680px]">
         Assigning here is <span className="font-semibold text-content">fixed</span>{" "}
         access: it belongs to the person, not to a group, so no group change
         can take it away.
@@ -192,7 +192,7 @@ const StoreUsersPanel = ({
       </p>
 
       {!levelsKnown && (
-        <div className="text-[11.5px] text-content/85 mb-2">
+        <div className="text-[11.5px] text-content/95 mb-2">
           Loading users…
         </div>
       )}

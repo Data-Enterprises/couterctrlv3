@@ -163,7 +163,7 @@ const StepReview = ({
                   </span>
                 )}
               </div>
-              <div className="text-[12px] text-content/85 mt-0.5 truncate">
+              <div className="text-[12px] text-content/95 mt-0.5 truncate">
                 {info.username}
                 {info.email ? ` · ${info.email}` : ""}
               </div>
@@ -176,7 +176,7 @@ const StepReview = ({
                 <div className="text-[19px] font-bold text-content tabular-nums leading-tight">
                   {s.value}
                 </div>
-                <div className="text-[11px] text-content/85">{s.label}</div>
+                <div className="text-[11px] text-content/95">{s.label}</div>
               </div>
             ))}
           </div>

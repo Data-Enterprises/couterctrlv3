@@ -540,7 +540,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                     picked
                       ? "bg-row_selected border-l-row_selected_border text-content"
                       : outranked
-                        ? "bg-gray-50 text-content/85 border-l-transparent"
+                        ? "bg-gray-50 text-content/95 border-l-transparent"
                         : "text-content even:bg-row_stripe hover:bg-gray-50 border-l-transparent"
                   } ${pickable ? "cursor-pointer" : ""}`}
                 >
@@ -581,7 +581,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                     {/* While picking, a click on a row only ticks it: nothing
                         here that would open or change somebody instead. */}
                     {selecting ? null : outranked ? (
-                      <span className="text-[10px] italic text-content/85">
+                      <span className="text-[10px] italic text-content/95">
                         Unauthorized
                       </span>
                     ) : showInactive ? (
@@ -667,7 +667,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               </div>
               <button
                 onClick={() => setSecurityUser(null)}
-                className="text-[11px] text-content/85"
+                className="text-[11px] text-content/95"
               >
                 Close
               </button>

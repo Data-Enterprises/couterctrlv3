@@ -356,13 +356,13 @@ const BaseGroups = () => {
                   className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 pl-3 pr-3 py-2 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/95 flex-shrink-0 transition-transform"
                     style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
                   <span className="text-[12px] font-semibold text-brand_navy flex-1 text-left truncate">
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-brand_navy/55 flex-shrink-0">
+                  <span className="text-[11px] text-brand_navy/95 flex-shrink-0">
                     {total !== undefined ? `${total} groups` : ""}
                   </span>
                 </button>
@@ -390,7 +390,7 @@ const BaseGroups = () => {
                       );
                     })}
                     {groups.length === 0 && (
-                      <div className="pl-6 py-1.5 text-[11px] text-content/60">
+                      <div className="pl-6 py-1.5 text-[11px] text-content/95">
                         No base groups
                       </div>
                     )}

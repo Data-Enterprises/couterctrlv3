@@ -221,7 +221,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
     <div className="w-full">
       {((loading && assigned.length + unassigned.length === 0) ||
         !levelsKnown) && (
-        <div className="text-[11px] text-content/85 mb-2">Loading users…</div>
+        <div className="text-[11px] text-content/95 mb-2">Loading users…</div>
       )}
       <AssignPanel
         leftTitle="Unassigned"

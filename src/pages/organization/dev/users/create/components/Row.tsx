@@ -15,12 +15,12 @@ const Row = ({
 }) => (
   <div className="flex flex-wrap justify-between items-center gap-2 text-[12.5px] py-0.5">
     <span className="min-w-0">
-      {label && <span className="text-content/85">{label} </span>}
+      {label && <span className="text-content/95">{label} </span>}
       <span className="font-semibold text-content">{value}</span>
     </span>
     {(meta || mode) && (
       <span className="flex items-center gap-2 flex-shrink-0">
-        {meta && <span className="text-[11.5px] text-content/85">{meta}</span>}
+        {meta && <span className="text-[11.5px] text-content/95">{meta}</span>}
         {mode && <GrantModeChip mode={mode} />}
       </span>
     )}

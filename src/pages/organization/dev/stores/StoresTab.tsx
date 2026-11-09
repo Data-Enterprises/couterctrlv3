@@ -134,7 +134,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
                 </span>
                 <span
                   className={`text-[12px] truncate ${
-                    isSel ? "text-custom-white/85" : "text-content/85"
+                    isSel ? "text-custom-white/95" : "text-content/95"
                   }`}
                 >
                   {s.store_name}

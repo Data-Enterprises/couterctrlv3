@@ -10,10 +10,10 @@ const Rule = ({ met, children }: { met: boolean; children: ReactNode }) => (
   <div className="flex items-center gap-2 text-[12px] py-1">
     <CheckIcon
       className={`w-4 h-4 flex-shrink-0 ${
-        met ? "text-severity_healthy_text" : "text-content/85 opacity-40"
+        met ? "text-severity_healthy_text" : "text-content/95 opacity-40"
       }`}
     />
-    <span className={met ? "text-content" : "text-content/85"}>{children}</span>
+    <span className={met ? "text-content" : "text-content/95"}>{children}</span>
   </div>
 );
 

@@ -104,7 +104,7 @@ const Companies = () => {
                 </span>
                 <span
                   className={`text-[10.5px] font-semibold tabular-nums flex-shrink-0 ${
-                    isSel ? "text-custom-white/85" : "text-content/85"
+                    isSel ? "text-custom-white/95" : "text-content/95"
                   }`}
                 >
                   {count}

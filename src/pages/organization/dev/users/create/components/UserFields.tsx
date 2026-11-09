@@ -314,7 +314,7 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
               className="text-[12px] py-1.5 border-t border-gray-100 first:border-t-0"
             >
               <span className="font-semibold text-content">{n.t}</span>
-              <span className="text-content/85"> — {n.d}</span>
+              <span className="text-content/95"> — {n.d}</span>
             </div>
           ))}
         </section>

@@ -210,16 +210,16 @@ const CompanyUsersPanel = ({
           <span className="text-[15px] font-semibold text-content">
             {company.name}
           </span>
-          <span className="text-[11.5px] text-content/85 ml-2">
+          <span className="text-[11.5px] text-content/95 ml-2">
             {assigned.length} user{assigned.length === 1 ? "" : "s"}
           </span>
         </div>
-        <span className="h-4 text-[11px] font-semibold text-content/85">
+        <span className="h-4 text-[11px] font-semibold text-content/95">
           {moving ? "Saving…" : ""}
         </span>
       </div>
 
-      <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
+      <p className="text-[11.5px] text-content/95 leading-snug mb-2 max-w-[680px]">
         A company is the outer boundary of what somebody can see. Base groups
         belong to one, and a person only reaches a group inside a company they
         hold — so taking this away hides their groups in it, and the stores
@@ -229,7 +229,7 @@ const CompanyUsersPanel = ({
       {/* Says why the left column is short, for those it narrows (not
           programmers, who see everyone). */}
       {!ctx.canSeeAllCompanies && (
-        <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
+        <p className="text-[11.5px] text-content/95 leading-snug mb-2 max-w-[680px]">
           You can add people from{" "}
           <span className="font-semibold">your own companies</span> and people
           who hold no company yet. Somebody in a company you do not hold has to

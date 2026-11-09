@@ -115,7 +115,7 @@ const EffectiveStoresPanel = ({
           <span className="text-[9px] font-bold uppercase tracking-wide text-content">
             Effective stores
           </span>
-          <span className="text-[10.5px] text-content/85 tabular-nums">
+          <span className="text-[10.5px] text-content/95 tabular-nums">
             {pending ? "counting…" : `${rows.length} · read only`}
           </span>
         </div>
@@ -140,7 +140,7 @@ const EffectiveStoresPanel = ({
               {/* Where it comes from: the granting group, or Direct when no
                   group does (and no group change can take it away). */}
               <span
-                className="text-[10.5px] font-semibold text-content/85 flex-shrink-0 truncate max-w-[42%]"
+                className="text-[10.5px] font-semibold text-content/95 flex-shrink-0 truncate max-w-[42%]"
                 title={
                   r.mode === null
                     ? "Assigned directly, through no base group"
@@ -154,13 +154,13 @@ const EffectiveStoresPanel = ({
         })}
 
         {rows.length > 0 && shown.length === 0 && (
-          <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/85 text-center">
+          <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/95 text-center">
             No stores match
           </div>
         )}
 
         {rows.length === 0 && (
-          <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/85 text-center">
+          <div className="flex items-center justify-center py-8 px-4 text-[11.5px] text-content/95 text-center">
             {picks.baseGroups.length === 0
               ? "No base groups held, so no stores."
               : "No stores yet — tick a group, or pick its stores By store."}
