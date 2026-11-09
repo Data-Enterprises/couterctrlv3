@@ -1,6 +1,6 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { basisWord } from "../utils";
+import { basisWord, PILL_FILL } from "../utils";
 import { changeTone, signed, signedPct } from "../utils/trackerTone";
 import { NUM } from "../utils/trackerColumns";
 
@@ -31,13 +31,6 @@ interface VsLyProps {
  * at full weight, the percent follows a step down (a small department's
  * percent can be huge on a few dollars).
  */
-const PILL_FILL = (v: number | null) => {
-  if (v === null) return "bg-gray-100 text-content";
-  if (v > 0) return "bg-severity_healthy_bg text-severity_healthy_text";
-  if (v < 0) return "bg-severity_critical_bg text-severity_critical_text";
-  return "bg-gray-100 text-content";
-};
-
 const VsLy = ({
   dollarChange,
   pctChange,

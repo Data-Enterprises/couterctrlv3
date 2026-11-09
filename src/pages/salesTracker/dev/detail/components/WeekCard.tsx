@@ -3,6 +3,7 @@ import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
 import { orDash, changeTone, signedPct } from "../../utils/trackerTone";
 import { WEEK_GRID, DAY_GRID, NUM } from "../../utils/trackerColumns";
 import { basisWord } from "../../utils";
+import { dayName, HEAD, LY_COLOR, shortDate, TY_COLOR } from "../utils";
 
 // Interfaces
 import type { WeekTotal, TrackerBasis } from "../../interfaces";
@@ -22,22 +23,6 @@ interface WeekCardProps {
   /** What the comparison column and the dashed line are. */
   basis: TrackerBasis;
 }
-
-const shortDate = (d: string) => {
-  const dt = new Date(d + "T12:00:00");
-  return `${dt.getMonth() + 1}/${dt.getDate()}`;
-};
-
-const dayName = (d: string) =>
-  new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
-
-const HEAD =
-  "text-[10.5px] font-semibold uppercase tracking-wide text-content/80";
-
-/** Two periods, not two verdicts — so navy and a lighter tint of it, never the
- *  severity palette. The comparison carries the judgement, the lines don't. */
-const TY_COLOR = "rgb(var(--color-brand-navy))";
-const LY_COLOR = "#8aa4c4";
 
 /**
  * One week of a sub department. Closed: one line (week, dates, takings,

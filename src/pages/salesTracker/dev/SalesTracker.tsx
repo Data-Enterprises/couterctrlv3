@@ -27,7 +27,13 @@ import {
   fetchSubSales,
   fetchTrackerWindow,
 } from "./utils/trackerData";
-import { basisWord, buildWindowPlan, isoToDisplay, shiftDays } from "./utils";
+import {
+  basisWord,
+  buildWindowPlan,
+  isoToDisplay,
+  shiftDays,
+  shortLabel,
+} from "./utils";
 import { buildSubDeptTotals, allDeptsTotal } from "./utils/trackerTotals";
 import { orDash } from "./utils/trackerTone";
 import { SUB_GRID, NUM } from "./utils/trackerColumns";
@@ -45,11 +51,6 @@ import TrackerHeader from "./components/TrackerHeader";
 import SubDeptRow from "./components/SubDeptRow";
 import TrackerDetail from "./detail/TrackerDetail";
 import VsLy from "./components/VsLy";
-
-const shortLabel = (d: string) => {
-  const dt = new Date(d + "T12:00:00");
-  return `${dt.getMonth() + 1}/${dt.getDate()}`;
-};
 
 /**
  * Sales Tracker: sub-department sales against the same weeks last year. A

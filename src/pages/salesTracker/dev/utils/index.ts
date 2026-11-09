@@ -157,3 +157,21 @@ export const bucketByDate = <T>(
   }
   return out;
 };
+
+/** Shortcut spans that fill the two date inputs, so what ran is always visible
+ *  in the dates. */
+export const WEEK_PRESETS = [4, 8, 12, 26];
+
+/** The pill's fill: green up, red down, grey when flat or missing. */
+export const PILL_FILL = (v: number | null) => {
+  if (v === null) return "bg-gray-100 text-content";
+  if (v > 0) return "bg-severity_healthy_bg text-severity_healthy_text";
+  if (v < 0) return "bg-severity_critical_bg text-severity_critical_text";
+  return "bg-gray-100 text-content";
+};
+
+/** A yyyy-mm-dd day as m/d. */
+export const shortLabel = (d: string) => {
+  const dt = new Date(d + "T12:00:00");
+  return `${dt.getMonth() + 1}/${dt.getDate()}`;
+};

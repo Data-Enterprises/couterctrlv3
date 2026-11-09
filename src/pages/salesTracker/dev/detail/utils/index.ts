@@ -113,3 +113,22 @@ export const exportTracker = ({ row, scopeLabel, plan }: ExportArgs) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+
+/** A yyyy-mm-dd day as m/d. */
+export const shortDate = (d: string) => {
+  const dt = new Date(d + "T12:00:00");
+  return `${dt.getMonth() + 1}/${dt.getDate()}`;
+};
+
+/** A yyyy-mm-dd day's short weekday name. */
+export const dayName = (d: string) =>
+  new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
+
+/** The week card's column headings. */
+export const HEAD =
+  "text-[10.5px] font-semibold uppercase tracking-wide text-content/80";
+
+/** Two periods, not two verdicts — so navy and a lighter tint of it, never the
+ *  severity palette. The comparison carries the judgement, the lines don't. */
+export const TY_COLOR = "rgb(var(--color-brand-navy))";
+export const LY_COLOR = "#8aa4c4";

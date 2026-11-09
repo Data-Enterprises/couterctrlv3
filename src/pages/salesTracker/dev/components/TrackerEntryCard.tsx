@@ -6,7 +6,7 @@ import { setStartDate } from "../../../../features/searchSlice";
 
 // Utils
 import { formatGoliathDate } from "../../../../utils";
-import { isoToDisplay, rangeForWeeks } from "../utils";
+import { isoToDisplay, rangeForWeeks, WEEK_PRESETS } from "../utils";
 
 // Components
 import SearchCard from "../../../../components-dev/SearchCard";
@@ -16,10 +16,6 @@ interface TrackerEntryCardProps {
   loading: boolean;
   notice?: string;
 }
-
-/** Shortcut spans that fill the two date inputs, so what ran is always visible
- *  in the dates. */
-const WEEK_PRESETS = [4, 8, 12, 26];
 
 /**
  * Entry point for the tracker: start and end dates (a range like 7/13 to 8/23),
