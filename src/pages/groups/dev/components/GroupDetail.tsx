@@ -199,7 +199,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: GroupDetailProps) => {
           )}
         </div>
         {readOnly && (
-          <div className="text-[12px] text-content/75 mt-1">
+          <div className="text-[12px] text-content/95 mt-1">
             {group.userid === ctx.userid
               ? "A shared group you created. Manage its stores and who has it in Groups > Shared Groups."
               : "Shared with you. Only its stores you're assigned to are shown, and only an owner can change it."}

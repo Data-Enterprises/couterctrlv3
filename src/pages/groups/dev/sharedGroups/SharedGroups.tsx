@@ -101,11 +101,11 @@ const SharedGroups = () => {
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-gray-100">
           {groups === null ? (
-            <div className="px-3 py-2 text-[11px] text-content/60">
+            <div className="px-3 py-2 text-[11px] text-content/95">
               Loading…
             </div>
           ) : shown.length === 0 ? (
-            <div className="px-3 py-2 text-[11px] text-content/60">
+            <div className="px-3 py-2 text-[11px] text-content/95">
               {q ? "No matches" : "No shared groups yet — make one with +"}
             </div>
           ) : (
@@ -127,7 +127,7 @@ const SharedGroups = () => {
                   <span className="text-[12px] font-medium text-content">
                     {g.name}
                   </span>
-                  <span className="text-[10.5px] text-content/55">
+                  <span className="text-[10.5px] text-content/95">
                     {g.stores.length} store{g.stores.length === 1 ? "" : "s"} ·
                     shared with {g.userids.length}
                   </span>

@@ -26,11 +26,11 @@ const NewSharedGroup = ({
       <div className="text-[16px] font-medium text-content mb-1">
         New shared group
       </div>
-      <p className="text-[11px] text-content/60 mb-3">
+      <p className="text-[11px] text-content/95 mb-3">
         A user group you can share. Name it, pick its stores from the ones
         you're assigned to, then share it.
       </p>
-      <label className="text-[11px] text-content/60 block mb-1">
+      <label className="text-[11px] text-content/95 block mb-1">
         Group name
       </label>
       <input
@@ -43,7 +43,7 @@ const NewSharedGroup = ({
         className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
       />
       <div
-        className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/50"}`}
+        className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/95"}`}
       >
         {problem ?? "Letters, numbers, spaces, _ and -."}
       </div>

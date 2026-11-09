@@ -233,7 +233,7 @@ const SharedGroupDetail = ({
           onClick={() => setConfirmDelete(true)}
         />
       </div>
-      <div className="text-[11.5px] text-content/85 mb-2">
+      <div className="text-[11.5px] text-content/95 mb-2">
         {group.stores.length} store{group.stores.length === 1 ? "" : "s"} ·
         shared with {recipients} {recipients === 1 ? "person" : "people"}
       </div>
@@ -256,10 +256,10 @@ const SharedGroupDetail = ({
 
       {subTab === "stores" &&
         (stores === null ? (
-          <div className="text-[11.5px] text-content/60">Loading stores…</div>
+          <div className="text-[11.5px] text-content/95">Loading stores…</div>
         ) : (
           <>
-            <p className="text-[11px] text-content/60 mb-2">
+            <p className="text-[11px] text-content/95 mb-2">
               From the stores you're assigned to. Changes reach everyone the
               group is shared with. Once it's shared, it keeps at least one
               store — unshare it or delete it to empty it.
@@ -294,16 +294,16 @@ const SharedGroupDetail = ({
 
       {subTab === "users" &&
         (users === null ? (
-          <div className="text-[11.5px] text-content/60">Loading users…</div>
+          <div className="text-[11.5px] text-content/95">Loading users…</div>
         ) : (
           <>
-            <p className="text-[11px] text-content/60 mb-2">
+            <p className="text-[11px] text-content/95 mb-2">
               Sharing puts the group in their User Groups and store picker. It
               doesn't change which stores they can open, and they only see the
               group's stores they're assigned to. People at your level or below
               who share a company with you.
             </p>
-            <p className="text-[11px] text-content/75 mb-2">
+            <p className="text-[11px] text-content/95 mb-2">
               You created this group, so you already have it — it's in your User
               Groups and your store picker. You don't need to share it with
               yourself.
