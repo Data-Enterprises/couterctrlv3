@@ -25,7 +25,7 @@ import {
 } from "../../../features/dev/devSuggestedSlice";
 import { isGroupSearch } from "../../../features/searchSlice";
 import { getStoreName } from "../../../utils";
-import { deptLabel, sheetRows } from ".";
+import { deptLabel, sheetRows } from "./utils/figures";
 import type {
   JsonError,
   Store,

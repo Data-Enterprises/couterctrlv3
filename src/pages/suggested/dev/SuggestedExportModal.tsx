@@ -8,7 +8,7 @@ import {
   downloadCsv,
   aggregateRows,
 } from "../../../utils/csvExport";
-import { deptLabel, suggestedAction } from ".";
+import { deptLabel, suggestedAction } from "./utils/figures";
 import {
   AGG_OPTIONS,
   buildActionsCsv,

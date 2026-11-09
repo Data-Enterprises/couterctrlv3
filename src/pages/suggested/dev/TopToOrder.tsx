@@ -11,7 +11,7 @@ import {
 } from "../../../features/dev/devSuggestedSlice";
 
 // Utils
-import { deptLabel, fmtLb, fmtLbOrDash } from ".";
+import { deptLabel, fmtLb, fmtLbOrDash } from "./utils/figures";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import { SORT_TH, TH, TOP_N } from "./utils";
 

@@ -2,10 +2,10 @@
 import { useEffect, useRef } from "react";
 
 // Utils
-import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from ".";
+import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from "./utils/figures";
 
 // Interfaces
-import type { SuggestedAction } from ".";
+import type { SuggestedAction } from "./interfaces";
 import type { DowRates, SuggestedItem } from "../../../interfaces";
 
 // Components

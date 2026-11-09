@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 
 // Utils
-import { buildBenchmark, deptLabel, fmtLb, median } from ".";
+import { buildBenchmark, deptLabel, fmtLb, median } from "./utils/figures";
 import { dailyKey } from "../../../interfaces";
 import { getStoreName } from "../../../utils";
 import { DAYS, SHORT } from "./utils";

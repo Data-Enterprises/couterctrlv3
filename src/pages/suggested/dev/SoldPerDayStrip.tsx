@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import { fmtLb, dayLabel } from ".";
+import { fmtLb, dayLabel } from "./utils/figures";
 import { isWeekend } from "./utils";
 
 // Interfaces

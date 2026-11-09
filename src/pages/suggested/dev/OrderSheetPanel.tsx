@@ -30,7 +30,7 @@ import {
   ACTION_TONE,
   ACTION_TONE_FOR,
   ACTION_ORDER,
-} from ".";
+} from "./utils/figures";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import { SORT_TH, TABS, TH } from "./utils";
 

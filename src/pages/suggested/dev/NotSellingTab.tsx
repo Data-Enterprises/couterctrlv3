@@ -11,7 +11,7 @@ import {
 } from "../../../features/dev/devSuggestedSlice";
 
 // Utils
-import { fmtLb, lostLb } from ".";
+import { fmtLb, lostLb } from "./utils/figures";
 import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import { SORT_TH, STATUS_PILL, STATUSES, TH } from "./utils";
 

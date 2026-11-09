@@ -5,7 +5,7 @@ import {
   lostLb,
   SCOPE_TEXT,
   suggestedAction,
-} from "..";
+} from "./figures";
 import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
 
 // Interfaces

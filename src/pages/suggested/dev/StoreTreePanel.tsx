@@ -11,7 +11,7 @@ import {
 import { isGroupSearch } from "../../../features/searchSlice";
 
 // Utils
-import { deptLabel, fmtLb0, rollupByStore } from ".";
+import { deptLabel, fmtLb0, rollupByStore } from "./utils/figures";
 import { getStoreName } from "../../../utils";
 import { DEPT_COLS, STORE_COLS } from "./utils";
 

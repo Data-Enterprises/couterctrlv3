@@ -1,12 +1,6 @@
-import type {
-  DowRates,
-  NotSellingItem,
-  SuggestedGroupRow,
-  SuggestedItem,
-} from "../../../interfaces";
-import type { ActionKey } from "../../../interfaces";
-// Defined in src/interfaces — Suggested actions. Re-exported for this page's files.
-export type { ActionKey } from "../../../interfaces";
+// Interfaces
+import type { DowRates, NotSellingItem, SuggestedGroupRow, SuggestedItem, ActionKey } from "../../../../interfaces";
+import type { StoreRollup, BenchmarkRow, CoverDay, ActionScope, SuggestedAction } from "../interfaces";
 
 /**
  * Rows whose department could not be resolved.
@@ -80,25 +74,6 @@ export const shrinkTitle = (item: {
   (item.shrink_clamped
     ? " Capped: the raw rate blew past its limit, which is a keying problem rather than heavy waste."
     : "");
-
-/**
- * One store's rollup across its departments.
- *
- * Built from the group rows rather than fetched: the group call already returns
- * every store x department pair, so a second call would be asking the same
- * question twice.
- */
-export interface StoreRollup {
-  storeid: number;
-  /** Resolved through assignedStores, never the payload's own `store_name` —
-   *  that goes null on rows whose department resolved fine, so the same store
-   *  appears named and unnamed in one response. */
-  label: string;
-  storeNumber: string | null;
-  suggested: number;
-  items: number;
-  departments: SuggestedGroupRow[];
-}
 
 export const rollupByStore = (
   rows: SuggestedGroupRow[],
@@ -201,7 +176,6 @@ export const dayLabel = (iso: string) => {
 export const dayLevelPct = (dayLb: number, avgDaily: number): number | null =>
   avgDaily > 0 ? (dayLb / avgDaily - 1) * 100 : null;
 
-
 /**
  * The pounds an item used to sell in this window and now does not.
  *
@@ -215,17 +189,6 @@ export const dayLevelPct = (dayLb: number, avgDaily: number): number | null =>
  */
 export const lostLb = (r: NotSellingItem, recentDays: number) =>
   Math.max((r.prior_lb_per_day - r.recent_lb_per_day) * recentDays, 0);
-
-/** One store's standing in a department, normalised. */
-export interface BenchmarkRow {
-  storeid: number;
-  label: string;
-  /** The department's whole-store rate, which is what the raw comparison uses. */
-  lbPerDay: number;
-  itemCount: number;
-  /** lbPerDay / itemCount — the comparable figure. */
-  lbPerItem: number;
-}
 
 /**
  * Every store's rate for one department, per item carried.
@@ -265,7 +228,6 @@ export const median = (ns: number[]): number => {
     : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
-
 /**
  * The rows the Order tab is showing, out of the whole store's items.
  *
@@ -290,15 +252,6 @@ export const sheetRows = (
   });
 };
 
-
-/** One day of the cover window and what this item is forecast to do on it. */
-export interface CoverDay {
-  iso: string;
-  /** "Fri 9/11". */
-  label: string;
-  lb: number;
-}
-
 /**
  * The suggested figure, taken apart.
  *
@@ -321,7 +274,6 @@ export const coverBreakdown = (
     lb: rateForDate(rates, iso),
   }));
 
-
 /* ── suggested actions ────────────────────────────────────────────────────── */
 
 
@@ -333,37 +285,12 @@ export const coverBreakdown = (
  */
 const fmtDays = (n: number) => (n < 10 ? n.toFixed(1) : Math.round(n).toString());
 
-/**
- * What an action is ABOUT, which decides how the popover frames it.
- *
- * The load-bearing distinction on this page, and it used to be a boolean called
- * `affectsOrder`. It is four values because "not this order" turned out to mean
- * three different things, and rendering all three as "about this item's
- * history" was wrong about two of them.
- *
- * `order` is the only one that says change the number on screen. The others
- * look BACKWARD at a quarter of buying while `suggested_weight` looks FORWARD
- * at a few days — they disagree on the same item without either being wrong,
- * so a buyer who reads "over-ordering" beside 313 lb and cuts it has been
- * misled by the UI, not by the data.
- */
-export type ActionScope = "order" | "pattern" | "schedule" | "recording";
-
 export const SCOPE_TEXT: Record<ActionScope, string> = {
   order: "changes this order",
   pattern: "about the ordering pattern",
   schedule: "about the delivery schedule",
   recording: "about the recording, not the order",
 };
-
-export interface SuggestedAction {
-  key: ActionKey;
-  /** Chip text. Short enough to sit under a product name. */
-  label: string;
-  tone: "critical" | "watch" | "neutral";
-  scope: ActionScope;
-  detail: string;
-}
 
 /**
  * One action per row, worst first.
