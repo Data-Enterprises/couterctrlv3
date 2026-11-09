@@ -141,7 +141,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
   if (!row) {
     return (
       <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl flex items-center justify-center">
-        <span className="text-[11px] text-content/40">
+        <span className="text-[11px] text-content/95">
           Select a category to see its week
         </span>
       </div>
@@ -321,7 +321,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
         </span>
         <button
           onClick={() => setExportOpen(true)}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
           title="Export"
         >
           <ArrowDownTrayIcon className="h-4 w-4" />
@@ -390,7 +390,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               tab === k
                 ? "border-brand_navy text-content"
-                : "border-transparent text-content/70 hover:text-content/80"
+                : "border-transparent text-content/95 hover:text-content/80"
             }`}
           >
             {k === "items" ? "Items" : "Hours"}
@@ -398,7 +398,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
         ))}
         <div className="flex-1" />
         {row.uncategorized && (
-          <span className="text-[10px] text-content/55 pr-1">
+          <span className="text-[10px] text-content/95 pr-1">
             No category assigned at the POS
           </span>
         )}
@@ -453,7 +453,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                 <span className="text-[11px] text-content">Loading hours…</span>
               </div>
             ) : shown.length === 0 ? (
-              <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
+              <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
                 No hourly rows
               </div>
             ) : (
@@ -494,7 +494,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
         {/* Report for the selected day / hour */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {!report ? (
-            <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">
+            <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
               Select an hour to see its report
             </div>
           ) : (

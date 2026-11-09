@@ -68,7 +68,7 @@ const CategoryRow = ({
         <div className="text-[13px] font-medium text-content truncate">{label}</div>
         {/* The comparison values themselves, so a percentage can be weighed
             against the size of what it moved. */}
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW <span className="font-semibold">{lwText}</span> · LY{" "}
           <span className="font-semibold">{lyText}</span>
         </div>

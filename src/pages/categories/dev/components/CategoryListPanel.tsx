@@ -328,7 +328,7 @@ const CategoryListPanel = ({
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             data-help="search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             onClick={onSearchOpen}
             title="Search"
           >
@@ -408,7 +408,7 @@ const CategoryListPanel = ({
       </div>
 
       {uncategorized.count > 0 && (
-        <div className="px-4 py-1.5 bg-custom-white border-x border-b border-gray-100 text-[11px] text-content/60 flex-shrink-0">
+        <div className="px-4 py-1.5 bg-custom-white border-x border-b border-gray-100 text-[11px] text-content/95 flex-shrink-0">
           <span className="font-medium text-content">{fmt(uncategorized.value)}</span>{" "}
           across {uncategorized.count} uncategorized{" "}
           {uncategorized.count === 1 ? "bucket" : "buckets"} — items with no category
@@ -420,7 +420,7 @@ const CategoryListPanel = ({
         {/* Column headers */}
         <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
-          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
             Category
           </span>
           <div data-help="sort" className="flex items-center gap-[14px]">
@@ -453,7 +453,7 @@ const CategoryListPanel = ({
 
         <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
           {visible.length === 0 ? (
-            <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
+            <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
               None this week
             </div>
           ) : (
