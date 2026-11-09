@@ -139,7 +139,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
                     <td className="px-2 py-2 text-right tabular-nums text-content">
                       {(item.qty ?? 0) > 0 ? item.qty : "—"}
                     </td>
-                    <td className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-amber-700" : "text-content"}`}>
+                    <td className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-severity_watch_text" : "text-content"}`}>
                       {formatCurrency2(isCpn ? couponValueOf(item) : item.total_sales)}
                     </td>
                     <td className="px-2 py-2 text-center">
@@ -147,10 +147,10 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
                         className="text-[11px] font-semibold rounded px-1.5 py-0.5"
                         style={
                           isCpn
-                            ? { background: "rgba(234,179,8,0.15)", color: "#92600a" }
+                            ? { background: "rgb(var(--color-severity-watch-bg))", color: "rgb(var(--color-severity-watch-text))" }
                             : isTender
-                              ? { background: "rgba(37,99,235,0.1)", color: "#1d4ed8" }
-                              : { background: "rgba(22,163,74,0.1)", color: "#15803d" }
+                              ? { background: "rgb(var(--color-filter-active))", color: "rgb(var(--color-brand-navy-hover))" }
+                              : { background: "rgb(var(--color-severity-healthy-bg))", color: "rgb(var(--color-severity-healthy-text))" }
                         }
                       >
                         {isCpn ? "Cpn" : isTender ? "Tender" : "Sale"}
@@ -165,7 +165,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
 
         <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-gray-100 bg-gray-50">
           {txCoupons > 0 && (
-            <div className="text-[11px] text-amber-700">
+            <div className="text-[11px] text-severity_watch_text">
               Coupons
               <span className="font-medium ml-1">-{formatCurrency2(txCoupons)}</span>
             </div>
