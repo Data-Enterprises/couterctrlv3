@@ -23,7 +23,7 @@ import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import Field from "./Field";
+import Field from "../../../../components-dev/filters/Field";
 
 interface OrdersConfigPanelProps {
   /** Every line item in the search, before any filter. */
