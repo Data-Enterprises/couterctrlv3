@@ -18,6 +18,8 @@ import type { JsonError } from "../../../../interfaces";
 // Components
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Create form: the existing group names as chips, a name field and Submit.
+ *  A name that already exists shows a warning and disables Submit. */
 const CreateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

@@ -20,6 +20,7 @@ interface GroupsListProps {
   onOpenCreate: () => void;
 }
 
+/** The left list of groups: a name search, a New group button, All / Mine / Shared tabs with counts, and a row per group (shared ones carry a badge). */
 const GroupsList = ({
   selectedId,
   onSelect,

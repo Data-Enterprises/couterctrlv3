@@ -34,7 +34,8 @@ interface GroupDetailProps {
   onDeleted: () => void;
 }
 
-// Selected group's rename/delete + store assign panel, all in one view
+/** The selected group's panel: rename and delete, plus the Unassigned and Assigned store columns.
+ *  A shared group is shown read-only, without the Unassigned column. */
 const GroupDetail = ({ group, onRenamed, onDeleted }: GroupDetailProps) => {
   const ctx = useGroupCtx();
   const toast = useToast();

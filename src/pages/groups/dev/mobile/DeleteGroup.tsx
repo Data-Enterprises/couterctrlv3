@@ -24,6 +24,7 @@ import type { JsonError } from "../../../../interfaces";
 // Components
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Delete form: tap one of your own (not shared) groups, press Delete, then confirm Yes or No. */
 const DeleteGroup = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const toast = useToast();

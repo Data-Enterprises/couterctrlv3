@@ -19,6 +19,7 @@ import GroupsList from "./GroupsList";
 import GroupDetail from "./GroupDetail";
 import NewGroupModal from "./NewGroupModal";
 
+/** The user groups tab: the group list beside the selected group's detail, with the New group pop-up. Creating checks for a blank or duplicate name first. */
 const UserGroupsPanel = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

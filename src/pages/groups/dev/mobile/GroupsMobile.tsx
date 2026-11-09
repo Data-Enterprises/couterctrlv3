@@ -20,6 +20,7 @@ import {
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
 
+/** The phone Groups page: a Create / Update / Delete / Assign tab row over the selected form. */
 const GroupsMobile = () => {
   const ctx = useGroupCtx();
   const dispatch = useAppDispatch();

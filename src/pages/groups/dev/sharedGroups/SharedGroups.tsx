@@ -22,7 +22,7 @@ import SharedGroupDetail from "./components/SharedGroupDetail";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import NewSharedGroup from "./components/NewSharedGroup";
 
-// Groups > Shared Groups — owners and up.
+/** Groups > Shared Groups, for owners and up: a searchable list of shared groups beside the new-group form or the selected group's detail. */
 const SharedGroups = () => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();

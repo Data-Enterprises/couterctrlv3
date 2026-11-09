@@ -23,6 +23,8 @@ import type { JsonError } from "../../../../interfaces";
 // Components
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Update form: tap one of your own (not shared) groups, type a new name and Submit.
+ *  A name already in use disables Submit. */
 const UpdateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

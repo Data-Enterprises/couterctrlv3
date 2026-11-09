@@ -14,6 +14,7 @@ interface StoreColumnProps {
   handleToggle: (storeid: number, type: "unassigned" | "assigned") => void;
 }
 
+/** One column of stores in a group's detail, searchable and counted: Unassigned (+ adds a store) or Assigned (− removes it). Buttons are hidden when read-only. */
 const StoreColumn = ({
   kind,
   readOnly,

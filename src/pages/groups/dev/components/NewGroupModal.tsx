@@ -1,6 +1,7 @@
 // Hooks
 import { useState } from "react";
 
+/** The "New group" pop-up: a name field with Cancel and Create buttons. */
 const NewGroupModal = ({
   onCreate,
   onClose,

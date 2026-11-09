@@ -7,6 +7,7 @@ interface GroupTypeTabsProps {
   count: Record<Show, number>;
 }
 
+/** The All / Mine / Shared tabs above the group list, each with its count. */
 const GroupTypeTabs = ({ show, setShow, count }: GroupTypeTabsProps) => {
   return (
     <div

@@ -25,6 +25,7 @@ import type { StoreWithGroupStatus, JsonError } from "../../../../interfaces";
 import SingleSelect from "../../../../components-dev/SingleSelect";
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Assign form: pick one of your own groups, then tap stores in the searchable Unassigned and Assigned columns to move them. */
 const GroupStoreAssignMobile = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

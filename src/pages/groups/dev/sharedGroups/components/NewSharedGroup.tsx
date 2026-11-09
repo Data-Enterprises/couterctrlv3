@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { nameProblem } from "../utils";
 
+/** The "New shared group" form: a name field that shows what is wrong with the name as it is typed, with Cancel and Create. */
 const NewSharedGroup = ({
   onCreate,
   onCancel,
