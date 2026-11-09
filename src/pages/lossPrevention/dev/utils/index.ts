@@ -78,7 +78,7 @@ export const theme = themeQuartz.withParams({
 
 export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {
-    return "bg-orange-200";
+    return "bg-row_selected";
   } else {
     return "bg-bkg";
   }

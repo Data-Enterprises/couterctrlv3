@@ -374,7 +374,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                       <div className="flex items-center gap-[14px]">
                         <span
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            transPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(transPct)
+                            transPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(transPct)
                           }`}
                           style={{ minWidth: 58 }}
                         >
@@ -382,7 +382,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                         </span>
                         <span
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            itemsPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(itemsPct)
+                            itemsPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(itemsPct)
                           }`}
                           style={{ minWidth: 58 }}
                         >
@@ -391,7 +391,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                         {hasAmount && (
                           <span
                             className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                              amountPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(amountPct)
+                              amountPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(amountPct)
                             }`}
                             style={{ minWidth: 64 }}
                           >
@@ -401,7 +401,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                         {hasAmount && (
                           <span
                             className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                              avgPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(avgPct)
+                              avgPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(avgPct)
                             }`}
                             style={{ minWidth: 58 }}
                           >
