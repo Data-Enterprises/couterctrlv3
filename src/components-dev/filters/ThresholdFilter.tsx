@@ -25,6 +25,8 @@ interface ThresholdFilterProps {
   className?: string;
 }
 
+/** Number filter with an optional greater / less / equal operator, an amount
+ *  field with prefix or suffix, and a clear button. */
 const ThresholdFilter = ({
   value,
   onChange,

@@ -14,6 +14,8 @@ interface SeverityBadgeProps {
   showBackground?: boolean;
 }
 
+/** Small status icon for a severity: critical (triangle), watch (circle),
+ *  healthy (check), or a grey dash when not graded. */
 const SeverityBadge = ({ severity, showBackground = true }: SeverityBadgeProps) => (
   <div
     className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"

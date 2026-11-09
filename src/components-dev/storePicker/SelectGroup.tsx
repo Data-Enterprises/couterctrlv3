@@ -6,6 +6,8 @@ import { useStorePickerContext } from "./";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import type { Group } from "../../features/groupSlice";
 
+/** The store picker's group dropdown: type to narrow the groups, pick one, and
+ *  it becomes the selected and last-used group. */
 const SelectGroup = () => {
   const context = useStorePickerContext();
   const app = useAppSelector((state) => state.app);

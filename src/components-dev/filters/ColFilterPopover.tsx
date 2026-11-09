@@ -23,6 +23,9 @@ interface ColFilterPopoverProps {
   children: React.ReactNode;
 }
 
+/** A column-header filter: the label opens a popover holding the filter control
+ *  passed as children, with Apply and Clear buttons. The header shows the
+ *  active value, or a dot, while it filters. */
 // The richer sibling of filters/ColFilter: it can show the active value in the
 // header, right-align its popover and take a label size. Lived in
 // pages/upc/components until Forecast and User Management used it too.

@@ -12,6 +12,8 @@ interface CheckBoxProps {
   isBool?: boolean;
 }
 
+/** A clickable checkbox icon with a label. It reports the toggled value, or its
+ *  own id when `isBool` is off. */
 const CheckBox = ({
   label = "",
   value,

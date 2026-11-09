@@ -47,6 +47,9 @@ interface SearchCardProps {
   leadingControls?: ReactNode;
 }
 
+/** The page's search card: store or group picker, date pickers and a Search
+ *  button that reads "Select Store" or "Select Group" until something is
+ *  picked. A spinner with the search label replaces the form while it loads. */
 const SearchCard = ({
   title,
   description,

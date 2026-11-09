@@ -5,6 +5,8 @@ interface KpiTileGridProps {
   items: KpiCell[];
 }
 
+/** A full-width band of KPI cells (label, value, optional delta pill) shown
+ *  under a selected item's detail title. */
 // One continuous divided KPI band for a single selected item's detail
 // panel — matches PopupSubDeptList.tsx's own "selected item" KPI strip
 // convention exactly (same one StoreDetailPopup's store-level strip uses

@@ -15,6 +15,9 @@ interface CalendarProps {
   dateFlag?: string;
 }
 
+/** Month calendar with previous/next arrows and a day grid. Picking a day
+ *  passes it to `handleDate`; a start date after the end date (or the reverse)
+ *  is refused with a warning toast. */
 const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const monthsOfYear = [

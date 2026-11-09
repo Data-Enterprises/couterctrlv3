@@ -4,6 +4,8 @@ interface EmptyPromptProps {
   className?: string;
 }
 
+/** Dashed placeholder panel that fills its parent with a title and an optional
+ *  description when there is nothing to show yet. */
 const EmptyPrompt = ({ title, description, className = "" }: EmptyPromptProps) => (
   <div className={`h-full flex flex-col items-center justify-center gap-2 bg-custom-white/60 rounded-xl border border-dashed border-gray-200 ${className}`}>
     <div className="text-content/50 text-[13px] font-medium">{title}</div>

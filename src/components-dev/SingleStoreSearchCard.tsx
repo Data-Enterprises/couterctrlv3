@@ -52,6 +52,9 @@ interface SingleStoreSearchCardProps {
   loadingMessage?: string;
 }
 
+/** Search card for pages that take one store: a store dropdown, a "Searching"
+ *  line naming the pick, optional date or other fields, and a Search button
+ *  that stays off until a store is chosen. */
 const SingleStoreSearchCard = ({
   title,
   description,

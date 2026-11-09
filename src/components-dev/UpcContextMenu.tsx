@@ -17,6 +17,8 @@ interface UpcContextMenuProps {
   onClose: () => void;
 }
 
+/** Right-click menu for a UPC at the cursor: copy this UPC, copy all UPCs, copy
+ *  by severity when given, plus any extra actions. Closes on an outside click. */
 const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 

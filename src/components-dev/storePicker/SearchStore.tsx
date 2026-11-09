@@ -15,6 +15,8 @@ import type { Store } from "../../interfaces";
 // Components
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
+/** The store picker's store dropdown: type to narrow the stores, pick one, and
+ *  it becomes the selected and last-used store. */
 const SearchStore = () => {
   const dispatch = useAppDispatch();
   const context = useStorePickerContext();

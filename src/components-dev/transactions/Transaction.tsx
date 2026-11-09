@@ -35,6 +35,9 @@ interface TransactionProps {
   saleType?: string;
 }
 
+/** A receipt for one sale: header with email and CSV download buttons, the line
+ *  items (code, description, qty, net, type) and a totals line for net sales,
+ *  tax, voids and refunds. */
 const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   // Description is the one `1fr` track, so it only grows if the fixed columns
   // give something up — each is 95% of its desktop width here.

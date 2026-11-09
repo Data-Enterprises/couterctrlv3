@@ -23,6 +23,8 @@ interface SingleSelectProps<T> {
   canType?: boolean;
 }
 
+/** Type-to-filter dropdown for picking one item from a list; reports the picked
+ *  item's value key. */
 const SingleSelect = <T,>({
   data,
   valueKey,

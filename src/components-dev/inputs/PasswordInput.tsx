@@ -24,6 +24,8 @@ interface PasswordInputProps {
   autoComplete?: string;
 }
 
+/** Password field with a show/hide eye. The password field shows a strength
+ *  label and bar; the confirm field says whether it matches. */
 const PasswordInput = ({
   label,
   name,

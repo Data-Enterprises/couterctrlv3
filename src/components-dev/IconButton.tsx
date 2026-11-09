@@ -5,6 +5,8 @@ interface IconButtonProps {
   variant?: "default" | "danger";
 }
 
+/** Small icon-only action button with a tooltip; the "danger" variant turns red
+ *  on hover. */
 // Shared small icon-only action button (rename/delete/etc.) used across
 // grid-style admin pages (Organization, Admin) wherever a row/section needs a
 // quiet inline action instead of a full labeled button.

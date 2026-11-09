@@ -14,6 +14,9 @@ interface ModalProps {
   padded?: boolean;
 }
 
+/** Centred modal over a blurred backdrop. Renders nothing while closed, closes
+ *  on an outside click unless that is turned off, and reports its open state
+ *  to the nav slice. */
 const Modal = ({
   isOpen,
   onClose,

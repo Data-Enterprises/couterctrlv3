@@ -12,6 +12,8 @@ interface DatePickersProps {
   stacked?: boolean;
 }
 
+/** The Start Date and End Date dropdowns side by side (or stacked), with an
+ *  optional Search button underneath. */
 const DatePickers = ({
   handleQuery,
   btnPadding = "",

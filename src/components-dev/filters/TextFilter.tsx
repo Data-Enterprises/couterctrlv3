@@ -7,6 +7,8 @@ interface TextFilterProps {
   className?: string;
 }
 
+/** Search-style text box for filtering a list. It highlights while text is
+ *  typed and shows a clear button. */
 const TextFilter = ({
   value,
   onChange,

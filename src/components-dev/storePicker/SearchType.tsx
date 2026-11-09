@@ -22,6 +22,9 @@ interface SearchTypeProps {
   singleStoreOnly?: boolean;
 }
 
+/** The store picker's search-type dropdown (store, group, and shared when the user
+ *  has shared groups). Picking one
+ *  switches the search type and saves it to the user's preferences. */
 const SearchType = ({ singleStoreOnly = false }: SearchTypeProps) => {
   const toast = useToast();
   const user = useAppSelector((state) => state.user);

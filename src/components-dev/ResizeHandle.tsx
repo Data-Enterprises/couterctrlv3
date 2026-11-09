@@ -2,6 +2,8 @@ interface ResizeHandleProps {
   onMouseDown: (e: React.MouseEvent) => void;
 }
 
+/** The small diagonal grip in a container's bottom-right corner that the user
+ *  drags to resize it. */
 // Bottom-right drag grip for a resizable container — pairs with
 // useResizableBox. The parent container must be `relative` for this to
 // anchor to its corner instead of the viewport.

@@ -33,6 +33,9 @@ interface SelectFilterProps {
   searchPlaceholder?: string;
 }
 
+/** Dropdown filter that lists options, optionally with a box to narrow them. It
+ *  opens upward when there is more room above, and highlights while a value is
+ *  set. */
 const SelectFilter = ({
   options,
   value,

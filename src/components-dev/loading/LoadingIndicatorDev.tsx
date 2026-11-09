@@ -6,6 +6,8 @@ interface LoadingIndicatorDevProps {
   className?: string;
 }
 
+/** Loading pill with a message (default "Loading...") and three animated
+ *  dots. */
 const LoadingIndicatorDev = ({ message = "Loading...", className = "" }: LoadingIndicatorDevProps) => {
   return (
     <div data-testid="loading-indicator" className={`loading-indicator ${className}`}>

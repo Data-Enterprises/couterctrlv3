@@ -11,6 +11,8 @@ interface ThresholdSliderProps {
   ariaLabel?: string;
 }
 
+/** Slider for the grading threshold percent (1 to 30), paired with the
+ *  ThresholdFilter number input. */
 // Drag-to-set companion for ThresholdFilter. The handle runs off local state so
 // dragging repaints immediately and only this component re-renders; the real
 // write is wrapped in startTransition so React can interrupt and discard the

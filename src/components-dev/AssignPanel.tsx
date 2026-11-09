@@ -69,6 +69,9 @@ interface AssignPanelProps {
   ) => { message: string; confirmLabel: string } | null;
 }
 
+/** Two searchable columns with Assign / Unassign buttons between them: pick rows
+ *  in one column and move them to the other, or move all of them after a
+ *  confirm. */
 // Shared staged dual-column assign/unassign control — used by the create-user
 // wizard's Assignments step, the user profile's Companies/Base groups/Stores
 // tabs, and a base group's Assign stores panel.

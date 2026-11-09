@@ -11,6 +11,8 @@ interface ConfirmModalProps {
   children?: ReactNode;
 }
 
+/** Small centred confirm dialog with a title, a message, optional extra content
+ *  and Cancel / red confirm buttons (default "Yes, delete"). */
 // Shared delete-confirmation modal — used across grid-style admin pages
 // (Organization, Admin) so the destructive-action pattern stays identical.
 const ConfirmModal = ({

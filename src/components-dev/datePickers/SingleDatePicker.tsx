@@ -9,6 +9,8 @@ interface SingleDatePickerProps {
   className?: string;
 }
 
+/** The single-date dropdown: shows the chosen day as month/day plus weekday and
+ *  opens a calendar that sets it in the search state. */
 const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
