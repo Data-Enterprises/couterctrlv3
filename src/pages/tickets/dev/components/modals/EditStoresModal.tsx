@@ -83,7 +83,7 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalPr
         <h2 className="text-[17px] font-semibold">
           Stores on {ticket.ticket_number}
         </h2>
-        <p className="mt-1 text-[12.5px] text-content/85">
+        <p className="mt-1 text-[12.5px] text-content/95">
           These decide which managers see the ticket. The change is noted in the
           thread for the desk, not the client.
         </p>

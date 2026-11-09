@@ -282,7 +282,7 @@ const NewTicketModal = ({
     >
       <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
         <h2 className="text-[17px] font-semibold">New ticket</h2>
-        <p className="text-[12.5px] text-content/85 mt-1">
+        <p className="text-[12.5px] text-content/95 mt-1">
           {origin?.page
             ? `About ${origin.page}. Two fields are needed; the rest is filled in.`
             : "Two fields are needed. Everything else the help desk works out."}
@@ -293,7 +293,7 @@ const NewTicketModal = ({
         {/** What came with you from the page. */}
         {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
-            <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
               From {origin.area ? `${origin.area} · ` : ""}
               {origin.page ?? origin.href}
             </div>
@@ -308,7 +308,7 @@ const NewTicketModal = ({
                   type="button"
                   onClick={() => setEvidenceOpen((v) => !v)}
                   aria-expanded={evidenceOpen}
-                  className="flex w-full items-center gap-1.5 text-left text-[11.5px] text-content/85"
+                  className="flex w-full items-center gap-1.5 text-left text-[11.5px] text-content/95"
                 >
                   <span className="flex-1">
                     Attach what this page loaded ({chosen.length} of{" "}
@@ -350,7 +350,7 @@ const NewTicketModal = ({
                 {/* Named rather than silently dropped, so a tech knows something
                     was too big to send. */}
                 {dropped.length > 0 && (
-                  <div className="mt-1.5 text-[11px] text-content/85">
+                  <div className="mt-1.5 text-[11px] text-content/95">
                     Too large to send — {dropped.map((g) => g.label).join(", ")}
                   </div>
                 )}
@@ -395,7 +395,7 @@ const NewTicketModal = ({
         </div>
 
         {onlyStore ? (
-          <p className="m-0 text-[12.5px] text-content/85">
+          <p className="m-0 text-[12.5px] text-content/95">
             About{" "}
             <span className="font-medium text-content">
               #{onlyStore.store_number} {onlyStore.store_name}
@@ -424,7 +424,7 @@ const NewTicketModal = ({
                   </button>
                 )}
                 {accessPage && (
-                  <span className="text-[11.5px] text-content/85">
+                  <span className="text-[11.5px] text-content/95">
                     About someone&apos;s access? Tick the store they work at, so
                     its manager sees this too.
                   </span>
@@ -443,7 +443,7 @@ const NewTicketModal = ({
             placeholder="Receipt printer stops after about ten receipts..."
             className="w-full border border-brand_line rounded-lg px-3 py-2 text-[13.5px] resize-none bg-custom-white"
           />
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             This becomes the first message in the thread, so the tech reads it
             where the conversation is.
           </span>
@@ -458,7 +458,7 @@ const NewTicketModal = ({
           fileError={fileError}
         />
 
-        <p className="text-[11.5px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2 m-0">
+        <p className="text-[11.5px] text-content/95 bg-custom-white border border-brand_line rounded-lg px-3 py-2 m-0">
           It files under your own company and lands in the queue unassigned.
         </p>
       </div>

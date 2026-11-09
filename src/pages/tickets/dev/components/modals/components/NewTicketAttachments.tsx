@@ -41,7 +41,7 @@ const NewTicketAttachments = ({
         >
           Choose files
         </button>
-        <span className="text-[11.5px] text-content/85">
+        <span className="text-[11.5px] text-content/95">
           {limits
             ? `${limits.extensions.join(" ")} · up to ${fileSize(limits.maxBytes)}`
             : "A screenshot is usually the most useful thing you can send."}
@@ -56,7 +56,7 @@ const NewTicketAttachments = ({
           <span className="font-mono text-[12px] flex-1 min-w-0 truncate">
             {one.name}
           </span>
-          <span className="text-[11.5px] text-content/85">
+          <span className="text-[11.5px] text-content/95">
             {fileSize(one.size)}
           </span>
           <button
@@ -65,7 +65,7 @@ const NewTicketAttachments = ({
               setFiles((have) => have.filter((f) => f.name !== one.name))
             }
             aria-label={`Remove ${one.name}`}
-            className="text-content/85 hover:text-content transition-colors"
+            className="text-content/95 hover:text-content transition-colors"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>

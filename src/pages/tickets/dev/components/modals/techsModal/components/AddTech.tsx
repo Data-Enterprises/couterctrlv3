@@ -52,7 +52,7 @@ const AddTech = ({
     <>
       <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
         <h2 className="text-[15.5px] font-semibold">Add a tech</h2>
-        <p className="mt-1 text-[12px] text-content/85">
+        <p className="mt-1 text-[12px] text-content/95">
           Support staff only — anyone on the company domain.
         </p>
       </div>
@@ -76,7 +76,7 @@ const AddTech = ({
         </label>
 
         {candidates.length === 0 && (
-          <p className="text-[12px] text-content/85">
+          <p className="text-[12px] text-content/95">
             Everybody eligible is already on the desk.
           </p>
         )}
@@ -98,7 +98,7 @@ const AddTech = ({
                 {codeValue}
               </span>
             </span>
-            <span className="text-[11px] text-content/55">
+            <span className="text-[11px] text-content/95">
               {picked?.was_a_tech ? "The code on their row" : "The next one"}
             </span>
           </div>

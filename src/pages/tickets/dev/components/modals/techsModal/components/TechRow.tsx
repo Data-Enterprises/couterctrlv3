@@ -44,7 +44,7 @@ const TechRow = ({
         <span className="block truncate font-mono text-[12.5px] font-semibold">
           {tech.username}
         </span>
-        <span className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px] text-content/85">
+        <span className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px] text-content/95">
           {tech.tech_code ?? "no code"} · {tech.name}
           {/* The one failure this sheet cannot fix: the tech row is
                                 one thing, the account behind it another. */}
@@ -56,7 +56,7 @@ const TechRow = ({
         </span>
       </span>
 
-      <span className="flex-none text-right text-[11px] text-content/85">
+      <span className="flex-none text-right text-[11px] text-content/95">
         <b className="block font-display text-[15px] font-bold text-content">
           {tech.ticket_count}
         </b>

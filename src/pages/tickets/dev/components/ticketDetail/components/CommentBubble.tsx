@@ -22,7 +22,7 @@ const CommentBubble = ({ comment, mine }: CommentBubbleProps) => {
         <span className="text-[12.5px] font-semibold">
           {mine ? "You" : comment.author_name}
         </span>
-        <span className="text-[11px] text-content/85">
+        <span className="text-[11px] text-content/95">
           {stampText(comment.created_at)}
         </span>
       </div>

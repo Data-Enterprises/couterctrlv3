@@ -45,7 +45,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
             <span className="block truncate text-[12px] font-semibold text-custom-white">
               {ticket.opened_by_name}
             </span>
-            <span className="block truncate font-mono text-[10px] text-custom-white/85">
+            <span className="block truncate font-mono text-[10px] text-custom-white/95">
               {ticket.opened_by_username}
             </span>
           </span>
@@ -56,7 +56,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
         {ticket.company_name && (
           <div className="mt-3 px-3.5">
             <div className="rounded-lg bg-bkg px-2.5 py-2">
-              <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
                 Company
               </div>
               <div className="mt-0.5 truncate text-[12.5px] font-semibold">
@@ -78,7 +78,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
 
         <Caption>Also from them</Caption>
         {others.length === 0 ? (
-          <p className="px-3.5 pb-3.5 text-[12px] text-content/85">
+          <p className="px-3.5 pb-3.5 text-[12px] text-content/95">
             Nothing else open or closed.
           </p>
         ) : (
@@ -94,7 +94,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
                   <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">
                     {t.title}
                   </span>
-                  <span className="flex-none text-[10.5px] text-content/85">
+                  <span className="flex-none text-[10.5px] text-content/95">
                     {whenText(t.updated_at)}
                   </span>
                 </span>

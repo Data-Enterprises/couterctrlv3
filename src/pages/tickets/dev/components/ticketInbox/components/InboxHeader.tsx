@@ -27,7 +27,7 @@ const InboxHeader = ({ isTech, scope, onTechs, rows }: InboxHeaderProps) => {
           type="button"
           onClick={onTechs}
           title="Who tickets can be assigned to"
-          className="flex-shrink-0 rounded-md border border-custom-white/25 px-2 py-[3px] text-[11px] font-medium text-custom-white/85 transition-colors hover:border-custom-white hover:text-custom-white"
+          className="flex-shrink-0 rounded-md border border-custom-white/25 px-2 py-[3px] text-[11px] font-medium text-custom-white/95 transition-colors hover:border-custom-white hover:text-custom-white"
         >
           Techs
         </button>
@@ -37,7 +37,7 @@ const InboxHeader = ({ isTech, scope, onTechs, rows }: InboxHeaderProps) => {
         <PageInfoButton page="help-desk" />
       </div>
       <div className="flex flex-shrink-0 items-baseline gap-1">
-        <span className="text-[10px] uppercase tracking-wide text-custom-white/85">
+        <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
           Showing
         </span>
         <span className="text-[13px] font-medium tabular-nums text-custom-white">

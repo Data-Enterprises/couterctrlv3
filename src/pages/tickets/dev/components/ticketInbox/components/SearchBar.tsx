@@ -51,7 +51,7 @@ const SearchBar = ({
               ? "border-severity_critical_text bg-severity_critical_text text-custom-white"
               : urgent > 0
                 ? "border-severity_critical_text/25 bg-severity_critical_bg text-severity_critical_text"
-                : "border-brand_line_2 text-content/85 hover:border-brand_slate"
+                : "border-brand_line_2 text-content/95 hover:border-brand_slate"
           }`}
         >
           Urgent <span className="tabular-nums">{urgent}</span>

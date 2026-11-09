@@ -18,7 +18,7 @@ interface TicketFactsProps {
 /** The one-line summary under a ticket's header: company (techs), who opened it, when, last update, category, stores, who has it and labels. */
 const TicketFacts = ({ ticket, isTech, canManage }: TicketFactsProps) => {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-content/85">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-content/95">
       {isTech && ticket.company_name && (
         <span className="font-semibold text-content">
           {ticket.company_name}

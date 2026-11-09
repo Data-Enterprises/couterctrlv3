@@ -122,7 +122,7 @@ const TicketInbox = ({
 
         {/* Shows the list of tickets based on user level */}
         {scope && scope !== "all" && (
-          <p className="m-0 mt-2 text-[11.5px] text-content/85">
+          <p className="m-0 mt-2 text-[11.5px] text-content/95">
             {SCOPE_TEXT[scope]}
           </p>
         )}
@@ -147,7 +147,7 @@ const TicketInbox = ({
 
       <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar">
         {rows.length === 0 && (
-          <p className="px-3 py-6 text-center text-[12.5px] text-content/85">
+          <p className="px-3 py-6 text-center text-[12.5px] text-content/95">
             {loading ? "Reading the queue…" : "Nothing here."}
           </p>
         )}

@@ -34,11 +34,11 @@ const QueueTabs = ({ isTech, tab, counts, onTab }: QueueTabsProps) => {
             className={`min-w-0 truncate border-b-2 px-1 pb-2 pt-2.5 text-center text-[12.5px] transition-colors ${
               active
                 ? "border-brand_navy font-semibold text-content"
-                : "border-transparent text-content/85 hover:border-brand_line_2"
+                : "border-transparent text-content/95 hover:border-brand_line_2"
             }`}
           >
             {q.label}{" "}
-            <span className="tabular-nums text-content/85">
+            <span className="tabular-nums text-content/95">
               {counts[q.key]}
             </span>
           </button>

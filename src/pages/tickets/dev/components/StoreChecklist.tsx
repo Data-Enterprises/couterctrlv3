@@ -70,7 +70,7 @@ const StoreChecklist = ({
     <div className="flex flex-col gap-1.5">
       <span className="text-[12.5px] font-medium">
         Which stores{" "}
-        <span className="font-normal text-content/85">
+        <span className="font-normal text-content/95">
           — tick at least one, or say it isn't about a store
         </span>
       </span>
@@ -103,12 +103,12 @@ const StoreChecklist = ({
             }`}
           >
             {options === null && (
-              <p className="m-0 text-[12px] text-content/85">
+              <p className="m-0 text-[12px] text-content/95">
                 Reading your stores...
               </p>
             )}
             {options !== null && groups.length === 0 && (
-              <p className="m-0 text-[12px] text-content/85">
+              <p className="m-0 text-[12px] text-content/95">
                 {query ? "No store matches that." : "No stores to pick from."}
               </p>
             )}
@@ -131,13 +131,13 @@ const StoreChecklist = ({
                       className="-mx-1 flex items-center gap-1 rounded px-1 pt-1 text-left hover:bg-row_selected"
                     >
                       <ChevronRightIcon
-                        className={`h-4 w-4 shrink-0 text-content/85 transition-transform ${open ? "rotate-90" : ""}`}
+                        className={`h-4 w-4 shrink-0 text-content/95 transition-transform ${open ? "rotate-90" : ""}`}
                         aria-hidden
                       />
                       <span className="text-[13px] font-semibold text-content">
                         {name}
                       </span>
-                      <span className="text-[12px] text-content/85">
+                      <span className="text-[12px] text-content/95">
                         · {g.stores.length}{" "}
                         {g.stores.length === 1 ? "store" : "stores"}
                         {ticked > 0 && (
@@ -159,7 +159,7 @@ const StoreChecklist = ({
                           <span className="min-w-0 truncate text-[12.5px] text-content">
                             {o.store_name || `Store ${o.store_number}`}
                             {o.deactivated && (
-                              <span className="text-content/85"> (closed)</span>
+                              <span className="text-content/95"> (closed)</span>
                             )}
                           </span>
                         }
@@ -185,7 +185,7 @@ const StoreChecklist = ({
             />
             <div className="flex-1" />
             {picked.length > 0 && (
-              <span className="text-[11.5px] tabular-nums text-content/85">
+              <span className="text-[11.5px] tabular-nums text-content/95">
                 {picked.length} picked
               </span>
             )}

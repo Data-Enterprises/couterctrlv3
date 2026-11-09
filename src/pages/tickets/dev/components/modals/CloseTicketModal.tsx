@@ -32,7 +32,7 @@ const CloseTicketModal = () => {
           <h2 className="text-[17px] font-semibold">
             Close {ticket?.ticket_number ?? "this ticket"}
           </h2>
-          <p className="text-[12.5px] text-content/85 mt-1">
+          <p className="text-[12.5px] text-content/95 mt-1">
             What you write here is posted to the thread, so it is what the
             client reads.
           </p>
@@ -52,7 +52,7 @@ const CloseTicketModal = () => {
         <div className="flex flex-col gap-2">
           <span className="text-[12.5px] font-medium">What kind of fix</span>
           <ClosedOptions kind={kind} setKind={setKind} />
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             Stored as a label on the ticket. It is what makes the archive worth
             reading a year from now.
           </span>

@@ -35,8 +35,8 @@ export const STATUS_CLASS: Record<TicketStatus, string> = {
 export const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-brand_danger_bg text-brand_danger",
   high: "bg-amber-50 text-amber-900",
-  normal: "bg-row_selected text-content/85",
-  low: "bg-row_selected text-content/85",
+  normal: "bg-row_selected text-content/95",
+  low: "bg-row_selected text-content/95",
 };
 
 /**

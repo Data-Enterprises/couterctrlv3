@@ -48,7 +48,7 @@ const RosterList = ({
         <h2 className="text-[15.5px] font-semibold">
           {canManageTechs ? "Ticket techs" : "On the desk"}
         </h2>
-        <p className="mt-1 text-[12px] text-content/85">
+        <p className="mt-1 text-[12px] text-content/95">
           Who tickets can be assigned to.
           {techs ? ` ${active.length} active.` : ""}
         </p>
@@ -73,13 +73,13 @@ const RosterList = ({
         )}
 
         {techs === null && !problem && (
-          <p className="py-6 text-center text-[12.5px] text-content/85">
+          <p className="py-6 text-center text-[12.5px] text-content/95">
             Reading the roster…
           </p>
         )}
 
         {techs !== null && shown.length === 0 && (
-          <p className="py-6 text-center text-[12.5px] text-content/85">
+          <p className="py-6 text-center text-[12.5px] text-content/95">
             {needle
               ? `Nobody on the desk matches “${query.trim()}”.`
               : "Nobody is on the desk."}
@@ -97,7 +97,7 @@ const RosterList = ({
         ))}
 
         {!canManageTechs && techs !== null && (
-          <p className="mt-2 text-[12px] text-content/85">
+          <p className="mt-2 text-[12px] text-content/95">
             Adding or standing down a tech is a programmer's job.
           </p>
         )}

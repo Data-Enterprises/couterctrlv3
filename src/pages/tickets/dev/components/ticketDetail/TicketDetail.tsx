@@ -65,7 +65,7 @@ const TicketDetail = () => {
           <div className="text-[13px] font-semibold">
             {ctx.detailLoading ? "Opening..." : "Pick a ticket"}
           </div>
-          <div className="text-[12.5px] text-content/85 mt-1.5">
+          <div className="text-[12.5px] text-content/95 mt-1.5">
             The thread, the files and what you can do to it all arrive in one
             call.
           </div>

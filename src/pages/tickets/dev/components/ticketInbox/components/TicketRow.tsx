@@ -61,25 +61,25 @@ const TicketRow = ({
               unread ? "font-bold" : "font-semibold"
             }`}
           >
-            <span className="font-mono text-[11px] text-content/85">
+            <span className="font-mono text-[11px] text-content/95">
               {ticket.ticket_number}
             </span>{" "}
             {ticket.title}
           </span>
-          <span className="flex-none text-[11px] text-content/85">
+          <span className="flex-none text-[11px] text-content/95">
             {whenText(ticket.updated_at)}
           </span>
         </span>
 
         {/* Who to answer: a client's own rows name the tech; a manager's staff tickets name who filed them. */}
-        <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
+        <span className="mt-0.5 block truncate text-[11.5px] text-content/95">
           {isTech || ticket.opened_by !== userid
             ? ticket.opened_by_name
             : (ticket.assigned_tech ?? "Unassigned")}
         </span>
 
         {snippet && (
-          <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
+          <span className="mt-0.5 block truncate text-[11.5px] text-content/95">
             {snippet}
           </span>
         )}
@@ -102,13 +102,13 @@ const TicketRow = ({
               title={storesOf(ticket)
                 .map((st) => `#${st.store_number} ${st.store_name}`)
                 .join(", ")}
-              className="rounded bg-bkg px-1.5 py-[1px] font-mono text-[10px] text-content/85"
+              className="rounded bg-bkg px-1.5 py-[1px] font-mono text-[10px] text-content/95"
             >
               {storeChipText(storesOf(ticket))}
             </span>
           )}
           {isTech && ticket.company_name && (
-            <span className="max-w-[120px] truncate rounded bg-bkg px-1.5 py-[1px] text-[10px] text-content/85">
+            <span className="max-w-[120px] truncate rounded bg-bkg px-1.5 py-[1px] text-[10px] text-content/95">
               {ticket.company_name}
             </span>
           )}

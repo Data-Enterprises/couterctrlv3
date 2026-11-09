@@ -34,7 +34,7 @@ const StandDown = ({
         <h2 className="text-[15.5px] font-semibold">
           Stand {tech.username} down?
         </h2>
-        <p className="mt-1 text-[12px] text-content/85">
+        <p className="mt-1 text-[12px] text-content/95">
           They come off the picker and stop being emailed about new tickets.
         </p>
       </div>
@@ -54,7 +54,7 @@ const StandDown = ({
           <label className="flex flex-col gap-1.5">
             <span className="text-[12.5px] font-medium">
               Hand them to{" "}
-              <span className="font-normal text-content/85">— optional</span>
+              <span className="font-normal text-content/95">— optional</span>
             </span>
             <SelectFilter
               plain
@@ -81,7 +81,7 @@ const StandDown = ({
           </div>
         )}
 
-        <p className="text-[12px] text-content/85">
+        <p className="text-[12px] text-content/95">
           Bringing them back later restores the same tech, with the same code
           and the same history.
         </p>
