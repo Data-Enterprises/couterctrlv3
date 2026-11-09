@@ -6,6 +6,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
+  clearMarkdownFilters,
   setLoading,
   setMarkdowns,
   setNotice,
@@ -78,6 +79,8 @@ export const useLoadMarkdowns = () => {
     const end = formatGoliathDate(ctx.endDate);
 
     ctx.dispatch(setMarkdowns([]));
+    // The last search's picks may not exist in this one's rows, as in Orders.
+    ctx.dispatch(clearMarkdownFilters());
     ctx.dispatch(setNotice(null));
     ctx.dispatch(setLoading(true));
 
