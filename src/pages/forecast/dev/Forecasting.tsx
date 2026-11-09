@@ -32,6 +32,7 @@ import { BATCH_SIZE } from "./utils";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 
 // Components
+import SearchPopup from "../../../components-dev/SearchPopup";
 import ForecastEntry from "./components/ForecastEntry";
 import ForecastListPanel from "./components/ForecastListPanel";
 import ForecastRowsTable from "./components/ForecastRowsTable";
@@ -199,20 +200,13 @@ const Forecasting = () => {
           </div>
 
           {searchOpen && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-              onClick={() => setSearchOpen(false)}
-            >
-              {/* Shrink-wraps the card; the backdrop centers (spanning the
-                  viewport would swallow backdrop clicks). */}
-              <div className="mx-4" onClick={(e) => e.stopPropagation()}>
-                <ForecastEntry
-                  onSearch={handleSearch}
-                  isLoading={isLoading}
-                  onClose={() => setSearchOpen(false)}
-                />
-              </div>
-            </div>
+            <SearchPopup onClose={() => setSearchOpen(false)}>
+              <ForecastEntry
+                onSearch={handleSearch}
+                isLoading={isLoading}
+                onClose={() => setSearchOpen(false)}
+              />
+            </SearchPopup>
           )}
         </>
       ) : (
