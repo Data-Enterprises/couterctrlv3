@@ -15,7 +15,7 @@ const GradeCell = ({
   partial?: boolean;
 }) => {
   if (pct === null)
-    return <span className="text-[13px] font-semibold text-gray-400">—</span>;
+    return <span className="text-[13px] font-semibold text-content/95">—</span>;
   return (
     <span
       className={`text-[13px] font-semibold whitespace-nowrap ${partial ? "text-content" : deltaTextClass(pct, threshold)}`}

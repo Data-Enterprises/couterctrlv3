@@ -611,7 +611,7 @@ const MarginPerfRightPanel = () => {
           <button
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "nocost"
-                ? "border-red-400 text-red-700"
+                ? "border-brand_danger text-brand_danger"
                 : "border-transparent text-content"
             }`}
             onClick={handleNoCostTab}

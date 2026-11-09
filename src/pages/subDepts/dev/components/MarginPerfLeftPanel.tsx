@@ -524,7 +524,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                                   isCompleteCoverage(grade.coverage.lwDayCount, grade.coverage.dayCount),
                                   gradingThreshold,
                                 )
-                              : "bg-gray-100 text-gray-400"
+                              : "bg-row_stripe text-brand_slate"
                           }`}
                           style={{ minWidth: PCT_COL_W }}
                         >
@@ -538,7 +538,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                                   isCompleteCoverage(grade.coverage.lyDayCount, grade.coverage.dayCount),
                                   gradingThreshold,
                                 )
-                              : "bg-gray-100 text-gray-400"
+                              : "bg-row_stripe text-brand_slate"
                           }`}
                           style={{ minWidth: PCT_COL_W }}
                         >
