@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { avgCouponAmount, sumCouponAmount } from "../utils";
+import { avgOf, isoOf, weekdayOf } from "../utils";
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
@@ -33,12 +33,6 @@ interface CpnSalesDayCardsProps {
   selectedDay: string;
   onSelect: (iso: string) => void;
 }
-
-const isoOf = (c: CouponItem) => c.sale_date.split("T")[0];
-const weekdayOf = (iso: string) => new Date(iso + "T12:00:00").getDay();
-
-const avgOf = (rows: CouponItem[]): number | null =>
-  rows.length === 0 ? null : avgCouponAmount(sumCouponAmount(rows), rows.length);
 
 const CpnSalesDayCards = ({
   coupons,

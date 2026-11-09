@@ -37,7 +37,7 @@ import SectionList from "./components/SectionList";
 import ReceiptPane from "./components/ReceiptPane";
 import TransactionsPane from "./components/TransactionsPane";
 
-interface Props {
+interface CpnSalesDetailPanelProps {
   /** Coupons for the selected store only. */
   storeCoupons: CouponItem[];
   storeLabel: string;
@@ -62,7 +62,7 @@ const CpnSalesDetailPanel = ({
   rangeLabel,
   threshold,
   grading,
-}: Props) => {
+}: CpnSalesDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);

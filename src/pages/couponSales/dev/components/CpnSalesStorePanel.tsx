@@ -15,12 +15,20 @@ import {
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
   type CouponTierFilter,
-  type CouponMetric,
 } from "../../../../features/dev/devCouponSalesSlice";
 
 // Utils
 import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
-import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../utils";
+import {
+  couponDotClass,
+  couponPillClass,
+  type CouponRow,
+  type CouponTotals,
+  METRIC_OPTS,
+} from "../utils";
+
+// Interfaces
+import type { StoreSortCol } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
@@ -30,21 +38,14 @@ import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider"
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SortHeader from "../../../../components-dev/SortHeader";
 
-const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
-  { key: "trend", label: "Trend" },
-  { key: "avg", label: "Avg $" },
-];
-
-type StoreSortCol = "amount" | "trans" | "count";
-
-interface Props {
+interface CpnSalesStorePanelProps {
   rows: CouponRow[];
   totals: CouponTotals;
   rangeLabel: string;
   onOpenSearch: () => void;
 }
 
-const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
+const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSalesStorePanelProps) => {
   const dispatch = useAppDispatch();
   const {
     threshold: rawThreshold,

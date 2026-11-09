@@ -454,3 +454,17 @@ export const buildTransactions = (
         TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.avgAmount - a.avgAmount,
     );
 };
+
+/** A coupon row's sale day as yyyy-mm-dd, and a day's weekday number. */
+export const isoOf = (c: CouponItem) => c.sale_date.split("T")[0];
+export const weekdayOf = (iso: string) => new Date(iso + "T12:00:00").getDay();
+
+/** The average coupon amount over rows, or null with none. */
+export const avgOf = (rows: CouponItem[]): number | null =>
+  rows.length === 0 ? null : avgCouponAmount(sumCouponAmount(rows), rows.length);
+
+/** The store list's Trend / Avg $ toggle. */
+export const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
+  { key: "trend", label: "Trend" },
+  { key: "avg", label: "Avg $" },
+];

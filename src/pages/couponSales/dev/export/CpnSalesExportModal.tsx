@@ -31,22 +31,20 @@ import {
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
+import type { Mode, Scope } from "./interfaces";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
-interface Props {
+interface CpnSalesExportModalProps {
   /** Coupons for the selected store. The whole-search set is offered too —
    *  the store list is graded across every store, so an export limited to one
    *  of them wouldn't reproduce what the left panel shows. */
   storeCoupons: CouponItem[];
 }
 
-type Mode = "presets" | "custom";
-type Scope = "store" | "all";
-
-const CpnSalesExportModal = ({ storeCoupons }: Props) => {
+const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
   const dispatch = useAppDispatch();
   const {
     coupons: allCoupons,
