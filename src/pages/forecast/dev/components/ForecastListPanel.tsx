@@ -16,16 +16,15 @@ import { formatCurrency2 } from "../../../../utils";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 
+interface ForecastListPanelProps {
+  onReSearch: () => void;
+}
+
 /**
  * The item panel, shaped like `UpcLeftPanel`. Ticking items narrows what the
  * grid and the KPI strip cover, without re-running the search.
  */
-
-interface Props {
-  onReSearch: () => void;
-}
-
-const ForecastListPanel = ({ onReSearch }: Props) => {
+const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
   const dispatch = useAppDispatch();
   const search = useAppSelector((s) => s.search);
   const { rowData, checkedUpcs, listFilter, adListRows } = useAppSelector(

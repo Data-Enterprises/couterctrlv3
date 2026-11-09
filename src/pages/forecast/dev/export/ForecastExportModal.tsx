@@ -4,12 +4,23 @@ import { useAppSelector } from "../../../../hooks";
 
 // Utils
 import { exportData } from "../../../../utils/export";
-import { formatCurrency2 } from "../../../../utils";
 import { rankRows, TIER_LABEL } from "../utils/forecastRanking";
+import {
+  cell,
+  CHECKBOX,
+  COLS,
+  CUSTOM_CHECKBOX,
+  CUSTOM_RADIO,
+  DOWNLOAD_BTN,
+  NOT_FOUND_HEADERS,
+  PREVIEW_ROWS,
+  SECTION_LABEL,
+  withRank,
+} from "./utils";
 
 // Interfaces
-import type { ColKey, ModalMode, PresetId, RankedRow } from "./interfaces";
-import type { RankEntry, Tier } from "../interfaces";
+import type { ColKey, ModalMode, PresetId } from "./interfaces";
+import type { Tier } from "../interfaces";
 import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
 
 // Components
@@ -17,92 +28,9 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
 /**
- * A row as exported: sorted by contribution, carrying its rank, band and share.
- */
-const withRank = (
-  rows: ForecastOutlierRow[],
-  ranks: Map<string, RankEntry>,
-): RankedRow[] =>
-  [...rows]
-    .sort((a, b) => b.fcstTotal - a.fcstTotal)
-    .map((row) => {
-      const entry = ranks.get(row.upc);
-      return {
-        ...row,
-        rank: entry?.rank ?? "",
-        tier: entry ? TIER_LABEL[entry.tier] : "",
-        sharePct: entry ? (entry.share * 100).toFixed(1) : "",
-      };
-    });
-
-/**
  * Forecast export, with the other export modals' shell and Presets/Custom
  * split. Presets are multi-select: each ticked one downloads as its own file.
  */
-
-const COLS: { key: ColKey; label: string }[] = [
-  { key: "rank", label: "Rank" },
-  { key: "tier", label: "Band" },
-  { key: "sharePct", label: "Share %" },
-  { key: "upc", label: "UPC" },
-  { key: "description", label: "Description" },
-  { key: "notes", label: "Notes" },
-  { key: "qtySold", label: "Qty sold" },
-  { key: "daysActive", label: "Days active" },
-  { key: "daysAtPrice", label: "Days at price" },
-  { key: "forecastWindow", label: "Forecast" },
-  { key: "adDays", label: "Ad days" },
-  { key: "fcstPrice", label: "Price" },
-  { key: "adFcst", label: "Ad fcst" },
-  { key: "fcstTotal", label: "Total" },
-  { key: "markdownDollars", label: "Markdown" },
-];
-
-const NOT_FOUND_HEADERS = [
-  { headerName: "UPC", field: "upc" },
-  { headerName: "Page Name", field: "pageName" },
-  { headerName: "Feature Description", field: "featureDescription" },
-  { headerName: "Feature Notes", field: "featureNotes" },
-];
-
-const PREVIEW_ROWS = 8;
-
-const CHECKBOX =
-  "mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0 disabled:cursor-not-allowed";
-const CUSTOM_CHECKBOX = "accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0";
-const CUSTOM_RADIO = "accent-brand_navy h-3.5 w-3.5";
-const SECTION_LABEL =
-  "text-[10px] font-semibold uppercase tracking-wide text-content mb-2";
-const DOWNLOAD_BTN =
-  "flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors";
-
-const cell = (row: RankedRow, key: ColKey) => {
-  switch (key) {
-    case "rank":
-      return String(row.rank);
-    case "tier":
-      return row.tier;
-    case "sharePct":
-      return `${row.sharePct}%`;
-    case "notes":
-      return row.notes ?? "";
-    case "daysActive":
-      return `${row.daysActive}/90`;
-    case "daysAtPrice":
-      return `${row.daysAtPrice}/${row.daysActive}`;
-    case "adDays":
-      return row.adDays === 0 ? "—" : String(row.adDays);
-    case "fcstPrice":
-      return formatCurrency2(row.fcstPrice);
-    case "fcstTotal":
-      return formatCurrency2(row.fcstTotal);
-    case "markdownDollars":
-      return formatCurrency2(Math.max(0, row.markdownDollars));
-    default:
-      return String(row[key] ?? "");
-  }
-};
-
 const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
   const {
     rowData,

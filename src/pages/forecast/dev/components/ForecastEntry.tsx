@@ -24,7 +24,7 @@ import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
 
-interface Props {
+interface ForecastEntryProps {
   onSearch: () => void;
   isLoading: boolean;
   loadingMessage?: string;
@@ -48,7 +48,7 @@ const ForecastEntry = ({
   loadingMessage = "Loading forecast...",
   onClose,
   notice,
-}: Props) => {
+}: ForecastEntryProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);

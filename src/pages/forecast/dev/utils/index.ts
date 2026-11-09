@@ -3,6 +3,8 @@ import { fitLinearDemand, predictQty, forecastUnits } from "../../../../utils/fo
 
 // Interfaces
 import type { PriceHistoryResult } from "../../../../interfaces";
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+import type { SortCol } from "../interfaces";
 
 export const formatRowData = (data: PriceHistoryResult[]) => {
   return data.map((item) => {
@@ -92,3 +94,34 @@ export const parseUpcs = (text: string): string[] =>
     .split(/[\n,;\r\t ]+/)
     .map((u) => u.trim())
     .filter((u) => u.length > 0 && /^\d+$/.test(u));
+
+/** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | share | markdown */
+export const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
+
+/** The forecast grid's sticky header row. */
+export const HEAD =
+  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
+
+/** The value a grid row sorts by in a column. */
+export const sortValue = (row: ForecastOutlierRow, col: SortCol) => row[col];
+
+/** One list drives the header row so every cell — sortable or not — is built
+ *  from the same class, in the same order as the row beneath it. */
+export const HEAD_CELLS: { col?: SortCol; label: string }[] = [
+  { label: "Item" },
+  { label: "Notes" },
+  { col: "qtySold", label: "Qty sold" },
+  { label: "Active" },
+  { label: "At price" },
+  { label: "Forecast" },
+  { label: "Ad days" },
+  { col: "fcstPrice", label: "Price" },
+  { col: "adFcst", label: "Ad fcst" },
+  { col: "fcstTotal", label: "Total" },
+  { label: "Share" },
+  { col: "markdownDollars", label: "Markdown" },
+];
+
+/** The API takes 500 UPCs at a time; a longer list is split so the first page
+ *  of results is on screen while the rest is still in flight. */
+export const BATCH_SIZE = 500;

@@ -26,6 +26,7 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 
 // Utils
 import { enrichForecastRows } from "./utils/enrichRows";
+import { BATCH_SIZE } from "./utils";
 
 // Interfaces
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
@@ -36,10 +37,6 @@ import ForecastListPanel from "./components/ForecastListPanel";
 import ForecastRowsTable from "./components/ForecastRowsTable";
 import ForecastCalcModal from "./calc/ForecastCalcModal";
 import ForecastExportModal from "./export/ForecastExportModal";
-
-/** The API takes 500 UPCs at a time; a longer list is split so the first page
- *  of results is on screen while the rest is still in flight. */
-const BATCH_SIZE = 500;
 
 const Forecasting = () => {
   const toast = useToast();

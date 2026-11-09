@@ -9,7 +9,7 @@ import { buildScenarioRows, COLS, HEAD } from "../utils";
 import type { PriceHistory } from "../../../../../interfaces";
 import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
 
-interface Props {
+interface ForecastScenariosProps {
   pricesWithQty: number[][];
   priceHistory: PriceHistory[];
   regularRetail: number;
@@ -40,7 +40,7 @@ const ForecastScenarios = ({
   onApply,
   onAddCustomPrice,
   onSetAdDays,
-}: Props) => {
+}: ForecastScenariosProps) => {
   const [customInput, setCustomInput] = useState("");
   const [adDaysInput, setAdDaysInput] = useState(
     liveAdDays > 0 ? liveAdDays.toString() : "",

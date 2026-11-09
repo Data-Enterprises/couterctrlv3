@@ -17,10 +17,10 @@ import {
 // Utils
 import { formatCurrency2 } from "../../../../utils";
 import { rankRows, tierCounts, tierSummary, exceptionsFor, EXCEPTION_LABEL, TIER_LABEL, TIER_STRIPE, TIER_CHIP_ON_NAVY, TIER_CHIP_BASE, TIER_CHIP_ON } from "../utils/forecastRanking";
+import { COLS, HEAD, HEAD_CELLS, sortValue } from "../utils";
 
 // Interfaces
 import type { Tier, SortCol } from "../interfaces";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
 
 // Components
 import {
@@ -38,32 +38,6 @@ import { colInputStyle } from "../../../../components-dev/filters/colFilterStyle
  * double-click. Notes are set in bulk from the toolbar, or per item in the
  * popup.
  */
-
-/** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | share | markdown */
-const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
-
-const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-const sortValue = (row: ForecastOutlierRow, col: SortCol) => row[col];
-
-/** One list drives the header row so every cell — sortable or not — is built
- *  from the same class, in the same order as the row beneath it. */
-const HEAD_CELLS: { col?: SortCol; label: string }[] = [
-  { label: "Item" },
-  { label: "Notes" },
-  { col: "qtySold", label: "Qty sold" },
-  { label: "Active" },
-  { label: "At price" },
-  { label: "Forecast" },
-  { label: "Ad days" },
-  { col: "fcstPrice", label: "Price" },
-  { col: "adFcst", label: "Ad fcst" },
-  { col: "fcstTotal", label: "Total" },
-  { label: "Share" },
-  { col: "markdownDollars", label: "Markdown" },
-];
-
 const ForecastRowsTable = ({
   onExportClick,
 }: {
