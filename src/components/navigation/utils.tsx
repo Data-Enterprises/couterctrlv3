@@ -644,9 +644,9 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
-        isVisible: true
+        isVisible: true,
       },
       // Commented out for publish — `suggested/order_weight` is dev-API only.
       // Restore this entry, the ScaleIcon import and the route in main.tsx
