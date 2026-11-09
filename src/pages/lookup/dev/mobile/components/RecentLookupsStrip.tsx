@@ -10,7 +10,7 @@ interface RecentLookupsStripProps {
 }
 
 const marginColor = (marginPct: number | null) => {
-  if (marginPct === null) return "text-content/85";
+  if (marginPct === null) return "text-content/95";
   return marginPct < 0 ? "text-red-700" : "text-emerald-700";
 };
 
@@ -31,19 +31,19 @@ const RecentLookupsStrip = ({
           className="grid gap-2 items-baseline pb-1.5 border-b border-brand_navy/15"
           style={{ gridTemplateColumns: COLS }}
         >
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide">
+          <span className="text-[10px] font-semibold text-content/95 uppercase tracking-wide">
             Item
           </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
+          <span className="text-[10px] font-semibold text-content/95 uppercase tracking-wide text-right">
             Qty
           </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
+          <span className="text-[10px] font-semibold text-content/95 uppercase tracking-wide text-right">
             Amount
           </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
+          <span className="text-[10px] font-semibold text-content/95 uppercase tracking-wide text-right">
             U cost
           </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
+          <span className="text-[10px] font-semibold text-content/95 uppercase tracking-wide text-right">
             Margin
           </span>
         </div>
@@ -58,13 +58,13 @@ const RecentLookupsStrip = ({
               <span className="text-[12px] font-medium text-content truncate">
                 {r.description}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {r.qty.toLocaleString()}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {formatCurrency2(r.revenue)}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {formatCurrency2(r.unitCost)}
               </span>
               <span
@@ -81,7 +81,7 @@ const RecentLookupsStrip = ({
 
   return (
     <div>
-      <div className="text-[10px] font-semibold text-content/85 uppercase tracking-wide mb-2">
+      <div className="text-[10px] font-semibold text-content/95 uppercase tracking-wide mb-2">
         Recent lookups
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">

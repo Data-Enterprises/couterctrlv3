@@ -53,7 +53,7 @@ const ItemDayChart = ({ buckets, selected, onToggle }: Props) => {
             </span>
             <span
               className={`text-[9.5px] ${
-                isSel ? "font-bold text-content" : "font-medium text-content/85"
+                isSel ? "font-bold text-content" : "font-medium text-content/95"
               }`}
             >
               {dayNumber(b.date)}

@@ -61,13 +61,13 @@ const Tile = ({
   sub?: string;
 }) => (
   <div className="flex flex-col">
-    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/85">
+    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/95">
       {label}
     </span>
     <span className="font-display text-[15px] font-bold tracking-tight text-content">
       {value}
     </span>
-    {sub && <span className="text-[10.5px] text-content/85">{sub}</span>}
+    {sub && <span className="text-[10.5px] text-content/95">{sub}</span>}
   </div>
 );
 
@@ -172,12 +172,12 @@ const LookupItemReport = ({
               <div className="truncate font-display text-[15px] font-bold leading-tight text-content">
                 {description}
               </div>
-              <div className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-wide text-content/85">
+              <div className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-wide text-content/95">
                 {productCode}
                 {categoryDescription ? ` \u00b7 ${categoryDescription}` : ""}
               </div>
               {/* The window as small print: the chart already draws it. */}
-              <div className="mt-1 truncate text-[11px] font-semibold text-content/85">
+              <div className="mt-1 truncate text-[11px] font-semibold text-content/95">
                 {storeName} &middot; {dateRangeLabel}
               </div>
             </div>
@@ -189,7 +189,7 @@ const LookupItemReport = ({
                 onClick={onBack}
                 title="New search"
                 aria-label="New search"
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-content/85 active:bg-bkg"
+                className="flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
               >
                 <MagnifyingGlassIcon className="h-4 w-4" />
               </button>
@@ -216,7 +216,7 @@ const LookupItemReport = ({
               <div data-testid="lookup-sale-types" className="border-t border-gray-100">
                 {/* A caption, not a heading: the item is the card's title. */}
               <div className="px-3.5 pb-1.5 pt-2.5">
-                <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/85">
+                <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/95">
                   By sale type
                 </span>
               </div>
@@ -249,7 +249,7 @@ const LookupItemReport = ({
                           {formatCurrency2(s.sales)}
                         </span>
                       </div>
-                      <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/85">
+                      <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/95">
                         <span>
                           {s.days} {s.days === 1 ? "day" : "days"}
                         </span>
@@ -289,7 +289,7 @@ const LookupItemReport = ({
               selected={selectedDay}
               onToggle={pickDay}
             />
-            <p className="px-1.5 pt-1 text-[12px] text-content/85">
+            <p className="px-1.5 pt-1 text-[12px] text-content/95">
               {selectedDay
                 ? "Tap the selected day again for the whole window."
                 : "Tap a day to scope this item to it."}
@@ -297,7 +297,7 @@ const LookupItemReport = ({
           </div>
 
           <div className="px-3.5 pb-3 pt-1.5">
-            <div className="text-[9.5px] font-semibold uppercase tracking-wider text-content/85">
+            <div className="text-[9.5px] font-semibold uppercase tracking-wider text-content/95">
               {day
                 ? dayLabel(day.date)
                 : `Sold · ${totals.sellingDays} of ${totals.windowDays} days`}
@@ -305,7 +305,7 @@ const LookupItemReport = ({
             <div className="mt-0.5 font-display text-[31px] font-extrabold leading-none tracking-tight text-content">
               {formatCurrency2(day ? day.revenue : totals.revenue)}
             </div>
-            <div className="mt-1 text-[12px] text-content/85">
+            <div className="mt-1 text-[12px] text-content/95">
               <span className="font-semibold text-content">
                 {formatUnits(day ? day.units : totals.units, weighed)}
               </span>
@@ -394,7 +394,7 @@ const LookupItemReport = ({
 
           {/* Said once, in a sentence — not in two columns, thirteen times. */}
           {isSale && margin.costMissing && (
-            <p className="border-t border-gray-100 bg-bkg px-3.5 py-2 text-[11.5px] text-content/85">
+            <p className="border-t border-gray-100 bg-bkg px-3.5 py-2 text-[11.5px] text-content/95">
               No cost on file for this item, so COGS and margin are unavailable.
             </p>
           )}
@@ -424,7 +424,7 @@ const LookupItemReport = ({
             <span className="font-display text-[13.5px] font-semibold text-content">
               Day by day
             </span>
-            <span className="text-[12px] text-content/85">
+            <span className="text-[12px] text-content/95">
               {isSale ? "newest first" : `${selectedSaleType.toLowerCase()} lines`}
             </span>
           </div>

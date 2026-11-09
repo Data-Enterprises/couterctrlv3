@@ -79,7 +79,7 @@ const LookupEntryScreen = ({
         >
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-content/15" />
-            <span className="text-[10.5px] text-content/85">
+            <span className="text-[10.5px] text-content/95">
               or scan the barcode
             </span>
             <div className="flex-1 h-px bg-content/15" />
@@ -108,7 +108,7 @@ const LookupEntryScreen = ({
                   onError={(message) => dispatch(setError(message))}
                 />
                 <button
-                  className="mt-1.5 text-[11.5px] text-content/85 underline"
+                  className="mt-1.5 text-[11.5px] text-content/95 underline"
                   onClick={() => setCameraOpen(false)}
                 >
                   Close camera

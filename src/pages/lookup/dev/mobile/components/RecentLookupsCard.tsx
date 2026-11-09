@@ -44,7 +44,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
                 {formatCurrency2(r.revenue)}
               </span>
             </div>
-            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/85">
+            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/95">
               <span className="font-semibold">{r.productCode}</span>
               {units > 0 && (
                 <span className="font-semibold text-content">
@@ -73,7 +73,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
         <span className="font-display text-[13.5px] font-semibold text-content">
           Recent lookups
         </span>
-        <span className="text-[12px] text-content/85">
+        <span className="text-[12px] text-content/95">
           {recentLookups.length}
         </span>
       </div>

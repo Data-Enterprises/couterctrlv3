@@ -46,10 +46,10 @@ const LookupDayRows = ({ buckets, weighed, selected, isSale }: Props) => {
               }`}
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span className="font-display text-[13px] font-medium text-content/85">
+                <span className="font-display text-[13px] font-medium text-content/95">
                   {dayLabel(b.date)}
                 </span>
-                <span className="text-[12px] text-content/85">no sales</span>
+                <span className="text-[12px] text-content/95">no sales</span>
               </div>
             </div>
           );
@@ -71,7 +71,7 @@ const LookupDayRows = ({ buckets, weighed, selected, isSale }: Props) => {
               </span>
             </div>
 
-            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/85">
+            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/95">
               <span className="font-semibold text-content">
                 {formatUnits(b.units, weighed)}
               </span>
