@@ -4,7 +4,7 @@ import { useMemo, useRef, useEffect } from "react";
 // Utils
 import { formatCurrency2, formatDateSimple } from "../../../../utils";
 import { normalizeProductCode } from "../../../../utils/productCode";
-import { describeReceipt } from "../utils";
+import { describeReceipt, ROW_COLS } from "../utils";
 import { ACTION_TONE } from "../utils/actionTone";
 
 // Interfaces
@@ -15,6 +15,22 @@ import type { ActionKind } from "../interfaces";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+
+interface InvoiceSheetProps {
+  vendorName: string;
+  invoiceId: number;
+  date: string;
+  /** The item you arrived from, so its line can be found without hunting. */
+  fromUpc: string;
+  /** That item's suggested action, so its row wears the same colour as the chip
+   *  on the sheet behind this modal. Undefined while the walk is still running
+   *  and nothing has been decided. */
+  fromAction?: ActionKind;
+  lines: ReceiverDetailsItem[];
+  loading: boolean;
+  error: string | null;
+  onClose: () => void;
+}
 
 /**
  * One delivery, in full.
@@ -36,27 +52,6 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
  * delivery of 82 sellable units. Every figure in the header is summed from the
  * lines.
  */
-
-/** Shared by the column header and every row — two copies of a grid template is
- *  how a header ends up one column out from its data. */
-const ROW_COLS = "30px 1fr 104px 46px 64px 64px 76px 76px 52px";
-
-interface Props {
-  vendorName: string;
-  invoiceId: number;
-  date: string;
-  /** The item you arrived from, so its line can be found without hunting. */
-  fromUpc: string;
-  /** That item's suggested action, so its row wears the same colour as the chip
-   *  on the sheet behind this modal. Undefined while the walk is still running
-   *  and nothing has been decided. */
-  fromAction?: ActionKind;
-  lines: ReceiverDetailsItem[];
-  loading: boolean;
-  error: string | null;
-  onClose: () => void;
-}
-
 const InvoiceSheet = ({
   vendorName,
   invoiceId,
@@ -67,7 +62,7 @@ const InvoiceSheet = ({
   loading,
   error,
   onClose,
-}: Props) => {
+}: InvoiceSheetProps) => {
   const fromRef = useRef<HTMLDivElement>(null);
 
   /** Only the flag counts are rolled up. Every other figure is per line now —

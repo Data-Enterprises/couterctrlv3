@@ -15,7 +15,7 @@ import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../../utils/dates";
 import { formatDate } from "../../../../utils";
 
 // Interfaces
-import type { ReceiptLine, ReportScope } from "../interfaces";
+import type { ActionKind, ReceiptLine, ReportScope } from "../interfaces";
 import type { ItemActionsResp } from "../../../../api/subMargins";
 import type {
   ReceiverListItem,
@@ -425,3 +425,69 @@ export const toReceiptLine = (
   free: line.free,
   returned: line.return,
 });
+
+/** How long the leave runs. Must match `animate-slideup` in tailwind.config —
+ *  too short and the card vanishes mid-slide, too long and it sits invisible
+ *  over the content beneath it. */
+export const LEAVE_MS = 150;
+
+/** Shared by the column header and every row — two copies of a grid template is
+ *  how a header ends up one column out from its data. */
+export const ROW_COLS = "30px 1fr 104px 46px 64px 64px 76px 76px 52px";
+
+/** Operational problems first, then pricing, then the clean rows. Someone
+ *  working down the sheet should hit what's costing them soonest. */
+/** The chip row.
+ *
+ * Two actions are deliberately absent. "pending" is not a pile anyone works
+ * through, and a chip for it would invite filtering to a set that empties
+ * itself a few seconds later — the progress strip below already says that.
+ * It still appears in the Action column and still exports.
+ *
+ * "insufficient" was left out too, on the grounds that no conclusion means no
+ * work to batch. The dev board review found the gap (finding R): an item there
+ * couldn't be filtered to at all. And since finding L it holds a real batch --
+ * deliveries that landed too late in the window to judge, each one saying
+ * "check again next week". So it is a pile now, last and in grey. */
+export const ORDER: ActionKind[] = [
+  "investigate",
+  "reorder",
+  "reprice",
+  "vendor",
+  "none",
+  "insufficient",
+];
+
+/**
+ * Action | Item | Units | vs LW | vs LY | Recv | Net | Last | Sales.
+ *
+ * Action is 92px — 4% off its original 96 — and Units 49px, 5% off its 52. Both
+ * lots of slack go to Item, the only `1fr` track, which is what the description
+ * and its UPC line actually need.
+ *
+ * Action has little left to give: "Call vendor" in a 12px semibold pill with
+ * `px-2` needs roughly 84. Recv and Net stay at 52 despite matching Units'
+ * original width — they carry signed values, so they need the extra character.
+ */
+export const COLS = "92px 1fr 49px 74px 74px 52px 52px 48px 60px";
+
+/**
+ * A comparison cell, in the app's list-row treatment — a filled pill rather
+ * than coloured text, so the two baselines read as a pair of chips against the
+ * plain figures either side of them.
+ *
+ * Graded on a threshold rather than Sales' binary red/green: a 2% dip is not a
+ * crisis, and painting it as one is the false alarm this page exists to avoid.
+ */
+export const DELTA_THRESHOLD = 10;
+
+/** Days from start to end, both counted, at least 1. */
+export const dayCount = (start: string, end: string) =>
+  Math.max(
+    1,
+    Math.round(
+      (new Date(`${end}T12:00:00`).getTime() -
+        new Date(`${start}T12:00:00`).getTime()) /
+        86400000,
+    ) + 1,
+  );

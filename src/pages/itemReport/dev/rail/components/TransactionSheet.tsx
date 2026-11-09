@@ -9,6 +9,7 @@ import { getTransactionList } from "../../../../../api/lossPrevention";
 import { fetchAllPages } from "../../../../../utils/paging";
 import { formatCurrency2, formatDateSimple } from "../../../../../utils";
 import { ACTION_TONE } from "../../utils/actionTone";
+import { BASKET_COLS, cell, LIST_COLS, num, saleNumber } from "../utils";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../../interfaces";
@@ -18,6 +19,19 @@ import type { ActionKind } from "../../interfaces";
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
+
+interface TransactionSheetProps {
+  /** The item whose price row was clicked. */
+  productCode: string;
+  itemDescription: string;
+  price: number;
+  /** That item's own register lines at this price — already in hand. */
+  lines: TransactionListItem[];
+  /** The item's suggested action, so its line in a basket wears the same colour
+   *  as its chip on the sheet. Undefined until the walk has decided one. */
+  action?: ActionKind;
+  onClose: () => void;
+}
 
 /**
  * The sales behind one price, and the basket behind one sale.
@@ -36,40 +50,6 @@ import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndic
  * something else* is a different one. Nothing else on the page can separate
  * them.
  */
-
-interface Props {
-  /** The item whose price row was clicked. */
-  productCode: string;
-  itemDescription: string;
-  price: number;
-  /** That item's own register lines at this price — already in hand. */
-  lines: TransactionListItem[];
-  /** The item's suggested action, so its line in a basket wears the same colour
-   *  as its chip on the sheet. Undefined until the walk has decided one. */
-  action?: ActionKind;
-  onClose: () => void;
-}
-
-/**
- * The receipt number a person would read off a till roll.
- *
- * `transaction_id` comes back empty on `transaction_list` — the identifier that
- * is actually populated is `sale_id`, a composite whose second segment is the
- * transaction number. Cashier Sales already derives it exactly this way; this
- * is that same derivation rather than a second guess at it.
- */
-const saleNumber = (saleId: string): string =>
-  saleId.split("-")[1] || saleId || "—";
-
-const cell = "text-[12px] font-medium text-content truncate";
-const num = `${cell} text-right tabular-nums`;
-
-/** No Qty column: `exact` price points are single-unit rings by definition, so
- *  it could only ever read 1. The space goes to the two fields that explain the
- *  ring instead — who put it through, and under what price type. */
-const LIST_COLS = "84px 92px 62px 1fr 82px 44px 72px";
-const BASKET_COLS = "1fr 92px 48px 72px 76px";
-
 const TransactionSheet = ({
   productCode,
   itemDescription,
@@ -77,7 +57,7 @@ const TransactionSheet = ({
   lines,
   action,
   onClose,
-}: Props) => {
+}: TransactionSheetProps) => {
   const { url, token } = useAppSelector((s) => s.app);
   const [openSale, setOpenSale] = useState<TransactionListItem | null>(null);
   const [basket, setBasket] = useState<TransactionListItem[]>([]);

@@ -35,22 +35,7 @@ import Line from "./components/Line";
 import ShowAll from "./components/ShowAll";
 import ReceiptDetail from "./components/ReceiptDetail";
 
-/**
- * The detail beside the sheet: what arrived, what moved, what it rang at.
- *
- * Deliberately thin and deliberately dumb. The sheet already states the finding
- * and the evidence; this exists so nobody has to leave the report to check the
- * numbers behind a line before acting on it. It is a reference column, not a
- * second report — anything needing a paragraph belongs in the evidence line,
- * where it will actually be read.
- *
- * The period strip at the top is the app's standard KPI strip with units in
- * place of dollars. Sales are deliberately absent: this page is about physical
- * movement, and the money lives in the sheet's trailing column and in the
- * export, where it can't crowd out the figure that matters here.
- */
-
-interface Props {
+interface ItemReportRailProps {
   item: ReportItem | null;
   receipts: ReceiptLine[];
   receivingComplete: boolean;
@@ -70,6 +55,20 @@ interface Props {
   evidence?: string;
 }
 
+/**
+ * The detail beside the sheet: what arrived, what moved, what it rang at.
+ *
+ * Deliberately thin and deliberately dumb. The sheet already states the finding
+ * and the evidence; this exists so nobody has to leave the report to check the
+ * numbers behind a line before acting on it. It is a reference column, not a
+ * second report — anything needing a paragraph belongs in the evidence line,
+ * where it will actually be read.
+ *
+ * The period strip at the top is the app's standard KPI strip with units in
+ * place of dollars. Sales are deliberately absent: this page is about physical
+ * movement, and the money lives in the sheet's trailing column and in the
+ * export, where it can't crowd out the figure that matters here.
+ */
 const ItemReportRail = ({
   item,
   receipts,
@@ -81,7 +80,7 @@ const ItemReportRail = ({
   onOpenPrice,
   action,
   evidence,
-}: Props) => {
+}: ItemReportRailProps) => {
   const dispatch = useAppDispatch();
   const { expandedReceipt, collapsedSections: collapsed } = useItemReportCtx();
   /** Which price row is open, or null. Local: a transient overlay over one

@@ -24,6 +24,15 @@ import type { Store } from "../../../../interfaces";
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 
+interface ItemReportEntryProps {
+  stores: Store[];
+  storeId: number;
+  onStoreSelect: (id: number) => void;
+  onRun: (upcs: string[], departments: string[]) => void;
+  loading: boolean;
+  loadingMessage: string;
+}
+
 /**
  * The entry screen: a store, a week, and a list of UPCs.
  *
@@ -37,16 +46,6 @@ import SingleDatePicker from "../../../../components-dev/datePickers/SingleDateP
  * users already build lists, and a second, different upload affordance in the
  * same nav category is a thing to relearn for no reason.
  */
-
-interface Props {
-  stores: Store[];
-  storeId: number;
-  onStoreSelect: (id: number) => void;
-  onRun: (upcs: string[], departments: string[]) => void;
-  loading: boolean;
-  loadingMessage: string;
-}
-
 const ItemReportEntry = ({
   stores,
   storeId,
@@ -54,7 +53,7 @@ const ItemReportEntry = ({
   onRun,
   loading,
   loadingMessage,
-}: Props) => {
+}: ItemReportEntryProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);

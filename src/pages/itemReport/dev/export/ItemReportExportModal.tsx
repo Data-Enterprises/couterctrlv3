@@ -27,6 +27,16 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 
+interface ItemReportExportModalProps {
+  onClose: () => void;
+  storeName: string;
+  dateLabel: string;
+  lookbackDays: number;
+  rows: SheetRow[];
+  receiptsByUpc: Record<string, ReceiptLine[]>;
+  receivingComplete: boolean;
+}
+
 /**
  * CSV export for Item Actions.
  *
@@ -45,17 +55,6 @@ import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFil
  * per price held, receipts one row per delivery — joining them would repeat an
  * item's totals down every period and multiply its sales in a pivot.
  */
-
-interface Props {
-  onClose: () => void;
-  storeName: string;
-  dateLabel: string;
-  lookbackDays: number;
-  rows: SheetRow[];
-  receiptsByUpc: Record<string, ReceiptLine[]>;
-  receivingComplete: boolean;
-}
-
 const ItemReportExportModal = ({
   onClose,
   storeName,
@@ -64,7 +63,7 @@ const ItemReportExportModal = ({
   rows,
   receiptsByUpc,
   receivingComplete,
-}: Props) => {
+}: ItemReportExportModalProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [presetKey, setPresetKey] = useState<string>(PRESETS[0].key);
   const preset = PRESETS.find((p) => p.key === presetKey) ?? PRESETS[0];

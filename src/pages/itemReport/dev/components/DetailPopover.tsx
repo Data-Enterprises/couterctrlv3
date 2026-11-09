@@ -1,6 +1,9 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
 
+// Utils
+import { LEAVE_MS } from "../utils";
+
 // Components
 import { XMarkIcon } from "@heroicons/react/16/solid";
 
@@ -24,10 +27,6 @@ import { XMarkIcon } from "@heroicons/react/16/solid";
  * unmounted the instant it closes cannot animate on the way out. It keeps
  * itself on screen for the length of the leave and then removes itself.
  */
-/** How long the leave runs. Must match `animate-slideup` in tailwind.config —
- *  too short and the card vanishes mid-slide, too long and it sits invisible
- *  over the content beneath it. */
-const LEAVE_MS = 150;
 const DetailPopover = ({
   title,
   subtitle,

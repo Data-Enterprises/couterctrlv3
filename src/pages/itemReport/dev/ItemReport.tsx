@@ -37,6 +37,7 @@ import {
   weekEnding,
   fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
+  dayCount,
 } from "./utils";
 import { buildPriceEras } from "./utils/priceEras";
 import { buildReport, buildRollup } from "./utils/report";
@@ -78,17 +79,6 @@ import ItemReportExportModal from "./export/ItemReportExportModal";
  * three windows plus an invoice walk — so nothing here may be the kind of state
  * that dies when someone clicks away and comes back.
  */
-
-const dayCount = (start: string, end: string) =>
-  Math.max(
-    1,
-    Math.round(
-      (new Date(`${end}T12:00:00`).getTime() -
-        new Date(`${start}T12:00:00`).getTime()) /
-        86400000,
-    ) + 1,
-  );
-
 const ItemReport = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

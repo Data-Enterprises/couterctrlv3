@@ -14,11 +14,11 @@ import {
 
 // Utils
 import { formatCurrencyCompact } from "../../../../utils";
-import { formatPct, pillClass } from "../../../../utils/severity";
 import { ACTION_TONE } from "../utils/actionTone";
 import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
 import { daysSince } from "../utils/metrics";
 import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interfaces";
+import { COLS, ORDER } from "../utils";
 
 // Interfaces
 
@@ -33,6 +33,7 @@ import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import DetailPopover from "./DetailPopover";
+import DeltaPill from "./DeltaPill";
 
 /**
  * The report itself: one row per item, its action, and the evidence for it.
@@ -54,7 +55,7 @@ import DetailPopover from "./DetailPopover";
  * stopped being scannable, which is the one thing a sheet has to be.
  */
 
-interface Props {
+interface ItemReportSheetProps {
   rows: SheetRow[];
   counts: Record<ActionKind, number>;
   receiptsByUpc: Record<string, ReceiptLine[]>;
@@ -82,60 +83,6 @@ interface Props {
 /** Chip and rule colour per action. Kept to one place so the strip, the row
  *  marker and the chip can't disagree about what "reorder" looks like. */
 
-/** Operational problems first, then pricing, then the clean rows. Someone
- *  working down the sheet should hit what's costing them soonest. */
-/** The chip row.
- *
- * Two actions are deliberately absent. "pending" is not a pile anyone works
- * through, and a chip for it would invite filtering to a set that empties
- * itself a few seconds later — the progress strip below already says that.
- * It still appears in the Action column and still exports.
- *
- * "insufficient" was left out too, on the grounds that no conclusion means no
- * work to batch. The dev board review found the gap (finding R): an item there
- * couldn't be filtered to at all. And since finding L it holds a real batch --
- * deliveries that landed too late in the window to judge, each one saying
- * "check again next week". So it is a pile now, last and in grey. */
-const ORDER: ActionKind[] = [
-  "investigate",
-  "reorder",
-  "reprice",
-  "vendor",
-  "none",
-  "insufficient",
-];
-
-/**
- * Action | Item | Units | vs LW | vs LY | Recv | Net | Last | Sales.
- *
- * Action is 92px — 4% off its original 96 — and Units 49px, 5% off its 52. Both
- * lots of slack go to Item, the only `1fr` track, which is what the description
- * and its UPC line actually need.
- *
- * Action has little left to give: "Call vendor" in a 12px semibold pill with
- * `px-2` needs roughly 84. Recv and Net stay at 52 despite matching Units'
- * original width — they carry signed values, so they need the extra character.
- */
-const COLS = "92px 1fr 49px 74px 74px 52px 52px 48px 60px";
-
-/**
- * A comparison cell, in the app's list-row treatment — a filled pill rather
- * than coloured text, so the two baselines read as a pair of chips against the
- * plain figures either side of them.
- *
- * Graded on a threshold rather than Sales' binary red/green: a 2% dip is not a
- * crisis, and painting it as one is the false alarm this page exists to avoid.
- */
-const DELTA_THRESHOLD = 10;
-
-const DeltaPill = ({ pct }: { pct: number | null }) => (
-  <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap justify-self-end ${pillClass(pct, DELTA_THRESHOLD)}`}
-  >
-    {pct === null ? "—" : formatPct(pct)}
-  </span>
-);
-
 const ItemReportSheet = ({
   rows,
   counts,
@@ -152,7 +99,7 @@ const ItemReportSheet = ({
   noReceiverCount,
   noReceiverItems,
   itemCount,
-}: Props) => {
+}: ItemReportSheetProps) => {
   const dispatch = useAppDispatch();
   // Filters live in the slice with everything else. A route change would
   // otherwise silently reset which pile someone was working through, and they
