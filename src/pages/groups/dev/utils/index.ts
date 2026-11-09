@@ -1,6 +1,7 @@
 // Interfaces
-import type { Group } from "@/features/groupSlice";
-import type { StoreWithGroupStatus } from "@/interfaces";
+import type { Group } from "../../../../features/groupSlice";
+import type { StoreWithGroupStatus } from "../../../../interfaces";
+import type { GroupsTab } from "../interfaces";
 
 /** Who a group belongs to, from where the user stands. */
 export const kindOf = (g: Group, userid: number): "mine" | "sharedByYou" | "sharedWithYou" =>
@@ -19,3 +20,15 @@ export const byFilter = (
   stores
     .filter((s) => s.active === active)
     .filter((s) => s.store_name.toLowerCase().includes(filter.toLowerCase()))
+
+/** The page's two tabs, User Groups and Shared Groups, for FormNavTabs. */
+export const groupsTabs: { id: GroupsTab; label: string }[] = [
+  {
+    id: "user",
+    label: "User Groups",
+  },
+  {
+    id: "shared",
+    label: "Shared Groups",
+  },
+];

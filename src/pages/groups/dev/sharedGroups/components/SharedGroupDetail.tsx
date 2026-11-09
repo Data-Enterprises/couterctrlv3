@@ -26,6 +26,7 @@ import type {
   SharedGroupUser,
   SharedGroupUsersResp,
 } from "../../../../../interfaces";
+import type { Envelope } from "../interfaces";
 
 // Components
 import AssignPanel from "../../../../../components-dev/AssignPanel";
@@ -33,14 +34,12 @@ import IconButton from "../../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface SharedGroupDetailProps {
   group: SharedGroup;
   onChanged: () => void;
   onRenamed: () => void;
   onDeleted: () => void;
 }
-
-type Envelope = { error: number; msg?: string };
 
 /**
  * One of the caller's shared groups: its name, its stores, and who can search with it. Only its creator manages it, not who it was shared with.
@@ -50,7 +49,7 @@ const SharedGroupDetail = ({
   onChanged,
   onRenamed,
   onDeleted,
-}: Props) => {
+}: SharedGroupDetailProps) => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
   const [editing, setEditing] = useState(false);

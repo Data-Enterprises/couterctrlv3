@@ -1,16 +1,8 @@
+// Utils
+import { groupsTabs } from "../utils";
+
 // Interfaces
 import type { GroupsTab } from "../interfaces";
-
-const tabs: { id: GroupsTab; label: string }[] = [
-  {
-    id: "user",
-    label: "User Groups",
-  },
-  {
-    id: "shared",
-    label: "Shared Groups",
-  },
-];
 
 interface FormNavTabsProps {
   setTab: (tab: GroupsTab) => void;
@@ -20,7 +12,7 @@ interface FormNavTabsProps {
 const FormNavTabs = ({ setTab, tab }: FormNavTabsProps) => {
   return (
     <div className="flex border-b border-gray-100 flex-shrink-0">
-      {tabs.map(({ id, label }) => (
+      {groupsTabs.map(({ id, label }) => (
         <button
           key={id}
           onClick={() => setTab(id)}

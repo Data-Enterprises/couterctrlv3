@@ -28,14 +28,14 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import StoreColumn from "./StoreColumn";
 
-interface Props {
+interface GroupDetailProps {
   group: Group;
   onRenamed: (newName: string) => void;
   onDeleted: () => void;
 }
 
 // Selected group's rename/delete + store assign panel, all in one view
-const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
+const GroupDetail = ({ group, onRenamed, onDeleted }: GroupDetailProps) => {
   const ctx = useGroupCtx();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
