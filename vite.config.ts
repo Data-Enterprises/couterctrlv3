@@ -33,8 +33,9 @@ export default defineConfig({
     environment: "jsdom",
     // Test discovery defaults to the whole repo, so a spec parked in `trash/`
     // during the dev/prod separation would still run — against code nothing
-    // imports any more.
-    exclude: ["**/node_modules/**", "**/dist/**", "trash/**"],
+    // imports any more. `.claude/` holds session worktrees: whole copies of
+    // the repo whose tests would run against this checkout's code.
+    exclude: ["**/node_modules/**", "**/dist/**", "trash/**", ".claude/**"],
     setupFiles: "./src/vitest.setup.ts",
     globals: true,
     coverage: {
