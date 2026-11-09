@@ -25,6 +25,8 @@ interface OrdersExportSheetProps {
   selectedOrder: SelectedOrder;
 }
 
+/** The phone Orders export sheet. Presets picks All Orders, the selected order, or chosen sub depts; Custom groups
+ *  by chosen fields with sum/avg metrics over the chosen sub depts. */
 const OrdersExportSheet = ({
   onClose,
   storeNames,

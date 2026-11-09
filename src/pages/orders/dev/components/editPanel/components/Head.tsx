@@ -1,5 +1,6 @@
 
 
+/** A column header cell for the Orders edit table. Editable columns are tinted with a pencil mark. */
 const Head = ({
   label,
   width,

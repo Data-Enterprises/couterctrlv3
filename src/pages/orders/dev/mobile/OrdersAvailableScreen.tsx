@@ -26,6 +26,9 @@ interface OrdersAvailableScreenProps {
   onOpenSearch: () => void;
 }
 
+/** The phone Orders first screen: orders found for the search, grouped by order type (tabs, collapsible in All)
+ *  with a store filter, a date filter and per-store order counts. Tapping a store, or "Select all N stores",
+ *  opens its orders. */
 const OrdersAvailableScreen = ({
   cards,
   selectedKey,

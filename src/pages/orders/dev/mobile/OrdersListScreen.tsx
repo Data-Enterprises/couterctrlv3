@@ -28,6 +28,8 @@ interface OrdersListScreenProps {
   onExport: () => void;
 }
 
+/** The phone Orders list for the chosen type and date: order, item and retail chips, a sub dept filter, an export
+ *  button, and a card per order with status, store (multi-store only), retail, cost and sub dept chips. */
 const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupStores, onBack, onSelectOrder, onExport }: OrdersListScreenProps) => {
   const [subDeptFilter, setSubDeptFilter] = useState("");
 

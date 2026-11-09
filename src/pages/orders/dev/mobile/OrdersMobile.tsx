@@ -42,6 +42,8 @@ import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
 
+/** The phone Orders page. It holds the search card, then moves through the available orders, the order list and a
+ *  bottom sheet of one order's lines, and owns the order fetches and the export sheet. */
 const OrdersMobile = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();

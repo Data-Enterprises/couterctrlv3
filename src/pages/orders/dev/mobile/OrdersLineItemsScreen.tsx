@@ -19,6 +19,8 @@ interface OrdersLineItemsScreenProps {
   onExport: () => void;
 }
 
+/** The phone Orders sheet for one order: store, order number and date, item/retail/cost chips with an Export button,
+ *  and the order's line items. Only that order's store and location are counted. */
 const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: OrdersLineItemsScreenProps) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.

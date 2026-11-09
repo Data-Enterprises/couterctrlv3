@@ -1,5 +1,6 @@
 
 
+/** A labelled text box in the Orders edit panel for finding a line, with a placeholder hint. */
 const SeekField = ({
   id,
   label,
