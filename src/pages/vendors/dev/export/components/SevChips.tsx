@@ -45,7 +45,7 @@ const SevChips = ({ value, onToggle, disabled, hint }: SevChipsProps) => (
       ))}
     </div>
     {hint && (
-      <p className="text-[10px] text-amber-800 mt-1">
+      <p className="text-[10px] text-severity_watch_text mt-1">
         Pick at least one severity or this dataset exports nothing.
       </p>
     )}
