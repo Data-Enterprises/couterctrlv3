@@ -1,7 +1,7 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 
-interface Props {
+interface KpiStripProps {
   totalCoupons: number;
   totalAmount: number;
   avgPerCoupon: number;
@@ -18,7 +18,7 @@ const KpiStrip = ({
   uniqueProducts,
   uniqueSubDepts,
   vendorCount,
-}: Props) => (
+}: KpiStripProps) => (
     <div data-help="kpis" className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
       {[
         { label: "Coupons", value: String(totalCoupons) },

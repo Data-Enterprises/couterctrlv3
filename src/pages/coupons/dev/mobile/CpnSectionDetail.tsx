@@ -12,6 +12,7 @@ import { getCashierTransaction } from "../../../../api/lossPrevention";
 // Utils
 import { formatCurrency2, formatDate } from "../../../../utils";
 import { couponValueOf } from "../../../../utils/couponValue";
+import { buildSaleId } from "./utils";
 
 // Interfaces
 import type { AggRow, AggUse } from "./interfaces";
@@ -27,7 +28,7 @@ import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import CpnTotalsCard from "./CpnTotalsCard";
 
-interface Props {
+interface CpnSectionDetailProps {
   coupons: CouponItem[];
   sectionLabel: string;
   /** "Sub dept" | "Date" | "Cashier" — the tab this section came from. */
@@ -37,11 +38,6 @@ interface Props {
   onBack: () => void;
 }
 
-const buildSaleId = (row: CouponItem) => {
-  const [y, m, d] = row.sale_date.split("T")[0].split("-");
-  return `${row.storeid}-${row.sale_id}-${row.terminal}-${+m}-${+d}-${y}`;
-};
-
 const CpnSectionDetail = ({
   coupons,
   sectionLabel,
@@ -49,7 +45,7 @@ const CpnSectionDetail = ({
   dateRangeLabel,
   sortMetric,
   onBack,
-}: Props) => {
+}: CpnSectionDetailProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);

@@ -9,12 +9,12 @@ import ThresholdFilter from "../../../../../../components-dev/filters/ThresholdF
 import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
 import ColFilter from "./ColFilter";
 
-interface Props {
+interface GridHeaderProps {
   filters: GridFilters;
 }
 
 /** The grid's headings, four of them filters. */
-const GridHeader = ({ filters }: Props) => {
+const GridHeader = ({ filters }: GridHeaderProps) => {
   const {
     draftUpc,
     setDraftUpc,

@@ -21,7 +21,7 @@ import CpnListControls from "./CpnListControls";
 import CpnSectionRow from "./CpnSectionRow";
 import CpnTotalsCard from "./CpnTotalsCard";
 
-interface Props {
+interface CpnStoreListProps {
   coupons: CouponItem[];
   groupName: string;
   dateRangeLabel: string;
@@ -40,7 +40,7 @@ const CpnStoreList = ({
   onSortMetric,
   onSelect,
   onSearch,
-}: Props) => {
+}: CpnStoreListProps) => {
   const [exportOpen, setExportOpen] = useState(false);
   // Store names come from assignedStores, never the coupon payload; groupStores
   // covers searched-group stores this user isn't assigned to.

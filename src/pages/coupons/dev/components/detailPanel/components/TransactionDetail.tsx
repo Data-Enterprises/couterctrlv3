@@ -4,7 +4,7 @@ import TxHeader from "./TxHeader";
 import TxLinesTable from "./TxLinesTable";
 import TxTotals from "./TxTotals";
 
-interface Props {
+interface TransactionDetailProps {
   txMeta: any;
   txLines: any[];
   onBack: () => void;
@@ -25,7 +25,7 @@ const TransactionDetail = ({
   txTax,
   txNet,
   txTotal,
-}: Props) => (
+}: TransactionDetailProps) => (
     <>
       <TxHeader txMeta={txMeta} txLines={txLines} onBack={onBack} onExport={onExport} />
       {txLines.length === 0 ? (

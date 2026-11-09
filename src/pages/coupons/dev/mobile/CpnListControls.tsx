@@ -2,7 +2,7 @@
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import MobileSortChips from "../../../../components-dev/mobile/MobileSortChips";
 
-interface Props {
+interface CpnListControlsProps {
   value: "amount" | "qty";
   onChange: (v: "amount" | "qty") => void;
   onExport: () => void;
@@ -12,7 +12,7 @@ interface Props {
  * The sort chips above a coupon list, with Export on the end of the row
  * (`PerfCardHeader` has no actions slot for it).
  */
-const CpnListControls = ({ value, onChange, onExport }: Props) => (
+const CpnListControls = ({ value, onChange, onExport }: CpnListControlsProps) => (
   <div className="flex items-center border-b border-brand_line">
     <div className="min-w-0 flex-1">
       <MobileSortChips

@@ -1,7 +1,7 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 
-interface Props {
+interface TxTotalsProps {
   txCoupons: number;
   txTax: number;
   txNet: number;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 /** Coupons, tax, net and total for the transaction. */
-const TxTotals = ({ txCoupons, txTax, txNet, txTotal }: Props) => (
+const TxTotals = ({ txCoupons, txTax, txNet, txTotal }: TxTotalsProps) => (
     <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-gray-100 bg-gray-50">
       {txCoupons > 0 && (
         <div className="text-[11px] text-amber-700/70">

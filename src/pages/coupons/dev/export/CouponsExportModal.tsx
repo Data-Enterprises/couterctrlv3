@@ -14,6 +14,7 @@ import {
   METRICS,
   AGG_OPTIONS,
 } from "../utils";
+import { PREVIEW_ROWS } from "./utils";
 
 // Interfaces
 import type { MetricSelection, ModalMode } from "../interfaces";
@@ -30,8 +31,6 @@ interface CouponsExportModalProps {
   subtitle: string;
   rows: CouponItem[];
 }
-
-const PREVIEW_ROWS = 5;
 
 const CouponsExportModal = ({
   onClose,

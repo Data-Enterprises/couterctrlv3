@@ -4,13 +4,13 @@ import { GROUP_TABS } from "../utils";
 // Interfaces
 import type { GroupTab } from "../../../interfaces";
 
-interface Props {
+interface GroupTabsProps {
   groupTab: GroupTab;
   onTab: (tab: GroupTab) => void;
 }
 
 /** Sub dept, Date, Cashier. */
-const GroupTabs = ({ groupTab, onTab }: Props) => (
+const GroupTabs = ({ groupTab, onTab }: GroupTabsProps) => (
     <div data-help="tabs" className="flex items-center border-b border-gray-100 flex-shrink-0">
       {GROUP_TABS.map((t) => (
         <button

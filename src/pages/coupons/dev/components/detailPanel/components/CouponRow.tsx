@@ -7,7 +7,7 @@ import type { AggRow } from "../interfaces";
 // Components
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface CouponRowProps {
   agg: AggRow;
   idx: number;
   isExp: boolean;
@@ -16,7 +16,7 @@ interface Props {
 }
 
 /** One coupon in the grid, and its uses when opened. */
-const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: Props) => (
+const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowProps) => (
     <>
       <tr
         key={agg.product_code}

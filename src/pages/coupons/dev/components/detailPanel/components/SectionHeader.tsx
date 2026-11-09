@@ -6,7 +6,7 @@ import { GROUP_TABS } from "../utils";
 import type { GroupTab } from "../../../interfaces";
 import type { GroupedSection } from "../interfaces";
 
-interface Props {
+interface SectionHeaderProps {
   groupedSections: GroupedSection[];
   selectedSection: string;
   groupTab: GroupTab;
@@ -27,7 +27,7 @@ const SectionHeader = ({
   secAmount,
   secAvg,
   secProducts,
-}: Props) => {
+}: SectionHeaderProps) => {
   const sec = groupedSections.find(
     (s) => s.key === selectedSection,
   );

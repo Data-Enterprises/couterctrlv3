@@ -1,7 +1,7 @@
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface DetailHeaderProps {
   headerTitle: string;
   headerSuffix: string;
   dateRangeLabel: string;
@@ -16,7 +16,7 @@ const DetailHeader = ({
   dateRangeLabel,
   totalCoupons,
   onExport,
-}: Props) => (
+}: DetailHeaderProps) => (
     <div
       className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
       style={{ background: "rgb(var(--color-brand-navy))" }}

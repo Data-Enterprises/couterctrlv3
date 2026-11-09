@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 
 // Utils
 import { sumCouponAmount } from "../../../../utils/couponValue";
+import { TABS } from "./utils";
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
@@ -15,7 +16,7 @@ import CpnListControls from "./CpnListControls";
 import CpnSectionRow from "./CpnSectionRow";
 import CpnTotalsCard from "./CpnTotalsCard";
 
-interface Props {
+interface CpnOverviewProps {
   coupons: CouponItem[];
   storeName: string;
   dateRangeLabel: string;
@@ -30,12 +31,6 @@ interface Props {
   onBack: () => void;
 }
 
-const TABS: { key: GroupTab; label: string }[] = [
-  { key: "subdept", label: "Sub dept" },
-  { key: "date", label: "Date" },
-  { key: "cashier", label: "Cashier" },
-];
-
 const CpnOverview = ({
   coupons,
   storeName,
@@ -47,7 +42,7 @@ const CpnOverview = ({
   onTabChange,
   onSectionSelect,
   onBack,
-}: Props) => {
+}: CpnOverviewProps) => {
   const [exportOpen, setExportOpen] = useState(false);
 
   const sections = useMemo(() => {

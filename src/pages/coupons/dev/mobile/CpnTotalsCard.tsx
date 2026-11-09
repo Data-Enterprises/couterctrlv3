@@ -5,7 +5,7 @@ import { sumCouponAmount } from "../../../../utils/couponValue";
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
 
-interface Props {
+interface CpnTotalsCardProps {
   coupons: CouponItem[];
   /** What the figures are OF, on the line above the headline. */
   caption: string;
@@ -16,7 +16,7 @@ interface Props {
  * other three as tiles. Totals go through `sumCouponAmount`, never a running
  * add, so the transaction-level fallback is deduped (see utils/couponValue).
  */
-const CpnTotalsCard = ({ coupons, caption }: Props) => {
+const CpnTotalsCard = ({ coupons, caption }: CpnTotalsCardProps) => {
   const total = sumCouponAmount(coupons);
   const avg = coupons.length > 0 ? total / coupons.length : 0;
   const products = new Set(coupons.map((c) => c.product_code)).size;

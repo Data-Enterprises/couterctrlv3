@@ -5,7 +5,7 @@ import type { AggRow, GridFilters } from "../interfaces";
 import GridHeader from "./GridHeader";
 import CouponRow from "./CouponRow";
 
-interface Props {
+interface CouponGridProps {
   gridRows: any[];
   selectedSection: string | null;
   filters: GridFilters;
@@ -24,7 +24,7 @@ const CouponGrid = ({
   expandedCoupons,
   toggleCoupon,
   handleRowClick,
-}: Props) => (
+}: CouponGridProps) => (
     <>
       {gridRows.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">

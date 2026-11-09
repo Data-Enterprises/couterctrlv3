@@ -4,7 +4,7 @@ import { formatCurrency2 } from "../../../../utils";
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface CpnSectionRowProps {
   label: string;
   count: number;
   total: number;
@@ -15,7 +15,7 @@ interface Props {
  * One grouped row: a store, a sub department, a date or a cashier. The count
  * sits on line two beside the average, which is derived as total over count.
  */
-const CpnSectionRow = ({ label, count, total, onClick }: Props) => (
+const CpnSectionRow = ({ label, count, total, onClick }: CpnSectionRowProps) => (
   <button
     type="button"
     onClick={onClick}

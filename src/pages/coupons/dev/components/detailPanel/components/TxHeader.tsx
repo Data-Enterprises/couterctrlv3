@@ -4,7 +4,7 @@ import { formatDate } from "../../../../../../utils";
 // Components
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface TxHeaderProps {
   txMeta: any;
   txLines: any[];
   onBack: () => void;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 /** Who rang it, when, at which store, with Back and export. */
-const TxHeader = ({ txMeta, txLines, onBack, onExport }: Props) => (
+const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
     <>
                       <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-custom-white">
                         <div className="flex items-center gap-2">

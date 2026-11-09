@@ -15,6 +15,7 @@ import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 // Utils
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { fmtSearchDate } from "./utils";
 
 // Interfaces
 import type { GroupTab } from "../interfaces";
@@ -31,16 +32,6 @@ import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
-
-const fmtSearchDate = (mdy: string) => {
-  const [m, d, y] = mdy.split("/");
-  return new Date(
-    `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`,
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
 
 const CouponsMobile = () => {
   const ctx = useCouponContext();

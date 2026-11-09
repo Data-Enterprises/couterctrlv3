@@ -2,12 +2,12 @@
 import { formatCurrency2 } from "../../../../../../utils";
 import { couponValueOf } from "../../../../../../utils/couponValue";
 
-interface Props {
+interface TxLinesTableProps {
   txLines: any[];
 }
 
 /** Every line of the transaction, coupons tinted. */
-const TxLinesTable = ({ txLines }: Props) => (
+const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
     <div className="flex-1 overflow-auto thin-scrollbar">
       <table className="w-full border-collapse text-[12px]">
         <thead>

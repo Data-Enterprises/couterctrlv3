@@ -4,14 +4,14 @@ import { formatCurrency2 } from "../../../../../../utils";
 // Interfaces
 import type { GroupedSection } from "../interfaces";
 
-interface Props {
+interface SectionListProps {
   groupedSections: GroupedSection[];
   selectedSection: string | null;
   onSelect: (key: string | null) => void;
 }
 
 /** The left column: one card per group, with its total and count. */
-const SectionList = ({ groupedSections, selectedSection, onSelect }: Props) => (
+const SectionList = ({ groupedSections, selectedSection, onSelect }: SectionListProps) => (
     <div
       className="flex flex-col border-r border-gray-100 flex-shrink-0"
       style={{ width: "26%" }}
