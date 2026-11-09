@@ -59,6 +59,19 @@ export const editedLines = (d: OrderDraft) => d.lines.filter(isEdited);
 export const addedLines = (d: OrderDraft) => d.lines.filter(isAdded);
 export const changedLines = (d: OrderDraft) => d.lines.filter(isChanged);
 /**
+ * The orders with changes still to send. While a receipt is up, the open
+ * order's draft is the one just sent, kept only so the receipt can show it.
+ */
+export const unsentDrafts = (
+  drafts: Record<string, OrderDraft>,
+  openKey: string | null,
+  receiptShowing: boolean,
+) =>
+  Object.values(drafts).filter(
+    (d) =>
+      changedLines(d).length > 0 && !(receiptShowing && d.doc.key === openKey),
+  );
+/**
  * Added lines that are not lines yet — what holds the save back.
  *
  * Read off the fields rather than off a "the lookup answered" flag, because

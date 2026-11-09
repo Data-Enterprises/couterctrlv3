@@ -348,8 +348,10 @@ const OrderEditPanel = ({
               </tr>
             ) : (
               rows.map((l) => (
+                // The order is part of the key: the qty, cost and retail boxes
+                // are uncontrolled, so switching orders must give fresh ones.
                 <Row
-                  key={l.line_number}
+                  key={`${draft.doc.key}-${l.line_number}`}
                   line={l}
                   locked={locked}
                   lookingUp={lookingUp === l.line_number}

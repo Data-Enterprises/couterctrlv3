@@ -41,7 +41,7 @@ import {
   blankLine,
   buildDocs,
   buildPayload,
-  changedLines,
+  unsentDrafts,
   editedLines,
   patchLine,
   recompute,
@@ -141,9 +141,7 @@ const Orders = () => {
   };
 
   /** Every order with something to send, open or not. */
-  const changedDrafts = Object.values(drafts).filter(
-    (d) => changedLines(d).length > 0,
-  );
+  const changedDrafts = unsentDrafts(drafts, openKey, receipt !== null);
   const changedKeys = new Set(changedDrafts.map((d) => d.doc.key));
   const { pickStore, pickDate, pickType } = edit;
   const setPickStore = (pickStore: string) => patchEdit({ pickStore });

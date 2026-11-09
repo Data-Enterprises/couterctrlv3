@@ -9,7 +9,7 @@ import { patchOrdersEdit } from "../../../../../../features/dev/devOrdersSlice";
 import {
   applyField,
   applyUnitCost,
-  changedLines,
+  unsentDrafts,
   dropLine,
   nextSeq,
   patchLine,
@@ -64,8 +64,7 @@ export const useOpenDraft = () => {
      *  every order the left panel shows. */
     onFixCost: () => ctx.dispatch(patchOrdersEdit({ leftTab: "problems" })),
     /** How many orders hold changes waiting to be sent; Submit sends them all. */
-    stagedCount: Object.values(drafts).filter((d) => changedLines(d).length > 0)
-      .length,
+    stagedCount: unsentDrafts(drafts, openKey, receipt !== null).length,
     /** Set once the file is in the bucket: the draft goes read-only. */
     submitted: receipt !== null,
   };
