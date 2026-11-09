@@ -142,7 +142,7 @@ const ForecastEntry = ({
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-base font-semibold text-content">Forecast</h2>
-            <p className="text-[12px] text-content/85">
+            <p className="text-[12px] text-content/95">
               Ad-week units, revenue and markdown at a price you choose, from 90
               days of sales history
             </p>
@@ -151,7 +151,7 @@ const ForecastEntry = ({
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-brand_navy/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/95 hover:text-content hover:bg-brand_navy/10 transition-colors"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -178,10 +178,10 @@ const ForecastEntry = ({
             {/* UPC input */}
             <div>
               <div className="flex items-baseline justify-between gap-2">
-                <label className="text-[11px] font-medium text-content/85 ml-0.5">
+                <label className="text-[11px] font-medium text-content/95 ml-0.5">
                   UPCs
                 </label>
-                <span className="text-[10.5px] text-content/85">
+                <span className="text-[10.5px] text-content/95">
                   Separate by comma or new lines
                 </span>
               </div>
@@ -243,7 +243,7 @@ const ForecastEntry = ({
                       )}
                       <button
                         onClick={() => dispatch(removeUpc(upc))}
-                        className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
+                        className="text-brand_navy/95 hover:text-brand_navy transition-colors leading-none"
                       >
                         ×
                       </button>
@@ -253,7 +253,7 @@ const ForecastEntry = ({
               )}
 
               {adListFileName && (
-                <p className="text-[10.5px] text-content/85 mt-1.5">
+                <p className="text-[10.5px] text-content/95 mt-1.5">
                   Ad prices from {adListFileName} will be used as the forecast
                   price for those items
                 </p>

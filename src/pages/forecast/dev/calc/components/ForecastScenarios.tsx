@@ -75,7 +75,7 @@ const ForecastScenarios = ({
   return (
     <div className="flex flex-col min-h-0 overflow-hidden border border-gray-200 rounded-lg">
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/80">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
           Price scenarios
         </span>
         <div className="ml-auto flex items-center gap-1.5">
@@ -143,13 +143,13 @@ const ForecastScenarios = ({
                   </span>
                 )}
               </span>
-              <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                 {row.histQty ?? "—"}
               </span>
               {/* A typed price was never on the shelf, so no days at price:
                   the forecast uses `estimateDaysActive`, an assumption, which
                   doesn't belong in observed history. */}
-              <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                 {row.isCustom ? "—" : row.daysAtPrice}
               </span>
               <span className="text-right text-[12px] font-medium tabular-nums text-content">
@@ -162,7 +162,7 @@ const ForecastScenarios = ({
                 {formatCurrency2(Math.max(0, row.markdown))}
               </span>
               {isActive ? (
-                <span className="text-right text-[11px] font-medium text-content/85">
+                <span className="text-right text-[11px] font-medium text-content/95">
                   applied
                 </span>
               ) : (

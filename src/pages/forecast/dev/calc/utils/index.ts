@@ -57,10 +57,10 @@ export const COLS = "1fr 60px 44px 60px 84px 84px 56px";
 
 /** The scenario table's header row. */
 export const HEAD =
-  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0";
+  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-shrink-0";
 
 /** The calculator modal's bordered sections, their headings and field labels. */
 export const SECTION = "border border-gray-200 rounded-lg overflow-hidden";
 export const SECTION_HEAD =
-  "px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[11px] font-semibold uppercase tracking-wide text-content/80";
-export const FIELD_LABEL = "text-[11px] font-medium text-content/85 ml-0.5";
+  "px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[11px] font-semibold uppercase tracking-wide text-content/95";
+export const FIELD_LABEL = "text-[11px] font-medium text-content/95 ml-0.5";

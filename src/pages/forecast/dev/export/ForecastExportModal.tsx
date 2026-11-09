@@ -244,7 +244,7 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+          className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>

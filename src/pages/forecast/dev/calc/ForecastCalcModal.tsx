@@ -129,7 +129,7 @@ const ForecastCalcModal = () => {
         </span>
         <button
           onClick={handleClose}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
           title="Close"
         >
           <XMarkIcon className="h-4 w-4" />
@@ -222,7 +222,7 @@ const ForecastCalcModal = () => {
               {/* The calculator's answer stays in its own section: it writes
                   nothing back. */}
               <div className="border-t border-gray-100 pt-2 flex flex-col gap-1">
-                <div className="text-[10.5px] font-medium text-content/85">
+                <div className="text-[10.5px] font-medium text-content/95">
                   At {formatCurrency2(activePrice)} over 7 days
                 </div>
                 {(
@@ -236,7 +236,7 @@ const ForecastCalcModal = () => {
                     key={label}
                     className="flex items-baseline justify-between"
                   >
-                    <span className="text-[12px] font-medium text-content/85">
+                    <span className="text-[12px] font-medium text-content/95">
                       {label}
                     </span>
                     <span
@@ -254,7 +254,7 @@ const ForecastCalcModal = () => {
           {/* Note */}
           <div className={SECTION}>
             <div className="flex items-stretch bg-gray-50 border-b border-gray-100">
-              <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+              <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Note
               </div>
               {noteText !== (row.notes ?? "") && (
@@ -289,7 +289,7 @@ const ForecastCalcModal = () => {
                   <div className="font-medium text-content">
                     {ad.featureDescription}
                     {ad.pageName && (
-                      <span className="ml-1.5 text-content/85 font-normal">
+                      <span className="ml-1.5 text-content/95 font-normal">
                         ({ad.pageName})
                       </span>
                     )}
@@ -312,14 +312,14 @@ const ForecastCalcModal = () => {
                     key={label}
                     className="flex items-baseline justify-between"
                   >
-                    <span className="font-medium text-content/85">{label}</span>
+                    <span className="font-medium text-content/95">{label}</span>
                     <span className="font-medium tabular-nums text-content">
                       {value}
                     </span>
                   </div>
                 ))}
                 {ad.featureNotes && (
-                  <div className="border-t border-gray-100 pt-1.5 text-[11px] font-medium text-content/85">
+                  <div className="border-t border-gray-100 pt-1.5 text-[11px] font-medium text-content/95">
                     {ad.featureNotes}
                   </div>
                 )}

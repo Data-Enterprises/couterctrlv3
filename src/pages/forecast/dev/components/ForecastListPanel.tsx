@@ -79,7 +79,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
             onClick={onReSearch}
             aria-label="New search"
             title="Search again"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -125,7 +125,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
             <button
               onClick={() => setShowSelectedOnly((p) => !p)}
               className={`text-[10px] font-medium transition-colors ${
-                showSelectedOnly ? "text-brand_navy underline" : "text-content/85"
+                showSelectedOnly ? "text-brand_navy underline" : "text-content/95"
               }`}
             >
               Only
@@ -136,7 +136,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
         {/* list */}
         <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
           {visible.length === 0 ? (
-            <div className="flex items-center justify-center h-16 text-[10px] text-content/85">
+            <div className="flex items-center justify-center h-16 text-[10px] text-content/95">
               {listFilter ? "No matches" : "No items"}
             </div>
           ) : (

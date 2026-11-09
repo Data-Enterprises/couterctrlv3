@@ -289,7 +289,7 @@ const ForecastRowsTable = ({
               Clear
             </button>
           )}
-          <span className="ml-auto text-[11px] text-content/85">
+          <span className="ml-auto text-[11px] text-content/95">
             {coverage.count} item{coverage.count === 1 ? "" : "s"} ={" "}
             {(coverage.share * 100).toFixed(0)}% of the forecast
           </span>
@@ -297,7 +297,7 @@ const ForecastRowsTable = ({
 
         {/* batch setter — writes to every ticked row, so the count is named */}
         <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-shrink-0">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}
           </span>
@@ -372,7 +372,7 @@ const ForecastRowsTable = ({
           >
             Clear notes
           </button>
-          <span className="text-[10.5px] text-content/85 ml-auto">
+          <span className="text-[10.5px] text-content/95 ml-auto">
             Double-click a row for the calculator
           </span>
         </div>
@@ -408,7 +408,7 @@ const ForecastRowsTable = ({
                       <span className="text-[11px] font-medium text-content tabular-nums">
                         {upc}
                       </span>
-                      <span className="text-[11px] font-medium text-content/85 truncate">
+                      <span className="text-[11px] font-medium text-content/95 truncate">
                         {adListRows[upc]?.featureDescription ||
                           adListRows[upc]?.pageName ||
                           "—"}
@@ -491,7 +491,7 @@ const ForecastRowsTable = ({
           </div>
 
           {sorted.length === 0 ? (
-            <div className="text-[12px] text-content/85 py-6 text-center">
+            <div className="text-[12px] text-content/95 py-6 text-center">
               {rows.length === 0
                 ? "Nothing selected — tick items in the list on the left."
                 : "No items match the current band or search filters."}
@@ -581,7 +581,7 @@ const ForecastRowsTable = ({
                           {/* Badges sit on the UPC line, so the description
                               keeps the full width. */}
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-[11px] font-medium text-content/85 tabular-nums flex-shrink-0">
+                            <span className="text-[11px] font-medium text-content/95 tabular-nums flex-shrink-0">
                               {row.upc}
                             </span>
                             {row.singlePrice && (
@@ -604,7 +604,7 @@ const ForecastRowsTable = ({
                         </div>
                       </div>
                       <span
-                        className="text-[11px] font-medium text-content/85 truncate"
+                        className="text-[11px] font-medium text-content/95 truncate"
                         title={row.notes || ""}
                       >
                         {row.notes || ""}
@@ -614,15 +614,15 @@ const ForecastRowsTable = ({
                           ? "—"
                           : row.qtySold.toLocaleString()}
                       </span>
-                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                         {row.daysActive}/90
                       </span>
-                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                         {customPriced.has(row.upc)
                           ? "—"
                           : `${row.daysAtPrice}/${row.daysActive}`}
                       </span>
-                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                         {row.forecastWindow}
                       </span>
                       <span className="text-right text-[12px] font-medium tabular-nums text-content">
@@ -637,7 +637,7 @@ const ForecastRowsTable = ({
                       <span className="text-right text-[13px] font-bold tabular-nums text-content">
                         {formatCurrency2(row.fcstTotal)}
                       </span>
-                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                         {((ranks.get(row.upc)?.share ?? 0) * 100).toFixed(1)}%
                       </span>
                       <span className="text-right text-[12px] font-medium tabular-nums text-content">
