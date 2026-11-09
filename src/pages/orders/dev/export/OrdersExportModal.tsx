@@ -4,7 +4,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Utils
 import { buildRows } from "../utils/ordersRows";
-import { ORDER_EXPORT_COLUMNS } from "./utils";
+import { csvCell, ORDER_EXPORT_COLUMNS, slug } from "./utils";
 
 // Interfaces
 import type { SortKey } from "../interfaces";
@@ -14,8 +14,9 @@ import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import Field from "./components/Field";
 
-interface Props {
+interface OrdersExportModalProps {
   /** Every line the search returned, before any filter. */
   lines: AllOrder[];
   /** What the left panel has selected — the modal opens on this. */
@@ -31,14 +32,6 @@ interface Props {
   endDate: string;
   onClose: () => void;
 }
-
-const slug = (s: string) => s.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
-
-const csvCell = (v: unknown) => {
-  if (v === null || v === undefined) return "";
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
 
 /**
  * Export, as the grid you are already looking at.
@@ -66,7 +59,7 @@ const OrdersExportModal = ({
   startDate,
   endDate,
   onClose,
-}: Props) => {
+}: OrdersExportModalProps) => {
   const toast = useToast();
 
   const [draft, setDraft] = useState<OrdersFilters>(filters);
@@ -304,14 +297,5 @@ const OrdersExportModal = ({
     </div>
   );
 };
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <span className="mb-1 block text-[10px] font-medium text-content/85">
-      {label}
-    </span>
-    {children}
-  </div>
-);
 
 export default OrdersExportModal;

@@ -12,6 +12,7 @@ import {
 import { availableOptions, markAvailability } from "../utils/orderFilters";
 import { lineFlags } from "../utils/ordersRows";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
+import { fmtOrderDate, padStoreNumber } from "../utils";
 
 // Interfaces
 import type { AllOrder } from "../../../../interfaces";
@@ -21,8 +22,9 @@ import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import Field from "./Field";
 
-interface Props {
+interface OrdersConfigPanelProps {
   /** Every line item in the search, before any filter. */
   lines: AllOrder[];
   filters: OrdersFilters;
@@ -37,15 +39,6 @@ interface Props {
   onOpenSearch: () => void;
   scopeLabel: string;
 }
-
-/** Same three-digit pad the report panel uses on store numbers. */
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-/** For order_date on a line, which is ISO. */
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
 
 /**
  * The left panel, as a configuration rather than a list of orders.
@@ -74,7 +67,7 @@ const OrdersConfigPanel = ({
   endDate,
   onOpenSearch,
   scopeLabel,
-}: Props) => {
+}: OrdersConfigPanelProps) => {
   /**
    * The options, read off the result.
    *
@@ -382,20 +375,5 @@ const OrdersConfigPanel = ({
     </div>
   );
 };
-
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <div>
-    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-1">
-      {label}
-    </span>
-    {children}
-  </div>
-);
 
 export default OrdersConfigPanel;

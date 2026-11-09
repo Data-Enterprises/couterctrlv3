@@ -1,3 +1,6 @@
+// Interfaces
+import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
+
 /**
  * What an order line costs and what it rings for.
  *
@@ -64,3 +67,19 @@ export const getERet = (
 
   return active_retail_price * qty;
 };
+
+/** An order date as m/d/yyyy. */
+export const fmtOrderDate = (iso: string) => {
+  const [y, m, d] = iso.split("T")[0].split("-");
+  return `${+m}/${+d}/${y}`;
+};
+
+/** A store number padded to three digits. */
+export const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
+
+/** A margin to one decimal with %, or a dash when unknown. */
+export const pct = (m: number | null) => (m === null ? "—" : `${m.toFixed(1)}%`);
+
+/** The order the list works in: the cause, its usual symptom, then the one
+ *  that is often fine. */
+export const ROWS: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];

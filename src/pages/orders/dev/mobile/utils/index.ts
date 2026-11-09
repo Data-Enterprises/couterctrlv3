@@ -6,7 +6,7 @@ import type { AllOrder } from "../../../../../interfaces";
 import type { AggFn } from "../../../../../utils/csvExport";
 import type { DimDef, MetricDef } from "../interfaces";
 
-const fmtDate = (iso: string) => {
+export const fmtDate = (iso: string) => {
   const [y, m, d] = iso.split("T")[0].split("-");
   return `${m}/${d}/${y}`;
 };
@@ -59,3 +59,18 @@ export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
   { value: "max",   label: "Max" },
   { value: "count", label: "Count" },
 ];
+
+/** The sunken navy fill of an order's chips. */
+export const chipStyle = {
+  background: "rgb(var(--color-brand-navy) / 0.06)",
+  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
+};
+
+/** How many sub department chips a row shows before +N. */
+export const MAX_CHIPS = 3;
+
+/** An order date as mm/dd/yyyy for the export. */
+export const fmtExportDate = (iso: string) => {
+  const [y, m, d] = iso.split("T")[0].split("-");
+  return `${m}/${d}/${y}`;
+};

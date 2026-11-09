@@ -36,3 +36,13 @@ export const ORDER_EXPORT_COLUMNS: OrderExportColumn[] = [
   { field: "edited", headerName: "Edited" },
   { field: "scalable", headerName: "Scalable" },
 ];
+
+/** Text made safe for a file name: runs of other characters become one underscore. */
+export const slug = (s: string) => s.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+
+/** A value as a CSV cell, quoted when it holds a comma, quote or line break. */
+export const csvCell = (v: unknown) => {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};

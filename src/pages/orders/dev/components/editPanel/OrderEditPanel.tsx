@@ -27,7 +27,7 @@ import Head from "./components/Head";
 import Row from "./components/Row";
 import SeekField from "./components/SeekField";
 
-interface Props {
+interface OrderEditPanelProps {
   draft: OrderDraft | null;
   loading: boolean;
   search: EditSearch;
@@ -121,7 +121,7 @@ const OrderEditPanel = ({
   submitting,
   submitted,
   onLeaveEdit,
-}: Props) => {
+}: OrderEditPanelProps) => {
   const rows = useMemo(
     () =>
       draft ? visibleLines(draft, search) : [],

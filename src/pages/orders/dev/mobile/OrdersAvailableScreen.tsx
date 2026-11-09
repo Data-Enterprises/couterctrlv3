@@ -2,6 +2,9 @@
 import { useState, useMemo } from "react";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
+// Utils
+import { fmtDate } from "./utils";
+
 // Interfaces
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
 
@@ -11,7 +14,7 @@ import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 
-interface Props {
+interface OrdersAvailableScreenProps {
   cards: GroupedOrderCard[];
   selectedKey: SelectedOrderKey;
   loading: boolean;
@@ -22,11 +25,6 @@ interface Props {
   onOpenSearch: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
 const OrdersAvailableScreen = ({
   cards,
   selectedKey,
@@ -36,7 +34,7 @@ const OrdersAvailableScreen = ({
   onSelectStore,
   onSelectAllStores,
   onOpenSearch,
-}: Props) => {
+}: OrdersAvailableScreenProps) => {
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");

@@ -15,8 +15,10 @@ import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
+import PagerButton from "./PagerButton";
+import Kpi from "./Kpi";
 
-interface Props {
+interface OrderReportPanelProps {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
   sort: GridSort;
@@ -57,7 +59,7 @@ const OrderReportPanel = ({
   onExport,
   onEnterEdit,
   canEdit,
-}: Props) => {
+}: OrderReportPanelProps) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
@@ -347,32 +349,5 @@ const OrderReportPanel = ({
     </div>
   );
 };
-
-const PagerButton = ({
-  label,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
-  >
-    {label}
-  </button>
-);
-
-const Kpi = ({ label, value }: { label: string; value: string }) => (
-  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </div>
-    <div className="text-[13px] font-bold text-content truncate">{value}</div>
-  </div>
-);
 
 export default OrderReportPanel;

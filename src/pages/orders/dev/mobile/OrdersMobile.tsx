@@ -28,6 +28,7 @@ import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { getCogs, getERet } from "../utils";
+import { fmtExportDate } from "./utils";
 
 // Interfaces
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
@@ -40,11 +41,6 @@ import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
-
-const fmtExportDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
 
 const OrdersMobile = () => {
   const ctx = useOrdersCtx();

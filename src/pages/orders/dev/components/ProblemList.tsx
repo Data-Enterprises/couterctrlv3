@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 // Utils
 import { workingOrder } from "../utils/problemItems";
 import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./utils";
+import { ROWS } from "../utils";
 
 // Interfaces
 import type { ProblemItem } from "../interfaces";
@@ -14,11 +15,7 @@ import { CheckIcon } from "@heroicons/react/16/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 
-/** The order the list works in: the cause, its usual symptom, then the one
- *  that is often fine. */
-const ROWS: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];
-
-interface Props {
+interface ProblemListProps {
   /** Every item on the loaded orders, flagged or not. */
   items: ProblemItem[];
   skipped: Set<string>;
@@ -52,7 +49,7 @@ const ProblemList = ({
   onMarginOver,
   scopeOrders,
   scopeStores,
-}: Props) => {
+}: ProblemListProps) => {
   const [query, setQuery] = useState("");
   const [only, setOnly] = useState<Set<OrderFlag>>(new Set());
 

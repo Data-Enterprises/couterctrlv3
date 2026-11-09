@@ -5,9 +5,10 @@ import { useMemo, useState } from "react";
 import { formatCurrency2 } from "../../../../utils";
 import { commonUnit, itemStoreRows } from "../utils/problemItems";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
+import { fmtOrderDate, padStoreNumber, pct } from "../utils";
 
 // Interfaces
-import type { Figures, ProblemItem, OrderDraft } from "../interfaces";
+import type { ProblemItem, OrderDraft } from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 
 // Components
@@ -16,8 +17,9 @@ import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import Checkbox from "../../../../components-dev/Checkbox";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import Band from "./Band";
+import Change from "./Change";
 
-interface Props {
+interface ItemFixPanelProps {
   /** The item open on the left, or null for the "pick one" state. */
   item: ProblemItem | null;
   /** Where it sits in the still-to-do list, for "3 of 57". */
@@ -34,15 +36,6 @@ interface Props {
   stagedCount: number;
   submitting: boolean;
 }
-
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
-
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-const pct = (m: number | null) => (m === null ? "—" : `${m.toFixed(1)}%`);
 
 /**
  * One item, across every store that ordered it.
@@ -71,7 +64,7 @@ const ItemFixPanel = ({
   onSubmit,
   stagedCount,
   submitting,
-}: Props) => {
+}: ItemFixPanelProps) => {
   const [unit, setUnit] = useState<number | null>(null);
   /** Orders left out of the fix. Everything starts ticked: the usual case is
    *  that every store should pay the same, and the exception is unticked. */
@@ -302,41 +295,5 @@ const ItemFixPanel = ({
     </div>
   );
 };
-
-/**
- * One figure, now and after.
- *
- * "Now → after" only on a row the fix will change; a row already at the typed
- * cost says so, rather than showing the same number twice and leaving the
- * reader to spot that nothing moved.
- */
-const Change = ({
-  now,
-  after,
-  pick,
-  unchanged = false,
-}: {
-  now: Figures;
-  after: Figures | null;
-  pick: (f: Figures) => string;
-  unchanged?: boolean;
-}) => (
-  <td className="px-2.5 py-2 text-right tabular-nums text-content whitespace-nowrap">
-    {after ? (
-      <>
-        <span className="text-content/95">{pick(now)}</span>
-        <span className="text-content/95"> → </span>
-        <span className="font-bold text-severity_watch_text">{pick(after)}</span>
-      </>
-    ) : (
-      <>
-        {pick(now)}
-        {unchanged && (
-          <span className="block text-[10.5px] text-content/95">no change</span>
-        )}
-      </>
-    )}
-  </td>
-);
 
 export default ItemFixPanel;

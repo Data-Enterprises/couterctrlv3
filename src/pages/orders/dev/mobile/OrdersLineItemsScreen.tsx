@@ -1,5 +1,6 @@
 // Utils
 import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import { chipStyle, fmtDate } from "./utils";
 
 // Interfaces
 import type { AllOrder, Store } from "../../../../interfaces";
@@ -8,7 +9,7 @@ import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/d
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-interface Props {
+interface OrdersLineItemsScreenProps {
   orders: AllOrder[];
   selectedKey: SelectedOrderKey;
   /** The full identity — id alone doesn't identify an order across stores. */
@@ -18,17 +19,7 @@ interface Props {
   onExport: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: Props) => {
+const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: OrdersLineItemsScreenProps) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.
   const storeName = resolveStoreName(
