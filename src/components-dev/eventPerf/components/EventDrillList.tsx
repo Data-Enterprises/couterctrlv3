@@ -89,7 +89,7 @@ const EventDrillList = ({
 
   const spinner = (
     <div
-      className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85"
+      className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95"
       style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
     >
       <span
@@ -108,7 +108,7 @@ const EventDrillList = ({
       style={{ color: TY_COLOR }}
     >
       Show more
-      <span className="text-content/85"> · {fmtInt(remaining)} left</span>
+      <span className="text-content/95"> · {fmtInt(remaining)} left</span>
     </button>
   );
 
@@ -171,11 +171,11 @@ const EventDrillList = ({
                   <span className="flex-none font-display text-[13px] font-bold text-content">
                     {formatCurrency2(t.amount)}
                   </span>
-                  <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+                  <ChevronRightIcon className="h-4 w-4 flex-none text-content/95" />
                 </div>
                 {/* Who, then when, then where. The person is what someone is
                     following; the lane matters once they have one. */}
-                <div className="mt-0.5 truncate text-[11px] text-content/85">
+                <div className="mt-0.5 truncate text-[11px] text-content/95">
                   {[
                     t.cashierName,
                     t.day ? formatDateSimple(t.day) : "",
@@ -223,9 +223,9 @@ const EventDrillList = ({
                     ? formatCurrency2(r.amount)
                     : fmtInt(r.transactions)}
                 </span>
-                <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+                <ChevronRightIcon className="h-4 w-4 flex-none text-content/95" />
               </div>
-              <div className="mt-0.5 truncate text-[11px] text-content/85">
+              <div className="mt-0.5 truncate text-[11px] text-content/95">
                 {[
                   measure === "amount"
                     ? `${fmtInt(r.transactions)} transactions`

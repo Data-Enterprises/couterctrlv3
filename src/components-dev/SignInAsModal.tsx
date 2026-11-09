@@ -70,7 +70,7 @@ const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
       <form onSubmit={go} className="flex flex-col gap-3 p-4">
         <div>
           <h2 className="text-[17px] font-semibold">Sign in as</h2>
-          <p className="text-[12.5px] text-content/85 mt-1">
+          <p className="text-[12.5px] text-content/95 mt-1">
             You will see the app as they do, on dev, for up to an hour. Sign
             out to come back as yourself.
           </p>

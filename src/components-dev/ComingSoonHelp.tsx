@@ -87,7 +87,7 @@ const ComingSoonHelp = ({ variant = "navy", className }: ComingSoonHelpProps) =>
             onClick={() => setOpen(false)}
             title="Close"
             aria-label="Close"
-            className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-md bg-custom-white/80 text-content/85 shadow-sm transition-colors hover:bg-custom-white hover:text-content"
+            className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-md bg-custom-white/80 text-content/95 shadow-sm transition-colors hover:bg-custom-white hover:text-content"
           >
             <XMarkIcon className="h-4 w-4" />
           </button>

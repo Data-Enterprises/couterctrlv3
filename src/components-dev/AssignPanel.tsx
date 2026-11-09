@@ -213,7 +213,7 @@ const AssignPanel = ({
               <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
                 <div className="truncate">{r.label}</div>
                 {r.sublabel && (
-                  <div className="text-[10.5px] text-content/85 truncate">{r.sublabel}</div>
+                  <div className="text-[10.5px] text-content/95 truncate">{r.sublabel}</div>
                 )}
               </li>
             ))}
@@ -238,7 +238,7 @@ const AssignPanel = ({
           {leftFilters && <div className="flex-shrink-0">{leftFilters}</div>}
         </div>
         {searchHint && (
-          <p className="text-[10px] text-content/85 leading-snug mb-1">
+          <p className="text-[10px] text-content/95 leading-snug mb-1">
             {searchHint}
           </p>
         )}

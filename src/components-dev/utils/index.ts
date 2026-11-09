@@ -9,8 +9,8 @@ export const DOC = "/coming-soon.html";
 
 /** The info button's shell classes on navy and on light backgrounds. */
 export const SHELL: Record<"navy" | "light", string> = {
-  navy: "w-[22px] h-[22px] rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40",
-  light: "w-7 h-7 rounded-full text-content/85 active:bg-bkg",
+  navy: "w-[22px] h-[22px] rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40",
+  light: "w-7 h-7 rounded-full text-content/95 active:bg-bkg",
 };
 
 /** The info button's icon size on navy and on light backgrounds. */
@@ -40,7 +40,7 @@ export const REPORT_ROW_LABELS: Record<RowMetricKey, string> = {
  * the header row around it.
  */
 export const PERF_SORT_HEADER =
-  "text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0";
+  "text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0";
 
 /** Copies UPCs to the clipboard, comma separated. */
 export const copyToClipboard = (upcs: string[]) => navigator.clipboard.writeText(upcs.join(", "));

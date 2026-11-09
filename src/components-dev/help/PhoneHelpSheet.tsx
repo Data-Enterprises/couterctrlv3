@@ -41,9 +41,9 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
   const row = "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left";
   const chevron = (on: boolean) =>
     on ? (
-      <ChevronDownIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+      <ChevronDownIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
     ) : (
-      <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+      <ChevronRightIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
     );
 
   return (
@@ -58,13 +58,13 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
         <div className="bg-custom-white px-4 pt-3.5 pb-3 border-b border-brand_line flex-shrink-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="text-[12px] text-content/85">Help · {content.screen}</div>
+              <div className="text-[12px] text-content/95">Help · {content.screen}</div>
               <h2 className="mt-0.5 text-[19px] font-bold text-content">How can we help?</h2>
             </div>
             <button
               onClick={onClose}
               aria-label="Close help"
-              className="w-8 h-8 flex items-center justify-center text-content/85 flex-shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-content/95 flex-shrink-0"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -83,7 +83,7 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
         {/* ── body ─────────────────────────────────────────────────────── */}
         {/* `min-h-0` so this scrolls inside the sheet rather than growing it. */}
         <div className="flex-1 min-h-0 overflow-auto px-4 py-4">
-          <p className="text-[13px] text-content/85 mb-4">{content.purpose}</p>
+          <p className="text-[13px] text-content/95 mb-4">{content.purpose}</p>
 
           {questions.length > 0 && (
             <>
@@ -104,7 +104,7 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
                         {chevron(on)}
                       </button>
                       {on && (
-                        <div className="px-3.5 pb-3 flex flex-col gap-2 text-[13px] text-content/85">
+                        <div className="px-3.5 pb-3 flex flex-col gap-2 text-[13px] text-content/95">
                           {x.a.map((para) => (
                             <p key={para}>{para}</p>
                           ))}
@@ -136,7 +136,7 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
                         {chevron(on)}
                       </button>
                       {on && (
-                        <div className="px-3.5 pb-3 text-[13px] text-content/85">
+                        <div className="px-3.5 pb-3 text-[13px] text-content/95">
                           <p>{t.def}</p>
                           {t.parts && (
                             <ul className="mt-2 flex flex-col gap-1.5">
@@ -163,10 +163,10 @@ const PhoneHelpSheet = ({ content, onClose }: PhoneHelpSheetProps) => {
           )}
 
           {questions.length === 0 && terms.length === 0 && (
-            <p className="text-[13px] text-content/85 mb-5">Nothing here matches “{search}”.</p>
+            <p className="text-[13px] text-content/95 mb-5">Nothing here matches “{search}”.</p>
           )}
 
-          <p className="text-[12.5px] text-content/85">
+          <p className="text-[12.5px] text-content/95">
             Still stuck? Contact your CounterCtrl representative.
           </p>
         </div>

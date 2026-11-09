@@ -120,7 +120,7 @@ const SearchCard = ({
       >
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
-          <p className="text-[12px] text-content/50 mt-1">{description}</p>
+          <p className="text-[12px] text-content/95 mt-1">{description}</p>
         </div>
 
         {/* A disabled button alone reads as a frozen form on slow group

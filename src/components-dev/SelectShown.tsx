@@ -22,7 +22,7 @@ const SelectShown = ({
   onSelectAll: () => void;
   onClear: () => void;
 }) => (
-  <div className="flex items-center gap-2 mb-1 text-[10px] text-content/85">
+  <div className="flex items-center gap-2 mb-1 text-[10px] text-content/95">
     <button
       onClick={onSelectAll}
       disabled={shown === 0}

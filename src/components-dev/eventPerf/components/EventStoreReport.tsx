@@ -72,7 +72,7 @@ const EventStoreReport = ({
           selected={selectedDay}
           onToggle={onToggleDay}
         />
-        <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
+        <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/95">
           <span className="inline-flex items-center gap-1.5">
             <span
               className="h-2 w-3.5 rounded-sm"
@@ -88,7 +88,7 @@ const EventStoreReport = ({
             Prior 2-wk avg
           </span>
         </div>
-        <p className="px-1 pt-1 text-[12px] text-content/85">
+        <p className="px-1 pt-1 text-[12px] text-content/95">
           {selectedDay
             ? "Tap the selected day again for the full week."
             : "Tap a day to scope this store to it."}
@@ -97,7 +97,7 @@ const EventStoreReport = ({
 
       {/* ── the figure, then the comparison ──────────────────────── */}
       <div className="px-3.5 pb-3 pt-1.5">
-        <div className="text-[11px] font-semibold text-content/85">
+        <div className="text-[11px] font-semibold text-content/95">
           {heroCaption}
         </div>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
@@ -124,7 +124,7 @@ const EventStoreReport = ({
               format={fmt}
               compact
             />
-            <p className="mt-1.5 text-[11px] text-content/85">
+            <p className="mt-1.5 text-[11px] text-content/95">
               WK {dayLabel ? "selected day" : "this week"} · AVG prior 2-wk avg
               {dayLabel ? ", same weekday" : ""}
             </p>
@@ -152,7 +152,7 @@ const EventStoreReport = ({
             ] as [string, string][]
           ).map(([k, v]) => (
             <div key={k} className="flex flex-col items-center text-center">
-              <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
                 {k}
               </span>
               <span className="font-display text-[15px] font-bold text-content">

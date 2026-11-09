@@ -128,13 +128,13 @@ const SelectFilter = ({
         }}
       >
         <span
-          className={isActive ? "text-content font-medium" : "text-content/85"}
+          className={isActive ? "text-content font-medium" : "text-content/95"}
           style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
         >
           {label}
         </span>
         <ChevronDownIcon
-          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/60"}`}
+          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/95"}`}
         />
       </button>
 
@@ -198,7 +198,7 @@ const SelectFilter = ({
               </button>
             ))}
             {narrowed.length === 0 && (
-              <div className="px-3 py-2 text-[12px] text-content/55">
+              <div className="px-3 py-2 text-[12px] text-content/95">
                 Nothing matches that.
               </div>
             )}

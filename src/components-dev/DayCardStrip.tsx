@@ -117,7 +117,7 @@ const DayCardStrip = ({
               <div className="text-[12px] font-bold text-content mt-1">
                 {value}
                 {valueNote && (
-                  <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wide text-content/85">
+                  <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wide text-content/95">
                     {valueNote}
                   </span>
                 )}

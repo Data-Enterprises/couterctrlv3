@@ -179,7 +179,7 @@ const MultiSelectFilter = ({
         }}
       >
         <span
-          className={isActive ? "text-content font-medium" : "text-content/85"}
+          className={isActive ? "text-content font-medium" : "text-content/95"}
           style={{
             fontSize: 12,
             overflow: "hidden",
@@ -190,7 +190,7 @@ const MultiSelectFilter = ({
           {label}
         </span>
         <ChevronDownIcon
-          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/60"}`}
+          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/95"}`}
         />
       </button>
 
@@ -217,7 +217,7 @@ const MultiSelectFilter = ({
               carry the field you are typing in off the top. */}
           {showSearch && (
             <div className="flex items-center gap-1.5 border-b border-gray-100 px-2.5 py-1.5 flex-shrink-0">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5 flex-shrink-0 text-content/85" />
+              <MagnifyingGlassIcon className="w-3.5 h-3.5 flex-shrink-0 text-content/95" />
               <input
                 autoFocus
                 value={query}
@@ -257,7 +257,7 @@ const MultiSelectFilter = ({
 
           <div className="flex-1 overflow-y-auto thin-scrollbar">
             {shown.length === 0 ? (
-              <div className="px-3 py-3 text-[12px] text-content/85">
+              <div className="px-3 py-3 text-[12px] text-content/95">
                 {query.trim()
                   ? `Nothing matches “${query.trim()}”.`
                   : "Nothing here is left by the other filters."}
@@ -293,7 +293,7 @@ const MultiSelectFilter = ({
               })
             )}
             {hiddenCount > 0 && (
-              <div className="px-3 py-2 border-t border-gray-100 text-[11px] text-content/85">
+              <div className="px-3 py-2 border-t border-gray-100 text-[11px] text-content/95">
                 {hiddenCount} more{" "}
                 {hiddenCount === 1 ? "option has" : "options have"} nothing left
                 once the other filters are applied.

@@ -86,7 +86,7 @@ const ExportModal = <T extends Record<string, any>>({
           Cancel
         </button>
       </div>
-      <div className="text-content/60 text-center text-sm translate-y-2">
+      <div className="text-content/95 text-center text-sm translate-y-2">
         *file extension will be added automatically on submit
       </div>
     </>

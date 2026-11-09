@@ -81,7 +81,7 @@ const SingleStoreSearchCard = ({
     <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
       <div>
         <h2 className="text-base font-semibold text-content">{title}</h2>
-        <p className="text-[12px] text-content/50 mt-1">{description}</p>
+        <p className="text-[12px] text-content/95 mt-1">{description}</p>
       </div>
 
       {/* Form stays mounted but unpainted while the search runs — holds the

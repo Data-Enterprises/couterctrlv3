@@ -33,7 +33,7 @@ const TextFilter = ({
       } ${className}`}
     >
       <MagnifyingGlassIcon
-        className={`w-3 h-3 flex-shrink-0 ${isActive ? "text-filter_active_border" : "text-brand_navy/75"}`}
+        className={`w-3 h-3 flex-shrink-0 ${isActive ? "text-filter_active_border" : "text-brand_navy/95"}`}
       />
       <input
         type="text"
@@ -46,7 +46,7 @@ const TextFilter = ({
       {value && (
         <button
           onClick={() => onChange("")}
-          className="flex-shrink-0 text-content/85 hover:text-content transition-colors"
+          className="flex-shrink-0 text-content/95 hover:text-content transition-colors"
         >
           <XMarkIcon className="w-3 h-3" />
         </button>

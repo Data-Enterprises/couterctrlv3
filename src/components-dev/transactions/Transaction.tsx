@@ -210,11 +210,11 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
         <div>
           <div className="text-[13px] font-bold text-content">
             Trans #{saleId}
-            <span className="ml-2 text-[10px] font-normal text-content/85">
+            <span className="ml-2 text-[10px] font-normal text-content/95">
               Terminal {first.terminal}
             </span>
           </div>
-          <div className="text-[10px] text-content/85 mt-0.5">
+          <div className="text-[10px] text-content/95 mt-0.5">
             {fmtDate} · {timeStr}
           </div>
         </div>
@@ -222,14 +222,14 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           <button
             onClick={handleEmail}
             aria-label="Email transaction"
-            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors"
           >
             <EnvelopeIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleExport}
             aria-label="Export transaction CSV"
-            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
@@ -283,7 +283,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
                 {item.qty ?? 0}
               </div>
               <div
-                className={`text-[10px] font-semibold text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-severity_critical_text" : "text-content"}`}
+                className={`text-[10px] font-semibold text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-severity_critical_text" : "text-content"}`}
               >
                 {formatCurrency2(displayNet)}
               </div>
@@ -301,14 +301,14 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
 
       {/* Totals — single inline line */}
       <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-gray-100 bg-gray-50">
-        <span className="text-[11px] text-content/65">
+        <span className="text-[11px] text-content/95">
           Net sales{" "}
           <span className="font-semibold text-content">
             {formatCurrency2(netSales)}
           </span>
         </span>
         {totalTax > 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Tax{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(totalTax)}
@@ -316,7 +316,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           </span>
         )}
         {voidAmount !== 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Voided{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(voidAmount)}
@@ -324,7 +324,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           </span>
         )}
         {refundAmount !== 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Refunded{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(refundAmount)}

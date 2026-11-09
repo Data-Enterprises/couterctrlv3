@@ -33,7 +33,7 @@ const ConfirmModal = ({
         <div className="text-[14px] font-medium text-content mb-2">
           {title}
         </div>
-        <p className="text-[12px] text-content/70 leading-relaxed mb-4">
+        <p className="text-[12px] text-content/95 leading-relaxed mb-4">
           {message}
         </p>
         {children && <div className="mb-4">{children}</div>}
