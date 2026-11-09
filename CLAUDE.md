@@ -68,6 +68,14 @@ Put a file in the **lowest folder that contains everything that uses it**.
   If one gets long, split it by topic in the same folder (`utils/csv.ts`).
 - No component goes in a helper file, and no helper is exported from a component file. No barrel
   files that only re-export.
+- **A component file holds its components and nothing else.** Constants (class strings, column
+  widths, option lists) and plain functions go to the `utils/index.ts` of the lowest folder that
+  uses them, even when only one file uses them. For example, Forecasting's `COLS`, `HEAD` and
+  `PILL` and its `parseUpcs` are in `utils/` (26a7b7f5). New code is written this way.
+  - Older component files still hold some (163 files on 9 Nov 2026). Move them out in a move
+    commit of their own, never inside a logic change.
+  - A doc comment stays above the thing it describes: the component's comment stays with the
+    component, and each moved constant gets one line of its own.
 - Don't create empty folders.
 
 ### Page layout
@@ -121,6 +129,23 @@ These are the mistakes a split actually made. Check every one when you move or s
    a similar element nearby.
 6. **Typed callbacks.** A component that dispatches takes `dispatch: AppDispatch`, and its props
    use the real types (`SetStateAction`, the slice's types), never `any`.
+7. **Moving state into a child changes when it resets.** If the child can unmount (an early
+   return for an empty day, a receipt view replacing a list, a tab), its `useState` goes back to its
+   initial value when it comes back. State that must survive that stays in the parent, above the
+   early return, and reaches the child as a value and its setter. The second sweep found this in
+   Sales' Sub depts and Hourly, and in Loss Prevention's filter drafts (6d6b8d3d, 70459386).
+8. **Moving an effect into a child changes when it runs.** A `useEffect` or `useLayoutEffect`
+   in a child that remounts also runs on every mount, not only when its dependencies change. An
+   effect meant to run on a change stays in the always-mounted component, and the child reads the
+   refs. Event Perf's list scroll restore had this problem (c39403da). The same goes for hooks with
+   mount effects, such as `useScanGun`'s focus.
+9. **Splitting can break DOM that was shared.** Two branches of one component that returned the
+   same element tree shared real DOM nodes (a scroller kept its offset). As separate components
+   they mount fresh. If that sharing was something users relied on, carry it explicitly, as Item
+   Perf's `useScrollCarry` does (c4c0e088).
+10. **Memoising a value changes how often effects run.** Arrays rebuilt on every render re-ran
+    effects that list them as dependencies. Wrapping them in `useMemo` stops that. Check what the
+    effect did on each run before memoising.
 
 ## 6. Imports
 
@@ -197,7 +222,8 @@ app or a dev server.** It is tested by hand.
 
 ## Before every commit
 
-- [ ] Each file exports at most one component; none near ~900 lines
+- [ ] Each file exports at most one component; none near ~900 lines; constants and plain functions
+      are in `utils/`, not in the component file
 - [ ] Helpers are in the `utils/` `hooks/` `interfaces/` of the lowest folder holding all their users
 - [ ] No import into another page's folder; no prod-library import of the dev library
 - [ ] Persisting state is in Redux and read through the page context hook; `useState` is only for
@@ -206,6 +232,8 @@ app or a dev server.** It is tested by hand.
 - [ ] Imports are labelled in order; one line per source; relative paths in `src`
 - [ ] Mapped components carry their `key` on the tag; helpers that became functions are called;
       guards, text and classes are carried over exactly
+- [ ] State and effects moved into a child still reset and run when they did before (check unmounts,
+      early returns and mount effects)
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
 - [ ] Verification is green
