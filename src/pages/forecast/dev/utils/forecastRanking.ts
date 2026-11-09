@@ -93,14 +93,14 @@ export const TIER_STRIPE: Record<Tier, string> = {
  */
 export const TIER_CHIP_BASE: Record<Tier, string> = {
   A: "bg-brand_navy/10 text-brand_navy",
-  B: "bg-[#8a93a8]/25 text-content",
-  C: "bg-[#dfe2e9] text-content",
+  B: "bg-row_selected_border/25 text-content",
+  C: "bg-bkg text-content",
 };
 
 export const TIER_CHIP_ON: Record<Tier, string> = {
   A: "ring-2 ring-brand_navy/40 shadow-sm",
-  B: "ring-2 ring-[#8a93a8]/60 shadow-sm",
-  C: "ring-2 ring-[#8a93a8]/45 shadow-sm",
+  B: "ring-2 ring-row_selected_border/60 shadow-sm",
+  C: "ring-2 ring-row_selected_border/45 shadow-sm",
 };
 
 /** On the navy band bar, where a light chip would disappear. */

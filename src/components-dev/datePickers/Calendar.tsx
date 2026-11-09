@@ -119,7 +119,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
           <div className="buttons flex gap-2 px-2">
             <i
               data-testid="prev-month-button"
-              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
+              className="bg-emerald-500 rounded-full text-custom-white cursor-pointer"
               onClick={prevMonth}
             >
               <ChevronLeftIcon
@@ -130,7 +130,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
             </i>
             <i
               data-testid="next-month-button"
-              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
+              className="bg-emerald-500 rounded-full text-custom-white cursor-pointer"
               onClick={nextMonth}
             >
               <ChevronRightIcon
