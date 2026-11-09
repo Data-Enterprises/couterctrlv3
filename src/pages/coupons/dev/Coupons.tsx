@@ -26,6 +26,7 @@ import type { CouponsResponse, JsonError } from "../../../interfaces";
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import CouponsMobile from "./mobile/CouponsMobile";
 import CouponListPanel from "./components/CouponListPanel";
 import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
@@ -119,21 +120,16 @@ const Coupons = () => {
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Coupons"
-              description="Select a store or group and date range to load coupon activity."
-              buttonLabel="Load Coupons"
-              onSearch={() => { setSearchModalOpen(false); getData(); }}
-              loading={context.isFetching}
-              loadingMessage="Finding coupons..."
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            title="Coupons"
+            description="Select a store or group and date range to load coupon activity."
+            buttonLabel="Load Coupons"
+            onSearch={() => { setSearchModalOpen(false); getData(); }}
+            loading={context.isFetching}
+            loadingMessage="Finding coupons..."
+          />
+        </SearchPopup>
       )}
       <CouponListPanel
         selectedKey={selectedKey}
