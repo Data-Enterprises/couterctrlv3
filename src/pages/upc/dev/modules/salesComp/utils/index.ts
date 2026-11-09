@@ -118,8 +118,8 @@ export const WEEK_GRID = "120px repeat(7, 1fr) 1.1fr";
 export const TONE_TEXT: Record<StatusTone, string> = {
   up: "text-severity_healthy_text",
   down: "text-severity_critical_text",
-  flat: "text-content/85",
-  muted: "text-content/85",
+  flat: "text-content/95",
+  muted: "text-content/95",
 };
 
 /** sameWeekDayLastYear returns ISO, which the API rejects (400, "Please use

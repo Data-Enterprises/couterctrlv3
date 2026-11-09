@@ -264,11 +264,11 @@ const MovementTab = () => {
           ))}
         </select>
       </label>
-      <span className="text-content/85">
+      <span className="text-content/95">
         ending {weekdayOf(endIso)} {ctx.endDate}. Weeks end on the search's end date.
       </span>
       <span className="flex-1" />
-      <span className="text-content/85">Pounds for weighed items, units for the rest</span>
+      <span className="text-content/95">Pounds for weighed items, units for the rest</span>
     </div>
   );
 
@@ -276,7 +276,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+        <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
           {progress && progress.total > 1
             ? `Loading movement: week ending ${shortDate(progress.week)}, ${progress.done} of ${progress.total} done…`
             : "Loading movement…"}
@@ -289,7 +289,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[11px] text-content/85">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[11px] text-content/95">
           <span>{failed.msg}</span>
           <button
             type="button"
@@ -307,7 +307,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+        <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
           No movement data
         </div>
       </div>
@@ -343,8 +343,8 @@ const MovementTab = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-                  <span className="text-[11px] text-content/85 truncate">{code}</span>
-                  <span className="text-[11px] text-content/85 flex-shrink-0">
+                  <span className="text-[11px] text-content/95 truncate">{code}</span>
+                  <span className="text-[11px] text-content/95 flex-shrink-0">
                     {weighed ? "lbs" : "units"}
                   </span>
                 </div>

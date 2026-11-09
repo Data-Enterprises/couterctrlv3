@@ -84,7 +84,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
             {grid.rows.map(({ store, cells, total }) => {
               const idle = cells.every((v) => v === null || v === 0);
               return (
-                <tr key={store.storeid} className={`group ${idle ? "text-content/85" : ""}`}>
+                <tr key={store.storeid} className={`group ${idle ? "text-content/95" : ""}`}>
                   <td
                     className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-gray-100 ${idle ? "" : "font-semibold"}`}
                   >
@@ -94,7 +94,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                     if (v === null || v === 0) {
                       return (
                         <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
-                          <div className={`${tile} text-content/85`}>–</div>
+                          <div className={`${tile} text-content/95`}>–</div>
                         </td>
                       );
                     }

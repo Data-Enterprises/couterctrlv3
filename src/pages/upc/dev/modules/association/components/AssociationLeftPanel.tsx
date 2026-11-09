@@ -35,7 +35,7 @@ const AssociationLeftPanel = ({
         </div>
         <button
           onClick={onBackToSeed}
-          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-gray-50 text-[11px] text-content/85 hover:bg-gray-50"
+          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-gray-50 text-[11px] text-content/95 hover:bg-gray-50"
         >
           <ArrowLeftIcon className="w-3 h-3 flex-shrink-0" />
           Back to Seed UPCs ({selectedUpcs.length})
@@ -44,7 +44,7 @@ const AssociationLeftPanel = ({
           <MagnifyingGlassIcon className="w-3 h-3 text-brand_navy flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
             <div className="text-[12px] font-medium text-content truncate">{rerootDescription}</div>
-            <div className="text-[11px] text-content/85 font-medium">{rerootUpc}</div>
+            <div className="text-[11px] text-content/95 font-medium">{rerootUpc}</div>
           </div>
         </div>
       </div>
@@ -72,8 +72,8 @@ const AssociationLeftPanel = ({
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-                  <span className="text-[11px] text-content/85 truncate">{code}</span>
-                  <span className="text-[11px] text-content/85 flex-shrink-0 truncate">
+                  <span className="text-[11px] text-content/95 truncate">{code}</span>
+                  <span className="text-[11px] text-content/95 flex-shrink-0 truncate">
                     {seedItem?.sub_department_description ?? ""}
                   </span>
                 </div>

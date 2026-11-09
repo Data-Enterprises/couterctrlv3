@@ -20,17 +20,17 @@ const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay,
     <div className="bg-gray-200/60 rounded px-2.5 py-2 mb-2 last:mb-0">
       <div className="flex items-start justify-between mb-1.5">
         <div>
-          <span className="flex items-center gap-1 text-[12px] font-semibold text-content/85">
+          <span className="flex items-center gap-1 text-[12px] font-semibold text-content/95">
             {label}
             {flagged && (
               <ExclamationCircleIcon className="w-4 h-4 text-amber-600" />
             )}
           </span>
           {descriptor && (
-            <div className="text-[11px] text-content/85">{descriptor}</div>
+            <div className="text-[11px] text-content/95">{descriptor}</div>
           )}
         </div>
-        <span className="text-[11px] text-content/85 font-medium">of 100%</span>
+        <span className="text-[11px] text-content/95 font-medium">of 100%</span>
       </div>
       <div className="flex items-center gap-1.5 mb-1">
         <div className="flex-1 h-[20px] rounded bg-brand_navy/15">

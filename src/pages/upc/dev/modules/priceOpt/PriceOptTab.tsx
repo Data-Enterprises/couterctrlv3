@@ -121,7 +121,7 @@ const PriceOptTab = () => {
 
   if (ctx.priceOptLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Loading price optimization…
       </div>
     );
@@ -129,7 +129,7 @@ const PriceOptTab = () => {
 
   if (!rows.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         No price optimization data
       </div>
     );

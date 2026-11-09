@@ -317,7 +317,7 @@ const UpcExportModal = ({ onClose }: Props) => {
               {TAB_LABELS[ctx.activeTab]}
             </div>
           </div>
-          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors">
+          <button onClick={onClose} className="text-custom-white/95 hover:text-custom-white transition-colors">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
@@ -326,7 +326,7 @@ const UpcExportModal = ({ onClose }: Props) => {
           {/* shape — sales comp only: what the rows represent */}
           {ctx.activeTab === "salesComp" && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Export shape
               </div>
               <div className="flex flex-col gap-1.5">
@@ -338,7 +338,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                       onChange={() => setExportShape(s.id)}
                       className="accent-brand_navy"
                     />
-                    <span className="text-[11px] text-content/85">{s.label}</span>
+                    <span className="text-[11px] text-content/95">{s.label}</span>
                   </label>
                 ))}
               </div>
@@ -347,7 +347,7 @@ const UpcExportModal = ({ onClose }: Props) => {
 
           {/* presets — scope: which UPCs */}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
               Export type
             </div>
             <div className="flex flex-col gap-1.5">
@@ -365,7 +365,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                       onChange={() => setSelectedPreset(p.id)}
                       className="accent-brand_navy"
                     />
-                    <span className="text-[11px] text-content/85">
+                    <span className="text-[11px] text-content/95">
                       {p.label}
                       {unavailable ? " (none selected)" : ""}
                     </span>
@@ -376,13 +376,13 @@ const UpcExportModal = ({ onClose }: Props) => {
           </div>
 
           {ctx.selectedUpcs.length > 0 && (
-            <div className="text-[10px] text-content/85 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/95 bg-gray-50 rounded px-3 py-2">
               {ctx.selectedUpcs.length} UPC{ctx.selectedUpcs.length !== 1 ? "s" : ""} selected — "Selected UPCs" presets will use this filter.
             </div>
           )}
 
           {waitReason && (
-            <div className="text-[10px] text-content/85 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/95 bg-gray-50 rounded px-3 py-2">
               {waitReason}
             </div>
           )}

@@ -35,7 +35,7 @@ const SalesCompLeftList = ({ stats, selectedCode, onSelect }: SalesCompLeftListP
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-              <span className="text-[11px] text-content/85 truncate">{s.code}</span>
+              <span className="text-[11px] text-content/95 truncate">{s.code}</span>
               <span className={`text-[11px] flex-shrink-0 ${TONE_TEXT[phrase.tone]}`}>
                 {phrase.text}
               </span>

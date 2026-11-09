@@ -191,7 +191,7 @@ const SalesCompTab = () => {
 
   if (!upcCodes.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}
       </div>
     );

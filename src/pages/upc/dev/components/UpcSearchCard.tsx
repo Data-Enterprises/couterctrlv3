@@ -82,7 +82,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-base font-semibold text-content">UPC List</h2>
-            <p className="text-[12px] text-content/85">
+            <p className="text-[12px] text-content/95">
               Sales comp · Forecast · Price opt · Trend · Association
             </p>
           </div>
@@ -90,7 +90,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-brand_navy/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/95 hover:text-content hover:bg-brand_navy/10 transition-colors"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -110,7 +110,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
                 className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
                   ctx.activeTab === tab.id
                     ? "bg-brand_navy border-brand_navy text-custom-white"
-                    : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
+                    : "border-content/20 text-content/95 hover:text-content hover:border-content/35"
                 }`}
               >
                 {tab.label}
@@ -128,10 +128,10 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
         {/* UPC input */}
         <div>
           <div className="flex items-baseline justify-between gap-2">
-            <label className="text-[11px] font-medium text-content/85 ml-0.5">
+            <label className="text-[11px] font-medium text-content/95 ml-0.5">
               UPCs
             </label>
-            <span className="text-[10.5px] text-content/85">
+            <span className="text-[10.5px] text-content/95">
               Separate by comma or new lines
             </span>
           </div>
@@ -146,13 +146,13 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
           <div data-help="upc-input" className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
             >
               Add
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
             >
               Upload CSV
             </button>
@@ -183,7 +183,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
                   {upc}
                   <button
                     onClick={() => dispatch(removeDevUpc(upc))}
-                    className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
+                    className="text-brand_navy/95 hover:text-brand_navy transition-colors leading-none"
                   >
                     ×
                   </button>

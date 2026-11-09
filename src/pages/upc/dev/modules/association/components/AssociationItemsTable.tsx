@@ -61,7 +61,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
   return (
     <div>
       <div
-        className="sticky top-0 z-10 bg-custom-white grid gap-1.5 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/85"
+        className="sticky top-0 z-10 bg-custom-white grid gap-1.5 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95"
         style={{ gridTemplateColumns: COLS }}
       >
         <ColFilter
@@ -121,7 +121,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
               {item.product_description}
             </div>
           </div>
-          <span className="text-[11px] text-content/85 truncate">
+          <span className="text-[11px] text-content/95 truncate">
             {item.sub_department_description}
           </span>
           <span className="text-right text-[12px] tabular-nums text-content">
@@ -142,7 +142,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
         </div>
       ))}
       {sorted.length === 0 && (
-        <div className="text-[12px] text-content/85 italic py-3 text-center">No matching products.</div>
+        <div className="text-[12px] text-content/95 italic py-3 text-center">No matching products.</div>
       )}
     </div>
   );

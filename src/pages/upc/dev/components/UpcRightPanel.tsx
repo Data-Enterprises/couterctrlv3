@@ -70,10 +70,10 @@ const UpcRightPanel = () => {
         <div className="flex-1 overflow-hidden flex flex-col min-h-0 relative">
           {ctx.selectedUpcs.length === 0 && (
             <div className="absolute inset-0 z-10 bg-custom-white flex flex-col items-center justify-center gap-2">
-              <div className="text-[11px] font-medium text-content/85">
+              <div className="text-[11px] font-medium text-content/95">
                 No UPCs selected
               </div>
-              <div className="text-[10px] text-content/85">
+              <div className="text-[10px] text-content/95">
                 Select one or more items from the left panel
               </div>
             </div>

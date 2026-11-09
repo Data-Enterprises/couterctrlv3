@@ -30,6 +30,6 @@ export function getPriceOptInsight(points: PricePoint[], elasticity: number | nu
 export const TONE_TEXT: Record<PriceOptTone, string> = {
   up: "text-severity_healthy_text",
   down: "text-severity_critical_text",
-  flat: "text-content/85",
-  muted: "text-content/85",
+  flat: "text-content/95",
+  muted: "text-content/95",
 };

@@ -141,7 +141,7 @@ const AssociationDetailPanel = ({
         <CtaInsightStrip title={title} insight={insight} tone="muted" />
         <KpiTileGrid items={kpis} />
         {items.length > 0 && (
-          <div className="px-4 pt-2 text-[10px] font-medium text-content/85">
+          <div className="px-4 pt-2 text-[10px] font-medium text-content/95">
             Showing top {items.length} association{items.length === 1 ? "" : "s"} by strength
           </div>
         )}
@@ -151,7 +151,7 @@ const AssociationDetailPanel = ({
         {items.length > 0 ? (
           <AssociationItemsTable items={items} onReroot={onReroot} onContextMenu={onContextMenu} />
         ) : (
-          <div className="text-[13px] text-content/85 italic py-2">No associations found.</div>
+          <div className="text-[13px] text-content/95 italic py-2">No associations found.</div>
         )}
       </div>
     </div>

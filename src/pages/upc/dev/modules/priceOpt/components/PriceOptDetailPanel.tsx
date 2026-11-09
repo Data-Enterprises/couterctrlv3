@@ -52,7 +52,7 @@ const PriceOptDetailPanel = ({ summary: r, fixes }: PriceOptDetailPanelProps) =>
 
       <div className="px-4 py-3.5">
         {r.points.length === 0 ? (
-          <div className="text-[13px] text-content/85 italic py-2">
+          <div className="text-[13px] text-content/95 italic py-2">
             No price history available for this item.
           </div>
         ) : (

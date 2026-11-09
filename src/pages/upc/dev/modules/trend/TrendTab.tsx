@@ -131,7 +131,7 @@ const TrendTab = () => {
 
   if (ctx.trendLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Loading trend detection…
       </div>
     );
@@ -139,7 +139,7 @@ const TrendTab = () => {
 
   if (!rows.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         No trend data
       </div>
     );

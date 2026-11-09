@@ -42,7 +42,7 @@ const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLef
               <span
                 className={`text-[12px] font-semibold tabular-nums flex-shrink-0 ${
                   noBaseline
-                    ? "text-content/85"
+                    ? "text-content/95"
                     : impact < 0
                     ? "text-severity_critical_text"
                     : "text-severity_healthy_text"
@@ -52,7 +52,7 @@ const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLef
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-              <span className="text-[11px] text-content/85 truncate">{t.product_code}</span>
+              <span className="text-[11px] text-content/95 truncate">{t.product_code}</span>
               <span className={`text-[11px] flex-shrink-0 ${TONE_TEXT[phrase.tone]}`}>{phrase.text}</span>
             </div>
           </button>

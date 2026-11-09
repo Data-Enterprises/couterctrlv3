@@ -92,7 +92,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
                 key={di}
                 className={`text-center rounded text-[12px] font-semibold py-1 tabular-nums ${
                   pct === null
-                    ? "text-content/85"
+                    ? "text-content/95"
                     : pct >= 0
                       ? "bg-severity_healthy_bg text-severity_healthy_text"
                       : "bg-severity_critical_bg text-severity_critical_text"
@@ -130,7 +130,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
                 );
               })
             ) : (
-              <div className="col-span-7 text-[13px] text-content/85 italic py-2">
+              <div className="col-span-7 text-[13px] text-content/95 italic py-2">
                 No LY data available for this item.
               </div>
             )}
@@ -159,7 +159,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
               className="grid gap-1 items-center py-1 border-t border-gray-200"
               style={{ gridTemplateColumns: WEEK_GRID }}
             >
-              <span className="text-[13px] text-content/85 truncate">
+              <span className="text-[13px] text-content/95 truncate">
                 {fmtWeekRange(week)}
               </span>
               {DAYS.map((d) => {

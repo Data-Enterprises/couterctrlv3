@@ -189,7 +189,7 @@ const AssociationTab = () => {
 
   if (!ctx.searchedUpcs.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Add UPCs to see associations
       </div>
     );
@@ -197,7 +197,7 @@ const AssociationTab = () => {
 
   if (!hasSelection) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Select UPCs to see associations
       </div>
     );
@@ -205,7 +205,7 @@ const AssociationTab = () => {
 
   if (ctx.associationSeedError && ctx.associationSeedKey === seedKey) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 h-full text-[11px] text-content/85">
+      <div className="flex flex-col items-center justify-center gap-2 h-full text-[11px] text-content/95">
         <span>Associations didn't load: {ctx.associationSeedError}.</span>
         <button
           type="button"
@@ -227,7 +227,7 @@ const AssociationTab = () => {
   );
   if (!seedData) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Loading associations…
       </div>
     );
@@ -256,7 +256,7 @@ const AssociationTab = () => {
 
       <div className="flex-1 min-w-0 flex flex-col min-h-0">
         {rerootNote && !rerootUpc && (
-          <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] text-content/85">
+          <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] text-content/95">
             <span>{rerootNote}</span>
             <button
               type="button"
@@ -270,7 +270,7 @@ const AssociationTab = () => {
         {/* A re-root with no answer yet is loading, whatever the shared
             loading flag says; a failed or cancelled one leaves the re-root. */}
         {rerootUpc && !rerootResult ? (
-          <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
             Loading {upcItemsMap.get(rerootUpc) ?? rerootUpc}’s associations…
           </div>
         ) : activeResult ? (
@@ -284,7 +284,7 @@ const AssociationTab = () => {
             onContextMenu={openContextMenu}
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">No associations found</div>
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">No associations found</div>
         )}
       </div>
 

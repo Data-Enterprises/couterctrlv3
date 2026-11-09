@@ -35,11 +35,11 @@ const PriceOptLeftList = ({ rows, selectedCode, onSelect }: PriceOptLeftListProp
                 {formatCurrency2(r.bestPrice)}
                 {/* Per pound, on a scale item — the figure means a different
                     thing without this and the list mixes both kinds. */}
-                {r.weighted && <span className="font-normal text-content/85">/lb</span>}
+                {r.weighted && <span className="font-normal text-content/95">/lb</span>}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-              <span className="text-[11px] text-content/85 truncate">{r.code}</span>
+              <span className="text-[11px] text-content/95 truncate">{r.code}</span>
               <span className={`text-[11px] flex-shrink-0 ${TONE_TEXT[phrase.tone]}`}>
                 {phrase.text}
               </span>
