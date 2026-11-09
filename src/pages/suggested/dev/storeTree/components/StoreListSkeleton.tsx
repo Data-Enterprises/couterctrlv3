@@ -1,8 +1,8 @@
 // Utils
-import { NAME_W, STORE_COLS } from "./utils";
+import { NAME_W, STORE_COLS } from "../../utils";
 
 // Components
-import Bar from "./components/Bar";
+import Bar from "../../components/Bar";
 
 /** The store tree, mid-load. Mirrors the real row grid and its `py-3`. */
 const StoreListSkeleton = ({ rows = 8 }: { rows?: number }) => (

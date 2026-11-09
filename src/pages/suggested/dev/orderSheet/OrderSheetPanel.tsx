@@ -1,7 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useSuggestedCtx } from "./hooks";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { useSuggestedCtx } from "../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Redux
 import {
@@ -11,7 +11,7 @@ import {
   setActionFilter,
   setSelectedDay,
   setActiveTab,
-} from "../../../features/dev/devSuggestedSlice";
+} from "../../../../features/dev/devSuggestedSlice";
 
 // Utils
 import {
@@ -30,31 +30,31 @@ import {
   ACTION_TONE,
   ACTION_TONE_FOR,
   ACTION_ORDER,
-} from "./utils/figures";
-import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import { SORT_TH, TABS, TH } from "./utils";
+} from "../utils/figures";
+import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
+import { SORT_TH, TABS, TH } from "../utils";
 
 // Interfaces
 import type {
   DowRates,
   NotSellingItem,
   SuggestedItem,
-} from "../../../interfaces";
-import type { OrderSheetSortCol } from "./interfaces";
-import type { DayCardEntry, KpiCell } from "../../../components-dev/interfaces";
+} from "../../../../interfaces";
+import type { OrderSheetSortCol } from "../interfaces";
+import type { DayCardEntry, KpiCell } from "../../../../components-dev/interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import DayCardStrip from "../../../components-dev/DayCardStrip";
-import TopToOrder from "./TopToOrder";
-import ProductionTab from "./ProductionTab";
-import NotSellingTab from "./NotSellingTab";
-import ColFilter from "../../../components-dev/filters/ColFilter";
-import SortHeader from "../../../components-dev/SortHeader";
-import SheetSkeleton from "./SheetSkeleton";
-import KpiTileGrid from "../../../components-dev/KpiTileGrid";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
-import WorkingPopover from "./WorkingPopover";
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
+import TopToOrder from "./components/TopToOrder";
+import ProductionTab from "./components/ProductionTab";
+import NotSellingTab from "./components/NotSellingTab";
+import ColFilter from "../../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../../components-dev/SortHeader";
+import SheetSkeleton from "./components/SheetSkeleton";
+import KpiTileGrid from "../../../../components-dev/KpiTileGrid";
+import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
+import WorkingPopover from "./components/WorkingPopover";
 
 /** Suggested's right panel: the selected store's order sheet. Shows the heaviest lines
  *  until a department is picked, then the Order, Production and Not Selling tabs. The

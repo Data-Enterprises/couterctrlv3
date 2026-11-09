@@ -1,5 +1,5 @@
 // Interfaces
-import type { BarTooltipRow } from "./interfaces";
+import type { BarTooltipRow } from "../../interfaces";
 
 interface BarTooltipProps {
   /** Horizontal anchor, 0–100, in the chart's own box. */

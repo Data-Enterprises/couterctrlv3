@@ -1,5 +1,5 @@
 // Utils
-import { DAY_ROWS, NAVY } from "../utils";
+import { DAY_ROWS, NAVY } from "../../../utils";
 
 /** The help's worked weekday chart. */
 const DayBars = () => (

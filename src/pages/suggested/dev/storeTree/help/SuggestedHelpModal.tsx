@@ -2,12 +2,12 @@
 import { useRef, useState } from "react";
 
 // Utils
-import { NAVY } from "./utils";
+import { NAVY } from "../../utils";
 import { SECTIONS } from "./utils/helpSections";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 
 /**
  * The page's explainer, opened from the store panel's "?".

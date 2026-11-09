@@ -1,8 +1,8 @@
 // Utils
-import { NAME_W } from "./utils";
+import { NAME_W } from "../../utils";
 
 // Components
-import Bar from "./components/Bar";
+import Bar from "../../components/Bar";
 
 /**
  * The right panel while a store's items are on the way.

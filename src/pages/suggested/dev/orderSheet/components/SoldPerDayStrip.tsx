@@ -2,11 +2,11 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import { fmtLb, dayLabel } from "./utils/figures";
-import { isWeekend } from "./utils";
+import { fmtLb, dayLabel } from "../../utils/figures";
+import { isWeekend } from "../../utils";
 
 // Interfaces
-import type { SuggestedDailyPoint } from "../../../interfaces";
+import type { SuggestedDailyPoint } from "../../../../../interfaces";
 
 // Components
 import BarTooltip from "./BarTooltip";

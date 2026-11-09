@@ -7,8 +7,8 @@ import {
   rowsToCsv,
   downloadCsv,
   aggregateRows,
-} from "../../../utils/csvExport";
-import { deptLabel, suggestedAction } from "./utils/figures";
+} from "../../../../utils/csvExport";
+import { deptLabel, suggestedAction } from "../utils/figures";
 import {
   AGG_OPTIONS,
   buildActionsCsv,
@@ -21,7 +21,7 @@ import {
   DOW,
   METRICS,
   PREVIEW_ROWS,
-} from "./utils";
+} from "../utils";
 
 // Interfaces
 import type {
@@ -29,12 +29,12 @@ import type {
   SuggestedGroupRow,
   SuggestedNotSelling,
   NotSellingItem,
-} from "../../../interfaces";
-import type { AggFn, AggRow } from "../../../utils/csvExport";
-import type { MetricSelection, ModalMode, PresetId } from "./interfaces";
+} from "../../../../interfaces";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import type { MetricSelection, ModalMode, PresetId } from "../interfaces";
 
 // Components
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface SuggestedExportModalProps {

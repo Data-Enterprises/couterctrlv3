@@ -2,15 +2,15 @@
 import { useEffect, useRef } from "react";
 
 // Utils
-import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from "./utils/figures";
+import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from "../../utils/figures";
 
 // Interfaces
-import type { SuggestedAction } from "./interfaces";
-import type { DowRates, SuggestedItem } from "../../../interfaces";
+import type { SuggestedAction } from "../../interfaces";
+import type { DowRates, SuggestedItem } from "../../../../../interfaces";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/16/solid";
-import Row from "./components/Row";
+import Row from "./Row";
 
 interface WorkingPopoverProps {
   x: number;

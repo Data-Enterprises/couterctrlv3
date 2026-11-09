@@ -1,5 +1,5 @@
 // Utils
-import { PILL } from "../utils";
+import { PILL } from "../../../utils";
 
 // Interfaces
 import type { ReactNode } from "react";

@@ -1,29 +1,29 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useSuggestedCtx } from "./hooks";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { useSuggestedCtx } from "../../hooks";
+import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 
 // Redux
 import {
   setNotSellingStatus,
   setNsDescFilter,
   setNsUpcFilter,
-} from "../../../features/dev/devSuggestedSlice";
+} from "../../../../../features/dev/devSuggestedSlice";
 
 // Utils
-import { fmtLb, lostLb } from "./utils/figures";
-import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import { SORT_TH, STATUS_PILL, STATUSES, TH } from "./utils";
+import { fmtLb, lostLb } from "../../utils/figures";
+import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
+import { SORT_TH, STATUS_PILL, STATUSES, TH } from "../../utils";
 
 // Interfaces
-import type { NotSellingItem } from "../../../interfaces";
-import type { NotSellingFilter } from "../../../features/dev/devSuggestedSlice";
-import type { NotSellingSortCol } from "./interfaces";
+import type { NotSellingItem } from "../../../../../interfaces";
+import type { NotSellingFilter } from "../../../../../features/dev/devSuggestedSlice";
+import type { NotSellingSortCol } from "../../interfaces";
 
 // Components
-import ColFilter from "../../../components-dev/filters/ColFilter";
-import SortHeader from "../../../components-dev/SortHeader";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import ColFilter from "../../../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 /** Suggested's Not Selling tab for one sub department: status chips with counts (all, dead,
  *  stopped, declining) over a table of recent vs prior lb/day, change and lost lb, with

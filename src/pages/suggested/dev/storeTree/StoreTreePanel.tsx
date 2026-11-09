@@ -1,28 +1,28 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useSuggestedCtx } from "./hooks";
+import { useSuggestedCtx } from "../hooks";
 
 // Redux
 import {
   setStoreSearch,
   toggleExpandedStore,
   type SheetKey,
-} from "../../../features/dev/devSuggestedSlice";
-import { isGroupSearch } from "../../../features/searchSlice";
+} from "../../../../features/dev/devSuggestedSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 // Utils
-import { deptLabel, fmtLb0, rollupByStore } from "./utils/figures";
-import { getStoreName } from "../../../utils";
-import { DEPT_COLS, STORE_COLS } from "./utils";
+import { deptLabel, fmtLb0, rollupByStore } from "../utils/figures";
+import { getStoreName } from "../../../../utils";
+import { DEPT_COLS, STORE_COLS } from "../utils";
 
 // Components
 import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import PanelFrame from "./PanelFrame";
-import FilterBar from "../../../components-dev/filters/FilterBar";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import InfoButton from "../../../components-dev/InfoButton";
-import SuggestedHelpModal from "./SuggestedHelpModal";
-import StoreListSkeleton from "./StoreListSkeleton";
+import PanelFrame from "./components/PanelFrame";
+import FilterBar from "../../../../components-dev/filters/FilterBar";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import InfoButton from "../../../../components-dev/InfoButton";
+import SuggestedHelpModal from "./help/SuggestedHelpModal";
+import StoreListSkeleton from "./components/StoreListSkeleton";
 
 /**
  * Store, then department, then the sheet.

@@ -1,28 +1,28 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useSuggestedCtx } from "./hooks";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { useSuggestedCtx } from "../../hooks";
+import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 
 // Redux
 import {
   setSheetKey,
   setTopDescFilter,
   setTopDeptFilter,
-} from "../../../features/dev/devSuggestedSlice";
+} from "../../../../../features/dev/devSuggestedSlice";
 
 // Utils
-import { deptLabel, fmtLb, fmtLbOrDash } from "./utils/figures";
-import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
-import { SORT_TH, TH, TOP_N } from "./utils";
+import { deptLabel, fmtLb, fmtLbOrDash } from "../../utils/figures";
+import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
+import { SORT_TH, TH, TOP_N } from "../../utils";
 
 // Interfaces
-import type { SuggestedItem } from "../../../interfaces";
-import type { TopToOrderSortCol } from "./interfaces";
+import type { SuggestedItem } from "../../../../../interfaces";
+import type { TopToOrderSortCol } from "../../interfaces";
 
 // Components
-import ColFilter from "../../../components-dev/filters/ColFilter";
-import SortHeader from "../../../components-dev/SortHeader";
-import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import ColFilter from "../../../../../components-dev/filters/ColFilter";
+import SortHeader from "../../../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 /**
  * The store's heaviest lines, before a department is picked.

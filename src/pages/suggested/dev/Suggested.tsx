@@ -34,9 +34,9 @@ import type {
 } from "../../../interfaces";
 
 import SearchCard from "../../../components-dev/SearchCard";
-import SuggestedExportModal from "./SuggestedExportModal";
-import StoreTreePanel from "./StoreTreePanel";
-import OrderSheetPanel from "./OrderSheetPanel";
+import SuggestedExportModal from "./export/SuggestedExportModal";
+import StoreTreePanel from "./storeTree/StoreTreePanel";
+import OrderSheetPanel from "./orderSheet/OrderSheetPanel";
 
 /**
  * Suggested Weight — pounds to buy for each scale item.

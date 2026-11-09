@@ -1,15 +1,15 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useSuggestedCtx } from "./hooks";
+import { useSuggestedCtx } from "../../hooks";
 
 // Utils
-import { buildBenchmark, deptLabel, fmtLb, median } from "./utils/figures";
-import { dailyKey } from "../../../interfaces";
-import { getStoreName } from "../../../utils";
-import { DAYS, SHORT } from "./utils";
+import { buildBenchmark, deptLabel, fmtLb, median } from "../../utils/figures";
+import { dailyKey } from "../../../../../interfaces";
+import { getStoreName } from "../../../../../utils";
+import { DAYS, SHORT } from "../../utils";
 
 // Interfaces
-import type { SuggestedGroupRow } from "../../../interfaces";
+import type { SuggestedGroupRow } from "../../../../../interfaces";
 
 // Components
 import SoldPerDayStrip from "./SoldPerDayStrip";
