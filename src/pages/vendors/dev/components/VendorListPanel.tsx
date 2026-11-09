@@ -66,6 +66,8 @@ interface VendorListPanelProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
+/** The Vendors list panel: header with the store's week total and its change, location tabs, threshold and text filters,
+ *  a no-supplier line, and vendor rows sortable by TY, vs LW and vs LY. */
 const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelProps) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();

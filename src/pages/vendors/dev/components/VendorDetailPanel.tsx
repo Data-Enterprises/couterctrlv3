@@ -47,6 +47,8 @@ import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
 import VendorExportModal from "../export/VendorExportModal";
 import Kpi from "./Kpi";
 
+/** The Vendors detail panel for the selected vendor: the header with its report and export buttons, KPI figures,
+ *  the week's day cards and the item margins table. Follows the Margin/Sales toggle and the chosen store location. */
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
   const vend = useVendorsCtx();
