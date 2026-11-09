@@ -1,30 +1,10 @@
 // Utils
-import { LIST_COLS, signed } from "../utils";
+import { FINDING_SAYS, LIST_COLS, signed, units } from "../utils";
 
 // Interfaces
-import type { Finding, ReportRow } from "../../../utils/deptReport";
+import type { ReportRow } from "../../../utils/deptReport";
 
-/** Whole units, signed, with the measure where it is not pieces. */
-const units = (v: number, weighed: boolean) =>
-  (v >= 0 ? "+" : "−") +
-  Math.abs(Math.round(v)).toLocaleString("en-US") +
-  (weighed ? " lb" : "");
-
-/** What a department's chain concluded, in the fewest words that are true. */
-const FINDING_SAYS: Record<Finding, string> = {
-  "nothing-rung": "Nothing rung",
-  "fewer-units": "Sold fewer units",
-  "lower-price": "Took less per unit",
-  "different-mix": "Selling a different mix",
-  "a-little-less": "A little less of everything",
-  ahead: "Ahead",
-  level: "Level",
-};
-
-/* ------------------------------------------------------------------ */
 /* The list                                                            */
-/* ------------------------------------------------------------------ */
-
 /**
  * One department in the left column.
  *

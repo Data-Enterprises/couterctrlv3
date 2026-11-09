@@ -13,7 +13,7 @@ import {
 // Interfaces
 import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
 import type { SubSale } from "../../../../../../interfaces";
-import type { Severity } from "../../../components/LedgerRow";
+import type { Severity } from "../../../../../../utils/severity";
 import type {
   DeptCta,
   DeptRow,
@@ -23,6 +23,8 @@ import type {
   ItemSortColumn,
   ItemSortState,
 } from "../interfaces";
+import type { CtaTone } from "../../../../../../components-dev/interfaces";
+import type { Finding } from "../../../utils/deptReport";
 
 export const money = (v: number) => formatCurrency2(v);
 
@@ -434,3 +436,65 @@ export const searchItems = (items: GradedItem[], text: string) => {
       )
     : items;
 };
+
+/** Small counts as words, and the word for a count. */
+export const WORDS = [
+  "No",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+  "Eleven",
+  "Twelve",
+  "Thirteen",
+  "Fourteen",
+  "Fifteen",
+];
+export const word = (n: number) => WORDS[n] ?? String(n);
+
+/** A sale date's yyyy-mm-dd part. */
+export const day = (v: string) => (v ?? "").split("T")[0];
+
+/** Informational, not a grade. The strip under the split bar explains what
+ *  the bar leaves out; nothing in it is a verdict on the store, so it takes
+ *  the neutral tone rather than borrowing a severity colour. */
+export const COMPARE_NOTE_TONE: CtaTone = {
+  border: "border-brand_navy/25",
+  bg: "bg-bkg",
+  hoverBg: "hover:bg-brand_navy/5",
+  text: "text-content",
+};
+
+/** Whole units, with the measure where the department rings by weight. */
+export const whole = (v: number) => Math.round(v).toLocaleString("en-US");
+
+/** The items table's sortable heading. */
+export const ITEMS_HEAD =
+  "flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy flex-shrink-0";
+
+/** Whole units, signed, with the measure where it is not pieces. */
+export const units = (v: number, weighed: boolean) =>
+  (v >= 0 ? "+" : "−") +
+  Math.abs(Math.round(v)).toLocaleString("en-US") +
+  (weighed ? " lb" : "");
+
+/** What a department's chain concluded, in the fewest words that are true. */
+export const FINDING_SAYS: Record<Finding, string> = {
+  "nothing-rung": "Nothing rung",
+  "fewer-units": "Sold fewer units",
+  "lower-price": "Took less per unit",
+  "different-mix": "Selling a different mix",
+  "a-little-less": "A little less of everything",
+  ahead: "Ahead",
+  level: "Level",
+};
+
+/** The sub department signal list's sortable heading. */
+export const SIGNAL_HEAD =
+  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content";

@@ -12,13 +12,22 @@ import {
   scopeToDay,
   type Excluded,
 } from "../utils/storeComparison";
+import { EXCLUDED_LABEL, pct0 } from "./utils";
 
 // Interfaces
-import type { LedgerRowData } from "../components/LedgerRow";
+import type { LedgerRowData } from "../interfaces";
 
 // Components
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import GroupShareBalance from "./components/GroupShareBalance";
+
+interface GroupComparisonPanelProps {
+  rows: LedgerRowData[];
+  /** The page's own threshold, so the comparison bands move with the control
+   *  the severity dot already answers to. */
+  threshold: number;
+  onSelectStore: (row: LedgerRowData) => void;
+}
 
 /**
  * Where every store stands inside the group that was searched.
@@ -32,31 +41,11 @@ import GroupShareBalance from "./components/GroupShareBalance";
  * here. Selecting a day re-asks the whole question of that day by handing
  * `scopeToDay`'s rows to the same function.
  */
-
-interface Props {
-  rows: LedgerRowData[];
-  /** The page's own threshold, so the comparison bands move with the control
-   *  the severity dot already answers to. */
-  threshold: number;
-  onSelectStore: (row: LedgerRowData) => void;
-}
-
-const EXCLUDED_LABEL: Record<Excluded, string> = {
-  "no-baseline": "No baseline",
-  "partial-week": "Short week",
-  "nothing-to-compare": "Nothing to compare",
-};
-
-/** Whole percent. This reads as a headline above eight stores, and a tenth
- *  of a point on a $1.4M group is noise dressed as precision. */
-const pct0 = (v: number | null) =>
-  v === null ? "—" : `${v >= 0 ? "+" : ""}${Math.round(v)}%`;
-
 const GroupComparisonPanel = ({
   rows,
   threshold,
   onSelectStore,
-}: Props) => {
+}: GroupComparisonPanelProps) => {
   const { selectedDate, gradingMetric } = useSalesCtx();
   // The panel's title names the group it is reading, because "By store" did
   // not say which stores.

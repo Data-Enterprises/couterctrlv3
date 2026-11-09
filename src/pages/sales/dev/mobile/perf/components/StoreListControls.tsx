@@ -5,11 +5,11 @@ import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
 import { setPerfStoreSort } from "../../../../../../features/dev/devSalesPerfSlice";
 
 // Utils
-import { cmpShort, dirOf } from "../utils/perfData";
+import { dirOf } from "../utils/perfData";
+import { storeSorts } from "../utils";
 
 // Interfaces
-import type { CmpBasis, PairSort } from "../utils/perfData";
-import type { SortOption } from "../../../../../../components-dev/mobile/interfaces";
+import type { CmpBasis } from "../utils/perfData";
 
 // Components
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
@@ -21,12 +21,6 @@ interface StoreListControlsProps {
   storeFilter: string;
   setStoreFilter: (v: string) => void;
 }
-
-const storeSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-  { key: "name", label: "Store #" },
-];
 
 /** How the store list is ordered and narrowed: sort chips and a filter box. */
 const StoreListControls = ({

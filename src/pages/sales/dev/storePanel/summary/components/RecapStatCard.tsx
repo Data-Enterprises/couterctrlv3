@@ -3,13 +3,7 @@ import { DAY_CARD } from "../utils/recapGrid";
 
 // Interfaces
 import type { ReactNode } from "react";
-
-/** One line under the headline: what it is, its figure, and a quieter aside. */
-export interface StatRow {
-  label: string;
-  value: string;
-  sub?: string;
-}
+import type { StatRow } from "../interfaces";
 
 /**
  * One card of a day's recap: a title, one headline figure with a few words

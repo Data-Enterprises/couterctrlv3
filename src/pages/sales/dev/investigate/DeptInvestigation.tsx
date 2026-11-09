@@ -44,6 +44,15 @@ import EvidenceRail from "./components/EvidenceRail";
 import ItemEvidence from "./components/ItemEvidence";
 import GridContextMenu from "./components/GridContextMenu";
 
+interface DeptInvestigationProps {
+  twStart: string;
+  twEnd: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
+}
+
 /**
  * Why this store is behind that one, in this department.
  *
@@ -60,16 +69,6 @@ import GridContextMenu from "./components/GridContextMenu";
  * on screen rather than hidden, because a cause that changes while somebody
  * is reading it needs to say why.
  */
-
-interface Props {
-  twStart: string;
-  twEnd: string;
-  lwStart: string;
-  lwEnd: string;
-  lyStart: string;
-  lyEnd: string;
-}
-
 const DeptInvestigation = ({
   twStart,
   twEnd,
@@ -77,7 +76,7 @@ const DeptInvestigation = ({
   lwEnd,
   lyStart,
   lyEnd,
-}: Props) => {
+}: DeptInvestigationProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric, investigation: target } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();

@@ -1,6 +1,7 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { cmpLabels, cmpWord, type CmpBasis } from "../utils/perfData";
+import { COUPON_KEYS } from "../utils";
 
 // Interfaces
 import type { PerfDay, PerfTotals } from "../utils/perfData";
@@ -12,10 +13,7 @@ import PerfDayChart from "../../../../../../components-dev/mobile/perf/PerfDayCh
 import PerfDelta from "../../../../../../components-dev/mobile/perf/PerfDelta";
 import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_SWATCH_BG } from "../../../../../../components-dev/mobile/perf/perfColors";
 
-/** Darkest to lightest, so the stack and the legend agree. */
-const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
-
-interface Props {
+interface PerfStoreReportProps {
   days: PerfDay[];
   selectedDay: string | null;
   onToggleDay: (iso: string) => void;
@@ -64,7 +62,7 @@ const PerfStoreReport = ({
   totalsPartial,
   totalsNote,
   onViewDetails,
-}: Props) => (
+}: PerfStoreReportProps) => (
   <div className="border-t border-brand_line">
     {/* ── the week ───────────────────────────────────────────────── */}
     <div className="px-3.5 pb-1 pt-2.5">

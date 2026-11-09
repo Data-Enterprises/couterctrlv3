@@ -20,7 +20,8 @@ import { shiftIsoDay } from "../../../../utils/dates";
 import { buildHeaderTotals } from "./utils";
 
 // Interfaces
-import type { LedgerRowData, StoreSelection } from "../components/LedgerRow";
+import type { StoreSelection } from "../../../../interfaces";
+import type { LedgerRowData } from "../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";

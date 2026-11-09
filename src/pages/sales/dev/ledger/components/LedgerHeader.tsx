@@ -10,6 +10,7 @@ import { setThreshold, setGradingMetric } from "../../../../../features/dev/devS
 import { formatCurrencyCompact, formatBigNumber } from "../../../../../utils";
 import { headerDeltaPill } from "../../../../../utils/severity";
 import { formatPct } from "../utils/tierColumnUtils";
+import { THRESHOLD_DEFAULT } from "../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -21,8 +22,6 @@ import {
 import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../../components-dev/filters/ThresholdSlider";
-
-const THRESHOLD_DEFAULT = 9;
 
 interface LedgerHeaderProps {
   weekLabel: string;

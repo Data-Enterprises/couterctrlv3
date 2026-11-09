@@ -14,8 +14,6 @@ import {
   getTopItems,
   TOP_ITEMS_FETCH,
   type ItemDetailResponse,
-  type TopItemPricePoint,
-  type TopItemRow,
   type TopItemsResponse,
 } from "../../../../../../api/topItems";
 
@@ -32,10 +30,10 @@ import {
   type CompareFilter,
   type CompareMetric,
 } from "../utils/topItemsCompare";
-import { money } from "../utils";
+import { money, OUTLINE_TONE } from "../utils";
 
 // Interfaces
-import type { CtaTone } from "../../../../../../components-dev/interfaces";
+import type { Side } from "../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
@@ -47,6 +45,16 @@ import SortHeader from "../../../../../../components-dev/SortHeader";
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import Row from "./Row";
 import Rail from "./Rail";
+
+interface TopItemsReportProps {
+  openStoreName: string;
+  openStoreId: number;
+  compareStoreId: number;
+  compareStoreName: string;
+  twStart: string;
+  twEnd: string;
+  onBack: () => void;
+}
 
 /**
  * Two stores' top 200, side by side.
@@ -66,32 +74,6 @@ import Rail from "./Rail";
  * `item_detail` for the absent side and reports what comes back — which is
  * still a SALES answer: "sold none this week", not "off their shelf".
  */
-
-/** Informational. Nothing in the outline is a verdict on either store, so it
- *  takes the neutral tone rather than borrowing a severity colour. */
-const OUTLINE_TONE: CtaTone = {
-  border: "border-brand_navy/25",
-  bg: "bg-bkg",
-  hoverBg: "hover:bg-brand_navy/5",
-  text: "text-content",
-};
-
-/** One store's week, as this tab needs it. */
-interface Side {
-  rows: TopItemRow[];
-  points: TopItemPricePoint[];
-}
-
-interface Props {
-  openStoreName: string;
-  openStoreId: number;
-  compareStoreId: number;
-  compareStoreName: string;
-  twStart: string;
-  twEnd: string;
-  onBack: () => void;
-}
-
 const TopItemsReport = ({
   openStoreName,
   openStoreId,
@@ -100,7 +82,7 @@ const TopItemsReport = ({
   twStart,
   twEnd,
   onBack,
-}: Props) => {
+}: TopItemsReportProps) => {
   const { url, token } = useAppSelector((s) => s.app);
   const { topItemsCache: cache, topItemsTyCache: tyCache } = useSalesCtx();
   const dispatch = useAppDispatch();

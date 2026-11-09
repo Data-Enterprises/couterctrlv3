@@ -20,11 +20,10 @@ import {
   totalsFrom,
   type ReportRow,
 } from "../../../utils/deptReport";
-import { LIST_COLS, money } from "../utils";
+import { COMPARE_NOTE_TONE, day, LIST_COLS, money, word } from "../utils";
 
 // Interfaces
 import type { SubSale } from "../../../../../../interfaces";
-import type { CtaTone } from "../../../../../../components-dev/interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
@@ -33,51 +32,7 @@ import PageInfoButton from "../../../../../../components-dev/PageInfoButton";
 import ListRow from "./ListRow";
 import Detail from "./Detail";
 
-/**
- * The sub-department comparison, read as a report.
- *
- * Shown only when a counterpart has been chosen in Stores — without one the
- * tab stays the store's own graded departments, which is a different question
- * and already answered.
- *
- * One line a department: what it is, what it costs, what went wrong, and the
- * button that goes and looks. Under each, the three gates in order with the
- * failing one marked, so the sentence is a claim with its working shown
- * rather than an assertion to take on trust.
- *
- * There is nothing to expand. An earlier pass hid a tray of figures behind
- * every row and it read as a pile — three sub-tables in three shapes, each
- * re-declaring its own headers, with the finding competing against them for
- * the eye. The trail of checks IS the evidence, and it fits on one line.
- *
- * Every figure comes from rows already fetched. Nothing item-level appears
- * here — that costs nine requests a department and is the investigation's
- * whole job. The report NAMES a diagnosis; the investigation proves it.
- */
-
-const WORDS = [
-  "No",
-  "One",
-  "Two",
-  "Three",
-  "Four",
-  "Five",
-  "Six",
-  "Seven",
-  "Eight",
-  "Nine",
-  "Ten",
-  "Eleven",
-  "Twelve",
-  "Thirteen",
-  "Fourteen",
-  "Fifteen",
-];
-const word = (n: number) => WORDS[n] ?? String(n);
-
-/* ------------------------------------------------------------------ */
-
-interface Props {
+interface DeptReportProps {
   openStoreName: string;
   /** The investigation is about one named store's supply chain, so it cannot
    *  work from the name alone. */
@@ -104,18 +59,27 @@ interface Props {
   onBack: () => void;
 }
 
-const day = (v: string) => (v ?? "").split("T")[0];
-
-/** Informational, not a grade. The strip under the split bar explains what
- *  the bar leaves out; nothing in it is a verdict on the store, so it takes
- *  the neutral tone rather than borrowing a severity colour. */
-const COMPARE_NOTE_TONE: CtaTone = {
-  border: "border-brand_navy/25",
-  bg: "bg-bkg",
-  hoverBg: "hover:bg-brand_navy/5",
-  text: "text-content",
-};
-
+/**
+ * The sub-department comparison, read as a report.
+ *
+ * Shown only when a counterpart has been chosen in Stores — without one the
+ * tab stays the store's own graded departments, which is a different question
+ * and already answered.
+ *
+ * One line a department: what it is, what it costs, what went wrong, and the
+ * button that goes and looks. Under each, the three gates in order with the
+ * failing one marked, so the sentence is a claim with its working shown
+ * rather than an assertion to take on trust.
+ *
+ * There is nothing to expand. An earlier pass hid a tray of figures behind
+ * every row and it read as a pile — three sub-tables in three shapes, each
+ * re-declaring its own headers, with the finding competing against them for
+ * the eye. The trail of checks IS the evidence, and it fits on one line.
+ *
+ * Every figure comes from rows already fetched. Nothing item-level appears
+ * here — that costs nine requests a department and is the investigation's
+ * whole job. The report NAMES a diagnosis; the investigation proves it.
+ */
 const DeptReport = ({
   openStoreName,
   openStoreId,
@@ -132,7 +96,7 @@ const DeptReport = ({
   lwWeekDates,
   lyWeekDates,
   onBack,
-}: Props) => {
+}: DeptReportProps) => {
   // A day picked in the strip above narrows both sides to that day. The
   // open store's departments arrive already narrowed; without this the
   // counterpart stayed a whole week, and one Friday was "behind" a week.

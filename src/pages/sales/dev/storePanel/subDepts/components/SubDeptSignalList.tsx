@@ -7,7 +7,12 @@ import { setSubDeptThreshold } from "../../../../../../features/dev/devSalesLedg
 
 // Utils
 import { PCT_COL_W } from "../../../utils/index";
-import { deptSeverity, nextDeptSort, sortDeptRows } from "../utils";
+import {
+  deptSeverity,
+  nextDeptSort,
+  SIGNAL_HEAD,
+  sortDeptRows,
+} from "../utils";
 
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
@@ -30,9 +35,6 @@ interface SubDeptSignalListProps {
   deptSort: DeptSortState;
   setDeptSort: Dispatch<SetStateAction<DeptSortState>>;
 }
-
-const HEAD =
-  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content";
 
 /**
  * The left panel: the store's sub departments, worst first, with grade chips,
@@ -92,14 +94,14 @@ const SubDeptSignalList = ({
         <span className="w-2.5 flex-shrink-0" />
         {/* A floor on the name, so a window too narrow for the row clips its
             right edge rather than hiding which department a number is for. */}
-        <button onClick={() => sortBy("dept")} className={`${HEAD} flex-1 min-w-[88px]`}>
+        <button onClick={() => sortBy("dept")} className={`${SIGNAL_HEAD} flex-1 min-w-[88px]`}>
           Sub Dept
           {chevron("dept")}
         </button>
         <div className="flex items-center gap-[14px]">
           <button
             onClick={() => sortBy("ty")}
-            className={`${HEAD} justify-end flex-shrink-0 pl-2.5`}
+            className={`${SIGNAL_HEAD} justify-end flex-shrink-0 pl-2.5`}
             style={{ width: 64 }}
           >
             TY
@@ -107,7 +109,7 @@ const SubDeptSignalList = ({
           </button>
           <button
             onClick={() => sortBy("vsLW")}
-            className={`${HEAD} justify-center flex-shrink-0`}
+            className={`${SIGNAL_HEAD} justify-center flex-shrink-0`}
             style={{ width: PCT_COL_W }}
           >
             vs LW
@@ -117,7 +119,7 @@ const SubDeptSignalList = ({
               comparison, and a dash on every row for a store with no history. */}
           <button
             onClick={() => sortBy("vsLY")}
-            className={`perf_narrow:hidden ${HEAD} justify-center flex-shrink-0`}
+            className={`perf_narrow:hidden ${SIGNAL_HEAD} justify-center flex-shrink-0`}
             style={{ width: PCT_COL_W }}
           >
             vs LY

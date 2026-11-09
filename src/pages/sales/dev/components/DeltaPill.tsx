@@ -1,8 +1,6 @@
 // Utils
 import { comparisonPillClass, pillClass } from "../../../../utils/severity";
-import { PCT_COL_W } from "../utils/index";
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+import { fmtPct, PCT_COL_W } from "../utils/index";
 
 /**
  * A graded comparison figure, as the ledger draws it.
@@ -47,7 +45,7 @@ const DeltaPill = ({
         : undefined
     }
   >
-    {has ? formatPct(pct) : "—"}
+    {has ? fmtPct(pct) : "—"}
   </span>
 );
 export default DeltaPill;

@@ -1,7 +1,8 @@
+// Utils
+import { NAME_W } from "../utils";
+
 // Components
 import Bar from "./Bar";
-
-const NAME_W = ["78%", "62%", "85%", "55%", "72%", "68%", "90%", "60%"];
 
 /** A card's worth of bars. */
 const SkCard = ({ rows = 4 }: { rows?: number }) => (

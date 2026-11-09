@@ -13,9 +13,10 @@ import {
   sameWeekDayLastYear,
 } from "../../../../utils";
 import { computeDayMatchedTotals } from "../utils/ledgerUtils";
+import { fmtPct } from "../utils";
 
 // Interfaces
-import type { DayDot } from "./LedgerRow";
+import type { DayDot } from "../../../../interfaces";
 
 // Components
 import { StarIcon } from "@heroicons/react/20/solid";
@@ -23,8 +24,6 @@ import { StarIcon } from "@heroicons/react/20/solid";
 interface PopupDaySidebarProps {
   days: DayDot[];
 }
-
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
   const dispatch = useAppDispatch();

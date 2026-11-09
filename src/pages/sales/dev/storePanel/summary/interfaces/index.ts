@@ -161,3 +161,10 @@ export type WeekExceptionsState =
   | { status: "loading" }
   | { status: "error" }
   | { status: "ready"; byDay: Record<string, RecapExceptions> };
+
+/** One line under the headline: what it is, its figure, and a quieter aside. */
+export interface StatRow {
+  label: string;
+  value: string;
+  sub?: string;
+}

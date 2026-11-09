@@ -1,6 +1,6 @@
 // Interfaces
 import type { ExportSubDeptItem } from "../../../../../../features/dev/devSalesLedgerSlice";
-import type { Severity } from "../../../components/LedgerRow";
+import type { Severity } from "../../../../../../utils/severity";
 
 /** One sub department in the left list: this week, last week, last year. */
 export type DeptRow = {

@@ -1,16 +1,12 @@
 // Hooks
 import { useState } from "react";
 
+// Utils
+import { onDay } from "../utils";
+
 // Interfaces
 import type { SupplyRecord } from "../utils/investigationSteps";
 import type { DocLine } from "../interfaces";
-
-/** Sep 24, from an ISO date that may or may not carry a time behind it. */
-const onDay = (d: string) =>
-  new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
 
 const Document = ({
   rec,

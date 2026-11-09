@@ -1,6 +1,6 @@
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { LedgerRowData } from "../../components/LedgerRow";
+import type { LedgerRowData } from "../../interfaces";
 
 /**
  * One store's share of the group, day by day.

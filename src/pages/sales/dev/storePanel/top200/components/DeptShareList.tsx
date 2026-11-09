@@ -1,11 +1,8 @@
 // Utils
-import { moneyText } from "../utils";
+import { LANDING_COLS, moneyText } from "../utils";
 
 // Interfaces
 import type { DeptRollup } from "../utils/topItems";
-
-/** Name, the share bar, and the sales. */
-const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 96px";
 
 /** The landing's sub departments, biggest first; a row narrows the list to it. */
 const DeptShareList = ({

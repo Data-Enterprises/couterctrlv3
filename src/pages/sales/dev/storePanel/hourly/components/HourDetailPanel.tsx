@@ -4,7 +4,7 @@ import { useSalesCtx } from "../../../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { buildWeekHourDays, formatHourRange, getCta } from "../utils";
+import { basket, buildWeekHourDays, formatHourRange, getCta } from "../utils";
 
 // Interfaces
 import type { Coverage } from "../../../utils/ledgerUtils";
@@ -35,8 +35,6 @@ interface HourDetailPanelProps {
   chartOpen: boolean;
   setChartOpen: Dispatch<SetStateAction<boolean>>;
 }
-
-const basket = (net: number, trans: number) => (trans > 0 ? net / trans : 0);
 
 /** The right panel: the open hour's insight, its figures, transactions,
  *  average basket and its week chart. */

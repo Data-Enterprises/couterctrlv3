@@ -1,17 +1,8 @@
 // Utils
-import { money } from "../utils";
+import { money, side } from "../utils";
 
 // Interfaces
-import type { TopItemPricePoint } from "../../../../../../api/topItems";
 import type { PriceLine } from "../interfaces";
-
-const side = (p: TopItemPricePoint | null) =>
-  p === null
-    ? null
-    : `${(p.weight > 0 ? p.weight : p.units).toLocaleString(undefined, {
-        minimumFractionDigits: p.weight > 0 ? 1 : 0,
-        maximumFractionDigits: p.weight > 0 ? 1 : 0,
-      })} ${p.weight > 0 ? "lb" : "u"} · ${money(p.net_sales)}`;
 
 const PriceRow = ({ line }: { line: PriceLine }) => (
   <>

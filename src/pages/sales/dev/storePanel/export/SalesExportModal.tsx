@@ -33,7 +33,7 @@ import {
 } from "./utils/index";
 
 // Interfaces
-import type { DayDot } from "../../components/LedgerRow";
+import type { DayDot } from "../../../../../interfaces";
 import type { ExportDataset, ItemSev, ModalMode } from "./interfaces/index";
 
 // Components

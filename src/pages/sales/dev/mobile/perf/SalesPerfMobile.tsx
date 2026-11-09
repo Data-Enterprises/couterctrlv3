@@ -52,12 +52,12 @@ import {
   storeKeyOf,
   cmpLabels,
 } from "./utils/perfData";
+import { DETAIL_TABS, storeNumberOf } from "./utils";
 
 // Interfaces
 import type { PerfBundle } from "../../../../../features/dev/devSalesPerfSlice";
 import type { CmpBasis } from "./utils/perfData";
 import type { ItemScope } from "./interfaces";
-import type { DetailTab } from "../../../../../components-dev/mobile/interfaces";
 
 // Components
 import InfoModal from "../../../../../components-dev/InfoModal";
@@ -71,19 +71,6 @@ import PerfStoreReport from "./components/PerfStoreReport";
 import PerfDrillList from "./components/PerfDrillList";
 import PerfSearchScreen from "./components/PerfSearchScreen";
 import StoreListControls from "./components/StoreListControls";
-
-/** Two breakdowns under a store. Items are not one of them — they live
- *  inside a sub department, and a tab for them showed the department list a
- *  second time under a name that promised item rows. */
-const DETAIL_TABS: DetailTab<"subs" | "hours">[] = [
-  { key: "subs", label: "Sub Depts" },
-  { key: "hours", label: "Hours" },
-];
-
-/** Stores sort on their number, taken from the key — the label is whatever
- *  name the user knows the store by, which needn't start with it. */
-const storeNumberOf = (p: { key: string; label: string }) =>
-  p.key.split("__")[1] ?? p.label;
 
 /**
  * Weekly Sales on mobile.

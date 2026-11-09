@@ -5,6 +5,9 @@ import { useSalesCtx } from "../../hooks";
 // Redux
 import { setLedgerTab } from "../../../../../features/dev/devSalesLedgerSlice";
 
+// Utils
+import { LABELS } from "../utils";
+
 // Interfaces
 import type { PopupTab } from "../interfaces";
 
@@ -12,14 +15,6 @@ interface StorePopupTabsProps {
   /** A search of more than one store: only then is Compare offered. */
   hasGroup: boolean;
 }
-
-const LABELS: Record<PopupTab, string> = {
-  dailyrecap: "Summary",
-  subdept: "Sub depts",
-  comparison: "Compare",
-  hourly: "Hourly",
-  topitems: "Top 200",
-};
 
 /**
  * The store panel's tab bar. Sub depts leads: it answers the question the page

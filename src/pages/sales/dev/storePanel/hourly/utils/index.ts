@@ -13,7 +13,7 @@ import {
 // Interfaces
 import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
 import type { HourlySale } from "../../../../../../interfaces";
-import type { Severity } from "../../../components/LedgerRow";
+import type { Severity } from "../../../../../../utils/severity";
 import type {
   HourCta,
   HourRow,
@@ -300,3 +300,34 @@ export const sortHourRows = (rows: HourRow[], sort: HourSortState, isQty: boolea
 
 /** Change against a reference, in percent. */
 export const pctChange = (value: number, ref: number) => ((value - ref) / ref) * 100;
+
+/** Average basket: net sales over transactions, 0 with none. */
+export const basket = (net: number, trans: number) => (trans > 0 ? net / trans : 0);
+
+/** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
+export const MINUS = "−";
+
+/** An hour as a short clock label, e.g. 9a or 12p. */
+export const hourLabel = (h: number) => {
+  const suffix = h < 12 ? "a" : "p";
+  const twelve = h % 12 === 0 ? 12 : h % 12;
+  return `${twelve}${suffix}`;
+};
+
+/** An hour's figure in the chosen metric: units, or net sales. */
+export const value = (h: HourlySale, metric: GradingMetric) =>
+  metric === "qty" ? h.qty : h.total_sales - h.total_tax;
+
+/** Hourly rows totalled by hour in the chosen metric. */
+export const byHour = (rows: HourlySale[], metric: GradingMetric) =>
+  rows.reduce<Record<number, number>>((acc, h) => {
+    acc[h.hour] = (acc[h.hour] ?? 0) + value(h, metric);
+    return acc;
+  }, {});
+
+/** A sale date's yyyy-mm-dd part. */
+export const day = (v: string) => (v ?? "").split("T")[0];
+
+/** The hourly signal list's sortable heading. */
+export const HEAD =
+  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0";

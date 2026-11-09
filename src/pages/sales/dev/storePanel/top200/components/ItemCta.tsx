@@ -2,27 +2,11 @@
 import { ctaClasses } from "../utils";
 
 // Interfaces
-import type {
-  ItemInsight,
-  ItemTone,
-  TopItemCompared,
-} from "../utils/topItems";
+import type { ItemInsight, TopItemCompared } from "../utils/topItems";
 
 // Components
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/20/solid";
-
-const CtaIcon = ({ tone, cls }: { tone: ItemTone; cls: string }) => {
-  if (tone === "critical") return <ExclamationTriangleIcon className={cls} />;
-  if (tone === "watch") return <ExclamationCircleIcon className={cls} />;
-  if (tone === "healthy") return <CheckCircleIcon className={cls} />;
-  return null;
-};
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
+import CtaIcon from "./CtaIcon";
 
 /** The selected item's verdict strip, with the sentence behind it. */
 const ItemCta = ({

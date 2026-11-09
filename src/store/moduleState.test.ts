@@ -22,7 +22,7 @@ const ALLOWED: Record<string, string> = {
     "a shared empty array, never written to",
   "pages/sales/dev/storePanel/subDepts/hooks/index.ts:inFlightItems":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/storePanel/top200/PopupTopItems.tsx:inFlight":
+  "pages/sales/dev/storePanel/top200/utils/index.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
   "pages/sales/dev/storePanel/hooks/index.ts:inFlightStores":
     "keys of requests still on the wire, emptied as each one lands",

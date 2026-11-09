@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursorTip";
 
 // Utils
-import { count, money, weight3 } from "../utils/recapFormat";
+import { count, money } from "../utils/recapFormat";
 import { NO_VENDOR } from "../utils/recapItems";
+import { colsOf, lb } from "../utils";
 
 // Interfaces
 import type { ItemSort, ItemSortCol, RecapItemRow } from "../interfaces/index";
@@ -13,20 +14,6 @@ import type { ItemSort, ItemSortCol, RecapItemRow } from "../interfaces/index";
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
 import RecapSortHead from "./RecapSortHead";
-
-/**
- * UPC, Description, Sub dept, Vendor, Sales (net), Qty, [Weight]. Fixed
- * widths for the figures so each head sits over its own numbers, and the
- * description takes the rest; a narrow panel tightens them.
- */
-const colsOf = (withPounds: boolean, narrow: boolean) =>
-  narrow
-    ? `100px minmax(0,1fr) 100px 100px 86px 56px${withPounds ? " 68px" : ""}`
-    : `125px minmax(0,1fr) 125px 130px 96px 62px${withPounds ? " 82px" : ""}`;
-
-/** Pounds to three places, no unit (the heading says Weight); a dash on an
- *  item sold by the each. */
-const lb = (n: number) => (n > 0 ? weight3(n) : "—");
 
 /**
  * The item view's list (board 18): sortable heads, one page of items,

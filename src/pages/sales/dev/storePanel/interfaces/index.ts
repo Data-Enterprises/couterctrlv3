@@ -1,5 +1,5 @@
 // Interfaces
-import type { DayDot } from "../../components/LedgerRow";
+import type { DayDot } from "../../../../../interfaces";
 import type { DayMatchedTotals, LyWindow } from "../../utils/ledgerUtils";
 
 export type PopupTab =

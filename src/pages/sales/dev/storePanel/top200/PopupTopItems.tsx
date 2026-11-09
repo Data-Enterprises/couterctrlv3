@@ -45,7 +45,7 @@ import {
   type TopItemSort,
   type TopItemCompared,
 } from "./utils/topItems";
-import { dayText, pctText } from "./utils";
+import { dayText, inFlight, pctText } from "./utils";
 
 // Interfaces
 import type { JsonError } from "../../../../../interfaces";
@@ -87,22 +87,6 @@ import InvoicesRail from "./components/InvoicesRail";
  * was leaving those columns empty, which would make the tab read like a
  * different page.
  */
-
-/**
- * Keys with a request already in the air.
- *
- * The slice's loading flag cannot do this job. It is read from the render
- * that scheduled the effect, so a second run scheduled from that same render
- * sees the value it had BEFORE the first run dispatched — and development
- * does exactly that: StrictMode mounts, unmounts and mounts again, so the tab
- * asked for all three windows twice on every open.
- *
- * It lives outside React because it has to survive the remount it exists to
- * absorb, and it is keyed by store-and-week so two different stores still
- * fetch independently.
- */
-const inFlight = new Set<string>();
-
 const PopupTopItems = ({
   storeId,
   locations,

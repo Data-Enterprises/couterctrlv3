@@ -2,7 +2,7 @@
 import { useSalesCtx } from "../../../hooks";
 
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
+import { ITEMS_HEAD } from "../utils";
 
 // Interfaces
 import type { MouseEvent } from "react";
@@ -11,6 +11,7 @@ import type { GradedItem, ItemSortColumn, ItemSortState } from "../interfaces";
 // Components
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 import SeverityBadge from "../../../../../../components-dev/SeverityBadge";
+import Cell from "./Cell";
 
 interface ItemsTableProps {
   items: GradedItem[];
@@ -19,44 +20,6 @@ interface ItemsTableProps {
   /** Right-click on an item: opens the UPC menu for it. */
   onItemMenu: (e: MouseEvent, upc: string) => void;
 }
-
-const HEAD =
-  "flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy flex-shrink-0";
-
-/** A figure and the one behind it: units over money when grading on units,
- *  money over units otherwise. Null is a period with no sale. */
-const Cell = ({
-  net,
-  qty,
-  isQty,
-  className = "",
-}: {
-  net: number | null;
-  qty: number | null;
-  isQty: boolean;
-  className?: string;
-}) => (
-  <div className={`flex-shrink-0 ${className}`} style={{ width: 64 }}>
-    <div className="text-[13px] font-semibold text-content">
-      {isQty
-        ? qty !== null
-          ? qty.toLocaleString()
-          : "—"
-        : net !== null
-          ? formatCurrency2(net)
-          : "—"}
-    </div>
-    <div className="text-[10px] text-content">
-      {isQty
-        ? net !== null
-          ? formatCurrency2(net)
-          : ""
-        : qty !== null
-          ? `${qty.toLocaleString()} u`
-          : ""}
-    </div>
-  </div>
-);
 
 /** The open sub department's items: TY, LW and LY, sortable. */
 const ItemsTable = ({ items, sort, onSort, onItemMenu }: ItemsTableProps) => {
@@ -78,15 +41,15 @@ const ItemsTable = ({ items, sort, onSort, onItemMenu }: ItemsTableProps) => {
           Items
         </span>
         <div className="flex items-center gap-[14px]">
-          <button onClick={() => onSort("ty")} className={`${HEAD} pl-2.5`} style={{ width: 64 }}>
+          <button onClick={() => onSort("ty")} className={`${ITEMS_HEAD} pl-2.5`} style={{ width: 64 }}>
             TY
             {chevron("ty")}
           </button>
-          <button onClick={() => onSort("lw")} className={HEAD} style={{ width: 64 }}>
+          <button onClick={() => onSort("lw")} className={ITEMS_HEAD} style={{ width: 64 }}>
             LW
             {chevron("lw")}
           </button>
-          <button onClick={() => onSort("ly")} className={HEAD} style={{ width: 64 }}>
+          <button onClick={() => onSort("ly")} className={ITEMS_HEAD} style={{ width: 64 }}>
             LY
             {chevron("ly")}
           </button>

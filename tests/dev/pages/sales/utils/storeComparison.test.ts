@@ -1,5 +1,7 @@
+// Interfaces
+import type { LedgerRowData } from "@/pages/sales/dev/interfaces";
+
 import { describe, expect, it } from "vitest";
-import type { LedgerRowData } from "@/pages/sales/dev/components/LedgerRow";
 import type { DayDot } from "@/interfaces";
 import {
   DEFAULT_BANDS,

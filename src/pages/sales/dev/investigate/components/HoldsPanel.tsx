@@ -1,3 +1,6 @@
+// Utils
+import { shortStore } from "../utils";
+
 // Interfaces
 import type { Summary } from "../interfaces";
 import type {
@@ -10,17 +13,6 @@ import type {
 import Carousel from "./Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";
-
-/* ------------------------------------------------------------------ */
-/* Summary · does it hold, and where is it                               */
-/* ------------------------------------------------------------------ */
-
-/** "003 - IGA HUNTSVILLE AL" is a heading, not a tab. The number is what
- *  the rest of the screen calls it anyway. */
-const shortStore = (name: string) => {
-  const lead = name.trim().split(/[\s-]/)[0];
-  return /^\d+$/.test(lead) ? lead : name;
-};
 
 const HoldsPanel = ({
   holds,

@@ -5,12 +5,7 @@ import {
   type ComparedTopItem,
   type CompareMetric,
 } from "../utils/topItemsCompare";
-import { money, pct, pts, signedMoney, toneOf } from "../utils";
-
-const TONE_PILL: Record<"healthy" | "critical", string> = {
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-};
+import { money, pct, pts, signedMoney, TONE_PILL, toneOf } from "../utils";
 
 /**
  * One item.

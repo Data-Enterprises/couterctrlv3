@@ -15,13 +15,23 @@ import { formatCurrency2, formatBigNumber } from "../../../../../utils";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
 import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
+import { COLS, GRID_MIN, HEAD } from "./utils";
 
 // Interfaces
-import type { LedgerRowData } from "../../components/LedgerRow";
+import type { Col } from "./interfaces";
+import type { LedgerRowData } from "../../interfaces";
 
 // Components
 import SortHeader from "../../../../../components-dev/SortHeader";
 import StoreColFilter from "../../components/StoreColFilter";
+
+interface PopupComparisonListProps {
+  rows: LedgerRowData[];
+  storeid: number;
+  storeNumber: string;
+  threshold: number;
+  openStoreName: string;
+}
 
 /**
  * The Comparison tab: every other store in the search, against this one.
@@ -34,30 +44,13 @@ import StoreColFilter from "../../components/StoreColFilter";
  * The difference is in POINTS, because both sides are already percentages and
  * subtracting two percentages never gives a percentage.
  */
-
-type Col = "theirsTy" | "tyGap" | "lwGap" | "lyGap";
-
-const COLS = "minmax(160px,1fr) 140px 130px 130px 130px";
-const GRID_MIN = 800;
-
-const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-interface Props {
-  rows: LedgerRowData[];
-  storeid: number;
-  storeNumber: string;
-  threshold: number;
-  openStoreName: string;
-}
-
 const PopupComparisonList = ({
   rows,
   storeid,
   storeNumber,
   threshold,
   openStoreName,
-}: Props) => {
+}: PopupComparisonListProps) => {
   const { selectedDate, gradingMetric, counterpart } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const dispatch = useAppDispatch();

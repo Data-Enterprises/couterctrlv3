@@ -6,17 +6,14 @@ import { useDateLabels } from "../hooks";
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
 import { PARTIAL_PILL_CLASS } from "../../utils/ledgerUtils";
 import { formatPct, pillClass } from "../../utils/index";
-import { buildHeaderTotals } from "../utils";
+import { buildHeaderTotals, THRESHOLD } from "../utils";
 
 // Interfaces
-import type { DayDot } from "../../components/LedgerRow";
+import type { DayDot } from "../../../../../interfaces";
 
 interface StoreKpiStripProps {
   days: DayDot[];
 }
-
-/** The header strip's pills grade on the store-row threshold. */
-const THRESHOLD = 9;
 
 /** The open store's three figures (TY, vs LW, vs LY) for the week or the
  *  picked day, with how many days each comparison matched. */

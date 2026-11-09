@@ -6,7 +6,7 @@ import {
   CTA_SEVERITY_CLASSES,
   type Severity,
 } from "../../../../../../utils/severity";
-import { money, signed } from "../utils";
+import { money, signed, whole } from "../utils";
 
 // Interfaces
 import type { ReportRow } from "../../../utils/deptReport";
@@ -19,16 +19,11 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
-import { Block, Measure } from "./CompareBlocks";
+import Block from "./Block";
+import Measure from "./Measure";
 import Tile from "./Tile";
 
-/** Whole units, with the measure where the department rings by weight. */
-const whole = (v: number) => Math.round(v).toLocaleString("en-US");
-
-/* ------------------------------------------------------------------ */
 /* The panel                                                           */
-/* ------------------------------------------------------------------ */
-
 /**
  * The selected department, in full.
  *

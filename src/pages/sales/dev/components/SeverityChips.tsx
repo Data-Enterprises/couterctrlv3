@@ -1,3 +1,6 @@
+// Utils
+import { CHIPS } from "../utils";
+
 // Interfaces
 import type { SevFilter } from "../utils/index";
 
@@ -6,28 +9,6 @@ interface SeverityChipsProps {
   onChange: (f: SevFilter) => void;
   counts: { critical: number; watch: number; healthy: number };
 }
-
-// One chip per grade; clicking the active chip goes back to "all".
-const CHIPS = [
-  {
-    sev: "critical",
-    label: "Crit",
-    cls: "bg-severity_critical_bg text-severity_critical_text",
-    ring: "ring-severity_critical_text/40",
-  },
-  {
-    sev: "watch",
-    label: "Watch",
-    cls: "bg-severity_watch_bg text-severity_watch_text",
-    ring: "ring-severity_watch_text/40",
-  },
-  {
-    sev: "healthy",
-    label: "OK",
-    cls: "bg-severity_healthy_bg text-severity_healthy_text",
-    ring: "ring-severity_healthy_text/40",
-  },
-] as const;
 
 const SeverityChips = ({ value, onChange, counts }: SeverityChipsProps) => (
   <>

@@ -43,6 +43,7 @@ import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 // Interfaces
 import type { Store } from "../../../../interfaces";
 import type { SevFilter } from "../utils/index";
+import type { SortColumn } from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -56,8 +57,6 @@ import LedgerRow from "../components/LedgerRow";
 import StoreColFilter from "../components/StoreColFilter";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import LedgerHeader from "./components/LedgerHeader";
-
-type SortColumn = "ty" | "vsLW" | "vsLY";
 
 const SalesLedger = () => {
   const dispatch = useAppDispatch();

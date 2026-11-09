@@ -9,61 +9,16 @@ import { getHourly } from "../../../../../../api/sales";
 // Utils
 import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
+import { byHour, day, hourLabel, MINUS } from "../utils";
 
 // Interfaces
 import type { HourlySale } from "../../../../../../interfaces";
-import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
+import type { Row } from "../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 
-/**
- * Two stores' trading day, hour by hour.
- *
- * The same shape as the department comparison, pointed at time instead of
- * product: a list you look at on the left, one focused hour on the right.
- * It answers WHEN two stores diverge — a store that is level all morning and
- * loses the evening has a staffing or a closing problem, not a buying one.
- *
- * There is deliberately no way into the item investigation from here. That
- * view is scoped to a department, and an hour does not name one; offering a
- * button that quietly picked a department for you would be worse than not
- * offering it.
- */
-
-/** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
-const MINUS = "−";
-
-interface Row {
-  hour: number;
-  label: string;
-  /** The open store's hour. */
-  a: number;
-  /** The counterpart's. */
-  b: number;
-  tyDiff: number;
-  lwDiff: number;
-  lyDiff: number;
-}
-
-const hourLabel = (h: number) => {
-  const suffix = h < 12 ? "a" : "p";
-  const twelve = h % 12 === 0 ? 12 : h % 12;
-  return `${twelve}${suffix}`;
-};
-
-const value = (h: HourlySale, metric: GradingMetric) =>
-  metric === "qty" ? h.qty : h.total_sales - h.total_tax;
-
-const byHour = (rows: HourlySale[], metric: GradingMetric) =>
-  rows.reduce<Record<number, number>>((acc, h) => {
-    acc[h.hour] = (acc[h.hour] ?? 0) + value(h, metric);
-    return acc;
-  }, {});
-
-const day = (v: string) => (v ?? "").split("T")[0];
-
-interface Props {
+interface HourlySideBySideProps {
   openStoreName: string;
   openStoreNumber: string;
   compareStoreId: number;
@@ -91,6 +46,19 @@ interface Props {
   onBack: () => void;
 }
 
+/**
+ * Two stores' trading day, hour by hour.
+ *
+ * The same shape as the department comparison, pointed at time instead of
+ * product: a list you look at on the left, one focused hour on the right.
+ * It answers WHEN two stores diverge — a store that is level all morning and
+ * loses the evening has a staffing or a closing problem, not a buying one.
+ *
+ * There is deliberately no way into the item investigation from here. That
+ * view is scoped to a department, and an hour does not name one; offering a
+ * button that quietly picked a department for you would be worse than not
+ * offering it.
+ */
 const HourlySideBySide = ({
   openStoreName,
   openStoreNumber,
@@ -106,7 +74,7 @@ const HourlySideBySide = ({
   lwWeekDates,
   lyWeekDates,
   onBack,
-}: Props) => {
+}: HourlySideBySideProps) => {
   // A day picked in the strip above narrows both sides to that day.
   const { selectedDate, gradingMetric } = useSalesCtx();
   const context = useAppSelector((state) => state.app);

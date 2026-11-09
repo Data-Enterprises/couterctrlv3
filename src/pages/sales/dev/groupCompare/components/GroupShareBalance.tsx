@@ -4,27 +4,50 @@ import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 
 // Utils
 import { formatBigNumber, formatCurrencyCompact } from "../../../../../utils";
-import { severityDotClass } from "../../../../../utils/severity";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import {
   byStanding,
   shareBalanceOf,
   shareRowsOf,
   shareStandingCounts,
-  SHARE_BAND_PCT,
   type ShareStanding,
 } from "../utils/shareBalance";
-import { shareDaysOf, storeKeyOf } from "../utils/shareByDay";
+import { shareDaysOf } from "../utils/shareByDay";
 import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
+import {
+  BALANCE_TONE,
+  BAND_LABEL,
+  BAND_WHY,
+  BAR_CEILING_PCT,
+  changeText,
+  COLS,
+  keyOf,
+  ORDER,
+  widthOf,
+} from "../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { ComparisonRow } from "../../utils/storeComparison";
-import type { LedgerRowData } from "../../components/LedgerRow";
+import type { Col } from "../interfaces";
+import type { LedgerRowData } from "../../interfaces";
 
 // Components
 import SortHeader from "../../../../../components-dev/SortHeader";
 import GroupShareStoreDetail from "./GroupShareStoreDetail";
+
+interface GroupShareBalanceProps {
+  /** The comparison the panel is already showing, scoped the same way. */
+  rows: ComparisonRow[];
+  /** The same stores unreduced, for the selected store's day strip. Scoped to
+   *  a day upstream it carries one day, and the strip stands itself down. */
+  ledgerRows: LedgerRowData[];
+  /** The group's total on the active metric, for pricing a share point. */
+  groupTotal: number;
+  gradingMetric: GradingMetric;
+  /** Opens the store's own report — the panel the ledger row opens. */
+  onOpenStore: (storeid: number) => void;
+}
 
 /**
  * Each store's share of group sales, as a balance.
@@ -38,98 +61,13 @@ import GroupShareStoreDetail from "./GroupShareStoreDetail";
  * panel can name it. `shareBalance` holds that arithmetic; this file is the
  * drawing, and the rail on the right reads one store out of it.
  */
-
-/** Share bars read 0–25% of the group. Above a quarter the bar is full and
- *  the number beside it carries the rest — a scale set by the biggest store
- *  would squash every other row flat in a fifty-store group. */
-const BAR_CEILING_PCT = 25;
-
-/**
- * Tone, not grade: these say WHICH WAY share moved, the same distinction the
- * grid's standing pills make with the same tokens. The severity family is for
- * grading a figure against a threshold, which is a different question and
- * belongs to the dots.
- */
-const TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
-  {
-    falling: {
-      pill: "bg-delta_negative_bg text-delta_negative_text",
-      text: "text-delta_negative_text",
-      bar: severityDotClass.critical,
-    },
-    consistent: {
-      pill: "bg-gray-200 text-content",
-      text: "text-content",
-      bar: "bg-brand_navy",
-    },
-    rising: {
-      pill: "bg-delta_positive_bg text-delta_positive_text",
-      text: "text-delta_positive_text",
-      bar: severityDotClass.healthy,
-    },
-  };
-
-const BAND_WHY: Record<ShareStanding, string> = {
-  falling: `lost more than ${SHARE_BAND_PCT}% of the group`,
-  consistent: `within ${SHARE_BAND_PCT}% of usual`,
-  rising: `gained more than ${SHARE_BAND_PCT}% of the group`,
-};
-
-const BAND_LABEL: Record<ShareStanding, string> = {
-  falling: "Falling",
-  consistent: "Consistent",
-  rising: "Rising",
-};
-
-const ORDER: ShareStanding[] = ["falling", "consistent", "rising"];
-
-/** The three figures a reader might want the list ordered by. The bar is a
- *  drawing of Share and the name is not a figure, so neither sorts. */
-type Col = "share" | "change" | "worth";
-
-/** Shared by the column heads and every row — two copies of this is a column
- *  that slides out from under its own name.
- *
- *  The store name takes a tenth of the bar's room on top of its 142px, so
- *  more of a long name shows and the bar is 10% shorter at any width: the
- *  room the two share is the row less the three figure columns and four
- *  8px gaps (226px). */
-const COLS =
-  "minmax(0,calc(142px + (100% - 226px - 142px) * 0.1)) minmax(0,1fr) 58px 62px 74px";
-
-/** Points of the group, written as a percentage because that is what the
- *  column beside it is. */
-const changeText = (n: number) =>
-  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toFixed(1)}%`;
-
-const widthOf = (pct: number) =>
-  `${Math.min(100, Math.max(0, (pct / BAR_CEILING_PCT) * 100))}%`;
-
-/** Co-located stores share one storeid, so neither half identifies a store on
- *  its own — the same key the day shares are gathered under. */
-const keyOf = (r: { storeid: number; storeNumber: string }) =>
-  storeKeyOf({ storeid: r.storeid, store_number: r.storeNumber });
-
-interface Props {
-  /** The comparison the panel is already showing, scoped the same way. */
-  rows: ComparisonRow[];
-  /** The same stores unreduced, for the selected store's day strip. Scoped to
-   *  a day upstream it carries one day, and the strip stands itself down. */
-  ledgerRows: LedgerRowData[];
-  /** The group's total on the active metric, for pricing a share point. */
-  groupTotal: number;
-  gradingMetric: GradingMetric;
-  /** Opens the store's own report — the panel the ledger row opens. */
-  onOpenStore: (storeid: number) => void;
-}
-
 const GroupShareBalance = ({
   rows,
   ledgerRows,
   groupTotal,
   gradingMetric,
   onOpenStore,
-}: Props) => {
+}: GroupShareBalanceProps) => {
   const [pickedKey, setPickedKey] = useState<string | null>(null);
   const [band, setBand] = useState<ShareStanding | null>(null);
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
@@ -205,7 +143,7 @@ const GroupShareBalance = ({
             onClick={() => setBand((b) => (b === st ? null : st))}
             title={BAND_WHY[st]}
             className={`text-[12px] font-semibold px-2.5 py-0.5 rounded-full transition-shadow ${
-              TONE[st].pill
+              BALANCE_TONE[st].pill
             } ${band === st ? "ring-2 ring-content/25 shadow-sm" : ""}`}
           >
             {BAND_LABEL[st]} ({counts[st]})
@@ -280,7 +218,7 @@ const GroupShareBalance = ({
                         to say. */}
                     <span className="relative h-4 rounded bg-bkg block">
                       <span
-                        className={`absolute left-0 top-0 bottom-0 rounded-l ${TONE[r.standing].bar}`}
+                        className={`absolute left-0 top-0 bottom-0 rounded-l ${BALANCE_TONE[r.standing].bar}`}
                         style={{ width: widthOf(r.sharePct) }}
                       />
                       <span
@@ -296,14 +234,14 @@ const GroupShareBalance = ({
                     </span>
                     <span className="flex justify-end">
                       <span
-                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${TONE[r.standing].pill}`}
+                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${BALANCE_TONE[r.standing].pill}`}
                       >
                         {changeText(r.changePct)}
                       </span>
                     </span>
                     <span className="flex justify-end">
                       <span
-                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${TONE[r.standing].pill}`}
+                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${BALANCE_TONE[r.standing].pill}`}
                       >
                         {money(r.money)}
                       </span>

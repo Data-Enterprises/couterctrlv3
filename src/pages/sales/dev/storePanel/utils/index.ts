@@ -4,8 +4,13 @@ import { computeDayMatchedTotals, describeLyWindow } from "../../utils/ledgerUti
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { DayDot } from "../../components/LedgerRow";
-import type { DateLabels, HeaderTotals, WeekWindow } from "../interfaces";
+import type { DayDot } from "../../../../../interfaces";
+import type {
+  DateLabels,
+  HeaderTotals,
+  PopupTab,
+  WeekWindow,
+} from "../interfaces";
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -219,4 +224,16 @@ const headerVsLYPct = activeDay
     headerDays,
     noLyHistory,
   };
+};
+
+/** The header strip's pills grade on the store-row threshold. */
+export const THRESHOLD = 9;
+
+/** Each store panel tab's name. */
+export const LABELS: Record<PopupTab, string> = {
+  dailyrecap: "Summary",
+  subdept: "Sub depts",
+  comparison: "Compare",
+  hourly: "Hourly",
+  topitems: "Top 200",
 };

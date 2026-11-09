@@ -14,12 +14,25 @@ import {
 // Utils
 import { applyStoreNumberToName } from "../utils/ledgerUtils";
 import { bestIn, flagged, type Cell, type Matrix } from "./utils/deptMatrix";
+import { DEPT_BAND, OVER, shade, UNDER } from "./utils";
 
 // Interfaces
 import type { MatrixStore } from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+
+interface DeptMatrixPanelProps {
+  stores: MatrixStore[];
+  threshold: number;
+  expanded: boolean;
+  twStart: string;
+  twEnd: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
+}
 
 /**
  * Where to look.
@@ -36,51 +49,6 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
  * against whoever is doing that department best — "here is who to copy" is a
  * more useful screen than "here is somebody roughly as bad as you".
  */
-
-/** Distance from 100, in five steps a side. The over-100 ramp is the app's
- *  own heat ramp from `heatColor`; the under-100 ramp is its mirror in the
- *  severity red, because being under is a problem and being over usually is
- *  not — a single symmetric ramp would claim they are the same thing. */
-const UNDER: Array<[string, string]> = [
-  ["#f2dede", "#8e1010"],
-  ["#e3bcbc", "#7a0d0d"],
-  ["#cf8f8f", "#f4f7f8"],
-  ["#a83c3c", "#f4f7f8"],
-  ["#931010", "#f4f7f8"],
-];
-
-const OVER: Array<[string, string]> = [
-  ["#e6f1fb", "#185fa5"],
-  ["#b5d4f4", "#0c447c"],
-  ["#85b7eb", "#0c447c"],
-  ["#378add", "#f4f7f8"],
-  ["#185fa5", "#f4f7f8"],
-];
-
-const STEP = 9;
-const DEPT_BAND = 2;
-
-const shade = (index: number | null, band: number) => {
-  if (index === null) return { background: "", color: "" };
-  const d = index - 100;
-  if (Math.abs(d) <= band) return { background: "", color: "" };
-  const step = Math.min(4, Math.floor((Math.abs(d) - band) / STEP));
-  const [bg, fg] = d < 0 ? UNDER[step] : OVER[step];
-  return { background: bg, color: fg };
-};
-
-interface Props {
-  stores: MatrixStore[];
-  threshold: number;
-  expanded: boolean;
-  twStart: string;
-  twEnd: string;
-  lwStart: string;
-  lwEnd: string;
-  lyStart: string;
-  lyEnd: string;
-}
-
 const DeptMatrixPanel = ({
   stores,
   threshold,
@@ -91,7 +59,7 @@ const DeptMatrixPanel = ({
   lwEnd,
   lyStart,
   lyEnd,
-}: Props) => {
+}: DeptMatrixPanelProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric } = useSalesCtx();
 

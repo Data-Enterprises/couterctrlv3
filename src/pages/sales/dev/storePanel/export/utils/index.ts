@@ -6,9 +6,8 @@ import { fmtNum, rowsToCsv } from "../../../../../../utils/csvExport";
 
 // Interfaces
 import type { AggFn } from "../../../../../../utils/csvExport";
-import type { SubSale, HourlySale } from "../../../../../../interfaces";
+import type { SubSale, HourlySale, DayDot } from "../../../../../../interfaces";
 import type { ExportSubDeptItem } from "../../../../../../features/dev/devSalesLedgerSlice";
-import type { DayDot } from "../../../components/LedgerRow";
 import type {
   DimDef,
   ExportDataset,

@@ -21,7 +21,8 @@ import type {
   Store,
 } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
-import type { LedgerRowData, Severity } from "../components/LedgerRow";
+import type { Severity } from "../../../../utils/severity";
+import type { LedgerRowData } from "../interfaces";
 
 // Universal now (Item Grading uses it too); re-exported for the ledger code.
 export { matchDatedRows };

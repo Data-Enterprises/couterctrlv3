@@ -1,24 +1,11 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
 import { comparisonPillClass, isCompleteCoverage } from "../utils/ledgerUtils";
-import { formatPct } from "../utils/index";
+import { DATE, formatPct, LABEL, UNITS, VALUE } from "../utils/index";
 
 // Interfaces
 import type { Coverage } from "../utils/ledgerUtils";
-
-/** What the three figures need from a row: a sub department or an hour. */
-interface PeriodRow {
-  tw: number;
-  lw: number;
-  ly: number;
-  qty: number;
-  lwQty: number;
-  lyQty: number;
-  hasLW: boolean;
-  hasLY: boolean;
-  vsLWPct: number;
-  vsLYPct: number;
-}
+import type { PeriodRow } from "../interfaces";
 
 interface PeriodKpisProps {
   row: PeriodRow;
@@ -28,11 +15,6 @@ interface PeriodKpisProps {
   lwDateLabel: string;
   lyDateLabel: string;
 }
-
-const LABEL = "text-[10px] font-bold uppercase tracking-wide text-content";
-const DATE = "text-[10px] font-bold text-content mt-0.5";
-const VALUE = "text-[13px] font-bold text-content";
-const UNITS = "text-[10px] font-bold text-content";
 
 /** The open row's three figures: this year, vs last week, vs last year. */
 const PeriodKpis = ({

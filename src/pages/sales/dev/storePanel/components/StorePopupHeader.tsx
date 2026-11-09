@@ -8,7 +8,7 @@ import { useStoreNames, useWeekWindow } from "../hooks";
 import { severityHeaderBgClass } from "../../utils/index";
 
 // Interfaces
-import type { StoreSelection } from "../../components/LedgerRow";
+import type { StoreSelection } from "../../../../../interfaces";
 
 // Components
 import {

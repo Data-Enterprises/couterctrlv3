@@ -7,7 +7,7 @@ import { setHourlyThreshold } from "../../../../../../features/dev/devSalesLedge
 
 // Utils
 import { PCT_COL_W } from "../../../utils/index";
-import { hourSeverity, nextHourSort, sortHourRows } from "../utils";
+import { HEAD, hourSeverity, nextHourSort, sortHourRows } from "../utils";
 
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
@@ -30,9 +30,6 @@ interface HourSignalListProps {
   hourSort: HourSortState;
   setHourSort: Dispatch<SetStateAction<HourSortState>>;
 }
-
-const HEAD =
-  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0";
 
 /** The left panel: the store's hours, worst first, with grade chips, the
  *  threshold and sortable columns. */

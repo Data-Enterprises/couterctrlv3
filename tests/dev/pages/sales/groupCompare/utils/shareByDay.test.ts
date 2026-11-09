@@ -1,6 +1,8 @@
+// Interfaces
+import type { LedgerRowData } from "@/pages/sales/dev/interfaces";
+
 import { describe, it, expect } from "vitest";
 import { shareDaysOf, shareDayNoteOf, storeKeyOf, type ShareDay } from "@/pages/sales/dev/groupCompare/utils/shareByDay";
-import type { LedgerRowData } from "@/pages/sales/dev/components/LedgerRow";
 
 const day = (date: string, twNet: number) => ({
   sale_date: date,

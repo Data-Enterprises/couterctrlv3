@@ -10,14 +10,13 @@ import {
   type ComparedTopItem,
   type CompareMetric,
 } from "../utils/topItemsCompare";
-import { money, pct, pts, signedMoney, toneOf } from "../utils";
+import { money, pct, priceLines, pts, signedMoney, toneOf } from "../utils";
 
 // Interfaces
 import {
   type ItemDetailResponse,
   type TopItemPricePoint,
 } from "../../../../../../api/topItems";
-import type { PriceLine } from "../interfaces";
 
 // Components
 import {
@@ -27,32 +26,6 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/20/solid";
 import PriceRow from "./PriceRow";
-
-/**
- * The price points, keyed on the PRICE rather than one table per store.
- *
- * Two tables would make the reader align the rows themselves. Keyed on the
- * price they line up, and a blank cell is the finding: the other store never
- * rang it at this. That is the answer to "why is it bigger there" far more
- * often than anything about the shopper.
- */
-const priceLines = (
-  code: string,
-  minePoints: TopItemPricePoint[],
-  theirsPoints: TopItemPricePoint[],
-): PriceLine[] => {
-  const byPrice = new Map<number, PriceLine>();
-  const put = (p: TopItemPricePoint, side: "mine" | "theirs") => {
-    if (p.product_code !== code) return;
-    const held =
-      byPrice.get(p.price) ?? { price: p.price, mine: null, theirs: null };
-    held[side] = p;
-    byPrice.set(p.price, held);
-  };
-  for (const p of minePoints) put(p, "mine");
-  for (const p of theirsPoints) put(p, "theirs");
-  return [...byPrice.values()].sort((a, b) => b.price - a.price);
-};
 
 const Rail = ({
   row,

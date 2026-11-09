@@ -5,7 +5,7 @@ import { gradeBasis, basisPct } from "./ledgerUtils";
 import type { GradeBasis } from "../../../../utils/grading";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot, StoreSelection } from "../../../../interfaces";
-import type { LedgerRowData } from "../components/LedgerRow";
+import type { LedgerRowData } from "../interfaces";
 
 /**
  * Where each store stands inside the group it was searched with.

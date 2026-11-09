@@ -1,7 +1,5 @@
 // Utils
 import {
-  cmpLabels,
-  cmpShort,
   cmpWord,
   fmtChange,
   pairChangePct,
@@ -9,10 +7,11 @@ import {
   type PerfPair,
   type PairSort,
 } from "../utils/perfData";
+import { hourSorts, itemSorts, scaleOf, subSorts } from "../utils";
 
 // Interfaces
 import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
-import type { SortOption } from "../../../../../../components-dev/mobile/interfaces";
+import type { ItemProps } from "../interfaces";
 
 // Components
 import {
@@ -22,96 +21,11 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import MobileSortChips from "../../../../../../components-dev/mobile/MobileSortChips";
-import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../../components-dev/mobile/perf/PerfChange";
 import { TY_COLOR } from "../../../../../../components-dev/mobile/perf/perfColors";
+import Bars from "./Bars";
 
-/** What each drill can sort by. Hours adds the time of day, which is also its
- *  default — a day reads as a timeline first.
- *
- *  No sort by name. These lists are read for where the money went, and
- *  alphabetical order answers a question nobody brought to a Performance
- *  page; `PairSort` keeps the "name" case because the store list still sorts
- *  by store number, which is an identifier rather than a name. */
-const subSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-];
-
-const hourSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "time", label: "Time" },
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-];
-
-const itemSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-];
-
-/**
- * This year against last year, under the row's name.
- *
- * Was two lines of mono figures, on the reasoning that these lists are read by
- * scanning names and twenty sub departments of bars turn a list into a scroll.
- * The scroll is real and the rows are taller for it, but figures alone made
- * every row its own puzzle: $32,676.83 against $34,115.27 is a subtraction the
- * reader has to perform, and a list of twenty is twenty subtractions. Bars are
- * the comparison, pre-done, and the figures ride along in their value column —
- * so this costs a line per row and gives back the reason the list exists.
- * Asked for by a client, on all three drills.
- *
- * `max` is the list's own largest figure, never the row's, so a $200
- * department and a $20,000 one are not drawn the same width.
- */
-const Bars = ({
-  ty,
-  ly,
-  noLy,
-  max,
-  basis,
-}: {
-  ty: number;
-  ly: number;
-  noLy?: boolean;
-  max: number;
-  basis: CmpBasis;
-}) => (
-  <div className="mt-1.5">
-    <PairedBars
-      ty={ty}
-      ly={ly}
-      max={max}
-      labels={cmpLabels(basis)}
-      lyUnavailable={noLy}
-      compact
-    />
-  </div>
-);
-
-/** The scale every row in one drill shares. 1 floors it so an all-zero list
- *  divides by something. */
-const scaleOf = (pairs: PerfPair[]) =>
-  Math.max(...pairs.map((p) => Math.max(p.ty, p.noLy ? 0 : p.ly)), 1);
-
-interface ItemProps {
-  pairs: PerfPair[];
-  total: number;
-  loading: boolean;
-  sort: PairSort | null;
-  sortDir: "asc" | "desc" | null;
-  onSort: (s: PairSort) => void;
-  query: string;
-  onQuery: (q: string) => void;
-  partial: boolean;
-  note: string;
-  /** Which period these items are drawn against. */
-  basis: CmpBasis;
-  /** Nothing sold this week — the rows on screen are last year's, at $0.00. */
-  noTy: boolean;
-}
-
-interface Props {
+interface PerfDrillListProps {
   drill: Exclude<PerfDrill, null>;
   pairs: PerfPair[];
   sort: PairSort | null;
@@ -161,7 +75,7 @@ const PerfDrillList = ({
   openSubDept,
   onOpenSubDept,
   items,
-}: Props) => {
+}: PerfDrillListProps) => {
   // A department opens its items; an hour has nothing below it. The group
   // card can't open either — `subs/subs` answers for a store id.
   const opensItems = drill === "subs" && allowItems;

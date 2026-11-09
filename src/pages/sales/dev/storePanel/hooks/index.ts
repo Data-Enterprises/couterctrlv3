@@ -26,7 +26,7 @@ import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/ledgerUt
 import { buildDateLabels, buildWeekWindow } from "../utils";
 
 // Interfaces
-import type { StoreSelection } from "../../components/LedgerRow";
+import type { StoreSelection } from "../../../../../interfaces";
 
 /**
  * Stores whose six calls are already in the air.

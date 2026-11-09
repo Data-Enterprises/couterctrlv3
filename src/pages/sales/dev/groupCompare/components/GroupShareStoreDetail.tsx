@@ -1,28 +1,27 @@
 // Hooks
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 
 // Utils
 import { formatBigNumber, formatCurrencyCompact } from "../../../../../utils";
-import { severityDotClass } from "../../../../../utils/severity";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
-import {
-  counterweightOf,
-  type ShareRow,
-  type ShareStanding,
-} from "../utils/shareBalance";
+import { counterweightOf, type ShareRow } from "../utils/shareBalance";
 import { shareDayNoteOf, type ShareDay } from "../utils/shareByDay";
 import { shareTrendOf, trendPoints } from "../utils/shareQuestions";
-
-// Interfaces
-import type { CtaTone } from "../../../../../components-dev/interfaces";
+import { CTA_ICON, CTA_TONE, DETAIL_TONE, pct1 } from "../utils";
 
 // Components
-import {
-  ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
-  MinusIcon,
-} from "@heroicons/react/16/solid";
 import CtaStrip from "../../../../../components-dev/CtaStrip";
+import QuestionSection from "./QuestionSection";
+
+interface GroupShareStoreDetailProps {
+  row: ShareRow | null;
+  rows: ShareRow[];
+  /** The group's week on the same metric, for pricing a share point. */
+  groupTotal: number;
+  days: ShareDay[];
+  isQty: boolean;
+  onOpenReport: () => void;
+}
 
 /**
  * One store out of the balance, as the questions it raises.
@@ -40,105 +39,6 @@ import CtaStrip from "../../../../../components-dev/CtaStrip";
  * Draws only. Every figure is handed to it already worked out, so it cannot
  * disagree with the list beside it.
  */
-
-/** Tone, not grade: which way share moved. The severity family grades a
- *  figure against a threshold, which is a different question. */
-const TONE: Record<
-  ShareStanding,
-  { pill: string; text: string; bar: string; card: string }
-> = {
-  falling: {
-    pill: "bg-delta_negative_bg text-delta_negative_text",
-    text: "text-delta_negative_text",
-    bar: severityDotClass.critical,
-    card: "bg-delta_negative_bg",
-  },
-  consistent: {
-    pill: "bg-gray-200 text-content",
-    text: "text-content",
-    bar: "bg-brand_navy",
-    card: "bg-gray-50",
-  },
-  rising: {
-    pill: "bg-delta_positive_bg text-delta_positive_text",
-    text: "text-delta_positive_text",
-    bar: severityDotClass.healthy,
-    card: "bg-delta_positive_bg",
-  },
-};
-
-/** What the house strip wants, in the delta family: this says which way
- *  share moved, so it is not graded and cannot use CTA_SEVERITY_CLASSES. */
-const CTA_TONE: Record<ShareStanding, CtaTone> = {
-  falling: {
-    border: "border-delta_negative_text/25",
-    bg: "bg-delta_negative_bg",
-    hoverBg: "hover:bg-delta_negative_text/10",
-    text: "text-delta_negative_text",
-  },
-  consistent: {
-    border: "border-gray-200",
-    bg: "bg-gray-50",
-    hoverBg: "hover:bg-gray-100",
-    text: "text-content",
-  },
-  rising: {
-    border: "border-delta_positive_text/25",
-    bg: "bg-delta_positive_bg",
-    hoverBg: "hover:bg-delta_positive_text/10",
-    text: "text-delta_positive_text",
-  },
-};
-
-/** The strip's icon, by which way share moved — the same slot the Sub dept
- *  and Top 200 strips give their severity icon. */
-const CTA_ICON: Record<ShareStanding, typeof ArrowTrendingDownIcon> = {
-  falling: ArrowTrendingDownIcon,
-  consistent: MinusIcon,
-  rising: ArrowTrendingUpIcon,
-};
-
-const pct1 = (n: number) => `${n.toFixed(1)}%`;
-
-interface Props {
-  row: ShareRow | null;
-  rows: ShareRow[];
-  /** The group's week on the same metric, for pricing a share point. */
-  groupTotal: number;
-  days: ShareDay[];
-  isQty: boolean;
-  onOpenReport: () => void;
-}
-
-/** A question and its answer. Reading, not a control -- the report at the
- *  bottom is the only thing in the rail that goes anywhere. */
-const QuestionSection = ({
-  question,
-  answer,
-  sub,
-  figure,
-}: {
-  question: string;
-  answer: ReactNode;
-  sub: ReactNode;
-  figure?: ReactNode;
-}) => (
-  <div className="py-2.5 border-b border-gray-100 last:border-b-0">
-    <div className="text-[13px] text-content/85">{question}</div>
-    <div className="flex items-center gap-2 mt-0.5">
-      <div className="min-w-0 flex-1">
-        <div className="text-[14.5px] font-bold text-content leading-snug">
-          {answer}
-        </div>
-        <div className="text-[13px] text-content/85 leading-snug mt-0.5">
-          {sub}
-        </div>
-      </div>
-      {figure && <div className="flex-shrink-0">{figure}</div>}
-    </div>
-  </div>
-);
-
 const GroupShareStoreDetail = ({
   row,
   rows,
@@ -146,7 +46,7 @@ const GroupShareStoreDetail = ({
   days,
   isQty,
   onOpenReport,
-}: Props) => {
+}: GroupShareStoreDetailProps) => {
   const other = useMemo(
     () => (row ? counterweightOf(row, rows) : null),
     [row, rows],
@@ -170,7 +70,7 @@ const GroupShareStoreDetail = ({
     );
   }
 
-  const tone = TONE[row.standing];
+  const tone = DETAIL_TONE[row.standing];
   const Icon = CTA_ICON[row.standing];
   const name = applyStoreNumberToName(
     row.storeName,
@@ -328,8 +228,8 @@ const GroupShareStoreDetail = ({
                         <span
                           className={`absolute left-0 right-0 ${
                             m < 0
-                              ? `top-1/2 rounded-b ${TONE.falling.bar}`
-                              : `bottom-1/2 rounded-t ${TONE.rising.bar}`
+                              ? `top-1/2 rounded-b ${DETAIL_TONE.falling.bar}`
+                              : `bottom-1/2 rounded-t ${DETAIL_TONE.rising.bar}`
                           } ${note.worst?.date === d.date ? "" : "opacity-50"}`}
                           style={{ height: `${(Math.abs(m) / dayMax) * 50}%` }}
                         />
@@ -373,7 +273,7 @@ const GroupShareStoreDetail = ({
                 <span className="flex items-center gap-1 text-[11.5px] font-semibold">
                   <span className={tone.text}>{row.storeNumber}</span>
                   <span className="text-content/85">&rarr;</span>
-                  <span className={TONE[other.standing].text}>
+                  <span className={DETAIL_TONE[other.standing].text}>
                     {other.storeNumber}
                   </span>
                 </span>
