@@ -1,5 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useRef } from "react";
+import { useOpenDraft } from "./hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
@@ -16,7 +17,7 @@ import {
 import { fmtOrderDate, padStoreNumber } from "./utils";
 
 // Interfaces
-import type { EditSearch, SubDeptOption, VendorOption, DraftLine, EditableField, LinePatch, OrderDraft } from "../../interfaces";
+import type { DraftLine, EditableField, LinePatch } from "../../interfaces";
 
 // Components
 import { PlusIcon } from "@heroicons/react/16/solid";
@@ -28,16 +29,7 @@ import Row from "./components/Row";
 import SeekField from "./components/SeekField";
 
 interface OrderEditPanelProps {
-  draft: OrderDraft | null;
-  loading: boolean;
-  search: EditSearch;
-  onSearch: (next: EditSearch) => void;
-  onField: (lineNumber: number, field: EditableField, value: number) => void;
-  onUnitCost: (lineNumber: number, unit: number) => void;
-  onRevertLine: (lineNumber: number) => void;
-  onRevertAll: () => void;
   onAddLine: () => void;
-  onDropLine: (lineNumber: number) => void;
   /**
    * The line being filled in, which is not on the order yet. Held apart from
    * the draft so a half-filled row is never one of the order's lines.
@@ -47,32 +39,14 @@ interface OrderEditPanelProps {
   onPendingPatch: (patch: LinePatch) => void;
   onConfirmPending: () => void;
   onCancelPending: () => void;
-  /** What sequence number the pending line will take. */
-  pendingSeq: number;
   /** Bumped when the lookup writes into the pending line's own boxes. */
   pendingNonce: number;
-  /** Any field on an added line: typed, picked, or filled by the lookup. */
-  onPatch: (lineNumber: number, patch: LinePatch) => void;
   /** Ask the item lookup to fill the rest in from a UPC. */
   onLookup: (lineNumber: number, upc: string) => void;
   lookingUp: number | null;
-  /** The vendors already on this store's orders, for an added line. */
-  vendors: VendorOption[];
-  /** The sub departments this store has, fetched when the first line is added. */
-  subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onSubmit: () => void;
-  /** Opens the Problems tab, where one item's unit cost is fixed across
-   *  every order the left panel shows. */
-  onFixCost: () => void;
-  /**
-   * How many orders hold changes waiting to be sent — the open one and any
-   * Fix cost staged without opening. Submit sends all of them.
-   */
-  stagedCount: number;
   submitting: boolean;
-  /** Set once the file is in the bucket: the draft goes read-only. */
-  submitted: boolean;
   onLeaveEdit: () => void;
 }
 
@@ -92,36 +66,39 @@ interface OrderEditPanelProps {
  * worth.
  */
 const OrderEditPanel = ({
-  draft,
-  loading,
-  search,
-  onSearch,
-  onField,
-  onUnitCost,
-  onRevertLine,
-  onRevertAll,
   onAddLine,
-  onDropLine,
   pending,
   onPendingField,
   onPendingPatch,
   onConfirmPending,
   onCancelPending,
-  pendingSeq,
   pendingNonce,
-  onPatch,
   onLookup,
   lookingUp,
-  vendors,
-  subDepts,
   loadingSubDepts,
   onSubmit,
-  onFixCost,
-  stagedCount,
   submitting,
-  submitted,
   onLeaveEdit,
 }: OrderEditPanelProps) => {
+  // The open order, its edits and the panel's figures come from the slice.
+  const {
+    draft,
+    loading,
+    search,
+    onSearch,
+    onField,
+    onUnitCost,
+    onRevertLine,
+    onRevertAll,
+    onDropLine,
+    onPatch,
+    pendingSeq,
+    vendors,
+    subDepts,
+    onFixCost,
+    stagedCount,
+    submitted,
+  } = useOpenDraft();
   const rows = useMemo(
     () =>
       draft ? visibleLines(draft, search) : [],

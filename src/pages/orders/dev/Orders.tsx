@@ -37,20 +37,14 @@ import { buildRows } from "./utils/ordersRows";
 import {
   addedLines,
   appendLine,
-  applyField,
-  applyUnitCost,
   stageUnitCost,
   blankLine,
   buildDocs,
   buildPayload,
   changedLines,
-  dropLine,
   editedLines,
-  nextSeq,
   patchLine,
   recompute,
-  revertAll,
-  revertLine,
   startDraft,
   canEditOrders,
   applySent,
@@ -239,7 +233,6 @@ const Orders = () => {
     setSkipped(nextSkipped);
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
-  const editSearch = edit.search;
   const setEditSearch = (search: EditSearch) => patchEdit({ search });
   /**
    * The line being filled in, which is not on the order yet.
@@ -369,28 +362,6 @@ const Orders = () => {
   const docs = useMemo(() => buildDocs(ctx.allOrders), [ctx.allOrders]);
 
 
-  /**
-   * The vendors already on this store's orders.
-   *
-   * `items/itemlookup` does not return a `vendor_id` and the column is
-   * `NOT NULL`, so an added line asks for one — out of the vendors the store
-   * really orders from, because an id the POS does not know is worse than no
-   * line.
-   */
-  const vendors = useMemo(() => {
-    if (!draft) return [];
-    const seen = new Map<string, string>();
-    for (const o of ctx.allOrders) {
-      if (o.storeid !== draft.doc.storeid || !o.vendor_id) continue;
-      if (!seen.has(o.vendor_id)) seen.set(o.vendor_id, o.vendor_name ?? o.vendor_id);
-    }
-    // By name, which is what the column and the picker show — an id is how
-    // the row stores a vendor, not how anybody looks one up.
-    return [...seen.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [ctx.allOrders, draft]);
-
   const dirty =
     (changedDrafts.length > 0 || pending !== null) && receipt === null;
 
@@ -417,16 +388,6 @@ const Orders = () => {
     setReceipt(null);
     setEditSearch(EMPTY_EDIT_SEARCH);
   };
-
-  const handleField = (
-    lineNumber: number,
-    field: EditableField,
-    value: number,
-  ) => setDraft((d) => (d ? applyField(d, lineNumber, field, value) : d));
-
-  /** A typed unit cost, stored as the case cost it implies. */
-  const handleUnitCost = (lineNumber: number, unit: number) =>
-    setDraft((d) => (d ? applyUnitCost(d, lineNumber, unit) : d));
 
   /**
    * Which sub departments this store has, for an added line.
@@ -487,10 +448,6 @@ const Orders = () => {
     setDraft(appendLine(draft, pending));
     setPending(null);
   };
-
-  /** Everything typed or picked on an added line comes through here. */
-  const handlePatch = (lineNumber: number, patch: LinePatch) =>
-    setDraft((d) => (d ? patchLine(d, lineNumber, patch) : d));
 
   /**
    * What the item lookup can fill in from a UPC.
@@ -734,36 +691,18 @@ const Orders = () => {
               />
             ) : (
             <OrderEditPanel
-              draft={draft}
-              loading={ctx.loadingAllOrders}
-              search={editSearch}
-              onSearch={setEditSearch}
-              onField={handleField}
-              onUnitCost={handleUnitCost}
-              onRevertLine={(ln) =>
-                setDraft((d) => (d ? revertLine(d, ln) : d))
-              }
-              onRevertAll={() => setDraft((d) => (d ? revertAll(d) : d))}
               onAddLine={handleAddLine}
-              onDropLine={(ln) => setDraft((d) => (d ? dropLine(d, ln) : d))}
               pending={pending}
               onPendingField={handlePendingField}
               onPendingPatch={handlePendingPatch}
               onConfirmPending={handleConfirmPending}
               onCancelPending={() => setPending(null)}
-              pendingSeq={draft ? nextSeq(draft) : 1}
               pendingNonce={pendingNonce}
               onLookup={handleLookup}
-              onPatch={handlePatch}
               lookingUp={lookingUp}
-              vendors={vendors}
-              subDepts={draft ? (subDeptsByStore[draft.doc.storeid] ?? []) : []}
               loadingSubDepts={loadingSubDepts}
               onSubmit={handleSubmit}
-              onFixCost={() => setLeftTab("problems")}
-              stagedCount={changedDrafts.length}
               submitting={submitting}
-              submitted={receipt !== null}
               onLeaveEdit={leaveEdit}
             />
             )}
