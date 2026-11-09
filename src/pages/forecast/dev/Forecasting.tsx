@@ -38,6 +38,8 @@ import ForecastRowsTable from "./components/ForecastRowsTable";
 import ForecastCalcModal from "./calc/ForecastCalcModal";
 import ForecastExportModal from "./export/ForecastExportModal";
 
+/** The Forecasting page: a UPC and store search card, then the forecast list beside its rows table.
+ *  Search runs in two batches against the dev slice, and the calc and export modals sit over the results. */
 const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
