@@ -54,7 +54,7 @@ const InvestigationHeader = ({
         >
           ‹ Back
         </button>
-        <span className="flex-shrink-0 text-[12.5px] text-custom-white/50">
+        <span className="flex-shrink-0 text-[12.5px] text-custom-white/95">
           |
         </span>
         <span className="text-[12.5px] font-semibold text-custom-white truncate">
@@ -62,7 +62,7 @@ const InvestigationHeader = ({
         </span>
         <span
           data-help="supply-window"
-          className="hidden lg:inline flex-shrink-0 text-[12.5px] font-semibold text-custom-white/85 whitespace-nowrap tabular-nums"
+          className="hidden lg:inline flex-shrink-0 text-[12.5px] font-semibold text-custom-white/95 whitespace-nowrap tabular-nums"
         >
           {usDate(twStart)} &ndash; {usDate(twEnd)}
         </span>
@@ -76,7 +76,7 @@ const InvestigationHeader = ({
         <span className="font-bold text-custom-white truncate">
           {target.storeName}
         </span>
-        <span className="flex-shrink-0 font-semibold text-custom-white/85">
+        <span className="flex-shrink-0 font-semibold text-custom-white/95">
           vs
         </span>
         <span className="w-2.5 h-2.5 rounded-full bg-store_compare flex-shrink-0" />

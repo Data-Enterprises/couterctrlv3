@@ -330,4 +330,4 @@ export const day = (v: string) => (v ?? "").split("T")[0];
 
 /** The hourly signal list's sortable heading. */
 export const HEAD =
-  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0";
+  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0";

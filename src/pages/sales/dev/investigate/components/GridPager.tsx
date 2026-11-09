@@ -46,7 +46,7 @@ const GridPager = ({
      totals row above it is over the whole filtered set, not this
      page — which is the figure anybody reading totals wants. */
   return (
-    <div className="flex-shrink-0 flex items-center gap-3 flex-wrap px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
+    <div className="flex-shrink-0 flex items-center gap-3 flex-wrap px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/95">
       <span>
         <span className="font-semibold text-content tabular-nums">
           {(from + 1).toLocaleString("en-US")}–
@@ -85,7 +85,7 @@ const GridPager = ({
             p === null ? (
               <span
                 key={`gap${i}`}
-                className="px-1 text-content/85"
+                className="px-1 text-content/95"
               >
                 &hellip;
               </span>

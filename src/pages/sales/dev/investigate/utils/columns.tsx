@@ -93,7 +93,7 @@ const signedWith =
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-bold ${
           v === 0
-            ? "bg-gray-100 text-content/85"
+            ? "bg-gray-100 text-content/95"
             : v > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -251,7 +251,7 @@ export const COLUMNS: ColumnDef[] = [
     label: "Vendor",
     width: 150,
     filter: "vendor",
-    render: (r) => r.vendorName || <span className="text-content/85">—</span>,
+    render: (r) => r.vendorName || <span className="text-content/95">—</span>,
   },
   {
     key: "cause",
@@ -304,7 +304,7 @@ export const COLUMNS: ColumnDef[] = [
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
           r.margins.diff === 0
-            ? "bg-gray-100 text-content/85"
+            ? "bg-gray-100 text-content/95"
             : r.margins.diff > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -329,7 +329,7 @@ export const COLUMNS: ColumnDef[] = [
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
           r.gap === 0
-            ? "bg-gray-100 text-content/85"
+            ? "bg-gray-100 text-content/95"
             : r.gap > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -467,7 +467,7 @@ export const COLUMNS: ColumnDef[] = [
       r.orderedQty > 0 ? (
         r.orderedQty.toLocaleString("en-US")
       ) : (
-        <span className="text-content/85">none</span>
+        <span className="text-content/95">none</span>
       ),
   },
   {
@@ -481,7 +481,7 @@ export const COLUMNS: ColumnDef[] = [
       r.receivedUnits > 0 ? (
         r.receivedUnits.toLocaleString("en-US")
       ) : (
-        <span className="text-content/85">none</span>
+        <span className="text-content/95">none</span>
       ),
   },
   {

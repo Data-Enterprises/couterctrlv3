@@ -72,7 +72,7 @@ const ListRow = ({
             : units(row.mineUnits - row.theirsUnits, row.weighed)}
         </span>
       </span>
-      <span className="block pl-4 text-[11px] text-content/85 truncate">
+      <span className="block pl-4 text-[11px] text-content/95 truncate">
         {FINDING_SAYS[row.chain.finding]}
       </span>
     </button>

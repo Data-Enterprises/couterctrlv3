@@ -497,4 +497,4 @@ export const FINDING_SAYS: Record<Finding, string> = {
 
 /** The sub department signal list's sortable heading. */
 export const SIGNAL_HEAD =
-  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content";
+  "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content";

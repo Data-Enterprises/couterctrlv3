@@ -61,7 +61,7 @@ const ItemRows = ({
                 {r.ty.product_description}
               </span>
               <span
-                className="block text-[10.5px] text-content/85 tabular-nums truncate"
+                className="block text-[10.5px] text-content/95 tabular-nums truncate"
                 title={`${r.ty.product_code} · ${deptName(r.ty)} · ${amountText(r.ty)}`}
               >
                 <span className="font-semibold">{r.ty.product_code}</span>{" "}

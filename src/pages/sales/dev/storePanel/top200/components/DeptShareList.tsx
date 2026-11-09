@@ -16,7 +16,7 @@ const DeptShareList = ({
 }) => (
   <>
     <div
-      className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/85"
+      className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/95"
       style={{ gridTemplateColumns: LANDING_COLS }}
     >
       <span>Sub dept</span>
@@ -70,7 +70,7 @@ const DeptShareList = ({
                   }}
                 />
               </span>
-              <span className="w-[42px] flex-shrink-0 text-right text-[11.5px] text-content/85 tabular-nums">
+              <span className="w-[42px] flex-shrink-0 text-right text-[11.5px] text-content/95 tabular-nums">
                 {pct.toFixed(1)}%
               </span>
             </span>
@@ -90,7 +90,7 @@ const DeptShareList = ({
       )}
     </div>
 
-    <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/85">
+    <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/95">
       Click a sub department to see its items.
     </p>
   </>

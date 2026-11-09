@@ -38,7 +38,7 @@ const Weeks = ({
             />
           </div>
           <div className="h-px bg-brand_navy/15" />
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85 text-center whitespace-nowrap mt-1">
+          <div className="text-[12px] font-semibold uppercase tracking-wide text-content/95 text-center whitespace-nowrap mt-1">
             {w.label}
           </div>
         </div>

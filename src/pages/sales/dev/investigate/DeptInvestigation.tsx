@@ -321,7 +321,7 @@ const DeptInvestigation = ({
       />
 
       {problem ? (
-        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/85">
+        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/95">
           {problem}
         </div>
       ) : (
@@ -462,7 +462,7 @@ const DeptInvestigation = ({
                   </table>
 
                   {capped.length === 0 && stage !== "sales" && (
-                    <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
                       Nothing in this department to compare.
                     </div>
                   )}

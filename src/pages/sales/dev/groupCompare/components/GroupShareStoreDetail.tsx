@@ -62,7 +62,7 @@ const GroupShareStoreDetail = ({
   if (!row || !trend) {
     return (
       <aside className="w-[313px] flex-shrink-0 border-l border-brand_navy/15 px-3 pt-2.5">
-        <p className="text-[13px] text-content/85 leading-snug">
+        <p className="text-[13px] text-content/95 leading-snug">
           Pick a store on the left to see whether its move is new, when in the
           week it happened, and which store took the other side of it.
         </p>
@@ -272,7 +272,7 @@ const GroupShareStoreDetail = ({
               other && (
                 <span className="flex items-center gap-1 text-[11.5px] font-semibold">
                   <span className={tone.text}>{row.storeNumber}</span>
-                  <span className="text-content/85">&rarr;</span>
+                  <span className="text-content/95">&rarr;</span>
                   <span className={DETAIL_TONE[other.standing].text}>
                     {other.storeNumber}
                   </span>

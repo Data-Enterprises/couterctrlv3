@@ -31,15 +31,15 @@ const InvoicesRail = ({
       tabIndex={invoicesOpen ? 0 : -1}
       className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
     >
-      <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+      <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/95" />
       <span className="text-[12.5px] font-semibold text-content">
         Invoices
       </span>
-      <span className="text-[11.5px] text-content/85 truncate">
+      <span className="text-[11.5px] text-content/95 truncate">
         {selected?.ty.product_description}
       </span>
       <span className="flex-1" />
-      <span className="text-[11.5px] font-semibold text-content/85">
+      <span className="text-[11.5px] font-semibold text-content/95">
         {detail?.cost_history.length ?? 0}
       </span>
     </button>
@@ -48,7 +48,7 @@ const InvoicesRail = ({
         seventeen rows, which is what drove the cost window down from
         120 days in the first place. */}
     <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 py-2">
-      <div className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/95">
         <span>Invoice</span>
         <span>Vendor</span>
         {/* Cases, because that is the unit the invoice is written in.
@@ -67,13 +67,13 @@ const InvoicesRail = ({
           <span className="tabular-nums">
             {dayText(h.invoice_date)}
           </span>
-          <span className="truncate text-content/85">
+          <span className="truncate text-content/95">
             {h.vendor_name ?? "—"}
           </span>
-          <span className="text-right tabular-nums text-content/85">
+          <span className="text-right tabular-nums text-content/95">
             {h.cases > 0 ? h.cases.toLocaleString() : "—"}
           </span>
-          <span className="text-right tabular-nums text-content/85">
+          <span className="text-right tabular-nums text-content/95">
             {moneyText(h.list_unit)}
           </span>
           {/* Green is the allowance. The endpoint returns it as its
@@ -95,7 +95,7 @@ const InvoicesRail = ({
           </span>
         </div>
       ))}
-      <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+      <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
         Green is an allowance — paid under list. Cost reaches back
         further than the sales week on purpose: a week cannot say
         whether today&rsquo;s price is a good one.

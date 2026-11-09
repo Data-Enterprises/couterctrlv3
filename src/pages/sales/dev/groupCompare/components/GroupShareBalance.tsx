@@ -159,7 +159,7 @@ const GroupShareBalance = ({
               style={{ gridTemplateColumns: COLS }}
             >
               <span className={PERF_SORT_HEADER}>Store</span>
-              <span className="text-[11px] font-semibold text-content/80 truncate">
+              <span className="text-[11px] font-semibold text-content/95 truncate">
                 share against usual
               </span>
               <SortHeader
@@ -251,7 +251,7 @@ const GroupShareBalance = ({
               })}
             </div>
 
-            <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[11px] text-content/85">
+            <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[11px] text-content/95">
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-2 rounded-sm bg-brand_navy" />
                 share this week

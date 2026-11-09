@@ -18,13 +18,13 @@ const EventTimeline = ({
 }) => (
   <div className="min-w-0">
     <div
-      className={`text-[13px] font-semibold uppercase tracking-wide text-content/85 pb-1.5 border-b-2 leading-tight ${tint}`}
+      className={`text-[13px] font-semibold uppercase tracking-wide text-content/95 pb-1.5 border-b-2 leading-tight ${tint}`}
     >
       {label}
     </div>
 
     {events.length === 0 ? (
-      <p className="text-[12px] text-content/85 leading-relaxed pt-2.5">
+      <p className="text-[12px] text-content/95 leading-relaxed pt-2.5">
         {ready ? (
           <>
             Nothing ordered and nothing received in the window.{" "}
@@ -56,7 +56,7 @@ const EventTimeline = ({
           </div>
           {e.detail && (
             <div
-              className="text-[13px] text-content/85 mt-1 ml-[60px] truncate"
+              className="text-[13px] text-content/95 mt-1 ml-[60px] truncate"
               title={e.detail}
             >
               {e.detail}

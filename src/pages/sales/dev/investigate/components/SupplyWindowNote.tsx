@@ -18,7 +18,7 @@ const SupplyWindowNote = ({
   /* The windows do not line up, and the screen says so rather than
      letting the grid imply every column is diagnosed. */
   return (
-    <p className="text-[13px] text-content/85 mt-2.5">
+    <p className="text-[13px] text-content/95 mt-2.5">
       Causes explain this week against {them}.
       Orders and receipts are read over {SUPPLY_LOOKBACK_DAYS} days (
       {window.start} to {window.end}) — they cannot account for the

@@ -207,7 +207,7 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   // Grey is the honest colour for a department's quiet majority. Giving it a
   // hue would put it on the same footing as the five findings that mean
   // something, and there is nothing here to act on.
-  streamlined: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
+  streamlined: { chip: "bg-gray-100 text-content/95", ring: "ring-content/30" },
 };
 
 /**

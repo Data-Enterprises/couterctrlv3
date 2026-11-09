@@ -40,14 +40,14 @@ const ActPanel = ({
             key={d.cause}
             className="flex items-center gap-3 flex-wrap rounded-lg bg-bkg shadow-card-sm px-4 py-2.5"
           >
-            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 flex-shrink-0">
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/95 flex-shrink-0">
               {CAUSE_LABEL[d.cause]}
             </span>
             <span className="text-[14px] font-bold tabular-nums text-delta_negative_text flex-shrink-0">
               {"−"}
               {cash(Math.abs(d.dollars))}
             </span>
-            <span className="text-[13px] leading-snug text-content/85 min-w-0">
+            <span className="text-[13px] leading-snug text-content/95 min-w-0">
               {d.says} Nothing here names anything to act on, so it goes on no
               list.
             </span>
@@ -69,7 +69,7 @@ const ActPanel = ({
               key={d.cause}
               className="flex flex-col gap-2.5 rounded-lg bg-bkg shadow-card-sm p-4"
             >
-              <span className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+              <span className="text-[12px] font-bold uppercase tracking-wide text-content/95">
                 {CAUSE_LABEL[d.cause]} ·{" "}
                 <span className="text-delta_negative_text">
                   {cash(Math.abs(d.dollars))}
@@ -78,7 +78,7 @@ const ActPanel = ({
               <span className="text-[15px] font-bold text-content">
                 {"→"} {OWNER_LABEL[d.owner as "buyer" | "vendor" | "price"]}
               </span>
-              <p className="text-[13px] leading-relaxed text-content/85">
+              <p className="text-[13px] leading-relaxed text-content/95">
                 {d.says}
               </p>
 
@@ -98,7 +98,7 @@ const ActPanel = ({
                   </li>
                 ))}
                 {d.items.length > 4 && (
-                  <li className="text-[12px] text-content/85">
+                  <li className="text-[12px] text-content/95">
                     + {(d.items.length - 4).toLocaleString("en-US")} more
                   </li>
                 )}

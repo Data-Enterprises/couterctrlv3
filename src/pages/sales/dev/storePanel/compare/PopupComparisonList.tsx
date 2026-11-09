@@ -69,7 +69,7 @@ const PopupComparisonList = ({
 
   if (!open) {
     return (
-      <div className="h-full flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
+      <div className="h-full flex items-center justify-center px-4 text-center text-[12.5px] text-content/95">
         This store is not in the current search.
       </div>
     );
@@ -167,7 +167,7 @@ const PopupComparisonList = ({
       <span
         className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
           sign === null || sign === 0
-            ? "bg-gray-100 text-content/85"
+            ? "bg-gray-100 text-content/95"
             : sign > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -202,7 +202,7 @@ const PopupComparisonList = ({
   return (
     <div className="h-full overflow-auto thin-scrollbar">
       <div style={{ minWidth: GRID_MIN }}>
-        <p className="px-2 py-2 text-[12px] text-content/85 border-b border-gray-100">
+        <p className="px-2 py-2 text-[12px] text-content/95 border-b border-gray-100">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
           <span className="font-semibold text-content tabular-nums">
             {fmt(open.ty)}
@@ -249,7 +249,7 @@ const PopupComparisonList = ({
         ))}
 
         {sorted.length === 0 && (
-          <div className="px-3 py-6 text-center text-[12.5px] text-content/85">
+          <div className="px-3 py-6 text-center text-[12.5px] text-content/95">
             No other stores in this search.
           </div>
         )}

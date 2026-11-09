@@ -136,7 +136,7 @@ const DeptMatrixPanel = ({
         ) : (
           <button
             onClick={() => dispatch(setGroupView("stores"))}
-            className="text-custom-white/85 text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10 hover:text-custom-white transition-colors"
+            className="text-custom-white/95 text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10 hover:text-custom-white transition-colors"
           >
             By store
           </button>
@@ -153,7 +153,7 @@ const DeptMatrixPanel = ({
 
         <span className="ml-auto flex items-center gap-3 flex-shrink-0">
           {!loading && matrix && !soloStore && (
-            <span className="text-custom-white/85 text-[12px]">
+            <span className="text-custom-white/95 text-[12px]">
               <span className="font-semibold text-custom-white">{flaggedCount}</span>{" "}
               of {cellCount} past ±{band}
             </span>
@@ -175,11 +175,11 @@ const DeptMatrixPanel = ({
           <LoadingIndicator message="Reading every department" />
         </div>
       ) : problem ? (
-        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/85">
+        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/95">
           {problem}
         </div>
       ) : !matrix || matrix.columns.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/85">
+        <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/95">
           Nothing sold in this window.
         </div>
       ) : soloStore ? (
@@ -191,7 +191,7 @@ const DeptMatrixPanel = ({
             <div className="text-[13.5px] font-semibold text-content">
               This needs more than one store
             </div>
-            <div className="text-[12.5px] text-content/85 mt-1.5 leading-relaxed">
+            <div className="text-[12.5px] text-content/95 mt-1.5 leading-relaxed">
               The index measures a store against the share of the group it
               usually holds. With one store that share is all of it, so every
               cell would read 100. Search a group to use this.
@@ -205,14 +205,14 @@ const DeptMatrixPanel = ({
               <thead>
                 <tr>
                   <th className="sticky top-0 left-0 z-30 bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left min-w-[190px]">
-                    <span className="uppercase tracking-wide text-content/85 font-semibold">
+                    <span className="uppercase tracking-wide text-content/95 font-semibold">
                       Store
                     </span>
                   </th>
                   {matrix.columns.map((c) => (
                     <th
                       key={c.subDept}
-                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 w-[74px] max-w-[74px]"
+                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center font-semibold uppercase tracking-wide text-content/95 w-[74px] max-w-[74px]"
                       title={c.name}
                     >
                       {/* Twenty departments do not fit across a panel, and
@@ -228,7 +228,7 @@ const DeptMatrixPanel = ({
                       makes it read as sitting OVER the columns it covers
                       rather than cutting one in half. */}
                   <th
-                    className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l-2 border-l-brand_navy/25 px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 min-w-[76px]"
+                    className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l-2 border-l-brand_navy/25 px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/95 min-w-[76px]"
                     style={{ boxShadow: "-6px 0 8px -6px rgb(var(--color-brand-navy) / 0.25)" }}
                     title="This store across every department it can be measured in"
                   >
@@ -268,7 +268,7 @@ const DeptMatrixPanel = ({
                             } ${tone.background ? "" : "hover:bg-gray-50"}`}
                           >
                             {idx === null ? (
-                              <span className="text-content/85">—</span>
+                              <span className="text-content/95">—</span>
                             ) : (
                               idx
                             )}
@@ -294,7 +294,7 @@ const DeptMatrixPanel = ({
             </table>
           </div>
 
-          <div className="flex-shrink-0 flex items-center gap-4 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/85">
+          <div className="flex-shrink-0 flex items-center gap-4 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/95">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm" style={{ background: UNDER[3][0] }} />
               Under its usual share

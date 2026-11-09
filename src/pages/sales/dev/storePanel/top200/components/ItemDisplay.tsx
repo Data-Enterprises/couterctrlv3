@@ -25,7 +25,7 @@ const ItemDisplay = ({ display }: { display: DisplayVerdict }) => (
                 ? "bg-severity_healthy_bg text-severity_healthy_text"
                 : c.state === "fail"
                   ? "bg-severity_critical_bg text-severity_critical_text"
-                  : "bg-gray-100 text-content/85"
+                  : "bg-gray-100 text-content/95"
             }`}
             aria-hidden="true"
           >
@@ -44,7 +44,7 @@ const ItemDisplay = ({ display }: { display: DisplayVerdict }) => (
         </div>
       ))}
     </div>
-    <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+    <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
       Nothing here says what is on display today &mdash; that one
       needs a look in the store.
     </p>

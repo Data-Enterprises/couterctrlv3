@@ -15,13 +15,13 @@ const QuestionSection = ({
   figure?: ReactNode;
 }) => (
   <div className="py-2.5 border-b border-gray-100 last:border-b-0">
-    <div className="text-[13px] text-content/85">{question}</div>
+    <div className="text-[13px] text-content/95">{question}</div>
     <div className="flex items-center gap-2 mt-0.5">
       <div className="min-w-0 flex-1">
         <div className="text-[14.5px] font-bold text-content leading-snug">
           {answer}
         </div>
-        <div className="text-[13px] text-content/85 leading-snug mt-0.5">
+        <div className="text-[13px] text-content/95 leading-snug mt-0.5">
           {sub}
         </div>
       </div>

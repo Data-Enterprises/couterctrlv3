@@ -92,7 +92,7 @@ const LedgerRow = ({
         <div className="text-[13px] font-medium text-content truncate">
           {displayName}
         </div>
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW{" "}
           <span className="font-semibold">
             {row.hasLW ? fmtMetric(row.lwTotal, row.lwQty) : "—"}

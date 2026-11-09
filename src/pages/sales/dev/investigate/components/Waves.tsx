@@ -27,7 +27,7 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
                 : "bg-severity_watch_text animate-pulse"
             }`}
           />
-          <span className="text-[11.5px] text-custom-white/85">{l.label}</span>
+          <span className="text-[11.5px] text-custom-white/95">{l.label}</span>
         </span>
       ))}
     </span>

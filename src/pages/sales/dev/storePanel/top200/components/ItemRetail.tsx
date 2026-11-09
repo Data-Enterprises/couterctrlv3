@@ -61,7 +61,7 @@ const ItemRetail = ({
       </>
     )}
 
-    <div className="grid grid-cols-[1fr_74px_84px] gap-2 mt-2.5 pb-1 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85">
+    <div className="grid grid-cols-[1fr_74px_84px] gap-2 mt-2.5 pb-1 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/95">
       <span>Rang at</span>
       <span className="text-right">
         {weighed(selected.ty) ? "Pounds" : "Units"}
@@ -69,7 +69,7 @@ const ItemRetail = ({
       <span className="text-right">Sales</span>
     </div>
     {points.length === 0 ? (
-      <p className="text-[11.5px] text-content/85 pt-1.5">
+      <p className="text-[11.5px] text-content/95 pt-1.5">
         No price came back for this item.
       </p>
     ) : (
@@ -81,7 +81,7 @@ const ItemRetail = ({
           <span className="text-[13px] font-semibold">
             {moneyText(pt.price)}
             {weighed(selected.ty) && (
-              <span className="text-[11px] font-normal text-content/85">
+              <span className="text-[11px] font-normal text-content/95">
                 {" "}
                 /lb
               </span>
@@ -100,7 +100,7 @@ const ItemRetail = ({
       ))
     )}
     {topPrice !== null && (
-      <div className="text-[11.5px] text-content/85 mt-1.5">
+      <div className="text-[11.5px] text-content/95 mt-1.5">
         Its highest price this week:{" "}
         <span className="font-semibold text-content">
           {moneyText(topPrice)}

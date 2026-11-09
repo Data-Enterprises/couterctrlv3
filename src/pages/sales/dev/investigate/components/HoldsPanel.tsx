@@ -119,7 +119,7 @@ const HoldsPanel = ({
                       {lead.b.dollars >= 0 ? "+" : "−"}
                       {cash(Math.abs(lead.b.dollars))}
                     </span>
-                    <span className="text-[13.5px] text-content/85 min-w-0">
+                    <span className="text-[13.5px] text-content/95 min-w-0">
                       <span className="font-semibold text-content">
                         {lead.b.items.toLocaleString("en-US")} items
                       </span>{" "}
@@ -154,16 +154,16 @@ const HoldsPanel = ({
                           x.b.items === 0 ? "bg-bkg" : x.tone
                         }`}
                       />
-                      <span className="text-[13px] text-content/85 min-w-0">
+                      <span className="text-[13px] text-content/95 min-w-0">
                         {x.label}
                       </span>
-                      <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
+                      <span className="ml-auto text-[12.5px] text-content/95 tabular-nums whitespace-nowrap">
                         {x.b.items.toLocaleString("en-US")} items
                       </span>
                       <span
                         className={`w-[96px] text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
                           x.b.items === 0
-                            ? "text-content/85"
+                            ? "text-content/95"
                             : x.b.dollars >= 0
                               ? "text-delta_positive_text"
                               : "text-delta_negative_text"
@@ -179,7 +179,7 @@ const HoldsPanel = ({
                 {/* Only when there is a cost penalty to report. The block is
                 the note, so with nothing to note there is no block. */}
                 {costPenalty < 0 && summary.gap < 0 && (
-                  <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
+                  <p className="text-[13.5px] text-content/95 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
                     Buying the same goods for more took another{" "}
                     <span className="font-semibold text-content">
                       {cash(Math.abs(costPenalty))}
@@ -210,7 +210,7 @@ const HoldsPanel = ({
                   label: "Week by week",
                   body: (
                     <>
-                      <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                      <p className="text-[12px] text-content/95 leading-snug mb-2.5">
                         Against itself: a standing difference, or something that
                         broke this week.
                       </p>
@@ -222,7 +222,7 @@ const HoldsPanel = ({
                   label: `Against ${shortStore(them)}`,
                   body: (
                     <>
-                      <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                      <p className="text-[12px] text-content/95 leading-snug mb-2.5">
                         One rule for all three, so measures that disagree are
                         seen to.
                       </p>
@@ -237,7 +237,7 @@ const HoldsPanel = ({
                         count: vendors.length,
                         body: (
                           <>
-                            <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                            <p className="text-[12px] text-content/95 leading-snug mb-2.5">
                               The shortfall by vendor. Pick one to narrow the
                               items.
                             </p>
@@ -298,7 +298,7 @@ const HoldsPanel = ({
                         gridTemplateColumns: "22px minmax(0,1fr) 120px 96px",
                       }}
                     >
-                      <span className="text-[12px] text-content/85 tabular-nums">
+                      <span className="text-[12px] text-content/95 tabular-nums">
                         {ix + 1}
                       </span>
                       <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
@@ -335,7 +335,7 @@ const HoldsPanel = ({
               {/* The list is the ten biggest; the way to the rest belongs
                 beside the sentence that says so, not three tabs away. */}
               <div className="flex items-center gap-4 flex-wrap">
-                <p className="text-[12.5px] text-content/85 leading-relaxed">
+                <p className="text-[12.5px] text-content/95 leading-relaxed">
                   {spread.ranked.length.toLocaleString("en-US")} items behind ·
                   ordered by the biggest difference · click one for its evidence
                   · {cash(shortfall)} in all

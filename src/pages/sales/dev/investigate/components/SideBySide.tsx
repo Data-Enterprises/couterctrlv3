@@ -71,7 +71,7 @@ const SideBySide = ({
   return (
     <div className="rounded-lg bg-custom-white shadow-card-sm overflow-hidden">
       <div
-        className="grid gap-x-3 px-3 pt-2.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85"
+        className="grid gap-x-3 px-3 pt-2.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/95"
         style={{ gridTemplateColumns: "minmax(0,1fr) 96px 96px 96px" }}
       >
         <span />
@@ -86,7 +86,7 @@ const SideBySide = ({
           className="grid gap-x-3 px-3 py-2 border-b border-brand_navy/15 last:border-b-0 text-[13.5px]"
           style={{ gridTemplateColumns: "minmax(0,1fr) 96px 96px 96px" }}
         >
-          <span className="text-content/85 truncate">{r.label}</span>
+          <span className="text-content/95 truncate">{r.label}</span>
           <span className="text-right tabular-nums font-semibold text-content bg-store_open_tint/50 -my-2 py-2 px-1">
             {r.us}
           </span>
@@ -96,7 +96,7 @@ const SideBySide = ({
           <span
             className={`text-right tabular-nums font-bold ${
               r.gap === null
-                ? "text-content/85"
+                ? "text-content/95"
                 : r.gap < 0
                   ? "text-delta_negative_text"
                   : r.gap > 0
@@ -113,7 +113,7 @@ const SideBySide = ({
       ))}
 
       {noCost && (
-        <p className="px-3 py-2 text-[12px] text-content/85 leading-snug border-t border-brand_navy/15">
+        <p className="px-3 py-2 text-[12px] text-content/95 leading-snug border-t border-brand_navy/15">
           No cost came through on either store&rsquo;s lines this week, so what
           this item makes cannot be said.
         </p>

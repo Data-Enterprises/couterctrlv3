@@ -112,13 +112,13 @@ const HourDetailPanel = ({
               className="w-full flex items-center justify-between px-4 py-2"
             >
               <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-content">
-                <PresentationChartLineIcon className="w-3.5 h-3.5 text-content/45" />
+                <PresentationChartLineIcon className="w-3.5 h-3.5 text-content/95" />
                 Chart
               </span>
               {chartOpen ? (
-                <ChevronUpIcon className="w-3 h-3 text-content/40" />
+                <ChevronUpIcon className="w-3 h-3 text-content/95" />
               ) : (
-                <ChevronDownIcon className="w-3 h-3 text-content/40" />
+                <ChevronDownIcon className="w-3 h-3 text-content/95" />
               )}
             </button>
             {chartOpen && weekHourDays && (

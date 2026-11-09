@@ -217,7 +217,7 @@ const ItemEvidence = ({
           {supplyReady &&
           mineEvents.length === 0 &&
           theirEvents.length === 0 ? (
-            <p className="text-[13px] leading-relaxed text-content/85 rounded-lg bg-bkg px-3.5 py-3">
+            <p className="text-[13px] leading-relaxed text-content/95 rounded-lg bg-bkg px-3.5 py-3">
               <span className="font-semibold text-content">
                 Neither store ordered or received it
               </span>{" "}

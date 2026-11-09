@@ -250,7 +250,7 @@ const DeptReport = ({
 
   if (failed) {
     return (
-      <div className="h-full flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
+      <div className="h-full flex items-center justify-center px-4 text-center text-[12.5px] text-content/95">
         That store&rsquo;s departments could not be loaded.
       </div>
     );
@@ -343,7 +343,7 @@ const DeptReport = ({
             )}
           </p>
 
-          <span className="flex-shrink-0 text-[11.5px] text-content/85 truncate max-w-[220px]">
+          <span className="flex-shrink-0 text-[11.5px] text-content/95 truncate max-w-[220px]">
             vs {compareStoreName}
           </span>
           <PageInfoButton
@@ -497,7 +497,7 @@ const DeptReport = ({
                         being shown about the biggest unexplained figure on
                         the screen. The strip overlays now, so the room to
                         name them exists. */}
-                    <span className="mt-1 flex flex-col gap-0.5 text-content/85">
+                    <span className="mt-1 flex flex-col gap-0.5 text-content/95">
                       {onlyMine.length > 0 && (
                         <span>
                           <span className="font-semibold">Only here:</span>{" "}
@@ -530,7 +530,7 @@ const DeptReport = ({
                     </span>{" "}
                     at {compareStoreName}
                     {hash.names.length > 0 && (
-                      <span className="text-content/85">
+                      <span className="text-content/95">
                         {" "}
                         ({hash.names.join(", ")})
                       </span>
@@ -564,7 +564,7 @@ const DeptReport = ({
           style={{ width: "39.5%" }}
         >
           <div
-            className="flex-shrink-0 grid items-center gap-2 px-3 py-1.5 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85"
+            className="flex-shrink-0 grid items-center gap-2 px-3 py-1.5 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/95"
             style={{ gridTemplateColumns: LIST_COLS }}
           >
             <span />
@@ -595,7 +595,7 @@ const DeptReport = ({
             onInvestigate={investigate}
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
+          <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/95">
             No departments to compare.
           </div>
         )}

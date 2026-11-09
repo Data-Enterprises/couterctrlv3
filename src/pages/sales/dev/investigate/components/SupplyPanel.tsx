@@ -203,7 +203,7 @@ const SupplyPanel = ({
                 <span className="text-[34px] font-bold tabular-nums leading-none text-content">
                   {n(supply.mine.orderedUnits)}
                 </span>
-                <span className="text-[13.5px] text-content/85 min-w-0">
+                <span className="text-[13.5px] text-content/95 min-w-0">
                   units ordered here, against{" "}
                   <span className="font-semibold text-content">
                     {n(supply.theirs.orderedUnits)}
@@ -262,10 +262,10 @@ const SupplyPanel = ({
                       r.tone || "border-2 border-content/40"
                     }`}
                   />
-                  <span className="text-[13px] text-content/85 min-w-0 truncate">
+                  <span className="text-[13px] text-content/95 min-w-0 truncate">
                     {r.label}
                   </span>
-                  <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
+                  <span className="ml-auto text-[12.5px] text-content/95 tabular-nums whitespace-nowrap">
                     {r.count}
                   </span>
                   <span className="w-[104px] text-right text-[13px] font-bold tabular-nums text-content whitespace-nowrap">
@@ -275,7 +275,7 @@ const SupplyPanel = ({
               ))}
             </div>
 
-            <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3 mt-3">
+            <p className="text-[13.5px] text-content/95 leading-relaxed rounded-md bg-bkg px-3.5 py-3 mt-3">
               {states.length === 1 && supply.orders.length > 0 && (
                 <>
                   All{" "}
@@ -315,7 +315,7 @@ const SupplyPanel = ({
                 label: "Over the window",
                 body: (
                   <>
-                    <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    <p className="text-[12px] text-content/95 leading-snug mb-2.5">
                       Dot size is units ordered. An empty lane means nothing
                       arrived.
                     </p>
@@ -341,13 +341,13 @@ const SupplyPanel = ({
                         justify-end pushes the overflow off the left, so a
                         truncate up here ate the front of the name instead of
                         putting an ellipsis on the end of it. */}
-                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/95">
                       <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
                       <span className="min-w-0 truncate normal-case" title={us}>
                         {us}
                       </span>
                     </span>
-                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/95">
                       <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
                       <span
                         className="min-w-0 truncate normal-case"
@@ -359,13 +359,13 @@ const SupplyPanel = ({
 
                     {sides.map((row) => (
                       <Fragment key={row.label}>
-                        <span className="py-1.5 border-b border-brand_navy/15 text-content/85 truncate">
+                        <span className="py-1.5 border-b border-brand_navy/15 text-content/95 truncate">
                           {row.label}
                         </span>
                         <span
                           className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
                             row.m === 0
-                              ? "text-content/85"
+                              ? "text-content/95"
                               : "font-bold text-content"
                           }`}
                         >
@@ -374,7 +374,7 @@ const SupplyPanel = ({
                         <span
                           className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
                             row.t === 0
-                              ? "text-content/85"
+                              ? "text-content/95"
                               : "font-semibold text-content"
                           }`}
                         >
@@ -401,7 +401,7 @@ const SupplyPanel = ({
                             (h, i) => (
                               <span
                                 key={h}
-                                className={`text-[11.5px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15 ${
+                                className={`text-[11.5px] font-bold uppercase tracking-wide text-content/95 pb-1.5 border-b border-brand_navy/15 ${
                                   i > 0 ? "text-right" : ""
                                 }`}
                               >
@@ -423,10 +423,10 @@ const SupplyPanel = ({
                               >
                                 {r.mine ? n(r.mine.units) : "none"}
                               </span>
-                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/95">
                                 {r.theirs ? n(r.theirs.units) : "none"}
                               </span>
-                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/95">
                                 {r.mine ? cash(r.mine.cost) : "—"}
                               </span>
                             </Fragment>
@@ -476,7 +476,7 @@ const SupplyPanel = ({
             )}
           </div>
           {wanted.size > 0 && (
-            <p className="text-[12px] text-content/85 mt-1.5">
+            <p className="text-[12px] text-content/95 mt-1.5">
               {wanted.size} {wanted.size === 1 ? "code" : "codes"} ·{" "}
               {shownOrders.length} of {supply.orders.length}{" "}
               {supply.orders.length === 1 ? "order" : "orders"} and{" "}
@@ -488,11 +488,11 @@ const SupplyPanel = ({
             </p>
           )}
 
-          <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
+          <div className="text-[11px] font-bold uppercase tracking-wide text-content/95 mt-4">
             Ordered
           </div>
           <div
-            className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+            className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/95"
             style={{
               gridTemplateColumns:
                 "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
@@ -526,7 +526,7 @@ const SupplyPanel = ({
             {shownOrders.length === 0 && (
               <p
                 className={`text-[13px] leading-relaxed py-3 ${
-                  orders.ok ? "text-content/85" : "text-severity_watch_text"
+                  orders.ok ? "text-content/95" : "text-severity_watch_text"
                 }`}
               >
                 {!orders.ok
@@ -544,7 +544,7 @@ const SupplyPanel = ({
 
           {supply.deliveries.length > 0 && (
             <>
-              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-content/95 mt-4">
                 Received
               </div>
               {/* Its own headings. These rows carry an INVOICE and its COST,
@@ -552,7 +552,7 @@ const SupplyPanel = ({
                   columns above — which is a dollar amount sitting under the
                   word Status. */}
               <div
-                className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+                className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/95"
                 style={{
                   gridTemplateColumns:
                     "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
@@ -592,10 +592,10 @@ const SupplyPanel = ({
 
           {supply.deliveries.length === 0 && (
             <div className="rounded-md border border-dashed border-brand_navy/25 px-3.5 py-2.5 mt-4">
-              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-content/95">
                 Received &middot; 0
               </div>
-              <p className="text-[12.5px] text-content/85 leading-snug mt-0.5">
+              <p className="text-[12.5px] text-content/95 leading-snug mt-0.5">
                 No invoice carried an item from this department, at either
                 store.
               </p>

@@ -32,7 +32,7 @@ const Tile = ({ gate }: { gate: Gate }) => {
             fail
               ? "text-delta_negative_text"
               : skipped
-                ? "text-content/85"
+                ? "text-content/95"
                 : "text-delta_positive_text"
           }`}
         >
@@ -43,7 +43,7 @@ const Tile = ({ gate }: { gate: Gate }) => {
             fail
               ? "text-delta_negative_text"
               : skipped
-                ? "text-content/85"
+                ? "text-content/95"
                 : "text-delta_positive_text"
           }`}
         >

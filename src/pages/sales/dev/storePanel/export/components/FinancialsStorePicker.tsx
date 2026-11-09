@@ -21,7 +21,7 @@ const FinancialsStorePicker = ({
   return (
     <div className="mt-2.5">
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-content/95">
           Stores
         </span>
         <span className="text-[10px] font-semibold text-content">
@@ -29,13 +29,13 @@ const FinancialsStorePicker = ({
         </span>
         <button
           onClick={() => setTicked(new Set(stores.map((st) => st.storeid)))}
-          className="text-[10px] font-semibold text-content/85 hover:underline"
+          className="text-[10px] font-semibold text-content/95 hover:underline"
         >
           All
         </button>
         <button
           onClick={() => setTicked(new Set([storeId]))}
-          className="text-[10px] font-semibold text-content/85 hover:underline"
+          className="text-[10px] font-semibold text-content/95 hover:underline"
         >
           Just this one
         </button>

@@ -53,12 +53,12 @@ const Timeline = ({
     <div className="flex flex-col gap-1">
       {lanes.map((lane) => (
         <div key={lane.label} className="flex items-center gap-3">
-          <span className="w-[108px] flex-shrink-0 truncate text-[11.5px] font-semibold text-content/85">
+          <span className="w-[108px] flex-shrink-0 truncate text-[11.5px] font-semibold text-content/95">
             {lane.label}
           </span>
           <span className="relative flex-1 min-w-0 h-11 border-b border-dashed border-brand_navy/20">
             {lane.rows.length === 0 ? (
-              <span className="absolute inset-0 flex items-center text-[12px] italic text-content/85">
+              <span className="absolute inset-0 flex items-center text-[12px] italic text-content/95">
                 Nothing
               </span>
             ) : (
@@ -89,7 +89,7 @@ const Timeline = ({
           {ticks.map((p) => (
             <span
               key={p}
-              className="absolute -translate-x-1/2 text-[11px] text-content/85 whitespace-nowrap"
+              className="absolute -translate-x-1/2 text-[11px] text-content/95 whitespace-nowrap"
               style={{ left: `${p}%` }}
             >
               {tickDay(p)}

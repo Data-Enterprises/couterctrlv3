@@ -26,7 +26,7 @@ const Ladder = ({
 
   if (ladder.points.length === 0) {
     return (
-      <p className="flex items-center gap-2 text-[13px] text-content/85">
+      <p className="flex items-center gap-2 text-[13px] text-content/95">
         <span
           className={`w-2 h-2 rounded-full flex-shrink-0 ${
             mine ? "bg-store_open" : "bg-store_compare"
@@ -85,7 +85,7 @@ const Ladder = ({
       </div>
 
       {says && (
-        <p className="text-[12.5px] leading-snug text-content/85 mt-1.5">
+        <p className="text-[12.5px] leading-snug text-content/95 mt-1.5">
           {says}
         </p>
       )}

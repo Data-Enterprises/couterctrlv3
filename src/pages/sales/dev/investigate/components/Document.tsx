@@ -41,7 +41,7 @@ const Document = ({
             "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
         }}
       >
-        <span className="text-[12px] text-content/85 whitespace-nowrap">
+        <span className="text-[12px] text-content/95 whitespace-nowrap">
           {onDay(rec.date)}
         </span>
         <span
@@ -51,7 +51,7 @@ const Document = ({
         />
         <span
           className={`min-w-0 truncate text-[12.5px] ${
-            rec.mine ? "font-semibold text-content" : "text-content/85"
+            rec.mine ? "font-semibold text-content" : "text-content/95"
           }`}
         >
           {rec.vendor}
@@ -59,10 +59,10 @@ const Document = ({
         <span className="text-[12.5px] tabular-nums text-content truncate">
           #{rec.id}
         </span>
-        <span className="text-[11.5px] text-content/85 truncate">
+        <span className="text-[11.5px] text-content/95 truncate">
           {isOrder ? (rec.status ?? "—") : cash(rec.cost)}
         </span>
-        <span className="text-right text-[11.5px] text-content/85 tabular-nums">
+        <span className="text-right text-[11.5px] text-content/95 tabular-nums">
           {rec.lines}
         </span>
         <span
@@ -93,7 +93,7 @@ const Document = ({
                   className={`text-[11.5px] font-semibold px-2 py-0.5 rounded transition-colors ${
                     everything === o.on
                       ? "bg-brand_navy text-custom-white"
-                      : "text-content/85 hover:bg-custom-white"
+                      : "text-content/95 hover:bg-custom-white"
                   }`}
                 >
                   {o.label}
@@ -103,7 +103,7 @@ const Document = ({
           )}
 
           {rows.length === 0 ? (
-            <p className="text-[12px] text-content/85 py-2 px-2">
+            <p className="text-[12px] text-content/95 py-2 px-2">
               No lines in this department on it.
             </p>
           ) : (
@@ -113,7 +113,7 @@ const Document = ({
                 className="grid gap-3 items-center px-2 py-1 text-[12px] border-t border-brand_navy/10"
                 style={{ gridTemplateColumns: "110px minmax(0,1fr) 76px 86px" }}
               >
-                <span className="font-mono text-content/85 truncate">
+                <span className="font-mono text-content/95 truncate">
                   {l.code}
                 </span>
                 <span className="min-w-0 truncate text-content">
@@ -122,7 +122,7 @@ const Document = ({
                 <span className="text-right tabular-nums text-content">
                   {n(l.units)}
                 </span>
-                <span className="text-right tabular-nums text-content/85">
+                <span className="text-right tabular-nums text-content/95">
                   {l.cost === 0 ? "—" : cash(l.cost)}
                 </span>
               </div>

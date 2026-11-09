@@ -136,7 +136,7 @@ const InvestigationTabs = ({
                 <Bar w="72%" h={10} />
               </span>
             ) : (
-              <span className="block text-[12px] mt-0.5 truncate text-content/85">
+              <span className="block text-[12px] mt-0.5 truncate text-content/95">
                 {t.answer()}
               </span>
             )}

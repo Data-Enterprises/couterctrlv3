@@ -13,10 +13,10 @@ const Rung = ({ p, weighed }: { p: PricePoint; weighed: boolean }) => (
     <span className="w-[78px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
       {money(p.price)}
       {weighed && (
-        <span className="text-[11px] font-semibold text-content/85">/lb</span>
+        <span className="text-[11px] font-semibold text-content/95">/lb</span>
       )}
     </span>
-    <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
+    <span className="min-w-0 flex-1 text-[12px] text-content/95 tabular-nums truncate">
       {weighed ? weightLabel(p) : `${count(p.units)} qty`} · {p.days}d ·{" "}
       {count(p.transactions)} baskets
     </span>
@@ -37,7 +37,7 @@ const Rung = ({ p, weighed }: { p: PricePoint; weighed: boolean }) => (
       className={`flex-shrink-0 text-right text-[12px] tabular-nums ${
         (perBasket(p, weighed) ?? 0) >= 1.5
           ? "font-bold text-delta_positive_text"
-          : "text-content/85"
+          : "text-content/95"
       }`}
     >
       {perBasket(p, weighed) === null

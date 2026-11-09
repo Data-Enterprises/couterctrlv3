@@ -110,7 +110,7 @@ const ItemHistory = ({
             key={label}
             className={`rounded-md px-2.5 py-2 ${i === 2 ? "border bg-row_selected border-row_selected_border" : "bg-bkg"}`}
           >
-            <div className="text-[11px] text-content/85">
+            <div className="text-[11px] text-content/95">
               {label}
             </div>
             <div className="text-[13.5px] font-semibold text-content tabular-nums">
@@ -120,7 +120,7 @@ const ItemHistory = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
+      <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/95">
         <span />
         <span className="text-right">{periodLabel}</span>
         <span className="text-right">vs LW</span>
@@ -147,7 +147,7 @@ const ItemHistory = ({
       {/* The gap, named. Deliveries are a different endpoint and
           this tab does not call it; saying so beats a bar that
           cannot be drawn. */}
-      <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+      <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
         What arrived this week is not read here &mdash; the
         department investigation reads ordering against sales.
       </p>

@@ -74,7 +74,7 @@ const ItemCost = ({
         <span className="text-[12.5px] text-content truncate">
           Selling at
           {mix && mix.adPct >= 50 && (
-            <span className="text-[11px] text-content/85">
+            <span className="text-[11px] text-content/95">
               {" "}
               (on ad)
             </span>
@@ -87,7 +87,7 @@ const ItemCost = ({
       <div className="flex items-baseline justify-between gap-2 py-1 border-b border-brand_navy/15">
         <span className="text-[12.5px] text-content truncate">
           Cost
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             {" "}
             &middot;{" "}
             {detail?.cost_summary
@@ -115,7 +115,7 @@ const ItemCost = ({
           <div
             className={`text-[11.5px] font-semibold ${
               selected.ty.margin === null
-                ? "text-content/85"
+                ? "text-content/95"
                 : selected.ty.margin < 0
                   ? "text-severity_critical_text"
                   : "text-severity_healthy_text"
@@ -136,7 +136,7 @@ const ItemCost = ({
               ? "\u2014"
               : `${selected.ty.margin.toFixed(1)}%`}
           </div>
-          <div className="text-[11px] text-content/85">
+          <div className="text-[11px] text-content/95">
             {perUnitMargin === null
               ? "no cost to compare"
               : `${perUnitMargin < 0 ? "loses" : "makes"} ${moneyText(Math.abs(perUnitMargin))} per ${weighed(selected.ty) ? "lb" : "unit"}`}
@@ -155,7 +155,7 @@ const ItemCost = ({
             <div className="text-[18px] font-bold tabular-nums leading-tight text-severity_watch_text">
               {topMargin.toFixed(1)}%
             </div>
-            <div className="text-[11px] text-content/85">
+            <div className="text-[11px] text-content/95">
               {perUnitCost === null
                 ? ""
                 : `makes ${moneyText(topPrice - perUnitCost)} per ${weighed(selected.ty) ? "lb" : "unit"}`}
@@ -201,7 +201,7 @@ const ItemCost = ({
         </span>
       </div>
       {grossProfit(selected.ty) === null && (
-        <p className="text-[13px] text-content/85 mt-1 leading-snug">
+        <p className="text-[13px] text-content/95 mt-1 leading-snug">
           Too few lines carried a cost to work out a margin worth
           trusting, so the profit is withheld rather than guessed.
         </p>

@@ -84,7 +84,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
           {/* No day of the week has a matching date on file. $0.00 would read
               as a store that sold nothing; it simply has no history there. */}
           <span
-            className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}
+            className={`text-[14px] font-bold ${noLyHistory ? "text-content/95" : "text-content"}`}
           >
             {noLyHistory
               ? "No history"

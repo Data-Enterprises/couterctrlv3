@@ -47,7 +47,7 @@ const ItemListToolbar = ({
         ))}
       </select>
     )}
-    <span className="flex-shrink-0 text-[10px] font-semibold text-content/85 whitespace-nowrap">
+    <span className="flex-shrink-0 text-[10px] font-semibold text-content/95 whitespace-nowrap">
       {shown.length === ranked.length
         ? `Top ${Math.min(ranked.length, TOP_ITEMS_SHOWN)} by sales`
         : `${shown.length} of ${ranked.length}`}

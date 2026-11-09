@@ -34,13 +34,13 @@ const Measure = ({
       {/* The verdict rides the heading. Under the bars it was a third line
           saying what the two bars had just shown. */}
       <div className="flex items-baseline gap-3">
-        <span className="text-[11.5px] font-bold uppercase tracking-wide text-content/85">
+        <span className="text-[11.5px] font-bold uppercase tracking-wide text-content/95">
           {title}
         </span>
         <span
           className={`ml-auto text-[13px] font-semibold truncate ${
             pct === null || pct === 0
-              ? "text-content/85"
+              ? "text-content/95"
               : good
                 ? "text-delta_positive_text"
                 : "text-delta_negative_text"
@@ -87,7 +87,7 @@ const Measure = ({
         ].map((b) => (
           <span key={b.label} className="flex items-center gap-2.5 text-[13px]">
             <span
-              className="w-[168px] flex-shrink-0 truncate text-content/85"
+              className="w-[168px] flex-shrink-0 truncate text-content/95"
               title={b.label}
             >
               {b.label}

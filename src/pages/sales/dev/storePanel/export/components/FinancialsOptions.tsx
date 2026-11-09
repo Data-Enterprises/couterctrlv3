@@ -32,7 +32,7 @@ const FinancialsOptions = ({
   children,
 }: FinancialsOptionsProps) => (
   <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
-    <p className="text-[10px] text-content/85 leading-snug mb-2">
+    <p className="text-[10px] text-content/95 leading-snug mb-2">
       {loading
         ? "Reading the records for this search…"
         : inHand
@@ -43,7 +43,7 @@ const FinancialsOptions = ({
     </p>
     <div className="flex items-end gap-2 flex-wrap">
       <div className="flex flex-col gap-1">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-content/95">
           From
         </span>
         <input
@@ -55,7 +55,7 @@ const FinancialsOptions = ({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-content/95">
           To
         </span>
         <input
@@ -68,7 +68,7 @@ const FinancialsOptions = ({
       </div>
       <button
         onClick={onThisWeek}
-        className="text-[11px] font-semibold text-content/85 hover:underline pb-1.5"
+        className="text-[11px] font-semibold text-content/95 hover:underline pb-1.5"
       >
         This week
       </button>

@@ -36,7 +36,7 @@ const TotalsStrip = ({
       <div className="text-[14px] font-bold text-content tabular-nums">
         {moneyText(totals.ty)}
       </div>
-      <div className="text-[11.5px] text-content/85 tabular-nums">
+      <div className="text-[11.5px] text-content/95 tabular-nums">
         {share.ty === null
           ? "—"
           : `${share.ty.toFixed(1)}% of net sales`}
@@ -97,7 +97,7 @@ const TotalsStrip = ({
             </span>
           )}
         </div>
-        <div className="text-[11.5px] text-content/85 tabular-nums">
+        <div className="text-[11.5px] text-content/95 tabular-nums">
           {pct === null ? "—" : `${pct.toFixed(1)}% of net sales`}
         </div>
       </div>

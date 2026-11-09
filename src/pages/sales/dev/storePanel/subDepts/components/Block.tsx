@@ -23,7 +23,7 @@ const Block = ({
      strip above it, it read as a stray line with a gap over it. */
   <div className="border-t border-brand_navy/15 pt-2.5 mt-3 first:border-t-0 first:pt-0 first:mt-0">
     <div className="flex items-center gap-3 mb-1.5">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
         {title}
       </div>
       {action && <span className="ml-auto flex-shrink-0">{action}</span>}

@@ -211,7 +211,7 @@ const HourlySideBySide = ({
 
   const stat = (key: string, v: number) => (
     <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
-      <span className="text-[11.5px] text-content/85 w-[52px] flex-shrink-0">{key}</span>
+      <span className="text-[11.5px] text-content/95 w-[52px] flex-shrink-0">{key}</span>
       <span
         className={`ml-auto tabular-nums text-[13.5px] font-bold ${
           v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
@@ -232,7 +232,7 @@ const HourlySideBySide = ({
         >
           &lsaquo; All stores
         </button>
-        <span className="text-[12px] text-content/85 truncate">
+        <span className="text-[12px] text-content/95 truncate">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
           trades against{" "}
           <span className="font-semibold text-content">{compareStoreName}</span>,
@@ -257,7 +257,7 @@ const HourlySideBySide = ({
       </div>
 
       {failed ? (
-        <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
+        <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/95">
           That store&rsquo;s hours could not be loaded.
         </div>
       ) : !theirs ? (
@@ -268,7 +268,7 @@ const HourlySideBySide = ({
         <div className="flex-1 min-h-0 flex overflow-hidden">
           <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
             <div
-              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85"
+              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: COLS }}
             >
               <span>Hour</span>
@@ -337,7 +337,7 @@ const HourlySideBySide = ({
               })}
 
               {rows.length === 0 && (
-                <div className="px-3 py-6 text-center text-[12.5px] text-content/85">
+                <div className="px-3 py-6 text-center text-[12.5px] text-content/95">
                   Neither store recorded hours in this window.
                 </div>
               )}
@@ -349,7 +349,7 @@ const HourlySideBySide = ({
               <div>
                 <div className="text-[15px] font-bold text-content leading-snug">
                   {focus.label}
-                  <span className="text-[12px] font-medium text-content/85">
+                  <span className="text-[12px] font-medium text-content/95">
                     {" "}&ndash; {hourLabel((focus.hour + 1) % 24)}
                   </span>
                 </div>
@@ -362,7 +362,7 @@ const HourlySideBySide = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-md px-2.5 py-2 bg-store_open_tint">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
                     {openStoreNumber}
                   </div>
                   <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
@@ -370,7 +370,7 @@ const HourlySideBySide = ({
                   </div>
                 </div>
                 <div className="rounded-md px-2.5 py-2 bg-store_compare_tint">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
                     {compareStoreNumber}
                   </div>
                   <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
@@ -385,7 +385,7 @@ const HourlySideBySide = ({
                 {stat("vs LY", focus.lyDiff)}
               </div>
 
-              <p className="text-[11.5px] text-content/85 leading-relaxed">
+              <p className="text-[11.5px] text-content/95 leading-relaxed">
                 This hour is{" "}
                 <span className="font-semibold text-content">
                   {shareMine(focus).toFixed(1)}%
@@ -416,7 +416,7 @@ const HourlySideBySide = ({
               {/* No way into the items from here, and saying so beats leaving
                   a reader hunting for one. An hour does not name a department,
                   and the investigation needs one. */}
-              <p className="mt-auto text-[10.5px] text-content/85 leading-snug border-t border-brand_navy/15 pt-2.5">
+              <p className="mt-auto text-[10.5px] text-content/95 leading-snug border-t border-brand_navy/15 pt-2.5">
                 Hours say <span className="font-semibold text-content">when</span>{" "}
                 the two diverge. For <span className="font-semibold text-content">what</span>,
                 use Sub depts &mdash; the item investigation is scoped to a department.

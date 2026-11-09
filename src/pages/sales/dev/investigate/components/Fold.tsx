@@ -22,10 +22,10 @@ const Fold = ({ title, children }: { title: string; children: ReactNode }) => {
         aria-expanded={open}
         className="w-full flex items-center gap-2 text-left group"
       >
-        <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 group-hover:text-content transition-colors">
+        <span className="text-[12px] font-bold uppercase tracking-wide text-content/95 group-hover:text-content transition-colors">
           {title}
         </span>
-        <span className="ml-auto flex-shrink-0 text-[10px] text-content/85">
+        <span className="ml-auto flex-shrink-0 text-[10px] text-content/95">
           {open ? "▲" : "▼"}
         </span>
       </button>

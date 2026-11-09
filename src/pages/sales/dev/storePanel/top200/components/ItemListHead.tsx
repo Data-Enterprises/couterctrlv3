@@ -32,7 +32,7 @@ const ItemListHead = ({
   }) => (
     <button
       onClick={() => setSort((cur) => nextTopItemSort(cur, col))}
-      className={`flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 ${className}`}
+      className={`flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0 ${className}`}
     >
       {children}
       {sort.column === col &&

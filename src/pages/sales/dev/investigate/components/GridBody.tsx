@@ -59,7 +59,7 @@ const GridBody = ({
             className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
               isOn(r.productCode)
                 ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
-                : "bg-custom-white text-content/85"
+                : "bg-custom-white text-content/95"
             }`}
           >
             {i + 1}

@@ -15,7 +15,7 @@ const ItemIdentity = ({
   shareOfTop: number | null;
 }) => (
   <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100">
-    <div className="min-w-0 flex-1 text-[11.5px] text-content/85 truncate">
+    <div className="min-w-0 flex-1 text-[11.5px] text-content/95 truncate">
       <span className="tabular-nums">
         {selected.ty.product_code}
       </span>{" "}
@@ -29,7 +29,7 @@ const ItemIdentity = ({
         {shareOfTop === null
           ? "\u2014"
           : `${shareOfTop.toFixed(1)}%`}
-        <span className="text-[11px] font-normal text-content/85">
+        <span className="text-[11px] font-normal text-content/95">
           {" "}
           of top 200
         </span>

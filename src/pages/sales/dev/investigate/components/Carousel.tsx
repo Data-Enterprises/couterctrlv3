@@ -58,7 +58,7 @@ const Carousel = ({ slides }: { slides: Slide[] }) => {
             onClick={() => go(i)}
             aria-current={i === at}
             className={`relative px-2.5 pt-1.5 pb-2 text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
-              i === at ? "text-content" : "text-content/85 hover:text-content"
+              i === at ? "text-content" : "text-content/95 hover:text-content"
             }`}
           >
             {sl.label}

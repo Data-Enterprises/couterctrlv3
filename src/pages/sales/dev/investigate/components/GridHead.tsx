@@ -134,10 +134,10 @@ const GridHead = ({
                 label={label(c, target)}
                 sort={sort}
                 onSort={onSort}
-                className="text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content"
+                className="text-[11px] font-semibold uppercase tracking-wide text-content/95 hover:text-content"
               />
             ) : (
-              <span className="uppercase tracking-wide text-content/85">
+              <span className="uppercase tracking-wide text-content/95">
                 {label(c, target)}
               </span>
             )}

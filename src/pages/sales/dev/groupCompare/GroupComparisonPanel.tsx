@@ -89,14 +89,14 @@ const GroupComparisonPanel = ({
 
   const tile = (label: string, value: string, sub?: string, title?: string) => (
     <div className="px-3 py-2.5 min-w-0" title={title}>
-      <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
         {label}
       </div>
       <div className="text-[14px] font-bold text-content truncate mt-0.5">
         {value}
       </div>
       {sub && (
-        <div className="text-[10.5px] text-content/85 truncate">{sub}</div>
+        <div className="text-[10.5px] text-content/95 truncate">{sub}</div>
       )}
     </div>
   );
