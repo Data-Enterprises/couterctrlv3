@@ -176,7 +176,7 @@ const CouponsExportModal = ({
   const StoreFilter = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
           Stores
         </p>
         <div className="flex gap-1.5">
@@ -185,15 +185,15 @@ const CouponsExportModal = ({
               setSelectedStores(new Set(uniqueStores.map((s) => s.number)))
             }
             disabled={allSelected}
-            className="text-[9px] text-brand_navy/50 hover:text-brand_navy disabled:opacity-30 transition-colors"
+            className="text-[9px] text-brand_navy/95 hover:text-brand_navy disabled:opacity-30 transition-colors"
           >
             All
           </button>
-          <span className="text-[9px] text-content/30">·</span>
+          <span className="text-[9px] text-content/95">·</span>
           <button
             onClick={() => setSelectedStores(new Set())}
             disabled={noneSelected}
-            className="text-[9px] text-brand_navy/50 hover:text-brand_navy disabled:opacity-30 transition-colors"
+            className="text-[9px] text-brand_navy/95 hover:text-brand_navy disabled:opacity-30 transition-colors"
           >
             None
           </button>
@@ -212,7 +212,7 @@ const CouponsExportModal = ({
               className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate">{s.name}</span>
-            <span className="text-[10px] text-content/40 flex-shrink-0">
+            <span className="text-[10px] text-content/95 flex-shrink-0">
               #{s.number}
             </span>
           </label>
@@ -234,7 +234,7 @@ const CouponsExportModal = ({
             <p className="text-custom-white text-[13px] font-semibold">
               Export CSV
             </p>
-            <p className="text-custom-white/55 text-[10px] mt-0.5">
+            <p className="text-custom-white/95 text-[10px] mt-0.5">
               {subtitle}
             </p>
           </div>
@@ -243,7 +243,7 @@ const CouponsExportModal = ({
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/70 hover:text-custom-white"}`}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
@@ -251,7 +251,7 @@ const CouponsExportModal = ({
           </div>
           <button
             onClick={onClose}
-            className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+            className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
@@ -264,7 +264,7 @@ const CouponsExportModal = ({
               {isMultiStore && <StoreFilter />}
               <div>
                 {!isMultiStore && (
-                  <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium mb-3">
+                  <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-3">
                     Select data to include
                   </p>
                 )}
@@ -279,7 +279,7 @@ const CouponsExportModal = ({
                     <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                       Coupon Records
                     </p>
-                    <p className="text-[11px] text-content/50 mt-0.5">
+                    <p className="text-[11px] text-content/95 mt-0.5">
                       {filteredRows.length} rows
                       {isMultiStore && selectedStores.size < uniqueStores.length
                         ? ` · ${selectedStores.size} of ${uniqueStores.length} stores`
@@ -294,7 +294,7 @@ const CouponsExportModal = ({
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
               <button
                 onClick={onClose}
-                className="text-[12px] text-content/50 hover:text-content transition-colors"
+                className="text-[12px] text-content/95 hover:text-content transition-colors"
               >
                 Cancel
               </button>
@@ -318,7 +318,7 @@ const CouponsExportModal = ({
               <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
                 {isMultiStore && <StoreFilter />}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                     Group By
                   </p>
                   <div className="space-y-1.5">
@@ -341,7 +341,7 @@ const CouponsExportModal = ({
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                     Metrics
                   </p>
                   <div className="space-y-2">
@@ -356,7 +356,7 @@ const CouponsExportModal = ({
                             className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
                           <span
-                            className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}
+                            className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
                           >
                             {m.label}
                           </span>
@@ -380,7 +380,7 @@ const CouponsExportModal = ({
                     })}
                   </div>
                 </div>
-                <p className="text-[10px] text-content/35 italic leading-relaxed">
+                <p className="text-[10px] text-content/95 italic leading-relaxed">
                   {filteredRows.length} rows
                   {isMultiStore && selectedStores.size < uniqueStores.length
                     ? ` · ${selectedStores.size}/${uniqueStores.length} stores`
@@ -391,10 +391,10 @@ const CouponsExportModal = ({
               {/* Preview */}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content/60 uppercase tracking-wide">
+                  <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
                     Preview
                   </p>
-                  <span className="text-[10px] text-content/40">
+                  <span className="text-[10px] text-content/95">
                     {aggRows.length === 0
                       ? "No data"
                       : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
@@ -402,7 +402,7 @@ const CouponsExportModal = ({
                 </div>
                 {columns.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content/40 leading-relaxed">
+                    <p className="text-[12px] text-content/95 leading-relaxed">
                       Select at least one group-by
                       <br />
                       or metric to see a preview.
@@ -416,7 +416,7 @@ const CouponsExportModal = ({
                           {columns.map((c) => (
                             <th
                               key={c.key}
-                              className="text-left px-3 py-2 text-content/55 font-semibold border-b border-gray-100 whitespace-nowrap"
+                              className="text-left px-3 py-2 text-content/95 font-semibold border-b border-gray-100 whitespace-nowrap"
                             >
                               {c.label}
                             </th>
@@ -434,7 +434,7 @@ const CouponsExportModal = ({
                             {columns.map((c) => (
                               <td
                                 key={c.key}
-                                className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50"
+                                className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-gray-50"
                               >
                                 {row[c.key] ?? "—"}
                               </td>
@@ -445,7 +445,7 @@ const CouponsExportModal = ({
                           <tr>
                             <td
                               colSpan={columns.length}
-                              className="px-3 py-2 text-[10px] text-content/35 italic"
+                              className="px-3 py-2 text-[10px] text-content/95 italic"
                             >
                               + {aggRows.length - PREVIEW_ROWS} more rows…
                             </td>
@@ -461,7 +461,7 @@ const CouponsExportModal = ({
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
               <button
                 onClick={onClose}
-                className="text-[12px] text-content/50 hover:text-content transition-colors"
+                className="text-[12px] text-content/95 hover:text-content transition-colors"
               >
                 Cancel
               </button>

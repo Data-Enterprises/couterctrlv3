@@ -137,7 +137,7 @@ const CouponListPanel = ({
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button data-help="search"
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ const CouponListPanel = ({
                 className={`px-2 py-0.5 text-[9px] font-medium rounded transition-colors ${
                   sortMetric === m
                     ? "bg-custom-white/20 text-custom-white"
-                    : "text-custom-white/40 hover:text-custom-white/70"
+                    : "text-custom-white/95 hover:text-custom-white/70"
                 }`}
               >
                 {m === "amount" ? "Amt" : "Qty"}
@@ -205,7 +205,7 @@ const CouponListPanel = ({
       {/* Flat store list */}
       <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar">
         {filtered.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/50">
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             No results
           </div>
         ) : (
@@ -227,10 +227,10 @@ const CouponListPanel = ({
                   All stores
                 </span>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-[11px] text-content/45">
+                  <span className="text-[11px] text-content/95">
                     {ctx.coupons.length}
                   </span>
-                  <span className="text-[11px] font-medium text-content/70">
+                  <span className="text-[11px] font-medium text-content/95">
                     {formatCurrency2(totalAmount)}
                   </span>
                 </div>
@@ -256,10 +256,10 @@ const CouponListPanel = ({
                     {item.label}
                   </span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[11px] text-content/45">
+                    <span className="text-[11px] text-content/95">
                       {item.count}
                     </span>
-                    <span className="text-[11px] font-medium text-content/70">
+                    <span className="text-[11px] font-medium text-content/95">
                       {formatCurrency2(item.total)}
                     </span>
                   </div>

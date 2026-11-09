@@ -12,26 +12,26 @@ interface TxTotalsProps {
 const TxTotals = ({ txCoupons, txTax, txNet, txTotal }: TxTotalsProps) => (
     <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-gray-100 bg-gray-50">
       {txCoupons > 0 && (
-        <div className="text-[11px] text-amber-700/70">
+        <div className="text-[11px] text-amber-700/95">
           Coupons{" "}
           <span className="font-medium ml-1">
             -{formatCurrency2(txCoupons)}
           </span>
         </div>
       )}
-      <div className="text-[11px] text-content/50">
+      <div className="text-[11px] text-content/95">
         Tax{" "}
         <span className="text-content font-medium ml-1">
           {formatCurrency2(txTax)}
         </span>
       </div>
-      <div className="text-[11px] text-content/50">
+      <div className="text-[11px] text-content/95">
         Net{" "}
         <span className="text-content font-medium ml-1">
           {formatCurrency2(txNet)}
         </span>
       </div>
-      <div className="text-[11px] text-content/70 font-medium">
+      <div className="text-[11px] text-content/95 font-medium">
         Total{" "}
         <span className="text-content ml-1">
           {formatCurrency2(txTotal)}

@@ -29,7 +29,7 @@ const CouponGrid = ({
     <>
       {gridRows.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-[12px] text-content/50">
+          <span className="text-[12px] text-content/95">
             {selectedSection
               ? "No coupons to display"
               : "Select a group to drill down"}

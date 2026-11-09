@@ -41,7 +41,7 @@ const SectionList = ({ groupedSections, selectedSection, onSelect }: SectionList
                   <span className="text-[12px] font-semibold text-content">
                     {formatCurrency2(section.total)}
                   </span>
-                  <span className="text-[11px] text-content/60">
+                  <span className="text-[11px] text-content/95">
                     {section.count}
                   </span>
                 </div>

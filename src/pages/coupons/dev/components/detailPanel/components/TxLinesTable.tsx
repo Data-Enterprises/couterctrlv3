@@ -15,19 +15,19 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right w-7">
+            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right w-7">
               #
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left">
+            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-left">
               Description
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right">
+            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right">
               Qty
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right">
+            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right">
               Total
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-center w-14">
+            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-center w-14">
               Type
             </th>
           </tr>
@@ -45,7 +45,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                     : undefined
                 }
               >
-                <td className="px-2 py-2 text-right tabular-nums text-content/50">
+                <td className="px-2 py-2 text-right tabular-nums text-content/95">
                   {item.line_number}
                 </td>
                 <td
@@ -54,7 +54,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                 >
                   {item.product_description}
                 </td>
-                <td className="px-2 py-2 text-right tabular-nums text-content/60">
+                <td className="px-2 py-2 text-right tabular-nums text-content/95">
                   {(item.qty ?? 0) > 0 ? item.qty : "—"}
                 </td>
                 <td

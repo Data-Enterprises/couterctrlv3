@@ -41,7 +41,7 @@ const SectionHeader = ({
         <span className="text-[12px] font-semibold text-content truncate">
           {sec.label}
         </span>
-        <span className="text-[11px] text-content/45 italic flex-shrink-0">
+        <span className="text-[11px] text-content/95 italic flex-shrink-0">
           {tabLabel} · {dateRangeLabel}
         </span>
       </div>

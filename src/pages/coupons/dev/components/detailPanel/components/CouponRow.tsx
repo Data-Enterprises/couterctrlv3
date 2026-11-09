@@ -27,9 +27,9 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
         <td className="px-3 py-2 whitespace-nowrap tabular-nums">
           <div className="flex items-center gap-1.5">
             {isExp ? (
-              <ChevronDownIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
+              <ChevronDownIcon className="w-3 h-3 text-content/95 flex-shrink-0" />
             ) : (
-              <ChevronRightIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
+              <ChevronRightIcon className="w-3 h-3 text-content/95 flex-shrink-0" />
             )}
             <span className="text-content">
               {agg.product_code || "—"}
