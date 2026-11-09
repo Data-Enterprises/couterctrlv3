@@ -164,7 +164,7 @@ const ForecastEntry = ({
             style={isLoading ? { visibility: "hidden" } : undefined}
           >
             {notice && (
-              <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+              <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-[11.5px] text-severity_watch_text leading-snug">
                 {notice}
               </div>
             )}
@@ -209,7 +209,7 @@ const ForecastEntry = ({
                 {upcs.length > 0 && (
                   <button
                     onClick={() => dispatch(clearUpcs())}
-                    className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
+                    className="px-3 py-1 text-[11px] font-medium rounded border border-brand_danger_line text-brand_danger hover:bg-brand_danger_bg transition-colors"
                   >
                     Clear all
                   </button>

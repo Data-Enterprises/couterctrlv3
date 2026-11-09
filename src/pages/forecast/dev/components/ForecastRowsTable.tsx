@@ -387,12 +387,12 @@ const ForecastRowsTable = ({
         )}
 
         {notFoundUpcs.length > 0 && !isLoadingMore && (
-          <div className="flex-shrink-0 border-b border-amber-200 relative">
+          <div className="flex-shrink-0 border-b border-severity_watch_text/20 relative">
             <button
-              className="w-full flex items-center justify-between px-3 py-1 bg-amber-50 hover:bg-amber-100 transition-colors text-left"
+              className="w-full flex items-center justify-between px-3 py-1 bg-severity_watch_bg hover:bg-severity_watch_bg/80 transition-colors text-left"
               onClick={() => setNotFoundOpen((o) => !o)}
             >
-              <span className="text-[11px] text-amber-700 font-medium">
+              <span className="text-[11px] text-severity_watch_text font-medium">
                 {notFoundUpcs.length} item{notFoundUpcs.length !== 1 ? "s" : ""}{" "}
                 had no sales history at the selected stores
               </span>
@@ -401,7 +401,7 @@ const ForecastRowsTable = ({
               </span>
             </button>
             {notFoundOpen && (
-              <div className="absolute left-0 right-0 top-full z-20 max-h-96 overflow-y-auto thin-scrollbar bg-amber-50 border border-amber-200 shadow-lg rounded-b-md px-3 pb-2">
+              <div className="absolute left-0 right-0 top-full z-20 max-h-96 overflow-y-auto thin-scrollbar bg-severity_watch_bg border border-severity_watch_text/20 shadow-lg rounded-b-md px-3 pb-2">
                 <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 pt-1">
                   {notFoundUpcs.map((upc) => (
                     <div key={upc} className="contents">
@@ -585,7 +585,7 @@ const ForecastRowsTable = ({
                               {row.upc}
                             </span>
                             {row.singlePrice && (
-                              <span className="flex-shrink-0 text-[11px] bg-yellow-200 text-yellow-700 rounded px-1 font-medium">
+                              <span className="flex-shrink-0 text-[11px] bg-severity_watch_bg text-severity_watch_text rounded px-1 font-medium">
                                 1pt
                               </span>
                             )}

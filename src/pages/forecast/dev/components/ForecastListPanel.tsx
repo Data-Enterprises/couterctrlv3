@@ -191,7 +191,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
                         </span>
                       )}
                       {row.singlePrice && (
-                        <span className="flex-shrink-0 text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">
+                        <span className="flex-shrink-0 text-[9px] bg-severity_watch_bg text-severity_watch_text rounded px-0.5 font-medium">
                           1pt
                         </span>
                       )}
