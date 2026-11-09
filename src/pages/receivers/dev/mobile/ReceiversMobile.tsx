@@ -18,24 +18,17 @@ import {
   scopeToStoreNumber,
   storeNumbersIn,
 } from "../../../../utils/storeIdentity";
+import { fmtSearchDate } from "./utils";
 
 // Interfaces
 import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
+import type { Screen } from "./interfaces";
 
 // Components
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import RcvReceiverList from "./components/RcvReceiverList";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-
-type Screen = "entry" | "list";
-
-const fmtSearchDate = (mdy: string) => {
-  const [m, d, y] = mdy.split("/");
-  return new Date(
-    `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`,
-  ).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
 
 const ReceiversMobile = () => {
   const dispatch = useAppDispatch();

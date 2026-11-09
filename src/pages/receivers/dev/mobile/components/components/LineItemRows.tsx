@@ -5,11 +5,11 @@ import { formatBigNumber, formatCurrency2 } from "../../../../../../utils";
 // Interfaces
 import type { ReceiverDetailsItem } from "../../../../../../interfaces";
 
-interface LineItemRowProps {
+interface LineItemRowsProps {
   details: ReceiverDetailsItem[];
 }
 
-const LineItemRows = ({ details }: LineItemRowProps) => {
+const LineItemRows = ({ details }: LineItemRowsProps) => {
   return (
     <div className="overflow-y-auto max-h-[320px]">
       {details.map((item, i) => (

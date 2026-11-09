@@ -8,7 +8,7 @@ import type { ReceiverListItem } from "../../../../../../interfaces";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import ItemInnerRow from "./ItemInnerRow";
 
-interface RListItemRowProps {
+interface RListItemRowsProps {
   group: {
     date: string;
     items: ReceiverListItem[];
@@ -25,7 +25,7 @@ const RListItemRows = ({
   dateOpen,
   selectedInvoice,
   getSelectedDetails,
-}: RListItemRowProps) => {
+}: RListItemRowsProps) => {
   return (
     <div>
       {/* Date row */}
