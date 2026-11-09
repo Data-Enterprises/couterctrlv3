@@ -185,7 +185,7 @@ const CompanyGrid = () => {
               <div className="truncate">
                 {c.name}
                 {(c as CompanyRecord).parent_company_id ? (
-                  <span className="text-[10.5px] text-content/85">
+                  <span className="text-[10.5px] text-content/95">
                     {" "}
                     · under{" "}
                     {nameOf.get((c as CompanyRecord).parent_company_id!) ??

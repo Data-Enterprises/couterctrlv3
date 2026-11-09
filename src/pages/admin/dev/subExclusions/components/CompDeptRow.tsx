@@ -56,7 +56,7 @@ const CompDeptRow = ({
             </span>
           )}
         </div>
-        <div className="truncate tabular-nums text-content/85">
+        <div className="truncate tabular-nums text-content/95">
           {varies.length > 0 ? (
             <span title={varies.join(" · ")}>varies</span>
           ) : (
@@ -68,13 +68,13 @@ const CompDeptRow = ({
             className={
               state === "some"
                 ? "font-semibold text-severity_watch_text"
-                : "text-content/85"
+                : "text-content/95"
             }
           >
             {coverageText(row)}
           </span>
         </div>
-        <div className="truncate tabular-nums text-content/85">
+        <div className="truncate tabular-nums text-content/95">
           {prettyDate(row.lastRung)}
         </div>
         <div className="flex justify-end">
@@ -82,7 +82,7 @@ const CompDeptRow = ({
             <button
               onClick={() => setOpen(expanded ? null : row.key)}
               aria-label={`${expanded ? "Hide" : "Show"} stores for ${row.label}`}
-              className="w-5 h-5 flex items-center justify-center rounded text-content/85 hover:bg-gray-100"
+              className="w-5 h-5 flex items-center justify-center rounded text-content/95 hover:bg-gray-100"
             >
               <ChevronRightIcon
                 className={`w-4 h-4 transition-transform ${
@@ -106,7 +106,7 @@ const CompDeptRow = ({
             />
           ))}
           {row.absent.length > 0 && (
-            <p className="text-[11px] text-content/85 pt-1.5 leading-snug">
+            <p className="text-[11px] text-content/95 pt-1.5 leading-snug">
               Not rung in this window at{" "}
               <span className="font-semibold text-content">
                 {row.absent.map((s) => s.store_number).join(", ")}

@@ -292,7 +292,7 @@ const StoreRecords = () => {
       </div>
 
       {!statusKnown && stores !== null && (
-        <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
+        <p className="text-[12px] text-content/95 mt-2 leading-snug max-w-[760px]">
           {UNKNOWN_NOTE}
         </p>
       )}

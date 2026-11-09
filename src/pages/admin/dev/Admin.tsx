@@ -98,7 +98,7 @@ const Admin = () => {
           <p className="text-[13px] font-semibold text-content">
             Admin access isn’t available on this account
           </p>
-          <p className="text-[12px] text-content/85 mt-1.5 leading-snug">
+          <p className="text-[12px] text-content/95 mt-1.5 leading-snug">
             It needs a higher access level. Speak to whoever manages your users
             if this looks wrong.
           </p>
@@ -139,7 +139,7 @@ const Admin = () => {
                 onClick={() => setExportOpen(true)}
                 disabled={context.companyStoresActivity.length === 0}
                 title="Export CSV"
-                className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
+                className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>

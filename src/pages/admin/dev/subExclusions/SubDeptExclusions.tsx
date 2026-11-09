@@ -384,7 +384,7 @@ const SubDeptExclusions = () => {
         </button>
       </div>
 
-      <p className="text-[11.5px] text-content/85 mb-2 leading-snug flex-shrink-0">
+      <p className="text-[11.5px] text-content/95 mb-2 leading-snug flex-shrink-0">
         An excluded department still appears in every sub-department list — it
         just stops counting towards net sales on the Performance pages.
         {rows.length > 0 && (

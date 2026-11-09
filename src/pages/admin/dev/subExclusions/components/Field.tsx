@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
  *  three unlabelled dropdowns in a row is a guessing game. */
 const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex flex-col gap-1 flex-shrink-0">
-    <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+    <span className="text-[9px] font-bold uppercase tracking-wide text-content/95">
       {label}
     </span>
     {children}

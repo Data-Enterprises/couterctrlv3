@@ -41,10 +41,10 @@ const DeptAtStoreRow = ({ a, row, send, saving }: DeptAtStoreRowProps) => {
         {a.store_number}
       </span>
       <span className="truncate flex-1">{a.store_name}</span>
-      <span className="tabular-nums text-content/85 w-[52px]">
+      <span className="tabular-nums text-content/95 w-[52px]">
         #{a.sub_department}
       </span>
-      <span className="tabular-nums text-content/85 w-[64px] text-right">
+      <span className="tabular-nums text-content/95 w-[64px] text-right">
         {prettyDate(a.lastRung)}
       </span>
     </div>

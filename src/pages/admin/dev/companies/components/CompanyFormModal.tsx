@@ -119,7 +119,7 @@ const CompanyFormModal = ({
               Belongs to
             </div>
             {isParent ? (
-              <p className="text-[11.5px] text-content/85 m-0">
+              <p className="text-[11.5px] text-content/95 m-0">
                 {members.length}{" "}
                 {members.length === 1 ? "company belongs" : "companies belong"}{" "}
                 under this one ({members.map((m) => m.name).join(", ")}), so it
@@ -136,7 +136,7 @@ const CompanyFormModal = ({
                   searchPlaceholder="Find a company…"
                   className="w-full"
                 />
-                <p className="text-[10.5px] text-content/85 mt-1 m-0">
+                <p className="text-[10.5px] text-content/95 mt-1 m-0">
                   Its managers and the parent's family administer each other's
                   people. Houchens' companies belong under Houchens.
                 </p>

@@ -144,19 +144,19 @@ const StoreFormModal = ({
             {/* Context, not fields: the backend offers no way to change
                 either, and an input that cannot be saved is worse than text. */}
             <div className="rounded-md bg-bkg px-3 py-2 flex items-baseline gap-3">
-              <span className="text-[12px] text-content/85">
+              <span className="text-[12px] text-content/95">
                 ID{" "}
                 <span className="font-semibold text-content">
                   {initial.storeid}
                 </span>
               </span>
-              <span className="text-[12px] text-content/85">
+              <span className="text-[12px] text-content/95">
                 Number{" "}
                 <span className="font-semibold text-content">
                   {initial.store_number}
                 </span>
               </span>
-              <span className="text-[12px] text-content/85 truncate">
+              <span className="text-[12px] text-content/95 truncate">
                 Company{" "}
                 <span className="font-semibold text-content">
                   {initial.company_name}
