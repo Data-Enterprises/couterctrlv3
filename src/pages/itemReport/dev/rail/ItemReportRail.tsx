@@ -194,7 +194,7 @@ const ItemReportRail = ({
             <div className="text-[13px] font-semibold text-custom-white leading-tight">
               {item.description}
             </div>
-            <div className="text-[12px] mt-0.5 text-custom-white/85 truncate">
+            <div className="text-[12px] mt-0.5 text-custom-white/95 truncate">
               {item.productCode}
             </div>
           </div>

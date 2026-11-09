@@ -333,7 +333,7 @@ const ItemReportSheet = ({
         )}
 
         <div
-          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
+          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
           style={{ gridTemplateColumns: COLS }}
         >
           <span>Action</span>
@@ -405,7 +405,7 @@ const ItemReportSheet = ({
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
           {visible.length === 0 && (
-            <div className="py-8 text-center text-[12px] text-content/85">
+            <div className="py-8 text-center text-[12px] text-content/95">
               No items matched
             </div>
           )}
@@ -446,7 +446,7 @@ const ItemReportSheet = ({
                     <span className="block text-[13px] font-medium text-content truncate">
                       {item.description}
                     </span>
-                    <span className="block text-[12px] font-medium text-content/85 truncate">
+                    <span className="block text-[12px] font-medium text-content/95 truncate">
                       {item.productCode} · {item.department} · {item.vendorName}
                     </span>
                   </span>
@@ -469,10 +469,10 @@ const ItemReportSheet = ({
                   <span
                     className={`text-right text-[12px] font-medium tabular-nums ${
                       item.movement === null
-                        ? "text-content/85"
+                        ? "text-content/95"
                         : item.movement.net > 0
                           ? "text-amber-700"
-                          : "text-content/85"
+                          : "text-content/95"
                     }`}
                     title={
                       item.movement
@@ -487,10 +487,10 @@ const ItemReportSheet = ({
                   <span
                     className={`text-right text-[12px] font-medium tabular-nums ${
                       lastDays === null
-                        ? "text-content/85"
+                        ? "text-content/95"
                         : lastDays > 21
                           ? "text-red-700"
-                          : "text-content/85"
+                          : "text-content/95"
                     }`}
                   >
                     {lastDays === null
@@ -499,7 +499,7 @@ const ItemReportSheet = ({
                         : "…"
                       : `${lastDays}d`}
                   </span>
-                  <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                  <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                     {item.ty.sales > 0
                       ? formatCurrencyCompact(item.ty.sales)
                       : "$0"}

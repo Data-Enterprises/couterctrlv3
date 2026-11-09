@@ -369,7 +369,7 @@ const ItemReportExportModal = ({
           <p className="text-custom-white text-[13px] font-semibold">
             Export CSV
           </p>
-          <p className="text-custom-white/85 text-[12px] truncate">
+          <p className="text-custom-white/95 text-[12px] truncate">
             {storeName} · {dateLabel}
           </p>
         </div>
@@ -381,7 +381,7 @@ const ItemReportExportModal = ({
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                 mode === m
                   ? "bg-custom-white text-brand_navy"
-                  : "text-custom-white/85 hover:text-custom-white"
+                  : "text-custom-white/95 hover:text-custom-white"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -390,7 +390,7 @@ const ItemReportExportModal = ({
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/85 hover:text-custom-white transition-colors justify-self-end"
+          className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -455,7 +455,7 @@ const ItemReportExportModal = ({
 
       {mode === "presets" ? (
         <div className="p-4">
-          <p className="text-[11px] text-content/85 uppercase tracking-wide font-medium mb-2">
+          <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-2">
             Who is this for?
           </p>
           {PRESETS.map((pr) => {
@@ -477,11 +477,11 @@ const ItemReportExportModal = ({
                   <p className="text-[13px] font-medium text-content">
                     {pr.title}
                   </p>
-                  <p className="text-[11px] text-content/85 mt-0.5">
+                  <p className="text-[11px] text-content/95 mt-0.5">
                     {pr.blurb}
                   </p>
                   {presetKey === pr.key && (
-                    <p className="text-[11px] text-content/85 mt-0.5 font-medium">
+                    <p className="text-[11px] text-content/95 mt-0.5 font-medium">
                       {rowsOut.length} rows · {cols.length} columns
                       {receivingComplete ? "" : " · still reading invoices"}
                     </p>
@@ -509,7 +509,7 @@ const ItemReportExportModal = ({
               modal, and the fix has to be here rather than on the whole column
               or the source radios scroll away with them. */}
           <div className="p-3.5 border-r border-gray-100 flex flex-col min-h-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
               Data source
             </p>
             {SOURCE_LABEL.map(({ key, label }) => (
@@ -529,7 +529,7 @@ const ItemReportExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mt-3.5 mb-2 flex-shrink-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mt-3.5 mb-2 flex-shrink-0">
               Columns
             </p>
             <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-1">
@@ -550,7 +550,7 @@ const ItemReportExportModal = ({
           </div>
 
           <div className="p-3.5 flex flex-col min-h-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2 flex-shrink-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2 flex-shrink-0">
               Preview
             </p>
             <div className="border border-gray-100 rounded-md overflow-x-auto">
@@ -560,7 +560,7 @@ const ItemReportExportModal = ({
                     {activeCols.map((c) => (
                       <th
                         key={c.key}
-                        className="text-left px-2.5 py-1.5 text-content/85 font-semibold whitespace-nowrap"
+                        className="text-left px-2.5 py-1.5 text-content/95 font-semibold whitespace-nowrap"
                       >
                         {c.label}
                       </th>
@@ -573,7 +573,7 @@ const ItemReportExportModal = ({
                       {activeCols.map((c) => (
                         <td
                           key={c.key}
-                          className="px-2.5 py-1 text-content/85 whitespace-nowrap max-w-[280px] truncate"
+                          className="px-2.5 py-1 text-content/95 whitespace-nowrap max-w-[280px] truncate"
                         >
                           {r[c.key] ?? ""}
                         </td>
@@ -584,7 +584,7 @@ const ItemReportExportModal = ({
                     <tr>
                       <td
                         colSpan={Math.max(activeCols.length, 1)}
-                        className="px-2.5 py-1.5 text-[10px] text-content/85"
+                        className="px-2.5 py-1.5 text-[10px] text-content/95"
                       >
                         +{rowsOut.length - PREVIEW_ROWS} more rows in download…
                       </td>
@@ -597,7 +597,7 @@ const ItemReportExportModal = ({
             <div className="flex items-center justify-between mt-3.5">
               <button
                 onClick={onClose}
-                className="text-[12px] text-content/85 hover:text-content transition-colors"
+                className="text-[12px] text-content/95 hover:text-content transition-colors"
               >
                 Cancel
               </button>

@@ -149,7 +149,7 @@ const ItemReportEntry = ({
       datePicker={
         <div className="flex flex-col gap-1.5">
           <SingleDatePicker />
-          <span className="text-[10.5px] text-content/85 leading-snug">
+          <span className="text-[10.5px] text-content/95 leading-snug">
             The {WINDOW_DAYS} days ending on that date, against the same week
             last week and last year. Deliveries are read back{" "}
             {RECEIVING_LOOKBACK_DAYS} days.
@@ -159,10 +159,10 @@ const ItemReportEntry = ({
       fields={
         <div data-help="upc-input">
           <div className="flex items-baseline justify-between gap-2">
-            <label className="text-[11px] font-medium text-content/85 ml-0.5">
+            <label className="text-[11px] font-medium text-content/95 ml-0.5">
               UPCs
             </label>
-            <span className="text-[10.5px] text-content/85">
+            <span className="text-[10.5px] text-content/95">
               Separate by comma or new lines
             </span>
           </div>
@@ -177,13 +177,13 @@ const ItemReportEntry = ({
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
             >
               Add
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
             >
               Upload CSV
             </button>
@@ -208,7 +208,7 @@ const ItemReportEntry = ({
               difference between reading a dozen departments and reading all of
               them. */}
           {upcs.length > 0 && (
-            <div className="text-[10.5px] text-content/85 mt-1.5">
+            <div className="text-[10.5px] text-content/95 mt-1.5">
               {fileName && `${fileName} · `}
               {upcs.length} UPC{upcs.length === 1 ? "" : "s"}
               {departments.length > 0
@@ -232,7 +232,7 @@ const ItemReportEntry = ({
                   {upc}
                   <button
                     onClick={() => dispatch(removePendingUpc(upc))}
-                    className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
+                    className="text-brand_navy/95 hover:text-brand_navy transition-colors leading-none"
                   >
                     ×
                   </button>

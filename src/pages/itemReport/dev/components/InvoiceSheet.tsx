@@ -96,14 +96,14 @@ const InvoiceSheet = ({
             <p className="text-custom-white text-[13px] font-semibold truncate">
               {vendorName}
             </p>
-            <p className="text-custom-white/85 text-[12px] truncate">
+            <p className="text-custom-white/95 text-[12px] truncate">
               Invoice {invoiceId} · {formatDateSimple(date)}
             </p>
           </div>
           <div className="flex-1" />
           <button
             onClick={onClose}
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
             aria-label="Close"
           >
             <XMarkIcon className="w-4 h-4" />
@@ -148,7 +148,7 @@ const InvoiceSheet = ({
                 heading. Sharing the scroll container is what makes them line
                 up; sticky is what keeps them visible. */}
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: ROW_COLS }}
             >
               <span className="text-right">#</span>
@@ -197,7 +197,7 @@ const InvoiceSheet = ({
                 >
                   <span
                     className={`text-[12px] font-medium text-right tabular-nums ${
-                      isFrom ? ink : "text-content/85"
+                      isFrom ? ink : "text-content/95"
                     }`}
                   >
                     {l.line_number}
@@ -214,7 +214,7 @@ const InvoiceSheet = ({
                           ? "text-severity_watch_text"
                           : isFrom
                             ? ink
-                            : "text-content/85"
+                            : "text-content/95"
                       }`}
                     >
                       {l.product_code}

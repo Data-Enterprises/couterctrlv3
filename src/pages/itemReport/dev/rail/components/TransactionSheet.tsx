@@ -257,7 +257,7 @@ const TransactionSheet = ({
         {inBasket && (
           <button
             onClick={() => setOpenSale(null)}
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
             aria-label="Back to the list"
           >
             <ArrowLeftIcon className="w-4 h-4" />
@@ -271,7 +271,7 @@ const TransactionSheet = ({
                   sales.length === 1 ? "" : "s"
                 }`}
           </p>
-          <p className="text-custom-white/85 text-[12px] truncate">
+          <p className="text-custom-white/95 text-[12px] truncate">
             {inBasket
               ? `${formatDateSimple(openSale.sale_date)} · terminal ${openSale.terminal} · ${openSale.cashier_name}`
               : `${itemDescription} · ${productCode}`}
@@ -280,7 +280,7 @@ const TransactionSheet = ({
         <div className="flex-1" />
         <button
           onClick={onClose}
-          className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+          className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
           aria-label="Close"
         >
           <XMarkIcon className="w-4 h-4" />
@@ -297,7 +297,7 @@ const TransactionSheet = ({
         ) : inBasket ? (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: BASKET_COLS }}
             >
               <span>Item</span>
@@ -336,7 +336,7 @@ const TransactionSheet = ({
                     </div>
                     <div
                       className={`text-[12px] font-medium truncate ${
-                        isItem ? ink : "text-content/85"
+                        isItem ? ink : "text-content/95"
                       }`}
                     >
                       {l.code}
@@ -393,7 +393,7 @@ const TransactionSheet = ({
         ) : (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: LIST_COLS }}
             >
               <span>Transaction</span>
