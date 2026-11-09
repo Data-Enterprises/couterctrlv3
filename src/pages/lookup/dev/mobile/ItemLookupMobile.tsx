@@ -43,6 +43,8 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupItemReport from "./LookupItemReport";
 
+/** The phone Item lookup page. It looks up one UPC at a store, keeps the full history so switching store location
+ *  re-derives the figures, and shows the entry screen or the item report. */
 const ItemLookupMobile = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();

@@ -19,6 +19,8 @@ interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;
 }
 
+/** The desktop Item lookup search card: a store picker and a box for one or more UPCs (comma or Shift+Enter between them).
+ *  Enter or the button runs the lookup once a store and a UPC are entered. */
 const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();
   const { assignedStores } = useAppSelector((s) => s.user);

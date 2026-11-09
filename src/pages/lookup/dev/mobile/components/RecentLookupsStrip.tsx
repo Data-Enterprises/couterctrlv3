@@ -10,6 +10,8 @@ interface RecentLookupsStripProps {
   variant?: "cards" | "list";
 }
 
+/** The phone Item lookup's recent lookups: a row of margin cards, or as a list a table of item, qty, amount, unit cost
+ *  and margin. Tapping one looks that item up again; nothing shows when there are none. */
 const RecentLookupsStrip = ({
   onSelect,
   variant = "cards",

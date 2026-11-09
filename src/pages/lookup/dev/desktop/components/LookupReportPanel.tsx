@@ -41,6 +41,8 @@ interface LookupReportPanelProps {
   onExportOpen: () => void;
 }
 
+/** The Item lookup's report for the selected item: header with export, a KPI strip (margin, prices, cost, units, days
+ *  sold, longest gap), slowing and no-sales banners, the by-sale-type breakdown, and the daily breakdown. */
 const LookupReportPanel = ({
   description,
   productCode,

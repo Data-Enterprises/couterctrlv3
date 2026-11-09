@@ -40,6 +40,8 @@ interface LookupExportModalProps {
   onClose: () => void;
 }
 
+/** The Item lookup CSV export pop-up. Presets offers the batch summary, the current item's daily breakdown and the
+ *  by-sale-type rows; Custom picks a source and its columns with a live preview. */
 const LookupExportModal = ({
   queue,
   selectedDescription,

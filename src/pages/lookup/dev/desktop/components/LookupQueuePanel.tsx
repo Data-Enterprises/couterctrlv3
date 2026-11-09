@@ -23,6 +23,8 @@ interface LookupQueuePanelProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
+/** The Item lookup's left panel: a navy header with the 14-day range and loaded count, the store-location tabs,
+ *  and the list of looked-up items showing margin, an error, or a queued/loading state. */
 const LookupQueuePanel = ({
   storeName,
   queue,

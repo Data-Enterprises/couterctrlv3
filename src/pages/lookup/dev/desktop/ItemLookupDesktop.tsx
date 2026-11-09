@@ -20,6 +20,8 @@ import LookupQueuePanel from "./components/LookupQueuePanel";
 import LookupReportPanel from "./components/LookupReportPanel";
 import LookupExportModal from "./components/LookupExportModal";
 
+/** The desktop Item lookup page: the search card first, then the item queue beside the selected item's report,
+ *  with the search and export pop-ups. */
 const ItemLookupDesktop = () => {
   const { selectedStore } = useAppSelector((s) => s.dev.item);
   const resolvedStoreName = useStoreName(selectedStore);
