@@ -20,8 +20,6 @@ import { daysSince } from "../utils/metrics";
 import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interfaces";
 import { COLS, ORDER } from "../utils";
 
-// Interfaces
-
 // Components
 import {
   MagnifyingGlassIcon,

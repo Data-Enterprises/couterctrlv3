@@ -1,4 +1,3 @@
-// Interfaces
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
 export interface CashierMetric {
