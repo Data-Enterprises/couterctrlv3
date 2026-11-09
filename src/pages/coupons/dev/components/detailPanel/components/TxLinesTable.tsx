@@ -2,8 +2,11 @@
 import { formatCurrency2 } from "../../../../../../utils";
 import { couponValueOf } from "../../../../../../utils/couponValue";
 
+// Interfaces
+import type { TransactionListItem } from "../../../../../../interfaces";
+
 interface TxLinesTableProps {
-  txLines: any[];
+  txLines: TransactionListItem[];
 }
 
 /** Every line of the transaction, coupons tinted. */
@@ -30,7 +33,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
           </tr>
         </thead>
         <tbody className="divide-y divide-brand_navy/15">
-          {txLines.map((item: any, i: number) => {
+          {txLines.map((item, i: number) => {
             const isCpn = item.is_coupon === 1;
             const isTender = item.sale_type === "Tender";
             return (
@@ -52,7 +55,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                   {item.product_description}
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums text-content/60">
-                  {item.qty > 0 ? item.qty : "—"}
+                  {(item.qty ?? 0) > 0 ? item.qty : "—"}
                 </td>
                 <td
                   className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-amber-700" : "text-content"}`}

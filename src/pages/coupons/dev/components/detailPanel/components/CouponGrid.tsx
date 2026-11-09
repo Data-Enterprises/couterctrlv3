@@ -1,4 +1,5 @@
 // Interfaces
+import type { CouponItem } from "../../../../../../interfaces";
 import type { AggRow, GridFilters } from "../interfaces";
 
 // Components
@@ -6,13 +7,13 @@ import GridHeader from "./GridHeader";
 import CouponRow from "./CouponRow";
 
 interface CouponGridProps {
-  gridRows: any[];
+  gridRows: CouponItem[];
   selectedSection: string | null;
   filters: GridFilters;
   aggCouponRows: AggRow[];
   expandedCoupons: Set<string>;
   toggleCoupon: (key: string) => void;
-  handleRowClick: (row: any) => void;
+  handleRowClick: (row: CouponItem) => void;
 }
 
 /** The coupons in the picked group, one row per coupon. */

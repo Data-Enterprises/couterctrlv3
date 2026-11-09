@@ -1,5 +1,5 @@
 // Interfaces
-import type { ThresholdValue } from "../../../../../../interfaces";
+import type { CouponItem, ThresholdValue } from "../../../../../../interfaces";
 
 /** One group in the detail panel's list: a sub dept, a date or a cashier. */
 export type GroupedSection = {
@@ -7,12 +7,12 @@ export type GroupedSection = {
   label: string;
   count: number;
   total: number;
-  rows: any[];
+  rows: CouponItem[];
 };
 
 /** One sale a coupon was used in, within the grid. */
 export type AggUse = {
-  sale_id: string;
+  sale_id: CouponItem["sale_id"];
   sale_date: string;
   cashier_name: string;
   storeid: number;
@@ -20,7 +20,7 @@ export type AggUse = {
   terminal: string;
   count: number;
   amount: number;
-  row: any;
+  row: CouponItem;
 };
 
 /** A coupon's uses in the grid, grouped by UPC or product. */

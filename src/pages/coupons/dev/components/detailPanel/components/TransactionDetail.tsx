@@ -1,3 +1,6 @@
+// Interfaces
+import type { TransactionListItem } from "../../../../../../interfaces";
+
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 import TxHeader from "./TxHeader";
@@ -5,8 +8,8 @@ import TxLinesTable from "./TxLinesTable";
 import TxTotals from "./TxTotals";
 
 interface TransactionDetailProps {
-  txMeta: any;
-  txLines: any[];
+  txMeta: TransactionListItem | null;
+  txLines: TransactionListItem[];
   onBack: () => void;
   onExport: () => void;
   txCoupons: number;

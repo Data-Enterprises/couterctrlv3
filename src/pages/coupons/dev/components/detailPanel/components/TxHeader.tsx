@@ -1,12 +1,15 @@
 // Utils
 import { formatDate } from "../../../../../../utils";
 
+// Interfaces
+import type { TransactionListItem } from "../../../../../../interfaces";
+
 // Components
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 
 interface TxHeaderProps {
-  txMeta: any;
-  txLines: any[];
+  txMeta: TransactionListItem | null;
+  txLines: TransactionListItem[];
   onBack: () => void;
   onExport: () => void;
 }
@@ -85,7 +88,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                         </span>
                         <div className="flex-1" />
                         <span className="text-[10px] font-medium text-content/70">
-                          {formatDate(txMeta?.sale_date?.split("T")[0])}
+                          {formatDate(txMeta?.sale_date?.split("T")[0] as string)}
                         </span>
                       </div>
     </>

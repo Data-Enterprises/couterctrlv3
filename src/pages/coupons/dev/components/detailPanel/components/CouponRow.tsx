@@ -2,6 +2,7 @@
 import { formatCurrency2, formatDate } from "../../../../../../utils";
 
 // Interfaces
+import type { CouponItem } from "../../../../../../interfaces";
 import type { AggRow } from "../interfaces";
 
 // Components
@@ -12,7 +13,7 @@ interface CouponRowProps {
   idx: number;
   isExp: boolean;
   toggleCoupon: (key: string) => void;
-  handleRowClick: (row: any) => void;
+  handleRowClick: (row: CouponItem) => void;
 }
 
 /** One coupon in the grid, and its uses when opened. */

@@ -18,7 +18,12 @@ import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue
 // Interfaces
 import type { GroupTab } from "../../interfaces";
 import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
-import type { JsonError, ThresholdValue } from "../../../../../interfaces";
+import type {
+  CouponItem,
+  JsonError,
+  ThresholdValue,
+  TransactionListItem,
+} from "../../../../../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
@@ -131,12 +136,12 @@ const CouponDetailPanel = ({
   // Pre-compute all groupings so tab switching is instant
   const allSections = useMemo(() => {
     const build = (
-      rows: any[],
-      getKey: (r: any) => string,
-      getLabel: (r: any) => string,
+      rows: CouponItem[],
+      getKey: (r: CouponItem) => string,
+      getLabel: (r: CouponItem) => string,
       chronological = false,
     ): GroupedSection[] => {
-      const map = new Map<string, { label: string; rows: any[] }>();
+      const map = new Map<string, { label: string; rows: CouponItem[] }>();
       rows.forEach((r) => {
         const k = getKey(r);
         if (!map.has(k)) map.set(k, { label: getLabel(r), rows: [] });
@@ -195,14 +200,14 @@ const CouponDetailPanel = ({
   // Unique values for select filters
   const uniqueSubDeptOptions = useMemo(() => {
     const depts = Array.from(
-      new Set(gridRows.map((r: any) => r.sub_department_description as string)),
+      new Set(gridRows.map((r) => r.sub_department_description as string)),
     ).sort();
     return depts.map((d) => ({ label: d, value: d }));
   }, [gridRows]);
 
   // Column-filtered rows for the grid
   const filteredGridRows = useMemo(() => {
-    return gridRows.filter((r: any) => {
+    return gridRows.filter((r) => {
       if (
         appliedProduct &&
         !r.product_description
@@ -235,7 +240,7 @@ const CouponDetailPanel = ({
   // Aggregated coupon rows for the grid (grouped by UPC/product)
   const aggCouponRows = useMemo(() => {
     const map = new Map<string, AggRow>();
-    filteredGridRows.forEach((r: any) => {
+    filteredGridRows.forEach((r) => {
       const key =
         r.product_code != null
           ? String(Math.round(Number(r.product_code)))
@@ -325,7 +330,7 @@ const CouponDetailPanel = ({
     return `${row.storeid}-${row.sale_id}-${row.terminal}-${+m}-${+d}-${y}`;
   };
 
-  const handleRowClick = (row: any) => {
+  const handleRowClick = (row: CouponItem) => {
     const saleId = buildSaleId(row);
     if (saleId === selectedSaleId) return;
     setSelectedSaleId(saleId);
@@ -340,7 +345,7 @@ const CouponDetailPanel = ({
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const transactions = [...j.transaction].map((item: any) => ({
+          const transactions = [...j.transaction].map((item) => ({
             ...item,
             transaction_id: item.sale_id.split("-")[1],
             qty: item.qty ?? 0,
@@ -366,7 +371,7 @@ const CouponDetailPanel = ({
       "Total",
       "Coupon Amount",
     ];
-    const rows = txLines.map((item: any) => [
+    const rows = txLines.map((item) => [
       item.line_number,
       `"${(item.product_description ?? "").replace(/"/g, '""')}"`,
       item.qty ?? "",
@@ -376,7 +381,7 @@ const CouponDetailPanel = ({
     ]);
     const csv = [
       headers.join(","),
-      ...rows.map((r: any[]) => r.join(",")),
+      ...rows.map((r) => r.join(",")),
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -392,22 +397,22 @@ const CouponDetailPanel = ({
   };
 
   // Transaction data
-  const txLines: any[] = ctx.receiptLines;
+  const txLines: TransactionListItem[] = ctx.receiptLines;
   const txMeta = txLines[0] ?? null;
   const saleLines = txLines.filter(
-    (r: any) => r.sale_type === "Sale" && r.is_coupon !== 1,
+    (r) => r.sale_type === "Sale" && r.is_coupon !== 1,
   );
-  const couponLines = txLines.filter((r: any) => r.is_coupon === 1);
+  const couponLines = txLines.filter((r) => r.is_coupon === 1);
   const txGross = saleLines.reduce(
-    (s: number, r: any) => s + (r.total_sales ?? 0),
+    (s: number, r) => s + (r.total_sales ?? 0),
     0,
   );
   const txCoupons = couponLines.reduce(
-    (s: number, r: any) => s + couponValueOf(r),
+    (s: number, r) => s + couponValueOf(r),
     0,
   );
   const txTax = saleLines.reduce(
-    (s: number, r: any) => s + (r.total_rounded_tax ?? 0),
+    (s: number, r) => s + (r.total_rounded_tax ?? 0),
     0,
   );
   const txNet = txGross - txCoupons;
