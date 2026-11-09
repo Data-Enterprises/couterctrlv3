@@ -9,7 +9,8 @@ import {
 } from "../../../../features/dev/devOrdersSlice";
 
 // Utils
-import { availableOptions, markAvailability } from "../utils/orderFilters";
+import { availableOptions } from "../utils/orderFilters";
+import { markAvailability } from "../../../../utils/filterAvailability";
 import { lineFlags } from "../utils/ordersRows";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
 import { fmtOrderDate, padStoreNumber } from "../utils";
