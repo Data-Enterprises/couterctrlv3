@@ -15,7 +15,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
-import PagerButton from "./PagerButton";
+import PagerButton from "../../../../components-dev/PagerButton";
 import Kpi from "./Kpi";
 
 interface OrderReportPanelProps {
