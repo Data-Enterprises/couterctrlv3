@@ -44,6 +44,9 @@ import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./export/CpnSalesExportModal";
 
+/** The Coupon Sales page: loads a week's coupons plus the two-week baseline for a store or
+ *  group, then shows the graded store list on the left and the picked store's breakdown on
+ *  the right. Phones get the shared event-performance screens instead. */
 const CouponSales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

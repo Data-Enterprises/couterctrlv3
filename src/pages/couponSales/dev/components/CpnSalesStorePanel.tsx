@@ -45,6 +45,9 @@ interface CpnSalesStorePanelProps {
   onOpenSearch: () => void;
 }
 
+/** Coupon Sales' left panel: the week's totals, a Trend / Avg $ switch with its threshold,
+ *  tier chips, a store filter and the graded store list (sortable by amount, trans and
+ *  count). Clicking a store selects it. */
 const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSalesStorePanelProps) => {
   const dispatch = useAppDispatch();
   const {

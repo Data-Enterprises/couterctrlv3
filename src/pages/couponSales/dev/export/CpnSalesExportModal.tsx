@@ -44,6 +44,9 @@ interface CpnSalesExportModalProps {
   storeCoupons: CouponItem[];
 }
 
+/** The Coupon Sales export pop-up: Presets (tick the data sets to include) or Custom (group
+ *  by and metrics, with a live preview), for the selected store or all stores in the
+ *  search, downloaded as one CSV. */
 const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
   const dispatch = useAppDispatch();
   const {
