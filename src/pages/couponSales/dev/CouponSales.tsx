@@ -39,7 +39,7 @@ import type { CouponsResponse, JsonError } from "../../../interfaces";
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
-import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
+import EventPerfMobile from "../../../components-dev/eventPerf/EventPerfMobile";
 import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./export/CpnSalesExportModal";

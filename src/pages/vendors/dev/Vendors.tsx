@@ -7,7 +7,7 @@ import { useVendorSearch, useVendorsCtx } from "./hooks";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
 import VendorListPanel from "./components/VendorListPanel";
 import VendorDetailPanel from "./components/VendorDetailPanel";
 

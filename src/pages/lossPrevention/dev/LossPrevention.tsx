@@ -20,7 +20,7 @@ import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter"
 import type { JsonError } from "../../../interfaces";
 
 // Components
-import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
+import EventPerfMobile from "../../../components-dev/eventPerf/EventPerfMobile";
 import LPDesktop from "./components/LPDesktop";
 
 /** The Loss Prevention page: loads the exception types for the searched store or group,

@@ -46,7 +46,7 @@ import type { RawSearch } from "./interfaces";
 // Components
 import ExportModal from "../../../components-dev/modals/ExportModal";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
 import MarginPerfLeftPanel from "./components/MarginPerfLeftPanel";
 import MarginPerfRightPanel from "./components/MarginPerfRightPanel";
 import SmDevSearchOverlay from "./components/SmDevSearchOverlay";
