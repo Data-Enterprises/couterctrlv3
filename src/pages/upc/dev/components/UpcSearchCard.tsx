@@ -159,7 +159,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
             {ctx.upcs.length > 0 && (
               <button
                 onClick={() => dispatch(clearDevUpcs())}
-                className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
+                className="px-3 py-1 text-[11px] font-medium rounded border border-brand_danger_line text-red-400 hover:text-red-600 transition-colors"
               >
                 Clear all
               </button>

@@ -56,10 +56,10 @@ const AssociationDetailPanel = ({
 
   const DEPT_TONE = {
     cross: {
-      caption: "text-amber-800",
-      chip: "bg-amber-100 border-amber-200",
-      label: "text-amber-900",
-      value: "text-amber-800",
+      caption: "text-severity_watch_text",
+      chip: "bg-severity_watch_bg border-severity_watch_text/20",
+      label: "text-severity_watch_text",
+      value: "text-severity_watch_text",
     },
     same: {
       caption: "text-blue-800",
