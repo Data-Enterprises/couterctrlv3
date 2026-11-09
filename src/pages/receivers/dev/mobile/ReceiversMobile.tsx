@@ -28,7 +28,6 @@ import type { Screen } from "./interfaces";
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import RcvReceiverList from "./components/RcvReceiverList";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 
 /** The phone Receivers page: a store and date search card that loads the receivers,
  *  then the receiver list, with a way back to the search and a Back to results button. */
@@ -158,23 +157,8 @@ const ReceiversMobile = () => {
               ? "No receivers came back for this search."
               : undefined
           }
-        >
-          {hasData && (
-            <button
-              onClick={handleBackToResults}
-              className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-              style={{
-                background: "rgb(var(--color-brand-navy) / 0.07)",
-                borderRadius: 10,
-              }}
-            >
-              <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
-              <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
-                Back to results
-              </span>
-            </button>
-          )}
-        </SingleStoreSearchCard>
+          onBack={hasData ? handleBackToResults : undefined}
+        />
       </div>
     </div>
   );

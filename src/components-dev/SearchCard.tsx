@@ -1,8 +1,8 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import StorePicker from "./storePicker/StorePicker";
 import SingleDatePicker from "./datePickers/SingleDatePicker";
 import DatePickers from "./datePickers/DatePickers";
 import EntryCardLoading from "./loading/EntryCardLoading";
+import SearchBackButton from "./SearchBackButton";
 import { useAppSelector } from "../hooks";
 import { getStoreName } from "../utils";
 import type { ReactNode } from "react";
@@ -169,18 +169,7 @@ const SearchCard = ({
                 : buttonLabel}
             </button>
 
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-                style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-              >
-                <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
-                <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
-                  {backLabel}
-                </span>
-              </button>
-            )}
+            {onBack && <SearchBackButton label={backLabel} onClick={onBack} />}
           </div>
 
           {loading && (

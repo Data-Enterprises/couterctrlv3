@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
+import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import SingleSelect from "./SingleSelect";
 import EntryCardLoading from "./loading/EntryCardLoading";
+import SearchBackButton from "./SearchBackButton";
 import type { Store } from "../interfaces";
 
 interface SingleStoreSearchCardProps {
@@ -177,18 +178,7 @@ const SingleStoreSearchCard = ({
               : (blockedLabel ?? buttonLabel)}
           </button>
 
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="flex w-full items-center justify-center gap-1.5 py-2.5 transition-colors"
-              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-            >
-              <ArrowLeftIcon className="h-4 w-4 text-brand_navy" />
-              <span className="text-[13px] font-semibold text-brand_navy underline underline-offset-2">
-                {backLabel}
-              </span>
-            </button>
-          )}
+          {onBack && <SearchBackButton label={backLabel} onClick={onBack} />}
 
           {children}
         </div>
