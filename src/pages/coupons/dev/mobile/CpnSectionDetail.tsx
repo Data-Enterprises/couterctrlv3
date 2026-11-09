@@ -356,7 +356,7 @@ const CpnSectionDetail = ({
                         {item.line_number}
                       </span>
                       <span
-                        className={`text-[10px] truncate ${isCpn ? "text-amber-700" : "text-content"}`}
+                        className={`text-[10px] truncate ${isCpn ? "text-severity_watch_text" : "text-content"}`}
                       >
                         {item.product_description}
                       </span>
@@ -365,7 +365,7 @@ const CpnSectionDetail = ({
                       </span>
                       <span
                         className={`text-[10px] font-semibold text-right tabular-nums ${
-                          isCpn ? "text-amber-700" : "text-content"
+                          isCpn ? "text-severity_watch_text" : "text-content"
                         }`}
                       >
                         {formatCurrency2(
@@ -376,10 +376,10 @@ const CpnSectionDetail = ({
                         <span
                           className={`text-[10px] font-bold rounded px-1 py-0.5 ${
                             isCpn
-                              ? "bg-amber-100 text-amber-800"
+                              ? "bg-severity_watch_bg text-severity_watch_text"
                               : isTender
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
+                                ? "bg-filter_active text-brand_navy_hover"
+                                : "bg-severity_healthy_bg text-severity_healthy_text"
                           }`}
                         >
                           {isCpn ? "Cpn" : isTender ? "Tndr" : "Sale"}
@@ -391,7 +391,7 @@ const CpnSectionDetail = ({
               </div>
               <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-gray-100 bg-gray-50">
                 {txCoupons > 0 && (
-                  <span className="text-[10px] text-amber-700">
+                  <span className="text-[10px] text-severity_watch_text">
                     Cpns{" "}
                     <span className="font-semibold">
                       -{formatCurrency2(txCoupons)}

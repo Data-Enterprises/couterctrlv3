@@ -58,7 +58,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                   {(item.qty ?? 0) > 0 ? item.qty : "—"}
                 </td>
                 <td
-                  className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-amber-700" : "text-content"}`}
+                  className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-severity_watch_text" : "text-content"}`}
                 >
                   {formatCurrency2(
                     isCpn
@@ -71,8 +71,8 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                     <span
                       className="text-[11px] font-semibold rounded px-1.5 py-0.5"
                       style={{
-                        background: "rgba(234,179,8,0.15)",
-                        color: "#92600a",
+                        background: "rgb(var(--color-severity-watch-bg))",
+                        color: "rgb(var(--color-severity-watch-text))",
                       }}
                     >
                       Cpn
@@ -81,8 +81,8 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                     <span
                       className="text-[11px] font-semibold rounded px-1.5 py-0.5"
                       style={{
-                        background: "rgba(37,99,235,0.1)",
-                        color: "#1d4ed8",
+                        background: "rgb(var(--color-filter-active))",
+                        color: "rgb(var(--color-brand-navy-hover))",
                       }}
                     >
                       Tender
@@ -91,8 +91,8 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                     <span
                       className="text-[11px] font-semibold rounded px-1.5 py-0.5"
                       style={{
-                        background: "rgba(22,163,74,0.1)",
-                        color: "#15803d",
+                        background: "rgb(var(--color-severity-healthy-bg))",
+                        color: "rgb(var(--color-severity-healthy-text))",
                       }}
                     >
                       Sale
