@@ -56,6 +56,10 @@ import KpiTileGrid from "../../../components-dev/KpiTileGrid";
 import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 import WorkingPopover from "./WorkingPopover";
 
+/** Suggested's right panel: the selected store's order sheet. Shows the heaviest lines
+ *  until a department is picked, then the Order, Production and Not Selling tabs. The
+ *  Order tab has KPI tiles, weekday cards, action chips and the item table; clicking a
+ *  row shows how its number was worked out. */
 const OrderSheetPanel = () => {
   const ctx = useSuggestedCtx();
   const { sort, handleSort, applySort } = useTriStateSort<OrderSheetSortCol>();

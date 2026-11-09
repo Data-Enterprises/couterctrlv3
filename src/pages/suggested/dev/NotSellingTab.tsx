@@ -25,6 +25,9 @@ import ColFilter from "../../../components-dev/filters/ColFilter";
 import SortHeader from "../../../components-dev/SortHeader";
 import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 
+/** Suggested's Not Selling tab for one sub department: status chips with counts (all, dead,
+ *  stopped, declining) over a table of recent vs prior lb/day, change and lost lb, with
+ *  totals. */
 const NotSellingTab = ({
   subDepartment,
 }: {
