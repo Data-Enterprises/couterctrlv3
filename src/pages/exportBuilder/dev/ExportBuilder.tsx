@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SearchCard from "../../../components-dev/SearchCard";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import ConfigPanel from "./ConfigPanel";
 import CsvPreview from "./CsvPreview";
 import SummaryPreview from "./SummaryPreview";
@@ -103,14 +104,9 @@ const ExportBuilder = () => {
   return (
     <div className="h-[calc(100vh-3rem)] bg-bkg flex flex-col p-3 gap-3">
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            {searchCard}
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>
+          {searchCard}
+        </SearchPopup>
       )}
       <div className="flex gap-3 flex-1 min-h-0">
         {/*
