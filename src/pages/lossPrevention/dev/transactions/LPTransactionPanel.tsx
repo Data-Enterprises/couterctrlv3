@@ -57,6 +57,11 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
     useState<TransactionOverview | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [cashierSevFilter, setCashierSevFilter] = useState<CashierSeverity | "all">("all");
+  // What is typed in each column filter, applied only on Apply. Kept here so
+  // it survives the filter row unmounting while a receipt is open.
+  const [draftTransId, setDraftTransId] = useState("");
+  const [draftQty, setDraftQty] = useState<ThresholdValue | null>(null);
+  const [draftSales, setDraftSales] = useState<ThresholdValue | null>(null);
   const [appliedTransId, setAppliedTransId] = useState("");
   const [appliedQty, setAppliedQty] = useState<ThresholdValue | null>(null);
   const [appliedSales, setAppliedSales] = useState<ThresholdValue | null>(null);
@@ -316,6 +321,12 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                     ) : (
                       <>
                         <TransactionFilters
+                          draftTransId={draftTransId}
+                          setDraftTransId={setDraftTransId}
+                          draftQty={draftQty}
+                          setDraftQty={setDraftQty}
+                          draftSales={draftSales}
+                          setDraftSales={setDraftSales}
                           appliedTransId={appliedTransId}
                           setAppliedTransId={setAppliedTransId}
                           appliedQty={appliedQty}

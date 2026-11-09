@@ -1,5 +1,4 @@
 // Hooks
-import { useState } from "react";
 import { useAppDispatch } from "../../../../../hooks";
 
 // Redux
@@ -17,6 +16,12 @@ import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import ColFilter from "./ColFilter";
 
 interface TransactionFiltersProps {
+  draftTransId: string;
+  setDraftTransId: (v: string) => void;
+  draftQty: ThresholdValue | null;
+  setDraftQty: (v: ThresholdValue | null) => void;
+  draftSales: ThresholdValue | null;
+  setDraftSales: (v: ThresholdValue | null) => void;
   appliedTransId: string;
   setAppliedTransId: (v: string) => void;
   appliedQty: ThresholdValue | null;
@@ -29,6 +34,12 @@ interface TransactionFiltersProps {
 
 /** The transaction list's column filters: ID, date, quantity and total. */
 const TransactionFilters = ({
+  draftTransId,
+  setDraftTransId,
+  draftQty,
+  setDraftQty,
+  draftSales,
+  setDraftSales,
   appliedTransId,
   setAppliedTransId,
   appliedQty,
@@ -39,10 +50,6 @@ const TransactionFilters = ({
   uniqueDates,
 }: TransactionFiltersProps) => {
   const dispatch = useAppDispatch();
-  // What is typed in each box, applied only on Apply.
-  const [draftTransId, setDraftTransId] = useState("");
-  const [draftQty, setDraftQty] = useState<ThresholdValue | null>(null);
-  const [draftSales, setDraftSales] = useState<ThresholdValue | null>(null);
   return (
     <div
       className="grid sticky top-0 z-10 bg-gray-100 border-b border-gray-100"
