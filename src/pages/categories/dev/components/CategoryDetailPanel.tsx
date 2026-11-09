@@ -56,6 +56,8 @@ interface CategoryDetailPanelProps {
   onLoadHourly: () => void;
 }
 
+/** The Categories detail panel for the selected category: header with export, KPI figures, the week's day cards,
+ *  and Items and Hours tabs (the hourly data loads on first open of Hours). */
 const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const cats = useCategoriesCtx();

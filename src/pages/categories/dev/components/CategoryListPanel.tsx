@@ -65,6 +65,8 @@ interface CategoryListPanelProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
+/** The Categories list panel: header with the store's week total and its change, location tabs, threshold and text filters,
+ *  an uncategorized line, and category rows sortable by TY, vs LW and vs LY. */
 const CategoryListPanel = ({
   onSearchOpen,
   onStoreNumberChange,
