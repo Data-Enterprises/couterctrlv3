@@ -43,6 +43,8 @@ import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import StoreFormModal from "./components/StoreFormModal";
 import StoreRow from "./components/StoreRow";
 
+/** The Store Records tab: every store with company and open or closed filters and a search, plus Add, Rename
+ *  and Close or Re-open (closing asks for confirmation). */
 const StoreRecords = () => {
   const toast = useToast();
   const context = useAdminPageCtx();

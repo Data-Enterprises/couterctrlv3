@@ -27,6 +27,9 @@ import SubDeptExclusions from "./subExclusions/SubDeptExclusions";
 import StoreRecords from "./stores/StoreRecords";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
+/** The dev Admin page: a resizable box with tabs for Companies, Store Activity, Store Records and Sub Dept
+ *  Exclusions. The Store Activity header shows the store and missing counts and an Export CSV button.
+ *  Accounts below the access level see a "not available" notice instead. */
 const Admin = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

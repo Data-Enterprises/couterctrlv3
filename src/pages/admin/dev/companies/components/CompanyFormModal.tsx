@@ -23,6 +23,8 @@ interface CompanyFormModalProps {
   onClose: () => void;
 }
 
+/** The pop-up form to add or edit a company: name, address, phone, contact email and an optional parent
+ *  company (or none, to stand alone). */
 const CompanyFormModal = ({
   initial,
   existingNames,

@@ -1,6 +1,8 @@
 // Hooks
 import { useAdminPageCtx } from "../../hooks";
 
+/** The Store Activity rows: store number, name, total days, active days and missing days, with missing days
+ *  in red when there are any. */
 const StoreRows = () => {
   const { filteredStoresActivity } = useAdminPageCtx();
   return (

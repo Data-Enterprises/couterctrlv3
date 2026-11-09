@@ -36,7 +36,8 @@ interface StoreActivityCompProps {
   setExportOpen: (open: boolean) => void;
 }
 
-// Displays stores missing sales data => needs dates missing, not just the total numbers
+/** The Store Activity tab: pick a company and date range to see each store's total, active and missing sales
+ *  days, with a store search. Shows an empty prompt until a search is run. */
 const StoreActivityComp = ({
   exportOpen,
   setExportOpen,

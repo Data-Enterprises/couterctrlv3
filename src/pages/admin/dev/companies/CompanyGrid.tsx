@@ -34,7 +34,8 @@ import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import CompanyFormModal from "./components/CompanyFormModal";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
 
-// Company grid that handles all CRUD operations in one form
+/** The Companies tab: a searchable list of companies with Add, Edit and Delete. Shows the parent company
+ *  next to a company that sits under one. */
 const CompanyGrid = () => {
   const toast = useToast();
   const context = useAdminPageCtx();

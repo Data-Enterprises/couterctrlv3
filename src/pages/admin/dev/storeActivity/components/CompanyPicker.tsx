@@ -10,6 +10,8 @@ interface CompanyPickerProps {
   helpAnchor?: string;
 }
 
+/** A side list of companies. In select mode a click picks one; in reference mode it is read-only and
+ *  highlights a company whose name matches the one being typed. */
 const CompanyPicker = ({
   companies,
   mode,

@@ -39,7 +39,9 @@ import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import CompDeptRow from "./components/CompDeptRow";
 
-// Which sub departments a store does not want counted in its net sales
+/** The Sub Dept Exclusions tab: choose which sub departments stop counting towards net sales, for a whole
+ *  company or one store. Filter by company, store, rang-within window, search or Likely hash. Excluding at
+ *  more than one store asks for confirmation. */
 const SubDeptExclusions = () => {
   const toast = useToast();
   const context = useAdminPageCtx();

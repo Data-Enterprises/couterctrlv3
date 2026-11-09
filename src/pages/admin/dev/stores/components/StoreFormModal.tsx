@@ -19,7 +19,8 @@ interface StoreFormModalProps {
   onClose: () => void;
 }
 
-// Does both creating and editing stores
+/** The pop-up form to add a store (Store ID, Store number, name and company) or rename an existing one.
+ *  Warns before a duplicate store ID or number is saved. */
 const StoreFormModal = ({
   initial,
   companies,

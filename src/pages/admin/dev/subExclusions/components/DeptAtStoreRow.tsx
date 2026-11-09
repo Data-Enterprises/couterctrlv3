@@ -18,6 +18,8 @@ interface DeptAtStoreRowProps {
   saving: boolean;
 }
 
+/** One store's line under an expanded sub department: a checkbox to exclude it from net sales at that store,
+ *  with the store number, name, sub dept number and last rang date. */
 const DeptAtStoreRow = ({ a, row, send, saving }: DeptAtStoreRowProps) => {
   return (
     <div

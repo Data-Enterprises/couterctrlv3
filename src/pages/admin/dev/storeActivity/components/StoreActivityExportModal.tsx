@@ -18,6 +18,7 @@ interface StoreActivityExportModalProps {
   stores: StoreWithActivity[];
 }
 
+/** The Export CSV pop-up for Store Activity: tick the datasets to include for the company, then download. */
 const StoreActivityExportModal = ({
   onClose,
   companyName,

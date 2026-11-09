@@ -19,6 +19,8 @@ interface StoreRowProps {
   changeStatus: (s: Store, action: "reactivate") => void;
 }
 
+/** One store row on the Store Records tab: number, name, company and an Active or Closed badge, with Rename
+ *  and Close or Re-open buttons. */
 const StoreRow = ({ s, setEditing, setDeactivating, changeStatus }: StoreRowProps) => {
   return (
     <div

@@ -24,6 +24,8 @@ interface CompDeptRowProps {
   send: (writes: ExclusionWrite[], label: string, want: boolean) => void;
 }
 
+/** One sub department across a company: a checkbox to exclude it from net sales at every store, its number,
+ *  where it stands and when it last rang. Expands to a row per store, and lists stores that never rang it. */
 const CompDeptRow = ({
   row,
   open,
