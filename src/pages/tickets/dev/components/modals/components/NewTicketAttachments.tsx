@@ -13,6 +13,7 @@ interface NewTicketAttachmentsProps {
   fileError: string | null;
 }
 
+/** The new-ticket form's Screenshots block: a file picker, the allowed types and size, the chosen files with a remove button, and any file error. */
 const NewTicketAttachments = ({
   picker,
   limits,

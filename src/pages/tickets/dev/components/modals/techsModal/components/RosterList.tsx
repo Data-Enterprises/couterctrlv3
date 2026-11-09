@@ -26,6 +26,7 @@ interface RosterListProps {
   onClose: () => void;
 }
 
+/** The Techs sheet's roster view: the techs on the desk with a search once the list is long, plus Add a tech (managers only) and Close. */
 const RosterList = ({
   techs,
   active,

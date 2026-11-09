@@ -18,6 +18,7 @@ interface ComposerProps {
   send: () => void;
 }
 
+/** The reply box under a ticket thread: text area, Internal note checkbox (managers), Attach and Reply / Post note buttons. */
 const Composer = ({
   draft,
   setDraft,

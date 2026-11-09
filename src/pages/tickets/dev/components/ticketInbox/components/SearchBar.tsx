@@ -12,6 +12,7 @@ interface SearchBarProps {
   pending: boolean;
 }
 
+/** The ticket search box with the Urgent shortcut (techs only) and a refresh button that reads "New" when the queue has moved. */
 const SearchBar = ({
   search,
   onSearch,

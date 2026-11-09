@@ -21,6 +21,7 @@ interface ManageBarProps {
   move: (status: TicketStatus, resolution?: string, resolutionType?: string) => void;
 }
 
+/** The tech's controls on a ticket: Take it, assignee and status pickers (Closed opens the closing sheet), and Edit stores. */
 const ManageBar = ({
   ticket,
   closed,

@@ -14,6 +14,7 @@ interface QueueTabsProps {
   onTab: (tab: QueueTab) => void;
 }
 
+/** The queue tabs with their counts: the full set for techs, a shorter set for clients. */
 const QueueTabs = ({ isTech, tab, counts, onTab }: QueueTabsProps) => {
   return (
     <div

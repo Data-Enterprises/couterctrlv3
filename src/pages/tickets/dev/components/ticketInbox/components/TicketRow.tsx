@@ -22,6 +22,7 @@ interface TicketRowProps {
   snippet: string | null;
 }
 
+/** One ticket in the list: unread dot, opener's initials, number and title, last update, who to answer, a snippet, and status, priority, store, company and label chips. */
 const TicketRow = ({
   ticket,
   open,

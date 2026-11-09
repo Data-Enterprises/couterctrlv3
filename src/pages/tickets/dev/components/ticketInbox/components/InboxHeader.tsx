@@ -14,6 +14,7 @@ interface InboxHeaderProps {
   rows: Ticket[];
 }
 
+/** The navy bar over the ticket list: the queue heading, a Techs button when available, the help button and how many tickets are showing. */
 const InboxHeader = ({ isTech, scope, onTechs, rows }: InboxHeaderProps) => {
   return (
     <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 py-2.5 flex items-end gap-3">

@@ -12,6 +12,7 @@ interface DetailHeaderProps {
   ticket: Ticket;
 }
 
+/** The navy bar on top of a ticket: number, title, and status and priority badges. */
 const DetailHeader = ({ ticket }: DetailHeaderProps) => {
   return (
     <div className="flex-shrink-0 rounded-t-xl bg-brand_navy text-custom-white px-4 py-3 flex items-center gap-2.5 flex-wrap">

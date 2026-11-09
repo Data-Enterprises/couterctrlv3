@@ -9,6 +9,8 @@ interface CommentBubbleProps {
   mine: boolean;
 }
 
+/** One comment in the ticket thread: author and time above a bubble, aligned right when it is the viewer's own.
+ *  Internal notes are flagged as never sent to a client. */
 const CommentBubble = ({ comment, mine }: CommentBubbleProps) => {
   return (
     <div

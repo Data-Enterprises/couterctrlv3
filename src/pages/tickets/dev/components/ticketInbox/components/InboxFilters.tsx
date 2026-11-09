@@ -19,6 +19,7 @@ interface InboxFiltersProps {
   narrowed: boolean;
 }
 
+/** The queue's status, priority and (when there is more than one) store filters, with counts and a clear button once narrowed. */
 const InboxFilters = ({
   filters,
   onFilters,

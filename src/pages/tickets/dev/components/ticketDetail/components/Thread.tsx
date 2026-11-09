@@ -25,6 +25,7 @@ interface ThreadProps {
   setFilesOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+/** A ticket's conversation: the comment bubbles, scrolled and tracked for "at bottom", with a collapsible Files bar listing the attachments. */
 const Thread = ({
   thread,
   wasAtBottom,

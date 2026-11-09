@@ -16,6 +16,7 @@ import ClosedStrip from "./components/ClosedStrip";
 import Thread from "./components/Thread";
 import Composer from "./components/Composer";
 
+/** The open ticket's pane: header, facts, manage bar, closed strip, thread and reply box. It polls for new comments every five seconds and keeps the thread scrolled to the newest one. */
 const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
   const [internal, setInternal] = useState(false);

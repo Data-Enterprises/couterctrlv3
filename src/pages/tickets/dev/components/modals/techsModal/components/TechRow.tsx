@@ -24,6 +24,7 @@ interface TechRowProps {
   setMode: (value: SetStateAction<Mode>) => void;
 }
 
+/** One tech on the roster: username, code, name, tickets held, and (managers only) a checkbox that brings them back or opens the stand-down sheet. */
 const TechRow = ({
   tech,
   canManageTechs,

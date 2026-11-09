@@ -18,6 +18,7 @@ interface ClosedStripProps {
   ) => void;
 }
 
+/** The green strip on a closed ticket: when it closed and how it was resolved, with a Reopen link for managers. */
 const ClosedStrip = ({
   ticket,
   canManage,

@@ -15,6 +15,8 @@ interface StandDownProps {
   onConfirm: (reassignTo?: number) => void;
 }
 
+/** The Techs sheet's "Stand down" confirmation: warns about open tickets and the last active tech,
+ *  and lets the manager hand their tickets to another tech. */
 const StandDown = ({
   tech,
   others,

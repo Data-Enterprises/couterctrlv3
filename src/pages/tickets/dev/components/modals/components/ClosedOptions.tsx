@@ -6,7 +6,7 @@ interface ClosedOptionsProps {
   setKind: (kind: string) => void;
 }
 
-// Displays the options a ticket tech can select when closing a ticket
+/** The radio options a tech picks from when closing a ticket (Fixed, Config, User error…). */
 const ClosedOptions = ({ kind, setKind }: ClosedOptionsProps) => {
   const ctx = useTicketsCtx();
   const kinds = ctx.lookups?.resolutionTypes ?? [

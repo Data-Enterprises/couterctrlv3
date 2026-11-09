@@ -26,6 +26,8 @@ interface AddTechProps {
   }) => void;
 }
 
+/** The Techs sheet's "Add a tech" form: pick a person, an optional display name, and see the code they will get.
+ *  A returning tech shows a note that their old row comes back. */
 const AddTech = ({
   candidates,
   techs,
