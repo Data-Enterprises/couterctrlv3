@@ -26,12 +26,10 @@ import {
 } from "../../../../utils";
 import { fmtCompactRange } from "../../../../utils/dateLabels";
 import {
-  severityDotClass,
   comparisonPillClass,
   headerDeltaPill,
   PCT_COL_W,
   formatPct,
-  type Severity,
 } from "../../../../utils/severity";
 import { isCompleteCoverage } from "../../../../utils/grading";
 import {
@@ -40,7 +38,14 @@ import {
   pctChange,
   sortGraded,
   type CategoryTier,
+  TOGGLE_OPTS,
+  dotFor,
+  CHIP_BASE,
+  CHIP_ON,
 } from "../utils";
+
+// Interfaces
+import type { ListSortCol } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
@@ -53,39 +58,7 @@ import ThresholdFilter, {
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import CategoryRow from "./CategoryRow";
 
-const TOGGLE_OPTS = [
-  { key: "sales" as const, label: "Sales" },
-  { key: "qty" as const, label: "Qty" },
-];
-
-/** Ungraded has no severity equivalent, so it falls back to the neutral dot
- *  rather than borrowing a colour that would imply a verdict. */
-const dotFor = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
-
-/** Tier summary chips, in Sales' tinted-fill register rather than the solid
- *  `chipClass` fill the Data pages use. Written out in full because Tailwind
- *  scans source text and never sees a class assembled at runtime. */
-const CHIP_BASE: Record<CategoryTier, string> = {
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-  watch: "bg-severity_watch_bg text-severity_watch_text",
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-content/70",
-};
-
-const CHIP_ON: Record<CategoryTier, string> = {
-  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
-  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
-  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
-  ungraded: "ring-2 ring-gray-400/40 shadow-sm",
-};
-
-/** Sortable columns. With none active the list keeps its own worst-grade
- *  -first order, which is the point of a Performance page — see
- *  useTriStateSort. */
-type ListSortCol = "ty" | "lw" | "ly";
-
-interface Props {
+interface CategoryListPanelProps {
   onSearchOpen: () => void;
   /** Re-presents the cached search as one co-located location, or all of
    *  them combined. No refetch — see useCategoryData. */
@@ -95,7 +68,7 @@ interface Props {
 const CategoryListPanel = ({
   onSearchOpen,
   onStoreNumberChange,
-}: Props) => {
+}: CategoryListPanelProps) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const cats = useCategoriesCtx();

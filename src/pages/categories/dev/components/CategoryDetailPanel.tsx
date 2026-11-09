@@ -20,7 +20,6 @@ import {
   PCT_COL_W,
   formatPct,
   chipClass,
-  severityHeaderBgClass,
   type Severity,
 } from "../../../../utils/severity";
 import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
@@ -32,8 +31,15 @@ import {
   LW_OFFSET,
   LY_OFFSET,
   type CategoryDay,
-  type CategoryTier,
+  headerBg,
+  tierOf,
+  SEV_CHIP,
+  SEV_CHIP_ON,
+  formatHour,
 } from "../utils";
+
+// Interfaces
+import type { Tab } from "../interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
@@ -42,99 +48,14 @@ import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider"
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import CategoryExportModal from "../export/CategoryExportModal";
 import CategoryItemsTable from "./CategoryItemsTable";
+import Kpi from "./Kpi";
+import Stat from "./Stat";
 
-type Tab = "items" | "hours";
-
-/** Ungraded has no severity colour of its own, so the header falls back to the
- *  navy every other panel uses rather than borrowing a verdict colour. */
-const headerBg = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier as Severity];
-
-const tierOf = (pct: number | null, threshold: number): Severity | null => {
-  if (pct === null) return null;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
-
-/** Written out rather than interpolated: Tailwind scans source text, so a class
- *  assembled at runtime is never emitted into the stylesheet. */
-const SEV_CHIP: Record<Severity, string> = {
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-  watch: "bg-severity_watch_bg text-severity_watch_text",
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-};
-
-const SEV_CHIP_ON: Record<Severity, string> = {
-  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
-  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
-  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
-};
-
-const formatHour = (h: number) =>
-  `${String(h).padStart(2, "0")}:00 – ${String((h + 1) % 24).padStart(2, "0")}:00`;
-
-/** One KPI cell, matching the Sales strip. The date line is load-bearing: the
- *  figure means something different once a day is selected. */
-const Kpi = ({
-  title,
-  dateLabel,
-  value,
-  pct,
-  threshold,
-  complete = true,
-  coverageNote,
-}: {
-  title: string;
-  dateLabel: string;
-  value: string;
-  pct?: number | null;
-  threshold: number;
-  /** False when the comparison is missing days: grey, and it doesn't grade. */
-  complete?: boolean;
-  /** "3 of 7 days matched", shown under a partial comparison. */
-  coverageNote?: string;
-}) => (
-  <div className="px-4 pt-2.5 pb-2 text-center">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {title}
-    </div>
-    <div className="text-[10px] font-bold text-content mb-0.5">{dateLabel}</div>
-    {pct === undefined ? (
-      <div className="text-[14px] font-bold text-content">{value}</div>
-    ) : (
-      <div className="flex items-baseline justify-center gap-2">
-        <span className="text-[14px] font-bold text-content">{value}</span>
-        {pct !== null && (
-          <span
-            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(pct, complete, threshold)}`}
-          >
-            {formatPct(pct)}
-          </span>
-        )}
-      </div>
-    )}
-    {coverageNote && (
-      <div className="text-[10px] font-semibold text-content pt-0.5">{coverageNote}</div>
-    )}
-  </div>
-);
-
-/** A labelled figure in the report column. */
-const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline justify-between gap-3 px-3 py-1.5 border-b border-gray-100">
-    <span className="text-[11px] text-content/60">{label}</span>
-    <span className="text-[12.5px] font-semibold text-content tabular-nums">
-      {value}
-    </span>
-  </div>
-);
-
-interface Props {
+interface CategoryDetailPanelProps {
   onLoadHourly: () => void;
 }
 
-const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
+const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const cats = useCategoriesCtx();
   const { rows, metric, threshold, selectedCategory, selectedDay, hourly, loadingHourly } = cats;

@@ -2,6 +2,11 @@
 import { onlyStoreNumber } from "../../../../utils/storeIdentity";
 import { countedRows } from "../../../../utils/hashSubs";
 import { coverageOf, gradeBasis } from "../../../../utils/grading";
+import {
+  type Severity,
+  severityDotClass,
+  severityHeaderBgClass,
+} from "../../../../utils/severity";
 
 // Interfaces
 import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../../interfaces";
@@ -327,3 +332,64 @@ export const sortGraded = <T extends CategoryRow & { tier: CategoryTier }>(
     const bv = metric === "qty" ? b.twQty : b.twNet;
     return bv - av;
   });
+
+/** Ungraded has no severity colour of its own, so the header falls back to the
+ *  navy every other panel uses rather than borrowing a verdict colour. */
+export const headerBg = (tier: CategoryTier) =>
+  tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier as Severity];
+
+/** Grades a percent change: critical past minus the threshold, watch below zero, else healthy. */
+export const tierOf = (pct: number | null, threshold: number): Severity | null => {
+  if (pct === null) return null;
+  if (pct < -threshold) return "critical";
+  if (pct < 0) return "watch";
+  return "healthy";
+};
+
+/** Written out rather than interpolated: Tailwind scans source text, so a class
+ *  assembled at runtime is never emitted into the stylesheet. */
+export const SEV_CHIP: Record<Severity, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+};
+
+/** The ring a severity chip wears while its filter is on. */
+export const SEV_CHIP_ON: Record<Severity, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+};
+
+/** An hour as its one-hour window, e.g. 09:00 – 10:00. */
+export const formatHour = (h: number) =>
+  `${String(h).padStart(2, "0")}:00 – ${String((h + 1) % 24).padStart(2, "0")}:00`;
+
+/** The list's Sales / Qty toggle. */
+export const TOGGLE_OPTS = [
+  { key: "sales" as const, label: "Sales" },
+  { key: "qty" as const, label: "Qty" },
+];
+
+/** Ungraded has no severity equivalent, so it falls back to the neutral dot
+ *  rather than borrowing a colour that would imply a verdict. */
+export const dotFor = (tier: CategoryTier) =>
+  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
+
+/** Tier summary chips, in Sales' tinted-fill register rather than the solid
+ *  `chipClass` fill the Data pages use. Written out in full because Tailwind
+ *  scans source text and never sees a class assembled at runtime. */
+export const CHIP_BASE: Record<CategoryTier, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  ungraded: "bg-gray-100 text-content/70",
+};
+
+/** The ring a tier chip wears while its filter is on. */
+export const CHIP_ON: Record<CategoryTier, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+  ungraded: "ring-2 ring-gray-400/40 shadow-sm",
+};
