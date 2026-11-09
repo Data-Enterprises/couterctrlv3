@@ -12,7 +12,7 @@ import type { CompanyDeptRow, ExclusionWrite } from "../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import Checkbox from "@/components-dev/Checkbox";
+import Checkbox from "../../../../../components-dev/Checkbox";
 import DeptAtStoreRow from "./DeptAtStoreRow";
 
 interface CompDeptRowProps {

@@ -1,5 +1,5 @@
 // Interfaces
-import type { Store } from "@/interfaces";
+import type { Store } from "../../../../interfaces";
 import type { AdminForm } from "../../../../features/dev/devAdminPageSlice";
 import type { Status } from "../interfaces";
 
@@ -7,7 +7,6 @@ import type { Status } from "../interfaces";
  *  Admin; the prod Admin still opens at 5. Only 7+ can reach dev mode anyway,
  *  so this states the rule rather than changing who gets in today. */
 export const ADMIN_MIN_LEVEL = 7;
-
 
 export const adminTabs: {
   id: AdminForm;

@@ -3,19 +3,13 @@ import { useState } from "react";
 
 // Interfaces
 import type { Store } from "../../../../../interfaces";
+import type { StoreForm } from "../interfaces";
 
 // Components
 import Input from "../../../../../components-dev/inputs/Input";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 
-export interface StoreForm {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-  company: number;
-}
-
-interface Props {
+interface StoreFormModalProps {
   initial: Store | null;
   companies: { value: string; label: string }[];
   existingNumbers: string[];
@@ -34,7 +28,7 @@ const StoreFormModal = ({
   saving,
   onSave,
   onClose,
-}: Props) => {
+}: StoreFormModalProps) => {
   const isCreate = !initial;
   const [storeId, setStoreId] = useState(
     initial ? String(initial.storeid) : "",

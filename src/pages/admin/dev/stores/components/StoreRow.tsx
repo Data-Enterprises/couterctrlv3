@@ -2,10 +2,10 @@
 import { statusOf, closedOn } from "../../utils";
 
 // Interfaces
-import type { Store } from "@/interfaces";
+import type { Store } from "../../../../../interfaces";
 
 // Components
-import IconButton from "@/components-dev/IconButton";
+import IconButton from "../../../../../components-dev/IconButton";
 import {
   PencilIcon,
   LockClosedIcon,

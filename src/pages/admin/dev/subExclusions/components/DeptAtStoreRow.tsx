@@ -9,16 +9,16 @@ import type {
 } from "../interfaces";
 
 // Components
-import Checkbox from "@/components-dev/Checkbox";
+import Checkbox from "../../../../../components-dev/Checkbox";
 
-interface Props {
+interface DeptAtStoreRowProps {
   a: DeptAtStore;
   row: CompanyDeptRow;
   send: (writes: ExclusionWrite[], label: string, want: boolean) => void;
   saving: boolean;
 }
 
-const DeptAtStoreRow = ({ a, row, send, saving }: Props) => {
+const DeptAtStoreRow = ({ a, row, send, saving }: DeptAtStoreRowProps) => {
   return (
     <div
       className="flex items-center gap-2 py-1 text-[11.5px] text-content"

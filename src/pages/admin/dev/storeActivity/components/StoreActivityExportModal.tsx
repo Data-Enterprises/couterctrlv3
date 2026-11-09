@@ -1,6 +1,9 @@
 // Hooks
 import { useState } from "react";
 
+// Utils
+import { buildStoreActivityCsv, downloadCsv } from "../utils";
+
 // Interfaces
 import type { StoreWithActivity } from "../../../../../interfaces";
 import type { ExportDataset } from "../interfaces";
@@ -14,50 +17,6 @@ interface StoreActivityExportModalProps {
   companyName: string;
   stores: StoreWithActivity[];
 }
-
-const escCsv = (val: string | number | null | undefined) => {
-  const s = String(val ?? "");
-  return s.includes(",") || s.includes('"') || s.includes("\n")
-    ? `"${s.replace(/"/g, '""')}"`
-    : s;
-};
-
-const rowsToCsv = (
-  headers: string[],
-  rows: (string | number | null)[][],
-): string => {
-  const lines = [headers.map(escCsv).join(",")];
-  for (const row of rows) lines.push(row.map(escCsv).join(","));
-  return lines.join("\n");
-};
-
-const buildStoreActivityCsv = (stores: StoreWithActivity[], label: string) => {
-  const headers = [
-    "Store ID",
-    "Store Name",
-    "Total Days",
-    "Active Days",
-    "Days Missing",
-  ];
-  const rows = stores.map((s) => [
-    s.storeid,
-    s.store_name,
-    s.total_days_in_range,
-    s.active_days,
-    s.inactive_or_missing_days,
-  ]);
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
-
-const downloadCsv = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
 
 const StoreActivityExportModal = ({
   onClose,

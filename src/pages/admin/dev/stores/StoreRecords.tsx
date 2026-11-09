@@ -28,22 +28,20 @@ import {
   withClosedMark,
   withoutClosedMark,
 } from "../utils";
+import { UNKNOWN_NOTE } from "./utils";
 
 // Interfaces
 import type { JsonError, Store } from "../../../../interfaces";
 import type { StatusFilter } from "../../../../features/dev/devAdminPageSlice";
+import type { StoreForm } from "./interfaces";
 
 // Components
 import { PlusIcon } from "@heroicons/react/20/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import StoreFormModal, { type StoreForm } from "./components/StoreFormModal";
+import StoreFormModal from "./components/StoreFormModal";
 import StoreRow from "./components/StoreRow";
-
-/** Shown only while the endpoint is not reporting status — see `statusOf`. */
-const UNKNOWN_NOTE =
-  "This list is not reporting which stores are already closed, so every row offers both actions. Both are safe to repeat.";
 
 const StoreRecords = () => {
   const toast = useToast();
