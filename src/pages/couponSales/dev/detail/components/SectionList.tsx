@@ -134,7 +134,7 @@ const SectionList = ({
         </div>
 
         {visibleSections.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
+          <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
             Nothing matches
           </div>
         ) : (

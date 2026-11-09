@@ -108,21 +108,21 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
           </span>
           <div className="flex-1" />
           <div className="flex items-center gap-3 text-custom-white">
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Amount{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatCurrencyCompact(totals.amount)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Coupons{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatBigNumber(totals.lines, 0)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Avg{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatCurrency2(totals.avgAmount)}
@@ -135,7 +135,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button data-help="search"
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -325,7 +325,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       {/* ── Rows ───────────────────────────────────────────────────────── */}
       <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-[12px] text-content/60">
+          <div className="flex items-center justify-center h-24 text-[12px] text-content/95">
             No stores match
           </div>
         ) : (
@@ -391,7 +391,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
                   <span
                     className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
                       row.trendPct === null
-                        ? "text-content/40"
+                        ? "text-content/95"
                         : row.trendPct > 0
                           ? "text-severity_critical_text"
                           : "text-severity_healthy_text"
