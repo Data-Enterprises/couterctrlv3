@@ -44,7 +44,7 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
     <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
       <div>
         <h2 className="text-base font-semibold text-content">Item lookup</h2>
-        <p className="text-[12px] text-content/50 mt-1">
+        <p className="text-[12px] text-content/95 mt-1">
           Search for an item by UPC, or paste several to look them up at once.
         </p>
       </div>
@@ -62,10 +62,10 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
 
       <div>
         <div className="flex items-baseline justify-between gap-2">
-          <label className="text-[11px] font-medium text-content/60 ml-0.5">
+          <label className="text-[11px] font-medium text-content/95 ml-0.5">
             UPCs
           </label>
-          <span className="text-[10.5px] text-content/60">
+          <span className="text-[10.5px] text-content/95">
             Comma or Shift+Enter between UPCs
           </span>
         </div>

@@ -167,7 +167,7 @@ const LookupExportModal = ({
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                   mode === m
                     ? "bg-custom-white text-brand_navy"
-                    : "text-custom-white/70 hover:text-custom-white"
+                    : "text-custom-white/95 hover:text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
@@ -176,7 +176,7 @@ const LookupExportModal = ({
           </div>
           <button
             onClick={onClose}
-            className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+            className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
@@ -184,7 +184,7 @@ const LookupExportModal = ({
 
         {mode === "presets" ? (
           <div className="p-4">
-            <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium mb-2">
+            <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-2">
               Select data to include
             </p>
             {presetOptions.map((o, i) => (
@@ -203,7 +203,7 @@ const LookupExportModal = ({
                 />
                 <div>
                   <p className="text-[13px] font-medium text-content">{o.title}</p>
-                  <p className="text-[11px] text-content/50 mt-0.5">{o.detail}</p>
+                  <p className="text-[11px] text-content/95 mt-0.5">{o.detail}</p>
                 </div>
               </label>
             ))}
@@ -219,7 +219,7 @@ const LookupExportModal = ({
         ) : (
           <div className="grid" style={{ gridTemplateColumns: "200px 1fr" }}>
             <div className="p-3.5 border-r border-gray-100">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Data source
               </p>
               {(Object.keys(sourceLabels) as Preset[]).map((src, i, all) => (
@@ -241,7 +241,7 @@ const LookupExportModal = ({
                 </label>
               ))}
 
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Columns
               </p>
               {COLS[source].map((c) => (
@@ -260,7 +260,7 @@ const LookupExportModal = ({
             </div>
 
             <div className="p-3.5 flex flex-col">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Preview
               </p>
               <div className="border border-gray-100 rounded-md overflow-hidden">
@@ -270,7 +270,7 @@ const LookupExportModal = ({
                       {custom.cols.map((c) => (
                         <th
                           key={c.key}
-                          className="text-left px-2.5 py-1.5 text-content/55 font-semibold whitespace-nowrap"
+                          className="text-left px-2.5 py-1.5 text-content/95 font-semibold whitespace-nowrap"
                         >
                           {c.label}
                         </th>
@@ -283,7 +283,7 @@ const LookupExportModal = ({
                         {row.map((cell, ci) => (
                           <td
                             key={custom.cols[ci].key}
-                            className="px-2.5 py-1 text-content/80 whitespace-nowrap"
+                            className="px-2.5 py-1 text-content/95 whitespace-nowrap"
                           >
                             {cell}
                           </td>
@@ -294,7 +294,7 @@ const LookupExportModal = ({
                       <tr>
                         <td
                           colSpan={custom.cols.length}
-                          className="px-2.5 py-1.5 text-[10px] text-content/35 italic"
+                          className="px-2.5 py-1.5 text-[10px] text-content/95 italic"
                         >
                           +{custom.rows.length - PREVIEW_ROWS} more rows in download…
                         </td>
@@ -307,7 +307,7 @@ const LookupExportModal = ({
               <div className="flex items-center justify-between mt-3.5">
                 <button
                   onClick={onClose}
-                  className="text-[12px] text-content/50 hover:text-content transition-colors"
+                  className="text-[12px] text-content/95 hover:text-content transition-colors"
                 >
                   Cancel
                 </button>

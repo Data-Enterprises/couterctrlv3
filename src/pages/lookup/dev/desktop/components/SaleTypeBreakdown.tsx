@@ -82,7 +82,7 @@ const SaleTypeBreakdown = ({
             {weighed && (
               <span className="text-right">{formatUnits(s.units, true)}</span>
             )}
-            <span className="text-right text-content/85">
+            <span className="text-right text-content/95">
               {isSale || saleDollars <= 0
                 ? "—"
                 : `${((s.sales / saleDollars) * 100).toFixed(2)}%`}

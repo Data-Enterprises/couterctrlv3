@@ -85,7 +85,7 @@ const LookupReportPanel = ({
           </div>
           <button
             onClick={onExportOpen}
-            className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
             title="Export"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
@@ -228,7 +228,7 @@ const LookupReportPanel = ({
           <div className="text-[11px] font-semibold text-content">
             Daily breakdown
             {!showingSales && (
-              <span className="font-normal text-content/85"> · {selectedSaleType}</span>
+              <span className="font-normal text-content/95"> · {selectedSaleType}</span>
             )}
           </div>
           {!showingSales && (
