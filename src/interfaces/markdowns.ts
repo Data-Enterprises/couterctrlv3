@@ -52,7 +52,7 @@ export interface MarkdownResponse {
 }
 
 export interface MarkdownFilters {
-  type: MarkdownType[] | null;
+  types: MarkdownType[] | null;
   storeNumbers: string[];
   dates: string[];
   subIds: number[];

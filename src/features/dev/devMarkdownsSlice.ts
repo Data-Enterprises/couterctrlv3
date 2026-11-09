@@ -10,7 +10,7 @@ interface DevMarkdownsState {
 }
 
 const emptyFilters: MarkdownFilters = {
-  type: null,
+  types: null,
   storeNumbers: [],
   dates: [],
   subIds: [],
