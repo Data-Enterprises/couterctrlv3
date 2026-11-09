@@ -126,7 +126,7 @@ export const dayName = (d: string) =>
 
 /** The week card's column headings. */
 export const HEAD =
-  "text-[10.5px] font-semibold uppercase tracking-wide text-content/80";
+  "text-[10.5px] font-semibold uppercase tracking-wide text-content/95";
 
 /** Two periods, not two verdicts — so navy and a lighter tint of it, never the
  *  severity palette. The comparison carries the judgement, the lines don't. */

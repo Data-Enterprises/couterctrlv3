@@ -212,7 +212,7 @@ const WeekCard = ({
                   reads as uncomparable rather than as a day that took nothing. */}
               <span
                 className={`text-[12.5px] text-right ${NUM} ${
-                  d.salesLy === null ? "text-content/50" : "text-content"
+                  d.salesLy === null ? "text-content/95" : "text-content"
                 }`}
               >
                 {orDash(d.salesLy, formatCurrency2)}
@@ -247,7 +247,7 @@ const WeekCard = ({
             </span>
             <span
               className={`text-[12.5px] font-semibold text-right ${NUM} ${
-                week.salesLy === null ? "text-content/50" : "text-content"
+                week.salesLy === null ? "text-content/95" : "text-content"
               }`}
             >
               {orDash(week.salesLy, formatCurrency2)}

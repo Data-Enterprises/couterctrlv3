@@ -49,7 +49,7 @@ const SubDeptRow = ({ row, isSelected, onClick }: SubDeptRowProps) => (
         last-year history reads as absent rather than as one that took nothing. */}
     <span
       className={`text-[13.5px] text-right ${NUM} ${
-        row.salesLy === null ? "text-content/50" : "text-content"
+        row.salesLy === null ? "text-content/95" : "text-content"
       }`}
     >
       {orDash(row.salesLy, formatCurrency2)}

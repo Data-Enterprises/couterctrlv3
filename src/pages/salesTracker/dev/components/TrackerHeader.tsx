@@ -81,7 +81,7 @@ const TrackerHeader = ({
       >
         <button
           onClick={onOpenSearch}
-          className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+          className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           aria-label="Search stores"
         >
           <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -104,7 +104,7 @@ const TrackerHeader = ({
             disabled={!canDropWeek}
             aria-label="Remove the oldest week"
             title="Remove the oldest week"
-            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <MinusIcon className="h-3 w-3" />
           </button>
@@ -119,7 +119,7 @@ const TrackerHeader = ({
             disabled={!canAddWeek || addingWeek}
             aria-label="Add another week"
             title="Add another week further back"
-            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <PlusIcon className="h-3 w-3" />
           </button>
