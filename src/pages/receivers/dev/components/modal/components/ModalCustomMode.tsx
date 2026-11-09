@@ -51,7 +51,7 @@ const ModalCustomMode = ({
         {/* Left: config */}
         <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
               Group By
             </p>
             <div className="space-y-1.5">
@@ -73,7 +73,7 @@ const ModalCustomMode = ({
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
               Metrics
             </p>
             <div className="space-y-2">
@@ -88,7 +88,7 @@ const ModalCustomMode = ({
                       className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                     />
                     <span
-                      className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}
+                      className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
                     >
                       {m.label}
                     </span>
@@ -113,7 +113,7 @@ const ModalCustomMode = ({
             </div>
           </div>
 
-          <p className="text-[10px] text-content/35 italic leading-relaxed">
+          <p className="text-[10px] text-content/95 italic leading-relaxed">
             Working on {details.length} line items for {vendorName} Invoice{" "}
             {invoiceId}.
           </p>
@@ -122,10 +122,10 @@ const ModalCustomMode = ({
         {/* Right: preview */}
         <div className="flex flex-col min-w-0">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-            <p className="text-[11px] font-semibold text-content/60 uppercase tracking-wide">
+            <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
               Preview
             </p>
-            <span className="text-[10px] text-content/40">
+            <span className="text-[10px] text-content/95">
               {aggRows.length === 0
                 ? "No data — select at least one group or metric"
                 : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
@@ -134,7 +134,7 @@ const ModalCustomMode = ({
 
           {columns.length === 0 ? (
             <div className="flex-1 flex items-center justify-center p-6 text-center">
-              <p className="text-[12px] text-content/40 leading-relaxed">
+              <p className="text-[12px] text-content/95 leading-relaxed">
                 Select at least one group-by dimension
                 <br />
                 or metric to see a preview.
@@ -164,7 +164,7 @@ const ModalCustomMode = ({
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
         <button
           onClick={onClose}
-          className="text-[12px] text-content/50 hover:text-content transition-colors"
+          className="text-[12px] text-content/95 hover:text-content transition-colors"
         >
           Cancel
         </button>

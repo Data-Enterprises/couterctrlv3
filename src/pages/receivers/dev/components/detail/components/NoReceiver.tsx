@@ -2,10 +2,10 @@
 const NoReceiver = () => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-1">
-      <span className="text-[13px] font-medium text-content/60">
+      <span className="text-[13px] font-medium text-content/95">
         No receiver selected
       </span>
-      <span className="text-[11px] text-content/40">
+      <span className="text-[11px] text-content/95">
         Select a receiver from the list to view its line items
       </span>
     </div>

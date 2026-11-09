@@ -43,7 +43,7 @@ const RListItemRows = ({
         </span>
         <div></div>
         <ChevronRightIcon
-          className="w-3 h-3 text-content/40 flex-shrink-0 justify-self-end transition-transform"
+          className="w-3 h-3 text-content/95 flex-shrink-0 justify-self-end transition-transform"
           style={{
             transform: dateOpen ? "rotate(90deg)" : "rotate(0deg)",
           }}
@@ -53,7 +53,7 @@ const RListItemRows = ({
       {/* Invoice rows */}
       {dateOpen && (
         <div>
-          <div className="grid grid-cols-[60px_70px_1fr] gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/85">
+          <div className="grid grid-cols-[60px_70px_1fr] gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/95">
             <div>Invoice #</div>
             <div>Item count</div>
             <div>Vendor</div>

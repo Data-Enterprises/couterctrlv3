@@ -171,13 +171,13 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
         className="flex-1 overflow-y-auto thin-scrollbar flex flex-col"
       >
         {grouped.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/70">
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             No results match filters
           </div>
         )}
 
         {grouped.length > 0 && (
-          <div className="grid grid-cols-[1fr_56px_10%_32px] gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/50 flex-shrink-0">
+          <div className="grid grid-cols-[1fr_56px_10%_32px] gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/95 flex-shrink-0">
             <div>Date</div>
             <div className="text-center">Invoices</div>
             <div></div>

@@ -24,7 +24,7 @@ const CustomModeTable = ({
           {columns.map((c) => (
             <td
               key={c.key}
-              className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50"
+              className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-gray-50"
             >
               {row[c.key] ?? "—"}
             </td>
@@ -35,7 +35,7 @@ const CustomModeTable = ({
         <tr>
           <td
             colSpan={columns.length}
-            className="px-3 py-2 text-[10px] text-content/35 italic"
+            className="px-3 py-2 text-[10px] text-content/95 italic"
           >
             + {aggRows.length - PREVIEW_ROWS} more rows in download…
           </td>
