@@ -49,6 +49,7 @@ import type { SortColumn } from "./interfaces";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import SortHeader from "../../../../components-dev/SortHeader";
+import SearchPopup from "../../../../components-dev/SearchPopup";
 import DeptInvestigation from "../investigate/DeptInvestigation";
 import DeptMatrixPanel from "../deptMatrix/DeptMatrixPanel";
 import GroupComparisonPanel from "../groupCompare/GroupComparisonPanel";
@@ -681,17 +682,9 @@ const SalesLedger = () => {
 
       {/* Search modal */}
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
+        </SearchPopup>
       )}
     </div>
   );
