@@ -1,5 +1,5 @@
-// Small inline trend line for a sub dept's daily sales across the current
-// week — purely visual, no axis/labels, sized to sit in a single row.
+/** A small inline trend line of a sub dept's daily sales across the current week.
+ *  Purely visual, with no axis or labels, sized to sit in a single row. */
 const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => {
   const w = 48;
   const h = 18;

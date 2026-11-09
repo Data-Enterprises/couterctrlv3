@@ -14,6 +14,8 @@ interface TextFilterProps {
   type: ItemFilterType;
   handleClose: () => void;
 }
+
+/** The UPC or Description filter form: one text box with Submit, which sets that filter, and Cancel. */
 const TextFilter = ({ label, type, handleClose }: TextFilterProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

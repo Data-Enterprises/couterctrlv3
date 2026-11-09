@@ -38,6 +38,8 @@ import ResizableModalShell from "../../../../components-dev/modals/ResizableModa
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import SevChips from "./components/SevChips";
 
+/** The Sub Dept Margins export pop-up: pick presets such as Items vs Last Year or UPC List, or build a custom
+ *  export by data source, group by, metrics and departments, preview it, then Export CSV. */
 const MarginPerfExportModal = ({
   onClose,
   storeName,

@@ -22,6 +22,8 @@ interface MarginPerfDaySidebarProps {
   coverage?: Coverage;
 }
 
+/** The day column beside a sub dept's margin panel: an All Week card plus one card per day with its figure
+ *  and change vs last year (or last week). Clicking a day filters the panel to it; a holiday gets a star. */
 const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();

@@ -11,6 +11,7 @@ interface SmDevEntryCardProps {
   notice?: string;
 }
 
+/** The Sub Dept Margins start screen: a centred card to pick a store and week ending date, then Search. */
 const SmDevEntryCard = ({ onSearch, notice }: SmDevEntryCardProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

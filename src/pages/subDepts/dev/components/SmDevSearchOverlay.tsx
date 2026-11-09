@@ -11,6 +11,7 @@ interface SmDevSearchOverlayProps {
   onClose: () => void;
 }
 
+/** The store and week picker as a blurred pop-up over Sub Dept Margins; a click outside the card closes it. */
 const SmDevSearchOverlay = ({ onSearch, onClose }: SmDevSearchOverlayProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

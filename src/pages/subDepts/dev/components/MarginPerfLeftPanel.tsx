@@ -61,6 +61,9 @@ interface MarginPerfLeftPanelProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
+/** The left panel of Sub Dept Margins: the store's TY, vs LW and vs LY figures, a location tab for co-located
+ *  stores, Critical, Watch and Healthy filter cards, a sub dept search box, and the sortable sub dept list
+ *  with sparklines. Also holds the grading threshold and the Search button. */
 const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLeftPanelProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();

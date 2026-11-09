@@ -7,6 +7,8 @@ import Modal from "../../../../components-dev/Modal";
 import TextFilter from "./components/TextFilter";
 import ThresholdFilter from "./components/ThresholdFilter";
 
+/** The item filter pop-up: a text form for UPC or Description, or a threshold form for Sales, Quantity, COGS,
+ *  Margin, Unit Cost and Case Cost. Closing it clears the draft filter. */
 const ItemFilterModal = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

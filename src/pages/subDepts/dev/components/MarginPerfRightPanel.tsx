@@ -41,6 +41,9 @@ import MarginPerfItemsTable from "./itemsTable/MarginPerfItemsTable";
 import SubDeptCostGrid from "./SubDeptCostGrid";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
 
+/** The right panel of Sub Dept Margins for the selected sub dept: a title bar with the item actions and
+ *  Export buttons, a TY / vs LW / vs LY figure strip (for the week or the chosen day), the day sidebar, and
+ *  the items table or cost grid. Shows a prompt until a sub dept is picked. */
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();

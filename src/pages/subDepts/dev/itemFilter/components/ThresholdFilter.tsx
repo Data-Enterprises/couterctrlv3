@@ -16,6 +16,8 @@ interface ThresholdFilterProps {
   handleClose: () => void;
 }
 
+/** The number filter form: pick Greater Than, Equal To or Less Than, type an amount, then Submit or Cancel.
+ *  Warns if the amount isn't a number or no operator is chosen. */
 const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilterProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();

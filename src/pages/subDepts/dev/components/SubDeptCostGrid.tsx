@@ -16,6 +16,8 @@ import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
 import ColFilter from "./ColFilter";
 import ThreshInput from "./ThreshInput";
 
+/** The cost grid for a sub dept: one row per item with Description, UPC, Unit Cost, Case Cost, Qty / Lb and
+ *  COGS. Each column header has a filter and a sort, and a selected day narrows the rows. */
 const SubDeptCostGrid = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

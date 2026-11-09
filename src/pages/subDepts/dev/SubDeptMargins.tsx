@@ -53,6 +53,8 @@ import SmDevSearchOverlay from "./components/SmDevSearchOverlay";
 import SmDevEntryCard from "./components/SmDevEntryCard";
 import ItemFilterModal from "./itemFilter/ItemFilterModal";
 
+/** The Sub Dept Margins page: the store and week search card, a loading state, then the sub dept list on the
+ *  left and the selected sub dept's margin panel on the right, with the export and item filter pop-ups. */
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
