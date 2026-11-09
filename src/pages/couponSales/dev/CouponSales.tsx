@@ -40,6 +40,7 @@ import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
 import EventPerfMobile from "../../../components-dev/eventPerf/EventPerfMobile";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./export/CpnSalesExportModal";
@@ -287,28 +288,20 @@ const CouponSales = () => {
       {exportOpen && <CpnSalesExportModal storeCoupons={storeCoupons} />}
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SearchCard
-              title="Coupon Sales"
-              description="Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks."
-              singleDate
-              buttonLabel="Load Coupon Sales"
-              onSearch={() => {
-                setSearchModalOpen(false);
-                getData();
-              }}
-              loading={isFetching}
-              loadingMessage="Finding coupon sales..."
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            title="Coupon Sales"
+            description="Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks."
+            singleDate
+            buttonLabel="Load Coupon Sales"
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getData();
+            }}
+            loading={isFetching}
+            loadingMessage="Finding coupon sales..."
+          />
+        </SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
