@@ -26,7 +26,7 @@ import StandDown from "./components/StandDown";
 import AddTech from "./components/AddTech";
 import RosterList from "./components/RosterList";
 
-interface Props {
+interface TechsModalProps {
   canManageTechs: boolean; //Level 9 only (Programmer)
   onClose: () => void;
   onChanged: () => void;
@@ -37,7 +37,7 @@ interface Props {
  * everyone else on the desk gets the same list read-only. Rows lead with the
  * username, which is unique; the display name is the second line.
  */
-const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
+const TechsModal = ({ canManageTechs, onClose, onChanged }: TechsModalProps) => {
   const { url, token } = useDevApi();
   const toast = useToast();
 

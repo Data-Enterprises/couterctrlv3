@@ -17,7 +17,7 @@ import { cleanStoreOptions, storesOf } from "../../utils";
 import Modal from "../../../../../components-dev/Modal";
 import StoreChecklist from "../StoreChecklist";
 
-interface Props {
+interface EditStoresModalProps {
   ticket: Ticket;
   onSave: (storeids: number[]) => Promise<string | null>;
   onClose: () => void;
@@ -28,7 +28,7 @@ interface Props {
  * A tech corrects which stores a ticket is about (the stores decide which
  * managers see it). The options are the server's, so the save never refuses one.
  */
-const EditStoresModal = ({ ticket, onSave, onClose, working }: Props) => {
+const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalProps) => {
   const { url, token } = useDevApi();
   const [options, setOptions] = useState<TicketStoreOption[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);

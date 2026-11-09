@@ -51,7 +51,7 @@ import Checkbox from "../../../../../components-dev/Checkbox";
 import TextField from "../../../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import StoreChecklist from "../StoreChecklist";
-import NewTicketAttachments from "./components/NetTicketAttachments";
+import NewTicketAttachments from "./components/NewTicketAttachments";
 
 /**
  * Filing: two fields are required and the queue works out the rest. No

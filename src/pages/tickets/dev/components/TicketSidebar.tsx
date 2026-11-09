@@ -11,30 +11,21 @@ import {
 // Interfaces
 import type { Ticket } from "../../../../api/tickets";
 
-interface Props {
+// Components
+import Caption from "./Caption";
+import Fact from "./Fact";
+
+interface TicketSidebarProps {
   ticket: Ticket;
   tickets: Ticket[];
   onSelect: (id: number) => void;
 }
 
-const Caption = ({ children }: { children: React.ReactNode }) => (
-  <div className="px-3.5 pb-1.5 pt-3.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-    {children}
-  </div>
-);
-
-const Fact = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline justify-between gap-3 px-3.5 py-[5px] text-[12px]">
-    <span className="text-content/85">{label}</span>
-    <span className="font-semibold tabular-nums">{value}</span>
-  </div>
-);
-
 /**
  * Who filed this, and what else they have filed. The ticket's own facts sit
  * under the thread's header.
  */
-const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
+const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
   const stats = openerStats(tickets, ticket);
   const others = alsoFrom(tickets, ticket);
 

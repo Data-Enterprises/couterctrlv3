@@ -20,7 +20,7 @@ import InboxFilters from "./components/InboxFilters";
 import SearchBar from "./components/SearchBar";
 import TicketRow from "./components/TicketRow";
 
-interface Props {
+interface TicketInboxProps {
   rows: Ticket[];
   selectedId: number | null;
   onSelect: (id: number) => void;
@@ -81,7 +81,7 @@ const TicketInbox = ({
   onNew,
   onTechs,
   error,
-}: Props) => {
+}: TicketInboxProps) => {
   const narrowed =
     filters.status.length > 0 ||
     filters.priority.length > 0 ||

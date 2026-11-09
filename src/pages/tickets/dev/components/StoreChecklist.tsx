@@ -11,7 +11,7 @@ import type { TicketStoreOption } from "../../../../api/tickets";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Checkbox from "../../../../components-dev/Checkbox";
 
-interface Props {
+interface StoreChecklistProps {
   options: TicketStoreOption[] | null;
   picked: number[];
   onPicked: (next: number[]) => void;
@@ -35,7 +35,7 @@ const StoreChecklist = ({
   searchable,
   loadError,
   extra,
-}: Props) => {
+}: StoreChecklistProps) => {
   const [query, setQuery] = useState("");
   const [folded, setFolded] = useState<Map<string, boolean>>(new Map());
   const groups = useMemo(

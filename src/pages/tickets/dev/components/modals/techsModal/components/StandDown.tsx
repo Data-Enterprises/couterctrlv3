@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // Interfaces
-import type { TicketTech } from "@/api/tickets";
+import type { TicketTech } from "../../../../../../../api/tickets";
 
 // Components
 import SelectFilter from "../../../../../../../components-dev/filters/SelectFilter";
