@@ -19,6 +19,7 @@ export const useCouponContext = () => {
     uniqueDateMobileFilter,
     showSubsMobileFilter,
     receiptLines,
+    gridFilters,
   } = useAppSelector((state) => state.dev.coupons);
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
     useAppSelector((state) => state.search);
@@ -48,6 +49,7 @@ export const useCouponContext = () => {
     uniqueDateMobileFilter,
     showSubsMobileFilter,
     receiptLines,
+    gridFilters,
     selectedGroup,
     selectedGroupStores,
     assignedStores,

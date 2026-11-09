@@ -5,7 +5,10 @@ import { useCouponContext } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // Redux
-import { setCouponReceiptLines } from "../../../../../features/dev/devCouponSlice";
+import {
+  setCouponGridFilter,
+  setCouponReceiptLines,
+} from "../../../../../features/dev/devCouponSlice";
 import { isGroupSearch } from "../../../../../features/searchSlice";
 
 // API
@@ -60,20 +63,24 @@ const CouponDetailPanel = ({
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [selectedSaleId, setSelectedSaleId] = useState("");
 
-  // Column filter draft state
-  const [draftProduct, setDraftProduct] = useState("");
-  const [draftUpc, setDraftUpc] = useState("");
-  const [draftSubDept, setDraftSubDept] = useState("");
-  const [draftAmount, setDraftAmount] = useState<ThresholdValue | null>(null);
+  // Applied column filters live in Redux, so they survive leaving the page;
+  // what is typed before Apply starts from them and stays local.
+  const applied = ctx.gridFilters;
+  const appliedProduct = applied.product;
+  const appliedUpc = applied.upc;
+  const appliedSubDept = applied.subDept;
+  const appliedAmount = applied.amount;
+  const setAppliedProduct = (v: string) => dispatch(setCouponGridFilter({ product: v }));
+  const setAppliedUpc = (v: string) => dispatch(setCouponGridFilter({ upc: v }));
+  const setAppliedSubDept = (v: string) => dispatch(setCouponGridFilter({ subDept: v }));
+  const setAppliedAmount = (v: ThresholdValue | null) =>
+    dispatch(setCouponGridFilter({ amount: v }));
+  const [draftProduct, setDraftProduct] = useState(appliedProduct);
+  const [draftUpc, setDraftUpc] = useState(appliedUpc);
+  const [draftSubDept, setDraftSubDept] = useState(appliedSubDept);
+  const [draftAmount, setDraftAmount] = useState<ThresholdValue | null>(appliedAmount);
   const [expandedCoupons, setExpandedCoupons] = useState<Set<string>>(
     new Set(),
-  );
-  // Applied (live) filter state
-  const [appliedProduct, setAppliedProduct] = useState("");
-  const [appliedUpc, setAppliedUpc] = useState("");
-  const [appliedSubDept, setAppliedSubDept] = useState("");
-  const [appliedAmount, setAppliedAmount] = useState<ThresholdValue | null>(
-    null,
   );
   // selectedKey is `storeid__store_number` — co-located stores share an id, so
   // the number is what identifies the location. See utils/storeIdentity.
