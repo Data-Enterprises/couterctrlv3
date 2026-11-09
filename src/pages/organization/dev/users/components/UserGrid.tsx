@@ -61,6 +61,9 @@ interface UserGridProps {
   onOpenCreate: () => void;
 }
 
+/** The Users list: filters for company, active state, level, role and access, name search, and sortable
+ *  columns with Username and Email filters. Rows have Edit, Duplicate, Password & security and Deactivate
+ *  or Reactivate, plus a pick mode for bulk deactivate or reactivate. Filters persist in Redux. */
 const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();

@@ -16,6 +16,8 @@ import type { View } from "./interfaces";
 import UserGrid from "./components/UserGrid";
 import UserWizard from "./create/UserWizard";
 
+/** The Users tab: the user list, or the Add or Edit wizard when a user is being created or opened.
+ *  Someone above the viewer's own level can't be opened. */
 const Users = () => {
   const ctx = useOrganizationCtx();
   const [view, setView] = useState<View>("grid");

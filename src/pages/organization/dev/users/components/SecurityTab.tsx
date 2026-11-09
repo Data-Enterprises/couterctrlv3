@@ -21,8 +21,9 @@ interface SecurityTabProps {
   user: User;
 }
 
-// Takes the target user as a prop: it opens from the grid's row action, so
-// there is no "selected for editing" state to read.
+/** The Password & security form for one user: set a temporary password (entered twice) or Reset security,
+ *  which asks first. Takes the user as a prop: it opens from the grid's row action, so there is no
+ *  "selected for editing" state to read. */
 const SecurityTab = ({ user }: SecurityTabProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();

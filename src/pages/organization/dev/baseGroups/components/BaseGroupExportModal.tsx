@@ -35,6 +35,8 @@ interface BaseGroupExportModalProps {
   users: User[];
 }
 
+/** The Export CSV pop-up for a base group: tick assigned or unassigned stores and users, then download.
+ *  Users are limited to those the viewer's level can reach. */
 const BaseGroupExportModal = ({
   onClose,
   group,

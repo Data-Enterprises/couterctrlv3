@@ -50,6 +50,9 @@ import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
 import StoresTab from "./stores/StoresTab";
 
+/** The User Management page: a resizable box with tabs for Users, Companies, Base Groups and Stores, the
+ *  Export CSV button, and a discard prompt when switching tabs with unsaved changes. Accounts with no
+ *  tab to show see a "no access" notice. */
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();

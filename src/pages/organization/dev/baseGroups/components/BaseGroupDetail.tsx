@@ -42,6 +42,9 @@ interface BaseGroupDetailProps {
   onRenamed: (newName: string) => void;
 }
 
+/** One base group opened: its renamable name with Rename, Delete and Export buttons, the company, and
+ *  Stores and Users sub-tabs. Stores moves between Unassigned and Assigned, and each move also updates
+ *  everyone holding the group. Delete asks for confirmation. */
 const BaseGroupDetail = ({
   group,
   companyName,

@@ -23,6 +23,8 @@ interface UsersExportModalProps {
   filtersActive: boolean;
 }
 
+/** The Export CSV pop-up for users: tick the datasets to include (all users or the filtered list), then
+ *  download. The header says whether it is the active or inactive list. */
 const UsersExportModal = ({
   onClose,
   allUsers,

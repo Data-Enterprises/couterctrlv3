@@ -42,11 +42,10 @@ interface BaseGroupUsersTabProps {
   users: User[];
 }
 
-// Assigning a user to a base group is an access grant only: it writes the
-// base group link, and removing it deletes the link.
-//
-// Both columns come from groups/base_group_users, which carries no levels, so
-// `users` (which does) keeps anyone above the acting user's level off both.
+/** A base group's Users tab: Unassigned and Assigned columns to move people in or out, with a company filter.
+ *  Assigning is an access grant only: it writes the base group link, and removing it deletes the link.
+ *  Both columns come from groups/base_group_users, which carries no levels, so `users` (which does) keeps
+ *  anyone above the acting user's level off both. */
 const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();

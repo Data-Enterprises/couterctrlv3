@@ -19,6 +19,8 @@ interface StoresExportModalProps {
   filteredStores: Store[];
 }
 
+/** The Export CSV pop-up for the store directory: tick the datasets to include (all stores or the filtered
+ *  list), then download. */
 const StoresExportModal = ({ onClose, allStores, filteredStores }: StoresExportModalProps) => {
   const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
   const isFiltered = filteredStores.length !== allStores.length;

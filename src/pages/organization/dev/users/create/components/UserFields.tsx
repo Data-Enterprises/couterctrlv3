@@ -48,6 +48,8 @@ interface UserFieldsProps {
   };
 }
 
+/** The first step of the Add or Edit user wizard: Authorization, Identity (username and email, which must be
+ *  unique), Name and, when adding, Security. Reports to the wizard whether this step is complete. */
 const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
