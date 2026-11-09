@@ -4,47 +4,13 @@ import { receiptLabel } from "../utils";
 import { fmtInt } from "../utils/display";
 
 // Interfaces
-import type { ReactNode } from "react";
 import type { EventReceiptState } from "../../../../../features/dev/devEventPerfSlice";
 import type { EventReceipt } from "../utils";
 import type { ReceiptLine } from "../interfaces";
 
-/** A rule with a caption sitting in it, the way a till roll breaks sections. */
-const Rule = ({ children }: { children?: ReactNode }) =>
-  children ? (
-    <div className="my-2.5 flex items-center gap-2">
-      <span className="h-px flex-1 bg-gray-200" />
-      <span className="font-mono text-[11px] font-bold tracking-wider text-content">
-        {children}
-      </span>
-      <span className="h-px flex-1 bg-gray-200" />
-    </div>
-  ) : (
-    <div className="my-2 border-t border-dashed border-gray-300" />
-  );
-
-const Total = ({
-  label,
-  value,
-  strong = false,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) => (
-  <div className="flex items-baseline gap-3 py-0.5">
-    <span
-      className={`flex-1 font-mono uppercase tracking-wider ${strong ? "text-[12px] font-bold text-content" : "text-[11px] text-content/95"}`}
-    >
-      {label}
-    </span>
-    <span
-      className={`flex-none font-mono tabular-nums ${strong ? "text-[14px] font-bold text-content" : "text-[12px] text-content/95"}`}
-    >
-      {value}
-    </span>
-  </div>
-);
+// Components
+import Rule from "./Rule";
+import Total from "./Total";
 
 /**
  * One transaction, laid out like the paper it came off.

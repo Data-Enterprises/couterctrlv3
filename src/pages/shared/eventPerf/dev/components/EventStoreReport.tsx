@@ -1,5 +1,6 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
+import { fmtInt } from "../utils/display";
 
 // Interfaces
 import type { EventTotals } from "../utils";
@@ -11,9 +12,7 @@ import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import { LY_COLOR, TY_SWATCH_BG } from "../../../../../components-dev/mobile/perf/perfColors";
 
-const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
-
-interface Props {
+interface EventStoreReportProps {
   days: { iso: string; label: string; value: number; baseline: number }[];
   selectedDay: string | null;
   onToggleDay: (iso: string) => void;
@@ -53,7 +52,7 @@ const EventStoreReport = ({
   dayLabel,
   busiest,
   onViewDetails,
-}: Props) => {
+}: EventStoreReportProps) => {
   const fmt = measure === "amount" ? formatCurrency2 : fmtInt;
   const value = measure === "amount" ? totals.amount : totals.transactions;
   const base =

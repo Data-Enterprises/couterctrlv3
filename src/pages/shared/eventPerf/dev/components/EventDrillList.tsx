@@ -5,6 +5,7 @@ import {
   type EventGroupRow,
   type EventReceipt,
 } from "../utils";
+import { fmtInt } from "../utils/display";
 
 // Interfaces
 import type { EventSort } from "../../../../../features/dev/devEventPerfSlice";
@@ -16,10 +17,9 @@ import MobileSortChips, {
 } from "../../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
+import Empty from "./Empty";
 
-const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
-
-interface Props {
+interface EventDrillListProps {
   view: "cashiers" | "receipts";
   /** Rebuilding after a scope change — the lists here are the page's heaviest
    *  work, so the spinner is honest rather than a flash of an empty list. */
@@ -50,14 +50,6 @@ interface Props {
   onShowMore: () => void;
 }
 
-const Empty = ({ query }: { query: string }) => (
-  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-    {query
-      ? `Nothing matches "${query}".`
-      : "Nothing recorded for this selection."}
-  </div>
-);
-
 /**
  * The list under an expanded store card: the people in it, or the receipts.
  *
@@ -87,7 +79,7 @@ const EventDrillList = ({
   onClearCashier,
   remaining,
   onShowMore,
-}: Props) => {
+}: EventDrillListProps) => {
   const fmt = measure === "amount" ? formatCurrency2 : fmtInt;
   const listMax = Math.max(
     ...rows.map((r) =>
