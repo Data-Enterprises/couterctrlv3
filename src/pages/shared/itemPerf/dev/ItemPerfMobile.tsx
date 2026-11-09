@@ -13,7 +13,7 @@ import ItemSearchScreen from "./components/ItemSearchScreen";
 import GroupItemsScreen from "./components/GroupItemsScreen";
 import StoreGroupsScreen from "./components/StoreGroupsScreen";
 
-interface Props {
+interface ItemPerfMobileProps {
   /** What this page groups by. One per page — the same rows could group the
    *  other way, but Sub Dept Margins and Vendors are different pages to a
    *  user and showing both groupings on one screen would blur that. */
@@ -42,7 +42,7 @@ interface Props {
  * sales, so no two bars mean different things; profit dollars are printed
  * beside them. Percent answers how healthy, bars answer how much.
  */
-const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
+const ItemPerfMobile = ({ dimension, title, listLabel }: ItemPerfMobileProps) => {
   const perf = useAppSelector((s) => s.dev.itemPerf);
   /**
    * Narrows the group list by name.
