@@ -8,6 +8,7 @@ import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/margin
 import { calculateCogs } from "../../../../utils/cogs";
 // Net of tax, the basis every other Sales surface reconciles on.
 import { netOf } from "../../../../utils/perfPairs";
+import { formatCurrencyCompact } from "../../../../utils";
 
 // Interfaces
 import type { InventoryScope, ItemCostStats, ProductSummary, SubDeptSummary, VendorSummary } from "../interfaces";
@@ -16,6 +17,7 @@ import type {
   SubSale,
   SubSalesJsonResp,
 } from "../../../../interfaces";
+import type { PricePointsState } from "../../../../hooks/usePricePoints";
 
 /**
  * Fetching for Price Opt: Sub Department, lazy between two levels:
@@ -271,3 +273,31 @@ export const fetchVendors = async (
     }))
     .sort((a, b) => b.sales - a.sales);
 };
+
+// Every column is sized to its widest real value, so the 1fr price column
+// absorbs extra width ($1,332.63 must not clip).
+export const ACT_COLS = "1fr 44px 48px 40px 50px 36px 64px";
+export const TXN_COLS = "90px 1fr 92px 48px 64px";
+
+/** Receipts read "STORE-123456"; the half before the dash is the store, which
+ *  is the same for every row on a single-store page. */
+export const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
+
+/** Scale items ring a fractional quantity, so decimals only when there are
+ *  any — "1" reads better than "1.00" nineteen times over. */
+export const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toFixed(2));
+
+/**
+ * Money down the tree: whole dollars under a thousand, one decimal of a
+ * thousand above (the shared formatter mixes the two). Local, since the shared
+ * one has 23 other users.
+ */
+export const treeMoney = (n: number) =>
+  Math.abs(n) < 1000
+    ? `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`
+    : formatCurrencyCompact(n);
+
+/** The estimate grid's columns, a stable empty row list, and the dash for a missing figure. */
+export const EST_COLS = "1fr 50px 46px 56px 38px";
+export const NO_ROWS: PricePointsState["rows"] = [];
+export const dash = "—";

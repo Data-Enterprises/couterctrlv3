@@ -13,7 +13,7 @@ import {
   suggestionWithheld,
   type ActualPricePoint,
 } from "../../../../utils/pricePoints";
-import { itemCostStats } from "../utils";
+import { ACT_COLS, dash, EST_COLS, itemCostStats, NO_ROWS } from "../utils";
 import { resolveUnitCost } from "../utils/invoiceCost";
 
 // Interfaces
@@ -27,7 +27,18 @@ import {
   InformationCircleIcon,
   ArrowTrendingUpIcon,
 } from "@heroicons/react/20/solid";
-import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
+import ActualPriceRow from "./ActualPriceRow";
+
+interface ItemAnalysisPanelProps {
+  product: ProductSummary;
+  /** The price table, for whichever item `prices.upc` names. */
+  prices: PricePointsState;
+  /** The item's receipt lines, read only once a price is opened. */
+  receipts: ActualFetchState;
+  onLoadReceipts: () => void;
+  /** The latest invoice cost lookup for the item on screen. */
+  invoice: InvoiceCostState;
+}
 
 /**
  * One item, read two ways, and only one gets a vote. Estimated (left) is from
@@ -39,29 +50,13 @@ import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
  * dollars by its units, giving prices nobody was charged. The actual side
  * keeps its full height while it loads.
  */
-
-interface Props {
-  product: ProductSummary;
-  /** The price table, for whichever item `prices.upc` names. */
-  prices: PricePointsState;
-  /** The item's receipt lines, read only once a price is opened. */
-  receipts: ActualFetchState;
-  onLoadReceipts: () => void;
-  /** The latest invoice cost lookup for the item on screen. */
-  invoice: InvoiceCostState;
-}
-
-const EST_COLS = "1fr 50px 46px 56px 38px";
-const NO_ROWS: PricePointsState["rows"] = [];
-const dash = "—";
-
 const ItemAnalysisPanel = ({
   product,
   prices,
   receipts,
   onLoadReceipts,
   invoice,
-}: Props) => {
+}: ItemAnalysisPanelProps) => {
   // Only ever read when the fetch belongs to the item on screen. A response
   // for the previously-clicked UPC is dropped rather than rendered.
   const isCurrent = prices.upc === product.productCode;

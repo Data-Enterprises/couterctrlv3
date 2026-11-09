@@ -3,6 +3,7 @@ import { useState } from "react";
 
 // Utils
 import { formatCurrency2, formatDate } from "../../../../utils";
+import { ACT_COLS, fmtQty, transactionLabel, TXN_COLS } from "../utils";
 
 // Interfaces
 import type { ActualPricePoint } from "../../../../utils/pricePoints";
@@ -11,18 +12,7 @@ import type { TransactionListItem } from "../../../../interfaces";
 // Components
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 
-/**
- * One actual price point, and the receipts behind it on demand. Shared by the
- * exact and averaged tables. The server's price table counts receipts but
- * doesn't list them, so `onOpen` reads them and `lines` stays null until in.
- */
-
-// Every column is sized to its widest real value, so the 1fr price column
-// absorbs extra width ($1,332.63 must not clip).
-export const ACT_COLS = "1fr 44px 48px 40px 50px 36px 64px";
-const TXN_COLS = "90px 1fr 92px 48px 64px";
-
-interface Props {
+interface ActualPriceRowProps {
   point: ActualPricePoint;
   /** The price the suggestion band is naming. Tinted so the two tie together. */
   isBest?: boolean;
@@ -34,14 +24,11 @@ interface Props {
   onOpen: () => void;
 }
 
-/** Receipts read "STORE-123456"; the half before the dash is the store, which
- *  is the same for every row on a single-store page. */
-const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
-
-/** Scale items ring a fractional quantity, so decimals only when there are
- *  any — "1" reads better than "1.00" nineteen times over. */
-const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toFixed(2));
-
+/**
+ * One actual price point, and the receipts behind it on demand. Shared by the
+ * exact and averaged tables. The server's price table counts receipts but
+ * doesn't list them, so `onOpen` reads them and `lines` stays null until in.
+ */
 const ActualPriceRow = ({
   point,
   isBest = false,
@@ -49,7 +36,7 @@ const ActualPriceRow = ({
   receiptsLoading,
   receiptsError,
   onOpen,
-}: Props) => {
+}: ActualPriceRowProps) => {
   const [open, setOpen] = useState(false);
 
   return (

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import { formatCurrencyCompact } from "../../../../utils";
+import { treeMoney } from "../utils";
 
 // Interfaces
 import type { TreeGroup, ProductSummary } from "../interfaces";
@@ -19,24 +19,7 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
 
-/**
- * Groups, and the items inside the one that's open: a tree, so sibling items
- * are compared side by side. One group open at a time (on the department page
- * each opening is a call). Group ids are strings so one component serves
- * departments and vendors.
- */
-
-/**
- * Money down the tree: whole dollars under a thousand, one decimal of a
- * thousand above (the shared formatter mixes the two). Local, since the shared
- * one has 23 other users.
- */
-const treeMoney = (n: number) =>
-  Math.abs(n) < 1000
-    ? `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`
-    : formatCurrencyCompact(n);
-
-interface Props {
+interface InventoryTreePanelProps {
   title: string;
   /** Which of the two Price Opt help pages the "?" opens. */
   helpPage: HelpPage;
@@ -57,6 +40,12 @@ interface Props {
   groupHasItem?: (groupId: string, term: string) => boolean;
 }
 
+/**
+ * Groups, and the items inside the one that's open: a tree, so sibling items
+ * are compared side by side. One group open at a time (on the department page
+ * each opening is a call). Group ids are strings so one component serves
+ * departments and vendors.
+ */
 const InventoryTreePanel = ({
   title,
   helpPage,
@@ -73,7 +62,7 @@ const InventoryTreePanel = ({
   onSearchOpen,
   onExportOpen,
   groupHasItem,
-}: Props) => {
+}: InventoryTreePanelProps) => {
   const [filter, setFilter] = useState("");
 
   // The filter reaches items as well as groups, so typing a product name
