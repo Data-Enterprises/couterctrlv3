@@ -84,7 +84,7 @@ const Row = ({
     >
       <ChevronRightIcon
         className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${
-          warn ? "text-amber-900" : "text-content/85"
+          warn ? "text-amber-900" : "text-content/95"
         } ${isOpen ? "rotate-90" : ""}`}
       />
       <span
@@ -96,7 +96,7 @@ const Row = ({
       </span>
       <span
         className={`text-[12px] ${
-          warn ? "text-amber-900 font-semibold" : "text-content/85"
+          warn ? "text-amber-900 font-semibold" : "text-content/95"
         }`}
       >
         {summary}
@@ -168,7 +168,7 @@ const choiceLabel = (list: ListFilter, item: ExportListItem): ReactNode => {
       return (
         <span className="flex items-center gap-2 min-w-0">
           <span className="font-medium">{item.value}</span>
-          <span className="truncate text-content/85">{item.label}</span>
+          <span className="truncate text-content/95">{item.label}</span>
         </span>
       );
     case "name":
@@ -176,7 +176,7 @@ const choiceLabel = (list: ListFilter, item: ExportListItem): ReactNode => {
     case "codeName":
       return (
         <span className="flex items-center gap-2 min-w-0">
-          <span className="font-mono text-[11.5px] text-content/85">{item.value}</span>
+          <span className="font-mono text-[11.5px] text-content/95">{item.value}</span>
           <span className="truncate">{item.label || "—"}</span>
         </span>
       );
@@ -184,7 +184,7 @@ const choiceLabel = (list: ListFilter, item: ExportListItem): ReactNode => {
       return list.blankHint && item.value === "" ? (
         <span className="flex items-center gap-1.5">
           {item.label}
-          <span className="text-[11px] text-content/85">{list.blankHint}</span>
+          <span className="text-[11px] text-content/95">{list.blankHint}</span>
         </span>
       ) : (
         item.label
@@ -289,7 +289,7 @@ const ListSearch = ({
       className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
     />
     {value.trim().length > 0 && (
-      <span className="text-[11px] text-content/85">
+      <span className="text-[11px] text-content/95">
         {shown} of {total} shown · ticking is unaffected by the search
       </span>
     )}
@@ -491,7 +491,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
     // broken rather than smooth.
     <div className="w-[340px] h-full flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85 flex-1">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
           Configuration
         </span>
         <button
@@ -499,7 +499,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
           onClick={() => setHelp(true)}
           title="How this page works"
           aria-label="How this page works"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
         >
           <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
         </button>
@@ -511,7 +511,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
           }}
           title="Clear every pick — the loaded range stays"
           aria-label="Clear every pick, keeping the loaded range"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
         >
           <ArrowPathIcon className="w-3.5 h-3.5" />
         </button>
@@ -525,7 +525,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         */}
       <div className="px-2.5 pb-1.5 flex-shrink-0" data-help="source">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
             Data
           </span>
           <span className="text-[12px] font-semibold flex-1">{ctx.source.label}</span>
@@ -554,13 +554,13 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         */}
       <div className="px-2.5 pb-2 flex-shrink-0">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
             File
           </span>
           <span className="text-[12px] font-semibold flex-1">
             {ctx.aggregating ? "Summary" : "Every line"}
           </span>
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             {ctx.aggregating
               ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"} · ${ctx.measureItems.length} measure${ctx.measureItems.length === 1 ? "" : "s"}`
               : `${ctx.selectedColumns.length} of ${ctx.columns.length} columns`}
@@ -617,7 +617,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
               onAll={() => ctx.dispatch(setSelectedDays(ctx.days))}
               onNone={() => ctx.dispatch(setSelectedDays([]))}
             />
-            <span className="text-[11px] text-content/85">
+            <span className="text-[11px] text-content/95">
               Particular days inside the range, not a second range.
             </span>
             <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
@@ -694,7 +694,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 onNone={() => ctx.dispatch(setPicks({ filter: list.filter, values: [] }))}
               />
               {list.note && (
-                <span className="text-[11px] text-content/85">{list.note}</span>
+                <span className="text-[11px] text-content/95">{list.note}</span>
               )}
               {list.search ? (
                 <>
@@ -715,7 +715,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 items.map(choice)
               )}
               {list.empty && items.length === 0 && (
-                <span className="text-[12px] text-content/85">{list.empty}</span>
+                <span className="text-[12px] text-content/95">{list.empty}</span>
               )}
             </div>
           </Row>
@@ -754,7 +754,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             />
           </label>
           <div className="flex items-center gap-3">
-            <span className="text-[11.5px] text-content/85 flex-1">
+            <span className="text-[11.5px] text-content/95 flex-1">
               {ctx.productCodes.length === 0
                 ? "Empty means every product."
                 : `${ctx.productCodes.length} code${
@@ -790,7 +790,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             />
           </label>
           <div className="flex items-center gap-3">
-            <span className="text-[11.5px] text-content/85 flex-1">
+            <span className="text-[11.5px] text-content/95 flex-1">
               {/*
                 * Not split on spaces, unlike the codes: WHOLE MILK is one
                 * thing to look for. A line is kept if its description holds
@@ -864,7 +864,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 label={
                   <span className="flex items-center gap-1.5">
                     Personal columns
-                    <span className="text-[11px] text-content/85">
+                    <span className="text-[11px] text-content/95">
                       {piiNames.filter((n) =>
                         ctx.selectedColumns.includes(n),
                       ).length}{" "}
@@ -906,7 +906,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                         PERSONAL
                       </span>
                     )}
-                    <span className="text-[10.5px] text-content/85">
+                    <span className="text-[10.5px] text-content/95">
                       {c.data_type}
                     </span>
                   </span>
@@ -914,7 +914,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
               />
             ))}
             {shown.length === 0 && (
-              <span className="text-[12px] text-content/85 py-2">
+              <span className="text-[12px] text-content/95 py-2">
                 No column matches that.
               </span>
             )}
@@ -936,7 +936,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             One row per combination of these, in the order you tick them.
             Ticking one makes the file a summary.
           </span>
@@ -990,7 +990,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                     <span className="font-mono text-[11.5px] flex-1 truncate">
                       {c.name}
                     </span>
-                    <span className="text-[10.5px] text-content/85">
+                    <span className="text-[10.5px] text-content/95">
                       {c.data_type}
                     </span>
                   </span>
@@ -1014,7 +1014,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <span className="text-[11px] text-content/85">
+          <span className="text-[11px] text-content/95">
             What to work out for each row. The name in the file carries the
             operation, so nothing reads as something it is not.
           </span>
@@ -1054,14 +1054,14 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                   type="button"
                   onClick={() => ctx.dispatch(removeAggregate(i))}
                   aria-label={`Remove ${aliasFor(m.column, m.fn)}`}
-                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate transition-colors"
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate transition-colors"
                 >
                   ×
                 </button>
               </div>
               <TextField
                 label={
-                  <span className="text-[11px] font-normal text-content/85">
+                  <span className="text-[11px] font-normal text-content/95">
                     Called in the file
                   </span>
                 }
@@ -1087,24 +1087,24 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
               className="flex flex-col gap-1 border border-brand_line_2 rounded-lg p-2 bg-filter_active"
             >
               <div className="flex items-center gap-1.5">
-                <span className="flex-1 min-w-0 font-mono text-[11px] text-content/85 truncate">
+                <span className="flex-1 min-w-0 font-mono text-[11px] text-content/95 truncate">
                   {sketchExpr(m.expr)}
                 </span>
-                <span className="text-[9.5px] font-semibold tracking-wide text-content/85">
+                <span className="text-[9.5px] font-semibold tracking-wide text-content/95">
                   COMPUTED
                 </span>
                 <button
                   type="button"
                   onClick={() => ctx.dispatch(removeComputed(i))}
                   aria-label={`Remove ${m.alias}`}
-                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate transition-colors"
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate transition-colors"
                 >
                   ×
                 </button>
               </div>
               <TextField
                 label={
-                  <span className="text-[11px] font-normal text-content/85">
+                  <span className="text-[11px] font-normal text-content/95">
                     Called in the file
                   </span>
                 }
@@ -1125,7 +1125,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             add an aggregate
           </button>
           {ctx.measureItems.length === 0 && (
-            <span className="text-[11.5px] text-content/85">
+            <span className="text-[11.5px] text-content/95">
               A summary with no aggregates is just the list of groups.
               Arithmetic between them comes from the query box.
             </span>
@@ -1168,7 +1168,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 onChange={(value) => ctx.dispatch(setFlag({ dateFormat: value }))}
                 className="w-full"
               />
-              <span className="text-[11px] text-content/85">
+              <span className="text-[11px] text-content/95">
                 How the file spells its date columns. The preview above shows
                 them as the table stores them. Sorting stays chronological
                 whichever is picked.
@@ -1259,7 +1259,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                   </button>
                 ))}
             </div>
-            <span className="text-[11px] text-content/85">
+            <span className="text-[11px] text-content/95">
               {ctx.orderBy.length === 0
                 ? "Unsorted unless the switch below is on. Sorting a long file takes longer to build."
                 : "Click a key to turn it around, again to drop it."}
@@ -1273,7 +1273,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             label={
               <span className="flex items-center gap-2">
                 Sort the file
-                <span className="text-[11px] text-content/85">
+                <span className="text-[11px] text-content/95">
                   {ctx.orderBy.length > 0
                     ? "the keys above win"
                     : ctx.aggregating
