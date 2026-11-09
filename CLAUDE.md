@@ -29,8 +29,18 @@ they are, and state that lives in one obvious place.
 
 ## 2. Components: the main component lists its sections
 
-- **One exported component per file**, named after it (PascalCase). Small private helper
-  components may sit in the same file, unexported.
+- **Every component file has exactly this shape, in this order:**
+  1. the imports, labelled (§6)
+  2. the component's props interface (`<Component>Props`), if it takes props
+  3. the component, with its doc comment above it
+  4. `export default <Component>;` as the last line
+
+  Nothing else goes in the file. The file is named after its component (PascalCase).
+  - **A helper component** (a row, a cell, a badge) gets its own file in `components/`.
+  - **Any other type** goes in `interfaces/index.ts`.
+  - **Constants and plain functions** go in `utils/index.ts` (§3).
+
+  **Why:** every file reads the same way, so it is easy to read and safe to edit by hand.
 - **Every file stays well under ~900 lines.** Past that, split it.
 - **The main component reads like a table of contents.** It holds the state and handlers and
   lays out its sections:
@@ -68,12 +78,14 @@ Put a file in the **lowest folder that contains everything that uses it**.
   If one gets long, split it by topic in the same folder (`utils/csv.ts`).
 - No component goes in a helper file, and no helper is exported from a component file. No barrel
   files that only re-export.
-- **A component file holds its components and nothing else.** Constants (class strings, column
-  widths, option lists) and plain functions go to the `utils/index.ts` of the lowest folder that
-  uses them, even when only one file uses them. For example, Forecasting's `COLS`, `HEAD` and
-  `PILL` and its `parseUpcs` are in `utils/` (26a7b7f5). New code is written this way.
-  - Older component files still hold some (163 files on 9 Nov 2026). Move them out in a move
-    commit of their own, never inside a logic change.
+- **A component file holds its component and nothing else** (the shape in §2). Constants (class
+  strings, column widths, option lists) and plain functions go to the `utils/index.ts` of the
+  lowest folder that uses them, even when only one file uses them. For example, Forecasting's
+  `COLS`, `HEAD` and `PILL` and its `parseUpcs` are in `utils/` (26a7b7f5). New code is written
+  this way.
+  - Older component files still break the shape. On 9 Nov 2026, 169 of 552 dev component files
+    held, between them, 372 constants or functions, 62 extra components and 47 extra types. Bring
+    them in line in move commits of their own, never inside a logic change.
   - A doc comment stays above the thing it describes: the component's comment stays with the
     component, and each moved constant gets one line of its own.
 - Don't create empty folders.
@@ -222,8 +234,8 @@ app or a dev server.** It is tested by hand.
 
 ## Before every commit
 
-- [ ] Each file exports at most one component; none near ~900 lines; constants and plain functions
-      are in `utils/`, not in the component file
+- [ ] Each component file is imports, props interface, component, `export default`, and nothing
+      else; none near ~900 lines
 - [ ] Helpers are in the `utils/` `hooks/` `interfaces/` of the lowest folder holding all their users
 - [ ] No import into another page's folder; no prod-library import of the dev library
 - [ ] Persisting state is in Redux and read through the page context hook; `useState` is only for
