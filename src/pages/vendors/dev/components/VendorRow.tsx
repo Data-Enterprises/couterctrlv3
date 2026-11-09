@@ -62,7 +62,7 @@ const VendorRow = ({
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
       <div className="min-w-0 flex-1">
         <div className="text-[13px] font-medium text-content truncate">{label}</div>
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW <span className="font-semibold">{lwText}</span> · LY{" "}
           <span className="font-semibold">{lyText}</span>
         </div>

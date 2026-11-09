@@ -160,7 +160,7 @@ const VendorDetailPanel = () => {
   if (!row) {
     return (
       <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl flex items-center justify-center">
-        <span className="text-[11px] text-content/40">
+        <span className="text-[11px] text-content/95">
           Select a vendor to see its week
         </span>
       </div>
@@ -321,7 +321,7 @@ const VendorDetailPanel = () => {
                   basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
                 })
               }
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
               title={`See item actions (${criticalItems.length})`}
             >
               <ClipboardDocumentListIcon className="h-4 w-4" />
@@ -331,7 +331,7 @@ const VendorDetailPanel = () => {
           <button
             onClick={() => setExportOpen(true)}
             disabled={vend.itemsLoading || !!vend.itemsError}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             title={vend.itemsLoading ? "Export — items still loading" : "Export"}
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
@@ -394,7 +394,7 @@ const VendorDetailPanel = () => {
           with no items. */}
       {vend.itemsLoading || vend.itemsError ? (
         <div className="flex-1 flex items-center justify-center p-6">
-          <span className="text-[11.5px] text-content/70">
+          <span className="text-[11.5px] text-content/95">
             {vend.itemsError ?? "Loading this week's items…"}
           </span>
         </div>

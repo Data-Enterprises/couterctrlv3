@@ -361,7 +361,7 @@ export const CHIP_BASE: Record<Tier, string> = {
   critical: "bg-severity_critical_bg text-severity_critical_text",
   watch: "bg-severity_watch_bg text-severity_watch_text",
   healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-content/70",
+  ungraded: "bg-gray-100 text-content/95",
 };
 
 /** The ring a tier chip wears while its filter is on. */
