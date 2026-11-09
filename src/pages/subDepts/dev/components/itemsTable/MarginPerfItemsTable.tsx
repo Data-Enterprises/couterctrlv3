@@ -32,7 +32,7 @@ import ItemListHeader from "./components/ItemListHeader";
 import ItemListRow from "./components/ItemListRow";
 import ItemReport from "./components/ItemReport";
 
-interface Props {
+interface MarginPerfItemsTableProps {
   tyMargins: SubDeptMargin[];
   lwMargins: SubDeptMargin[];
   lyMargins: SubDeptMargin[];
@@ -47,7 +47,7 @@ const MarginPerfItemsTable = ({
   lwMargins,
   lyMargins,
   coverage,
-}: Props) => {
+}: MarginPerfItemsTableProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();

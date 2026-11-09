@@ -4,11 +4,11 @@ import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../hooks";
 
 // Utils
-import { calculateCogs } from "../../../../utils/cogs";
 import { getLYDate } from "../../../../utils/dates";
 import { addDays, formatCurrency2 } from "../../../../utils";
 import { getHolidayName } from "../../../../utils/holidays";
 import { gradeBasis, type Coverage } from "../../../../utils/grading";
+import { agg, byDate, fmtPct, fmtPts } from "../utils";
 
 // Interfaces
 import type { SubDeptMargin } from "../../../../interfaces";
@@ -16,29 +16,13 @@ import type { SubDeptMargin } from "../../../../interfaces";
 // Components
 import { StarIcon } from "@heroicons/react/20/solid";
 
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
-
-const agg = (rows: SubDeptMargin[]) => {
-  const sales = rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
-  const cogs = rows.reduce(
-    (acc, m) =>
-      acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
-    0,
-  );
-  return { sales, marginPct: sales > 0 ? ((sales - cogs) / sales) * 100 : 0 };
-};
-
-const byDate = (src: SubDeptMargin[], dateStr: string) =>
-  src.filter((m) => m.sale_date.split("T")[0] === dateStr);
-
-interface Props {
+interface MarginPerfDaySidebarProps {
   /** The store's coverage for the week — the All Week card grades on last
    *  year only when it covers every day. See utils/grading. */
   coverage?: Coverage;
 }
 
-const MarginPerfDaySidebar = ({ coverage }: Props) => {
+const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

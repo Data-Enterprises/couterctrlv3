@@ -1,142 +1,20 @@
 // Hooks
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginActions, useSubMarginState } from "../hooks";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { COLS, inputStyle } from "../utils";
 
 // Interfaces
 import type { SubDeptCost } from "../../../../interfaces";
+import type { Operator, SortCol } from "../interfaces";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
-
-// ── Shared filter popover ─────────────────────────────────────────────────────
-
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  align?: "left" | "right";
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
-const ColFilter = ({ label, active, align = "left", onApply, onClear, children }: ColFilterProps) => {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
-
-  return (
-    <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-brand_navy" : "text-content"
-        }`}
-      >
-        {label}
-        {active && <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />}
-      </button>
-      {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
-      {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            ...(align === "right" ? { right: 0 } : { left: 0 }),
-            zIndex: 200,
-            background: "white",
-            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
-            borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-            padding: "10px 10px 8px",
-            minWidth: 168,
-          }}
-        >
-          {children}
-          <div className="flex gap-1.5 mt-2">
-            <button
-              onClick={() => { onApply(); setOpen(false); }}
-              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium"
-              style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
-            >
-              <MagnifyingGlassIcon className="w-3 h-3" /> Apply
-            </button>
-            {onClear && (
-              <button
-                onClick={() => { onClear(); setOpen(false); }}
-                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ── Threshold filter input (operator + value) ─────────────────────────────────
-
-type Operator = ">" | "<" | "=";
-
-interface ThreshInputProps {
-  operator: Operator;
-  value: string;
-  onOperatorChange: (op: Operator) => void;
-  onValueChange: (v: string) => void;
-  placeholder?: string;
-}
-
-const inputStyle: React.CSSProperties = {
-  fontSize: 11,
-  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
-  borderRadius: 4,
-  padding: "4px 7px",
-  outline: "none",
-  color: "var(--color-text-primary)",
-  background: "rgb(var(--color-brand-navy) / 0.03)",
-};
-
-const ThreshInput = ({ operator, value, onOperatorChange, onValueChange, placeholder }: ThreshInputProps) => (
-  <div className="flex gap-1">
-    <select
-      value={operator}
-      onChange={(e) => onOperatorChange(e.target.value as Operator)}
-      style={{ ...inputStyle, width: 42, padding: "4px 4px" }}
-    >
-      <option value=">">{">"}</option>
-      <option value="<">{"<"}</option>
-      <option value="=">{"="}</option>
-    </select>
-    <input
-      autoFocus
-      type="number"
-      style={{ ...inputStyle, flex: 1 }}
-      placeholder={placeholder ?? "Value…"}
-      value={value}
-      onChange={(e) => onValueChange(e.target.value)}
-    />
-  </div>
-);
-
-// ── Table ─────────────────────────────────────────────────────────────────────
-
-type SortCol = "description" | "upc" | "unitCost" | "caseCost" | "qty" | "cogs";
-
-const COLS = "minmax(0,2fr) 0.6fr 0.55fr 0.55fr 0.42fr 0.55fr";
+import ColFilter from "./ColFilter";
+import ThreshInput from "./ThreshInput";
 
 const SubDeptCostGrid = () => {
   const dispatch = useAppDispatch();

@@ -6,12 +6,12 @@ import { useSubMarginCtx, useSubMarginActions } from "../hooks";
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 
-interface Props {
+interface SmDevEntryCardProps {
   onSearch: () => void;
   notice?: string;
 }
 
-const SmDevEntryCard = ({ onSearch, notice }: Props) => {
+const SmDevEntryCard = ({ onSearch, notice }: SmDevEntryCardProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();

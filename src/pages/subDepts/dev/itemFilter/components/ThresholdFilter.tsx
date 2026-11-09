@@ -10,13 +10,13 @@ import type { ItemFilterType, ThreshOperator } from "../../../../../features/dev
 import CheckBox from "../../../../../components-dev/inputs/CheckBox";
 import Input from "../../../../../components-dev/inputs/Input";
 
-interface ThresholdFilter {
+interface ThresholdFilterProps {
   label: string;
   type: ItemFilterType;
   handleClose: () => void;
 }
 
-const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
+const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilterProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

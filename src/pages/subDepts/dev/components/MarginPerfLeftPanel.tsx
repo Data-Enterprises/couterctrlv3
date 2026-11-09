@@ -11,7 +11,6 @@ import {
   setSelectedSubDeptId,
   type MarginTier,
   type SubDeptGrade,
-  type GradingMetric,
 } from "../../../../features/dev/devSubMarginSlice";
 
 // Utils
@@ -36,10 +35,14 @@ import {
   getTier,
   getGradeDelta,
   storeMarginPctOf,
+  SEV_RANK,
+  TOGGLE_OPTS,
+  TIER_STROKE,
 } from "../utils";
 
 // Interfaces
 import type { SubDeptMargin } from "../../../../interfaces";
+import type { SdSortCol } from "../interfaces";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
@@ -48,54 +51,16 @@ import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter"
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import Sparkline from "./Sparkline";
 
-interface Props {
+interface MarginPerfLeftPanelProps {
   onSearchOpen: () => void;
   /** Re-presents the cached search as one co-located location, or all of them
    *  combined when null. No refetch — see SubDeptMarginsDev. */
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-/** Sortable columns. Trend is a shape, not a figure, so it stays static. */
-type SdSortCol = "ty" | "lw" | "ly";
-
-const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
-
-const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [
-  { key: "margin", label: "Margin" },
-  { key: "sales", label: "Sales" },
-];
-
-const TIER_STROKE: Record<MarginTier, string> = {
-  critical: "#ef4444",
-  watch: "#fbbf24",
-  healthy: "#10b981",
-  ungraded: "#9ca3af",
-};
-
-// Small inline trend line for a sub dept's daily sales across the current
-// week — purely visual, no axis/labels, sized to sit in a single row.
-const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => {
-  const w = 48;
-  const h = 18;
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const range = max - min;
-  const points = values
-    .map((v, i) => {
-      const x = values.length > 1 ? (i / (values.length - 1)) * w : w / 2;
-      const y = range > 0 ? h - 2 - ((v - min) / range) * (h - 4) : h / 2;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="flex-shrink-0">
-      <polyline points={points} fill="none" stroke={stroke} strokeWidth={1.5} />
-    </svg>
-  );
-};
-
-const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
+const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLeftPanelProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<SdSortCol>();

@@ -1,5 +1,9 @@
+// API
+import { getSubMargins } from "../../../../api/subMargins";
+import { getRollup } from "../../../../api/rollup";
+
 // Utils
-import { calculateCogs } from "../../../../utils/cogs";
+import { calculateCogs, hasNoUsableCost } from "../../../../utils/cogs";
 import { getLYDate, setDates } from "../../../../utils/dates";
 import {
   coverageOf,
@@ -12,7 +16,12 @@ import {
 import type { RollupRow } from "../../../../api/rollup";
 import type { MarginDollars } from "../../../../utils/grading";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
-import type { SubDeptMargin } from "../../../../interfaces";
+import type {
+  SubDept,
+  SubDeptMargin,
+  SubMarginsJsonResp,
+} from "../../../../interfaces";
+import type { RawSearch } from "../interfaces";
 
 /** The figure a sub department is graded and ranked on: last year when it
  * covers every day of the week, else last week when that does, else nothing.
@@ -435,5 +444,322 @@ export const computeMarginDayMatched = (
         ? marginPct(lwMatch.tyNet, lwMatch.tyCogs) -
           marginPct(lwMatch.refNet, lwMatch.refCogs)
         : null,
+  };
+};
+
+/** A signed percent to two places, and a signed point change. */
+export const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+export const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
+
+/** Net sales and margin % over margin rows. */
+export const agg = (rows: SubDeptMargin[]) => {
+  const sales = rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+  const cogs = rows.reduce(
+    (acc, m) =>
+      acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+    0,
+  );
+  return { sales, marginPct: sales > 0 ? ((sales - cogs) / sales) * 100 : 0 };
+};
+
+/** The margin rows of one yyyy-mm-dd day. */
+export const byDate = (src: SubDeptMargin[], dateStr: string) =>
+  src.filter((m) => m.sale_date.split("T")[0] === dateStr);
+
+/** Worst-first order of the margin tiers. */
+export const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
+
+/** The list's Margin / Sales toggle. */
+export const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [
+  { key: "margin", label: "Margin" },
+  { key: "sales", label: "Sales" },
+];
+
+/** Each tier's sparkline stroke colour. */
+export const TIER_STROKE: Record<MarginTier, string> = {
+  critical: "#ef4444",
+  watch: "#fbbf24",
+  healthy: "#10b981",
+  ungraded: "#9ca3af",
+};
+
+/** The cost grid's filter input style. */
+export const inputStyle: React.CSSProperties = {
+  fontSize: 11,
+  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
+  borderRadius: 4,
+  padding: "4px 7px",
+  outline: "none",
+  color: "var(--color-text-primary)",
+  background: "rgb(var(--color-brand-navy) / 0.03)",
+};
+
+/** The cost grid's column widths. */
+export const COLS = "minmax(0,2fr) 0.6fr 0.55fr 0.55fr 0.42fr 0.55fr";
+
+/** fetchAllPages, with a failed read as no rows. */
+export const fetchSafe = (
+  url: string,
+  token: string,
+  subDeptId: number,
+  start: string,
+  end: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+): Promise<SubDeptMargin[]> =>
+  fetchAllPages(
+    url,
+    token,
+    subDeptId,
+    start,
+    end,
+    useGroups,
+    searchValue,
+    singleStore,
+  ).catch(() => []);
+
+/** Every page of a sub department's margins: page 1, then the rest together. */
+export const fetchAllPages = async (
+  url: string,
+  token: string,
+  subDeptId: number,
+  start: string,
+  end: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+): Promise<SubDeptMargin[]> => {
+  const resp = await getSubMargins(
+    url,
+    token,
+    subDeptId,
+    start,
+    end,
+    useGroups,
+    searchValue,
+    singleStore,
+  );
+  const j: SubMarginsJsonResp = resp.data;
+  if (j.error !== 0) throw new Error(j.msg ?? "Failed to load margins");
+
+  // Pages 2..N go out together. Sequential paging was tried and measured
+  // slower in practice, so the parallel form stands regardless of how many
+  // workers the API runs.
+  let data: SubDeptMargin[] = j.subs;
+  if (j.total_pages > 1) {
+    const extras = await Promise.all(
+      Array.from({ length: j.total_pages - 1 }, (_, i) =>
+        getSubMargins(
+          url,
+          token,
+          subDeptId,
+          start,
+          end,
+          useGroups,
+          searchValue,
+          singleStore,
+          i + 2,
+        ),
+      ),
+    );
+    for (const r of extras) {
+      const pj: SubMarginsJsonResp = r.data;
+      if (pj.error === 0) data = [...data, ...pj.subs];
+    }
+  }
+  return data;
+};
+
+/**
+ * The `subDeptId` value that asks `subs/subs` for every department at once.
+ *
+ * Named rather than a bare 0 at the call site, because 0 is also a real
+ * department number in the response — `deriveSubDepts` deliberately keeps rows
+ * whose `sub_department` is 0. As a *request* argument it means "all"; as a
+ * *row value* it means that department. Conflating the two is easy and this
+ * name is here to stop it.
+ *
+ * It also removes a fault in the shape this replaced: that version asked for
+ * each department in turn, so on a store that has a department 0 the request
+ * for it came back with every item in the store, and department 0 was then
+ * graded against all of them.
+ */
+export const ALL_SUB_DEPTS = 0;
+
+/**
+ * Rows falling inside a date window, bounds inclusive.
+ *
+ * Dates are `yyyy-mm-dd`, so a string compare is a date compare — no parsing,
+ * and no timezone to get wrong.
+ */
+export const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
+  rows.filter((r) => {
+    const d = r.sale_date.split("T")[0];
+    return d >= start && d <= end;
+  });
+
+/** Item rows keyed by the department each row says it belongs to. */
+export const groupBySubDept = (rows: SubDeptMargin[]) => {
+  const by = new Map<number, SubDeptMargin[]>();
+  for (const row of rows) {
+    const found = by.get(row.sub_department);
+    if (found) found.push(row);
+    else by.set(row.sub_department, [row]);
+  }
+  return by;
+};
+
+/** A search with nothing read yet. */
+export const emptyRaw = (): RawSearch => ({
+  totals: { ty: [], lw: [], ly: [] },
+  items: { ty: [], lw: [], ly: [] },
+  itemsReady: false,
+});
+
+/** One rollup read by department, unpaged. */
+export const fetchTotals = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+) => {
+  const resp = await getRollup(url, token, {
+    by: "sub_department",
+    startDate,
+    endDate,
+    useGroups,
+    searchValue,
+    singleStore,
+  });
+  if (resp.data.error !== 0) {
+    throw new Error(resp.data.msg ?? "Could not read the department totals");
+  }
+  return resp.data.rows ?? [];
+};
+
+/**
+ * A department's grade from its totals alone.
+ *
+ * The same day-matched arithmetic as `computeSubDeptGrade`, on the rollup's
+ * rows, so every rate and delta is the one the item rows will give. What it
+ * cannot have is the items: the arrays are empty and the no-cost count is 0
+ * until the item rows land and the full grade replaces this one.
+ */
+export const computeTotalsGrade = (
+  ty: RollupRow[],
+  ly: RollupRow[],
+  lw: RollupRow[],
+  coverage: Coverage,
+): SubDeptGrade => {
+  const m = computeMarginDayMatched(ty, lw, ly);
+  const sales = computeStoreDayMatched(ty, lw, ly);
+  return {
+    tyMarginPct: m.tyMarginPct,
+    lyMarginPct: m.lyMarginPct,
+    ptsDelta: m.ptsDelta,
+    lwMarginPct: m.lwMarginPct,
+    lwPtsDelta: m.lwPtsDelta,
+    noCostCount: 0,
+    dollars: m.dollars,
+    tySales: sales.tySales,
+    lySales: sales.lySales,
+    lwSales: sales.lwSales,
+    vsLYSalesPct: sales.vsLYSalesPct,
+    vsLWSalesPct: sales.vsLWSalesPct,
+    tyWeekOneMargins: [],
+    lyWeekOneMargins: [],
+    lwWeekOneMargins: [],
+    tyDaily: netByDay(ty),
+    coverage,
+  };
+};
+
+/** Rollup rows keyed by department. The key is the department number as
+ *  text, "0" for none, which is the number the item rows carry. */
+export const groupTotalsBySubDept = (rows: RollupRow[]) => {
+  const by = new Map<number, RollupRow[]>();
+  for (const row of rows) {
+    const id = Number(row.key);
+    const found = by.get(id);
+    if (found) found.push(row);
+    else by.set(id, [row]);
+  }
+  return by;
+};
+
+// No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
+// every row), so dropping it here made this page show one fewer sub department
+// and a lower total than Sales.
+export const deriveSubDepts = (
+  rows: { sub_department: number; sub_department_description: string }[],
+): SubDept[] =>
+  rows
+    .reduce((acc: SubDept[], curr) => {
+      if (!acc.some((s) => s.id === curr.sub_department)) {
+        acc.push({
+          id: curr.sub_department,
+          desc: curr.sub_department_description,
+        });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => a.id - b.id);
+
+/** A sub department's grade from TY, LY and LW margins and the coverage. */
+export const computeSubDeptGrade = (
+  tyMargins: SubDeptMargin[],
+  lyMargins: SubDeptMargin[],
+  lwMargins: SubDeptMargin[],
+  coverage: Coverage,
+): SubDeptGrade => {
+  // Each metric reads the endpoint that's authoritative for it — getTier and
+  // the panels already branch on gradingMetric, so this lands in the right
+  // place without any UI change:
+  //
+  //  Sales metric  -> sub_sales. It has the correct item_ring_type filter
+  //                   ('ITEM','SUBD'); subs/subs only matches 'ITEM' and so
+  //                   runs short. Same endpoint and formula as the Sales page,
+  //                   including its whole-range comparison, so the two agree
+  //                   exactly.
+  //  Margin metric -> subs/subs, the only source carrying cost. Stays
+  //                   day-matched (computeMarginDayMatched) since there's no
+  //                   Sales figure it has to line up with.
+  const m = computeMarginDayMatched(tyMargins, lwMargins, lyMargins);
+  // Sales figures day-matched too, exactly as the store header above them is.
+  // They used to be whole-range sums — full week against whatever last year
+  // returned — which is the comparison that flipped Wic Grocery from -42% to
+  // +49% on the Sales page.
+  const sales = computeStoreDayMatched(tyMargins, lwMargins, lyMargins);
+
+  const seen = new Set<string>();
+  let noCostCount = 0;
+  for (const row of tyMargins) {
+    if (!seen.has(row.product_code)) {
+      seen.add(row.product_code);
+      if (hasNoUsableCost(row)) noCostCount++;
+    }
+  }
+
+  return {
+    tyMarginPct: m.tyMarginPct,
+    lyMarginPct: m.lyMarginPct,
+    ptsDelta: m.ptsDelta,
+    lwMarginPct: m.lwMarginPct,
+    lwPtsDelta: m.lwPtsDelta,
+    noCostCount,
+    dollars: m.dollars,
+    tySales: sales.tySales,
+    lySales: sales.lySales,
+    lwSales: sales.lwSales,
+    vsLYSalesPct: sales.vsLYSalesPct,
+    vsLWSalesPct: sales.vsLWSalesPct,
+    tyWeekOneMargins: tyMargins,
+    lyWeekOneMargins: lyMargins,
+    lwWeekOneMargins: lwMargins,
+    coverage,
   };
 };
