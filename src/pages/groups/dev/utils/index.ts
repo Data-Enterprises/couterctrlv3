@@ -9,7 +9,7 @@ export const kindOf = (g: Group, userid: number): "mine" | "sharedByYou" | "shar
 
 export const BADGE = {
   sharedByYou: { label: "Shared by you", cls: "bg-blue-50 text-blue-700" },
-  sharedWithYou: { label: "Shared with you", cls: "bg-emerald-50 text-emerald-700" },
+  sharedWithYou: { label: "Shared with you", cls: "bg-severity_healthy_bg text-severity_healthy_text" },
 } as const;
 
 export const byFilter = (

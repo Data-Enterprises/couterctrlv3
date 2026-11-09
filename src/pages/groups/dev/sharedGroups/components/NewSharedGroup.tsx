@@ -43,7 +43,7 @@ const NewSharedGroup = ({
         className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
       />
       <div
-        className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/95"}`}
+        className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-brand_danger" : "text-content/95"}`}
       >
         {problem ?? "Letters, numbers, spaces, _ and -."}
       </div>

@@ -309,7 +309,7 @@ const SharedGroupDetail = ({
               yourself.
             </p>
             {noStores && (
-              <p className="text-[11px] text-amber-800 mb-2">
+              <p className="text-[11px] text-severity_watch_text mb-2">
                 This group has no stores yet. Add some on the Stores tab before
                 sharing it.
               </p>
