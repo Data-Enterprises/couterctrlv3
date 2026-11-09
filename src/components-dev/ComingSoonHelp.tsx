@@ -1,14 +1,17 @@
+// Hooks
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
+
+// Utils
+import { comingSoonSection } from "../utils/comingSoonHelp";
+import { DOC } from "./utils";
+
+// Components
 import { XMarkIcon } from "@heroicons/react/16/solid";
 import Modal from "./Modal";
 import InfoButton from "./InfoButton";
-import { comingSoonSection } from "../utils/comingSoonHelp";
 
-/** Served straight from `public/`, so this is a path and not a fetch. */
-const DOC = "/coming-soon.html";
-
-interface Props {
+interface ComingSoonHelpProps {
   /** Passed through to InfoButton — these sit in navy panel headers. */
   variant?: "navy" | "light";
   className?: string;
@@ -32,7 +35,7 @@ interface Props {
  * Renders nothing on a route outside `comingSoonSection` — a released page
  * that kept this button would open a document that no longer describes it.
  */
-const ComingSoonHelp = ({ variant = "navy", className }: Props) => {
+const ComingSoonHelp = ({ variant = "navy", className }: ComingSoonHelpProps) => {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);

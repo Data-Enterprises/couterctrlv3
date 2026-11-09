@@ -7,11 +7,12 @@ import { fmtDate } from "./utils";
 
 // Interfaces
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 
 interface OrdersAvailableScreenProps {

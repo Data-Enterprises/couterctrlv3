@@ -1,34 +1,28 @@
 // import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+// Hooks
 import { useAppSelector } from "../../hooks";
-import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
-import { setUserPrefs } from "../../api/user";
-import type { JsonError } from "../../interfaces";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-interface Props {
+// Redux
+import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Utils
+import { options, sharedOption } from "./utils";
+
+// Interfaces
+import type { JsonError } from "../../interfaces";
+import type { iOption } from "./interfaces";
+
+interface SearchTypeProps {
   singleStoreOnly?: boolean;
 }
 
-interface iOption {
-  id: number;
-  name: string;
-  type: SEARCH_TYPE;
-}
-
-const options: iOption[] = [
-  // { id: 1, name: "Stores", type: "Stores" },
-  { id: 3, name: "Store", type: "Store" },
-  { id: 2, name: "Group", type: "Group" },
-];
-
-// Only offered when the user actually holds one. A shared group is a base
-// group a manager pushed to them, so most users have none and the option
-// would just be a dead choice that resolves to an empty list.
-const sharedOption: iOption = { id: 4, name: "Shared", type: "Shared" };
-
-const SearchType = ({ singleStoreOnly = false }: Props) => {
+const SearchType = ({ singleStoreOnly = false }: SearchTypeProps) => {
   const toast = useToast();
   const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);

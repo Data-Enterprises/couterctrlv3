@@ -1,5 +1,9 @@
 // Solid, not outline. The filled glyph is what gives the "?" its light fill
 // against the navy; the outline variant is stroke-only and reads as empty.
+// Utils
+import { GLYPH, SHELL } from "./utils";
+
+// Components
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
 /**
@@ -32,16 +36,6 @@ interface InfoButtonProps {
    */
   variant?: "navy" | "light";
 }
-
-const SHELL: Record<"navy" | "light", string> = {
-  navy: "w-[22px] h-[22px] rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40",
-  light: "w-7 h-7 rounded-full text-content/85 active:bg-bkg",
-};
-
-const GLYPH: Record<"navy" | "light", string> = {
-  navy: "w-3.5 h-3.5",
-  light: "w-5 h-5",
-};
 
 const InfoButton = ({
   onClick,

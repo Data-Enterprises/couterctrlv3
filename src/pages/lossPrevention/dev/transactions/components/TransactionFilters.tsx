@@ -8,7 +8,7 @@ import { setSaleDateFilter } from "../../../../../features/dev/devLossPrevention
 import { colInputStyle as inputStyle, fmtDate, fmtThreshold } from "../utils";
 
 // Interfaces
-import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
+import type { ThresholdValue } from "../../../../../interfaces";
 
 // Components
 import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";

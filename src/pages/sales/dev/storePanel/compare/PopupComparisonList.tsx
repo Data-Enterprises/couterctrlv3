@@ -14,12 +14,13 @@ import {
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
+import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
 
 // Interfaces
 import type { LedgerRowData } from "../../components/LedgerRow";
 
 // Components
-import SortHeader, { PERF_SORT_HEADER } from "../../../../../components-dev/SortHeader";
+import SortHeader from "../../../../../components-dev/SortHeader";
 import StoreColFilter from "../../components/StoreColFilter";
 
 /**

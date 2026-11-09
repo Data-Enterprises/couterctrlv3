@@ -1,10 +1,11 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
-import CursorTip from "./CursorTip";
 
-interface Held {
-  el: Element;
-  title: string;
-}
+// Interfaces
+import type { Held } from "./interfaces";
+
+// Components
+import CursorTip from "./CursorTip";
 
 /**
  * Every `title` tooltip in the dev tree, drawn as the app's CursorTip instead

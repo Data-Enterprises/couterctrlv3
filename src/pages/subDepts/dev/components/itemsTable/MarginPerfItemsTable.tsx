@@ -19,9 +19,8 @@ import {
 import { buildReportRows, byDate, getColSortValue, nextColSort } from "./utils";
 
 // Interfaces
-import type { SubDeptMargin } from "../../../../../interfaces";
+import type { SubDeptMargin, ThresholdValue } from "../../../../../interfaces";
 import type { Coverage } from "../../../../../utils/grading";
-import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
 import type { ItemSeverity as Severity } from "../../../../../utils/itemMargins";
 import type { ColSort, SevFilter } from "./interfaces";
 

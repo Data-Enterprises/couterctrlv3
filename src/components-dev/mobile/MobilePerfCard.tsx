@@ -1,4 +1,7 @@
+// Interfaces
 import type { ReactNode } from "react";
+
+// Components
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -6,7 +9,7 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 
-interface Props {
+interface MobilePerfCardProps {
   /** What this row is — a store, a sub department, a vendor, a category. */
   label: string;
   /** The figure beside the name, already formatted and already coloured —
@@ -69,7 +72,7 @@ const MobilePerfCard = ({
   onSearch,
   onInfo,
   children,
-}: Props) => {
+}: MobilePerfCardProps) => {
   const Header = onToggle ? "button" : "div";
 
   return (

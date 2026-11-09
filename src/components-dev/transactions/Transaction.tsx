@@ -1,10 +1,20 @@
-import { EnvelopeIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { TransactionListItem } from "../../interfaces";
+// Hooks
+import { useAppSelector } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
+
+// API
+import { emailTransaction } from "../../api/lossPrevention";
+
+// Utils
 import { formatCurrency2 } from "../../utils";
 import { exportData } from "../../utils/export";
-import { useAppSelector } from "../../hooks";
-import { emailTransaction } from "../../api/lossPrevention";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { fmtTime, renderStamps, typeBadgeClass } from "./utils";
+
+// Interfaces
+import type { TransactionListItem } from "../../interfaces";
+
+// Components
+import { EnvelopeIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface TransactionProps {
   trans: TransactionListItem[];
@@ -24,26 +34,6 @@ interface TransactionProps {
    */
   saleType?: string;
 }
-
-const fmtTime = (raw: string) => {
-  const s = raw.length === 5 ? "0" + raw : raw;
-  return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
-};
-
-const renderStamps = (item: TransactionListItem) => {
-  const stamps = [];
-  if (item.fs > 0) stamps.push("FS");
-  if (item.fsa > 0) stamps.push("FSA");
-  if (item.wic > 0) stamps.push("WIC");
-  return stamps.join(" · ") || null;
-};
-
-const typeBadgeClass = (isVoid: boolean, saleType: string) => {
-  if (isVoid) return "bg-gray-100 text-gray-500";
-  return saleType === "Tender"
-    ? "bg-blue-100 text-blue-800"
-    : "bg-amber-100 text-amber-800";
-};
 
 const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   // Description is the one `1fr` track, so it only grows if the fixed columns

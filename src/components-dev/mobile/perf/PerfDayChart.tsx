@@ -1,4 +1,4 @@
-import type { PerfDay } from "../../../utils/perfPairs";
+// Utils
 import {
   DOWN_COLOR,
   LY_COLOR,
@@ -6,7 +6,10 @@ import {
   UP_COLOR,
 } from "./perfColors";
 
-interface Props {
+// Interfaces
+import type { PerfDay } from "../../../utils/perfPairs";
+
+interface PerfDayChartProps {
   days: PerfDay[];
   selected: string | null;
   onToggle: (iso: string) => void;
@@ -27,7 +30,7 @@ interface Props {
  * While a day is selected the other six drop right back rather than
  * disappearing, so the week's shape survives while you read one day of it.
  */
-const PerfDayChart = ({ days, selected, onToggle }: Props) => {
+const PerfDayChart = ({ days, selected, onToggle }: PerfDayChartProps) => {
   const max = days.reduce((m, d) => Math.max(m, d.ty, d.ly), 0) || 1;
 
   return (

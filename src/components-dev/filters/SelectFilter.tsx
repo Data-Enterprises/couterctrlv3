@@ -1,10 +1,11 @@
+// Hooks
 import { useState, useRef, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
-export interface SelectFilterOption {
-  label: string;
-  value: string;
-}
+// Interfaces
+import type { SelectFilterOption } from "./interfaces";
+
+// Components
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 interface SelectFilterProps {
   options: SelectFilterOption[];

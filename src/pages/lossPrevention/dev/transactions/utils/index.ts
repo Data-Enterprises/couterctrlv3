@@ -3,8 +3,7 @@ import { formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
 import type { CSSProperties } from "react";
-import type { CashierDetails } from "../../../../../interfaces";
-import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
+import type { CashierDetails, ThresholdValue } from "../../../../../interfaces";
 import type { CashierGrade, CashierSeverity } from "../../interfaces";
 
 // Cashier list uses a plain dot (list-level), matching Sales' store/sub-dept

@@ -9,7 +9,7 @@ import { cmpShort, dirOf } from "../utils/perfData";
 
 // Interfaces
 import type { CmpBasis, PairSort } from "../utils/perfData";
-import type { SortOption } from "../../../../../../components-dev/mobile/MobileSortChips";
+import type { SortOption } from "../../../../../../components-dev/mobile/interfaces";
 
 // Components
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";

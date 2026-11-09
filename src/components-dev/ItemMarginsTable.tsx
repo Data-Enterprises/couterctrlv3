@@ -1,12 +1,7 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MinusCircleIcon } from "@heroicons/react/16/solid";
-import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/20/solid";
+
+// Utils
 import { formatCurrency2 } from "../utils";
 import {
   severityDotClass,
@@ -31,77 +26,30 @@ import {
   type GradedSeverity,
   type RowMetricKey,
 } from "../utils/itemMargins";
+import { colInputStyle } from "./filters/colFilterStyles";
+import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
+import { formatPricedUnitsShort } from "../utils/pricedUnits";
+import { byDate, REPORT_ROW_LABELS } from "./utils";
+
+// Interfaces
+import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
+import type { SevFilter } from "./interfaces";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
 import ThresholdFilter from "./filters/ThresholdFilter";
 import ColFilter from "./filters/ColFilter";
-import { colInputStyle } from "./filters/colFilterStyles";
 import UpcContextMenu from "./UpcContextMenu";
-import SharedSeverityBadge from "./SeverityBadge";
-import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
-import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
-import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../utils/pricedUnits";
+import ItemSeverityBadge from "./ItemSeverityBadge";
+import GradeCell from "./GradeCell";
 
-/**
- * Item-level report, shared by the Performance pages that drill to items.
- *
- * A graded item list on the left, one item's report on the right — the same
- * anatomy Sub Dept Margins established, running on the shared maths in
- * src/utils/itemMargins.ts.
- *
- * Deliberately prop-driven and Redux-free: Categories grades the items inside
- * one category, Vendors grades the items behind one supplier, and the only
- * thing that differs is which rows get handed in. Reading a slice here would
- * have forced a second copy for the second caller.
- */
-
-type SevFilter = "all" | ItemSeverity;
-
-/** "ungraded" has no shared SeverityBadge equivalent — small local adapter. */
-const SeverityBadge = ({ severity }: { severity: ItemSeverity }) =>
-  severity === "ungraded" ? (
-    <div className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 bg-gray-100">
-      <MinusCircleIcon className="w-3 h-3 text-gray-400" />
-    </div>
-  ) : (
-    <SharedSeverityBadge severity={severity} />
-  );
-
-const GradeCell = ({
-  pct,
-  threshold,
-  isPts,
-  partial = false,
-}: {
-  pct: number | null;
-  threshold: number;
-  isPts: boolean;
-  /** The period is missing days: show the figure without a verdict colour. */
-  partial?: boolean;
-}) => {
-  if (pct === null)
-    return <span className="text-[13px] font-semibold text-gray-400">—</span>;
-  return (
-    <span
-      className={`text-[13px] font-semibold whitespace-nowrap ${partial ? "text-content" : deltaTextClass(pct, threshold)}`}
-    >
-      {`${pct >= 0 ? "+" : ""}${pct.toFixed(2)}${isPts ? "pt" : "%"}`}
-    </span>
-  );
-};
-
-const byDate = <T extends { sale_date: string }>(src: T[], dateStr: string) =>
-  src.filter((m) => m.sale_date.split("T")[0] === dateStr);
-
-const REPORT_ROW_LABELS: Record<RowMetricKey, string> = {
-  margin: "Margin",
-  contribution: "Contribution",
-  sales: "Sales",
-  // Names both units: the row prints pounds on a scale item and a count on
-  // everything else, and a bare "Qty" made the pounds look like a count.
-  qty: PRICED_UNITS_LABEL,
-  cogs: "COGS",
-};
-
-interface Props {
+interface ItemMarginsTableProps {
   /** Item rows for all three periods. Any row carrying the margin columns and a
    *  sale_date works — CatItem from categories/cats, SubDeptMargin from
    *  subs/subs. */
@@ -125,6 +73,18 @@ interface Props {
   coverage?: Coverage;
 }
 
+/**
+ * Item-level report, shared by the Performance pages that drill to items.
+ *
+ * A graded item list on the left, one item's report on the right — the same
+ * anatomy Sub Dept Margins established, running on the shared maths in
+ * src/utils/itemMargins.ts.
+ *
+ * Deliberately prop-driven and Redux-free: Categories grades the items inside
+ * one category, Vendors grades the items behind one supplier, and the only
+ * thing that differs is which rows get handed in. Reading a slice here would
+ * have forced a second copy for the second caller.
+ */
 const ItemMarginsTable = ({
   items,
   gradingMetric,
@@ -134,7 +94,7 @@ const ItemMarginsTable = ({
   selectedDay,
   loading = false,
   coverage,
-}: Props) => {
+}: ItemMarginsTableProps) => {
   const [colSort, setColSort] = useState<{
     col: "ty" | "lw" | "ly";
     dir: "desc" | "asc";
@@ -527,7 +487,7 @@ const ItemMarginsTable = ({
                         : "border-transparent hover:bg-gray-50"
                     }`}
                   >
-                    <SeverityBadge severity={sev} />
+                    <ItemSeverityBadge severity={sev} />
                     <div className="flex flex-col justify-center min-w-0 flex-1">
                       <div className="text-[13px] font-medium text-content truncate">
                         {item.description}

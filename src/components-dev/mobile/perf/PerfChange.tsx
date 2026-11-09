@@ -1,6 +1,7 @@
+// Utils
 import { DOWN_COLOR, UP_COLOR } from "./perfColors";
 
-interface Props {
+interface PerfChangeProps {
   /** The change, or null when there is nothing to compare against. */
   pct: number | null;
   /** The page's own wording. Sales and the margin pages each have a
@@ -30,7 +31,7 @@ interface Props {
  *
  * Null renders as an em dash, uncoloured: no comparison is not a flat week.
  */
-const PerfChange = ({ pct, format, className = "" }: Props) => {
+const PerfChange = ({ pct, format, className = "" }: PerfChangeProps) => {
   if (pct === null) return <span className={className}>—</span>;
 
   return (

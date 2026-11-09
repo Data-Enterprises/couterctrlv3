@@ -1,25 +1,22 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useHelpHighlight } from "./useHelpHighlight";
+
+// Utils
+import { matches, SLIDE_MS } from "./utils";
+
+// Interfaces
+import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
+import type { View } from "./interfaces";
+
+// Components
 import { createPortal } from "react-dom";
 import { XMarkIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useHelpHighlight } from "./useHelpHighlight";
-import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
 
 interface HelpPanelProps {
   content: HelpContent;
   onClose: () => void;
 }
-
-/** Kept in step with `duration-200` on the aside below. */
-const SLIDE_MS = 200;
-
-type View =
-  | { mode: "home" }
-  | { mode: "guide"; id: string; step: number }
-  | { mode: "fix"; id: string };
-
-const matches = (needle: string, ...hay: string[]) =>
-  needle.trim() === "" ||
-  hay.some((h) => h.toLowerCase().includes(needle.trim().toLowerCase()));
 
 /**
  * The "?" help, as a panel over the screen it describes.

@@ -1,12 +1,13 @@
+// Hooks
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+
+// Interfaces
+import type { DetailTab } from "./interfaces";
+
+// Components
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 
-export interface DetailTab<K extends string> {
-  key: K;
-  label: string;
-}
-
-interface Props<K extends string> {
+interface MobilePerfDetailProps<K extends string> {
   /**
    * The breakdowns on offer.
    *
@@ -57,7 +58,7 @@ const MobilePerfDetail = <K extends string>({
   onBack,
   levelKey,
   children,
-}: Props<K>) => {
+}: MobilePerfDetailProps<K>) => {
   const scroller = useRef<HTMLDivElement>(null);
 
   // Switching breakdown, or opening a row's own level, is a different list —

@@ -34,9 +34,12 @@ import {
 } from "../utils/topItemsCompare";
 import { money } from "../utils";
 
+// Interfaces
+import type { CtaTone } from "../../../../../../components-dev/interfaces";
+
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
-import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
+import CtaStrip from "../../../../../../components-dev/CtaStrip";
 import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSelectFilter";
 import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";

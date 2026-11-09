@@ -7,9 +7,10 @@ import { dayOf, shiftDays, totals } from "../utils";
 
 // Interfaces
 import type { TransactionOverview } from "../../../../interfaces";
+import type { DayCardEntry } from "../../../../components-dev/interfaces";
 
 // Components
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
 
 /**
  * Day-of-week cards for the selected store. Rendering lives in DayCardStrip;

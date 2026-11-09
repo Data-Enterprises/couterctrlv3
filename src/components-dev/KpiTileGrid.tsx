@@ -1,22 +1,7 @@
-/**
- * One tile of the band. Authored here now that four UPC panels, Item Actions
- * and LP Actions all render through it — it was never a UPC type.
- */
-export type KpiCell = {
-  label: string;
-  value: string;
-  sub?: string;
-  variant?: "up" | "down";
-  // Independent from `variant` — lets a tile keep a neutral main value
-  // (e.g. a plain dollar total) while still color-coding its inline sub
-  // annotation by direction. "neutral" is for a confirmed-no-change
-  // annotation (distinct from omitting `sub` entirely, which should only
-  // mean "nothing to compare"). Falls back to a fixed attention color when
-  // unset, for flags like "was Fri LY" that aren't inherently up/down.
-  subVariant?: "up" | "down" | "neutral";
-};
+// Interfaces
+import type { KpiCell } from "./interfaces";
 
-interface Props {
+interface KpiTileGridProps {
   items: KpiCell[];
 }
 
@@ -28,7 +13,7 @@ interface Props {
 // inline colored text. Meant to render full-bleed (no side margin/padding
 // of its own) directly below a detail panel's title strip. Reusable by
 // any module's future per-item detail view, not just Sales Comp.
-const KpiTileGrid = ({ items }: Props) => {
+const KpiTileGrid = ({ items }: KpiTileGridProps) => {
   return (
     <div
       className="grid divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 leading-snug"

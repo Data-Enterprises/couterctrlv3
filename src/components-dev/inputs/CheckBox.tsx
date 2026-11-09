@@ -1,6 +1,7 @@
+// Components
 import CheckboxIcon from "../../svgs/CheckBoxIcon";
 
-interface Props {
+interface CheckBoxProps {
   label?: string;
   value: boolean;
   onChange?: (value: boolean | number) => void;
@@ -20,7 +21,7 @@ const CheckBox = ({
   className = "",
   idExtension = "",
   isBool = true,
-}: Props) => {
+}: CheckBoxProps) => {
   const handleClick = () => {
     if (onChange && isBool) onChange(!value);
     if (onChange && !isBool) onChange(id);

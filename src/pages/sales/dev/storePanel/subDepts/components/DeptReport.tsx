@@ -24,10 +24,11 @@ import { LIST_COLS, money } from "../utils";
 
 // Interfaces
 import type { SubSale } from "../../../../../../interfaces";
+import type { CtaTone } from "../../../../../../components-dev/interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
-import CtaStrip, { type CtaTone } from "../../../../../../components-dev/CtaStrip";
+import CtaStrip from "../../../../../../components-dev/CtaStrip";
 import PageInfoButton from "../../../../../../components-dev/PageInfoButton";
 import ListRow from "./ListRow";
 import Detail from "./Detail";

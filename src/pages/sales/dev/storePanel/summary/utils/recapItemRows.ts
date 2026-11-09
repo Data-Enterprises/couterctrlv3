@@ -2,8 +2,8 @@
 import { NO_VENDOR } from "./recapItems";
 
 // Interfaces
-import type { MultiSelectOption } from "../../../../../../components-dev/filters/MultiSelectFilter";
 import type { DayItemsState, RecapItem, RecapItemRow, RecapVendorPart } from "../interfaces/index";
+import type { MultiSelectOption } from "../../../../../../components-dev/filters/interfaces";
 
 /** Where a period's items are: every day's in hand, or why not. */
 export type PeriodItems =

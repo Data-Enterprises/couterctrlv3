@@ -1,9 +1,35 @@
+// Hooks
 import { useState, useRef, useEffect, useMemo } from "react";
+
+// Interfaces
+import type { MultiSelectOption } from "./interfaces";
+
+// Components
 import {
   ChevronDownIcon,
   CheckIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
+
+interface MultiSelectFilterProps {
+  options: MultiSelectOption[];
+  /** Selected values. Empty means every option, which is what the button says. */
+  values: string[];
+  onChange: (values: string[]) => void;
+  /** Shown when nothing is selected. Name the whole set — "All departments" —
+   *  rather than a bare "All", so the button reads as a sentence. */
+  placeholder?: string;
+  /** Plural noun for the count label, e.g. "departments". */
+  noun?: string;
+  /**
+   * Force the search box on or off.
+   *
+   * Left alone it appears once the list is long enough to be worth
+   * searching, which is the behaviour every caller wants without saying so.
+   */
+  searchable?: boolean;
+  className?: string;
+}
 
 /**
  * A checkbox dropdown, styled to match `SelectFilter` exactly.
@@ -26,41 +52,6 @@ import {
  * would make selecting four things take four round trips. It closes on an
  * outside click, like its single-select sibling.
  */
-
-export interface MultiSelectOption {
-  label: string;
-  value: string;
-  /**
-   * No row left that carries this value, once the OTHER filters are applied.
-   *
-   * Dropped from the list, so everything left in it is something that
-   * returns rows -- UNLESS it is selected, in which case it is kept and said
-   * so. A pick that quietly vanished would leave the screen empty with the
-   * reason nowhere on it, and nothing to click to undo.
-   */
-  unavailable?: boolean;
-}
-
-interface Props {
-  options: MultiSelectOption[];
-  /** Selected values. Empty means every option, which is what the button says. */
-  values: string[];
-  onChange: (values: string[]) => void;
-  /** Shown when nothing is selected. Name the whole set — "All departments" —
-   *  rather than a bare "All", so the button reads as a sentence. */
-  placeholder?: string;
-  /** Plural noun for the count label, e.g. "departments". */
-  noun?: string;
-  /**
-   * Force the search box on or off.
-   *
-   * Left alone it appears once the list is long enough to be worth
-   * searching, which is the behaviour every caller wants without saying so.
-   */
-  searchable?: boolean;
-  className?: string;
-}
-
 const MultiSelectFilter = ({
   options,
   values,
@@ -69,7 +60,7 @@ const MultiSelectFilter = ({
   noun = "selected",
   searchable,
   className = "",
-}: Props) => {
+}: MultiSelectFilterProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const btnRef = useRef<HTMLButtonElement>(null);

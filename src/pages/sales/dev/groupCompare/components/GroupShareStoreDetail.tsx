@@ -13,13 +13,16 @@ import {
 import { shareDayNoteOf, type ShareDay } from "../utils/shareByDay";
 import { shareTrendOf, trendPoints } from "../utils/shareQuestions";
 
+// Interfaces
+import type { CtaTone } from "../../../../../components-dev/interfaces";
+
 // Components
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
   MinusIcon,
 } from "@heroicons/react/16/solid";
-import CtaStrip, { type CtaTone } from "../../../../../components-dev/CtaStrip";
+import CtaStrip from "../../../../../components-dev/CtaStrip";
 
 /**
  * One store out of the balance, as the questions it raises.

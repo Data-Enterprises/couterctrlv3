@@ -1,35 +1,16 @@
+// Interfaces
 import type { ReactNode } from "react";
+import type { HelpPage } from "../../constants/helpPages";
+
+// Components
 import {
   MagnifyingGlassIcon,
   ChevronLeftIcon,
 } from "@heroicons/react/20/solid";
 import PageInfoButton from "../PageInfoButton";
 import HeaderIconButton from "../HeaderIconButton";
-import type { HelpPage } from "../../constants/helpPages";
 
-/**
- * The navy header shared by every mobile report — the Performance pages (Sub
- * Dept Margins, Vendors, Categories, Sales, Cashiers) and the Data pages
- * (Orders, Receivers, Coupons).
- *
- * Two rows:
- *   1. the store or scope on the left, the range it covers on the right
- *   2. back / re-search and the page name on the left, page controls,
- *      threshold and "?" on the right
- *
- * The page name is the point. The Performance pages are laid out identically —
- * same KPI strip, same day cards, same rows — so without a name in the chrome
- * there was nothing on screen telling you which one you were looking at. The
- * Data pages have the same problem one level down: their drill-downs are all
- * "a list of things under a heading", so each screen names what it is showing.
- *
- * The "?" opens that page's phone help, for whichever page this header is
- * naming. It is what replaced the severity legend that used to sit
- * on row two: the legend explained the colours and nothing else, and the help
- * explains the whole page.
- */
-
-interface Props {
+interface MobilePerfHeaderProps {
   /** e.g. "Vendors" — the left of row two. */
   pageName: string;
   /** e.g. "Aug 4 – Aug 10". */
@@ -56,6 +37,27 @@ interface Props {
   helpPage?: HelpPage;
 }
 
+/**
+ * The navy header shared by every mobile report — the Performance pages (Sub
+ * Dept Margins, Vendors, Categories, Sales, Cashiers) and the Data pages
+ * (Orders, Receivers, Coupons).
+ *
+ * Two rows:
+ *   1. the store or scope on the left, the range it covers on the right
+ *   2. back / re-search and the page name on the left, page controls,
+ *      threshold and "?" on the right
+ *
+ * The page name is the point. The Performance pages are laid out identically —
+ * same KPI strip, same day cards, same rows — so without a name in the chrome
+ * there was nothing on screen telling you which one you were looking at. The
+ * Data pages have the same problem one level down: their drill-downs are all
+ * "a list of things under a heading", so each screen names what it is showing.
+ *
+ * The "?" opens that page's phone help, for whichever page this header is
+ * naming. It is what replaced the severity legend that used to sit
+ * on row two: the legend explained the colours and nothing else, and the help
+ * explains the whole page.
+ */
 const MobilePerfHeader = ({
   pageName,
   dateRange,
@@ -65,7 +67,7 @@ const MobilePerfHeader = ({
   actions,
   threshold,
   helpPage,
-}: Props) => {
+}: MobilePerfHeaderProps) => {
 
   return (
     <div

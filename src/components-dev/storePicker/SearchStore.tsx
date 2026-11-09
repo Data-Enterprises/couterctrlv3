@@ -1,12 +1,21 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../hooks";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
-import type { Store } from "../../interfaces";
-import { setLastStore, setSelectedStore } from "../../features/searchSlice";
-import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from "./";
 
-const SelectStore = () => {
+// Redux
+import { setLastStore, setSelectedStore } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Interfaces
+import type { Store } from "../../interfaces";
+
+// Components
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+const SearchStore = () => {
   const dispatch = useAppDispatch();
   const context = useStorePickerContext();
   const componentRef = useRef<HTMLDivElement>(null);
@@ -162,4 +171,4 @@ const SelectStore = () => {
   );
 };
 
-export default SelectStore;
+export default SearchStore;

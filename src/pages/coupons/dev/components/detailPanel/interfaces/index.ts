@@ -1,5 +1,5 @@
 // Interfaces
-import type { ThresholdValue } from "../../../../../../components-dev/filters/ThresholdFilter";
+import type { ThresholdValue } from "../../../../../../interfaces";
 
 /** One group in the detail panel's list: a sub dept, a date or a cashier. */
 export type GroupedSection = {

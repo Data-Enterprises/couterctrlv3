@@ -1,3 +1,4 @@
+// Components
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -5,7 +6,7 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 
-interface Props {
+interface PerfCardHeaderProps {
   /** What the card is about — the store, the group, the item, the lens. */
   title: string;
   /** A short qualifier beside the title, e.g. "5 stores". */
@@ -62,7 +63,7 @@ const PerfCardHeader = ({
   onToggle,
   open = false,
   onTitleTap,
-}: Props) => (
+}: PerfCardHeaderProps) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
         baseline alignment hung it off the bottom of the title's text box. */}

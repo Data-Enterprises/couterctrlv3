@@ -1,7 +1,10 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
+
+// Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
-interface Props {
+interface ColFilterPopoverProps {
   label: string;
   active: boolean;
   /** What the filter is currently set to. When given, the header shows the
@@ -29,7 +32,7 @@ interface Props {
 // and others — centralized here instead of adding a 7th copy. Label toggles
 // an absolutely-positioned popover holding whatever filter control is passed
 // as children (typically a text input), with built-in Apply/Clear.
-const ColFilter = ({
+const ColFilterPopover = ({
   label,
   active,
   activeValue,
@@ -38,7 +41,7 @@ const ColFilter = ({
   onApply,
   onClear,
   children,
-}: Props) => {
+}: ColFilterPopoverProps) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -121,4 +124,4 @@ const ColFilter = ({
   );
 };
 
-export default ColFilter;
+export default ColFilterPopover;

@@ -38,6 +38,7 @@ import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../uti
 import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
 import { PCT_COL_W } from "../utils/index";
+import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { Store } from "../../../../interfaces";
@@ -46,7 +47,7 @@ import type { SevFilter } from "../utils/index";
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import SortHeader from "../../../../components-dev/SortHeader";
 import DeptInvestigation from "../investigate/DeptInvestigation";
 import DeptMatrixPanel from "../deptMatrix/DeptMatrixPanel";
 import GroupComparisonPanel from "../groupCompare/GroupComparisonPanel";

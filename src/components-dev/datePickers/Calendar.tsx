@@ -1,17 +1,21 @@
+// Hooks
 import { useState } from "react";
-import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
-import { formatDate } from "../../utils";
 import { useAppSelector } from "../../hooks";
-// import { setStartDate, setEndDate } from "../../features/searchSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-interface Props {
+// Utils
+import { formatDate } from "../../utils";
+
+// Components
+import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
+
+interface CalendarProps {
   handleCancel: () => void;
   handleDate?: (x: string) => void;
   dateFlag?: string;
 }
 
-const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
+const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const monthsOfYear = [
     "Jan",

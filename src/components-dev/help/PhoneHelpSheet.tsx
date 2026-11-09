@@ -1,16 +1,20 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
+import { matches } from "./utils";
+
+// Interfaces
+import type { PhoneHelp } from "./helpTypes";
+
+// Components
 import { XMarkIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import Modal from "../Modal";
-import type { PhoneHelp } from "./helpTypes";
 
 interface PhoneHelpSheetProps {
   content: PhoneHelp;
   onClose: () => void;
 }
-
-const matches = (needle: string, ...hay: string[]) =>
-  needle.trim() === "" ||
-  hay.some((h) => h.toLowerCase().includes(needle.trim().toLowerCase()));
 
 /**
  * The "?" help on a phone: the screen's questions and its terms, in a sheet.

@@ -17,8 +17,7 @@ import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue
 // Interfaces
 import type { GroupTab } from "../../interfaces";
 import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
-import type { JsonError } from "../../../../../interfaces";
-import type { ThresholdValue } from "../../../../../components-dev/filters/ThresholdFilter";
+import type { JsonError, ThresholdValue } from "../../../../../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";

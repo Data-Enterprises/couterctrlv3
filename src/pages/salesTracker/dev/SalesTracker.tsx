@@ -37,6 +37,7 @@ import {
 import { buildSubDeptTotals, allDeptsTotal } from "./utils/trackerTotals";
 import { orDash } from "./utils/trackerTone";
 import { SUB_GRID, NUM } from "./utils/trackerColumns";
+import { PERF_SORT_HEADER } from "../../../components-dev/utils";
 
 // Interfaces
 import type { SortColumn, SubDeptTotal, TrackerBasis } from "./interfaces";
@@ -45,7 +46,7 @@ import type { SortColumn, SubDeptTotal, TrackerBasis } from "./interfaces";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
 import TextFilter from "../../../components-dev/filters/TextFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
+import SortHeader from "../../../components-dev/SortHeader";
 import TrackerEntryCard from "./components/TrackerEntryCard";
 import TrackerHeader from "./components/TrackerHeader";
 import SubDeptRow from "./components/SubDeptRow";

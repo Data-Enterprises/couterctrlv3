@@ -12,7 +12,7 @@ import type {
   SortCol,
   ItemGradingMetric,
 } from "../../../../../../utils/itemMargins";
-import type { ThresholdValue } from "../../../../../../components-dev/filters/ThresholdFilter";
+import type { ThresholdValue } from "../../../../../../interfaces";
 import type { SevFilter } from "../interfaces";
 
 // Components

@@ -7,9 +7,10 @@ import { avgOf, isoOf, weekdayOf } from "../utils";
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
+import type { DayCardEntry } from "../../../../components-dev/interfaces";
 
 // Components
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
 
 /**
  * Day-of-week cards for the selected store, matching the strip on Sales, Sub

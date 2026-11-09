@@ -1,11 +1,12 @@
+// Utils
 import "./loadingIndicator.css";
 
-interface Props {
+interface LoadingIndicatorDevProps {
   message?: string;
   className?: string;
 }
 
-const LoadingIndicatorDev = ({ message = "Loading...", className = "" }: Props) => {
+const LoadingIndicatorDev = ({ message = "Loading...", className = "" }: LoadingIndicatorDevProps) => {
   return (
     <div data-testid="loading-indicator" className={`loading-indicator ${className}`}>
       <div className="loading-pill">

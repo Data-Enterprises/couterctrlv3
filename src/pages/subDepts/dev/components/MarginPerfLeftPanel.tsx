@@ -39,6 +39,7 @@ import {
   TOGGLE_OPTS,
   TIER_STROKE,
 } from "../utils";
+import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { SubDeptMargin } from "../../../../interfaces";
@@ -50,7 +51,7 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import SortHeader from "../../../../components-dev/SortHeader";
 import Sparkline from "./Sparkline";
 
 interface MarginPerfLeftPanelProps {

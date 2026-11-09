@@ -10,6 +10,7 @@ import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { severityDotClass } from "../../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../utils/grading";
 import { SEV_RANK } from "../utils";
+import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { CashierDetails } from "../../../../interfaces";
@@ -22,7 +23,7 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import SortHeader from "../../../../components-dev/SortHeader";
 
 interface LPStorePanelProps {
   loading: boolean;

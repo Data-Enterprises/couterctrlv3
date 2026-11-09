@@ -41,17 +41,18 @@ import type {
   SuggestedItem,
 } from "../../../interfaces";
 import type { OrderSheetSortCol } from "./interfaces";
+import type { DayCardEntry, KpiCell } from "../../../components-dev/interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../components-dev/DayCardStrip";
 import TopToOrder from "./TopToOrder";
 import ProductionTab from "./ProductionTab";
 import NotSellingTab from "./NotSellingTab";
 import ColFilter from "../../../components-dev/filters/ColFilter";
 import SortHeader from "../../../components-dev/SortHeader";
 import SheetSkeleton from "./SheetSkeleton";
-import KpiTileGrid, { type KpiCell } from "../../../components-dev/KpiTileGrid";
+import KpiTileGrid from "../../../components-dev/KpiTileGrid";
 import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 import WorkingPopover from "./WorkingPopover";
 

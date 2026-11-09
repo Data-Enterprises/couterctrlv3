@@ -12,6 +12,7 @@ import {
 
 // Interfaces
 import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
+import type { SortOption } from "../../../../../../components-dev/mobile/interfaces";
 
 // Components
 import {
@@ -20,9 +21,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../../../components-dev/mobile/MobileSortChips";
+import MobileSortChips from "../../../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../../components-dev/mobile/perf/PerfChange";
 import { TY_COLOR } from "../../../../../../components-dev/mobile/perf/perfColors";
@@ -49,7 +48,6 @@ const itemSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
   { key: "sales", label: "Sales" },
   { key: "change", label: `Change vs ${cmpShort(basis)}` },
 ];
-
 
 /**
  * This year against last year, under the row's name.

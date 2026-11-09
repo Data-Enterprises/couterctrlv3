@@ -9,12 +9,11 @@ import { fmtInt } from "../utils/display";
 
 // Interfaces
 import type { EventSort } from "../../../../../features/dev/devEventPerfSlice";
+import type { SortOption } from "../../../../../components-dev/mobile/interfaces";
 
 // Components
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../../components-dev/mobile/MobileSortChips";
+import MobileSortChips from "../../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 import Empty from "./Empty";

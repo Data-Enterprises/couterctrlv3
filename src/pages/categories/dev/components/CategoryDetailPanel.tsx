@@ -40,10 +40,11 @@ import {
 
 // Interfaces
 import type { Tab } from "../interfaces";
+import type { DayCardEntry } from "../../../../components-dev/interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import CategoryExportModal from "../export/CategoryExportModal";

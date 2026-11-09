@@ -1,5 +1,29 @@
+// Hooks
 import { useState, type ReactNode } from "react";
+
+// Interfaces
+import type { CtaTone } from "./interfaces";
+
+// Components
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
+
+interface CtaStripProps {
+  tone: CtaTone;
+  /** Sits at the head of the strip. Null for a strip with no icon. */
+  icon?: ReactNode;
+  /** The finding, in a few words. Truncates — the detail is where the room
+   *  is. */
+  label: ReactNode;
+  /** The word for what it is, pinned to the right of the label and never
+   *  truncated: Falling, Critical, Outpaced. */
+  trailing?: ReactNode;
+  /** The working behind the label. */
+  detail: ReactNode;
+  /** Open on mount. Off, and a caller wanting it on should be able to say
+   *  why — see the rules above. */
+  defaultOpen?: boolean;
+  className?: string;
+}
 
 /**
  * The house CTA strip: a one-line verdict you can open for the working
@@ -27,32 +51,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
  * and they had already drifted on which chevron, which z-index and whether
  * the thing started open.
  */
-
-export interface CtaTone {
-  border: string;
-  bg: string;
-  hoverBg: string;
-  text: string;
-}
-
-interface Props {
-  tone: CtaTone;
-  /** Sits at the head of the strip. Null for a strip with no icon. */
-  icon?: ReactNode;
-  /** The finding, in a few words. Truncates — the detail is where the room
-   *  is. */
-  label: ReactNode;
-  /** The word for what it is, pinned to the right of the label and never
-   *  truncated: Falling, Critical, Outpaced. */
-  trailing?: ReactNode;
-  /** The working behind the label. */
-  detail: ReactNode;
-  /** Open on mount. Off, and a caller wanting it on should be able to say
-   *  why — see the rules above. */
-  defaultOpen?: boolean;
-  className?: string;
-}
-
 const CtaStrip = ({
   tone,
   icon,
@@ -61,7 +59,7 @@ const CtaStrip = ({
   detail,
   defaultOpen = false,
   className = "",
-}: Props) => {
+}: CtaStripProps) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (

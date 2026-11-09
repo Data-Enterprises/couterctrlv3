@@ -1,6 +1,25 @@
-import { StarIcon } from "@heroicons/react/20/solid";
+// Utils
 import { getHolidayName } from "../utils/holidays";
 import { formatPct } from "../utils/severity";
+
+// Interfaces
+import type { DayCardEntry } from "./interfaces";
+
+// Components
+import { StarIcon } from "@heroicons/react/20/solid";
+
+interface DayCardStripProps {
+  days: DayCardEntry[];
+  /** The all-week figure shown on the leading card. */
+  weekValue: string;
+  weekDelta: number | null;
+  /** "" means all week. */
+  selected: string;
+  onSelect: (iso: string) => void;
+  /** Basis for the all-week card's delta, same contract as DayCardEntry. */
+  weekDeltaBasis?: string;
+  higherIsWorse?: boolean;
+}
 
 /**
  * The day-of-week card strip used across the Performance pages — an "All Week"
@@ -16,57 +35,6 @@ import { formatPct } from "../utils/severity";
  * Sales want a rise painted red, but the arrow should still point the way the
  * number actually moved.
  */
-export interface DayCardEntry {
-  /** YYYY-MM-DD. Also the selection value. */
-  iso: string;
-  /** Headline figure, already formatted. */
-  value: string;
-  /** Percentage move against the comparison period; null when ungraded. */
-  delta: number | null;
-  /** Hover text for the delta, e.g. the baseline value behind it. */
-  deltaTitle?: string;
-  /**
-   * Overrides for the card's own wording, all optional so every existing caller
-   * keeps the weekday-and-date default.
-   *
-   * Suggested Weight needs them because its cards are NOT that date's figure:
-   * they are the weekday's average, shown against the date it will be delivered
-   * against. Rendering "Saturday 9/12 — 1,151 lb" reads as a forecast for that
-   * Saturday, which the number is not. "Saturdays / covers 9/12 / 1,151 lb
-   * typical" says the same thing truthfully in the same space.
-   */
-  /** Replaces the weekday name on the top line. */
-  label?: string;
-  /** Replaces the m/d on the second line. */
-  subLabel?: string;
-  /** Small qualifier printed after the value, e.g. "typical". */
-  valueNote?: string;
-  /**
-   * Which baseline the delta is measured against — "LY" or "LW" — printed
-   * after the percentage so the card says what it is comparing to. Per-card
-   * rather than per-strip because a day can have a last-year figure while the
-   * day beside it only has last week.
-   *
-   * Left off by pages that grade against something else: LP and Coupon Sales
-   * compare each day to a rolling baseline of prior weeks, and labelling that
-   * "LY" would be false.
-   */
-  basis?: string;
-}
-
-interface DayCardStripProps {
-  days: DayCardEntry[];
-  /** The all-week figure shown on the leading card. */
-  weekValue: string;
-  weekDelta: number | null;
-  /** "" means all week. */
-  selected: string;
-  onSelect: (iso: string) => void;
-  /** Basis for the all-week card's delta, same contract as DayCardEntry. */
-  weekDeltaBasis?: string;
-  higherIsWorse?: boolean;
-}
-
 const DayCardStrip = ({
   days,
   weekValue,

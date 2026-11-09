@@ -35,13 +35,14 @@ import {
 
 // Interfaces
 import type { ItemGradingMetric } from "../../../../utils/itemMargins";
+import type { DayCardEntry } from "../../../../components-dev/interfaces";
 
 // Components
 import {
   ArrowDownTrayIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
 import ItemMarginsTable from "../../../../components-dev/ItemMarginsTable";
 import VendorExportModal from "../export/VendorExportModal";
 import Kpi from "./Kpi";

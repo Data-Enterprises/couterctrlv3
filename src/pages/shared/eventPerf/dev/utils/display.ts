@@ -1,6 +1,6 @@
 // Interfaces
 import type { EventSort } from "../../../../../features/dev/devEventPerfSlice";
-import type { SortOption } from "../../../../../components-dev/mobile/MobileSortChips";
+import type { SortOption } from "../../../../../components-dev/mobile/interfaces";
 
 export const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 

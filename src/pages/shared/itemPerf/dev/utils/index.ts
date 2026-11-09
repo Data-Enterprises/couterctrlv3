@@ -1,8 +1,8 @@
 // Interfaces
 import type { HelpPage } from "../../../../../constants/helpPages";
 import type { ItemDimension, MarginSort } from "../../../../../features/dev/devItemPerfSlice";
-import type { SortOption } from "../../../../../components-dev/mobile/MobileSortChips";
 import type { CmpBasis } from "../../../../../utils/perfPairs";
+import type { SortOption } from "../../../../../components-dev/mobile/interfaces";
 
 /** How many recents sit in the page before the rest move to a sheet. */
 export const RECENTS_INLINE = 3;

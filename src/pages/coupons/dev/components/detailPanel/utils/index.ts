@@ -1,6 +1,6 @@
 // Interfaces
 import type { GroupTab } from "../../../interfaces";
-import type { ThresholdValue } from "../../../../../../components-dev/filters/ThresholdFilter";
+import type { ThresholdValue } from "../../../../../../interfaces";
 
 /** The panel's three groupings. */
 export const GROUP_TABS: { key: GroupTab; label: string }[] = [

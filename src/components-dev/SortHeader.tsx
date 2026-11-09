@@ -1,13 +1,8 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
+// Interfaces
 import type { SortState } from "../utils/useTriStateSort";
 
-/**
- * The Performance left-panel column-header look — identical type scale to the
- * static headers these replaced, so making a column sortable doesn't restyle
- * the header row around it.
- */
-export const PERF_SORT_HEADER =
-  "text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0";
+// Components
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
 
 interface SortHeaderProps<C extends string> {
   col: C;

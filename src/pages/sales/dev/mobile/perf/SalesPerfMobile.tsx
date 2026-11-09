@@ -55,9 +55,9 @@ import {
 
 // Interfaces
 import type { PerfBundle } from "../../../../../features/dev/devSalesPerfSlice";
-import type { DetailTab } from "../../../../../components-dev/mobile/MobilePerfDetail";
 import type { CmpBasis } from "./utils/perfData";
 import type { ItemScope } from "./interfaces";
+import type { DetailTab } from "../../../../../components-dev/mobile/interfaces";
 
 // Components
 import InfoModal from "../../../../../components-dev/InfoModal";

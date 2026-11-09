@@ -15,6 +15,7 @@ import {
   type ShareStanding,
 } from "../utils/shareBalance";
 import { shareDaysOf, storeKeyOf } from "../utils/shareByDay";
+import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -22,9 +23,7 @@ import type { ComparisonRow } from "../../utils/storeComparison";
 import type { LedgerRowData } from "../../components/LedgerRow";
 
 // Components
-import SortHeader, {
-  PERF_SORT_HEADER,
-} from "../../../../../components-dev/SortHeader";
+import SortHeader from "../../../../../components-dev/SortHeader";
 import GroupShareStoreDetail from "./GroupShareStoreDetail";
 
 /**

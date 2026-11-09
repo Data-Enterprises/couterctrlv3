@@ -1,8 +1,13 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
 import zxcvbn from "zxcvbn";
+
+// Components
 import Eye from "../../svgs/Eye";
 
-interface PasswrodInputProps {
+interface PasswordInputProps {
   label: string;
   name: string;
   text: string;
@@ -28,7 +33,7 @@ const PasswordInput = ({
   leftCompare,
   rightCompare,
   autoComplete,
-}: PasswrodInputProps) => {
+}: PasswordInputProps) => {
   const [inputType, setInputType] = useState<string>("password");
   const [encrypted, setEncrypted] = useState(inputType === "password");
 

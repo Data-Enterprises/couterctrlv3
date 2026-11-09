@@ -44,8 +44,10 @@ import {
   CHIP_BASE,
   CHIP_ON,
 } from "../utils";
+import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
+import type { ThresholdValue } from "../../../../interfaces";
 import type { ListSortCol } from "../interfaces";
 
 // Components
@@ -53,10 +55,8 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import ThresholdFilter, {
-  type ThresholdValue,
-} from "../../../../components-dev/filters/ThresholdFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import SortHeader from "../../../../components-dev/SortHeader";
 import VendorRow from "./VendorRow";
 
 interface VendorListPanelProps {

@@ -1,10 +1,11 @@
+// Hooks
 import { useEffect, useRef } from "react";
 
-interface SeverityUpcs {
-  critical: string[];
-  watch: string[];
-  healthy: string[];
-}
+// Utils
+import { copyToClipboard } from "./utils";
+
+// Interfaces
+import type { SeverityUpcs } from "./interfaces";
 
 interface UpcContextMenuProps {
   x: number;
@@ -15,8 +16,6 @@ interface UpcContextMenuProps {
   extraActions?: { label: string; onClick: () => void }[];
   onClose: () => void;
 }
-
-const copyToClipboard = (upcs: string[]) => navigator.clipboard.writeText(upcs.join(", "));
 
 const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);

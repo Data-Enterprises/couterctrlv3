@@ -25,8 +25,8 @@ import { buildKpiMetrics, buildScoreMetrics, fmtDate } from "./utils";
 import type {
   TransactionListItem,
   TransactionOverview,
+  ThresholdValue,
 } from "../../../../interfaces";
-import type { ThresholdValue } from "../../../../components-dev/filters/ThresholdFilter";
 import type { CashierSeverity } from "../interfaces";
 
 // Components

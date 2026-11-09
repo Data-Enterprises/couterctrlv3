@@ -18,6 +18,7 @@ import {
 import { formatCurrency2 } from "../../../../utils";
 import { rankRows, tierCounts, tierSummary, exceptionsFor, EXCEPTION_LABEL, TIER_LABEL, TIER_STRIPE, TIER_CHIP_ON_NAVY, TIER_CHIP_BASE, TIER_CHIP_ON } from "../utils/forecastRanking";
 import { COLS, HEAD, HEAD_CELLS, sortValue } from "../utils";
+import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { Tier, SortCol } from "../interfaces";
@@ -28,7 +29,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 

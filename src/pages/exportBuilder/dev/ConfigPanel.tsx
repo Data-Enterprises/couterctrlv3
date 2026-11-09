@@ -8,9 +8,8 @@ import HelpPanel from "../../../components-dev/help/HelpPanel";
 import { HELP_CONTENT } from "../../../components-dev/help/content";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
-import SelectFilter, {
-  type SelectFilterOption,
-} from "../../../components-dev/filters/SelectFilter";
+import SelectFilter from "../../../components-dev/filters/SelectFilter";
+import type { SelectFilterOption } from "../../../components-dev/filters/interfaces";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";

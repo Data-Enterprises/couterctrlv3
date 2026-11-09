@@ -7,10 +7,11 @@ import { dayName, HEAD, LY_COLOR, shortDate, TY_COLOR } from "../utils";
 
 // Interfaces
 import type { WeekTotal, TrackerBasis } from "../../interfaces";
+import type { TrendSeries } from "../../../../../components-dev/charts/interfaces";
 
 // Components
 import { ChevronRightIcon, StarIcon } from "@heroicons/react/20/solid";
-import TrendLine, { type TrendSeries } from "../../../../../components-dev/charts/TrendLine";
+import TrendLine from "../../../../../components-dev/charts/TrendLine";
 import VsLy from "../../components/VsLy";
 
 interface WeekCardProps {
