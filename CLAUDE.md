@@ -1,0 +1,211 @@
+# CounterCtrl: rules for working in this repo
+
+These rules are **mandatory** for every change in this repo, by Claude or by a person.
+They are the result of the November 2026 dev refactor, which brought every dev page into this
+shape. New code is written this way from the first commit; it is never split up later.
+
+The full rule book, with the reasoning, is `Documents/doc-templates/repo-health-guideline.md`.
+Where this file and a habit disagree, this file wins.
+
+**Why:** anyone has to be able to open any file and fix it by hand, follow a change as it
+happens, and hand a page to another developer. That means small files, folders that say what
+they are, and state that lives in one obvious place.
+
+---
+
+## 1. The two trees
+
+- Every released page has `src/pages/<page>/prod` (what customers see) and
+  `src/pages/<page>/dev` (dev mode, level 7+). **Edit the dev tree.** Prod catches up by
+  promotion, never by hand edits.
+- Coming Soon pages (e.g. Tickets) have a dev tree only and call the dev API through `useDevApi`.
+- The shared library is split the same way. Components are in `src/components` (prod) and
+  `src/components-dev` (dev). Redux slices are in `src/features` and `src/features/dev`. The
+  prod library never imports the dev library.
+- `src/utils`, `src/hooks`, `src/interfaces` and `src/api` have **one copy, used by both trees**.
+  Find every caller before changing one.
+- The mobile screens are a separate tree (`mobile/`) by design. Never make the desktop
+  responsive to cover a phone.
+
+## 2. Components: the main component lists its sections
+
+- **One exported component per file**, named after it (PascalCase). Small private helper
+  components may sit in the same file, unexported.
+- **Every file stays well under ~900 lines.** Past that, split it.
+- **The main component reads like a table of contents.** It holds the state and handlers and
+  lays out its sections:
+  ```tsx
+  <DetailNavHeader … />
+  {!selected ? <NoReceiver /> : null}
+  <DetailKpiStrip />
+  <DetailTable />
+  ```
+  Each section (a header, a KPI strip, a table, a row, a modal, a tab) is its own file in that
+  folder's `components/`. Split along what the user sees: if a block of JSX has its own heading
+  on screen, it gets its own file. Name files for what they are (`ItemsTable.tsx`), never
+  `Part2.tsx` or `Helpers.tsx`.
+- **Repeated markup becomes one component with a parameter.** Don't keep two copies. For example,
+  Groups' `StoreColumn` takes `kind`, and its label, button, colour and click all follow from it.
+- **Data in hooks, drawing in components.** Fetching and reshaping go in `hooks/` and `utils/`;
+  components draw and handle clicks.
+
+## 3. Where a file lives
+
+Put a file in the **lowest folder that contains everything that uses it**.
+
+| Used by | Goes in |
+|---|---|
+| one part (tab, panel, modal, export) of one page | that part's own folder |
+| several parts of one page | the page's own `components/` `hooks/` `utils/` `interfaces/` |
+| more than one page | the shared library (`src/components-dev`, `src/utils`, `src/hooks`, …) |
+
+- **Never import another page's folder.** If two pages need something, move it to the shared
+  library. When a shared file ends up with one user, move it down into that user.
+- **Helpers are grouped by kind, one file per kind per folder:**
+  - `utils/index.ts` holds plain functions and constants;
+  - `hooks/index.ts` holds hooks;
+  - `interfaces/index.ts` holds types. The folder is called `interfaces/`, **never `types/`**.
+  If one gets long, split it by topic in the same folder (`utils/csv.ts`).
+- No component goes in a helper file, and no helper is exported from a component file. No barrel
+  files that only re-export.
+- Don't create empty folders.
+
+### Page layout
+
+```
+<page>/dev/
+  <Page>.tsx                       the page
+  components/                      shared across the page
+  hooks/index.ts  utils/index.ts  interfaces/index.ts
+  <module>/                        one folder per tab, panel, modal or export
+    <Module>.tsx
+    components/  hooks/  utils/  interfaces/     (as needed, same layout one level down)
+  mobile/                          the phone screens
+```
+
+**`src/pages/groups/dev` is the reference page.** When in doubt, do what it does.
+
+## 4. State
+
+| State | Goes in |
+|---|---|
+| Anything that must persist: shared across parts, or kept across a tab switch, a remount or leaving the page (the day, the store, cached reads, saved filters) | **Redux** |
+| Temporary state nothing else needs: a menu or modal open, a search box, a name being typed, an export pop-up flag | **local `useState`** |
+| What a small component is handed to draw: a mapped row, a card's figures | **props** |
+
+- **Never prop-drill.** If a value would pass through a component that doesn't use it, it belongs
+  in Redux and the component that needs it reads it there.
+- **Read Redux through the page's context hook** (`useGroupCtx`, `useSalesCtx`, …) in the page's
+  `hooks/index.ts`, not through `useAppSelector` scattered across components.
+- **Props stay simple:** values, a setter, an `onX` handler. Don't pass whole context objects down.
+- **Pop-up flags are temporary.** A modal's open flag goes in `useState`, so it doesn't reopen when
+  someone comes back to the page.
+- **Every new piece of Redux state is cleared on sign-out** (only the username survives) and
+  covered by the `signOutReset` and `moduleState` tests.
+
+## 5. React rules the refactor taught us
+
+These are the mistakes a split actually made. Check every one when you move or split code:
+
+1. **The `key` goes on the outermost element the `.map` returns.** When a mapped block becomes a
+   component, write `<Row key={item.line_number} item={item} />`. A key placed inside the new
+   component does nothing. Keep the same key value as before; don't switch to the index.
+2. **A function is called, never tested.** If `canSubmit` becomes `canSubmit(form)`, every
+   `disabled={!canSubmit}` must change too. A function is always truthy, so the button never
+   disables.
+3. **Carry every guard across.** Conditions like `&& !state.isFetchingDetails` and
+   `&& !alreadyExists` are easy to drop when an expression is pulled into a helper or a child.
+4. **Copy text exactly, including template literals.** A multi-line template (`\n\n—\n`) is data
+   that gets sent to the server. Collapsing it to one line changes what is saved.
+5. **Copy class strings exactly.** Take a moved element's `className` from the original, not from
+   a similar element nearby.
+6. **Typed callbacks.** A component that dispatches takes `dispatch: AppDispatch`, and its props
+   use the real types (`SetStateAction`, the slice's types), never `any`.
+
+## 6. Imports
+
+Every file groups its imports under these labels, in this order, leaving out any it doesn't need:
+
+```ts
+// Hooks        react, app hooks, the page's own hooks
+// Redux        slice actions from features/
+// API          calls from api/
+// Utils        helpers and constants
+// Interfaces   types (import type …)
+// Components   components and icons
+```
+
+- **One import line per source file.** An import goes under the label for what it is, not where
+  it lives.
+- **Code under `src` uses relative paths, never `@/`.** Tests import through `@/`.
+
+## 7. Comments
+
+- Short paraphrases: one or two lines on what the code does and why, where the code doesn't
+  already say it. No essays and no history ("this used to …"); that belongs in the commit message.
+- Keep the comments that stop a real mistake: a non-obvious business rule, a number that looks
+  wrong but is right, a workaround.
+- **Delete code, don't comment it out.** Remove dead functions, unused imports and old components
+  in their own commit.
+
+## 8. Tests
+
+- Dev tests live in `tests/dev`, mirroring the source path without the `dev` segment:
+  - `src/pages/<page>/dev/<rest>` → `tests/dev/pages/<page>/<rest>`
+  - `src/components-dev/<rest>` → `tests/dev/components/<rest>`
+  - `src/features/dev/<rest>` → `tests/dev/features/<rest>`
+- When a source file moves, its test moves in the same commit.
+- Test what a person would notice: a figure, a label, what a click does.
+- Prod-tree and shared-code tests (`src/utils`, `src/store`, `src/api`, …) still sit beside their
+  source for now.
+
+## 9. Commits
+
+- **One concern per commit**, with a message that says what is true now.
+- **Moves and logic changes never share a commit.** A move commit must change no code.
+- **Stage explicit paths only**, never `git add src` or a whole folder: others edit the tree live.
+  Commit with a pathspec (`git commit -m "…" -- src/pages/<page>`).
+- Files are CRLF; keep them that way. `sed -i` strips the CRs.
+- `docs/` is gitignored and never committed. Repo working docs (change log, theme reference,
+  checklists) live there.
+
+## 10. Verification, after every step
+
+```bash
+npx tsc -b
+npx eslint <files or folders touched>
+npx vitest run --coverage.enabled=false
+npm run check:tests
+node scripts/check-split.mjs <page>
+npm run audit:theme
+npm run build
+```
+
+`tsc --noEmit` proves nothing here, because the root tsconfig compiles nothing. **Don't start the
+app or a dev server.** It is tested by hand.
+
+## 11. Also
+
+- **Theme:** use tokens only (no raw white or hex in classes), never text below `/95` opacity, and
+  write Tailwind classes out literally. The rules are in `docs/theme-reference.md`.
+- **Tooltips:** use `src/components-dev/tooltip` (`CursorTip`); a plain `title` works in dev code.
+  Never hand-roll one.
+- **UI copy:** no explanatory filler in cards; users know POS terms. Separators are ` | `.
+- **Shared rules live in their util** (e.g. `src/utils/hashSubs` for fuel, lottery and cash sub
+  departments), never re-implemented inline.
+- **The backend** (`C:\backend\goliath-platform`) is read-only from this repo: review and report only.
+
+## Before every commit
+
+- [ ] Each file exports at most one component; none near ~900 lines
+- [ ] Helpers are in the `utils/` `hooks/` `interfaces/` of the lowest folder holding all their users
+- [ ] No import into another page's folder; no prod-library import of the dev library
+- [ ] Persisting state is in Redux and read through the page context hook; `useState` is only for
+      temporary state; props are simple; no drilling
+- [ ] New Redux state is cleared on sign-out and tested
+- [ ] Imports are labelled in order; one line per source; relative paths in `src`
+- [ ] Mapped components carry their `key` on the tag; helpers that became functions are called;
+      guards, text and classes are carried over exactly
+- [ ] Comments are short; no commented-out code
+- [ ] Moves and logic changes are in separate commits; only intended paths are staged
+- [ ] Verification is green
