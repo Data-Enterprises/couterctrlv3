@@ -51,6 +51,7 @@ import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import ItemReportEntry from "./components/ItemReportEntry";
 import InvoiceSheet from "./components/InvoiceSheet";
 import ItemReportSheet from "./components/ItemReportSheet";
@@ -616,12 +617,7 @@ const ItemReport = () => {
           load this expensive to change one field is what that pattern
           prevents. */}
       {state.searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => dispatch(setItemReportSearchOpen(false))}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>{entry}</SearchPopup>
       )}
 
       {openInvoice && (
