@@ -282,7 +282,7 @@ const ItemReportRail = ({
                     avgGap === null ? "" : ` · usually every ${avgGap}`
                   }`
             }
-            noteTone={(lastDays ?? 0) > 21 ? "text-red-700" : "text-content"}
+            noteTone={(lastDays ?? 0) > 21 ? "text-severity_critical_text" : "text-content"}
           >
             {receipts.length === 0 ? (
               <div className="text-[12px] text-content">

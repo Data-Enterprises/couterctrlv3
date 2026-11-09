@@ -190,7 +190,7 @@ const ItemReportEntry = ({
             {upcs.length > 0 && (
               <button
                 onClick={() => dispatch(clearPendingUpload())}
-                className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
+                className="px-3 py-1 text-[11px] font-medium rounded border border-brand_danger_line text-red-400 hover:text-red-600 transition-colors"
               >
                 Clear all
               </button>

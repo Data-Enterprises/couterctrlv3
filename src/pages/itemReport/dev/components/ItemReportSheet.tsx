@@ -267,7 +267,7 @@ const ItemReportSheet = ({
         </div>
 
         {!receivingComplete && (
-          <div className="flex-shrink-0 px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900">
+          <div className="flex-shrink-0 px-4 py-1.5 bg-severity_watch_bg text-severity_watch_text text-[11px]">
             Reading deliveries — {receivingProgress}. Actions that depend on
             receivers are provisional until this finishes.
           </div>
@@ -454,7 +454,7 @@ const ItemReportSheet = ({
                       which is what lets the three be read across the row. */}
                   <span
                     className={`text-right text-[13px] font-semibold tabular-nums ${
-                      item.ty.units > 0 ? "text-content" : "text-red-700"
+                      item.ty.units > 0 ? "text-content" : "text-severity_critical_text"
                     }`}
                   >
                     {item.ty.units % 1 === 0
@@ -471,7 +471,7 @@ const ItemReportSheet = ({
                       item.movement === null
                         ? "text-content/95"
                         : item.movement.net > 0
-                          ? "text-amber-700"
+                          ? "text-severity_watch_text"
                           : "text-content/95"
                     }`}
                     title={
@@ -489,7 +489,7 @@ const ItemReportSheet = ({
                       lastDays === null
                         ? "text-content/95"
                         : lastDays > 21
-                          ? "text-red-700"
+                          ? "text-severity_critical_text"
                           : "text-content/95"
                     }`}
                   >
