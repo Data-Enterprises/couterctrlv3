@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
-/** A column heading that opens its own filter, with the applied value as a chip. */
 interface ColFilterProps {
   label: string;
   active: boolean;
@@ -15,6 +14,7 @@ interface ColFilterProps {
   children: React.ReactNode;
 }
 
+/** A column heading that opens its own filter, with the applied value as a chip. */
 const ColFilter = ({
   label,
   active,

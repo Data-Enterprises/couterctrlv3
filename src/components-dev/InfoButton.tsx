@@ -6,19 +6,6 @@ import { GLYPH, SHELL } from "./utils";
 // Components
 import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
-/**
- * The "?" button in a navy panel header.
- *
- * Eleven panels had drifted into four different versions of this — some with
- * raw `border-custom-white`, some at /50 opacity instead of /75, one with a smaller
- * icon and no border colour at all. The styling lives here so there's one to
- * change.
- *
- * Deliberately renders the button and nothing else: the popovers it opens are
- * absolutely positioned against whatever container each page already
- * establishes, and wrapping the button in its own `relative` would silently
- * re-anchor them.
- */
 interface InfoButtonProps {
   /** Optional: Sub Dept Margins opens its legend on hover from the wrapper,
    *  so the button itself has nothing to handle. */
@@ -37,6 +24,19 @@ interface InfoButtonProps {
   variant?: "navy" | "light";
 }
 
+/**
+ * The "?" button in a navy panel header.
+ *
+ * Eleven panels had drifted into four different versions of this — some with
+ * raw `border-custom-white`, some at /50 opacity instead of /75, one with a smaller
+ * icon and no border colour at all. The styling lives here so there's one to
+ * change.
+ *
+ * Deliberately renders the button and nothing else: the popovers it opens are
+ * absolutely positioned against whatever container each page already
+ * establishes, and wrapping the button in its own `relative` would silently
+ * re-anchor them.
+ */
 const InfoButton = ({
   onClick,
   title = "About this view",

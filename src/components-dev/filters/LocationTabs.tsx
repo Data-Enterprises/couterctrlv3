@@ -1,14 +1,3 @@
-/**
- * Location switcher for co-located stores — the handful of storeids that cover
- * two physical locations (see utils/storeIdentity).
- *
- * Single-store pages fetch by storeid, so those responses arrive with both
- * locations combined and something has to choose which one is on screen. List
- * pages don't need this: they just split into two rows.
- *
- * Renders nothing at all when there's fewer than two numbers, so call sites can
- * drop it in unconditionally and ordinary stores see no change to the layout.
- */
 interface LocationTabsProps {
   /** Every store_number the current search returned. */
   numbers: string[];
@@ -22,6 +11,17 @@ interface LocationTabsProps {
   variant?: "panel" | "bare";
 }
 
+/**
+ * Location switcher for co-located stores — the handful of storeids that cover
+ * two physical locations (see utils/storeIdentity).
+ *
+ * Single-store pages fetch by storeid, so those responses arrive with both
+ * locations combined and something has to choose which one is on screen. List
+ * pages don't need this: they just split into two rows.
+ *
+ * Renders nothing at all when there's fewer than two numbers, so call sites can
+ * drop it in unconditionally and ordinary stores see no change to the layout.
+ */
 const LocationTabs = ({
   numbers,
   selected,

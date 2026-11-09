@@ -4,15 +4,6 @@ import { memo, useCallback } from "react";
 // Utils
 import { PCT_COL_W } from "../../../../utils/severity";
 
-/**
- * One row in the vendor list.
- *
- * Memoized on primitives only — including the already-resolved pill and dot
- * class names — so dragging the threshold slider re-renders the handful of rows
- * whose grade actually crossed it rather than the whole list. Passing the row
- * object would defeat the memo, since the parent builds a new one each pass.
- * Same reasoning as CategoryRow.
- */
 interface VendorRowProps {
   vendorId: string;
   label: string;
@@ -31,6 +22,15 @@ interface VendorRowProps {
   onSelect: (vendorId: string, isSelected: boolean) => void;
 }
 
+/**
+ * One row in the vendor list.
+ *
+ * Memoized on primitives only — including the already-resolved pill and dot
+ * class names — so dragging the threshold slider re-renders the handful of rows
+ * whose grade actually crossed it rather than the whole list. Passing the row
+ * object would defeat the memo, since the parent builds a new one each pass.
+ * Same reasoning as CategoryRow.
+ */
 const VendorRow = ({
   vendorId,
   label,

@@ -7,8 +7,6 @@ import type { ReactNode } from "react";
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
-/** A column-header filter that opens a small box with Apply and Clear, and
- *  shows what is applied beside its label. */
 interface ColFilterProps {
   label: string;
   active: boolean;
@@ -19,6 +17,8 @@ interface ColFilterProps {
   children: ReactNode;
 }
 
+/** A column-header filter that opens a small box with Apply and Clear, and
+ *  shows what is applied beside its label. */
 const ColFilter = ({
   label,
   active,

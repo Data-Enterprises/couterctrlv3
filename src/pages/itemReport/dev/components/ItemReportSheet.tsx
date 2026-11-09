@@ -78,9 +78,8 @@ interface ItemReportSheetProps {
   itemCount: number;
 }
 
-/** Chip and rule colour per action. Kept to one place so the strip, the row
- *  marker and the chip can't disagree about what "reorder" looks like. */
-
+/** The Item Actions sheet: the navy header, the action piles that narrow it,
+ *  and one row per item graded from sales against receivers. */
 const ItemReportSheet = ({
   rows,
   counts,
@@ -218,7 +217,6 @@ const ItemReportSheet = ({
         </div>
 
         {/* The piles. Clicking one narrows the sheet, but the sheet is already
-            complete — this is for working one kind of problem at a time. The
             complete — this is for working one kind of problem at a time. */}
         <div
           data-help="piles"

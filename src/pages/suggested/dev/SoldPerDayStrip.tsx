@@ -11,6 +11,11 @@ import type { SuggestedDailyPoint } from "../../../interfaces";
 // Components
 import BarTooltip from "./BarTooltip";
 
+interface SoldPerDayStripProps {
+  daily: SuggestedDailyPoint[];
+  dailyAvg: number;
+}
+
 /**
  * What the department actually moved, day by day.
  *
@@ -31,11 +36,6 @@ import BarTooltip from "./BarTooltip";
  * and a closed Sunday would drag the line down and paint every trading day as
  * above average.
  */
-interface SoldPerDayStripProps {
-  daily: SuggestedDailyPoint[];
-  dailyAvg: number;
-}
-
 const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
   const [hover, setHover] = useState<number | null>(null);
 

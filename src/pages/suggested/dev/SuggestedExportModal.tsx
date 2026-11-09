@@ -37,18 +37,6 @@ import type { MetricSelection, ModalMode, PresetId } from "./interfaces";
 import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-/**
- * Presets / Custom CSV export, the shape every other page uses.
- *
- * One preset per view. The panel answers four questions in four places, so the
- * file menu offers the same four rather than making anyone learn a second
- * arrangement: the store's heaviest lines, one department's sheet, the
- * production reading, and what has stopped selling. The rollup behind the tree
- * is the fifth, and the only one that spans stores.
- *
- * Custom is the same group-by + metric-with-aggregate builder as Receivers,
- * Coupons and Sub Dept Margins, running on the store's item rows.
- */
 interface SuggestedExportModalProps {
   onClose: () => void;
   /** Every scale item in the active store, all departments. */
@@ -69,6 +57,18 @@ interface SuggestedExportModalProps {
   cycleDays: number;
 }
 
+/**
+ * Presets / Custom CSV export, the shape every other page uses.
+ *
+ * One preset per view. The panel answers four questions in four places, so the
+ * file menu offers the same four rather than making anyone learn a second
+ * arrangement: the store's heaviest lines, one department's sheet, the
+ * production reading, and what has stopped selling. The rollup behind the tree
+ * is the fifth, and the only one that spans stores.
+ *
+ * Custom is the same group-by + metric-with-aggregate builder as Receivers,
+ * Coupons and Sub Dept Margins, running on the store's item rows.
+ */
 const SuggestedExportModal = ({
   onClose,
   items,

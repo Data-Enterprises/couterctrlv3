@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
+interface ColFilterProps {
+  label: string;
+  active: boolean;
+  onApply: () => void;
+  onClear?: () => void;
+  children: React.ReactNode;
+}
+
 /**
  * A column heading that filters its own column.
  *
@@ -15,14 +23,6 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
  * has no use for, and folding the two together would mean changing behaviour on
  * a page nobody asked about.
  */
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
 export const ColFilter = ({
   label,
   active,

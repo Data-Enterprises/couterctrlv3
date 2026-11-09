@@ -1,19 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
 
-/**
- * The list panel's navy-headed card.
- *
- * Deliberately list-only. Receivers, Orders and Coupons build their two panels
- * differently on purpose: the list header is two rows at `px-3 pt-1 pb-2.5`
- * with a hairline between them, while the detail header is a single
- * `px-4 py-[11px]` row with the title and its metadata pushed to opposite
- * edges. An earlier version of this tried to serve both through a `variant`
- * prop and produced a stacked detail header that no other page has — the
- * detail panel now renders its own header, the way Receivers does.
- *
- * Page-local: promoting it while only this page uses it would add a variant
- * that looks canonical without being what anything else renders.
- */
 interface PanelFrameProps {
   /** Row 1, left. */
   title: string;
@@ -30,6 +16,20 @@ interface PanelFrameProps {
   style?: CSSProperties;
 }
 
+/**
+ * The list panel's navy-headed card.
+ *
+ * Deliberately list-only. Receivers, Orders and Coupons build their two panels
+ * differently on purpose: the list header is two rows at `px-3 pt-1 pb-2.5`
+ * with a hairline between them, while the detail header is a single
+ * `px-4 py-[11px]` row with the title and its metadata pushed to opposite
+ * edges. An earlier version of this tried to serve both through a `variant`
+ * prop and produced a stacked detail header that no other page has — the
+ * detail panel now renders its own header, the way Receivers does.
+ *
+ * Page-local: promoting it while only this page uses it would add a variant
+ * that looks canonical without being what anything else renders.
+ */
 const PanelFrame = ({
   title,
   subtitle,

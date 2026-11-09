@@ -12,19 +12,6 @@ import type { DowRates, SuggestedItem } from "../../../interfaces";
 import { XMarkIcon } from "@heroicons/react/16/solid";
 import Row from "./components/Row";
 
-/**
- * How this row's number was arrived at, for this row.
- *
- * The help modal explains the model in general; it cannot show a waste rate,
- * because that is per item. This is the same explanation with the reader's own
- * figures in it: the days their settings picked, the rate this item does on
- * each of those weekdays, and the uplift its own waste history earns.
- *
- * It reports the endpoint's numbers rather than recomputing them. The days are
- * a decomposition, not a second opinion — the moment the panel starts deriving
- * its own suggested weight, a rounding difference reads as the model being
- * wrong.
- */
 interface WorkingPopoverProps {
   x: number;
   y: number;
@@ -39,6 +26,19 @@ interface WorkingPopoverProps {
   onClose: () => void;
 }
 
+/**
+ * How this row's number was arrived at, for this row.
+ *
+ * The help modal explains the model in general; it cannot show a waste rate,
+ * because that is per item. This is the same explanation with the reader's own
+ * figures in it: the days their settings picked, the rate this item does on
+ * each of those weekdays, and the uplift its own waste history earns.
+ *
+ * It reports the endpoint's numbers rather than recomputing them. The days are
+ * a decomposition, not a second opinion — the moment the panel starts deriving
+ * its own suggested weight, a rounding difference reads as the model being
+ * wrong.
+ */
 const WorkingPopover = ({
   x,
   y,

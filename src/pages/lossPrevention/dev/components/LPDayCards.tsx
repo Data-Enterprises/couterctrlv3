@@ -12,15 +12,6 @@ import type { DayCardEntry } from "../../../../components-dev/interfaces";
 // Components
 import DayCardStrip from "../../../../components-dev/DayCardStrip";
 
-/**
- * Day-of-week cards for the selected store. Rendering lives in DayCardStrip;
- * this only decides what LP's numbers are.
- *
- * Needs no fetches: transOverviews is already one row per transaction with a
- * sale_date, and baselineOverviews holds the prior two weeks for the same
- * store. Each day is graded against the same weekday in those two weeks — a
- * Tuesday only ever compared with Tuesdays.
- */
 interface LPDayCardsProps {
   overviews: TransactionOverview[];
   baseline: TransactionOverview[];
@@ -30,6 +21,15 @@ interface LPDayCardsProps {
   hasAmount: boolean;
 }
 
+/**
+ * Day-of-week cards for the selected store. Rendering lives in DayCardStrip;
+ * this only decides what LP's numbers are.
+ *
+ * Needs no fetches: transOverviews is already one row per transaction with a
+ * sale_date, and baselineOverviews holds the prior two weeks for the same
+ * store. Each day is graded against the same weekday in those two weeks — a
+ * Tuesday only ever compared with Tuesdays.
+ */
 const LPDayCards = ({
   overviews,
   baseline,

@@ -12,6 +12,16 @@ import type { DayCardEntry } from "../../../../components-dev/interfaces";
 // Components
 import DayCardStrip from "../../../../components-dev/DayCardStrip";
 
+interface CpnSalesDayCardsProps {
+  /** This week's coupons for the selected store. */
+  coupons: CouponItem[];
+  /** The prior two weeks for the same store. */
+  baseline: CouponItem[];
+  /** "" means all week. */
+  selectedDay: string;
+  onSelect: (iso: string) => void;
+}
+
 /**
  * Day-of-week cards for the selected store, matching the strip on Sales, Sub
  * Dept Margins and LP. Rendering lives in DayCardStrip; this decides what
@@ -25,16 +35,6 @@ import DayCardStrip from "../../../../components-dev/DayCardStrip";
  * per coupon, so however many coupons sit behind each side, the two averages
  * compare directly.
  */
-interface CpnSalesDayCardsProps {
-  /** This week's coupons for the selected store. */
-  coupons: CouponItem[];
-  /** The prior two weeks for the same store. */
-  baseline: CouponItem[];
-  /** "" means all week. */
-  selectedDay: string;
-  onSelect: (iso: string) => void;
-}
-
 const CpnSalesDayCards = ({
   coupons,
   baseline,
