@@ -145,7 +145,7 @@ const OrderEditPanel = ({
           <span className="text-custom-white font-medium text-[13px]">
             Edit an order
           </span>
-          <span className="text-custom-white/85 text-[11.5px]">
+          <span className="text-custom-white/95 text-[11.5px]">
             pick one on the left
           </span>
           <div className="flex-1" />

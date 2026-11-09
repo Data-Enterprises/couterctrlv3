@@ -11,7 +11,7 @@ const PagerButton = ({
   <button
     onClick={onClick}
     disabled={disabled}
-    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
+    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/95 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
   >
     {label}
   </button>

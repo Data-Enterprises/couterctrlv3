@@ -153,7 +153,7 @@ const OrderReportPanel = ({
           <button data-help="export"
             onClick={onExport}
             title="Export CSV"
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
           </button>
@@ -291,7 +291,7 @@ const OrderReportPanel = ({
           </div>
 
           <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
-            <span className="text-[11px] text-content/85">
+            <span className="text-[11px] text-content/95">
               {visible.length === 0
                 ? "No rows"
                 : `${(safePage * pageSize + 1).toLocaleString()}–${Math.min(
@@ -300,7 +300,7 @@ const OrderReportPanel = ({
                   ).toLocaleString()} of ${visible.length.toLocaleString()}`}
             </span>
 
-            <label className="flex items-center gap-1.5 text-[11px] text-content/85">
+            <label className="flex items-center gap-1.5 text-[11px] text-content/95">
               Rows
               <select
                 value={pageSize}

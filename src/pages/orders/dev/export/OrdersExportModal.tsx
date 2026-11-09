@@ -165,7 +165,7 @@ const OrdersExportModal = ({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-custom-white/85 transition-colors hover:text-custom-white"
+            className="text-custom-white/95 transition-colors hover:text-custom-white"
           >
             <XMarkIcon className="h-4 w-4" />
           </button>
@@ -173,7 +173,7 @@ const OrdersExportModal = ({
 
         <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
           <div>
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/95">
               File name
             </span>
             <div className="flex items-center rounded border border-brand_navy/75 bg-custom-white px-2">
@@ -185,12 +185,12 @@ const OrdersExportModal = ({
                 className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] text-content"
                 style={{ outline: "none", boxShadow: "none" }}
               />
-              <span className="flex-shrink-0 text-[12px] text-content/85">.csv</span>
+              <span className="flex-shrink-0 text-[12px] text-content/95">.csv</span>
             </div>
           </div>
 
           <div>
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/95">
               Columns
             </span>
             <MultiSelectFilter
@@ -207,10 +207,10 @@ const OrdersExportModal = ({
 
           <div>
             <div className="mb-2 flex items-baseline gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
                 Filters
               </span>
-              <span className="text-[11px] text-content/85">
+              <span className="text-[11px] text-content/95">
                 opened on what the panel has selected
               </span>
             </div>
@@ -274,13 +274,13 @@ const OrdersExportModal = ({
         </div>
 
         <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
-          <span className="flex-1 text-[12px] text-content/85">
+          <span className="flex-1 text-[12px] text-content/95">
             {rows.length.toLocaleString()} line{rows.length === 1 ? "" : "s"} ·{" "}
             {chosen.length} column{chosen.length === 1 ? "" : "s"}
           </span>
           <button
             onClick={onClose}
-            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
+            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/95 transition-colors hover:border-content/35 hover:text-content"
           >
             Cancel
           </button>

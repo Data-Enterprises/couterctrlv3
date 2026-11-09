@@ -222,16 +222,16 @@ const OrdersConfigPanel = ({
             data-help="search"
             onClick={onOpenSearch}
             title="New search"
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
         <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
-          <span className="text-custom-white/85 text-[12px] truncate">
+          <span className="text-custom-white/95 text-[12px] truncate">
             {scopeLabel}
           </span>
-          <span className="text-custom-white/85 text-[12px] flex-shrink-0 ml-auto">
+          <span className="text-custom-white/95 text-[12px] flex-shrink-0 ml-auto">
             {startDate} – {endDate}
           </span>
         </div>
@@ -243,7 +243,7 @@ const OrdersConfigPanel = ({
         </div>
       ) : lines.length === 0 ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center">
-          <span className="text-[12px] text-content/85">
+          <span className="text-[12px] text-content/95">
             Run a search to configure what you see.
           </span>
         </div>
@@ -319,7 +319,7 @@ const OrdersConfigPanel = ({
                       className={`rounded-full border px-2.5 py-[3px] text-[10.5px] font-semibold transition-colors disabled:opacity-50 ${
                         on
                           ? FLAG_ON[flag]
-                          : "border-gray-200 bg-custom-white text-content/85 hover:border-content/35"
+                          : "border-gray-200 bg-custom-white text-content/95 hover:border-content/35"
                       }`}
                     >
                       {FLAG_LABEL[flag]} {n.toLocaleString()}
@@ -356,7 +356,7 @@ const OrdersConfigPanel = ({
           </div>
 
           <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 flex-shrink-0">
-            <span className="text-[11px] text-content/85 flex-1">
+            <span className="text-[11px] text-content/95 flex-1">
               {matched.toLocaleString()} of {lines.length.toLocaleString()}{" "}
               lines
             </span>
@@ -364,7 +364,7 @@ const OrdersConfigPanel = ({
               onClick={onClear}
               disabled={active === 0}
               title="Clear every filter"
-              className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium text-content/85 transition-colors hover:text-content hover:border-content/35 disabled:opacity-50"
+              className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium text-content/95 transition-colors hover:text-content hover:border-content/35 disabled:opacity-50"
             >
               <ArrowPathIcon className="w-3 h-3" />
               Clear{active > 0 ? ` (${active})` : ""}

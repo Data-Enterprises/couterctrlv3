@@ -7,7 +7,7 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div>
-    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-1">
+    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-1">
       {label}
     </span>
     {children}
