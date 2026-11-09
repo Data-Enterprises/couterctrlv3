@@ -88,7 +88,7 @@ const JourneyTransactions = ({ rows, lines, saleType, onOpen }: Props) => {
           <span className={GRID_NUM}>
             {formatCurrency2(Math.abs(r.total_sales ?? 0))}
           </span>
-          <ChevronRightIcon className="w-4 h-4 text-content/85" />
+          <ChevronRightIcon className="w-4 h-4 text-content/95" />
         </button>
       ))}
 

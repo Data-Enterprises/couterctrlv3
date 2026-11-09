@@ -73,7 +73,7 @@ const LpActions = () => {
       </div>
 
       {rows.length === 0 && !loading && (
-        <p className="mt-3 text-[12px] text-content/85">
+        <p className="mt-3 text-[12px] text-content/95">
           No exceptions were flagged for this store over the {weeks} weeks
           ending on the searched date.
         </p>

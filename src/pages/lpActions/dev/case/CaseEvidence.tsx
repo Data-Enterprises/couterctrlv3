@@ -28,7 +28,7 @@ interface Props {
 }
 
 const Heading = ({ text }: { text: string }) => (
-  <div className="text-[11px] font-semibold uppercase tracking-wide text-content/85 mb-1">
+  <div className="text-[11px] font-semibold uppercase tracking-wide text-content/95 mb-1">
     {text}
   </div>
 );
@@ -54,7 +54,7 @@ const CaseEvidence = ({
         {profile ? (
           <HourStackChart profile={profile} types={names} selected={selected} />
         ) : (
-          <div className="h-[120px] flex items-center justify-center text-center text-[12px] text-content/85 px-2">
+          <div className="h-[120px] flex items-center justify-center text-center text-[12px] text-content/95 px-2">
             {profileLoading
               ? "Reading the receipts…"
               : (profileError ?? "No hour data on these receipts")}
