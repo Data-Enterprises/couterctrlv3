@@ -1,5 +1,5 @@
 // Hooks
-import { createContext, useContext, useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useStore } from "react-redux";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
@@ -61,6 +61,11 @@ export const useEventPerfView = (
   /** Where the list was left. It unmounts while the detail view is up, so the
    *  position has to survive outside the DOM. */
   const listScroll = useRef(0);
+  /** The list's scroller and the open store card. The page owns them, so the
+   *  scroll effects below run when their inputs change, not each time the list
+   *  screen mounts. */
+  const scroller = useRef<HTMLDivElement>(null);
+  const openCard = useRef<HTMLDivElement>(null);
 
   /** Whatever is in the slice belongs to this page. Checked in render as well
    *  as cleared in the effect, so the other page's rows never paint for the
@@ -188,6 +193,40 @@ export const useEventPerfView = (
 
   /** What the old single scope meant, for the pieces that still read one. */
   const shown = shownCard;
+
+  /**
+   * Opening a card brings it to the top of the screen.
+   *
+   * An accordion has to scroll DOWN as well as up: the card just tapped is
+   * usually below the one that was open, so leaving the viewport where it was
+   * opens the report off screen. That is why this doesn't use
+   * `useDrillScroll` — that hook only ever scrolls up within a level, which is
+   * right for tabs and wrong for this.
+   *
+   * It also watches the group scope, which is what brings you back after
+   * picking a type. That rebuilds the list, so the open card unmounts and its
+   * scroll goes with it — the card is still open in state, it has just left
+   * the screen. Running again once the new list lands puts it back under the
+   * reader rather than making them find it.
+   */
+  useLayoutEffect(() => {
+    if (perf.detailOpen || !perf.selectedStoreKey) return;
+    const el = scroller.current;
+    // Null while the group card is the open one — the ref is only attached to
+    // store cards — and while the list is mid-rebuild.
+    const card = openCard.current;
+    if (!el || !card) return;
+    const offset =
+      card.getBoundingClientRect().top - el.getBoundingClientRect().top;
+    el.scrollTop = Math.max(0, el.scrollTop + offset - 8);
+  }, [perf.selectedStoreKey, shownGroup]);
+
+  /** Coming back from the detail view lands where the list was left. */
+  useLayoutEffect(() => {
+    if (perf.detailOpen) return;
+    const el = scroller.current;
+    if (el) el.scrollTop = listScroll.current;
+  }, [perf.detailOpen]);
 
   /**
    * Null first: the carousel opens on everything, and swiping narrows.
@@ -394,6 +433,8 @@ export const useEventPerfView = (
     perf,
     mine,
     listScroll,
+    scroller,
+    openCard,
     runSearch,
     groupOpen,
     shownGroup,
