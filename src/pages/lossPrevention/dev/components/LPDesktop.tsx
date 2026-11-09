@@ -60,6 +60,7 @@ import type {
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SearchCard from "../../../../components-dev/SearchCard";
+import SearchPopup from "../../../../components-dev/SearchPopup";
 import LPTransactionPanel from "../transactions/LPTransactionPanel";
 import LPStorePanel from "./LPStorePanel";
 
@@ -644,27 +645,19 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
         onShowAll={handleShowAll}
       />
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SearchCard
-              title="Loss Prevention"
-              description="Select a store and date to find exception activity."
-              buttonLabel="Load exceptions"
-              singleDate={true}
-              onSearch={() => {
-                setSearchModalOpen(false);
-                getSaleTypes();
-              }}
-              loading={false}
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            title="Loss Prevention"
+            description="Select a store and date to find exception activity."
+            buttonLabel="Load exceptions"
+            singleDate={true}
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getSaleTypes();
+            }}
+            loading={false}
+          />
+        </SearchPopup>
       )}
     </div>
   );
