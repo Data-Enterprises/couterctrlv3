@@ -22,6 +22,7 @@ import { upcQueue } from "./upcQueue";
 import { buildScopeKey, sameStores } from "./utils";
 
 // Components
+import SearchPopup from "../../../components-dev/SearchPopup";
 import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";
@@ -187,20 +188,13 @@ const UpcList = () => {
       </div>
 
       {reSearchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setReSearchOpen(false)}
-        >
-          {/* Shrink-wraps the card; the backdrop centers. Spanning the
-              viewport would swallow backdrop clicks. */}
-          <div className="mx-4" onClick={(e) => e.stopPropagation()}>
-            <UpcSearchCard
-              onSearch={handleSearch}
-              onClose={() => setReSearchOpen(false)}
-              busy={lookingUp}
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setReSearchOpen(false)}>
+          <UpcSearchCard
+            onSearch={handleSearch}
+            onClose={() => setReSearchOpen(false)}
+            busy={lookingUp}
+          />
+        </SearchPopup>
       )}
     </div>
   );
