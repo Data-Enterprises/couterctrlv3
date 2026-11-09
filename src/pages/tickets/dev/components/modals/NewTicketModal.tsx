@@ -473,7 +473,7 @@ const NewTicketModal = ({
           Cancel
         </button>
         {sendError && (
-          <p role="alert" className="mr-auto text-[11.5px] text-red-700 m-0">
+          <p role="alert" className="mr-auto text-[11.5px] text-brand_danger m-0">
             {sendError}
           </p>
         )}

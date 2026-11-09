@@ -28,13 +28,13 @@ export const STATUS_LABEL: Record<TicketStatus, string> = {
 export const STATUS_CLASS: Record<TicketStatus, string> = {
   open: "bg-row_selected text-content",
   in_progress: "bg-filter_active text-brand_navy_hover",
-  waiting: "bg-amber-50 text-amber-900",
+  waiting: "bg-severity_watch_bg text-severity_watch_text",
   closed: "bg-brand_green_tint text-brand_green_darker",
 };
 
 export const PRIORITY_CLASS: Record<string, string> = {
   urgent: "bg-brand_danger_bg text-brand_danger",
-  high: "bg-amber-50 text-amber-900",
+  high: "bg-severity_watch_bg text-severity_watch_text",
   normal: "bg-row_selected text-content/95",
   low: "bg-row_selected text-content/95",
 };

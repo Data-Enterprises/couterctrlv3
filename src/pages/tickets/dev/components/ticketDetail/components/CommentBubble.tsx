@@ -31,14 +31,14 @@ const CommentBubble = ({ comment, mine }: CommentBubbleProps) => {
           mine ? "rounded-br-sm" : "rounded-bl-sm"
         } ${
           comment.is_internal
-            ? "bg-amber-50 border border-amber-200"
+            ? "bg-severity_watch_bg border border-severity_watch_text/20"
             : mine
               ? "bg-brand_navy text-custom-white"
               : "bg-row_selected border border-brand_line"
         }`}
       >
         {comment.is_internal && (
-          <div className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-900 mb-1">
+          <div className="text-[10.5px] font-semibold uppercase tracking-wide text-severity_watch_text mb-1">
             Internal note — never sent to a client
           </div>
         )}

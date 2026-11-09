@@ -60,7 +60,7 @@ const CloseTicketModal = () => {
 
         <div className="flex items-center gap-3">
           {resolution.trim() === "" && (
-            <span className="text-[11.5px] text-amber-900">
+            <span className="text-[11.5px] text-severity_watch_text">
               A close without a resolution is refused — nobody can add one
               afterwards.
             </span>

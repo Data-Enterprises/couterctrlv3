@@ -103,7 +103,7 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalPr
 
       <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
         {saveError && (
-          <p role="alert" className="m-0 mr-auto text-[11.5px] text-red-700">
+          <p role="alert" className="m-0 mr-auto text-[11.5px] text-brand_danger">
             {saveError}
           </p>
         )}

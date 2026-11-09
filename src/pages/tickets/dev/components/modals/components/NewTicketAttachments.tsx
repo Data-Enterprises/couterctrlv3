@@ -73,7 +73,7 @@ const NewTicketAttachments = ({
       ))}
 
       {fileError && (
-        <span className="text-[11.5px] text-amber-900">{fileError}</span>
+        <span className="text-[11.5px] text-severity_watch_text">{fileError}</span>
       )}
     </div>
   );
