@@ -31,6 +31,8 @@ interface CpnOverviewProps {
   onBack: () => void;
 }
 
+/** The phone Coupons overview for a store or group: a totals card and a list of Sub dept, Date or Cashier rows
+ *  (by the chosen tab) with count and value, plus the export sheet. */
 const CpnOverview = ({
   coupons,
   storeName,

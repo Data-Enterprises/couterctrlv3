@@ -36,6 +36,8 @@ interface CouponDetailPanelProps {
 }
 
 
+/** The Coupons page's right panel for the chosen store or all stores: header, KPI strip, Sub dept/Date/Cashier tabs
+ *  with their section cards, and the coupon grid, which swaps to a single transaction's receipt when a row is clicked. */
 const CouponDetailPanel = ({
   selectedKey,
   sortMetric,

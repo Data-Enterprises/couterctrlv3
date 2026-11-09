@@ -32,6 +32,8 @@ interface CpnStoreListProps {
   onSearch: () => void;
 }
 
+/** The phone Coupons store list for a group search: a header card, group totals, and an "All stores" row plus one
+ *  row per store with its coupon count and value. Also opens the info modal and the export sheet. */
 const CpnStoreList = ({
   coupons,
   groupName,

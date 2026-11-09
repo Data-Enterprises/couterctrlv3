@@ -21,6 +21,8 @@ interface CpnExportSheetProps {
   rows: CouponItem[];
 }
 
+/** The phone Coupons export sheet: Presets downloads the coupon records, Custom groups by chosen fields with
+ *  sum/count metrics. Multi-store data adds a store checklist. */
 const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());

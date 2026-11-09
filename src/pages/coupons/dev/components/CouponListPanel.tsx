@@ -24,6 +24,8 @@ interface CouponListPanelProps {
   onOpenSearch: () => void;
 }
 
+/** The Coupons page's left panel: a navy header with the date range, record count, search button and Amt/Qty sort,
+ *  then the store list (with an "All stores" row on group searches) showing each store's coupon count and value. */
 const CouponListPanel = ({
   selectedKey,
   onSelect,

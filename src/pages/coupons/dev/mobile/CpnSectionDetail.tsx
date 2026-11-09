@@ -38,6 +38,8 @@ interface CpnSectionDetailProps {
   onBack: () => void;
 }
 
+/** The phone Coupons detail for one section: a totals card and its coupons grouped by product, each expanding to
+ *  its uses. Tapping a use opens that transaction's receipt in a bottom sheet, with a CSV export. */
 const CpnSectionDetail = ({
   coupons,
   sectionLabel,

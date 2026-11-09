@@ -33,6 +33,8 @@ import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
 
+/** The phone Coupons page. It holds the search card, then moves through the store list (group searches only),
+ *  the overview with its Sub dept/Date/Cashier tabs, and a section's product detail. */
 const CouponsMobile = () => {
   const ctx = useCouponContext();
   const { nothingPicked, pickLabel } = useSearchPick();

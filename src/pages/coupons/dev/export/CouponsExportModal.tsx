@@ -32,6 +32,8 @@ interface CouponsExportModalProps {
   rows: CouponItem[];
 }
 
+/** The Coupons CSV export pop-up. Presets downloads the coupon records as they are; Custom groups by chosen fields
+ *  with sum/count metrics and a live preview. Multi-store data adds a store checklist. */
 const CouponsExportModal = ({
   onClose,
   title,

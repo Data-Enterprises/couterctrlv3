@@ -30,6 +30,8 @@ import CouponsMobile from "./mobile/CouponsMobile";
 import CouponListPanel from "./components/CouponListPanel";
 import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
 
+/** The Coupons page: a search card to load coupon activity for a store or group and date range, then a store list
+ *  beside the detail panel. Phones get the mobile screens instead. */
 const Coupons = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
