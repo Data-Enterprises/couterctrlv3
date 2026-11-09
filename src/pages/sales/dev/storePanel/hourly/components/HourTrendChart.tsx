@@ -63,8 +63,8 @@ const HourTrendChart = ({ days, hasLW, hasLY }: HourTrendChartProps) => {
           </div>
         )}
         theme={{
-          text: { fontSize: 10, fill: "#6b7280" },
-          grid: { line: { stroke: "#e5e7eb", strokeWidth: 1 } },
+          text: { fontSize: 10, fill: "rgb(var(--color-brand-slate))" },
+          grid: { line: { stroke: "rgb(var(--color-brand-line))", strokeWidth: 1 } },
         }}
       />
     </div>

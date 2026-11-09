@@ -129,19 +129,19 @@ export const BADGE_COLOR: Record<Severity, string> = {
   healthy: "#10b981",
 };
 export const SECTION_BG: Record<Severity, string> = {
-  critical: "bg-red-50",
-  watch: "bg-amber-50",
-  healthy: "bg-emerald-50",
+  critical: "bg-severity_critical_bg",
+  watch: "bg-severity_watch_bg",
+  healthy: "bg-severity_healthy_bg",
 };
 export const SECTION_BORDER: Record<Severity, string> = {
-  critical: "border-red-100",
-  watch: "border-amber-100",
-  healthy: "border-emerald-100",
+  critical: "border-severity_critical_text/20",
+  watch: "border-severity_watch_text/20",
+  healthy: "border-severity_healthy_text/20",
 };
 export const SECTION_TEXT: Record<Severity, string> = {
-  critical: "text-red-800",
-  watch: "text-amber-800",
-  healthy: "text-emerald-800",
+  critical: "text-severity_critical_text",
+  watch: "text-severity_watch_text",
+  healthy: "text-severity_healthy_text",
 };
 
 /**

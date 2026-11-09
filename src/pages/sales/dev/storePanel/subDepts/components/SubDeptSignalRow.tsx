@@ -64,7 +64,7 @@ const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps
           className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
             r.hasLW
               ? comparisonPillClass(rowVsLWPct, lwComplete, threshold)
-              : "bg-gray-100 text-gray-400"
+              : "bg-gray-100 text-brand_slate"
           }`}
           title={
             r.hasLW && !lwComplete
@@ -79,7 +79,7 @@ const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps
           className={`perf_narrow:hidden text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
             r.hasLY
               ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
-              : "bg-gray-100 text-gray-400"
+              : "bg-gray-100 text-brand_slate"
           }`}
           title={
             r.hasLY && !lyComplete
