@@ -3,6 +3,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useAdminPageCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Redux
+import {
+  setSubExclCatalog,
+  setSubExclCompanyId,
+  setSubExclDays,
+  setSubExclExclusions,
+  setSubExclHashOnly,
+  setSubExclSearch,
+  setSubExclStoreKey,
+  setSubExclStores,
+} from "../../../../features/dev/devAdminPageSlice";
+
 // API
 import { getUserStores } from "../../../../api/user";
 import {
@@ -10,7 +22,6 @@ import {
   getSubDeptCatalog,
   getSubDeptExclusions,
   removeSubDeptExclusion,
-  type SubDeptCatalogRow,
   type SubDeptExclusionRow,
 } from "../../../../api/subDeptExclusions";
 
@@ -45,16 +56,25 @@ import CompDeptRow from "./components/CompDeptRow";
 const SubDeptExclusions = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
+  const { dispatch } = context;
 
-  const [stores, setStores] = useState<Store[] | null>(null);
-  const [companyId, setCompanyId] = useState("");
-  const [storeKey, setStoreKey] = useState(ALL_STORES);
-  const [days, setDays] = useState("120");
-  const [search, setSearch] = useState("");
-  const [hashOnly, setHashOnly] = useState(false);
+  // The lists and filters live in Redux, so they are still there after a tab
+  // switch; what follows in useState only matters while it is on screen.
+  const stores = context.subExclStores;
+  const companyId = context.subExclCompanyId;
+  const storeKey = context.subExclStoreKey;
+  const days = context.subExclDays;
+  const search = context.subExclSearch;
+  const hashOnly = context.subExclHashOnly;
+  const catalog = context.subExclCatalog;
+  const exclusions = context.subExclExclusions;
+  const setCompanyId = (v: string) => dispatch(setSubExclCompanyId(v));
+  const setStoreKey = (v: string) => dispatch(setSubExclStoreKey(v));
+  const setDays = (v: string) => dispatch(setSubExclDays(v));
+  const setSearch = (v: string) => dispatch(setSubExclSearch(v));
+  const setExclusions = (rows: SubDeptExclusionRow[]) =>
+    dispatch(setSubExclExclusions(rows));
 
-  const [catalog, setCatalog] = useState<SubDeptCatalogRow[] | null>(null);
-  const [exclusions, setExclusions] = useState<SubDeptExclusionRow[]>([]);
   const [loading, setLoading] = useState(false);
   /** Which catalogue batch is in flight, when the scope takes more than one.
    *  Null while a single batch is enough to answer. */
@@ -83,10 +103,12 @@ const SubDeptExclusions = () => {
         }
         const valid = (list: Store[]) =>
           list.filter((s) => s.store_number !== null && s.store_name !== null);
-        setStores([
-          ...valid(j.assigned_stores ?? []),
-          ...(context.canSeeAllStores ? valid(j.unassigned_stores ?? []) : []),
-        ]);
+        dispatch(
+          setSubExclStores([
+            ...valid(j.assigned_stores ?? []),
+            ...(context.canSeeAllStores ? valid(j.unassigned_stores ?? []) : []),
+          ]),
+        );
       })
       .catch((err: JsonError) => toast.error(err.message));
   }, []);
@@ -131,14 +153,12 @@ const SubDeptExclusions = () => {
     [companyStores, storeKey],
   );
 
-  // A store number from the last company is not a store number in this one.
-  useEffect(() => setStoreKey(ALL_STORES), [companyId]);
-
   const scopeIds = useMemo(
     () => scope.map((s) => s.storeid).sort((a, b) => a - b),
     [scope],
   );
   const scopeSig = scopeIds.join(",");
+  const loadKey = `${scopeSig}|${days}`;
 
   /**
    * The catalogue and the exclusions, one call each for the whole scope.
@@ -149,10 +169,12 @@ const SubDeptExclusions = () => {
    */
   useEffect(() => {
     if (scopeIds.length === 0) {
-      setCatalog(null);
+      dispatch(setSubExclCatalog({ rows: null, loadedFor: null }));
       setExclusions([]);
       return;
     }
+    // Already read for this scope and window, on an earlier visit.
+    if (context.subExclLoadedFor === loadKey) return;
     let live = true;
     setLoading(true);
     setProgress(null);
@@ -174,12 +196,18 @@ const SubDeptExclusions = () => {
         if (e.error !== 0) {
           toast.error(e.msg || "Could not read the current exclusions");
         }
-        setCatalog(catalogRows);
+        // A failed exclusions read is not cached, so the next visit tries again.
+        dispatch(
+          setSubExclCatalog({
+            rows: catalogRows,
+            loadedFor: e.error === 0 ? loadKey : null,
+          }),
+        );
         setExclusions(e.error === 0 ? (e.data ?? []) : []);
       })
       .catch((err: JsonError & { response?: { status?: number } }) => {
         if (!live) return;
-        setCatalog([]);
+        dispatch(setSubExclCatalog({ rows: [], loadedFor: null }));
         toast.error(
           err.response?.status === 404
             ? "The sub department catalogue endpoint is not on this API yet"
@@ -344,7 +372,7 @@ const SubDeptExclusions = () => {
           className="flex-1"
         />
         <button
-          onClick={() => setHashOnly((v) => !v)}
+          onClick={() => dispatch(setSubExclHashOnly(!hashOnly))}
           title="Lottery, money orders, stamps and the like"
           className={`text-[11.5px] font-medium px-3 py-1.5 rounded-md flex-shrink-0 border transition-colors ${
             hashOnly

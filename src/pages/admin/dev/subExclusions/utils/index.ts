@@ -1,3 +1,6 @@
+// Utils
+import { SUB_EXCL_ALL_STORES } from "../../../../../features/dev/devAdminPageSlice";
+
 // Interfaces
 import type {
   CompanyDeptRow,
@@ -241,7 +244,8 @@ export const WINDOWS = [
   { value: "730", label: "Last 2 years" },
 ];
 
-export const ALL_STORES = "__all__";
+/** The Store filter's "every store" choice; the slice starts on it. */
+export const ALL_STORES = SUB_EXCL_ALL_STORES;
 
 export const prettyDate = (iso: string) => {
   if (!iso) return "—";

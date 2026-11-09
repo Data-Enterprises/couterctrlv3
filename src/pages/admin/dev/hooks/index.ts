@@ -43,6 +43,15 @@ export const useAdminPageCtx = () => {
     storeSearch,
     storeCompanyFilter,
     storeStatusFilter,
+    subExclStores,
+    subExclCompanyId,
+    subExclStoreKey,
+    subExclDays,
+    subExclSearch,
+    subExclHashOnly,
+    subExclCatalog,
+    subExclExclusions,
+    subExclLoadedFor,
   } = useAppSelector((state) => state.dev.adminPage);
 
   /**
@@ -121,5 +130,14 @@ export const useAdminPageCtx = () => {
     storeSearch,
     storeCompanyFilter,
     storeStatusFilter,
+    subExclStores,
+    subExclCompanyId,
+    subExclStoreKey,
+    subExclDays,
+    subExclSearch,
+    subExclHashOnly,
+    subExclCatalog,
+    subExclExclusions,
+    subExclLoadedFor,
   };
 };
