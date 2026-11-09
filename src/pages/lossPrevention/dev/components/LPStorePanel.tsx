@@ -35,6 +35,9 @@ interface LPStorePanelProps {
   onDaySelect: (day: string | null) => void;
 }
 
+/** Loss Prevention's left panel: the week's totals, exception type tabs, severity chips, a
+ *  day picker and store filter, and the sortable store list graded against the two-week
+ *  baseline. Clicking a store loads its transactions. */
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: LPStorePanelProps) => {
   const cashier = useLossPreventionCtx();
   const search = useAppSelector((s) => s.search);

@@ -39,6 +39,9 @@ interface LPExportModalProps {
   cashierGrades: CashierGrade[];
 }
 
+/** The Loss Prevention export pop-up: Presets (the transaction list, and a cashier summary
+ *  by severity) or Custom (group by and metrics over transactions or cashiers, with a
+ *  preview), downloaded as one CSV. */
 const LPExportModal = ({
   onClose,
   storeName,

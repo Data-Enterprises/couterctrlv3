@@ -67,6 +67,9 @@ interface LPDesktopProps {
   getSaleTypes: () => void;
 }
 
+/** The desktop Loss Prevention page: the search card until exception types load, then the
+ *  graded store list on the left and the picked store's cashiers and transactions on the
+ *  right. Owns the fetches for an exception type, a single day and a store's transactions. */
 const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
   const toast = useToast();
   const params = useApiContext();

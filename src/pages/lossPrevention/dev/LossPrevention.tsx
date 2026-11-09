@@ -23,6 +23,8 @@ import type { JsonError } from "../../../interfaces";
 import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
 import LPDesktop from "./components/LPDesktop";
 
+/** The Loss Prevention page: loads the exception types for the searched store or group,
+ *  then shows the desktop page, or the shared event-performance screens on a phone. */
 const LossPrevention = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
