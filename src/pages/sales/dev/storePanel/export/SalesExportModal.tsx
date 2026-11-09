@@ -76,6 +76,9 @@ interface SalesExportModalProps {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+/** The store popup's Export CSV modal, in two modes: Presets (Weekly Summary, Sub Department, Hourly Breakdown, Items Sold,
+ *  Financials and Sub Dept Items, some with their own dates or filters) and Custom (pick a source, group-by dimensions and
+ *  metrics with a live preview). Downloads the result as a CSV. */
 const SalesExportModal = ({
   onClose,
   storeName,

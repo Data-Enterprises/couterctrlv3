@@ -25,6 +25,8 @@ interface PopupDaySidebarProps {
   days: DayDot[];
 }
 
+/** The day strip across the store popup: an All Week card and one card per day with its sales or quantity
+ *  and change against last year or last week (starred for holidays). Clicking a card selects that day. */
 const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
   const dispatch = useAppDispatch();
   const { selectedDate, gradingMetric } = useSalesCtx();

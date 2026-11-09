@@ -58,6 +58,8 @@ import StoreColFilter from "../components/StoreColFilter";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import LedgerHeader from "./components/LedgerHeader";
 
+/** The Sales page's weekly ledger: search for a store or group and week, then a graded store list
+ *  (severity chips, sorting, filters) with the department investigation, matrix and store detail popups. */
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();

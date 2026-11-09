@@ -5,6 +5,7 @@ import { STAGE_NOTE } from "../utils";
 // Interfaces
 import type { Stage } from "../interfaces";
 
+/** The note under the causes grid: orders and receipts cover a longer window, so they cannot explain the LW or LY columns. */
 const SupplyWindowNote = ({
   them,
   window,

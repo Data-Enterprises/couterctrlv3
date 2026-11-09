@@ -11,6 +11,7 @@ interface ExportFooterProps {
   spaced?: boolean;
 }
 
+/** The export modal's footer: a Cancel link and the download button. */
 const ExportFooter = ({
   onCancel,
   onDownload,

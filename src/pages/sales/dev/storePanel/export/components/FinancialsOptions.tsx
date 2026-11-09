@@ -17,6 +17,8 @@ interface FinancialsOptionsProps {
   children?: ReactNode;
 }
 
+/** The Financials preset's options: how many records are in hand (or that the dates will be fetched on download),
+ *  From / To dates with a This week shortcut, and the store picker passed in as children. */
 const FinancialsOptions = ({
   loading,
   inHand,

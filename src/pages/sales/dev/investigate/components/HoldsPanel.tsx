@@ -14,6 +14,8 @@ import Carousel from "./Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";
 
+/** The investigation's first tab: whether the report holds, led by the biggest dollar bucket
+ *  against the other store, with the charts and the ranked items and vendors behind it. */
 const HoldsPanel = ({
   holds,
   spread,

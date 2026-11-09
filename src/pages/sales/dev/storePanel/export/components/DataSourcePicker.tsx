@@ -6,6 +6,7 @@ interface DataSourcePickerProps {
   onChange: (source: CustomSource) => void;
 }
 
+/** The custom export's Data Source radios: Sub Department or Hourly. */
 const DataSourcePicker = ({ source, onChange }: DataSourcePickerProps) => (
   <div>
     <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">

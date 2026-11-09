@@ -12,6 +12,7 @@ interface SubDeptItemsOptionProps {
   onToggleSev: (sev: ItemSev) => void;
 }
 
+/** The Sub Dept Items preset: a checkbox with the sub department's name and severity chips to filter which items export. */
 const SubDeptItemsOption = ({
   checked,
   subDeptName,

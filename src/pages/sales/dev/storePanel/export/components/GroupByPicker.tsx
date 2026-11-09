@@ -7,6 +7,7 @@ interface GroupByPickerProps {
   onToggle: (key: string) => void;
 }
 
+/** The custom export's Group By checkboxes, one per dimension. */
 const GroupByPicker = ({ dims, groupBy, onToggle }: GroupByPickerProps) => (
   <div>
     <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">

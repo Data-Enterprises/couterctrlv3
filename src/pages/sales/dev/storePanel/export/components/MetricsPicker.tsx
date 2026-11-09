@@ -12,6 +12,7 @@ interface MetricsPickerProps {
   onFnChange: (key: string, fn: AggFn) => void;
 }
 
+/** The custom export's Metrics list: a checkbox per metric and a dropdown for how it is aggregated. */
 const MetricsPicker = ({
   mDefs,
   metrics,

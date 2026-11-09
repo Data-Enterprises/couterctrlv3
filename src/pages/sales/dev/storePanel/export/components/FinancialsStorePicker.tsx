@@ -10,6 +10,7 @@ interface FinancialsStorePickerProps {
   setTicked: Dispatch<SetStateAction<Set<number>>>;
 }
 
+/** The Financials preset's store checklist for a group search, with All and Just this one shortcuts. */
 const FinancialsStorePicker = ({
   stores,
   storeId,

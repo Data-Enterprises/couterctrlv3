@@ -10,6 +10,7 @@ interface PresetOptionProps {
   children?: ReactNode;
 }
 
+/** One preset in the export modal: a checkbox with its name and description, and any extra controls under it. */
 const PresetOption = ({
   label,
   description,

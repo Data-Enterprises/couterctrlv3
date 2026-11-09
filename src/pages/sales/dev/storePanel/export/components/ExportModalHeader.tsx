@@ -11,6 +11,7 @@ interface ExportModalHeaderProps {
   onClose: () => void;
 }
 
+/** The export modal's navy header: the store name, the Presets / Custom mode tabs and the close button. */
 const ExportModalHeader = ({
   storeName,
   mode,

@@ -12,6 +12,7 @@ interface ItemsSoldDatesProps {
   tooLong: boolean;
 }
 
+/** The Items Sold preset's From / To dates with a This week shortcut; dimmed and disabled until Items Sold is ticked. */
 const ItemsSoldDates = ({
   enabled,
   from,

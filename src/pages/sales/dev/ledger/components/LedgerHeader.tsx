@@ -44,6 +44,8 @@ interface LedgerHeaderProps {
   onOpenSearch: () => void;
 }
 
+/** The Sales ledger's dark header: the week label, its sales or quantity total with LW and LY change pills,
+ *  and a row with the store search, the sales/qty grading toggle and the store threshold slider. */
 const LedgerHeader = ({
   weekLabel,
   twTotal,

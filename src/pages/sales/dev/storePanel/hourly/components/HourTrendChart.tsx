@@ -8,6 +8,7 @@ interface HourTrendChartProps {
   hasLY: boolean;
 }
 
+/** The Hourly tab's line chart of sales across the days: this week, plus last week and last year when they exist. */
 const HourTrendChart = ({ days, hasLW, hasLY }: HourTrendChartProps) => {
   const lineData = [
     { id: "TY", data: days.map((d) => ({ x: d.label, y: d.tw })), color: "rgb(var(--color-brand-navy))" },

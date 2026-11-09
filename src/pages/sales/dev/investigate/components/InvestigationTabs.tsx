@@ -8,6 +8,8 @@ import type { Desk, Holds, Supply } from "../utils/investigationSteps";
 // Components
 import Bar from "./Bar";
 
+/** The investigation's tab bar: the steps as tabs, each showing its conclusion once it has one,
+ *  or what it is waiting for while orders and deliveries load. */
 /*
   The steps, as tabs.
 

@@ -27,6 +27,8 @@ import {
 } from "@heroicons/react/20/solid";
 import PriceRow from "./PriceRow";
 
+/** The Top 200 comparison's side rail for the picked item: a severity-tinted strip that opens to the item's
+ *  figure and whether the other store carries it, over a price-by-price grid of what each store rang. */
 const Rail = ({
   row,
   metric,

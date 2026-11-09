@@ -10,6 +10,8 @@ import type { Cause } from "../interfaces";
 /* Step 5 · who fixes it                                               */
 /* ------------------------------------------------------------------ */
 
+/** The investigation's "who fixes it" tab: a card per desk with the items it owns and an export,
+ *  plus a line for each cause nobody can act on, each with a "Show in grid" button. */
 const ActPanel = ({
   desks,
   cash,
