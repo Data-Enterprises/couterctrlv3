@@ -31,6 +31,8 @@ interface AssociationDetailPanelProps {
   onContextMenu: (e: React.MouseEvent, upc: string) => void;
 }
 
+/** The Association tab's right side: an insight strip, four KPI tiles (avg revenue, top
+ *  companion, attach rate, baskets) and the companion items table. */
 const AssociationDetailPanel = ({
   result,
   title,

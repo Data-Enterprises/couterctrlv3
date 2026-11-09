@@ -16,9 +16,9 @@ interface AssociationLeftPanelProps {
   onBackToSeed: () => void;
 }
 
-// Two states in one panel: re-rooted, a back-link plus the current target;
-// at seed level, a read-only list mirroring what's checked in the page's UPC
-// panel (which owns the selection).
+/** The Association tab's left panel, in two states: re-rooted, a back-link plus the
+ *  current target; at seed level, a read-only list of the seed UPCs with revenue and sub
+ *  dept, mirroring what's checked in the page's UPC panel (which owns the selection). */
 const AssociationLeftPanel = ({
   selectedUpcs,
   upcItemsMap,

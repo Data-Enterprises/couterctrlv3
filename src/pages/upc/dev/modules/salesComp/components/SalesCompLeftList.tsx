@@ -11,6 +11,8 @@ interface SalesCompLeftListProps {
   onSelect: (code: string) => void;
 }
 
+/** The Sales Comp tab's left list: one row per item with its period total, code and a
+ *  status phrase vs last year. */
 const SalesCompLeftList = ({ stats, selectedCode, onSelect }: SalesCompLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

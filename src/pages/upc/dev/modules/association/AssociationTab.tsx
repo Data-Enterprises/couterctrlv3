@@ -37,6 +37,8 @@ import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import AssociationLeftPanel from "./components/AssociationLeftPanel";
 import AssociationDetailPanel from "./components/AssociationDetailPanel";
 
+/** The UPC List's Association tab: fetches the items bought in the same baskets as the
+ *  selected seed UPCs, lists them by attach rate, and re-roots on a clicked companion. */
 const AssociationTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

@@ -22,8 +22,8 @@ interface CtaInsightStripProps {
   tone: CtaTone;
 }
 
-// Clickable, tone-coloured insight strip that expands into a plain-language
-// explanation; flags direction (up/down/flat), it doesn't grade.
+/** A clickable, tone-coloured insight strip that expands into a plain-language
+ *  explanation; it flags direction (up/down/flat), it doesn't grade. */
 const CtaInsightStrip = ({ title, insight, tone }: CtaInsightStripProps) => {
   const [open, setOpen] = useState(false);
   const c = TONE_CLASSES[tone];

@@ -11,7 +11,9 @@ interface PriceOptLeftListProps {
   onSelect: (code: string) => void;
 }
 
-// The headline is always Best price: there is no current price to compare.
+/** The Price Opt tab's left list: one row per item with its best price (per pound on scale
+ *  items), code and an elasticity phrase. The headline is always Best price: there is no
+ *  current price to compare. */
 const PriceOptLeftList = ({ rows, selectedCode, onSelect }: PriceOptLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

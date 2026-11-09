@@ -1,5 +1,5 @@
-// Color key for BeforeAfterBar's two shades — rendered once above a group
-// of bars rather than repeated per bar.
+/** The Before / After colour key for BeforeAfterBar's two shades, shown once above a group
+ *  of bars rather than repeated per bar. */
 const BeforeAfterLegend = () => {
   return (
     <div className="flex items-center gap-2.5 text-[10px] text-content/85">

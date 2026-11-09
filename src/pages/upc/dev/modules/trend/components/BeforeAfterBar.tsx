@@ -12,9 +12,9 @@ interface BeforeAfterBarProps {
   note?: string;
 }
 
-// Before/after rows against a fixed 0-100 scale, so fill length is the literal
-// percentage. Only for metrics bounded 0-100 (Confidence, Active rate); others
-// use TrendBeforeAfterTile.
+/** A before/after pair of bars against a fixed 0-100 scale, so fill length is the literal
+ *  percentage, with an optional amber flag and note. Only for metrics bounded 0-100
+ *  (Confidence, Active rate); others use TrendBeforeAfterTile. */
 const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay, afterDisplay, flagged, note }: BeforeAfterBarProps) => {
   return (
     <div className="bg-gray-200/60 rounded px-2.5 py-2 mb-2 last:mb-0">

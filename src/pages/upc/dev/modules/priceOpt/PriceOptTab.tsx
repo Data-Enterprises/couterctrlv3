@@ -28,6 +28,9 @@ import type { UpcPriceOpt } from "../../../../../interfaces";
 import PriceOptLeftList from "./components/PriceOptLeftList";
 import PriceOptDetailPanel from "./components/PriceOptDetailPanel";
 
+/** The UPC List's Price Opt tab: fetches price, qty and revenue history for the searched
+ *  UPCs on its first visit, then shows the items in a left list and the picked item's
+ *  best price, elasticity and price points on the right. */
 const PriceOptTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

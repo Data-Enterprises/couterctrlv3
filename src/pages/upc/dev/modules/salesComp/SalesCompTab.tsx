@@ -37,6 +37,9 @@ import type { UpcSalesComp } from "../../../../../interfaces";
 import SalesCompLeftList from "./components/SalesCompLeftList";
 import SalesCompDetailPanel from "./components/SalesCompDetailPanel";
 
+/** The UPC List's Sales Comp tab: fetches this year's and last year's sales for the
+ *  searched UPCs on its first visit, then shows the items in a left list and the picked
+ *  item's comparison on the right. */
 const SalesCompTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

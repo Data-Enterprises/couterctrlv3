@@ -30,6 +30,9 @@ import type { UpcTrend } from "../../../../../interfaces";
 import TrendLeftList from "./components/TrendLeftList";
 import TrendDetailPanel from "./components/TrendDetailPanel";
 
+/** The UPC List's Trend tab: fetches before/after trend detection for the searched UPCs
+ *  on its first visit, then shows the items in a left list and the picked item's trend
+ *  detail on the right. */
 const TrendTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

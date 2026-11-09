@@ -24,6 +24,9 @@ interface TrendDetailPanelProps {
   fixes: boolean;
 }
 
+/** The Trend tab's right side for one item: an insight strip, KPI tiles (impact units,
+ *  daily rate, confidence, days since the pivot), before/after bars for Confidence and
+ *  Active Rate, and before/after tiles for total units, volatility and slope. */
 const TrendDetailPanel = ({
   trend: t,
   status,

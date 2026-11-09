@@ -15,8 +15,9 @@ interface TrendLeftListProps {
   window: UpcTrendWindow | null;
 }
 
-// The headline is units lost (impact_units), Trend's own unit, matching the
-// KPI strip; the phrase is the status label itself.
+/** The Trend tab's left list: one row per item with its impact units (an arrow and count,
+ *  a dash when it has no prior history), code and status label. The headline is impact
+ *  units, Trend's own unit, matching the KPI strip. */
 const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

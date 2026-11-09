@@ -16,6 +16,9 @@ interface SalesCompDetailPanelProps {
   stats: UpcSalesCompStats;
 }
 
+/** The Sales Comp tab's right side for one item: an insight strip, KPI tiles (total, peak
+ *  day, daily avg, week over week), this year and last year by day of week, and the
+ *  week-by-week table. */
 const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
   const kpis: KpiCell[] = [
     {

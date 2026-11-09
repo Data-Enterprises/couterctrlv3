@@ -12,6 +12,8 @@ interface UpcLeftPanelProps {
   onReSearch: () => void;
 }
 
+/** The UPC List's left panel: a navy header with the date range, the searched store or
+ *  group, a search-again button and help, above the UPC list. */
 const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
   const ctx = useUpcDevCtx();
 

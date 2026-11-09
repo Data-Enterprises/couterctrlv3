@@ -10,6 +10,8 @@ import { getMovementKpis } from "../modules/movement/MovementKpis";
 import { movementGrid, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
 
+/** The row of KPI figures above the UPC List tabs, computed for the active tab from the
+ *  selected UPCs. Hidden when no UPC is selected. */
 const UpcKpiStrip = () => {
   const ctx = useUpcDevCtx();
   const movementWindow = useMovementWindow();

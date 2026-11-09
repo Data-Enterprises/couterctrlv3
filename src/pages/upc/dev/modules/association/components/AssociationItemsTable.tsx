@@ -21,8 +21,10 @@ interface AssociationItemsTableProps {
   onContextMenu: (e: React.MouseEvent, upc: string) => void;
 }
 
-// Shaped like PriceOptPricePointsTable, with the app's column-header sort and
-// filter conventions. Department and Attach stay plain columns.
+/** The companion items table: product, sub dept, qty, baskets, revenue, avg price and
+ *  attach rate. Click a row to re-root on it, right-click for the UPC menu. Shaped like
+ *  PriceOptPricePointsTable, with the app's column-header sort and filter conventions;
+ *  Sub Dept and Attach stay plain columns. */
 const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationItemsTableProps) => {
   const [colSort, setColSort] = useState<{ col: SortCol; dir: "desc" | "asc" } | null>(null);
   const [draftDesc, setDraftDesc] = useState("");

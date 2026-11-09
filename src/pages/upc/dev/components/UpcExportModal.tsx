@@ -90,6 +90,8 @@ const download = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+/** The UPC List export pop-up: picks the export type (and shape on Sales Comp) for the
+ *  active tab and downloads it as a CSV. Disabled with a reason while data is still loading. */
 const UpcExportModal = ({ onClose }: Props) => {
   const ctx = useUpcDevCtx();
   const movementWindow = useMovementWindow();

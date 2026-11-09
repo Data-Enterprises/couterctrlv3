@@ -11,6 +11,8 @@ import {
   setDevFilterText,
 } from "../../../../features/dev/devUpcDevSlice";
 
+/** The UPC List's left-panel list: a filter box, All/None buttons and one tick row per
+ *  searched UPC with its description. */
 const UpcItemList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

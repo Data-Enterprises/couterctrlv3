@@ -31,6 +31,8 @@ interface UpcSearchCardProps {
   busy?: boolean;
 }
 
+/** The UPC List search card: landing tab, store or group, dates, and UPCs typed, pasted or
+ *  uploaded from a CSV, then the Search button. Also used as the re-search overlay. */
 const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) => {
   const ctx = useUpcDevCtx();
   const { nothingPicked, pickLabel } = useSearchPick();

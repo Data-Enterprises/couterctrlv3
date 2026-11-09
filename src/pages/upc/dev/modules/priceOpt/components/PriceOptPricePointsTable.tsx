@@ -12,9 +12,9 @@ interface PriceOptPricePointsTableProps {
   weighted: boolean;
 }
 
-// Price Opt's version of Sales Comp's day-of-week grid: a variable-length list
-// of price points. No profit column and no "current" row; the best-by-revenue
-// row is tinted.
+/** Price Opt's version of Sales Comp's day-of-week grid: a variable-length list of price
+ *  points with qty (or lb) and revenue. No profit column and no "current" row; the
+ *  best-by-revenue row is tinted. */
 const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPricePointsTableProps) => {
   const sorted = [...points].sort((a, b) => b.revenue - a.revenue);
   const cols = "1fr 70px 90px";

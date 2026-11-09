@@ -16,6 +16,9 @@ import AssociationTab from "../modules/association/AssociationTab";
 import UpcKpiStrip from "./UpcKpiStrip";
 import UpcExportModal from "./UpcExportModal";
 
+/** The UPC List's right panel: the export button, the tab bar, the KPI strip and the tab
+ *  content. All tabs stay mounted so their fetches start at once; "No UPCs selected"
+ *  covers them when nothing is ticked. */
 const UpcRightPanel = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();

@@ -26,6 +26,9 @@ import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";
 
+/** The UPC List page: the search card until a search runs, then the UPC list on the left
+ *  and the tabs on the right, with a re-search overlay. A search that only removes UPCs
+ *  prunes loaded rows; one for the same store and dates fetches only what's missing. */
 const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
