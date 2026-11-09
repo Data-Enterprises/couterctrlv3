@@ -9,18 +9,15 @@ import {
 // Redux
 import { setSelectedStore } from "../../../../../features/dev/devItemLookupSlice";
 
+// Utils
+import { parseUpcs } from "../utils";
+
 // Components
 import SingleSelect from "../../../../../components-dev/SingleSelect";
 
 interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;
 }
-
-const parseUpcs = (raw: string): string[] =>
-  raw
-    .split(/[\n,]/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0);
 
 const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();

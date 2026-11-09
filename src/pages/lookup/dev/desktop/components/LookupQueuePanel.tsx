@@ -1,3 +1,6 @@
+// Utils
+import { fmtRangeDate } from "../utils";
+
 // Interfaces
 import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
 
@@ -19,9 +22,6 @@ interface LookupQueuePanelProps {
   selectedStoreNumber: string | null;
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
-
-const fmtRangeDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 const LookupQueuePanel = ({
   storeName,

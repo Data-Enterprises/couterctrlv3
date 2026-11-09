@@ -7,7 +7,7 @@ import type { DayBucket } from "../../interfaces";
 // Components
 import { TY_COLOR, UNSCOPED_OPACITY } from "../../../../../components-dev/mobile/perf/perfColors";
 
-interface Props {
+interface ItemDayChartProps {
   buckets: DayBucket[];
   /** ISO date of the scoped day, or null for the whole window. */
   selected: string | null;
@@ -19,7 +19,7 @@ interface Props {
  * `PerfDayChart` but one column per day (no last year here); colour, dimming
  * and tap-again-to-clear are shared. Keyed by date so a scope change animates.
  */
-const ItemDayChart = ({ buckets, selected, onToggle }: Props) => {
+const ItemDayChart = ({ buckets, selected, onToggle }: ItemDayChartProps) => {
   const max = buckets.reduce((m, b) => Math.max(m, b.revenue), 0) || 1;
 
   return (

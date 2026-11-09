@@ -5,7 +5,7 @@ import { useAppSelector } from "../../../../../hooks";
 import { formatCurrency2 } from "../../../../../utils";
 import { formatUnits } from "../../utils";
 
-interface Props {
+interface RecentLookupsCardProps {
   onSelect: (productCode: string) => void;
   /** Inside the result screen's bottom sheet the card shell is already there,
    *  so the list drops its own border and heading. */
@@ -16,7 +16,7 @@ interface Props {
  * Recent lookups, dev only: two lines per row (as `PerfDrillList`) so the name
  * gets the width. A scale item shows pounds (it rings `qty: 0`).
  */
-const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
+const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) => {
   const { recentLookups } = useAppSelector((s) => s.dev.item);
   if (!recentLookups.length) return null;
 

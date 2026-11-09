@@ -70,3 +70,9 @@ export const dayNumber = (iso: string): string =>
 /** Signed, so a flat day reads as flat rather than as a gain of nothing. */
 export const formatSignedPct = (pct: number): string =>
   `${pct > 0 ? "+" : ""}${pct.toFixed(pct >= 100 || pct <= -100 ? 0 : 1)}%`;
+
+/** A margin's text colour: red below zero, green above, plain when unknown. */
+export const marginColor = (marginPct: number | null) => {
+  if (marginPct === null) return "text-content/95";
+  return marginPct < 0 ? "text-red-700" : "text-emerald-700";
+};

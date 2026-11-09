@@ -32,8 +32,9 @@ import InfoButton from "../../../../components-dev/InfoButton";
 import InfoModal from "../../../../components-dev/InfoModal";
 import ItemDayChart from "./components/ItemDayChart";
 import LookupDayRows from "./components/LookupDayRows";
+import Tile from "./components/Tile";
 
-interface Props {
+interface LookupItemReportProps {
   description: string;
   productCode: string;
   categoryDescription: string;
@@ -49,27 +50,6 @@ interface Props {
   buckets: DayBucket[];
   trend: TrendResult;
 }
-
-/** One figure and its caption. */
-const Tile = ({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-}) => (
-  <div className="flex flex-col">
-    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/95">
-      {label}
-    </span>
-    <span className="font-display text-[15px] font-bold tracking-tight text-content">
-      {value}
-    </span>
-    {sub && <span className="text-[10.5px] text-content/95">{sub}</span>}
-  </div>
-);
 
 /**
  * Item Lookup's result screen, dev only. One unit, never two: pounds for a
@@ -94,7 +74,7 @@ const LookupItemReport = ({
   historyAll,
   buckets,
   trend,
-}: Props) => {
+}: LookupItemReportProps) => {
   const [infoOpen, setInfoOpen] = useState(false);
   // Both keyed to the item, so a new lookup opens on its sales and the whole
   // window rather than inheriting the last item's scope.

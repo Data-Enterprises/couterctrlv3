@@ -3,16 +3,12 @@ import { useAppSelector } from "../../../../../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
+import { marginColor } from "../utils";
 
 interface RecentLookupsStripProps {
   onSelect: (productCode: string) => void;
   variant?: "cards" | "list";
 }
-
-const marginColor = (marginPct: number | null) => {
-  if (marginPct === null) return "text-content/95";
-  return marginPct < 0 ? "text-red-700" : "text-emerald-700";
-};
 
 const RecentLookupsStrip = ({
   onSelect,

@@ -9,7 +9,7 @@ import type { DayBucket } from "../../interfaces";
 // Components
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 
-interface Props {
+interface LookupDayRowsProps {
   buckets: DayBucket[];
   /** Scale item: the unit is pounds, and the rate is per pound. */
   weighed: boolean;
@@ -26,7 +26,7 @@ interface Props {
  * `PerfDrillList`. Read-only: the chart is the one filter, and a row highlights
  * when the chart scopes its day.
  */
-const LookupDayRows = ({ buckets, weighed, selected, isSale }: Props) => {
+const LookupDayRows = ({ buckets, weighed, selected, isSale }: LookupDayRowsProps) => {
   const max = buckets.reduce((m, b) => Math.max(m, b.revenue), 0) || 1;
   const rate = weighed ? "/lb" : " ea";
 
