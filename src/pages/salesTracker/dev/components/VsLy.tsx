@@ -85,7 +85,7 @@ const VsLy = ({
         {signed(dollarChange, formatCurrency2)}
       </span>
       <span
-        className={isPill ? "opacity-40" : "text-gray-300"}
+        className={isPill ? "opacity-40" : "text-brand_line_2"}
         aria-hidden="true"
       >
         |
