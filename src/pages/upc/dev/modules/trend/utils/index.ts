@@ -92,3 +92,11 @@ export function getTrendInsight(
       return `Sales are up ${t.pct_change_mean >= 0 ? "+" : ""}${t.pct_change_mean.toFixed(1)}% per day, ${impact.toLocaleString()} more units than before.`;
   }
 }
+
+/** Each tone's text colour in the list. */
+export const TONE_TEXT: Record<TrendTone, string> = {
+  up: "text-severity_healthy_text",
+  down: "text-severity_critical_text",
+  flat: "text-content/85",
+  muted: "text-content/85",
+};

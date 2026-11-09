@@ -21,7 +21,7 @@ import CtaInsightStrip from "../../../components/CtaInsightStrip";
 import KpiTileGrid from "../../../components/KpiTileGrid";
 import AssociationItemsTable from "./AssociationItemsTable";
 
-interface Props {
+interface AssociationDetailPanelProps {
   result: AssociationResult;
   title: string;
   isReroot: boolean;
@@ -39,7 +39,7 @@ const AssociationDetailPanel = ({
   prevTotalBaskets,
   onReroot,
   onContextMenu,
-}: Props) => {
+}: AssociationDetailPanelProps) => {
   const items = getDisplayItems(result.items, rerootUpc);
   const topCompanion = getTopCompanion(items);
   const totalRevenue = getTotalRevenue(items);

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 import { sortByAttachRateDesc } from "../associationStats";
+import { COLS, getSortValue } from "../utils";
 
 // Interfaces
 import type { SortCol } from "../interfaces";
@@ -14,19 +15,15 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
 import ColFilter from "../../../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../../../components-dev/filters/colFilterStyles";
 
-interface Props {
+interface AssociationItemsTableProps {
   items: AssociationItem[];
   onReroot: (upc: string) => void;
   onContextMenu: (e: React.MouseEvent, upc: string) => void;
 }
 
-const COLS = "1fr 110px 60px 70px 80px 70px 75px";
-
-const getSortValue = (item: AssociationItem, col: SortCol) => item[col];
-
 // Shaped like PriceOptPricePointsTable, with the app's column-header sort and
 // filter conventions. Department and Attach stay plain columns.
-const AssociationItemsTable = ({ items, onReroot, onContextMenu }: Props) => {
+const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationItemsTableProps) => {
   const [colSort, setColSort] = useState<{ col: SortCol; dir: "desc" | "asc" } | null>(null);
   const [draftDesc, setDraftDesc] = useState("");
   const [appliedDesc, setAppliedDesc] = useState("");

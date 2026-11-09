@@ -1,5 +1,10 @@
 // Interfaces
-import type { Direction, StatusPhrase, Trajectory } from "../interfaces";
+import type {
+  Direction,
+  StatusPhrase,
+  StatusTone,
+  Trajectory,
+} from "../interfaces";
 
 // The same flat band SalesCompKpis uses for up/flat/down, so both agree on
 // what counts as a real move.
@@ -105,3 +110,22 @@ export function getStatusInsight(vsLYPct: number | null, wowPct: number | null):
   const trajectory = classifyTrajectory(wowPct);
   return INSIGHT_MATRIX[lyDir][trajectory](vsLYPct, wowPct);
 }
+
+/** Week label, seven days, then the week's total. */
+export const WEEK_GRID = "120px repeat(7, 1fr) 1.1fr";
+
+/** Each tone's text colour in the list. */
+export const TONE_TEXT: Record<StatusTone, string> = {
+  up: "text-severity_healthy_text",
+  down: "text-severity_critical_text",
+  flat: "text-content/85",
+  muted: "text-content/85",
+};
+
+/** sameWeekDayLastYear returns ISO, which the API rejects (400, "Please use
+ *  mm/dd/yyyy"), so it is reformatted to m/d/yyyy by string split: `new Date`
+ *  would parse UTC midnight and roll back a day in US timezones. */
+export const isoToMdy = (iso: string) => {
+  const [y, m, d] = iso.split("-");
+  return `${Number(m)}/${Number(d)}/${y}`;
+};

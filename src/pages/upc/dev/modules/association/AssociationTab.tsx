@@ -27,6 +27,7 @@ import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { failureReason } from "../../utils";
 import { buildSeedKey, seedDataFor } from "./associationStats";
+import { fmtDate, LIMIT, SEED_DEBOUNCE_MS } from "./utils";
 
 // Interfaces
 import type { ContextMenuState } from "./interfaces";
@@ -35,17 +36,6 @@ import type { ContextMenuState } from "./interfaces";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import AssociationLeftPanel from "./components/AssociationLeftPanel";
 import AssociationDetailPanel from "./components/AssociationDetailPanel";
-
-const LIMIT = 25;
-
-/** Each seed-set change is a heavy fetch, so a run of checkbox clicks is
- *  collapsed into the one where the user stopped. */
-const SEED_DEBOUNCE_MS = 600;
-
-const fmtDate = (d: string) => {
-  const [m, day, y] = d.split("/");
-  return `${y}-${m.padStart(2, "0")}-${day.padStart(2, "0")}`;
-};
 
 const AssociationTab = () => {
   const ctx = useUpcDevCtx();

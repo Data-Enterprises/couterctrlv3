@@ -5,7 +5,7 @@ import { formatPricedUnitsShort } from "../../../../../../utils/pricedUnits";
 // Interfaces
 import type { PricePoint } from "../interfaces";
 
-interface Props {
+interface PriceOptPricePointsTableProps {
   points: PricePoint[];
   bestPrice: number;
   /** Sold by the pound — the volume column is weight, not a ring count. */
@@ -15,7 +15,7 @@ interface Props {
 // Price Opt's version of Sales Comp's day-of-week grid: a variable-length list
 // of price points. No profit column and no "current" row; the best-by-revenue
 // row is tinted.
-const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: Props) => {
+const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPricePointsTableProps) => {
   const sorted = [...points].sort((a, b) => b.revenue - a.revenue);
   const cols = "1fr 70px 90px";
 

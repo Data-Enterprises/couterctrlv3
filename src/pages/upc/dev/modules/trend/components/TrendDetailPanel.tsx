@@ -16,7 +16,7 @@ import BeforeAfterBar from "./BeforeAfterBar";
 import BeforeAfterLegend from "./BeforeAfterLegend";
 import TrendBeforeAfterTile from "./TrendBeforeAfterTile";
 
-interface Props {
+interface TrendDetailPanelProps {
   trend: UpcTrend;
   status: TrendStatus;
   /** The windows the answer describes. Null only before the first answer. */
@@ -29,7 +29,7 @@ const TrendDetailPanel = ({
   status,
   window,
   fixes,
-}: Props) => {
+}: TrendDetailPanelProps) => {
   const phrase = getTrendPhrase(status);
   const insight = getTrendInsight(t, status, fixes, window);
   const factor = status === "accelerating" ? accelerationFactor(t, fixes) : null;

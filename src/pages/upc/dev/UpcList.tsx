@@ -19,34 +19,12 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 
 // Utils
 import { upcQueue } from "./upcQueue";
+import { buildScopeKey, sameStores } from "./utils";
 
 // Components
 import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";
-
-/** Everything but the UPC list that decides whether loaded data is still
- *  valid, from the search selection (not resolved storeids) so the check is
- *  free. Same key, fewer UPCs: a pure removal answered from state. */
-const buildScopeKey = (
-  type: string,
-  storeid: number | string | undefined,
-  groupId: number | string | undefined,
-  startDate: string,
-  endDate: string,
-) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
-
-/** Whether two comma-joined store lists hold the same stores, in any order. */
-const sameStores = (a: string, b: string) => {
-  const norm = (s: string) =>
-    s
-      .split(",")
-      .map(Number)
-      .filter((n) => Number.isFinite(n) && n > 0)
-      .sort((x, y) => x - y)
-      .join(",");
-  return norm(a) === norm(b);
-};
 
 const UpcList = () => {
   const ctx = useUpcDevCtx();

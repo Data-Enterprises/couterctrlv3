@@ -28,6 +28,7 @@ import {
   salesCompCodes,
   salesCompRange,
 } from "./salesCompStats";
+import { isoToMdy } from "./utils";
 
 // Interfaces
 import type { UpcSalesComp } from "../../../../../interfaces";
@@ -35,14 +36,6 @@ import type { UpcSalesComp } from "../../../../../interfaces";
 // Components
 import SalesCompLeftList from "./components/SalesCompLeftList";
 import SalesCompDetailPanel from "./components/SalesCompDetailPanel";
-
-/** sameWeekDayLastYear returns ISO, which the API rejects (400, "Please use
- *  mm/dd/yyyy"), so it is reformatted to m/d/yyyy by string split: `new Date`
- *  would parse UTC midnight and roll back a day in US timezones. */
-const isoToMdy = (iso: string) => {
-  const [y, m, d] = iso.split("-");
-  return `${Number(m)}/${Number(d)}/${y}`;
-};
 
 const SalesCompTab = () => {
   const ctx = useUpcDevCtx();

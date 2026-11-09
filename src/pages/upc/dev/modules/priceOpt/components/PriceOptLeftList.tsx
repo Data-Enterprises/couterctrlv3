@@ -1,25 +1,18 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { getPriceOptPhrase } from "../utils";
+import { getPriceOptPhrase, TONE_TEXT } from "../utils";
 
 // Interfaces
-import type { PriceOptTone, PriceOptRowSummary } from "../interfaces";
+import type { PriceOptRowSummary } from "../interfaces";
 
-interface Props {
+interface PriceOptLeftListProps {
   rows: PriceOptRowSummary[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
 }
 
-const TONE_TEXT: Record<PriceOptTone, string> = {
-  up: "text-severity_healthy_text",
-  down: "text-severity_critical_text",
-  flat: "text-content/85",
-  muted: "text-content/85",
-};
-
 // The headline is always Best price: there is no current price to compare.
-const PriceOptLeftList = ({ rows, selectedCode, onSelect }: Props) => {
+const PriceOptLeftList = ({ rows, selectedCode, onSelect }: PriceOptLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
       {rows.map((r) => {

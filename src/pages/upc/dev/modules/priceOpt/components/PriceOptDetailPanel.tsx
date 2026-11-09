@@ -12,12 +12,12 @@ import CtaInsightStrip from "../../../components/CtaInsightStrip";
 import KpiTileGrid from "../../../components/KpiTileGrid";
 import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
 
-interface Props {
+interface PriceOptDetailPanelProps {
   summary: PriceOptRowSummary;
   fixes: boolean;
 }
 
-const PriceOptDetailPanel = ({ summary: r, fixes }: Props) => {
+const PriceOptDetailPanel = ({ summary: r, fixes }: PriceOptDetailPanelProps) => {
   const phrase = getPriceOptPhrase(r.points, r.elasticity);
   const insight = getPriceOptInsight(r.points, r.elasticity);
 

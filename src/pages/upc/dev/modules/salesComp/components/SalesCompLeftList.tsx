@@ -1,24 +1,17 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { getStatusPhrase } from "../utils";
+import { getStatusPhrase, TONE_TEXT } from "../utils";
 
 // Interfaces
-import type { StatusTone, UpcSalesCompStats } from "../interfaces";
+import type { UpcSalesCompStats } from "../interfaces";
 
-interface Props {
+interface SalesCompLeftListProps {
   stats: UpcSalesCompStats[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
 }
 
-const TONE_TEXT: Record<StatusTone, string> = {
-  up: "text-severity_healthy_text",
-  down: "text-severity_critical_text",
-  flat: "text-content/85",
-  muted: "text-content/85",
-};
-
-const SalesCompLeftList = ({ stats, selectedCode, onSelect }: Props) => {
+const SalesCompLeftList = ({ stats, selectedCode, onSelect }: SalesCompLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
       {stats.map((s) => {

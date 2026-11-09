@@ -1,13 +1,13 @@
 // Utils
 import { impactUnits } from "../trendStats";
-import { getTrendPhrase } from "../utils";
+import { getTrendPhrase, TONE_TEXT } from "../utils";
 
 // Interfaces
-import type { TrendTone, TrendStatus } from "../interfaces";
+import type { TrendStatus } from "../interfaces";
 import type { UpcTrend } from "../../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../../features/dev/devUpcDevSlice";
 
-interface Props {
+interface TrendLeftListProps {
   rows: { t: UpcTrend; status: TrendStatus }[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
@@ -15,16 +15,9 @@ interface Props {
   window: UpcTrendWindow | null;
 }
 
-const TONE_TEXT: Record<TrendTone, string> = {
-  up: "text-severity_healthy_text",
-  down: "text-severity_critical_text",
-  flat: "text-content/85",
-  muted: "text-content/85",
-};
-
 // The headline is units lost (impact_units), Trend's own unit, matching the
 // KPI strip; the phrase is the status label itself.
-const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: Props) => {
+const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLeftListProps) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
       {rows.map(({ t, status }) => {

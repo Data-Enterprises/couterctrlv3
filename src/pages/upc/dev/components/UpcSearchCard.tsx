@@ -14,12 +14,15 @@ import {
   UPC_DEV_TABS,
 } from "../../../../features/dev/devUpcDevSlice";
 
+// Utils
+import { parseUpcs } from "../utils";
+
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 
-interface Props {
+interface UpcSearchCardProps {
   onSearch: () => void;
   /** Only for the re-search overlay: shows a close button and drops the
    *  card's own full-viewport centering (the backdrop centers instead). */
@@ -28,13 +31,7 @@ interface Props {
   busy?: boolean;
 }
 
-const parseUpcs = (text: string): string[] =>
-  text
-    .split(/[\n,;\r\t ]+/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0 && /^\d+$/.test(u));
-
-const UpcSearchCard = ({ onSearch, onClose, busy = false }: Props) => {
+const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) => {
   const ctx = useUpcDevCtx();
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();

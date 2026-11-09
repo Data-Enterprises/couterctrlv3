@@ -1,5 +1,5 @@
 // Interfaces
-import type { PriceOptPhrase, PricePoint } from "../interfaces";
+import type { PriceOptPhrase, PriceOptTone, PricePoint } from "../interfaces";
 
 // Elasticity at or above this reads as "highly" price-sensitive: a starting
 // threshold, not a validated cutoff.
@@ -25,3 +25,11 @@ export function getPriceOptInsight(points: PricePoint[], elasticity: number | nu
       : "";
   return `${points.length} price points tested so far.${elasticityNote}`;
 }
+
+/** Each tone's text colour in the list. */
+export const TONE_TEXT: Record<PriceOptTone, string> = {
+  up: "text-severity_healthy_text",
+  down: "text-severity_critical_text",
+  flat: "text-content/85",
+  muted: "text-content/85",
+};

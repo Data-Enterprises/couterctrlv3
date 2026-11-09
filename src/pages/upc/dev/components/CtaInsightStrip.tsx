@@ -1,6 +1,9 @@
 // Hooks
 import { useState } from "react";
 
+// Utils
+import { TONE_CLASSES } from "../utils";
+
 // Interfaces
 import type { CtaTone } from "../interfaces";
 
@@ -13,42 +16,15 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/16/solid";
 
-interface Props {
+interface CtaInsightStripProps {
   title: string;
   insight: React.ReactNode;
   tone: CtaTone;
 }
 
-const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: string; border: string }> = {
-  up: {
-    bg: "bg-severity_healthy_bg",
-    hoverBg: "hover:bg-severity_healthy_text/10",
-    text: "text-severity_healthy_text",
-    border: "border-severity_healthy_text/25",
-  },
-  down: {
-    bg: "bg-severity_critical_bg",
-    hoverBg: "hover:bg-severity_critical_text/10",
-    text: "text-severity_critical_text",
-    border: "border-severity_critical_text/25",
-  },
-  flat: {
-    bg: "bg-gray-100",
-    hoverBg: "hover:bg-gray-200",
-    text: "text-content",
-    border: "border-gray-300",
-  },
-  muted: {
-    bg: "bg-gray-100",
-    hoverBg: "hover:bg-gray-200",
-    text: "text-content",
-    border: "border-gray-300",
-  },
-};
-
 // Clickable, tone-coloured insight strip that expands into a plain-language
 // explanation; flags direction (up/down/flat), it doesn't grade.
-const CtaInsightStrip = ({ title, insight, tone }: Props) => {
+const CtaInsightStrip = ({ title, insight, tone }: CtaInsightStripProps) => {
   const [open, setOpen] = useState(false);
   const c = TONE_CLASSES[tone];
 

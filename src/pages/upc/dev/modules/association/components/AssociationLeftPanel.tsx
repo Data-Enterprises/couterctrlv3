@@ -7,7 +7,7 @@ import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSl
 // Components
 import { ArrowLeftIcon, CheckIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
-interface Props {
+interface AssociationLeftPanelProps {
   selectedUpcs: string[];
   upcItemsMap: Map<string, string>;
   seedItemsMap: Map<string, AssociationItem>;
@@ -26,7 +26,7 @@ const AssociationLeftPanel = ({
   rerootUpc,
   rerootDescription,
   onBackToSeed,
-}: Props) => {
+}: AssociationLeftPanelProps) => {
   if (rerootUpc) {
     return (
       <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">

@@ -8,11 +8,11 @@ import {
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import UpcItemList from "./UpcItemList";
 
-interface Props {
+interface UpcLeftPanelProps {
   onReSearch: () => void;
 }
 
-const UpcLeftPanel = ({ onReSearch }: Props) => {
+const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
   const ctx = useUpcDevCtx();
 
   // What was searched, from ctx, not the search being edited in the re-search

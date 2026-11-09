@@ -2,7 +2,7 @@
 import { formatCurrency2 } from "../../../../../../utils";
 import { heatStyle } from "../../../utils/heatColor";
 import { DAYS, DAY_SHORT, fmtWeekRange } from "../salesCompStats";
-import { getStatusPhrase, getStatusInsight } from "../utils";
+import { getStatusPhrase, getStatusInsight, WEEK_GRID } from "../utils";
 
 // Interfaces
 import type { UpcSalesCompStats } from "../interfaces";
@@ -12,14 +12,11 @@ import type { KpiCell } from "../../../interfaces";
 import KpiTileGrid from "../../../components/KpiTileGrid";
 import CtaInsightStrip from "../../../components/CtaInsightStrip";
 
-interface Props {
+interface SalesCompDetailPanelProps {
   stats: UpcSalesCompStats;
 }
 
-/** Week label, seven days, then the week's total. */
-const WEEK_GRID = "120px repeat(7, 1fr) 1.1fr";
-
-const SalesCompDetailPanel = ({ stats: s }: Props) => {
+const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
   const kpis: KpiCell[] = [
     {
       label: "Total sales",
