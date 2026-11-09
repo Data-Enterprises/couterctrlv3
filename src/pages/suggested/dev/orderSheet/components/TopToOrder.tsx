@@ -97,7 +97,7 @@ const TopToOrder = () => {
         <p className="text-[13px] font-medium text-content">
           No scale items in this store
         </p>
-        <p className="text-[11px] text-content/85">
+        <p className="text-[11px] text-content/95">
           Nothing here sells by the pound in the lookback window
         </p>
       </div>
@@ -108,10 +108,10 @@ const TopToOrder = () => {
     <>
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-gray-50">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-content/85">
+          <span className="text-[13px] font-semibold uppercase tracking-wide text-content/95">
             Top to order · every department at this store
           </span>
-          <span className="text-[13px] text-content/85 tabular-nums flex-shrink-0">
+          <span className="text-[13px] text-content/95 tabular-nums flex-shrink-0">
             these {rows.length} are{" "}
             <span className="font-semibold text-content">
               {sharePct.toFixed(0)}%
@@ -119,7 +119,7 @@ const TopToOrder = () => {
             of {fmtLb(storeTotal)} lb
           </span>
         </div>
-        <p className="text-[13px] text-content/85 mt-1 leading-snug">
+        <p className="text-[13px] text-content/95 mt-1 leading-snug">
           The heaviest lines in this store for this window. Open a department on
           the left for its full sheet, or click a row to jump to it.
         </p>
@@ -127,7 +127,7 @@ const TopToOrder = () => {
 
       <div className="flex-1 overflow-auto thin-scrollbar">
         {rows.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             No results match filters
           </div>
         ) : (
@@ -223,7 +223,7 @@ const TopToOrder = () => {
                     className={`px-3 py-2 ${
                       r.sub_department === null
                         ? "text-severity_watch_text font-medium"
-                        : "text-content/85"
+                        : "text-content/95"
                     }`}
                   >
                     {deptLabel(r.sub_department_description)}
@@ -240,13 +240,13 @@ const TopToOrder = () => {
             <tfoot>
               <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
                 <td className="px-3 py-2"></td>
-                <td className="px-3 py-2 text-right text-content/85">
+                <td className="px-3 py-2 text-right text-content/95">
                   {isFiltered ? `${rows.length} shown` : `Top ${rows.length}`}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                <td className="px-3 py-2 text-right tabular-nums text-content/95">
                   {fmtLb(rows.reduce((s, r) => s + (r.avg_daily_weight ?? 0), 0))}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                <td className="px-3 py-2 text-right tabular-nums text-content/95">
                   {fmtLb(shown)}
                 </td>
               </tr>

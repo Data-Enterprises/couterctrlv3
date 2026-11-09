@@ -94,24 +94,24 @@ const WorkingPopover = ({
           <div className="text-[12px] font-semibold text-custom-white truncate">
             {item.product_description ?? String(item.product_code)}
           </div>
-          <div className="text-[12px] text-custom-white/85">
+          <div className="text-[12px] text-custom-white/95">
             {leadDays} days until delivery · {coverDays} cover days
           </div>
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/85 hover:text-custom-white flex-shrink-0"
+          className="text-custom-white/95 hover:text-custom-white flex-shrink-0"
           title="Close"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="px-3 pt-2 pb-1 text-[12px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="px-3 pt-2 pb-1 text-[12px] font-semibold uppercase tracking-wide text-content/95">
         What this item does on the days covered
       </div>
       {days.length === 0 ? (
-        <div className="px-3 pb-2 text-[12px] text-content/85">
+        <div className="px-3 pb-2 text-[12px] text-content/95">
           No cover window on this response.
         </div>
       ) : (
@@ -121,7 +121,7 @@ const WorkingPopover = ({
       <div className="border-t border-gray-200">
         <Row k="Cover demand" v={`${fmtLb(demand)} lb`} />
         {drift && (
-          <div className="px-3 pb-1 text-[12px] text-content/85 leading-snug">
+          <div className="px-3 pb-1 text-[12px] text-content/95 leading-snug">
             The days above sum to {fmtLb(daySum)} — each weekday rate is rounded
             to two places before it is shown, so the parts need not add to the
             whole.
@@ -143,7 +143,7 @@ const WorkingPopover = ({
                 will want to know where it came from before they cut an order
                 by it. Both halves are the SHORT window, which is why the line
                 names the days. */}
-            <div className="px-3 pb-1.5 text-[12px] text-content/85 leading-snug">
+            <div className="px-3 pb-1.5 text-[12px] text-content/95 leading-snug">
               Ordered {fmtLb(item.ordered_weight_recent)} lb and sold{" "}
               {fmtLb(item.sold_weight_recent)} lb over the last{" "}
               {leadDays + coverDays} days.
@@ -181,7 +181,7 @@ const WorkingPopover = ({
             {/* Says which kind of advice this is. Without it "over-ordering"
                 next to a figure of 313 lb reads as "buy less than 313", which
                 is the one thing it does not mean. */}
-            <span className="text-[12px] text-content/85">
+            <span className="text-[12px] text-content/95">
               {SCOPE_TEXT[action.scope]}
             </span>
           </div>
@@ -189,7 +189,7 @@ const WorkingPopover = ({
         </div>
       )}
 
-      <div className="px-3 py-2 border-t border-gray-100 text-[12px] leading-snug text-content/85">
+      <div className="px-3 py-2 border-t border-gray-100 text-[12px] leading-snug text-content/95">
         {onHand > 0
           ? "What this item should sell over those days, plus its waste rate, less what is still in the case."
           : "What this item should sell over those days, plus its waste rate. Nothing came off for stock on hand — more has sold than was recorded as ordered, so there is nothing to net."}

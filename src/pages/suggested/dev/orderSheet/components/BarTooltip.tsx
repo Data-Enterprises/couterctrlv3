@@ -44,10 +44,10 @@ const BarTooltip = ({ xPct, title, rows }: BarTooltipProps) => {
             key={r.label}
             className="flex items-baseline justify-between gap-3 whitespace-nowrap mt-1"
           >
-            <span className="text-[12px] text-content/85">{r.label}</span>
+            <span className="text-[12px] text-content/95">{r.label}</span>
             <span
               className={`text-[12px] tabular-nums ${
-                r.soft ? "text-content/85" : "text-content font-semibold"
+                r.soft ? "text-content/95" : "text-content font-semibold"
               }`}
             >
               {r.value}

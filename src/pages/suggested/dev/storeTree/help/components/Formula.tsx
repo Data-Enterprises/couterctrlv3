@@ -12,11 +12,11 @@ const Formula = () => (
     <div className="px-3.5 py-3 border-b border-gray-200 bg-custom-white">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px] tabular-nums">
         <span className="font-bold text-brand_navy">Suggested weight</span>
-        <span className="text-content/85">=</span>
+        <span className="text-content/95">=</span>
         <span className="font-semibold text-content">demand</span>
-        <span className="text-content/85">&times;</span>
+        <span className="text-content/95">&times;</span>
         <span className="font-semibold text-content">waste</span>
-        <span className="text-content/85">&minus;</span>
+        <span className="text-content/95">&minus;</span>
         <span className="font-semibold text-content">stock on hand</span>
       </div>
     </div>
@@ -45,7 +45,7 @@ const Formula = () => (
         </div>
       ))}
     </dl>
-    <div className="px-3.5 py-2.5 border-t border-gray-200 text-[13px] leading-snug text-content/85">
+    <div className="px-3.5 py-2.5 border-t border-gray-200 text-[13px] leading-snug text-content/95">
       The result is floored at zero — the model never asks for a negative order.
     </div>
   </div>

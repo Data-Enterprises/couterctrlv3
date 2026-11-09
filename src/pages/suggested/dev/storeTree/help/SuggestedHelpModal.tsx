@@ -68,14 +68,14 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
           <div className="text-[15px] font-bold text-custom-white">
             Reading Suggested Weight
           </div>
-          <div className="text-[13px] font-normal text-custom-white/85 mt-0.5">
+          <div className="text-[13px] font-normal text-custom-white/95 mt-0.5">
             How the number is worked out, what it covers, and what it doesn&rsquo;t.
           </div>
         </div>
         <button
           onClick={onClose}
           title="Close"
-          className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+          className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
         >
           <XMarkIcon className="w-5 h-5" />
         </button>
@@ -97,7 +97,7 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
                   onClick={() => jump(sec.id)}
                   className="group w-full text-left flex items-baseline gap-3"
                 >
-                  <span className="w-5 flex-shrink-0 text-[13px] font-bold tabular-nums text-brand_navy/50 group-hover:text-brand_navy transition-colors">
+                  <span className="w-5 flex-shrink-0 text-[13px] font-bold tabular-nums text-brand_navy/95 group-hover:text-brand_navy transition-colors">
                     {i + 1}
                   </span>
                   <span className="text-[14px] text-content group-hover:text-brand_navy group-hover:underline underline-offset-2 transition-colors">
@@ -147,7 +147,7 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
           </section>
         ))}
 
-        <footer className="px-1 pt-2 pb-1 text-[13px] leading-relaxed text-content/85">
+        <footer className="px-1 pt-2 pb-1 text-[13px] leading-relaxed text-content/95">
           Figures shown are real, from one store over a twelve-week window.
           Departments covered are the ones that sell by the pound &mdash; meat,
           produce and deli scale items.

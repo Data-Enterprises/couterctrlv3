@@ -24,16 +24,16 @@ import type { AggFn } from "../../../../utils/csvExport";
 
 /** The page's table header cell, and its sortable variant. */
 export const TH =
-  "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
+  "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95";
 export const SORT_TH =
-  "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
+  "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/95 hover:text-content";
 
 /** Severity, in the order a reader should care: a line that stopped outright is
  *  worse news than one that slowed, and a dead line is a cleanup job. */
 export const STATUS_PILL: Record<NotSellingStatus, string> = {
   stopped: "bg-severity_critical_bg text-severity_critical_text",
   declining: "bg-severity_watch_bg text-severity_watch_text",
-  dead: "bg-gray-200 text-content/85",
+  dead: "bg-gray-200 text-content/95",
 };
 
 /**
@@ -417,7 +417,7 @@ export const NAVY = "rgb(var(--color-brand-navy))";
 export const PILL: Record<string, string> = {
   ok: "bg-severity_healthy_bg text-severity_healthy_text",
   warn: "bg-severity_watch_bg text-severity_watch_text",
-  off: "bg-gray-200 text-content/85",
+  off: "bg-gray-200 text-content/95",
 };
 
 /** The weekday bars. Same navy as the Production tab's, so the two read as one

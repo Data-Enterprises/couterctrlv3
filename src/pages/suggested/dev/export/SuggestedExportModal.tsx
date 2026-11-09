@@ -331,7 +331,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <p className="text-custom-white text-[13px] font-semibold">
             Export CSV
           </p>
-          <p className="text-custom-white/85 text-[10px] mt-0.5">
+          <p className="text-custom-white/95 text-[10px] mt-0.5">
             {storeLabel} — {departmentLabel}
             {windowLabel && ` · covers ${windowLabel}`}
           </p>
@@ -344,7 +344,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                 mode === m
                   ? "bg-custom-white text-brand_navy"
-                  : "text-custom-white/85 hover:text-custom-white"
+                  : "text-custom-white/95 hover:text-custom-white"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -353,7 +353,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/85 hover:text-custom-white transition-colors justify-self-end"
+          className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -363,7 +363,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
       {mode === "presets" && (
         <>
           <div className="px-4 pt-4 pb-2 space-y-3">
-            <p className="text-[11px] text-content/85 uppercase tracking-wide font-medium">
+            <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium">
               Select data to include
             </p>
             {PRESETS.map((p) => (
@@ -381,7 +381,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                   <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                     {p.label}
                   </p>
-                  <p className="text-[11px] text-content/85 mt-0.5">
+                  <p className="text-[11px] text-content/95 mt-0.5">
                     {p.description}
                   </p>
                 </div>
@@ -392,7 +392,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
             <button
               onClick={onClose}
-              className="text-[12px] text-content/85 hover:text-content transition-colors"
+              className="text-[12px] text-content/95 hover:text-content transition-colors"
             >
               Cancel
             </button>
@@ -414,7 +414,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                   Group By
                 </p>
                 <div className="space-y-1.5">
@@ -436,7 +436,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
               </div>
 
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                   Metrics
                 </p>
                 <div className="space-y-2">
@@ -452,7 +452,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                         />
                         <span
                           className={`text-[12px] flex-1 ${
-                            sel.enabled ? "text-content" : "text-content/85"
+                            sel.enabled ? "text-content" : "text-content/95"
                           }`}
                         >
                           {m.label}
@@ -478,7 +478,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                 </div>
               </div>
 
-              <p className="text-[10px] text-content/85 leading-relaxed">
+              <p className="text-[10px] text-content/95 leading-relaxed">
                 Working on {items.length.toLocaleString()} items for{" "}
                 {storeLabel} — {departmentLabel}.
               </p>
@@ -486,10 +486,10 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
 
             <div className="flex flex-col min-w-0">
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                <p className="text-[11px] font-semibold text-content/85 uppercase tracking-wide">
+                <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
                   Preview
                 </p>
-                <span className="text-[10px] text-content/85">
+                <span className="text-[10px] text-content/95">
                   {aggRows.length === 0
                     ? "No data — select at least one group or metric"
                     : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
@@ -498,7 +498,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
 
               {columns.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center p-6 text-center">
-                  <p className="text-[12px] text-content/85 leading-relaxed">
+                  <p className="text-[12px] text-content/95 leading-relaxed">
                     Select at least one group-by dimension
                     <br />
                     or metric to see a preview.
@@ -512,7 +512,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                         {columns.map((c) => (
                           <th
                             key={c.key}
-                            className="text-left px-3 py-2 text-content/85 font-semibold border-b border-gray-100 whitespace-nowrap"
+                            className="text-left px-3 py-2 text-content/95 font-semibold border-b border-gray-100 whitespace-nowrap"
                           >
                             {c.label}
                           </th>
@@ -530,7 +530,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                           {columns.map((c) => (
                             <td
                               key={c.key}
-                              className="px-3 py-1.5 text-content/85 whitespace-nowrap border-b border-gray-50"
+                              className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-gray-50"
                             >
                               {row[c.key] ?? "—"}
                             </td>
@@ -541,7 +541,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                         <tr>
                           <td
                             colSpan={columns.length}
-                            className="px-3 py-2 text-[10px] text-content/85"
+                            className="px-3 py-2 text-[10px] text-content/95"
                           >
                             + {aggRows.length - PREVIEW_ROWS} more rows in
                             download…
@@ -558,7 +558,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <button
               onClick={onClose}
-              className="text-[12px] text-content/85 hover:text-content transition-colors"
+              className="text-[12px] text-content/95 hover:text-content transition-colors"
             >
               Cancel
             </button>

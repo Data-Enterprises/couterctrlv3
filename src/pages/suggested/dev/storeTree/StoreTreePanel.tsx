@@ -136,7 +136,7 @@ const StoreTreePanel = ({
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -172,12 +172,12 @@ const StoreTreePanel = ({
         {ctx.loadingGroup ? (
           <StoreListSkeleton />
         ) : shown.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             No stores match filters
           </div>
         ) : (
           <>
-            <div className={`grid ${STORE_COLS} gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/85 flex-shrink-0`}>
+            <div className={`grid ${STORE_COLS} gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/95 flex-shrink-0`}>
               <div>Store</div>
               <div className="text-center">Items</div>
               <div className="text-right">Order lb</div>
@@ -225,7 +225,7 @@ const StoreTreePanel = ({
                         {orderLb(store.suggested)}
                       </span>
                       <ChevronRightIcon
-                        className="w-3 h-3 text-content/85 flex-shrink-0 justify-self-end transition-transform"
+                        className="w-3 h-3 text-content/95 flex-shrink-0 justify-self-end transition-transform"
                         style={{
                           transform: open ? "rotate(90deg)" : "rotate(0deg)",
                         }}
@@ -234,7 +234,7 @@ const StoreTreePanel = ({
 
                     {open && (
                       <div>
-                        <div className={`grid ${DEPT_COLS} gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/85`}>
+                        <div className={`grid ${DEPT_COLS} gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/95`}>
                           <div>Department</div>
                           <div className="text-center">Items</div>
                           <div className="text-right">Order lb</div>

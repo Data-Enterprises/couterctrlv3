@@ -311,7 +311,7 @@ const OrderSheetPanel = () => {
             <button
               onClick={() => ctx.dispatch(setExportOpen(true))}
               title="Export CSV"
-              className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+              className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
@@ -327,7 +327,7 @@ const OrderSheetPanel = () => {
       {!hasStore && !ctx.loadingGroup && (
         <div className="flex-1 flex flex-col items-center justify-center gap-1">
           <p className="text-[13px] font-medium text-content">Select a store</p>
-          <p className="text-[11px] text-content/85">
+          <p className="text-[11px] text-content/95">
             Open one on the left to see what it needs
           </p>
         </div>
@@ -360,7 +360,7 @@ const OrderSheetPanel = () => {
                   className={`px-4 py-2 text-[12px] font-semibold border-b-2 transition-colors ${
                     on
                       ? "text-content border-brand_navy bg-custom-white"
-                      : "text-content/85 border-transparent hover:text-content"
+                      : "text-content/95 border-transparent hover:text-content"
                   }`}
                 >
                   {t.label}
@@ -409,7 +409,7 @@ const OrderSheetPanel = () => {
                 }
               />
 
-              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/85 bg-gray-50 leading-snug">
+              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/95 bg-gray-50 leading-snug">
                 Each card is what this department does on that{" "}
                 <span className="font-semibold text-content">weekday</span>,
                 averaged over the lookback — not a forecast for that date. The
@@ -440,7 +440,7 @@ const OrderSheetPanel = () => {
                   className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
                     ctx.actionFilter === "all"
                       ? "bg-brand_navy text-custom-white"
-                      : "bg-custom-white text-content/85 border border-gray-200"
+                      : "bg-custom-white text-content/95 border border-gray-200"
                   }`}
                 >
                   All <span className="tabular-nums">{filtered.length}</span>
@@ -468,7 +468,7 @@ const OrderSheetPanel = () => {
 
               <div className="flex-1 overflow-auto thin-scrollbar">
                 {rows.length === 0 ? (
-                  <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
+                  <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
                     No results match filters
                   </div>
                 ) : (
@@ -615,7 +615,7 @@ const OrderSheetPanel = () => {
                           <td className="px-3 py-2 text-content font-medium">
                             {r.product_description ?? String(r.product_code)}
                           </td>
-                          <td className="px-3 py-2 text-content/85 tabular-nums">
+                          <td className="px-3 py-2 text-content/95 tabular-nums">
                             {r.product_code}
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums text-content">
@@ -658,13 +658,13 @@ const OrderSheetPanel = () => {
                       <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
                         <td className="px-3 py-2"></td>
                         <td className="px-3 py-2"></td>
-                        <td className="px-3 py-2 text-right text-content/85">
+                        <td className="px-3 py-2 text-right text-content/95">
                           Totals
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
                           {fmtLb(totals.daily)}
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
                           {fmtLb(totals.demand)}
                         </td>
                         <td className="px-3 py-2"></td>
@@ -672,10 +672,10 @@ const OrderSheetPanel = () => {
                             than each item's whole life. Lifetime pounds over
                             lifetimes that differ had no period to sum into; this
                             covers the same window as everything beside it. */}
-                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
                           {fmtLb(totals.markdown)}
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
                           {isHistorical ? "—" : fmtLb(totals.order)}
                         </td>
                       </tr>

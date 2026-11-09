@@ -112,7 +112,7 @@ const NotSellingTab = ({
         <p className="text-[13px] font-medium text-content">
           No not-selling data
         </p>
-        <p className="text-[11px] text-content/85">
+        <p className="text-[11px] text-content/95">
           The response came back without it
         </p>
       </div>
@@ -133,26 +133,26 @@ const NotSellingTab = ({
                 className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                   on
                     ? "bg-brand_navy text-custom-white border-brand_navy"
-                    : "bg-custom-white text-content/85 border-gray-200 hover:border-gray-300"
+                    : "bg-custom-white text-content/95 border-gray-200 hover:border-gray-300"
                 }`}
               >
                 {s.label} · {counts[s.key].toLocaleString()}
               </button>
             );
           })}
-          <span className="ml-auto text-[10px] text-content/85 tabular-nums">
+          <span className="ml-auto text-[10px] text-content/95 tabular-nums">
             recent {ns.window.recent.days}d vs prior {ns.window.prior.days}d ·
             down past {(ns.decline_threshold * 100).toFixed(0)}%
           </span>
         </div>
-        <p className="text-[10.5px] text-content/85 mt-1.5 leading-snug">
+        <p className="text-[10.5px] text-content/95 mt-1.5 leading-snug">
           {active.blurb}
         </p>
       </div>
 
       <div className="flex-1 overflow-auto thin-scrollbar">
         {rows.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             Nothing {active.label.toLowerCase()} in this department
           </div>
         ) : (
@@ -231,7 +231,7 @@ const NotSellingTab = ({
                   <td className="px-3 py-2 text-content font-medium">
                     {r.product_description ?? String(r.product_code)}
                   </td>
-                  <td className="px-3 py-2 text-content/85 tabular-nums">
+                  <td className="px-3 py-2 text-content/95 tabular-nums">
                     {r.product_code}
                   </td>
                   <td className="px-3 py-2">
@@ -249,7 +249,7 @@ const NotSellingTab = ({
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {r.change_ratio === null ? (
-                      <span className="text-content/85">—</span>
+                      <span className="text-content/95">—</span>
                     ) : (
                       <span className="text-severity_critical_text font-semibold">
                         {(r.change_ratio * 100).toFixed(0)}%
@@ -265,25 +265,25 @@ const NotSellingTab = ({
             <tfoot>
               <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
                 <td className="px-3 py-2"></td>
-                <td className="px-3 py-2 text-right text-content/85" colSpan={2}>
+                <td className="px-3 py-2 text-right text-content/95" colSpan={2}>
                   Totals · {rows.length.toLocaleString()} items
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                <td className="px-3 py-2 text-right tabular-nums text-content/95">
                   {fmtLb(totals.prior)}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                <td className="px-3 py-2 text-right tabular-nums text-content/95">
                   {fmtLb(totals.recent)}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {totals.change === null ? (
-                    <span className="text-content/85">—</span>
+                    <span className="text-content/95">—</span>
                   ) : (
                     <span className="text-severity_critical_text">
                       {(totals.change * 100).toFixed(0)}%
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                <td className="px-3 py-2 text-right tabular-nums text-content/95">
                   {fmtLb(totals.lost)}
                 </td>
               </tr>

@@ -12,7 +12,7 @@ const Row = ({
 }) => (
   <div className="flex items-baseline justify-between gap-6 px-3 py-1.5">
     <span
-      className={`text-[12px] ${strong ? "font-semibold text-content" : soft ? "text-content/85" : "text-content"}`}
+      className={`text-[12px] ${strong ? "font-semibold text-content" : soft ? "text-content/95" : "text-content"}`}
     >
       {k}
     </span>

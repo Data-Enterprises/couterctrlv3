@@ -11,7 +11,7 @@ const StoreListSkeleton = ({ rows = 8 }: { rows?: number }) => (
     role="status"
     aria-label="Loading stores"
   >
-    <div className={`grid ${STORE_COLS} gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/85`}>
+    <div className={`grid ${STORE_COLS} gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/95`}>
       <div>Store</div>
       <div className="text-center">Items</div>
       <div className="text-right">Order lb</div>
