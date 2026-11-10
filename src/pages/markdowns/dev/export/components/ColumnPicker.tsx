@@ -34,7 +34,10 @@ const ColumnPicker = ({ chosen, onToggle, onAll }: ColumnPickerProps) => (
     </div>
     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
       {MARKDOWN_COLUMNS.map((c) => (
-        <label key={c.key} className="flex items-center gap-2 cursor-pointer text-[12px] text-content">
+        <label
+          key={c.key}
+          className="flex items-center gap-2 cursor-pointer text-[12px] text-content"
+        >
           <input
             type="checkbox"
             checked={chosen.has(c.key)}

@@ -50,7 +50,10 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
             ))}
             {visible.length === 0 && (
               <tr>
-                <td colSpan={MARKDOWN_COLUMNS.length} className="px-3 py-6 text-[12px] text-content/95">
+                <td
+                  colSpan={MARKDOWN_COLUMNS.length}
+                  className="px-3 py-6 text-[12px] text-content/95"
+                >
                   No markdowns match these filters.
                 </td>
               </tr>

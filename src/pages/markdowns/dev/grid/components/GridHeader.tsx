@@ -19,12 +19,15 @@ const GridHeader = () => {
       <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
         {MARKDOWN_COLUMNS.map((c) => {
           const on = sort?.col === c.key;
-          const Arrow = on && sort.dir === "asc" ? ChevronUpIcon : ChevronDownIcon;
+          const Arrow =
+            on && sort.dir === "asc" ? ChevronUpIcon : ChevronDownIcon;
           return (
             <th
               key={c.key}
               scope="col"
-              aria-sort={on ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+              aria-sort={
+                on ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+              }
               className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap ${
                 c.align === "right" ? "text-right" : "text-left"
               }`}
@@ -37,7 +40,9 @@ const GridHeader = () => {
                 }`}
               >
                 {c.label}
-                <Arrow className={`w-3 h-3 ${on ? "text-brand_navy" : "invisible"}`} />
+                <Arrow
+                  className={`w-3 h-3 ${on ? "text-brand_navy" : "invisible"}`}
+                />
               </button>
             </th>
           );

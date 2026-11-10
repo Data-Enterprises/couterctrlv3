@@ -22,7 +22,10 @@ import { formatGoliathDate } from "../../../../utils";
 import { filterRows, sortRows } from "../utils";
 
 // Interfaces
-import type { MarkdownItem, MarkdownResponse } from "../../../../interfaces/markdowns";
+import type {
+  MarkdownItem,
+  MarkdownResponse,
+} from "../../../../interfaces/markdowns";
 
 /**
  * Everything the Markdowns page reads, in one place: the slice, the search it
@@ -31,8 +34,15 @@ import type { MarkdownItem, MarkdownResponse } from "../../../../interfaces/mark
 export const useMarkdownsCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useDevApi();
-  const { type, startDate, endDate, lastStore, lastGroup, selectedStore, selectedGroup } =
-    useAppSelector((state) => state.search);
+  const {
+    type,
+    startDate,
+    endDate,
+    lastStore,
+    lastGroup,
+    selectedStore,
+    selectedGroup,
+  } = useAppSelector((state) => state.search);
   const markdowns = useAppSelector((state) => state.dev.markdowns);
 
   return {
@@ -86,7 +96,15 @@ export const useLoadMarkdowns = () => {
 
     try {
       const first: MarkdownResponse = (
-        await getMarkdowns(ctx.url, ctx.token, start, end, searchValue, useGroups, 1)
+        await getMarkdowns(
+          ctx.url,
+          ctx.token,
+          start,
+          end,
+          searchValue,
+          useGroups,
+          1,
+        )
       ).data;
       if (thisRun !== run.current) return;
       if (first.error !== 0) {
@@ -104,7 +122,15 @@ export const useLoadMarkdowns = () => {
 
       for (let page = 2; page <= first.total_pages; page++) {
         const next: MarkdownResponse = (
-          await getMarkdowns(ctx.url, ctx.token, start, end, searchValue, useGroups, page)
+          await getMarkdowns(
+            ctx.url,
+            ctx.token,
+            start,
+            end,
+            searchValue,
+            useGroups,
+            page,
+          )
         ).data;
         if (thisRun !== run.current) return;
         rows = [...rows, ...next.markdowns];
@@ -114,7 +140,10 @@ export const useLoadMarkdowns = () => {
     } catch (err) {
       // The backend answers "No stores found" and the like with a 4xx, which
       // axios throws: show its message rather than the HTTP one.
-      const e = err as { response?: { data?: { msg?: string } }; message: string };
+      const e = err as {
+        response?: { data?: { msg?: string } };
+        message: string;
+      };
       toast.error(e.response?.data?.msg ?? e.message);
     } finally {
       if (thisRun === run.current) {

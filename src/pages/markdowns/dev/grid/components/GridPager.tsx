@@ -16,7 +16,14 @@ interface GridPagerProps {
 }
 
 /** The pager under the grid, as Orders' report panel has it. */
-const GridPager = ({ total, page, pageCount, pageSize, onPage, onPageSize }: GridPagerProps) => (
+const GridPager = ({
+  total,
+  page,
+  pageCount,
+  pageSize,
+  onPage,
+  onPageSize,
+}: GridPagerProps) => (
   <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
     <span className="text-[11px] text-content/95">
       {total === 0
@@ -46,13 +53,29 @@ const GridPager = ({ total, page, pageCount, pageSize, onPage, onPageSize }: Gri
     <div className="flex-1" />
 
     <div className="flex items-center gap-1">
-      <PagerButton label="First" disabled={page === 0} onClick={() => onPage(0)} />
-      <PagerButton label="Prev" disabled={page === 0} onClick={() => onPage(page - 1)} />
+      <PagerButton
+        label="First"
+        disabled={page === 0}
+        onClick={() => onPage(0)}
+      />
+      <PagerButton
+        label="Prev"
+        disabled={page === 0}
+        onClick={() => onPage(page - 1)}
+      />
       <span className="px-1.5 text-[11px] font-medium text-content tabular-nums">
         {page + 1} / {pageCount}
       </span>
-      <PagerButton label="Next" disabled={page >= pageCount - 1} onClick={() => onPage(page + 1)} />
-      <PagerButton label="Last" disabled={page >= pageCount - 1} onClick={() => onPage(pageCount - 1)} />
+      <PagerButton
+        label="Next"
+        disabled={page >= pageCount - 1}
+        onClick={() => onPage(page + 1)}
+      />
+      <PagerButton
+        label="Last"
+        disabled={page >= pageCount - 1}
+        onClick={() => onPage(pageCount - 1)}
+      />
     </div>
   </div>
 );

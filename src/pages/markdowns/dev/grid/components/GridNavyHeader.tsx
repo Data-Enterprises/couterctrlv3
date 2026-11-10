@@ -33,12 +33,18 @@ const GridNavyHeader = ({ shown, onExport }: GridNavyHeaderProps) => {
         </button>
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
         <div className="flex items-baseline gap-1 flex-shrink-0">
-          <span className="text-[10px] uppercase tracking-wide text-custom-white">Shown</span>
-          <span className="text-[13px] font-medium text-custom-white">{shown.toLocaleString()}</span>
+          <span className="text-[10px] uppercase tracking-wide text-custom-white">
+            Shown
+          </span>
+          <span className="text-[13px] font-medium text-custom-white">
+            {shown.toLocaleString()}
+          </span>
         </div>
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
         <div className="flex items-baseline gap-1 flex-shrink-0">
-          <span className="text-[10px] uppercase tracking-wide text-custom-white">Loaded</span>
+          <span className="text-[10px] uppercase tracking-wide text-custom-white">
+            Loaded
+          </span>
           <span className="text-[13px] font-medium text-custom-white">
             {ctx.markdowns.length.toLocaleString()}
           </span>

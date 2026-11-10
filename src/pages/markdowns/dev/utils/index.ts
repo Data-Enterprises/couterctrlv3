@@ -3,7 +3,11 @@ import { formatCurrency2 } from "../../../../utils";
 
 // Interfaces
 import type { SortState } from "../../../../utils/useTriStateSort";
-import type { MarkdownFilters, MarkdownItem, MarkdownSortKey } from "../../../../interfaces/markdowns";
+import type {
+  MarkdownFilters,
+  MarkdownItem,
+  MarkdownSortKey,
+} from "../../../../interfaces/markdowns";
 import type { MarkdownColumn, MarkdownFilterKey } from "../interfaces";
 
 /** A backend date or timestamp ("2026-11-03" or "2026-11-03T06:12:00") as dd/mm/yyyy. */
@@ -15,49 +19,199 @@ export const fmtDmyTime = (iso: string | null) =>
   iso ? `${fmtDmy(iso)} ${iso.slice(11, 16)}` : "—";
 
 const money = (n: number | null) => (n === null ? "—" : formatCurrency2(n));
-const num = (n: number | null, digits = 0) => (n === null ? "—" : n.toFixed(digits));
-const text = (s: string | number | null) => (s === null || s === "" ? "—" : String(s));
+const num = (n: number | null, digits = 0) =>
+  n === null ? "—" : n.toFixed(digits);
+const text = (s: string | number | null) =>
+  s === null || s === "" ? "—" : String(s);
 
 /**
  * The grid's 25 columns, in the endpoint's order with Date and Store moved up
  * beside id. storeid and storenumber are not shown: Store names the store.
  */
 export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
-  { key: "id", label: "id", align: "right", show: (r) => String(r.id), csv: (r) => r.id },
-  { key: "order_date", label: "Date", align: "left", show: (r) => fmtDmy(r.order_date), csv: (r) => fmtDmy(r.order_date) },
-  { key: "storename", label: "Store", align: "left", show: (r) => r.storename, csv: (r) => r.storename },
-  { key: "userid", label: "userid", align: "left", show: (r) => r.userid, csv: (r) => r.userid },
-  { key: "product_code", label: "product_code", align: "left", show: (r) => r.product_code, csv: (r) => r.product_code },
-  { key: "original_price", label: "original_price", align: "right", show: (r) => money(r.original_price), csv: (r) => r.original_price },
-  { key: "new_price", label: "new_price", align: "right", show: (r) => money(r.new_price), csv: (r) => r.new_price },
-  { key: "markdown", label: "markdown", align: "right", show: (r) => money(r.markdown), csv: (r) => r.markdown },
+  {
+    key: "id",
+    label: "id",
+    align: "right",
+    show: (r) => String(r.id),
+    csv: (r) => r.id,
+  },
+  {
+    key: "order_date",
+    label: "Date",
+    align: "left",
+    show: (r) => fmtDmy(r.order_date),
+    csv: (r) => fmtDmy(r.order_date),
+  },
+  {
+    key: "storename",
+    label: "Store",
+    align: "left",
+    show: (r) => r.storename,
+    csv: (r) => r.storename,
+  },
+  {
+    key: "userid",
+    label: "userid",
+    align: "left",
+    show: (r) => r.userid,
+    csv: (r) => r.userid,
+  },
+  {
+    key: "product_code",
+    label: "product_code",
+    align: "left",
+    show: (r) => r.product_code,
+    csv: (r) => r.product_code,
+  },
+  {
+    key: "original_price",
+    label: "original_price",
+    align: "right",
+    show: (r) => money(r.original_price),
+    csv: (r) => r.original_price,
+  },
+  {
+    key: "new_price",
+    label: "new_price",
+    align: "right",
+    show: (r) => money(r.new_price),
+    csv: (r) => r.new_price,
+  },
+  {
+    key: "markdown",
+    label: "markdown",
+    align: "right",
+    show: (r) => money(r.markdown),
+    csv: (r) => r.markdown,
+  },
   {
     key: "markdown_percent",
     label: "markdown_percent",
     align: "right",
-    show: (r) => (r.markdown_percent === null ? "—" : `${r.markdown_percent.toFixed(2)}%`),
+    show: (r) =>
+      r.markdown_percent === null ? "—" : `${r.markdown_percent.toFixed(2)}%`,
     csv: (r) => r.markdown_percent,
   },
-  { key: "markdown_id", label: "markdown_id", align: "right", show: (r) => text(r.markdown_id), csv: (r) => r.markdown_id },
-  { key: "type", label: "type", align: "left", show: (r) => text(r.type), csv: (r) => r.type },
-  { key: "qty", label: "qty", align: "right", show: (r) => num(r.qty), csv: (r) => r.qty },
-  { key: "weight", label: "weight", align: "right", show: (r) => num(r.weight, 2), csv: (r) => r.weight },
-  { key: "retail", label: "retail", align: "right", show: (r) => money(r.retail), csv: (r) => r.retail },
-  { key: "description", label: "description", align: "left", show: (r) => text(r.description), csv: (r) => r.description },
-  { key: "category", label: "category", align: "right", show: (r) => text(r.category), csv: (r) => r.category },
-  { key: "category_description", label: "category_description", align: "left", show: (r) => text(r.category_description), csv: (r) => r.category_description },
-  { key: "sub_department", label: "sub_department", align: "right", show: (r) => text(r.sub_department), csv: (r) => r.sub_department },
-  { key: "sub_department_description", label: "sub_department_description", align: "left", show: (r) => text(r.sub_department_description), csv: (r) => r.sub_department_description },
-  { key: "case_size", label: "case_size", align: "right", show: (r) => num(r.case_size), csv: (r) => r.case_size },
-  { key: "vendor_id", label: "vendor_id", align: "left", show: (r) => text(r.vendor_id), csv: (r) => r.vendor_id },
-  { key: "vendor_name", label: "vendor_name", align: "left", show: (r) => text(r.vendor_name), csv: (r) => r.vendor_name },
-  { key: "last_update_time", label: "last_update_time", align: "left", show: (r) => fmtDmyTime(r.last_update_time), csv: (r) => fmtDmyTime(r.last_update_time) },
-  { key: "case_cost", label: "case_cost", align: "right", show: (r) => money(r.case_cost), csv: (r) => r.case_cost },
-  { key: "scalable", label: "scalable", align: "right", show: (r) => text(r.scalable), csv: (r) => r.scalable },
+  {
+    key: "markdown_id",
+    label: "markdown_id",
+    align: "right",
+    show: (r) => text(r.markdown_id),
+    csv: (r) => r.markdown_id,
+  },
+  {
+    key: "type",
+    label: "type",
+    align: "left",
+    show: (r) => text(r.type),
+    csv: (r) => r.type,
+  },
+  {
+    key: "qty",
+    label: "qty",
+    align: "right",
+    show: (r) => num(r.qty),
+    csv: (r) => r.qty,
+  },
+  {
+    key: "weight",
+    label: "weight",
+    align: "right",
+    show: (r) => num(r.weight, 2),
+    csv: (r) => r.weight,
+  },
+  {
+    key: "retail",
+    label: "retail",
+    align: "right",
+    show: (r) => money(r.retail),
+    csv: (r) => r.retail,
+  },
+  {
+    key: "description",
+    label: "description",
+    align: "left",
+    show: (r) => text(r.description),
+    csv: (r) => r.description,
+  },
+  {
+    key: "category",
+    label: "category",
+    align: "right",
+    show: (r) => text(r.category),
+    csv: (r) => r.category,
+  },
+  {
+    key: "category_description",
+    label: "category_description",
+    align: "left",
+    show: (r) => text(r.category_description),
+    csv: (r) => r.category_description,
+  },
+  {
+    key: "sub_department",
+    label: "sub_department",
+    align: "right",
+    show: (r) => text(r.sub_department),
+    csv: (r) => r.sub_department,
+  },
+  {
+    key: "sub_department_description",
+    label: "sub_department_description",
+    align: "left",
+    show: (r) => text(r.sub_department_description),
+    csv: (r) => r.sub_department_description,
+  },
+  {
+    key: "case_size",
+    label: "case_size",
+    align: "right",
+    show: (r) => num(r.case_size),
+    csv: (r) => r.case_size,
+  },
+  {
+    key: "vendor_id",
+    label: "vendor_id",
+    align: "left",
+    show: (r) => text(r.vendor_id),
+    csv: (r) => r.vendor_id,
+  },
+  {
+    key: "vendor_name",
+    label: "vendor_name",
+    align: "left",
+    show: (r) => text(r.vendor_name),
+    csv: (r) => r.vendor_name,
+  },
+  {
+    key: "last_update_time",
+    label: "last_update_time",
+    align: "left",
+    show: (r) => fmtDmyTime(r.last_update_time),
+    csv: (r) => fmtDmyTime(r.last_update_time),
+  },
+  {
+    key: "case_cost",
+    label: "case_cost",
+    align: "right",
+    show: (r) => money(r.case_cost),
+    csv: (r) => r.case_cost,
+  },
+  {
+    key: "scalable",
+    label: "scalable",
+    align: "right",
+    show: (r) => text(r.scalable),
+    csv: (r) => r.scalable,
+  },
 ];
 
 /** A row's value for one list filter, as the filter stores it. */
-export const filterValue = (r: MarkdownItem, key: MarkdownFilterKey): string | null => {
+export const filterValue = (
+  r: MarkdownItem,
+  key: MarkdownFilterKey,
+): string | null => {
   switch (key) {
     case "types":
       return r.type;
@@ -109,7 +263,10 @@ export const passesFilters = (
     const v = filterValue(r, key);
     if (v === null || !chosen.includes(v)) return false;
   }
-  if (f.minPercent !== null && (r.markdown_percent === null || r.markdown_percent < f.minPercent))
+  if (
+    f.minPercent !== null &&
+    (r.markdown_percent === null || r.markdown_percent < f.minPercent)
+  )
     return false;
   return true;
 };
@@ -122,7 +279,10 @@ export const filterRows = (rows: MarkdownItem[], f: MarkdownFilters) =>
  * The rows in the sort's order. No sort keeps the backend's order (order_date,
  * storeid, markdown_id, id). Blanks go last either way.
  */
-export const sortRows = (rows: MarkdownItem[], sort: SortState<MarkdownSortKey>) => {
+export const sortRows = (
+  rows: MarkdownItem[],
+  sort: SortState<MarkdownSortKey>,
+) => {
   if (!sort) return rows;
   const dir = sort.dir === "asc" ? 1 : -1;
   return [...rows].sort((a, b) => {
@@ -130,7 +290,10 @@ export const sortRows = (rows: MarkdownItem[], sort: SortState<MarkdownSortKey>)
     const vb = b[sort.col];
     if (va === null || va === "") return vb === null || vb === "" ? 0 : 1;
     if (vb === null || vb === "") return -1;
-    if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
-    return String(va).localeCompare(String(vb), undefined, { numeric: true }) * dir;
+    if (typeof va === "number" && typeof vb === "number")
+      return (va - vb) * dir;
+    return (
+      String(va).localeCompare(String(vb), undefined, { numeric: true }) * dir
+    );
   });
 };
