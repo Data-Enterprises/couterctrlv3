@@ -1,4 +1,16 @@
-// Icons
+// Utils
+import {
+  COMING_SOON_CATEGORY,
+  COMING_SOON_LEVELS,
+  PROGRAMMER_ONLY_LEVELS,
+} from "../../utils/comingSoon";
+import { performancePages } from "./categoryPages/performance";
+import { analyticsPages } from "./categoryPages/analytics";
+import { dataPages } from "./categoryPages/dataPages";
+import { configPages } from "./categoryPages/configPages";
+import { comingSoonPages } from "./categoryPages/comingSoon";
+
+// Components
 import {
   HomeIcon,
   UsersIcon,
@@ -19,26 +31,12 @@ import {
   ClockIcon,
   DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
-import {
-  COMING_SOON_CATEGORY,
-  COMING_SOON_LEVELS,
-  PROGRAMMER_ONLY_LEVELS,
-} from "../../utils/comingSoon";
-
-// Utils
-import { performancePages } from "./categoryPages/performance";
-import { analyticsPages } from "./categoryPages/analytics";
-import { dataPages } from "./categoryPages/dataPages";
-import { configPages } from "./categoryPages/configPages";
-
-// Components
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
 import CouponIcon from "../../svgs/CouponIcon";
-import { comingSoonPages } from "./categoryPages/comingSoon";
 
 export type Navigation = {
   name: string;
@@ -341,6 +339,10 @@ export const categories: NavCategory[] = [
    * to be spelled out. 8 is undocumented in the list above but is used by the
    * existing Admin and User Management gates, so it is included in the wider
    * gate too.
+   *
+   * Promoting a page from 9 to owner-visible is a one-word change to its
+   * `userLevels`. Moving a page out of here entirely is the release: cut its
+   * entry back to its category's file and restore `userLevels: ["*"]`.
    */
   {
     name: COMING_SOON_CATEGORY,

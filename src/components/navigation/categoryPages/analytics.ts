@@ -1,7 +1,7 @@
 // Interfaces
 import type { Navigation } from "../utils";
 
-// Interfaces
+// Components
 import {
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
