@@ -7,6 +7,8 @@ import {
   rowsToCsv,
   downloadCsv,
   aggregateRows,
+  type AggFn,
+  type AggRow,
 } from "../../../../utils/csvExport";
 import {
   buildPresetCsv,
@@ -19,7 +21,6 @@ import { PREVIEW_ROWS } from "./utils";
 // Interfaces
 import type { MetricSelection, ModalMode } from "../interfaces";
 import type { CouponItem } from "../../../../interfaces";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";

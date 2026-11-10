@@ -2,13 +2,19 @@
 import { useState, useMemo } from "react";
 
 // Utils
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
 import { DIMS, METRICS, AGG_OPTIONS, buildPresetCsv } from "../utils";
 
 // Interfaces
 import type { MetricSelection, ModalMode } from "../interfaces";
 import type { CouponItem } from "../../../../interfaces";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";

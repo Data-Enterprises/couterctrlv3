@@ -1051,14 +1051,8 @@
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
   },
-  "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
-    "one-line-per-source": 1
-  },
   "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
     "selector-outside-hook": 4
-  },
-  "src/pages/coupons/dev/mobile/CpnExportSheet.tsx": {
-    "one-line-per-source": 1
   },
   "src/pages/coupons/dev/mobile/CpnSectionDetail.tsx": {
     "selector-outside-hook": 2
