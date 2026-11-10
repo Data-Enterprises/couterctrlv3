@@ -1,6 +1,6 @@
 // Utils
 import { padStoreNumber } from "../../../../../utils/storeIdentity";
-import { fmtDmy, LIST_FILTERS, filterValue, passesFilters } from "../../utils";
+import { compileFilters, fmtDmy, LIST_FILTERS, filterValue } from "../../utils";
 
 // Interfaces
 import type { MarkdownFilters, MarkdownItem } from "../../../../../interfaces/markdowns";
@@ -67,12 +67,15 @@ export const buildOptions = (rows: MarkdownItem[]): Record<MarkdownFilterKey, Ma
  */
 export const availableOptions = (rows: MarkdownItem[], f: MarkdownFilters): MarkdownAvailable => {
   const out = Object.fromEntries(LIST_FILTERS.map((k) => [k, new Set<string>()])) as MarkdownAvailable;
-  for (const key of LIST_FILTERS)
+  const passes = compileFilters(f);
+  for (const key of LIST_FILTERS) {
+    const keep = passes(key);
     for (const r of rows) {
-      if (!passesFilters(r, f, key)) continue;
+      if (!keep(r)) continue;
       const v = filterValue(r, key);
       if (v !== null) out[key].add(v);
     }
+  }
   return out;
 };
 

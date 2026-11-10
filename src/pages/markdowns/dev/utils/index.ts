@@ -237,10 +237,6 @@ export const filterValue = (
   }
 };
 
-/** Each list filter's picks as strings, the form filterValue returns. */
-const picks = (f: MarkdownFilters, key: MarkdownFilterKey): string[] =>
-  (f[key] as (string | number)[]).map(String);
-
 export const LIST_FILTERS: MarkdownFilterKey[] = [
   "types",
   "storeNumbers",
@@ -253,32 +249,34 @@ export const LIST_FILTERS: MarkdownFilterKey[] = [
 ];
 
 /**
- * Whether a row survives the filters. `skip` leaves one list filter out, which
- * is how each filter learns what it can still offer given the others.
+ * The filters as a row test. Each list's picks become a Set of strings (the
+ * form filterValue returns) once, not once a row: tens of thousands of rows
+ * run through it on every pick. `skip` leaves one list filter out, which is how
+ * each filter learns what it can still offer given the others.
  */
-export const passesFilters = (
-  r: MarkdownItem,
-  f: MarkdownFilters,
-  skip: MarkdownFilterKey | null = null,
-): boolean => {
-  for (const key of LIST_FILTERS) {
-    if (key === skip) continue;
-    const chosen = picks(f, key);
-    if (chosen.length === 0) continue;
-    const v = filterValue(r, key);
-    if (v === null || !chosen.includes(v)) return false;
-  }
-  if (
-    f.minPercent !== null &&
-    (r.markdown_percent === null || r.markdown_percent < f.minPercent)
-  )
-    return false;
-  return true;
+export const compileFilters = (f: MarkdownFilters) => {
+  const sets = LIST_FILTERS.filter((key) => f[key].length > 0).map(
+    (key) => [key, new Set((f[key] as (string | number)[]).map(String))] as const,
+  );
+  return (skip: MarkdownFilterKey | null = null) =>
+    (r: MarkdownItem): boolean => {
+      for (const [key, chosen] of sets) {
+        if (key === skip) continue;
+        const v = filterValue(r, key);
+        if (v === null || !chosen.has(v)) return false;
+      }
+      if (
+        f.minPercent !== null &&
+        (r.markdown_percent === null || r.markdown_percent < f.minPercent)
+      )
+        return false;
+      return true;
+    };
 };
 
 /** The rows every filter keeps, in the order they came. */
 export const filterRows = (rows: MarkdownItem[], f: MarkdownFilters) =>
-  rows.filter((r) => passesFilters(r, f));
+  rows.filter(compileFilters(f)());
 
 /**
  * The rows in the sort's order. No sort keeps the backend's order (order_date,
