@@ -11,6 +11,7 @@ import {
   setLookupSelectedUpc,
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
+  type ItemLookupHistory,
 } from "../../../../../features/dev/devItemLookupSlice";
 
 // API
@@ -25,7 +26,7 @@ import {
 import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
 
 // Interfaces
-import type { ItemLookupHistory } from "../../../../../features/dev/devItemLookupSlice";
+
 
 // The lookup is by storeid, so a co-located storeid returns both locations;
 // scoping the rows re-derives every figure without a refetch. Takes every line

@@ -1364,12 +1364,6 @@
   "src/pages/lookup/dev/desktop/components/LookupDesktopEntry.tsx": {
     "selector-outside-hook": 2
   },
-  "src/pages/lookup/dev/desktop/components/SaleTypeTimeline.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/lookup/dev/desktop/hooks/index.ts": {
-    "one-line-per-source": 1
-  },
   "src/pages/lookup/dev/mobile/ItemLookupMobile.tsx": {
     "selector-outside-hook": 5
   },
@@ -1381,9 +1375,6 @@
   },
   "src/pages/lookup/dev/mobile/components/RecentLookupsStrip.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/lookup/dev/mobile/components/Tile.tsx": {
-    "shape-inline-props": 1
   },
   "src/pages/lossPrevention/LossPrevention.tsx": {
     "labels": 1

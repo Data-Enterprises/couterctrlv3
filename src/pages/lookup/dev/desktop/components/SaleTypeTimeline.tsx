@@ -5,19 +5,17 @@ import { formatCurrency2 } from "../../../../../utils";
 // Interfaces
 import type { DayBucket } from "../../interfaces";
 
+interface SaleTypeTimelineProps {
+  buckets: DayBucket[];
+  weighed: boolean;
+  saleType: string;
+}
+
 /**
  * One non-Sale type's days. Cost and margin are left off: a voided or
  * restored line isn't a sale, so neither means anything against it.
  */
-const SaleTypeTimeline = ({
-  buckets,
-  weighed,
-  saleType,
-}: {
-  buckets: DayBucket[];
-  weighed: boolean;
-  saleType: string;
-}) => {
+const SaleTypeTimeline = ({ buckets, weighed, saleType }: SaleTypeTimelineProps) => {
   const grid = {
     gridTemplateColumns: `repeat(${weighed ? 5 : 4}, minmax(0, 1fr))`,
   };
