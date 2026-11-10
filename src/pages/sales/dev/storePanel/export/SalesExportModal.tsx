@@ -121,8 +121,8 @@ const SalesExportModal = ({
   // rather than assumed.
   const [fetching, setFetching] = useState(false);
   // Its own dates, defaulting to the week on screen. Financials is the only
-  // export that can answer for a range the page is not showing, and a month
-  // of records is the usual ask.
+  // one that can answer for a range the page is not showing, and a month of
+  // records is the usual ask.
   // Items Sold's dates: one day or a range. Starts on the day picked in the
   // day cards, as Summary's item grid shows it, else the week.
   const [itemsFrom, setItemsFrom] = useState(selectedDate ?? startDate);

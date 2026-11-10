@@ -8,18 +8,15 @@ import type { TopItemCompared } from "../utils/topItems";
 // Components
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 
-/** The selected item's invoices, sliding over the panel. */
-const InvoicesRail = ({
-  invoicesOpen,
-  setInvoicesOpen,
-  selected,
-  detail,
-}: {
+interface InvoicesRailProps {
   invoicesOpen: boolean;
   setInvoicesOpen: (open: boolean) => void;
   selected: TopItemCompared | null;
   detail: ItemDetailResponse | null;
-}) => (
+}
+
+/** The selected item's invoices, sliding over the panel. */
+const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: InvoicesRailProps) => (
   <div
     aria-hidden={!invoicesOpen}
     className={`absolute inset-y-0 right-0 w-full z-30 flex flex-col bg-custom-white border-l-2 border-brand_navy/25 shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${

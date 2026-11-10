@@ -8,6 +8,17 @@ import type { Desk, Holds, Supply } from "../utils/investigationSteps";
 // Components
 import Bar from "./Bar";
 
+interface InvestigationTabsProps {
+  tab: InvestigationTab;
+  onTab: (t: InvestigationTab) => void;
+  salesIn: boolean;
+  allIn: boolean;
+  holds: Holds;
+  summary: Summary;
+  supply: Supply;
+  desks: Desk[];
+}
+
 /** The investigation's tab bar: the steps as tabs, each showing its conclusion once it has one,
  *  or what it is waiting for while orders and deliveries load. */
 /*
@@ -31,16 +42,7 @@ const InvestigationTabs = ({
   summary,
   supply,
   desks,
-}: {
-  tab: InvestigationTab;
-  onTab: (t: InvestigationTab) => void;
-  salesIn: boolean;
-  allIn: boolean;
-  holds: Holds;
-  summary: Summary;
-  supply: Supply;
-  desks: Desk[];
-}) => {
+}: InvestigationTabsProps) => {
   /**
    * The bar's own content.
    *

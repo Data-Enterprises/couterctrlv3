@@ -4,7 +4,11 @@ import { useAppDispatch } from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
 
 // Redux
-import { setThreshold, setGradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
+import {
+  setThreshold,
+  setGradingMetric,
+  type GradingMetric,
+} from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
 import { formatCurrencyCompact, formatBigNumber } from "../../../../../utils";
@@ -13,7 +17,6 @@ import { formatPct } from "../utils/tierColumnUtils";
 import { THRESHOLD_DEFAULT } from "../utils";
 
 // Interfaces
-import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Components
 import BackButton from "../../../../../components-dev/BackButton";

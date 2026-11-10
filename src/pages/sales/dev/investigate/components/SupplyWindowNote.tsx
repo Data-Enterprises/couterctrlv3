@@ -5,16 +5,14 @@ import { STAGE_NOTE } from "../utils";
 // Interfaces
 import type { Stage } from "../interfaces";
 
-/** The note under the causes grid: orders and receipts cover a longer window, so they cannot explain the LW or LY columns. */
-const SupplyWindowNote = ({
-  them,
-  window,
-  stage,
-}: {
+interface SupplyWindowNoteProps {
   them: string;
   window: { start: string; end: string };
   stage: Stage;
-}) => {
+}
+
+/** The note under the causes grid: orders and receipts cover a longer window, so they cannot explain the LW or LY columns. */
+const SupplyWindowNote = ({ them, window, stage }: SupplyWindowNoteProps) => {
   /* The windows do not line up, and the screen says so rather than
      letting the grid imply every column is diagnosed. */
   return (

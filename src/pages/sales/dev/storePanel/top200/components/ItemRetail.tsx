@@ -8,18 +8,15 @@ import {
 } from "../utils/topItems";
 import { moneyText } from "../utils";
 
-/** What retail sold it at: the mix bar and the price ladder. */
-const ItemRetail = ({
-  selected,
-  mix,
-  points,
-  topPrice,
-}: {
+interface ItemRetailProps {
   selected: TopItemCompared;
   mix: RetailMix | null;
   points: ReturnType<typeof pointsFor>;
   topPrice: number | null;
-}) => (
+}
+
+/** What retail sold it at: the mix bar and the price ladder. */
+const ItemRetail = ({ selected, mix, points, topPrice }: ItemRetailProps) => (
   <div
     data-help="item-retail"
     className="px-4 py-2.5 border-b border-gray-100"

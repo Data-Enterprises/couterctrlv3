@@ -15,18 +15,15 @@ import { dotClass, moneyText, pctText } from "../utils";
 // Interfaces
 import type { TopItemPricePoint } from "../../../../../../api/topItems";
 
-/** The ranked list's rows. */
-const ItemRows = ({
-  shown,
-  topItemPoints,
-  selectedCode,
-  setSelectedCode,
-}: {
+interface ItemRowsProps {
   shown: TopItemCompared[];
   topItemPoints: TopItemPricePoint[];
   selectedCode: string | null;
   setSelectedCode: (code: string | null) => void;
-}) => {
+}
+
+/** The ranked list's rows. */
+const ItemRows = ({ shown, topItemPoints, selectedCode, setSelectedCode }: ItemRowsProps) => {
   /** The page's grading threshold, so these pills grade like every other. */
   const threshold = useSalesCtx().itemThreshold ?? 9;
 

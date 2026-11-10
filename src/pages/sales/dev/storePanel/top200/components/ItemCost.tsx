@@ -13,6 +13,16 @@ import { dayText, moneyText } from "../utils";
 // Interfaces
 import type { ItemDetailResponse } from "../../../../../../api/topItems";
 
+interface ItemCostProps {
+  selected: TopItemCompared;
+  points: ReturnType<typeof pointsFor>;
+  mix: RetailMix | null;
+  detail: ItemDetailResponse | null;
+  perUnitCost: number | null;
+  topPrice: number | null;
+  topMargin: number | null;
+}
+
 /** Whether the cost and the retail are right: price, cost, margin, profit. */
 const ItemCost = ({
   selected,
@@ -22,15 +32,7 @@ const ItemCost = ({
   perUnitCost,
   topPrice,
   topMargin,
-}: {
-  selected: TopItemCompared;
-  points: ReturnType<typeof pointsFor>;
-  mix: RetailMix | null;
-  detail: ItemDetailResponse | null;
-  perUnitCost: number | null;
-  topPrice: number | null;
-  topMargin: number | null;
-}) => {
+}: ItemCostProps) => {
   /*
    * The headline price.
    *

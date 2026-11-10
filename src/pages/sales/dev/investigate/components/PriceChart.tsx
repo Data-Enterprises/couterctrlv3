@@ -4,6 +4,11 @@ import { count, money } from "../utils";
 // Interfaces
 import type { PricePoint } from "../interfaces";
 
+interface PriceChartProps {
+  points: PricePoint[];
+  weighed: boolean;
+}
+
 /**
  * Units sold at each price, in ten-cent steps.
  *
@@ -15,13 +20,7 @@ import type { PricePoint } from "../interfaces";
  * Bars are units, not money: the question is what customers actually paid,
  * and money would make a dear price with three sales look like a busy one.
  */
-const PriceChart = ({
-  points,
-  weighed,
-}: {
-  points: PricePoint[];
-  weighed: boolean;
-}) => {
+const PriceChart = ({ points, weighed }: PriceChartProps) => {
   if (points.length < 2) return null;
 
   /* A bar is how much went out at that price. On a scale item that is pounds,

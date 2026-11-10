@@ -22,6 +22,19 @@ import Carousel from "./Carousel";
 import Timeline from "./Timeline";
 import Document from "./Document";
 
+interface SupplyPanelProps {
+  supply: Supply;
+  them: string;
+  us: string;
+  window: { start: string; end: string };
+  cash: (v: number) => string;
+  orders: OrdersWave;
+  receipts: ReceiptsWave;
+  /** UPCs carried over from the grid, comma or space separated. */
+  upcQuery: string;
+  onUpcQuery: (v: string) => void;
+}
+
 /* ------------------------------------------------------------------ */
 /* Supply · the orders and the invoices themselves                     */
 /* ------------------------------------------------------------------ */
@@ -50,18 +63,7 @@ const SupplyPanel = ({
   receipts,
   upcQuery,
   onUpcQuery,
-}: {
-  supply: Supply;
-  them: string;
-  us: string;
-  window: { start: string; end: string };
-  cash: (v: number) => string;
-  orders: OrdersWave;
-  receipts: ReceiptsWave;
-  /** UPCs carried over from the grid, comma or space separated. */
-  upcQuery: string;
-  onUpcQuery: (v: string) => void;
-}) => {
+}: SupplyPanelProps) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
   const says = supplySays(supply, us, them);
 

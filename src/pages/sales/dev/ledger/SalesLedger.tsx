@@ -37,12 +37,11 @@ import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
-import { PCT_COL_W } from "../utils/index";
+import { PCT_COL_W, type SevFilter } from "../utils/index";
 import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { Store } from "../../../../interfaces";
-import type { SevFilter } from "../utils/index";
 import type { SortColumn } from "./interfaces";
 
 // Components

@@ -1,10 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { comparisonPillClass, isCompleteCoverage } from "../utils/ledgerUtils";
+import { comparisonPillClass, isCompleteCoverage, type Coverage } from "../utils/ledgerUtils";
 import { DATE, formatPct, LABEL, UNITS, VALUE } from "../utils/index";
 
 // Interfaces
-import type { Coverage } from "../utils/ledgerUtils";
 import type { PeriodRow } from "../interfaces";
 
 interface PeriodKpisProps {

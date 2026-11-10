@@ -1,5 +1,5 @@
 // Hooks
-import { useMemo } from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { useSalesCtx } from "../../../hooks";
 
 // Utils
@@ -8,7 +8,6 @@ import { basket, buildWeekHourDays, formatHourRange, getCta } from "../utils";
 
 // Interfaces
 import type { Coverage } from "../../../utils/ledgerUtils";
-import type { Dispatch, SetStateAction } from "react";
 import type { HourRow } from "../interfaces";
 
 // Components

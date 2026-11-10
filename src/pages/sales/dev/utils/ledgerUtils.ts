@@ -1,7 +1,7 @@
 // Utils
 import { addDays, sameWeekDayLastYear } from "../../../../utils";
 import { rowsToCsv } from "../../../../utils/csvExport";
-import { gradeSeverity } from "../../../../utils/severity";
+import { gradeSeverity, type Severity } from "../../../../utils/severity";
 import {
   gradeBasis as sharedGradeBasis,
   isCompleteCoverage,
@@ -9,7 +9,7 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../../../utils/grading";
-import { getHolidayName, getHolidayLastYear } from "../../../../utils/holidays";
+import { getHolidayName, getHolidayLastYear, type HolidayName } from "../../../../utils/holidays";
 import {
   DEPT_RING_KEY,
   DEPT_RING_LABEL,
@@ -18,7 +18,6 @@ import {
 } from "../../../../utils/departmentRings";
 
 // Interfaces
-import type { HolidayName } from "../../../../utils/holidays";
 import type {
   WeeklySale,
   SubSale,
@@ -27,7 +26,6 @@ import type {
   Store,
 } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
-import type { Severity } from "../../../../utils/severity";
 import type { LedgerRowData } from "../interfaces";
 
 // Universal now (Item Grading uses it too); re-exported for the ledger code.

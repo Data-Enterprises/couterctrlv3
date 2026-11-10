@@ -4,6 +4,10 @@ import { useRef, useState } from "react";
 // Interfaces
 import type { Slide } from "../interfaces";
 
+interface CarouselProps {
+  slides: Slide[];
+}
+
 /* ------------------------------------------------------------------ */
 /* One card at a time                                                  */
 /* ------------------------------------------------------------------ */
@@ -19,7 +23,7 @@ import type { Slide } from "../interfaces";
  * It is a scroll container, so a trackpad swipe works and the tabs stay
  * honest about where it ended up.
  */
-const Carousel = ({ slides }: { slides: Slide[] }) => {
+const Carousel = ({ slides }: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState(0);
 

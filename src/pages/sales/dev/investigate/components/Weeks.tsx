@@ -1,17 +1,16 @@
 // Interfaces
 import type { Vitals as VitalsShape } from "../utils/investigationSteps";
 
+interface WeeksProps {
+  vitals: VitalsShape;
+  cash: (v: number) => string;
+}
+
 /** The department against itself: a standing difference, or something that
  *  broke in the last seven days. Values above the bars, because the labels
  *  below already anchor them and a figure under a bar reads as its caption
  *  rather than as its height. */
-const Weeks = ({
-  vitals,
-  cash,
-}: {
-  vitals: VitalsShape;
-  cash: (v: number) => string;
-}) => {
+const Weeks = ({ vitals, cash }: WeeksProps) => {
   const tallest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
   return (
     <div className="grid grid-cols-3 gap-3">

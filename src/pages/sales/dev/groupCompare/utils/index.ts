@@ -1,10 +1,9 @@
 // Utils
 import { severityDotClass } from "../../../../../utils/severity";
-import { SHARE_BAND_PCT } from "./shareBalance";
+import { SHARE_BAND_PCT, type ShareStanding } from "./shareBalance";
 import { storeKeyOf } from "./shareByDay";
 
 // Interfaces
-import type { ShareStanding } from "./shareBalance";
 import type { CtaTone } from "../../../../../components-dev/interfaces";
 import type { Excluded } from "../../utils/storeComparison";
 

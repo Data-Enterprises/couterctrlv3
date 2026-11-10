@@ -11,14 +11,13 @@ import type { Dispatch, SetStateAction } from "react";
 // Components
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 
-/** The list's column headings. */
-const ItemListHead = ({
-  sort,
-  setSort,
-}: {
+interface ItemListHeadProps {
   sort: TopItemSort;
   setSort: Dispatch<SetStateAction<TopItemSort>>;
-}) => {
+}
+
+/** The list's column headings. */
+const ItemListHead = ({ sort, setSort }: ItemListHeadProps) => {
   /** A column heading that sorts. Chevron only on the column in force, the
    *  way every other grid on this page marks it. */
   const SortHead = ({

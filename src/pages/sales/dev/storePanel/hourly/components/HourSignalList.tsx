@@ -6,11 +6,10 @@ import { useSalesCtx } from "../../../hooks";
 import { setHourlyThreshold } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { PCT_COL_W } from "../../../utils/index";
+import { PCT_COL_W, type SevFilter } from "../../../utils/index";
 import { HEAD, hourSeverity, nextHourSort, sortHourRows } from "../utils";
 
 // Interfaces
-import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
 import type { Dispatch, SetStateAction } from "react";
 import type { HourRow, HourSortColumn, HourSortState } from "../interfaces";

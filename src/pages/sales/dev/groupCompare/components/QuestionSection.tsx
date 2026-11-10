@@ -1,19 +1,16 @@
 // Interfaces
 import type { ReactNode } from "react";
 
-/** A question and its answer. Reading, not a control -- the report at the
- *  bottom is the only thing in the rail that goes anywhere. */
-const QuestionSection = ({
-  question,
-  answer,
-  sub,
-  figure,
-}: {
+interface QuestionSectionProps {
   question: string;
   answer: ReactNode;
   sub: ReactNode;
   figure?: ReactNode;
-}) => (
+}
+
+/** A question and its answer. Reading, not a control -- the report at the
+ *  bottom is the only thing in the rail that goes anywhere. */
+const QuestionSection = ({ question, answer, sub, figure }: QuestionSectionProps) => (
   <div className="py-2.5 border-b border-gray-100 last:border-b-0">
     <div className="text-[13px] text-content/95">{question}</div>
     <div className="flex items-center gap-2 mt-0.5">

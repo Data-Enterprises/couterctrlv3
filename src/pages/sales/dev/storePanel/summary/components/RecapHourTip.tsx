@@ -8,6 +8,14 @@ import type { RecapHour } from "../interfaces/index";
 // Components
 import CursorTipBox from "../../../../../../components-dev/tooltip/CursorTipBox";
 
+interface RecapHourTipProps {
+  hour: RecapHour;
+  /** The day's net sales by hour, summed: the base for the hour's share. */
+  dayNet: number;
+  x: number;
+  y: number;
+}
+
 /**
  * The readout for one hour of the day's chart, following the mouse.
  *
@@ -17,18 +25,7 @@ import CursorTipBox from "../../../../../../components-dev/tooltip/CursorTipBox"
  * The hour's own figures, and its share of the day. No grade: a busy hour is
  * a fact, not a verdict.
  */
-const RecapHourTip = ({
-  hour,
-  dayNet,
-  x,
-  y,
-}: {
-  hour: RecapHour;
-  /** The day's net sales by hour, summed: the base for the hour's share. */
-  dayNet: number;
-  x: number;
-  y: number;
-}) => {
+const RecapHourTip = ({ hour, dayNet, x, y }: RecapHourTipProps) => {
   const basket = avgBasket(hour.net, hour.transactions);
   const rows: [string, string][] = [
     ["Net sales", money(hour.net)],

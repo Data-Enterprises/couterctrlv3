@@ -23,6 +23,15 @@ import type { RecapDay } from "../interfaces/index";
 // Components
 import RecapHourTip from "./RecapHourTip";
 
+interface RecapShapeCardProps {
+  day: RecapDay;
+  /** Says which period, for the chart's spoken label: "on Thu Oct 30",
+   *  "across the week". */
+  period: string;
+  narrow: boolean;
+  short: boolean;
+}
+
 /**
  * Net sales by hour, across the whole second row (boards 15 and 16).
  *
@@ -41,19 +50,7 @@ import RecapHourTip from "./RecapHourTip";
  * No fixed height of its own: it fills its grid row and keeps a floor, so it
  * is never squeezed below its contents.
  */
-const RecapShapeCard = ({
-  day,
-  period,
-  narrow,
-  short,
-}: {
-  day: RecapDay;
-  /** Says which period, for the chart's spoken label: "on Thu Oct 30",
-   *  "across the week". */
-  period: string;
-  narrow: boolean;
-  short: boolean;
-}) => {
+const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => {
   const shape = day.hours;
   const top = shape.peak?.net ?? 0;
   const ticks = niceTicks(top);

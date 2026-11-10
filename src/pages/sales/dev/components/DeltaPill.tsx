@@ -2,24 +2,7 @@
 import { comparisonPillClass, pillClass } from "../../../../utils/severity";
 import { fmtPct, PCT_COL_W } from "../utils/index";
 
-/**
- * A graded comparison figure, as the ledger draws it.
- *
- * Lifted out of LedgerRow once the comparison grids needed the same thing: a
- * percentage that bands on the page threshold, greys out when the comparison
- * does not cover the whole week, and says why in its tooltip. Two copies of
- * this would drift, and a store's figure reading one way in the ledger and
- * another in the grid beside it is worse than either.
- */
-const DeltaPill = ({
-  has,
-  pct,
-  threshold,
-  complete,
-  matched,
-  days,
-  period,
-}: {
+interface DeltaPillProps {
   has: boolean;
   pct: number;
   threshold: number;
@@ -30,7 +13,18 @@ const DeltaPill = ({
   matched: number;
   days: number;
   period: "last week" | "last year";
-}) => (
+}
+
+/**
+ * A graded comparison figure, as the ledger draws it.
+ *
+ * Lifted out of LedgerRow once the comparison grids needed the same thing: a
+ * percentage that bands on the page threshold, greys out when the comparison
+ * does not cover the whole week, and says why in its tooltip. Two copies of
+ * this would drift, and a store's figure reading one way in the ledger and
+ * another in the grid beside it is worse than either.
+ */
+const DeltaPill = ({ has, pct, threshold, complete, matched, days, period }: DeltaPillProps) => (
   <span
     className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
       has

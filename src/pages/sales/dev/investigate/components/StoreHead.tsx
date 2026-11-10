@@ -1,6 +1,12 @@
 // Utils
 import { splitStore } from "../utils";
 
+interface StoreHeadProps {
+  name: string;
+  number: string;
+  dot: string;
+}
+
 /**
  * A store over a money column: the name, then the number under it.
  *
@@ -9,15 +15,7 @@ import { splitStore } from "../utils";
  * so a truncate that was meant to add an ellipsis instead silently ate the
  * front of the name and three stores all read "OODLAND 36_".
  */
-const StoreHead = ({
-  name,
-  number,
-  dot,
-}: {
-  name: string;
-  number: string;
-  dot: string;
-}) => (
+const StoreHead = ({ name, number, dot }: StoreHeadProps) => (
   <span className="min-w-0" title={number ? `${name} ${number}` : name}>
     <span className="flex items-center justify-end gap-1.5 min-w-0">
       <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />

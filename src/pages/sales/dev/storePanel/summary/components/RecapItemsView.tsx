@@ -11,11 +11,11 @@ import {
   mergeItems,
   subDeptOptions,
   vendorOptions,
+  type PeriodItems,
 } from "../utils/recapItemRows";
 import { DEFAULT_ITEM_SORT, nextItemSort, sortItemRows } from "../utils/recapItemSort";
 
 // Interfaces
-import type { PeriodItems } from "../utils/recapItemRows";
 import type { ItemSort, ItemSortCol } from "../interfaces/index";
 
 // Components
@@ -23,6 +23,15 @@ import MultiSelectFilter from "../../../../../../components-dev/filters/MultiSel
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 import RecapItemsTable from "./RecapItemsTable";
 import RecapPager from "./RecapPager";
+
+interface RecapItemsViewProps {
+  items: PeriodItems;
+  /** Changes with the day cards: a new period starts on page 1. */
+  periodKey: string;
+  withPounds: boolean;
+  narrow: boolean;
+  onBack: () => void;
+}
 
 /**
  * Summary's item view (board 18): every item the period sold, a page at a
@@ -45,20 +54,7 @@ import RecapPager from "./RecapPager";
  * No grades, no last week or last year. The download is the Items Sold
  * preset in Export CSV.
  */
-const RecapItemsView = ({
-  items,
-  periodKey,
-  withPounds,
-  narrow,
-  onBack,
-}: {
-  items: PeriodItems;
-  /** Changes with the day cards: a new period starts on page 1. */
-  periodKey: string;
-  withPounds: boolean;
-  narrow: boolean;
-  onBack: () => void;
-}) => {
+const RecapItemsView = ({ items, periodKey, withPounds, narrow, onBack }: RecapItemsViewProps) => {
   const [search, setSearch] = useState("");
   const [subDepts, setSubDepts] = useState<string[]>([]);
   const [vendors, setVendors] = useState<string[]>([]);

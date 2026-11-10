@@ -12,17 +12,15 @@ import {
 } from "../utils/topItems";
 import { moneyText, pctText, pointsText } from "../utils";
 
-/** Where it ranked in each period, and its metrics against each baseline. */
-const ItemHistory = ({
-  history,
-  periodLabel,
-  selected,
-}: {
+interface ItemHistoryProps {
   history: RankHistory;
   /** One picked day or the week, as the headings name it. */
   periodLabel: string;
   selected: TopItemCompared;
-}) => {
+}
+
+/** Where it ranked in each period, and its metrics against each baseline. */
+const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
   /** The supporting metrics: every row TY, and against each baseline. */
   const metricRows = !selected
     ? []

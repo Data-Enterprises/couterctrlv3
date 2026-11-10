@@ -1,19 +1,16 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
 
-/** A figure and the one behind it: units over money when grading on units,
- *  money over units otherwise. Null is a period with no sale. */
-const Cell = ({
-  net,
-  qty,
-  isQty,
-  className = "",
-}: {
+interface CellProps {
   net: number | null;
   qty: number | null;
   isQty: boolean;
   className?: string;
-}) => (
+}
+
+/** A figure and the one behind it: units over money when grading on units,
+ *  money over units otherwise. Null is a period with no sale. */
+const Cell = ({ net, qty, isQty, className = "" }: CellProps) => (
   <div className={`flex-shrink-0 ${className}`} style={{ width: 64 }}>
     <div className="text-[13px] font-semibold text-content">
       {isQty

@@ -6,25 +6,21 @@ import { OWNER_LABEL, type Desk } from "../utils/investigationSteps";
 // Interfaces
 import type { Cause } from "../interfaces";
 
+interface ActPanelProps {
+  desks: Desk[];
+  cash: (v: number) => string;
+  onShow: (c: Cause) => void;
+  onExport: (d: Desk) => void;
+  onPickItem: (code: string) => void;
+}
+
 /* ------------------------------------------------------------------ */
 /* Step 5 · who fixes it                                               */
 /* ------------------------------------------------------------------ */
 
 /** The investigation's "who fixes it" tab: a card per desk with the items it owns and an export,
  *  plus a line for each cause nobody can act on, each with a "Show in grid" button. */
-const ActPanel = ({
-  desks,
-  cash,
-  onShow,
-  onExport,
-  onPickItem,
-}: {
-  desks: Desk[];
-  cash: (v: number) => string;
-  onShow: (c: Cause) => void;
-  onExport: (d: Desk) => void;
-  onPickItem: (code: string) => void;
-}) => {
+const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) => {
   const owned = desks.filter((d) => d.actionable);
   const quiet = desks.filter((d) => !d.actionable);
 

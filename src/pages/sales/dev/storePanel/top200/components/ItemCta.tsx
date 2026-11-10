@@ -8,18 +8,15 @@ import type { ItemInsight, TopItemCompared } from "../utils/topItems";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 import CtaIcon from "./CtaIcon";
 
-/** The selected item's verdict strip, with the sentence behind it. */
-const ItemCta = ({
-  insight,
-  selected,
-  folded,
-  fold,
-}: {
+interface ItemCtaProps {
   insight: ItemInsight;
   selected: TopItemCompared;
   folded: Set<string>;
   fold: (id: string) => void;
-}) => (
+}
+
+/** The selected item's verdict strip, with the sentence behind it. */
+const ItemCta = ({ insight, selected, folded, fold }: ItemCtaProps) => (
   <div
     className={`relative flex-shrink-0 border-b ${ctaClasses(insight.tone).border}`}
   >

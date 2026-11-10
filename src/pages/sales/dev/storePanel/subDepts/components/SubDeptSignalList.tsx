@@ -6,7 +6,7 @@ import { useSalesCtx } from "../../../hooks";
 import { setSubDeptThreshold } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { PCT_COL_W } from "../../../utils/index";
+import { PCT_COL_W, type SevFilter } from "../../../utils/index";
 import {
   deptSeverity,
   nextDeptSort,
@@ -15,7 +15,6 @@ import {
 } from "../utils";
 
 // Interfaces
-import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
 import type { Dispatch, SetStateAction } from "react";
 import type { DeptRow, DeptSortColumn, DeptSortState } from "../interfaces";

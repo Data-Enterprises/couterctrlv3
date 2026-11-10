@@ -9,7 +9,7 @@ import {
 } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { fmtNum, aggregateRows } from "../../../../../../utils/csvExport";
+import { fmtNum, aggregateRows, type AggFn, type AggRow } from "../../../../../../utils/csvExport";
 import { dayKey, isCacheableDay } from "../../summary/utils/recapKeys";
 import { loadDayItems } from "../../summary/utils/recapLoad";
 import {
@@ -23,7 +23,6 @@ import {
 
 // Interfaces
 import type { SubSale, HourlySale } from "../../../../../../interfaces";
-import type { AggFn, AggRow } from "../../../../../../utils/csvExport";
 import type {
   CustomSource,
   MetricSelection,

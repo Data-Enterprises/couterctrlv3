@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useAppDispatch } from "../../../../../../hooks";
 import { useSalesCtx } from "../../../hooks";
 
@@ -16,7 +16,6 @@ import { getCta, nextItemSort, searchItems, sortItems } from "../utils";
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
-import type { Dispatch, SetStateAction } from "react";
 import type { DeptRow, ItemMenu, ItemSortColumn, ItemSortState } from "../interfaces";
 
 // Components

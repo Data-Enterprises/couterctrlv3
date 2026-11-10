@@ -4,18 +4,15 @@ import { count, EVENT_CLASS } from "../utils";
 // Interfaces
 import type { SupplyEvent } from "../interfaces";
 
-/** One store's orders and deliveries in date order, or why there are none. */
-const EventTimeline = ({
-  events,
-  ready,
-  tint,
-  label,
-}: {
+interface EventTimelineProps {
   events: SupplyEvent[];
   ready: boolean;
   tint: string;
   label: string;
-}) => (
+}
+
+/** One store's orders and deliveries in date order, or why there are none. */
+const EventTimeline = ({ events, ready, tint, label }: EventTimelineProps) => (
   <div className="min-w-0">
     <div
       className={`text-[13px] font-semibold uppercase tracking-wide text-content/95 pb-1.5 border-b-2 leading-tight ${tint}`}

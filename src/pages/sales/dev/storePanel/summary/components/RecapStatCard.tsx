@@ -5,6 +5,16 @@ import { DAY_CARD } from "../utils/recapGrid";
 import type { ReactNode } from "react";
 import type { StatRow } from "../interfaces";
 
+interface RecapStatCardProps {
+  title: string;
+  hero: string;
+  heroSub: string;
+  rows: StatRow[];
+  short: boolean;
+  action?: ReactNode;
+  children?: ReactNode;
+}
+
 /**
  * One card of a day's recap: a title, one headline figure with a few words
  * beside it, then the lines that make it up.
@@ -22,15 +32,7 @@ const RecapStatCard = ({
   short,
   action,
   children,
-}: {
-  title: string;
-  hero: string;
-  heroSub: string;
-  rows: StatRow[];
-  short: boolean;
-  action?: ReactNode;
-  children?: ReactNode;
-}) => (
+}: RecapStatCardProps) => (
   <section
     aria-label={title}
     className={`${DAY_CARD} h-full min-w-0 flex flex-col px-[18px] ${short ? "pt-2.5 pb-2" : "pt-3.5 pb-3"}`}

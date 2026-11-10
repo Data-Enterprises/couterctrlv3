@@ -4,6 +4,10 @@ import type { Gate } from "../../../utils/deptReport";
 // Components
 import Mark from "./Mark";
 
+interface TileProps {
+  gate: Gate;
+}
+
 /**
  * One gate, as a tile.
  *
@@ -12,7 +16,7 @@ import Mark from "./Mark";
  * failing one carry the tint, so what was checked and what it found are
  * read at a glance rather than parsed.
  */
-const Tile = ({ gate }: { gate: Gate }) => {
+const Tile = ({ gate }: TileProps) => {
   const fail = gate.state === "fail";
   const skipped = gate.state === "skipped";
   return (

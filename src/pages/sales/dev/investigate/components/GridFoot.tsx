@@ -4,14 +4,13 @@ import { COLUMNS, tintOf } from "../utils/columns";
 // Interfaces
 import type { ItemVerdict } from "../interfaces";
 
-/** The totals row, over every filtered item. */
-const GridFoot = ({
-  shown,
-  fmt,
-}: {
+interface GridFootProps {
   shown: ItemVerdict[];
   fmt: (v: number) => string;
-}) => {
+}
+
+/** The totals row, over every filtered item. */
+const GridFoot = ({ shown, fmt }: GridFootProps) => {
   /* Sticky to the bottom of the scroller, so the totals are
      readable from the first row as well as the last. Over the
      whole filtered set rather than this page: a total of fifty

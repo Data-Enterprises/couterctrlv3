@@ -4,6 +4,12 @@ import { FINDING_SAYS, LIST_COLS, signed, units } from "../utils";
 // Interfaces
 import type { ReportRow } from "../../../utils/deptReport";
 
+interface ListRowProps {
+  row: ReportRow;
+  selected: boolean;
+  onSelect: () => void;
+}
+
 /* The list                                                            */
 /**
  * One department in the left column.
@@ -18,15 +24,7 @@ import type { ReportRow } from "../../../utils/deptReport";
  * lives on the right, so there is no part of this list where clicking the
  * wrong thing does something unexpected.
  */
-const ListRow = ({
-  row,
-  selected,
-  onSelect,
-}: {
-  row: ReportRow;
-  selected: boolean;
-  onSelect: () => void;
-}) => {
+const ListRow = ({ row, selected, onSelect }: ListRowProps) => {
   const ahead = row.gap >= 0;
   return (
     <button

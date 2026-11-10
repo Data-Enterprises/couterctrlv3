@@ -1,8 +1,13 @@
 // Hooks
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+
+interface FoldProps {
+  title: string;
+  children: ReactNode;
+}
 
 // Interfaces
-import type { ReactNode } from "react";
+
 
 /**
  * A section that folds.
@@ -11,7 +16,7 @@ import type { ReactNode } from "react";
  * not scroll past the other three every time. Open by default: a panel of
  * shut drawers makes somebody open all four to find out what is in them.
  */
-const Fold = ({ title, children }: { title: string; children: ReactNode }) => {
+const Fold = ({ title, children }: FoldProps) => {
   const [open, setOpen] = useState(true);
   return (
     /* A seam between sections, not a frame around them: at /15 and above

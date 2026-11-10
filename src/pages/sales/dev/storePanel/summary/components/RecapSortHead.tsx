@@ -5,24 +5,20 @@ import type { ItemSort, ItemSortCol } from "../interfaces/index";
 // Components
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
 
-/**
- * A column head in the item view that sorts by its column, as Top 200's do:
- * the chevron only on the column in force, pointing the way it runs.
- */
-const RecapSortHead = ({
-  col,
-  sort,
-  onSort,
-  right,
-  children,
-}: {
+interface RecapSortHeadProps {
   col: ItemSortCol;
   sort: ItemSort;
   onSort: (col: ItemSortCol) => void;
   /** A figure column: right-aligned over its numbers. */
   right?: boolean;
   children: ReactNode;
-}) => {
+}
+
+/**
+ * A column head in the item view that sorts by its column, as Top 200's do:
+ * the chevron only on the column in force, pointing the way it runs.
+ */
+const RecapSortHead = ({ col, sort, onSort, right, children }: RecapSortHeadProps) => {
   const active = sort.column === col;
   return (
     <button

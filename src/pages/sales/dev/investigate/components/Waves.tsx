@@ -1,3 +1,8 @@
+interface WavesProps {
+  sales: boolean;
+  all: boolean;
+}
+
 /**
  * Which of the three waves are in.
  *
@@ -6,7 +11,7 @@
  * lying in both directions at once. Three lights say which half of the
  * screen is settled and which is still moving.
  */
-const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
+const Waves = ({ sales, all }: WavesProps) => {
   const lamps = [
     { label: "Sales", lit: sales },
     { label: "Orders", lit: all },

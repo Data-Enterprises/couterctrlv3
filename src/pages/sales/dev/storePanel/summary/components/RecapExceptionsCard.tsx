@@ -8,6 +8,13 @@ import type { WeekExceptionsState } from "../interfaces/index";
 // Components
 import RecapStatCard from "./RecapStatCard";
 
+interface RecapExceptionsCardProps {
+  /** The day, or the week's seven. */
+  dates: string[];
+  state: WeekExceptionsState;
+  short: boolean;
+}
+
 /**
  * The period's exceptions, a day or the week: how many transactions had one
  * and their amount, then each type with its transactions and amount (board
@@ -18,16 +25,7 @@ import RecapStatCard from "./RecapStatCard";
  * of the recap. A No Sale rings nothing, so it shows only its count. Types
  * with nothing in the period are left out.
  */
-const RecapExceptionsCard = ({
-  dates,
-  state,
-  short,
-}: {
-  /** The day, or the week's seven. */
-  dates: string[];
-  state: WeekExceptionsState;
-  short: boolean;
-}) => {
+const RecapExceptionsCard = ({ dates, state, short }: RecapExceptionsCardProps) => {
   if (state.status !== "ready") {
     return (
       <RecapStatCard

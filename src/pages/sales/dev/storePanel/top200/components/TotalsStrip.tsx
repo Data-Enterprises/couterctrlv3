@@ -2,6 +2,19 @@
 import { contributionGap } from "../utils/topItems";
 import { dayText, moneyText } from "../utils";
 
+interface TotalsStripProps {
+  oneDay: boolean;
+  start: string;
+  end: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
+  totals: { ty: number; lw: number | null; ly: number | null };
+  /** The share of each period's net sales these items carried. */
+  share: { ty: number | null; lw: number | null; ly: number | null };
+}
+
 /** The landing's three tiles: the top 200's sales, then against each baseline. */
 const TotalsStrip = ({
   oneDay,
@@ -13,18 +26,7 @@ const TotalsStrip = ({
   lyEnd,
   totals,
   share,
-}: {
-  oneDay: boolean;
-  start: string;
-  end: string;
-  lwStart: string;
-  lwEnd: string;
-  lyStart: string;
-  lyEnd: string;
-  totals: { ty: number; lw: number | null; ly: number | null };
-  /** The share of each period's net sales these items carried. */
-  share: { ty: number | null; lw: number | null; ly: number | null };
-}) => (
+}: TotalsStripProps) => (
   <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
     <div className="px-4 pt-2.5 pb-2 text-center">
       <div className="text-[10px] font-bold uppercase tracking-wide text-content">

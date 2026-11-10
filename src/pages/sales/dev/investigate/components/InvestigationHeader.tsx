@@ -12,6 +12,18 @@ import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import Waves from "./Waves";
 
+interface InvestigationHeaderProps {
+  target: InvestigationTarget;
+  twStart: string;
+  twEnd: string;
+  salesIn: boolean;
+  allIn: boolean;
+  /** Nothing left by the filters, so nothing to export. */
+  empty: boolean;
+  onBack: () => void;
+  onExport: () => void;
+}
+
 /** The navy bar: the way out, the two stores, and the export. */
 const InvestigationHeader = ({
   target,
@@ -22,17 +34,7 @@ const InvestigationHeader = ({
   empty,
   onBack,
   onExport,
-}: {
-  target: InvestigationTarget;
-  twStart: string;
-  twEnd: string;
-  salesIn: boolean;
-  allIn: boolean;
-  /** Nothing left by the filters, so nothing to export. */
-  empty: boolean;
-  onBack: () => void;
-  onExport: () => void;
-}) => {
+}: InvestigationHeaderProps) => {
   /* The way out takes the focus on arrival: it is where a reader who came
      in by keyboard expects to be, and it is the one control on the page
      that is in the same place on every tab. */

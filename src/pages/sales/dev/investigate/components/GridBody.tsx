@@ -8,18 +8,15 @@ import type { useRowSelection } from "../hooks";
 // Components
 import Bar from "./Bar";
 
-/** One page of the grid's rows. */
-const GridBody = ({
-  rows,
-  selection,
-  allIn,
-  fmt,
-}: {
+interface GridBodyProps {
   rows: ItemVerdict[];
   selection: ReturnType<typeof useRowSelection>;
   allIn: boolean;
   fmt: (v: number) => string;
-}) => {
+}
+
+/** One page of the grid's rows. */
+const GridBody = ({ rows, selection, allIn, fmt }: GridBodyProps) => {
   const { chosen, setChosen, anchor, setCtx, pickRow, isOn } = selection;
 
   /* No zebra stripe: every cell is ruled, which is what

@@ -10,14 +10,13 @@ import {
   DocumentTextIcon,
 } from "@heroicons/react/20/solid";
 
-/** Opens the invoices rail. */
-const InvoicesButton = ({
-  detail,
-  setInvoicesOpen,
-}: {
+interface InvoicesButtonProps {
   detail: ItemDetailResponse;
   setInvoicesOpen: (open: boolean) => void;
-}) => (
+}
+
+/** Opens the invoices rail. */
+const InvoicesButton = ({ detail, setInvoicesOpen }: InvoicesButtonProps) => (
   <button
     onClick={() => setInvoicesOpen(true)}
     className="flex items-center gap-2 w-full mx-4 mb-3 px-3 py-2 rounded-md border border-brand_navy/15 bg-custom-white hover:bg-gray-50 transition-colors text-left"

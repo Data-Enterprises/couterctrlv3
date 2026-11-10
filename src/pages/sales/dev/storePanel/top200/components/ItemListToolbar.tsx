@@ -4,16 +4,7 @@ import { TOP_ITEMS_SHOWN } from "../../../../../../api/topItems";
 // Interfaces
 import type { TopItemCompared } from "../utils/topItems";
 
-/** The list's search box, sub dept filter and count. */
-const ItemListToolbar = ({
-  search,
-  setSearch,
-  dept,
-  setDept,
-  depts,
-  shown,
-  ranked,
-}: {
+interface ItemListToolbarProps {
   search: string;
   setSearch: (value: string) => void;
   dept: string;
@@ -23,7 +14,18 @@ const ItemListToolbar = ({
   shown: TopItemCompared[];
   /** Every ranked row. */
   ranked: TopItemCompared[];
-}) => (
+}
+
+/** The list's search box, sub dept filter and count. */
+const ItemListToolbar = ({
+  search,
+  setSearch,
+  dept,
+  setDept,
+  depts,
+  shown,
+  ranked,
+}: ItemListToolbarProps) => (
   <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
     <input
       value={search}

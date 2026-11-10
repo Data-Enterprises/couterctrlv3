@@ -4,8 +4,13 @@ import { count, money, perBasket, weightLabel } from "../utils";
 // Interfaces
 import type { PricePoint } from "../interfaces";
 
+interface RungProps {
+  p: PricePoint;
+  weighed: boolean;
+}
+
 /** One price, and what went out at it. */
-const Rung = ({ p, weighed }: { p: PricePoint; weighed: boolean }) => (
+const Rung = ({ p, weighed }: RungProps) => (
   <div className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0">
     {/* Per pound on a scale item, which is what the shelf says. It used to
         be sales divided by scans -- the price of an average package, which

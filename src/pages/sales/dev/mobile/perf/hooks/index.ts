@@ -19,6 +19,7 @@ import {
   setPerfLoading,
   setPerfStoreLoading,
   setPerfWeek,
+  type PerfBundle,
 } from "../../../../../../features/dev/devSalesPerfSlice";
 
 // API
@@ -35,7 +36,6 @@ import { asLastYearSlots } from "../../../../../../utils/perfPairs";
 import { pickComparison, resolveWeekComparison, storeKeyOf } from "../utils/perfData";
 
 // Interfaces
-import type { PerfBundle } from "../../../../../../features/dev/devSalesPerfSlice";
 import type {
   HourlySale,
   JsonError,

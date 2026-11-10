@@ -1,8 +1,7 @@
 // Utils
-import { ctaClasses } from "../utils/index";
+import { ctaClasses, type Severity } from "../utils/index";
 
 // Interfaces
-import type { Severity } from "../utils/index";
 
 // Components
 import {

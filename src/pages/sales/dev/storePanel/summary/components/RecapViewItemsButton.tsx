@@ -4,12 +4,17 @@ import { useCursorTip } from "../../../../../../components-dev/tooltip/useCursor
 // Components
 import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
 
+interface RecapViewItemsButtonProps {
+  tip: string;
+  onClick: () => void;
+}
+
 /**
  * View items, top right of the Baskets card (board 17): switches Summary to
  * its item view. Hovering it says what the list will hold, for the week or
  * the day picked, in a tip that follows the mouse like the hour chart's.
  */
-const RecapViewItemsButton = ({ tip: text, onClick }: { tip: string; onClick: () => void }) => {
+const RecapViewItemsButton = ({ tip: text, onClick }: RecapViewItemsButtonProps) => {
   const { tip, track, clear } = useCursorTip<true>();
   return (
     <>

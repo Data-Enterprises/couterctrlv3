@@ -4,24 +4,20 @@ import { PAGE_SIZES } from "../utils/recapItemPaging";
 // Components
 import PagerButton from "./PagerButton";
 
-/**
- * The item view's pager, laid out as the Orders report's: the range shown,
- * rows per page, then First, Prev, page of pages, Next and Last.
- */
-const RecapPager = ({
-  page,
-  pageSize,
-  total,
-  onPage,
-  onPageSize,
-}: {
+interface RecapPagerProps {
   /** 0-based. */
   page: number;
   pageSize: number;
   total: number;
   onPage: (page: number) => void;
   onPageSize: (size: number) => void;
-}) => {
+}
+
+/**
+ * The item view's pager, laid out as the Orders report's: the range shown,
+ * rows per page, then First, Prev, page of pages, Next and Last.
+ */
+const RecapPager = ({ page, pageSize, total, onPage, onPageSize }: RecapPagerProps) => {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   return (
     <div className="flex-none flex items-center gap-3.5 px-[18px] py-1.5 border-t border-brand_line text-[12px] text-content">

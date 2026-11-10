@@ -10,6 +10,23 @@ import RecapExceptionsCard from "./RecapExceptionsCard";
 import RecapMoneyCard from "./RecapMoneyCard";
 import RecapShapeCard from "./RecapShapeCard";
 
+interface RecapDayViewProps {
+  /** The period's figures: one day's, or the week's combined. */
+  day: RecapDay;
+  /** The day, or the week's seven. */
+  dates: string[];
+  /** "on Thu Oct 30" or "across the week", for spoken labels. */
+  period: string;
+  money: RecapMoney;
+  mix: DayMixState;
+  exceptions: WeekExceptionsState;
+  withPounds: boolean;
+  narrow: boolean;
+  short: boolean;
+  itemsTip: string;
+  onViewItems: () => void;
+}
+
 /**
  * Summary for one period: the week (board 16), or a day picked from its day
  * card (board 15). The same cards in the same places either way, so a day
@@ -37,22 +54,7 @@ const RecapDayView = ({
   short,
   itemsTip,
   onViewItems,
-}: {
-  /** The period's figures: one day's, or the week's combined. */
-  day: RecapDay;
-  /** The day, or the week's seven. */
-  dates: string[];
-  /** "on Thu Oct 30" or "across the week", for spoken labels. */
-  period: string;
-  money: RecapMoney;
-  mix: DayMixState;
-  exceptions: WeekExceptionsState;
-  withPounds: boolean;
-  narrow: boolean;
-  short: boolean;
-  itemsTip: string;
-  onViewItems: () => void;
-}) => (
+}: RecapDayViewProps) => (
   <div
     className={`${TRAY} h-full min-h-0 overflow-y-auto thin-scrollbar flex flex-col ${
       short ? "p-2.5" : "p-3.5"

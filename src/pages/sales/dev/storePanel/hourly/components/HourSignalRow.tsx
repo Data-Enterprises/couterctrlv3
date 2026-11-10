@@ -7,12 +7,11 @@ import { setSelectedHour } from "../../../../../../features/dev/devSalesLedgerSl
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
-import { comparisonPillClass, isCompleteCoverage } from "../../../utils/ledgerUtils";
+import { comparisonPillClass, isCompleteCoverage, type Coverage } from "../../../utils/ledgerUtils";
 import { formatPct, severityDotClass, PCT_COL_W } from "../../../utils/index";
 import { formatHourRange, hourSeverity } from "../utils";
 
 // Interfaces
-import type { Coverage } from "../../../utils/ledgerUtils";
 import type { HourRow } from "../interfaces";
 
 interface HourSignalRowProps {

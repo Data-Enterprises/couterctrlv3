@@ -8,6 +8,12 @@ import type { DayMixState, RecapMoney } from "../interfaces/index";
 import RecapPriceMix from "./RecapPriceMix";
 import RecapStatCard from "./RecapStatCard";
 
+interface RecapMoneyCardProps {
+  money: RecapMoney;
+  mix: DayMixState;
+  short: boolean;
+}
+
 /**
  * The day's money: net sales first (the day card's figure), then the sum
  * behind it (sales with tax, less tax), then the price mix splitting it.
@@ -17,15 +23,7 @@ import RecapStatCard from "./RecapStatCard";
  * No coupon line: the POS has already taken coupons out of these sales, and
  * the coupon columns repeat that money, so a coupon total would count twice.
  */
-const RecapMoneyCard = ({
-  money: m,
-  mix,
-  short,
-}: {
-  money: RecapMoney;
-  mix: DayMixState;
-  short: boolean;
-}) => (
+const RecapMoneyCard = ({ money: m, mix, short }: RecapMoneyCardProps) => (
   <RecapStatCard
     title="Money"
     hero={money(m.net)}

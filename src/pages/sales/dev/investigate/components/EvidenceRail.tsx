@@ -1,15 +1,14 @@
 // Interfaces
 import type { ReactNode } from "react";
 
-/** The slide-in frame the open item's evidence sits in, over the grid. */
-const EvidenceRail = ({
-  open,
-  children,
-}: {
+interface EvidenceRailProps {
   /** An item is picked, so the rail is in. */
   open: boolean;
   children: ReactNode;
-}) => {
+}
+
+/** The slide-in frame the open item's evidence sits in, over the grid. */
+const EvidenceRail = ({ open, children }: EvidenceRailProps) => {
   /*
     The rail lays OVER the grid rather than beside it.
 

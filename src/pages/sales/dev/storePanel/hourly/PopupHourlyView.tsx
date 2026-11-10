@@ -1,4 +1,4 @@
-﻿// Hooks
+// Hooks
 import { useMemo, useRef, useState } from "react";
 import { useSalesCtx, useSalesState } from "../../hooks";
 

@@ -9,6 +9,16 @@ import type { DayMixState, RecapDay } from "../interfaces/index";
 import RecapStatCard from "./RecapStatCard";
 import RecapViewItemsButton from "./RecapViewItemsButton";
 
+interface RecapBasketsCardProps {
+  day: RecapDay;
+  mix: DayMixState;
+  withPounds: boolean;
+  short: boolean;
+  /** What View items' tip says: the week, or the day picked. */
+  itemsTip: string;
+  onViewItems: () => void;
+}
+
 /**
  * The period's baskets, a day or the week: how many, and what an average one
  * came to, then each count beside what it averages to per basket.
@@ -25,15 +35,7 @@ const RecapBasketsCard = ({
   short,
   itemsTip,
   onViewItems,
-}: {
-  day: RecapDay;
-  mix: DayMixState;
-  withPounds: boolean;
-  short: boolean;
-  /** What View items' tip says: the week, or the day picked. */
-  itemsTip: string;
-  onViewItems: () => void;
-}) => {
+}: RecapBasketsCardProps) => {
   const basket = avgBasket(day.net, day.transactions);
   const perBasket = itemsPerBasket(day.units, day.transactions);
   const unitPrice = avgItemPrice(day.net, day.units);

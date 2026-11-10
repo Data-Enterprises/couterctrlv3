@@ -4,16 +4,7 @@ import { PAGE_ROWS } from "../utils";
 // Interfaces
 import type { ItemVerdict } from "../interfaces";
 
-/** The strip under the grid: where you are in the list, and the pages. */
-const GridPager = ({
-  sorted,
-  items,
-  chosen,
-  from,
-  page: at_,
-  pages,
-  setPage,
-}: {
+interface GridPagerProps {
   /** The filtered, sorted list the grid pages through. */
   sorted: ItemVerdict[];
   /** Every item in the department. */
@@ -24,7 +15,10 @@ const GridPager = ({
   page: number;
   pages: number;
   setPage: (p: number) => void;
-}) => {
+}
+
+/** The strip under the grid: where you are in the list, and the pages. */
+const GridPager = ({ sorted, items, chosen, from, page: at_, pages, setPage }: GridPagerProps) => {
   /**
    * The page numbers worth printing: the first, the last, and a few either
    * side of where you are, with gaps for the rest.

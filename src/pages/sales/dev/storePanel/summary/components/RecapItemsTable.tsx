@@ -15,6 +15,17 @@ import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import CursorTip from "../../../../../../components-dev/tooltip/CursorTip";
 import RecapSortHead from "./RecapSortHead";
 
+interface RecapItemsTableProps {
+  rows: RecapItemRow[];
+  /** Every UPC in the filtered, sorted list, not just this page's. */
+  allUpcs: string[];
+  totals: { items: number; units: number; pounds: number; net: number };
+  sort: ItemSort;
+  onSort: (col: ItemSortCol) => void;
+  withPounds: boolean;
+  narrow: boolean;
+}
+
 /**
  * The item view's list (board 18): sortable heads, one page of items,
  * striped, scrolling inside the card, and a totals row pinned under it for
@@ -40,16 +51,7 @@ const RecapItemsTable = ({
   onSort,
   withPounds,
   narrow,
-}: {
-  rows: RecapItemRow[];
-  /** Every UPC in the filtered, sorted list, not just this page's. */
-  allUpcs: string[];
-  totals: { items: number; units: number; pounds: number; net: number };
-  sort: ItemSort;
-  onSort: (col: ItemSortCol) => void;
-  withPounds: boolean;
-  narrow: boolean;
-}) => {
+}: RecapItemsTableProps) => {
   const cols = colsOf(withPounds, narrow);
   const { tip, track, clear } = useCursorTip<string>();
   const [menu, setMenu] = useState<{ x: number; y: number; upc: string } | null>(null);

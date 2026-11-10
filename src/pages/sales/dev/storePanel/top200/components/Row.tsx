@@ -7,6 +7,16 @@ import {
 } from "../utils/topItemsCompare";
 import { money, pct, pts, signedMoney, TONE_PILL, toneOf } from "../utils";
 
+interface RowProps {
+  row: ComparedTopItem;
+  widest: number;
+  metric: CompareMetric;
+  selected: boolean;
+  onPick: () => void;
+  /** Right-click, so the menu can offer this one code as well as the list. */
+  onContext: (x: number, y: number) => void;
+}
+
 /**
  * One item.
  *
@@ -20,22 +30,7 @@ import { money, pct, pts, signedMoney, TONE_PILL, toneOf } from "../utils";
  * has all of it. The unknown is a hatched cap OUTSIDE the bar: drawing it
  * inside would shorten a measured thing to make room for an unmeasured one.
  */
-const Row = ({
-  row,
-  widest,
-  metric,
-  selected,
-  onPick,
-  onContext,
-}: {
-  row: ComparedTopItem;
-  widest: number;
-  metric: CompareMetric;
-  selected: boolean;
-  onPick: () => void;
-  /** Right-click, so the menu can offer this one code as well as the list. */
-  onContext: (x: number, y: number) => void;
-}) => {
+const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => {
   const signed = metricSigned(row, metric);
   // Ahead or behind, in the ledger's own two colours. No threshold: a
   // third band would have to be "close", and nothing on this screen asks

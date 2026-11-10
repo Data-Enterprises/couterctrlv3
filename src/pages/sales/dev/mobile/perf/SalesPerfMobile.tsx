@@ -26,6 +26,7 @@ import {
   togglePerfDay,
   togglePerfGroupDay,
   togglePerfStore,
+  type PerfBundle,
 } from "../../../../../features/dev/devSalesPerfSlice";
 
 // Utils
@@ -54,12 +55,11 @@ import {
   scopeMatch,
   sortPairs,
   storeKeyOf,
+  type CmpBasis,
 } from "./utils/perfData";
 import { DETAIL_TABS, storeNumberOf } from "./utils";
 
 // Interfaces
-import type { PerfBundle } from "../../../../../features/dev/devSalesPerfSlice";
-import type { CmpBasis } from "./utils/perfData";
 import type { ItemScope } from "./interfaces";
 
 // Components

@@ -8,21 +8,17 @@ import type { ItemVerdict } from "../interfaces";
 // Components
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
-/** The grid's right-click menu: the selection first, then copy by cause. */
-const GridContextMenu = ({
-  ctx,
-  shown,
-  chosen,
-  onFind,
-  onClose,
-}: {
+interface GridContextMenuProps {
   ctx: { x: number; y: number; upc: string };
   shown: ItemVerdict[];
   chosen: Set<string>;
   /** Narrow the Supply tab to these codes and go there. */
   onFind: (upcs: string) => void;
   onClose: () => void;
-}) => {
+}
+
+/** The grid's right-click menu: the selection first, then copy by cause. */
+const GridContextMenu = ({ ctx, shown, chosen, onFind, onClose }: GridContextMenuProps) => {
   /**
    * Copying by CAUSE rather than by severity.
    *

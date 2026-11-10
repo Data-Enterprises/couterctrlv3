@@ -19,6 +19,16 @@ import type { DayDot } from "../../../../../interfaces";
 import RecapDayView from "./components/RecapDayView";
 import RecapItemsView from "./components/RecapItemsView";
 
+interface DailyRecapProps {
+  storeId: number;
+  storeNumber: string;
+  /** The week's seven dates, yyyy-mm-dd, oldest first. */
+  dates: string[];
+  /** The day cards' rows: their net sales and units are the day rows'. */
+  days: DayDot[];
+  selectedDate: string | null;
+}
+
 /**
  * Summary: the week, or one day of it, in one view.
  *
@@ -50,15 +60,7 @@ const DailyRecap = ({
   dates: datesIn,
   days: dayDots,
   selectedDate,
-}: {
-  storeId: number;
-  storeNumber: string;
-  /** The week's seven dates, yyyy-mm-dd, oldest first. */
-  dates: string[];
-  /** The day cards' rows: their net sales and units are the day rows'. */
-  days: DayDot[];
-  selectedDate: string | null;
-}) => {
+}: DailyRecapProps) => {
   const { rawSubs, rawHourly } = useAppSelector((s) => s.dev.salesLedger);
   // The popup rebuilds its date list on every render; key it on its content
   // so nothing below re-runs (or re-asks) unless the week really changed.

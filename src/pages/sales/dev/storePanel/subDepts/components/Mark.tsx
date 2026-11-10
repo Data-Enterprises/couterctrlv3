@@ -1,8 +1,12 @@
 // Interfaces
 import type { Gate } from "../../../utils/deptReport";
 
+interface MarkProps {
+  state: Gate["state"];
+}
+
 /** Pass, fail, or never reached. A tick, a cross, or an empty ring. */
-const Mark = ({ state }: { state: Gate["state"] }) => (
+const Mark = ({ state }: MarkProps) => (
   <span
     className={`w-[17px] h-[17px] flex-shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold leading-none ${
       state === "fail"

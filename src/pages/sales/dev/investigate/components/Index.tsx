@@ -1,17 +1,15 @@
 // Interfaces
 import type { Vitals as VitalsShape } from "../utils/investigationSteps";
 
-/** Sales, units and margin on ONE rule, the counterpart at 100, so measures
- *  that disagree are seen to disagree. */
-const Index = ({
-  vitals,
-  them,
-  cash,
-}: {
+interface IndexProps {
   vitals: VitalsShape;
   them: string;
   cash: (v: number) => string;
-}) => {
+}
+
+/** Sales, units and margin on ONE rule, the counterpart at 100, so measures
+ *  that disagree are seen to disagree. */
+const Index = ({ vitals, them, cash }: IndexProps) => {
   // Three bars pinned at zero say nothing, in the one case where the reason
   // they are at zero IS the finding.
   if (vitals.index.every((m) => m.mine === 0)) {

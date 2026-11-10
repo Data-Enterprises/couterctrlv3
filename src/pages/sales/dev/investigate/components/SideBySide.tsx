@@ -7,6 +7,14 @@ import type { ItemVerdict } from "../interfaces";
 // Components
 import StoreHead from "./StoreHead";
 
+interface SideBySideProps {
+  item: ItemVerdict;
+  mine: string;
+  mineNumber: string;
+  theirs: string;
+  theirsNumber: string;
+}
+
 /**
  * The item, both stores, one table.
  *
@@ -22,19 +30,7 @@ import StoreHead from "./StoreHead";
  * to look at the shelf price, when the shelf price was fine and the invoice
  * was not.
  */
-const SideBySide = ({
-  item,
-  mine,
-  mineNumber,
-  theirs,
-  theirsNumber,
-}: {
-  item: ItemVerdict;
-  mine: string;
-  mineNumber: string;
-  theirs: string;
-  theirsNumber: string;
-}) => {
+const SideBySide = ({ item, mine, mineNumber, theirs, theirsNumber }: SideBySideProps) => {
   const m = item.margins;
   const noCost = item.mineCogs === 0 && item.theirsCogs === 0;
 

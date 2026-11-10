@@ -1,8 +1,12 @@
 // Interfaces
 import type { DisplayVerdict } from "../utils/topItems";
 
+interface ItemDisplayProps {
+  display: DisplayVerdict;
+}
+
 /** Whether it is worth a display: the verdict and the checks behind it. */
-const ItemDisplay = ({ display }: { display: DisplayVerdict }) => (
+const ItemDisplay = ({ display }: ItemDisplayProps) => (
   <div className="px-4 py-2.5">
     <div
       className={`text-[14px] font-bold leading-snug ${

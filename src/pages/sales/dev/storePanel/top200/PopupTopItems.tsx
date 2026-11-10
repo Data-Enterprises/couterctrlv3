@@ -67,6 +67,31 @@ import ItemDisplay from "./components/ItemDisplay";
 import InvoicesButton from "./components/InvoicesButton";
 import InvoicesRail from "./components/InvoicesRail";
 
+interface PopupTopItemsProps {
+  storeId: number;
+  /** Every store_number under this storeid. More than one means co-located
+   *  stores, which this endpoint cannot tell apart. */
+  locations: string[];
+  /**
+   * The store's own net sales for each of the three periods, whole week.
+   *
+   * The tiles report the top 200 as a SHARE of these rather than comparing
+   * their dollars: a week up 10% lifts the top 200 with it, and a tile that
+   * says +10% then reads as a change in the list when nothing about the list
+   * moved.
+   */
+  netSales: { ty: number; lw: number | null; ly: number | null };
+  /** yyyy-mm-dd. The week the popup is showing, and its two baselines; or
+   *  one picked day (start === end), against the same weekday last week and
+   *  last year. */
+  start: string;
+  end: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
+}
+
 /**
  * The store's biggest sellers, and one of them drilled into.
  *
@@ -97,30 +122,7 @@ const PopupTopItems = ({
   lwEnd,
   lyStart,
   lyEnd,
-}: {
-  storeId: number;
-  /** Every store_number under this storeid. More than one means co-located
-   *  stores, which this endpoint cannot tell apart. */
-  locations: string[];
-  /**
-   * The store's own net sales for each of the three periods, whole week.
-   *
-   * The tiles report the top 200 as a SHARE of these rather than comparing
-   * their dollars: a week up 10% lifts the top 200 with it, and a tile that
-   * says +10% then reads as a change in the list when nothing about the list
-   * moved.
-   */
-  netSales: { ty: number; lw: number | null; ly: number | null };
-  /** yyyy-mm-dd. The week the popup is showing, and its two baselines; or
-   *  one picked day (start === end), against the same weekday last week and
-   *  last year. */
-  start: string;
-  end: string;
-  lwStart: string;
-  lwEnd: string;
-  lyStart: string;
-  lyEnd: string;
-}) => {
+}: PopupTopItemsProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { url, token } = useAppSelector((state) => state.app);

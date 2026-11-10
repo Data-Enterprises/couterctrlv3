@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
+interface StoreColFilterProps {
+  /** The applied filter. Empty means the column is not filtering. */
+  value: string;
+  onApply: (next: string) => void;
+  label?: string;
+  labelSize?: string;
+}
+
 /**
  * "Search by store", as the column heading that does it.
  *
@@ -27,13 +35,7 @@ const StoreColFilter = ({
   onApply,
   label = "Store",
   labelSize = "text-[11.5px]",
-}: {
-  /** The applied filter. Empty means the column is not filtering. */
-  value: string;
-  onApply: (next: string) => void;
-  label?: string;
-  labelSize?: string;
-}) => {
+}: StoreColFilterProps) => {
   const [draft, setDraft] = useState(value);
 
   // Follows the applied value when something else clears it — a new search,

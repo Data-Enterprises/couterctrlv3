@@ -23,21 +23,7 @@ import Block from "./Block";
 import Measure from "./Measure";
 import Tile from "./Tile";
 
-/* The panel                                                           */
-/**
- * The selected department, in full.
- *
- * What the single column could never fit: the sentence, the three gates
- * with a column each, the exact split behind the sentence, and how the
- * same subtraction ran in the two earlier weeks.
- */
-const Detail = ({
-  row,
-  us,
-  them,
-  day: picked,
-  onInvestigate,
-}: {
+interface DetailProps {
   row: ReportRow;
   /** Full store names: a number is what the row is keyed by, not what
    *  anybody calls it. */
@@ -47,7 +33,17 @@ const Detail = ({
    *  that day's, so the headings have to say so. */
   day: string | null;
   onInvestigate: (row: ReportRow) => void;
-}) => {
+}
+
+/* The panel                                                           */
+/**
+ * The selected department, in full.
+ *
+ * What the single column could never fit: the sentence, the three gates
+ * with a column each, the exact split behind the sentence, and how the
+ * same subtraction ran in the two earlier weeks.
+ */
+const Detail = ({ row, us, them, day: picked, onInvestigate }: DetailProps) => {
   const ahead = row.gap >= 0;
   /* Closed. It lays over the panel rather than pushing it down, so an open
      strip on arrival would cover the first thing the panel has to show. */

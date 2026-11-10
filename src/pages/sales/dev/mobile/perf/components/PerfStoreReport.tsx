@@ -1,10 +1,9 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { cmpWord, type CmpBasis } from "../utils/perfData";
+import { cmpWord, type CmpBasis, type PerfDay, type PerfTotals } from "../utils/perfData";
 import { COUPON_KEYS } from "../utils";
 
 // Interfaces
-import type { PerfDay, PerfTotals } from "../utils/perfData";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

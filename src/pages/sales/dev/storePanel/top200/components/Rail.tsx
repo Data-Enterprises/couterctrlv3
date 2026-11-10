@@ -27,6 +27,17 @@ import {
 } from "@heroicons/react/20/solid";
 import PriceRow from "./PriceRow";
 
+interface RailProps {
+  row: ComparedTopItem | null;
+  metric: CompareMetric;
+  openStoreName: string;
+  compareStoreName: string;
+  minePoints: TopItemPricePoint[];
+  theirsPoints: TopItemPricePoint[];
+  absent: ItemDetailResponse | null;
+  absentLoading: boolean;
+}
+
 /** The Top 200 comparison's side rail for the picked item: a severity-tinted strip that opens to the item's
  *  figure and whether the other store carries it, over a price-by-price grid of what each store rang. */
 const Rail = ({
@@ -38,16 +49,7 @@ const Rail = ({
   theirsPoints,
   absent,
   absentLoading,
-}: {
-  row: ComparedTopItem | null;
-  metric: CompareMetric;
-  openStoreName: string;
-  compareStoreName: string;
-  minePoints: TopItemPricePoint[];
-  theirsPoints: TopItemPricePoint[];
-  absent: ItemDetailResponse | null;
-  absentLoading: boolean;
-}) => {
+}: RailProps) => {
   /** The strip opens closed, like every other one. */
   const [open, setOpen] = useState(false);
 

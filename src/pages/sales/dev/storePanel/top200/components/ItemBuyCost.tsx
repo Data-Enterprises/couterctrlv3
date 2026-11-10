@@ -10,14 +10,13 @@ import { dayText, moneyText } from "../utils";
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 
-/** What it costs to buy: paying now, best seen, and what waiting could save. */
-const ItemBuyCost = ({
-  detail,
-  detailLoading,
-}: {
+interface ItemBuyCostProps {
   detail: ItemDetailResponse | null;
   detailLoading: boolean;
-}) => (
+}
+
+/** What it costs to buy: paying now, best seen, and what waiting could save. */
+const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
   <div
     data-help="item-buy"
     className="px-4 py-2.5 border-b border-gray-100"

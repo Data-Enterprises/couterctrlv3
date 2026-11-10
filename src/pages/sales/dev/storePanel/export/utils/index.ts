@@ -2,10 +2,9 @@
 import { FINANCIALS_READY, type FinancialsRow } from "../../../../../../api/financials";
 
 // Utils
-import { fmtNum, rowsToCsv } from "../../../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../../../utils/csvExport";
 
 // Interfaces
-import type { AggFn } from "../../../../../../utils/csvExport";
 import type { SubSale, HourlySale, DayDot } from "../../../../../../interfaces";
 import type { ExportSubDeptItem } from "../../../../../../features/dev/devSalesLedgerSlice";
 import type {

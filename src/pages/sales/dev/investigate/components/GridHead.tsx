@@ -14,20 +14,16 @@ import SortHeader from "../../../../../components-dev/SortHeader";
 import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
 
-/** The grid's heading row: a filter, a sort or a plain label per column. */
-const GridHead = ({
-  target,
-  filters,
-  byCause,
-  sort,
-  onSort,
-}: {
+interface GridHeadProps {
   target: InvestigationTarget;
   filters: ReturnType<typeof useItemFilters>;
   byCause: Map<Cause, CauseTotal>;
   sort: SortState<Col>;
   onSort: (col: Col) => void;
-}) => {
+}
+
+/** The grid's heading row: a filter, a sort or a plain label per column. */
+const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => {
   const {
     only,
     setOnly,

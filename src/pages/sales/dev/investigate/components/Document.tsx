@@ -8,15 +8,7 @@ import { onDay } from "../utils";
 import type { SupplyRecord } from "../utils/investigationSteps";
 import type { DocLine } from "../interfaces";
 
-/** One order or receipt row: date, vendor, number, status or cost, lines and units.
- *  Click to open its lines, with a switch between this department's lines and the whole document. */
-const Document = ({
-  rec,
-  lines,
-  whole,
-  cash,
-  isOrder,
-}: {
+interface DocumentProps {
   rec: SupplyRecord;
   /** This department's lines on it. */
   lines: DocLine[];
@@ -24,7 +16,11 @@ const Document = ({
   whole: DocLine[] | null;
   cash: (v: number) => string;
   isOrder: boolean;
-}) => {
+}
+
+/** One order or receipt row: date, vendor, number, status or cost, lines and units.
+ *  Click to open its lines, with a switch between this department's lines and the whole document. */
+const Document = ({ rec, lines, whole, cash, isOrder }: DocumentProps) => {
   const [open, setOpen] = useState(false);
   const [everything, setEverything] = useState(false);
   const rows = everything && whole ? whole : lines;

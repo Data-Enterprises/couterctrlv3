@@ -8,16 +8,7 @@ import type { Cause, CauseTotal } from "../interfaces";
 // Components
 import Bar from "./Bar";
 
-/** The cause piles, as chips that narrow the grid to one of them. */
-const CauseChips = ({
-  total,
-  only,
-  onOnly,
-  allIn,
-  byCause,
-  suggested,
-  fmt,
-}: {
+interface CauseChipsProps {
   /** Every item in the department, before any filter. */
   total: number;
   only: Cause | null;
@@ -26,7 +17,10 @@ const CauseChips = ({
   byCause: Map<Cause, CauseTotal>;
   suggested: Cause[];
   fmt: (v: number) => string;
-}) => (
+}
+
+/** The cause piles, as chips that narrow the grid to one of them. */
+const CauseChips = ({ total, only, onOnly, allIn, byCause, suggested, fmt }: CauseChipsProps) => (
   <div className="flex flex-wrap items-center gap-2">
     <button
       onClick={() => onOnly(null)}

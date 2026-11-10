@@ -1,6 +1,14 @@
 // Interfaces
 import type { SupplyRecord } from "../utils/investigationSteps";
 
+interface TimelineProps {
+  orders: SupplyRecord[];
+  deliveries: SupplyRecord[];
+  window: { start: string; end: string };
+  us: string;
+  them: string;
+}
+
 /**
  * Every order and every delivery, on the window they were read over.
  *
@@ -9,19 +17,7 @@ import type { SupplyRecord } from "../utils/investigationSteps";
  * hundred — nor that a lane is empty, which is the strongest way to say
  * nothing arrived. Dot area follows units, so the big order looks big.
  */
-const Timeline = ({
-  orders,
-  deliveries,
-  window,
-  us,
-  them,
-}: {
-  orders: SupplyRecord[];
-  deliveries: SupplyRecord[];
-  window: { start: string; end: string };
-  us: string;
-  them: string;
-}) => {
+const Timeline = ({ orders, deliveries, window, us, them }: TimelineProps) => {
   const day = (d: string) => Date.parse(d.slice(0, 10) + "T12:00:00");
   const from = day(window.start);
   const span = Math.max(1, day(window.end) - from);

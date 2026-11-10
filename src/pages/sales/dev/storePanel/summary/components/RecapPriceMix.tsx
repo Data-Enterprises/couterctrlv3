@@ -5,6 +5,11 @@ import { money0, pct } from "../utils/recapFormat";
 // Interfaces
 import type { DayMixState } from "../interfaces/index";
 
+interface RecapPriceMixProps {
+  state: DayMixState;
+  short: boolean;
+}
+
 /**
  * The day's net sales split by price type, under Money's lines: one slim bar,
  * navy for regular and the light line tone for on sale, with the dollars on
@@ -15,7 +20,7 @@ import type { DayMixState } from "../interfaces/index";
  * price type gets an empty dashed bar marked not reported, never a full one
  * that would claim everything sold at regular.
  */
-const RecapPriceMix = ({ state, short }: { state: DayMixState; short: boolean }) => {
+const RecapPriceMix = ({ state, short }: RecapPriceMixProps) => {
   const gap = short ? "mt-2" : "mt-3";
   if (state.status !== "ready") {
     return (

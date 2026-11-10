@@ -12,16 +12,14 @@ import type { PriceLadder, PricePoint } from "../interfaces";
 import PriceChart from "./PriceChart";
 import Rung from "./Rung";
 
-/** One store's price ladder, the first rungs shown and the rest behind a toggle. */
-const Ladder = ({
-  ladder,
-  label,
-  mine,
-}: {
+interface LadderProps {
   ladder: PriceLadder;
   label: string;
   mine: boolean;
-}) => {
+}
+
+/** One store's price ladder, the first rungs shown and the rest behind a toggle. */
+const Ladder = ({ ladder, label, mine }: LadderProps) => {
   const [all, setAll] = useState(false);
 
   if (ladder.points.length === 0) {

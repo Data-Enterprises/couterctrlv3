@@ -4,16 +4,14 @@ import { LANDING_COLS, moneyText } from "../utils";
 // Interfaces
 import type { DeptRollup } from "../utils/topItems";
 
-/** The landing's sub departments, biggest first; a row narrows the list to it. */
-const DeptShareList = ({
-  landing,
-  dept,
-  setDept,
-}: {
+interface DeptShareListProps {
   landing: { shown: DeptRollup[]; top: number; total: number };
   dept: string;
   setDept: (value: string) => void;
-}) => (
+}
+
+/** The landing's sub departments, biggest first; a row narrows the list to it. */
+const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
   <>
     <div
       className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/95"

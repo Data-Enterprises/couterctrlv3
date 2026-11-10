@@ -3,6 +3,10 @@ import Bar from "./Bar";
 import LoadNote from "./LoadNote";
 import SkCard from "./SkCard";
 
+interface TabSkeletonProps {
+  tab: "holds" | "items" | "supply" | "act";
+}
+
 /**
  * The tab, mid-load, drawn in the shape of what is coming.
  *
@@ -11,11 +15,7 @@ import SkCard from "./SkCard";
  * be worse than one that waited, because the reader would have acted on the
  * first version.
  */
-const TabSkeleton = ({
-  tab,
-}: {
-  tab: "holds" | "items" | "supply" | "act";
-}) => (
+const TabSkeleton = ({ tab }: TabSkeletonProps) => (
   <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
     <div className="flex flex-col gap-4" role="status">
       <LoadNote>

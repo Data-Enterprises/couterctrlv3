@@ -1647,318 +1647,41 @@
   "src/pages/sales/Sales.tsx": {
     "labels": 1
   },
-  "src/pages/sales/dev/components/DeltaPill.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/components/InsightToggle.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/components/PeriodKpis.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/components/StoreColFilter.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/sales/dev/groupCompare/GroupComparisonPanel.tsx": {
     "selector-outside-hook": 1
   },
-  "src/pages/sales/dev/groupCompare/components/QuestionSection.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/groupCompare/utils/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/investigate/components/ActPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Bar.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Carousel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/CauseChips.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Document.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/EventTimeline.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/EvidenceRail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Fold.tsx": {
-    "one-line-per-source": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/GridBody.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/GridContextMenu.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/GridFoot.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/GridHead.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/GridPager.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/HoldsPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Index.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/InvestigationHeader.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/InvestigationTabs.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Ladder.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/LoadNote.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/PriceChart.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Rung.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/SideBySide.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/SkCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/StoreHead.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/SupplyPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/SupplyWindowNote.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/TabSkeleton.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Timeline.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Waves.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/investigate/components/Weeks.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/sales/dev/ledger/SalesLedger.tsx": {
-    "one-line-per-source": 1,
     "selector-outside-hook": 4
   },
-  "src/pages/sales/dev/ledger/components/LedgerHeader.tsx": {
-    "one-line-per-source": 1
-  },
   "src/pages/sales/dev/mobile/perf/SalesPerfMobile.tsx": {
-    "one-line-per-source": 2,
     "selector-outside-hook": 3
   },
   "src/pages/sales/dev/mobile/perf/components/PerfSearchScreen.tsx": {
     "selector-outside-hook": 1
   },
-  "src/pages/sales/dev/mobile/perf/components/PerfStoreReport.tsx": {
-    "one-line-per-source": 1
-  },
   "src/pages/sales/dev/mobile/perf/components/StoreListControls.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/mobile/perf/hooks/index.ts": {
-    "one-line-per-source": 1
   },
   "src/pages/sales/dev/storePanel/StoreDetailPopup.tsx": {
     "selector-outside-hook": 1
   },
-  "src/pages/sales/dev/storePanel/components/PopupTipButton.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/sales/dev/storePanel/export/SalesExportModal.tsx": {
-    "commented-code": 1,
     "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/export/hooks/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/export/utils/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/hourly/PopupHourlyView.tsx": {
-    "labels": 1
-  },
-  "src/pages/sales/dev/storePanel/hourly/components/HourDetailPanel.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/hourly/components/HourSignalList.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/hourly/components/HourSignalRow.tsx": {
-    "one-line-per-source": 1
   },
   "src/pages/sales/dev/storePanel/hourly/components/HourlySideBySide.tsx": {
     "selector-outside-hook": 1
   },
-  "src/pages/sales/dev/storePanel/subDepts/components/Block.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/Cell.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/sales/dev/storePanel/subDepts/components/DeptReport.tsx": {
     "selector-outside-hook": 2
   },
-  "src/pages/sales/dev/storePanel/subDepts/components/Detail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/ListRow.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/Mark.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/Measure.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptDetailPanel.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptSignalList.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptSignalRow.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/Tile.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/sales/dev/storePanel/summary/DailyRecap.tsx": {
-    "selector-outside-hook": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/PagerButton.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapBasketsCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapDayView.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapExceptionsCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapHourTip.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapItemsTable.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapItemsView.tsx": {
-    "one-line-per-source": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapMoneyCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapPager.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapPriceMix.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapShapeCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapSortHead.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapStatCard.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapViewItemsButton.tsx": {
-    "shape-inline-props": 1
+    "selector-outside-hook": 1
   },
   "src/pages/sales/dev/storePanel/top200/PopupTopItems.tsx": {
-    "selector-outside-hook": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/CtaIcon.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/DeptShareList.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/InvoicesButton.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/InvoicesRail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemBuyCost.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemCost.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemCta.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemDisplay.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemHistory.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemIdentity.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemListHead.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemListToolbar.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemRetail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/ItemRows.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/PriceRow.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/Rail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/Row.tsx": {
-    "shape-inline-props": 1
+    "selector-outside-hook": 1
   },
   "src/pages/sales/dev/storePanel/top200/components/TopItemsReport.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/TotalsStrip.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/sales/dev/utils/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/sales/dev/utils/ledgerUtils.ts": {
-    "one-line-per-source": 2
   },
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1

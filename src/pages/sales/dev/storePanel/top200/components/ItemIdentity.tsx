@@ -1,19 +1,16 @@
 // Utils
 import { deptName, type TopItemCompared } from "../utils/topItems";
 
-/** The selected item's code, sub dept, rank, and share of the list. */
-const ItemIdentity = ({
-  selected,
-  rank,
-  count,
-  shareOfTop,
-}: {
+interface ItemIdentityProps {
   selected: TopItemCompared;
   rank: number;
   /** How many rows are ranked. */
   count: number;
   shareOfTop: number | null;
-}) => (
+}
+
+/** The selected item's code, sub dept, rank, and share of the list. */
+const ItemIdentity = ({ selected, rank, count, shareOfTop }: ItemIdentityProps) => (
   <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100">
     <div className="min-w-0 flex-1 text-[11.5px] text-content/95 truncate">
       <span className="tabular-nums">
