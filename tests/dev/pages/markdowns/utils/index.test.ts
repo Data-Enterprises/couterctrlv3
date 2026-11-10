@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  GRID_COLUMNS,
   MARKDOWN_COLUMNS,
   filterRows,
   fmtDmy,
@@ -65,23 +66,34 @@ describe("dates", () => {
   });
 });
 
-describe("the grid's columns", () => {
-  it("are the 25 shown: id, Date, Store, then the rest, without storeid or storenumber", () => {
+describe("the columns", () => {
+  it("export 25 under plain headings, without storeid or storenumber", () => {
     const labels = MARKDOWN_COLUMNS.map((c) => c.label);
     expect(labels).toHaveLength(25);
-    expect(labels.slice(0, 3)).toEqual(["id", "Date", "Store"]);
-    expect(labels).not.toContain("storeid");
-    expect(labels).not.toContain("storenumber");
-    expect(labels.at(-1)).toBe("scalable");
+    expect(labels.slice(0, 5)).toEqual(["Date", "Store", "Type", "UPC", "Description"]);
+    expect(labels.at(-1)).toBe("Updated");
+    expect(labels.every((l) => !l.includes("_"))).toBe(true);
+    expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storeid");
+    expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storenumber");
   });
 
-  it("show money, percent, dates and blanks the way a person reads them", () => {
+  it("put the sub department and category numbers in the export only", () => {
+    const grid = GRID_COLUMNS.map((c) => c.label);
+    expect(grid).toHaveLength(23);
+    expect(grid).not.toContain("Sub Dept #");
+    expect(grid).not.toContain("Category #");
+    expect(grid).toContain("Sub Dept");
+    expect(grid).toContain("Category");
+  });
+
+  it("show money, percent, dates, yes/no and blanks the way a person reads them", () => {
     const r = row({});
     const show = (label: string) => MARKDOWN_COLUMNS.find((c) => c.label === label)!.show(r);
     expect(show("Date")).toBe("03/11/2026");
-    expect(show("original_price")).toBe("$3.99");
-    expect(show("markdown_percent")).toBe("25.06%");
-    expect(show("weight")).toBe("—");
+    expect(show("Orig Price")).toBe("$3.99");
+    expect(show("MD %")).toBe("25.06%");
+    expect(show("Weight")).toBe("—");
+    expect(show("Scalable")).toBe("No");
   });
 });
 

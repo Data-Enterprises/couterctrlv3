@@ -84,13 +84,13 @@ describe("the Markdowns page", () => {
     expect(screen.getByText("04/11/2026")).toBeTruthy();
   });
 
-  it("headings are the backend's column names, with Date and Store, and no storeid or storenumber", () => {
+  it("headings are plain names, without the sub department and category numbers", () => {
     setup();
     const headings = screen.getAllByRole("columnheader").map((th) => th.textContent);
-    expect(headings.slice(0, 3)).toEqual(["id", "Date", "Store"]);
-    expect(headings).toHaveLength(25);
-    expect(headings).not.toContain("storeid");
-    expect(headings).not.toContain("storenumber");
+    expect(headings.slice(0, 5)).toEqual(["Date", "Store", "Type", "UPC", "Description"]);
+    expect(headings).toHaveLength(23);
+    expect(headings).not.toContain("Sub Dept #");
+    expect(headings).not.toContain("Category #");
   });
 
   it("narrows the grid and the counts when a filter is set", () => {
@@ -107,7 +107,7 @@ describe("the Markdowns page", () => {
 
   it("sorts by a heading: descending, ascending, then back to the backend's order", () => {
     setup();
-    const pct = screen.getByRole("button", { name: /markdown_percent/ });
+    const pct = screen.getByRole("button", { name: /MD %/ });
     fireEvent.click(pct);
     expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb", "Wheat bread"]);
     fireEvent.click(pct);
@@ -121,7 +121,7 @@ describe("the Markdowns page", () => {
     act(() => {
       store.dispatch(setMarkdownFilters({ types: ["Price", "Waste"] }));
     });
-    fireEvent.click(screen.getByRole("button", { name: /markdown_percent/ }));
+    fireEvent.click(screen.getByRole("button", { name: /MD %/ }));
     view.unmount();
 
     render(
@@ -163,7 +163,7 @@ describe("the Markdowns page", () => {
         <Markdowns />
       </Provider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: /markdown_percent/ }));
+    fireEvent.click(screen.getByRole("button", { name: /MD %/ }));
     expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb"]);
     const dupes = errors.mock.calls.filter((c) => String(c[0]).includes("same key"));
     errors.mockRestore();

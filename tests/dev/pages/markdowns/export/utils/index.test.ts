@@ -20,18 +20,18 @@ const pick = (...labels: string[]) => MARKDOWN_COLUMNS.filter((c) => labels.incl
 
 describe("buildMarkdownsCsv", () => {
   it("writes the chosen columns, under their headings, rows in the order given", () => {
-    const csv = buildMarkdownsCsv([row({ id: 2 }), row({ id: 1 })], pick("id", "Date", "Store"));
+    const csv = buildMarkdownsCsv([row({ id: 2 }), row({ id: 1 })], pick("ID", "Date", "Store"));
     expect(csv.split("\n")).toEqual([
-      "id,Date,Store",
-      "2,03/11/2026,Food Giant Hayti",
-      "1,03/11/2026,Food Giant Hayti",
+      "Date,Store,ID",
+      "03/11/2026,Food Giant Hayti,2",
+      "03/11/2026,Food Giant Hayti,1",
     ]);
   });
 
-  it("keeps numbers raw, quotes text with commas, and leaves blanks empty, in the grid's order", () => {
-    const csv = buildMarkdownsCsv([row({})], pick("markdown_percent", "description", "weight"));
-    expect(csv.split("\n")[0]).toBe("markdown_percent,weight,description");
-    expect(csv.split("\n")[1]).toBe('25.06,,"Strawberries, 1lb"');
+  it("keeps numbers raw, quotes text with commas, and leaves blanks empty, in the export's order", () => {
+    const csv = buildMarkdownsCsv([row({})], pick("MD %", "Description", "Weight"));
+    expect(csv.split("\n")[0]).toBe("Description,MD %,Weight");
+    expect(csv.split("\n")[1]).toBe('"Strawberries, 1lb",25.06,');
   });
 });
 

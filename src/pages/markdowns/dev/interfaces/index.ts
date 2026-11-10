@@ -4,9 +4,11 @@ import type { MarkdownFilters, MarkdownItem, MarkdownSortKey } from "../../../..
 /** One column of the Markdowns grid and its export. */
 export interface MarkdownColumn {
   key: MarkdownSortKey;
-  /** The heading: the backend's column name, except Date and Store. */
+  /** The heading, in the grid and the CSV. */
   label: string;
   align: "left" | "right";
+  /** false: in the export only, not the grid. */
+  grid?: false;
   /** The value as the grid shows it; null becomes "—". */
   show: (row: MarkdownItem) => string;
   /** The value as the CSV writes it; null becomes an empty cell. */

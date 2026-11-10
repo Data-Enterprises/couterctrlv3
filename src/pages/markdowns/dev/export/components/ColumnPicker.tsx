@@ -10,7 +10,7 @@ interface ColumnPickerProps {
   onAll: (all: boolean) => void;
 }
 
-/** The columns the CSV will hold, one checkbox each, in the grid's order. */
+/** The columns the CSV will hold, one checkbox each, in the export's order. */
 const ColumnPicker = ({ chosen, onToggle, onAll }: ColumnPickerProps) => (
   <div className="space-y-2">
     <div className="flex items-center gap-3">

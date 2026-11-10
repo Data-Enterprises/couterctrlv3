@@ -5,7 +5,7 @@ import { useMarkdownsCtx } from "../../hooks";
 import { toggleMarkdownSort } from "../../../../../features/dev/devMarkdownsSlice";
 
 // Utils
-import { MARKDOWN_COLUMNS } from "../../utils";
+import { GRID_COLUMNS } from "../../utils";
 
 // Components
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
@@ -17,7 +17,7 @@ const GridHeader = () => {
   return (
     <thead>
       <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-        {MARKDOWN_COLUMNS.map((c) => {
+        {GRID_COLUMNS.map((c) => {
           const on = sort?.col === c.key;
           const Arrow =
             on && sort.dir === "asc" ? ChevronUpIcon : ChevronDownIcon;

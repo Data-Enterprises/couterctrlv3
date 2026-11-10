@@ -1,5 +1,5 @@
 // Utils
-import { MARKDOWN_COLUMNS } from "../../utils";
+import { GRID_COLUMNS } from "../../utils";
 
 // Interfaces
 import type { MarkdownItem } from "../../../../../interfaces/markdowns";
@@ -8,10 +8,10 @@ interface GridRowProps {
   row: MarkdownItem;
 }
 
-/** One markdown, as Receivers draws a line item: every column, as it came. */
+/** One markdown, as Receivers draws a line item: every grid column. */
 const GridRow = ({ row }: GridRowProps) => (
   <tr className="even:bg-row_stripe hover:bg-gray-50 transition-colors">
-    {MARKDOWN_COLUMNS.map((c) => (
+    {GRID_COLUMNS.map((c) => (
       <td
         key={c.key}
         className={`px-3 py-2 tabular-nums text-content/95 whitespace-nowrap ${

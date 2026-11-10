@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useVisibleMarkdowns } from "../hooks";
 
 // Utils
-import { MARKDOWN_COLUMNS, rowKey } from "../utils";
+import { GRID_COLUMNS, rowKey } from "../utils";
 import { DEFAULT_PAGE_SIZE } from "./utils";
 
 // Components
@@ -51,7 +51,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
             {visible.length === 0 && (
               <tr>
                 <td
-                  colSpan={MARKDOWN_COLUMNS.length}
+                  colSpan={GRID_COLUMNS.length}
                   className="px-3 py-6 text-[12px] text-content/95"
                 >
                   No markdowns match these filters.
