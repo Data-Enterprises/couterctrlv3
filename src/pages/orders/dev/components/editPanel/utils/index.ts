@@ -8,9 +8,6 @@ export const fmtOrderDate = (iso: string) => {
   return `${+m}/${+d}/${y}`;
 };
 
-/** A store number padded to three digits. */
-export const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
 /**
  * The vendors already on this store's orders.
  *

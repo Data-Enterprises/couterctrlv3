@@ -14,7 +14,8 @@ import {
   validate,
   visibleLines,
 } from "../../utils/orderEdit";
-import { fmtOrderDate, padStoreNumber } from "./utils";
+import { padStoreNumber } from "../../../../../utils/storeIdentity";
+import { fmtOrderDate } from "./utils";
 
 // Interfaces
 import type { DraftLine, EditableField, LinePatch } from "../../interfaces";
