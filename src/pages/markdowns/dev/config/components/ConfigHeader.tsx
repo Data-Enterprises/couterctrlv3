@@ -3,6 +3,7 @@ import { useMarkdownsCtx } from "../../hooks";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 
 interface ConfigHeaderProps {
   onOpenSearch: () => void;
@@ -26,6 +27,7 @@ const ConfigHeader = ({ onOpenSearch }: ConfigHeaderProps) => {
         >
           <MagnifyingGlassIcon className="w-4 h-4" />
         </button>
+        <PageInfoButton page="markdowns" />
       </div>
       <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
         <span className="text-custom-white/95 text-[12px] truncate">{ctx.shown.scope}</span>

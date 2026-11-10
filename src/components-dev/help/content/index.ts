@@ -11,6 +11,7 @@ import { HELP_DESK_HELP } from "./helpDesk";
 import { ITEM_ACTIONS_HELP } from "./itemActions";
 import { ITEM_LOOKUP_HELP } from "./itemLookup";
 import { LOSS_PREVENTION_HELP } from "./lossPrevention";
+import { MARKDOWNS_HELP } from "./markdowns";
 import { ORDERS_HELP } from "./orders";
 import {
   PRICE_OPT_SUB_DEPT_HELP,
@@ -50,6 +51,7 @@ export const HELP_CONTENT: Record<HelpPage, HelpContent> = {
   "item-actions": ITEM_ACTIONS_HELP,
   "item-lookup": ITEM_LOOKUP_HELP,
   "loss-prevention": LOSS_PREVENTION_HELP,
+  markdowns: MARKDOWNS_HELP,
   orders: ORDERS_HELP,
   "price-opt-sub-dept": PRICE_OPT_SUB_DEPT_HELP,
   "price-opt-vendor": PRICE_OPT_VENDOR_HELP,

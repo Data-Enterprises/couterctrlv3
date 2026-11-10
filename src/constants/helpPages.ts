@@ -22,6 +22,7 @@ export const HELP_PAGES = [
   "item-actions",
   "item-lookup",
   "loss-prevention",
+  "markdowns",
   "orders",
   "price-opt-sub-dept",
   "price-opt-vendor",
