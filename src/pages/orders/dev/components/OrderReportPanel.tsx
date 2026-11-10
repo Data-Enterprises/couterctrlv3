@@ -109,14 +109,14 @@ const OrderReportPanel = ({
         label={label}
         sort={sort}
         onSort={onSort}
-        className="ml-auto text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy"
+        className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-content/95 hover:text-brand_navy"
       />
     </th>
   );
 
   const plainHead = (label: string, width: number) => (
     <th
-      className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+      className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
       style={{ width }}
     >
       {label}
@@ -171,7 +171,7 @@ const OrderReportPanel = ({
         />
       ) : (
         <>
-          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
+          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
             <Kpi label="Lines" value={visible.length.toLocaleString()} />
             <Kpi label="Orders" value={totals.orders.toLocaleString()} />
             <Kpi label="Stores" value={totals.stores.toLocaleString()} />
@@ -181,34 +181,34 @@ const OrderReportPanel = ({
           </div>
 
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
-            <table data-help="lines" className="w-full text-[11px] border-collapse">
-              <thead className="sticky top-0 z-10 bg-custom-white">
-                <tr className="border-b border-b-brand_navy/15">
+            <table data-help="lines" className="w-full border-collapse text-[12px]">
+              <thead>
+                <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                   {/* Narrow and unlabelled: a line can carry two flags at
                       once, and a tint across the row could only show one. */}
                   <th style={{ width: 22 }} aria-label="Cost problems" />
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
                     style={{ width: 100 }}
                   >
                     UPC
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
                     style={{ width: 220 }}
                   >
                     Description
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
                     style={{ width: 130 }}
                   >
                     Sub dept
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
                     style={{ width: 70 }}
                   >
                     Store
@@ -223,11 +223,11 @@ const OrderReportPanel = ({
                   {plainHead("Weight", 70)}
                 </tr>
               </thead>
-              <tbody className="bg-custom-white">
+              <tbody className="divide-y divide-brand_navy/15 text-[13px]">
                 {paged.map((o) => (
                   <tr
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
-                    className="border-b border-b-brand_navy/15 even:bg-row_stripe"
+                    className="even:bg-row_stripe hover:bg-gray-50 transition-colors"
                   >
                     <td className="pl-3 py-2">
                       <span className="flex gap-[3px]">
@@ -240,48 +240,48 @@ const OrderReportPanel = ({
                         ))}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
                       {o.order_id}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {o.line_number}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.product_code}
                     </td>
-                    <td className="px-3 py-2 font-medium text-content max-w-0 truncate">
+                    <td className="px-3 py-2 font-medium text-content/95 max-w-0 truncate">
                       {o.description}
                     </td>
-                    <td className="px-3 py-2 text-content whitespace-nowrap">
+                    <td className="px-3 py-2 text-content/95 whitespace-nowrap">
                       {o.sub_department_description}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.storenumber}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {o.qty}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {formatCurrency2(o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {formatCurrency2(o.active_retail_price)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
                       {formatCurrency2(o.e_ret)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
                       {formatCurrency2(o.e_ret - o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {o.e_ret > 0
                         ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
                       {o.weight ?? "—"}
                     </td>
                   </tr>
