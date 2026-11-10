@@ -1,11 +1,9 @@
 // Utils
 import { calculateCogs, hasNoUsableCost } from "../../../../../utils/cogs";
-import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
-import { gradedDelta } from "../../../../../utils/itemMargins";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../../utils/csvExport";
+import { gradedDelta, type ItemGradingMetric } from "../../../../../utils/itemMargins";
 
 // Interfaces
-import type { AggFn } from "../../../../../utils/csvExport";
-import type { ItemGradingMetric } from "../../../../../utils/itemMargins";
 import type { SubDeptMargin } from "../../../../../interfaces";
 import type { GradedItem, ItemSev } from "../../utils/gradedItems";
 import type { DimDef, MetricDef } from "../interfaces";

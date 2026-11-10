@@ -1,16 +1,19 @@
 // Utils
 import { severityDotClass } from "../../../../../../utils/severity";
 import { formatCurrency2 } from "../../../../../../utils";
-import { dayTrend, deltaTextClass, WEEKDAY_ORDER } from "../../../../../../utils/itemMargins";
+import {
+  dayTrend,
+  deltaTextClass,
+  WEEKDAY_ORDER,
+  type buildItemDetail,
+  type DayPeriodValue,
+  type GradedSeverity,
+  type ItemGradingMetric,
+} from "../../../../../../utils/itemMargins";
 import { formatPricedUnitsShort } from "../../../../../../utils/pricedUnits";
 
 // Interfaces
-import type {
-  buildItemDetail,
-  DayPeriodValue,
-  GradedSeverity,
-  ItemGradingMetric,
-} from "../../../../../../utils/itemMargins";
+
 
 interface ItemDayTrendProps {
   selectedDetail: ReturnType<typeof buildItemDetail> | null;

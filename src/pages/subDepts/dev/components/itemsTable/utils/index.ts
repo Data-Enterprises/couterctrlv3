@@ -1,14 +1,14 @@
 // Utils
-import { getRowMetric } from "../../../../../../utils/itemMargins";
+import {
+  getRowMetric,
+  type ItemMarginRow,
+  type RowMetricKey,
+  type ItemGradingMetric,
+} from "../../../../../../utils/itemMargins";
 import { PRICED_UNITS_LABEL } from "../../../../../../utils/pricedUnits";
 
 // Interfaces
 import type { CSSProperties } from "react";
-import type {
-  ItemMarginRow,
-  RowMetricKey,
-  ItemGradingMetric,
-} from "../../../../../../utils/itemMargins";
 import type { SubDeptMargin } from "../../../../../../interfaces";
 import type { ColSort, ReportRow } from "../interfaces";
 

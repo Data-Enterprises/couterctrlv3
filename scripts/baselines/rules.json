@@ -1988,42 +1988,6 @@
   "src/pages/subDepts/SubDeptMargins.tsx": {
     "labels": 1
   },
-  "src/pages/subDepts/dev/components/Sparkline.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/MarginPerfItemsTable.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/ColFilter.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/GradeCell.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/ItemDayTrend.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/ItemListRow.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/ItemListToolbar.tsx": {
-    "one-line-per-source": 2
-  },
-  "src/pages/subDepts/dev/components/itemsTable/components/ItemSeverityBadge.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/subDepts/dev/components/itemsTable/utils/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/subDepts/dev/export/MarginPerfExportModal.tsx": {
-    "one-line-per-source": 2
-  },
-  "src/pages/subDepts/dev/export/utils/index.ts": {
-    "one-line-per-source": 2
-  },
-  "src/pages/subDepts/dev/utils/index.ts": {
-    "one-line-per-source": 2
-  },
   "src/pages/suggested/Suggested.tsx": {
     "labels": 1
   },

@@ -1,19 +1,16 @@
 // Utils
 import { deltaTextClass } from "../../../../../../utils/itemMargins";
 
-/** A change, coloured by its grade unless the period is missing days. */
-const GradeCell = ({
-  pct,
-  threshold,
-  isPts,
-  partial = false,
-}: {
+interface GradeCellProps {
   pct: number | null;
   threshold: number;
   isPts: boolean;
   /** The period is missing days: show the figure without a verdict colour. */
   partial?: boolean;
-}) => {
+}
+
+/** A change, coloured by its grade unless the period is missing days. */
+const GradeCell = ({ pct, threshold, isPts, partial = false }: GradeCellProps) => {
   if (pct === null)
     return <span className="text-[13px] font-semibold text-content/95">—</span>;
   return (

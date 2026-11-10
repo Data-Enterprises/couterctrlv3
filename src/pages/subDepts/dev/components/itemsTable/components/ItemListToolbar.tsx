@@ -1,17 +1,18 @@
 // Hooks
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 
 // Utils
 import { chipClass } from "../../../../../../utils/severity";
-import { presetKey, VIEW_PRESETS, VIEW_OPTIONS } from "../../../../../../utils/itemMargins";
+import {
+  presetKey,
+  VIEW_PRESETS,
+  VIEW_OPTIONS,
+  type ItemSeverity as Severity,
+  type SortCol,
+  type ItemGradingMetric,
+} from "../../../../../../utils/itemMargins";
 
 // Interfaces
-import type { Dispatch, SetStateAction } from "react";
-import type {
-  ItemSeverity as Severity,
-  SortCol,
-  ItemGradingMetric,
-} from "../../../../../../utils/itemMargins";
 import type { ThresholdValue } from "../../../../../../interfaces";
 import type { SevFilter } from "../interfaces";
 

@@ -1,13 +1,14 @@
 // Utils
-import { getRowMetric, SEV_PILL_CLASSES } from "../../../../../../utils/itemMargins";
+import {
+  getRowMetric,
+  SEV_PILL_CLASSES,
+  type ItemMarginRow,
+  type ItemSeverity as Severity,
+  type RowMetricKey,
+} from "../../../../../../utils/itemMargins";
 
 // Interfaces
 import type { MouseEvent } from "react";
-import type {
-  ItemMarginRow,
-  ItemSeverity as Severity,
-  RowMetricKey,
-} from "../../../../../../utils/itemMargins";
 
 // Components
 import ItemSeverityBadge from "./ItemSeverityBadge";

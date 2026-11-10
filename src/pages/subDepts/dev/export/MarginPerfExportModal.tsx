@@ -2,8 +2,15 @@
 import { useState, useMemo } from "react";
 
 // Utils
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import { collectGradedItems } from "../utils/gradedItems";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
+import { collectGradedItems, type ItemSev } from "../utils/gradedItems";
 import {
   fmtDate,
   netSales,
@@ -22,8 +29,6 @@ import {
 } from "./utils";
 
 // Interfaces
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import type { ItemSev } from "../utils/gradedItems";
 import type {
   CustomSource,
   ExportPreset,

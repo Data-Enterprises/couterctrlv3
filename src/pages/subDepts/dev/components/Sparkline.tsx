@@ -1,6 +1,11 @@
+interface SparklineProps {
+  values: number[];
+  stroke: string;
+}
+
 /** A small inline trend line of a sub dept's daily sales across the current week.
  *  Purely visual, with no axis or labels, sized to sit in a single row. */
-const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => {
+const Sparkline = ({ values, stroke }: SparklineProps) => {
   const w = 48;
   const h = 18;
   const max = Math.max(...values);

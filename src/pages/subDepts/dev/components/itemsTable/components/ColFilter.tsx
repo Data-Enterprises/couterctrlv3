@@ -1,8 +1,7 @@
 // Hooks
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // Interfaces
-import type { ReactNode } from "react";
 
 // Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";

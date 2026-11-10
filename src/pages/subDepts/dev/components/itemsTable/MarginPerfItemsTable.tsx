@@ -15,13 +15,13 @@ import {
   SEV_RANK,
   type RowMetricKey,
   type SortCol,
+  type ItemSeverity as Severity,
 } from "../../../../../utils/itemMargins";
 import { buildReportRows, byDate, getColSortValue, nextColSort } from "./utils";
 
 // Interfaces
 import type { SubDeptMargin, ThresholdValue } from "../../../../../interfaces";
 import type { Coverage } from "../../../../../utils/grading";
-import type { ItemSeverity as Severity } from "../../../../../utils/itemMargins";
 import type { ColSort, SevFilter } from "./interfaces";
 
 // Components

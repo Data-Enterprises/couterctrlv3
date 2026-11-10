@@ -1,6 +1,6 @@
 // API
 import { getSubMargins } from "../../../../api/subMargins";
-import { getRollup } from "../../../../api/rollup";
+import { getRollup, type RollupRow } from "../../../../api/rollup";
 
 // Utils
 import { calculateCogs, hasNoUsableCost } from "../../../../utils/cogs";
@@ -10,11 +10,10 @@ import {
   gradeBasis,
   type Coverage,
   marginPct,
+  type MarginDollars,
 } from "../../../../utils/grading";
 
 // Interfaces
-import type { RollupRow } from "../../../../api/rollup";
-import type { MarginDollars } from "../../../../utils/grading";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
 import type {
   SubDept,
