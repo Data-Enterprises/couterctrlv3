@@ -7,6 +7,22 @@ import type { GrantMode } from "../../../../../../interfaces";
 // Components
 import GrantModeChip from "./GrantModeChip";
 
+interface StepAccessTypeProps {
+  value: GrantMode;
+  onChange: (next: GrantMode) => void;
+  /** The person being created, so the question names them. */
+  who: string;
+  /** The single-store role can't hold a whole group (the server refuses), so
+   *  By group is greyed with its reason. */
+  singleStoreOnly: boolean;
+  /** An existing person, whose access type is a change rather than a first
+   *  answer. Only the sentence under the heading differs. */
+  editing?: boolean;
+  /** Editing somebody with no access type on file — made in prod, or before
+   *  types existed. The choice here is a first answer, and saving records it. */
+  typeUnset?: boolean;
+}
+
 /**
  * How this person gets stores, asked before any store is picked: each card
  * states the consequence ("New stores: show up automatically" or "must be added
@@ -27,21 +43,7 @@ const StepAccessType = ({
   singleStoreOnly,
   editing = false,
   typeUnset = false,
-}: {
-  value: GrantMode;
-  onChange: (next: GrantMode) => void;
-  /** The person being created, so the question names them. */
-  who: string;
-  /** The single-store role can't hold a whole group (the server refuses), so
-   *  By group is greyed with its reason. */
-  singleStoreOnly: boolean;
-  /** An existing person, whose access type is a change rather than a first
-   *  answer. Only the sentence under the heading differs. */
-  editing?: boolean;
-  /** Editing somebody with no access type on file — made in prod, or before
-   *  types existed. The choice here is a first answer, and saving records it. */
-  typeUnset?: boolean;
-}) => (
+}: StepAccessTypeProps) => (
   <div className="max-w-[900px] mx-auto">
     <h2 className="text-[17px] font-bold text-content m-0">
       How should {who || "this user"} get their stores?

@@ -24,21 +24,7 @@ import {
 import ReviewSection from "./ReviewSection";
 import Row from "./Row";
 
-/**
- * What is about to be written, counted: how many stores it adds up to, and
- * which will keep arriving on their own. Every section links back to the step
- * that set it.
- */
-const StepReview = ({
-  picks,
-  companyIds,
-  companyGroups,
-  groupStores,
-  onGoTo,
-  modeBefore,
-  typeUnset = false,
-  heldGroups = [],
-}: {
+interface StepReviewProps {
   picks: AccessPicks;
   /** The companies actually written: ticked ones plus each held group's
    *  company. */
@@ -56,7 +42,23 @@ const StepReview = ({
   /** Edit: the groups the person already holds, so a group whose company was
    *  never opened on Assignments is named rather than read "Group 66". */
   heldGroups?: BaseGroup[];
-}) => {
+}
+
+/**
+ * What is about to be written, counted: how many stores it adds up to, and
+ * which will keep arriving on their own. Every section links back to the step
+ * that set it.
+ */
+const StepReview = ({
+  picks,
+  companyIds,
+  companyGroups,
+  groupStores,
+  onGoTo,
+  modeBefore,
+  typeUnset = false,
+  heldGroups = [],
+}: StepReviewProps) => {
   const ctx = useOrganizationCtx();
   const info = ctx.userInfo;
 

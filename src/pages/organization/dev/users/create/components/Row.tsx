@@ -1,18 +1,15 @@
 // Components
 import GrantModeChip from "./GrantModeChip";
 
-/** One line of the review: a label, its value and an optional note. */
-const Row = ({
-  label,
-  value,
-  meta,
-  mode,
-}: {
+interface RowProps {
   label?: string;
   value: string;
   meta?: string;
   mode?: "all" | "selected";
-}) => (
+}
+
+/** One line of the review: a label, its value and an optional note. */
+const Row = ({ label, value, meta, mode }: RowProps) => (
   <div className="flex flex-wrap justify-between items-center gap-2 text-[12.5px] py-0.5">
     <span className="min-w-0">
       {label && <span className="text-content/95">{label} </span>}

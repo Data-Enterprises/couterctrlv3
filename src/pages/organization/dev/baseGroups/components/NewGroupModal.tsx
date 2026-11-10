@@ -4,19 +4,16 @@ import { useState } from "react";
 // Components
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 
-/** The new base group form: a name and, where there is a choice, its company. */
-const NewGroupModal = ({
-  companies,
-  onCreate,
-  onClose,
-  busy = false,
-}: {
+interface NewGroupModalProps {
   companies: { id: number; name: string }[];
   onCreate: (name: string, companyId: number) => void;
   onClose: () => void;
   /** A create is running: Create waits, so a double-click makes one group. */
   busy?: boolean;
-}) => {
+}
+
+/** The new base group form: a name and, where there is a choice, its company. */
+const NewGroupModal = ({ companies, onCreate, onClose, busy = false }: NewGroupModalProps) => {
   const [name, setName] = useState("");
   const [companyId, setCompanyId] = useState("");
 

@@ -4,9 +4,14 @@ import type { ReactNode } from "react";
 // Components
 import { CheckIcon } from "@heroicons/react/20/solid";
 
+interface RuleProps {
+  met: boolean;
+  children: ReactNode;
+}
+
 /** A rule, and whether the password meets it yet. Live rather than a static
  *  list: a tick that never moves is decoration. */
-const Rule = ({ met, children }: { met: boolean; children: ReactNode }) => (
+const Rule = ({ met, children }: RuleProps) => (
   <div className="flex items-center gap-2 text-[12px] py-1">
     <CheckIcon
       className={`w-4 h-4 flex-shrink-0 ${

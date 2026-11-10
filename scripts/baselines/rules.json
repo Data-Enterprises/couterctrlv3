@@ -1604,54 +1604,6 @@
   "src/pages/organization/Organization.tsx": {
     "labels": 1
   },
-  "src/pages/organization/dev/baseGroups/components/NewGroupModal.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/baseGroups/components/Option.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/companies/components/CompanyUsersPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/components/CompanyFilterSelect.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/stores/components/StoreUsersPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/components/OutcomeIcon.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/EffectiveStoresPanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/EmptyPicksNotice.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/GrantModeChip.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/ReviewSection.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/Row.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/Rule.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/Section.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/StepAccessType.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/StepReview.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/organization/dev/users/create/components/Stepper.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/quicksight/Dashboard.tsx": {
     "labels": 1
   },

@@ -1,10 +1,14 @@
+interface EmptyPicksNoticeProps {
+  labels: string[];
+}
+
 /**
  * "East (Houchens) has no stores picked." A group held By store with nothing
  * picked grants nothing; the server accepts it, but here it is nearly always
  * an accident. Takes resolved labels, since the panel can only name groups it
  * has loaded.
  */
-const EmptyPicksNotice = ({ labels }: { labels: string[] }) => {
+const EmptyPicksNotice = ({ labels }: EmptyPicksNoticeProps) => {
   if (labels.length === 0) return null;
   return (
     <div className="px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">

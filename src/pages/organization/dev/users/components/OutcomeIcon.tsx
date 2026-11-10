@@ -9,8 +9,12 @@ import {
   NoSymbolIcon,
 } from "@heroicons/react/20/solid";
 
+interface OutcomeIconProps {
+  outcome: Outcome | null;
+}
+
 /** The icon for one user's outcome: changed, unchanged or refused. */
-const OutcomeIcon = ({ outcome }: { outcome: Outcome | null }) => {
+const OutcomeIcon = ({ outcome }: OutcomeIconProps) => {
   const cls = "w-4 h-4 flex-shrink-0";
   if (outcome === null) return null;
   switch (outcome.kind) {

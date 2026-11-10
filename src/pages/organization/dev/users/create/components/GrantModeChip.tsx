@@ -1,17 +1,16 @@
 // Interfaces
 import type { GrantMode } from "../../../../../../interfaces";
 
+interface GrantModeChipProps {
+  mode: GrantMode;
+  className?: string;
+}
+
 /**
  * `auto` or `fixed`, the same chip on the assignments panel, the review step
  * and Edit user. Filter-active colours, not severity: neither is a verdict.
  */
-const GrantModeChip = ({
-  mode,
-  className = "",
-}: {
-  mode: GrantMode;
-  className?: string;
-}) => (
+const GrantModeChip = ({ mode, className = "" }: GrantModeChipProps) => (
   <span
     title={
       mode === "all"

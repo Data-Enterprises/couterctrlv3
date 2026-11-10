@@ -32,6 +32,13 @@ import type { JsonError, Store, User } from "../../../../../interfaces";
 import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
+interface StoreUsersPanelProps {
+  store: Store;
+  /** The full user list, for the level guard: the endpoint checks no levels,
+   *  so this stops a level 7 rearranging a 9. */
+  users: User[];
+}
+
 /**
  * Who holds one store. Unlike the other two tabs, **a grant made here is
  * fixed**: an `assigned` row with no group behind it, shown as `direct` in
@@ -40,15 +47,7 @@ import CompanyFilterSelect from "../../components/CompanyFilterSelect";
  * A user who holds the store through a base group can't be removed here: the
  * server refuses and names the group, since the next re-grant would undo it.
  */
-const StoreUsersPanel = ({
-  store,
-  users,
-}: {
-  store: Store;
-  /** The full user list, for the level guard: the endpoint checks no levels,
-   *  so this stops a level 7 rearranging a 9. */
-  users: User[];
-}) => {
+const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();

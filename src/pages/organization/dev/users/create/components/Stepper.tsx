@@ -7,16 +7,7 @@ import type { WizardStep } from "../interfaces";
 // Components
 import { CheckIcon } from "@heroicons/react/20/solid";
 
-/**
- * The four steps, across the top. A finished step is clickable, an unreached
- * one is not; `limit` stops skipping past a step emptied since it was reached.
- */
-const Stepper = ({
-  current,
-  furthest,
-  limit = STEP_ORDER.length - 1,
-  onGoTo,
-}: {
+interface StepperProps {
   current: WizardStep;
   /** The furthest step reached, so a visited step stays reachable after
    *  stepping back from it. */
@@ -24,7 +15,13 @@ const Stepper = ({
   /** The last step that may be jumped to: the first one not ready. */
   limit?: number;
   onGoTo: (step: WizardStep) => void;
-}) => {
+}
+
+/**
+ * The four steps, across the top. A finished step is clickable, an unreached
+ * one is not; `limit` stops skipping past a step emptied since it was reached.
+ */
+const Stepper = ({ current, furthest, limit = STEP_ORDER.length - 1, onGoTo }: StepperProps) => {
   const currentAt = STEP_ORDER.indexOf(current);
   const furthestAt = Math.min(STEP_ORDER.indexOf(furthest), limit);
 

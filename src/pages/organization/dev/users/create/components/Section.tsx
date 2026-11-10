@@ -1,20 +1,17 @@
 // Interfaces
 import type { ReactNode } from "react";
 
-/**
- * One block of the form: what it is for on the left, the fields on the right.
- */
-const Section = ({
-  title,
-  desc,
-  last = false,
-  children,
-}: {
+interface SectionProps {
   title: string;
   desc: string;
   last?: boolean;
   children: ReactNode;
-}) => (
+}
+
+/**
+ * One block of the form: what it is for on the left, the fields on the right.
+ */
+const Section = ({ title, desc, last = false, children }: SectionProps) => (
   <div
     className={`flex flex-wrap gap-x-8 gap-y-3 px-5 py-3.5 ${
       last ? "" : "border-b border-gray-100"

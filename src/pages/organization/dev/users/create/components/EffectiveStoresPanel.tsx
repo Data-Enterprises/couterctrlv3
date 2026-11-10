@@ -11,6 +11,18 @@ import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../inter
 // Components
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 
+interface EffectiveStoresPanelProps {
+  picks: AccessPicks;
+  companyGroups: Record<number, CompanyBaseGroup[]>;
+  groupStores: Record<number, Store[]>;
+  /** Held stores no pick explains — see `CarriedAccess.stores`. */
+  directStoreIds: number[];
+  /** Everything the person currently holds, for names the rosters lack. */
+  assignedStores: Store[];
+  /** The groups they hold, for names before their company is opened. */
+  heldGroups?: BaseGroup[];
+}
+
 /**
  * What the person can actually see, and why (which group grants each store,
  * or Direct). Read only: it is derived from the grants beside it. Reads the
@@ -23,17 +35,7 @@ const EffectiveStoresPanel = ({
   directStoreIds,
   assignedStores,
   heldGroups = [],
-}: {
-  picks: AccessPicks;
-  companyGroups: Record<number, CompanyBaseGroup[]>;
-  groupStores: Record<number, Store[]>;
-  /** Held stores no pick explains — see `CarriedAccess.stores`. */
-  directStoreIds: number[];
-  /** Everything the person currently holds, for names the rosters lack. */
-  assignedStores: Store[];
-  /** The groups they hold, for names before their company is opened. */
-  heldGroups?: BaseGroup[];
-}) => {
+}: EffectiveStoresPanelProps) => {
   const [filter, setFilter] = useState("");
 
   const groupsById = useMemo(() => {

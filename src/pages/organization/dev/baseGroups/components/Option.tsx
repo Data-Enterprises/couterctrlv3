@@ -1,20 +1,16 @@
 // Interfaces
 import type { ReactNode } from "react";
 
-/** One tickable dataset: a label, and what it holds or why it can't. */
-const Option = ({
-  checked,
-  disabled,
-  onToggle,
-  title,
-  detail,
-}: {
+interface OptionProps {
   checked: boolean;
   disabled: boolean;
   onToggle: () => void;
   title: string;
   detail: ReactNode;
-}) => (
+}
+
+/** One tickable dataset: a label, and what it holds or why it can't. */
+const Option = ({ checked, disabled, onToggle, title, detail }: OptionProps) => (
   <label
     className={`flex items-start gap-3 ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"} group`}
   >

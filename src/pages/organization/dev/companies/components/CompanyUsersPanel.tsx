@@ -24,22 +24,20 @@ import type { JsonError, User } from "../../../../../interfaces";
 import AssignPanel from "../../../../../components-dev/AssignPanel";
 import CompanyFilterSelect from "../../components/CompanyFilterSelect";
 
+interface CompanyUsersPanelProps {
+  company: { id: number; name: string };
+  users: User[];
+  /** Re-read the users, so both columns show what the server now holds. */
+  onChanged: () => void;
+}
+
 /**
  * Who holds one company, built from the users already loaded: each carries its
  * whole `companies` list, which every write must send (`assign_user_to_company`
  * replaces; see `companies/utils`). Users above the acting level are kept off
  * both columns: the endpoint checks no levels.
  */
-const CompanyUsersPanel = ({
-  company,
-  users,
-  onChanged,
-}: {
-  company: { id: number; name: string };
-  users: User[];
-  /** Re-read the users, so both columns show what the server now holds. */
-  onChanged: () => void;
-}) => {
+const CompanyUsersPanel = ({ company, users, onChanged }: CompanyUsersPanelProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();
