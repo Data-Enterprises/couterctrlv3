@@ -41,7 +41,7 @@ const CouponGrid = ({
             <thead>
               <GridHeader filters={filters} />
             </thead>
-            <tbody className="divide-y divide-brand_navy/5">
+            <tbody className="divide-y divide-brand_navy/15 text-[13px]">
               {aggCouponRows.map((agg, idx) => {
                 const isExp = expandedCoupons.has(agg.product_code);
                 return (
@@ -59,7 +59,7 @@ const CouponGrid = ({
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-3 py-6 text-center text-[11px] text-content"
+                    className="px-3 py-6 text-center text-[12px] text-content/95"
                   >
                     No results match the current filters
                   </td>

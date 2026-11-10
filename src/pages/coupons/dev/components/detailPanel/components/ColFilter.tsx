@@ -61,7 +61,7 @@ const ColFilter = ({
         onClick={() => setOpen((v) => !v)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0"
+        className="flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0"
         style={{ color: labelColor }}
       >
         {label}

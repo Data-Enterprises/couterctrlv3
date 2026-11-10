@@ -35,7 +35,7 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
     uniqueSubDeptOptions,
   } = filters;
   return (
-    <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+    <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
       <th
         className="px-3 py-2 text-left w-32"
         style={{ overflow: "visible" }}
@@ -126,12 +126,12 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
         </ColFilter>
       </th>
       <th
-        className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right whitespace-nowrap"
+        className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right whitespace-nowrap"
         style={{ width: "8%" }}
       >
         Trans
       </th>
-      <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right w-12">
+      <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right w-12">
         Count
       </th>
       <th

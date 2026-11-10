@@ -15,19 +15,19 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right w-7">
+            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right w-7">
               #
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-left">
+            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-left">
               Description
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right">
+            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right">
               Qty
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-right">
+            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right">
               Total
             </th>
-            <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/95 text-center w-14">
+            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-center w-14">
               Type
             </th>
           </tr>
@@ -49,7 +49,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                   {item.line_number}
                 </td>
                 <td
-                  className="px-2 py-2 text-content truncate max-w-0"
+                  className="px-2 py-2 text-content/95 truncate max-w-0"
                   style={{ maxWidth: 200 }}
                 >
                   {item.product_description}
@@ -58,7 +58,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
                   {(item.qty ?? 0) > 0 ? item.qty : "—"}
                 </td>
                 <td
-                  className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-severity_watch_text" : "text-content"}`}
+                  className={`px-2 py-2 text-right tabular-nums font-semibold ${isCpn ? "text-severity_watch_text" : "text-content/95"}`}
                 >
                   {formatCurrency2(
                     isCpn

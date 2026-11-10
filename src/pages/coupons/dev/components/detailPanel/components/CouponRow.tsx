@@ -31,27 +31,27 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
             ) : (
               <ChevronRightIcon className="w-3 h-3 text-content/95 flex-shrink-0" />
             )}
-            <span className="text-content">
+            <span className="text-content/95">
               {agg.product_code || "—"}
             </span>
           </div>
         </td>
         <td
-          className="px-3 py-2 text-content font-medium truncate max-w-0"
+          className="px-3 py-2 text-content/95 font-medium truncate max-w-0"
           style={{ maxWidth: 180 }}
         >
           {agg.product_description}
         </td>
-        <td className="px-3 py-2 text-content whitespace-nowrap">
+        <td className="px-3 py-2 text-content/95 whitespace-nowrap">
           {agg.sub_department_description}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content">
+        <td className="px-3 py-2 text-right tabular-nums text-content/95">
           {agg.uses.length}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content">
+        <td className="px-3 py-2 text-right tabular-nums text-content/95">
           {agg.count}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+        <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
           {formatCurrency2(agg.total)}
         </td>
       </tr>
@@ -59,26 +59,26 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
         <>
           <tr className="bg-gray-100/70 text-[11px]">
             <td className="pl-8 pr-3 py-1" />
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
+            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
               Cashier
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
+            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
               Date
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content">
+            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
               Trans ID
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content text-right">
+            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95 text-right">
               Qty
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content text-right">
+            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95 text-right">
               Amount
             </td>
           </tr>
           {agg.uses.map((use) => (
             <tr
               key={use.sale_id}
-              className="bg-gray-50/85 cursor-pointer hover:bg-blue-50/40 transition-colors text-[11px]"
+              className="bg-gray-50/85 cursor-pointer hover:bg-gray-100 transition-colors text-[11px]"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRowClick(use.row);
@@ -86,23 +86,23 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
             >
               <td className="pl-8 pr-3 py-1.5" />
               <td
-                className="px-3 py-1.5 text-content truncate max-w-0"
+                className="px-3 py-1.5 text-content/95 truncate max-w-0"
                 style={{ maxWidth: 180 }}
               >
                 {use.cashier_name}
               </td>
-              <td className="px-3 py-1.5 text-content whitespace-nowrap">
+              <td className="px-3 py-1.5 text-content/95 whitespace-nowrap">
                 {formatDate(
                   use.sale_date.split("T")[0],
                 )}
               </td>
-              <td className="px-3 py-1.5 text-content whitespace-nowrap tabular-nums">
+              <td className="px-3 py-1.5 text-content/95 whitespace-nowrap tabular-nums">
                 {use.sale_id}
               </td>
-              <td className="px-3 py-1.5 text-right tabular-nums text-content">
+              <td className="px-3 py-1.5 text-right tabular-nums text-content/95">
                 {use.count}
               </td>
-              <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">
+              <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content/95">
                 {formatCurrency2(use.amount)}
               </td>
             </tr>

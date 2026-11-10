@@ -19,7 +19,7 @@ const KpiStrip = ({
   uniqueSubDepts,
   vendorCount,
 }: KpiStripProps) => (
-    <div data-help="kpis" className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+    <div data-help="kpis" className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
       {[
         { label: "Coupons", value: String(totalCoupons) },
         { label: "Total amt", value: formatCurrency2(totalAmount) },
@@ -28,7 +28,7 @@ const KpiStrip = ({
         { label: "Sub depts", value: String(uniqueSubDepts) },
         { label: "Vendor", value: String(vendorCount) },
       ].map(({ label, value }) => (
-        <div key={label} className="px-4 pt-2.5 text-center">
+        <div key={label} className="px-4 py-2 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             {label}
           </div>
