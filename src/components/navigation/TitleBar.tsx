@@ -10,8 +10,6 @@ import { setUserPrefs } from "../../api/user";
 // Utils
 import { SAMPLE_RELEASES } from "../../content/releaseNotes";
 import { categoriesFor } from "./utils";
-import logo from "../../assets/portal/logo.webp";
-import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 
 // Interfaces
@@ -23,6 +21,8 @@ import ReleaseNotesModal from "../../components-dev/releaseNotes/ReleaseNotesMod
 import AvatarDropdown from "./components/avatar/AvatarDropdown";
 import MobileBottomNav from "./components/mobile/MobileBottomNav";
 import CategoryNavList from "./components/cats/CategoryNavList";
+import Logo from "./components/Logo";
+import DevPill from "./components/DevPill";
 
 const TitleBar = () => {
   const location = useLocation();
@@ -99,22 +99,7 @@ const TitleBar = () => {
         }`}
       >
         {/* Logo */}
-        <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">
-          {/* Both logos are always rendered and cross-fade with the bar */}
-          <div className="relative h-8 max-w-full">
-            <img
-              src={logo}
-              alt="CounterCtrl Cloud"
-              className={`h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-0" : "opacity-100"}`}
-            />
-            <img
-              src={logoReversed}
-              alt=""
-              aria-hidden
-              className={`absolute inset-0 h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-100" : "opacity-0"}`}
-            />
-          </div>
-        </div>
+        <Logo onNavy={onNavy} />
 
         {/* Category nav — desktop only */}
         {context.isDesktop && (
@@ -132,19 +117,7 @@ const TitleBar = () => {
         <div className="flex-1" />
 
         {/* Dev Pill: show up only in dev mode */}
-        <div
-          aria-hidden={!onNavy}
-          className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
-            onNavy ? "max-w-[120px] opacity-100 pr-3" : "max-w-0 opacity-0 pr-0"
-          }`}
-        >
-          <span
-            title="Dev mode: this session is on the dev API"
-            className="px-3 py-1.5 rounded-full bg-custom-white text-brand_navy text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
-          >
-            DEV MODE
-          </span>
-        </div>
+        <DevPill onNavy={onNavy} />
 
         {/* Avatar — always visible */}
         <AvatarDropdown

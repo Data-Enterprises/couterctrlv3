@@ -1,8 +1,15 @@
+// Hooks
 import { NavLink } from "react-router";
-import type { NavCategory } from "../../interfaces";
-import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+
+// Redux
 import { setLastRoute, setIsNavOpen } from "../../../../features/navSlice";
+
+// Interfaces
+import type { NavCategory } from "../../interfaces";
+
+// Components
+import { ChevronDownIcon } from "@heroicons/react/16/solid";
 
 interface CategoryNavListProps {
   openCategory: string | null;
