@@ -25,6 +25,8 @@ import {
   type ItemSeverity,
   type GradedSeverity,
   type RowMetricKey,
+  type MarginSourceRow,
+  type ItemGradingMetric,
 } from "../utils/itemMargins";
 import { colInputStyle } from "./filters/colFilterStyles";
 import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
@@ -32,7 +34,6 @@ import { formatPricedUnitsShort } from "../utils/pricedUnits";
 import { byDate, REPORT_ROW_LABELS } from "./utils";
 
 // Interfaces
-import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
 import type { SevFilter } from "./interfaces";
 
 // Components

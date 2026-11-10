@@ -1,3 +1,4 @@
+// Interfaces
 import type { ReactNode } from "react";
 
 interface FilterBarProps {

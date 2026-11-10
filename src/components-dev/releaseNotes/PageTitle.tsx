@@ -1,5 +1,9 @@
+interface PageTitleProps {
+  page: string;
+}
+
 /** The menu path, with the page itself standing out from where it lives. */
-const PageTitle = ({ page }: { page: string }) => {
+const PageTitle = ({ page }: PageTitleProps) => {
   const cut = page.lastIndexOf("→");
   return cut === -1 ? (
     <span className="font-semibold text-content">{page}</span>

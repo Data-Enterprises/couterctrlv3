@@ -1,16 +1,29 @@
+// Hooks
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { impersonate } from "../api/login";
+
+// Redux
 import {
   resetAppSlice,
   setApiEnv,
   setFetchingCredentials,
 } from "../features/appSlice";
 import { setUsername } from "../features/userSlice";
+
+// API
+import { impersonate } from "../api/login";
+
+// Utils
 import { applySession, impersonateFailureText } from "../utils/session";
+
+// Components
 import Modal from "./Modal";
 import TextField from "./inputs/TextField";
+
+interface SignInAsModalProps {
+  onClose: () => void;
+}
 
 /**
  * Sign in as someone else. Level 9, dev only.
@@ -31,7 +44,7 @@ import TextField from "./inputs/TextField";
  * token: switching Mode while signed in as someone has nothing to switch to.
  * It lasts 60 minutes; Sign out ends it sooner.
  */
-const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
+const SignInAsModal = ({ onClose }: SignInAsModalProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const context = useAppSelector((state) => state.app);

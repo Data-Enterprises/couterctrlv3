@@ -1,10 +1,17 @@
-import type { ColDef } from "ag-grid-community";
-import Modal from "../Modal";
-import ResizableModalShell from "./ResizableModalShell";
+// Hooks
 import { useState } from "react";
+import { useToast } from "../../components/toasts/hooks/useToast";
+
+// Utils
 import { formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
-import { useToast } from "../../components/toasts/hooks/useToast";
+
+// Interfaces
+import type { ColDef } from "ag-grid-community";
+
+// Components
+import Modal from "../Modal";
+import ResizableModalShell from "./ResizableModalShell";
 
 interface ExportModalProps<T extends Record<string, any>> {
   isOpen: boolean;

@@ -10,11 +10,10 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { gradedChange, noLyHistory } from "../utils/itemPerfData";
+import { gradedChange, noLyHistory, type MarginRow } from "../utils/itemPerfData";
 import { cmpWord, fmtChange } from "../utils";
 
 // Interfaces
-import type { MarginRow } from "../utils/itemPerfData";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

@@ -259,7 +259,6 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
         {trans.map((item, i) => {
           const isVoid = item.sale_type.toLowerCase().includes("void");
           const isCoupon = item.is_coupon === 1 || item.coupon_amount > 0;
-          // const displayNet = selectedSaleType === "Description" ? item.total_sales : item.net_sales;
           const displayNet = item.net_sales;
           const stamps = !context.isMobile ? renderStamps(item) : null;
           return (

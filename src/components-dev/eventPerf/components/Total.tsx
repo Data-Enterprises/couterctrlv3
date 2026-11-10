@@ -1,13 +1,11 @@
-/** One label and amount line on the receipt, bold when strong. */
-const Total = ({
-  label,
-  value,
-  strong = false,
-}: {
+interface TotalProps {
   label: string;
   value: string;
   strong?: boolean;
-}) => (
+}
+
+/** One label and amount line on the receipt, bold when strong. */
+const Total = ({ label, value, strong = false }: TotalProps) => (
   <div className="flex items-baseline gap-3 py-0.5">
     <span
       className={`flex-1 font-mono uppercase tracking-wider ${strong ? "text-[12px] font-bold text-content" : "text-[11px] text-content/95"}`}

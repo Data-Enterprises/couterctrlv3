@@ -1,10 +1,15 @@
+// Hooks
+import { useRef } from "react";
+import { useAppSelector } from "../../hooks";
+import { useDispatch } from "react-redux";
+
+// Redux
+import { setEndDate } from "../../features/searchSlice";
+
+// Components
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Calendar from "./Calendar";
-import { useRef } from "react";
-import { useAppSelector } from "../../hooks";
-import { setEndDate } from "../../features/searchSlice";
-import { useDispatch } from "react-redux";
 
 /** The End Date dropdown: shows the chosen end date as month/day and opens a
  *  calendar that sets it in the search state. */
@@ -37,7 +42,6 @@ const EndDatePicker = () => {
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
   const calendarStyle = "w-[150%] md:w-[215px]";
-  // const calendarStyle = "w-[98%] md:w-[165%]";
 
   return (
     <Menu data-testid="end-date-picker" as="div" className={styling}>

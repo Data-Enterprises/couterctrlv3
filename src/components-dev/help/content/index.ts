@@ -1,5 +1,4 @@
-import type { HelpPage } from "../../../constants/helpPages";
-import type { HelpContent } from "../helpTypes";
+// Utils
 import { ADMIN_HELP } from "./admin";
 import { CASHIERS_HELP } from "./cashiers";
 import { CATEGORIES_HELP } from "./categories";
@@ -26,6 +25,10 @@ import { SUB_DEPT_MARGINS_HELP } from "./subDeptMargins";
 import { UPC_LIST_HELP } from "./upcList";
 import { USER_MANAGEMENT_HELP } from "./userManagement";
 import { VENDORS_HELP } from "./vendors";
+
+// Interfaces
+import type { HelpPage } from "../../../constants/helpPages";
+import type { HelpContent } from "../helpTypes";
 
 /**
  * Every screen's help, by the name its "?" passes.

@@ -1,5 +1,8 @@
+// Hooks
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "../hooks";
+
+// Redux
 import { setIsModalOpen } from "../features/navSlice";
 
 interface ModalProps {

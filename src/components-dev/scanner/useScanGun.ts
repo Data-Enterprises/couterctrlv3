@@ -1,4 +1,7 @@
+// Hooks
 import { useCallback, useEffect, useRef, useState } from "react";
+
+// Utils
 import { normalizeUpc } from ".";
 
 /**

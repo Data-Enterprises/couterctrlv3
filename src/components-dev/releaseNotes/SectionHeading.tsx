@@ -5,14 +5,13 @@ import { SECTION_TITLE } from "../../content/releaseNotes";
 // Interfaces
 import type { SectionKey } from "./interfaces";
 
-/** A section's heading, with its icon tile and its count. */
-const SectionHeading = ({
-  sectionKey,
-  count,
-}: {
+interface SectionHeadingProps {
   sectionKey: SectionKey;
   count: number;
-}) => {
+}
+
+/** A section's heading, with its icon tile and its count. */
+const SectionHeading = ({ sectionKey, count }: SectionHeadingProps) => {
   const { Icon, tile } = LOOK[sectionKey];
   return (
     <div className="flex items-center gap-2.5">

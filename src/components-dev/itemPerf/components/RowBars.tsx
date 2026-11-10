@@ -2,10 +2,9 @@
 import { useItemPerfCtx } from "../hooks";
 
 // Utils
-import { measuredOf } from "../utils/itemPerfData";
+import { measuredOf, type MarginRow } from "../utils/itemPerfData";
 
 // Interfaces
-import type { MarginRow } from "../utils/itemPerfData";
 
 // Components
 import PairedBars from "../../mobile/perf/PairedBars";

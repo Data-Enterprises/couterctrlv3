@@ -1,4 +1,7 @@
+// Hooks
 import { useState, useEffect, useRef, type ReactNode } from "react";
+
+// Components
 import ChevronUpDownIcon from "../svgs/ChevronUpDownIcon";
 
 interface SingleSelectProps<T> {

@@ -1,7 +1,12 @@
+// Hooks
 import { useState } from "react";
+
+// Interfaces
+import type { HelpPage } from "../constants/helpPages";
+
+// Components
 import InfoButton from "./InfoButton";
 import InfoModal from "./InfoModal";
-import type { HelpPage } from "../constants/helpPages";
 
 interface PageInfoButtonProps {
   /** The page's own help name. Desktop or phone is decided in InfoModal. */

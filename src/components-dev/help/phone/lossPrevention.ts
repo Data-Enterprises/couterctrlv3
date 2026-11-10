@@ -1,3 +1,4 @@
+// Interfaces
 import type { PhoneHelp } from "../helpTypes";
 
 /** Help for Loss Prevention on a phone. Ported from its `-mobile` help page. */

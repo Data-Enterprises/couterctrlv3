@@ -1,5 +1,14 @@
 // Hooks
-import { createContext, useContext, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type UIEvent,
+} from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
@@ -14,6 +23,8 @@ import {
   setItemPerfRows,
   setItemPerfStore,
   sourceOf,
+  type ItemDimension,
+  type MarginSort,
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
@@ -27,7 +38,7 @@ import {
 } from "../../../utils";
 import { shiftIso } from "../../../utils/grading";
 import { applyStoreNumberToName } from "../../../utils/storeIdentity";
-import { asLastYearSlots } from "../../../utils/perfPairs";
+import { asLastYearSlots, type CmpBasis } from "../../../utils/perfPairs";
 import { fetchItemRows } from "../utils/fetchItemRows";
 import {
   buildDailyRows,
@@ -42,15 +53,13 @@ import {
   marginDirOf,
   measuredOf,
   sortMarginRows,
+  type MarginRow,
+  type PricedRow,
 } from "../utils/itemPerfData";
 import { fmtUnits, prepared } from "../utils";
 
 // Interfaces
-import type { UIEvent } from "react";
 import type { JsonError } from "../../../interfaces";
-import type { ItemDimension, MarginSort } from "../../../features/dev/devItemPerfSlice";
-import type { CmpBasis } from "../../../utils/perfPairs";
-import type { MarginRow, PricedRow } from "../utils/itemPerfData";
 import type { ItemPerfCtxValue, ItemPerfScreen } from "../interfaces";
 
 /** The week the NEXT search will fetch, and its last-year and last-week

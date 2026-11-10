@@ -1,9 +1,16 @@
+// Hooks
 import { useAppSelector } from "../hooks";
-import type { HelpPage } from "../constants/helpPages";
-import HelpPanel from "./help/HelpPanel";
-import PhoneHelpSheet from "./help/PhoneHelpSheet";
+
+// Utils
 import { HELP_CONTENT } from "./help/content";
 import { phoneHelpFor } from "./help/phone";
+
+// Interfaces
+import type { HelpPage } from "../constants/helpPages";
+
+// Components
+import HelpPanel from "./help/HelpPanel";
+import PhoneHelpSheet from "./help/PhoneHelpSheet";
 
 interface InfoModalProps {
   /** Which screen's help to show. Phone or desktop is picked here, not by

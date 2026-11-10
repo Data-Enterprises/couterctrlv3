@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for the Client Help Desk — raising a ticket, following it, and (for

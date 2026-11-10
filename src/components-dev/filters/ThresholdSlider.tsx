@@ -1,3 +1,4 @@
+// Hooks
 import { useEffect, useState, startTransition } from "react";
 
 interface ThresholdSliderProps {

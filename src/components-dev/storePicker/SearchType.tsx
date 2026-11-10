@@ -1,4 +1,3 @@
-// import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
 // Hooks
 import { useAppSelector } from "../../hooks";
 import { useDispatch } from "react-redux";

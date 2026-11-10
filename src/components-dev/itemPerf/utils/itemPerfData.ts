@@ -1,6 +1,6 @@
 // Utils
 import { calculateCogs } from "../../../utils/cogs";
-import { dayOf, lyDateFor, netOf } from "../../../utils/perfPairs";
+import { dayOf, lyDateFor, netOf, type DayMatch } from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
 import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
 
@@ -11,7 +11,7 @@ import type {
   MarginMeasure,
   MarginSort,
 } from "../../../features/dev/devItemPerfSlice";
-import type { DayMatch } from "../../../utils/perfPairs";
+
 
 export {
   isPartialMatch,

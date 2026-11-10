@@ -1,5 +1,17 @@
-import type { ReactNode } from "react";
+// Hooks
 import { useTipPlacement } from "./useTipPlacement";
+
+// Interfaces
+import type { ReactNode } from "react";
+
+interface CursorTipBoxProps {
+  /** The pointer, in screen coordinates (clientX/Y). */
+  x: number;
+  y: number;
+  /** Vertical padding and any minimum width; the frame itself is fixed. */
+  className?: string;
+  children: ReactNode;
+}
 
 /**
  * The app's tooltip: a light box that follows the mouse.
@@ -17,19 +29,7 @@ import { useTipPlacement } from "./useTipPlacement";
  * This is the frame; lay out what goes in it yourself (the Summary hour
  * chart's readout does). For a line or two of words, use `CursorTip`.
  */
-const CursorTipBox = ({
-  x,
-  y,
-  className = "py-2",
-  children,
-}: {
-  /** The pointer, in screen coordinates (clientX/Y). */
-  x: number;
-  y: number;
-  /** Vertical padding and any minimum width; the frame itself is fixed. */
-  className?: string;
-  children: ReactNode;
-}) => {
+const CursorTipBox = ({ x, y, className = "py-2", children }: CursorTipBoxProps) => {
   const { ref, pos } = useTipPlacement<HTMLDivElement>(x, y);
   return (
     <div

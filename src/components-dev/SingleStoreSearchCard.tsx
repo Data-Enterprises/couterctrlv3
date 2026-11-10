@@ -1,9 +1,12 @@
+// Interfaces
 import type { ReactNode } from "react";
+import type { Store } from "../interfaces";
+
+// Components
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import SingleSelect from "./SingleSelect";
 import EntryCardLoading from "./loading/EntryCardLoading";
 import SearchBackButton from "./SearchBackButton";
-import type { Store } from "../interfaces";
 
 interface SingleStoreSearchCardProps {
   title: string;

@@ -1,5 +1,8 @@
+// Hooks
 import { useEffect, useRef, type ReactNode } from "react";
 import { useResizableBox } from "../../hooks/useResizableBox";
+
+// Components
 import ResizeHandle from "../ResizeHandle";
 
 interface ResizableModalShellProps {

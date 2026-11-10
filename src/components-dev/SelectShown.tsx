@@ -1,3 +1,10 @@
+interface SelectShownProps {
+  shown: number;
+  selected: number;
+  onSelectAll: () => void;
+  onClear: () => void;
+}
+
 /**
  * Stage or clear every row the column is currently showing.
  *
@@ -11,17 +18,7 @@
  * all of them, narrow to the next, take those too, then assign once. The
  * running count is there because that only makes sense if you can see it.
  */
-const SelectShown = ({
-  shown,
-  selected,
-  onSelectAll,
-  onClear,
-}: {
-  shown: number;
-  selected: number;
-  onSelectAll: () => void;
-  onClear: () => void;
-}) => (
+const SelectShown = ({ shown, selected, onSelectAll, onClear }: SelectShownProps) => (
   <div className="flex items-center gap-2 mb-1 text-[10px] text-content/95">
     <button
       onClick={onSelectAll}

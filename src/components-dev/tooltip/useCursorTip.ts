@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import type { MouseEvent } from "react";
+// Hooks
+import { useCallback, useState, type MouseEvent } from "react";
 
 /** What is under the cursor, and where the cursor is on the screen. */
 export interface CursorTip<K> {

@@ -1,5 +1,4 @@
-import type { HelpPage } from "../../../constants/helpPages";
-import type { PhoneHelp } from "../helpTypes";
+// Utils
 import { CASHIERS_PHONE_HELP } from "./cashiers";
 import { CATEGORIES_PHONE_HELP } from "./categories";
 import { COUPON_SALES_PHONE_HELP } from "./couponSales";
@@ -12,6 +11,10 @@ import { SALES_PHONE_HELP } from "./sales";
 import { STORE_GROUPS_PHONE_HELP } from "./storeGroups";
 import { SUB_DEPT_MARGINS_PHONE_HELP } from "./subDeptMargins";
 import { VENDORS_PHONE_HELP } from "./vendors";
+
+// Interfaces
+import type { HelpPage } from "../../../constants/helpPages";
+import type { PhoneHelp } from "../helpTypes";
 
 /**
  * Every phone screen's help, by the name its "?" passes.

@@ -1,10 +1,19 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
-import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from "./";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+// Redux
+import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Interfaces
 import type { Group } from "../../features/groupSlice";
+
+// Components
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
 /** The store picker's group dropdown: type to narrow the groups, pick one, and
  *  it becomes the selected and last-used group. */

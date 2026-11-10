@@ -1,4 +1,7 @@
+// Interfaces
 import type { ReactNode } from "react";
+
+// Components
 import Modal from "./Modal";
 
 interface ConfirmDeleteProps {

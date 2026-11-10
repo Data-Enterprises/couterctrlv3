@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Item Lookup — a store's last 14 days for specific UPCs. */

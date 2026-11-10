@@ -14,6 +14,7 @@ import {
   setEventData,
   setEventLoadProgress,
   setReceiptLines,
+  type EventView,
 } from "../../../features/dev/devEventPerfSlice";
 
 // Utils
@@ -26,14 +27,14 @@ import {
   buildReceipts,
   buildTotals,
   defaultEventSort,
+  type EventScope,
+  type EventTotals,
 } from "../utils";
 import { fmtInt, shortDay } from "../utils/display";
 
 // Interfaces
 import type { RootState } from "../../../store";
 import type { JsonError } from "../../../interfaces";
-import type { EventView } from "../../../features/dev/devEventPerfSlice";
-import type { EventScope, EventTotals } from "../utils";
 import type { EventPerfCtxValue, EventPerfMobileProps } from "../interfaces";
 
 /**

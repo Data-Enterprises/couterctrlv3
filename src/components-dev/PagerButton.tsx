@@ -1,13 +1,11 @@
-/** A previous / next button under the report. */
-const PagerButton = ({
-  label,
-  disabled,
-  onClick,
-}: {
+interface PagerButtonProps {
   label: string;
   disabled: boolean;
   onClick: () => void;
-}) => (
+}
+
+/** A previous / next button under the report. */
+const PagerButton = ({ label, disabled, onClick }: PagerButtonProps) => (
   <button
     onClick={onClick}
     disabled={disabled}

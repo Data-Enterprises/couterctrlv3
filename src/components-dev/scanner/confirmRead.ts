@@ -1,3 +1,4 @@
+// Interfaces
 import type { QuaggaJSResultObject } from "@ericblade/quagga2";
 
 /**

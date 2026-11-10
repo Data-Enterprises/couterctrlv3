@@ -1,16 +1,22 @@
 // Utils
 import { formatCurrency2 } from "../../../utils";
-import { receiptLabel } from "../utils";
+import { receiptLabel, type EventReceipt } from "../utils";
 import { fmtInt } from "../utils/display";
 
 // Interfaces
 import type { EventReceiptState } from "../../../features/dev/devEventPerfSlice";
-import type { EventReceipt } from "../utils";
 import type { ReceiptLine } from "../interfaces";
 
 // Components
 import Rule from "./Rule";
 import Total from "./Total";
+
+interface ReceiptProps {
+  txn: EventReceipt;
+  /** Null until the slice has a state for this receipt — read as loading. */
+  receipt: EventReceiptState | null;
+  when: string;
+}
 
 /**
  * One transaction, laid out like the paper it came off.
@@ -21,16 +27,7 @@ import Total from "./Total";
  * the two disagree — 12px rather than a true till roll's 8, and the store and
  * cashier named in full rather than abbreviated.
  */
-const Receipt = ({
-  txn,
-  receipt,
-  when,
-}: {
-  txn: EventReceipt;
-  /** Null until the slice has a state for this receipt — read as loading. */
-  receipt: EventReceiptState | null;
-  when: string;
-}) => {
+const Receipt = ({ txn, receipt, when }: ReceiptProps) => {
   const status = receipt?.status ?? "loading";
   const lines: ReceiptLine[] = receipt?.lines ?? [];
   const items = lines.filter((l) => l.kind !== "tender");

@@ -5,8 +5,13 @@ import type { ReleasePage } from "../../content/releaseNotes";
 import PageTitle from "./PageTitle";
 import Bullets from "./Bullets";
 
+interface PageCardProps {
+  p: ReleasePage;
+  mine: boolean;
+}
+
 /** One page's changes, highlighted when it is the page the reader is on. */
-const PageCard = ({ p, mine }: { p: ReleasePage; mine: boolean }) => (
+const PageCard = ({ p, mine }: PageCardProps) => (
   <div
     data-this-page={mine}
     className={`rounded-xl border px-4 py-3 shadow-sm ${

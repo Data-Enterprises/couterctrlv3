@@ -1,11 +1,13 @@
+// Utils
+import { type Severity, BADGE_BG, BADGE_COLOR } from "../utils/severity";
+
+// Components
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
   MinusCircleIcon,
 } from "@heroicons/react/20/solid";
-import type { Severity } from "../utils/severity";
-import { BADGE_BG, BADGE_COLOR } from "../utils/severity";
 
 interface SeverityBadgeProps {
   /** Null renders a grey "not graded" mark — nothing to compare against, so no

@@ -1,12 +1,21 @@
+// Hooks
+import { useAppSelector } from "../hooks";
+
+// Redux
+import { isGroupSearch } from "../features/searchSlice";
+
+// Utils
+import { getStoreName } from "../utils";
+
+// Interfaces
+import type { ReactNode } from "react";
+
+// Components
 import StorePicker from "./storePicker/StorePicker";
 import SingleDatePicker from "./datePickers/SingleDatePicker";
 import DatePickers from "./datePickers/DatePickers";
 import EntryCardLoading from "./loading/EntryCardLoading";
 import SearchBackButton from "./SearchBackButton";
-import { useAppSelector } from "../hooks";
-import { getStoreName } from "../utils";
-import type { ReactNode } from "react";
-import { isGroupSearch } from "../features/searchSlice";
 
 interface SearchCardProps {
   title: string;

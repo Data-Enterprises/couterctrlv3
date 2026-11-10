@@ -1,3 +1,4 @@
+// Components
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 
 interface TextFilterProps {

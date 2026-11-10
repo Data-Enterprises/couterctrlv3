@@ -1,4 +1,7 @@
+// Hooks
 import { useState, useRef, useEffect } from "react";
+
+// Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
 interface ColFilterProps {

@@ -1,3 +1,4 @@
+// Interfaces
 import type { PhoneHelp } from "../helpTypes";
 
 /** Help for Coupons on a phone. Ported from its `-mobile` help page. */

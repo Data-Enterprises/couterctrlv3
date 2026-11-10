@@ -1,9 +1,14 @@
+// Hooks
+import { useRef } from "react";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+
+// Redux
+import { setSingleDate } from "../../features/searchSlice";
+
+// Components
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Calendar from "./Calendar";
-import { useRef } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setSingleDate } from "../../features/searchSlice";
 
 interface SingleDatePickerProps {
   className?: string;
