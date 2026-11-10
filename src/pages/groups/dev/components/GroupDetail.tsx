@@ -18,8 +18,7 @@ import { byFilter } from "../utils";
 
 // Interfaces
 import type { Group } from "../../../../features/groupSlice";
-import type { StoreWithGroupStatus } from "../../../../interfaces";
-import type { JsonError } from "../../../../interfaces";
+import type { JsonError, StoreWithGroupStatus } from "../../../../interfaces";
 
 // Components
 import IconButton from "../../../../components-dev/IconButton";

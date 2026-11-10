@@ -1,14 +1,16 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
 import { nameProblem } from "../utils";
 
-/** The "New shared group" form: a name field that shows what is wrong with the name as it is typed, with Cancel and Create. */
-const NewSharedGroup = ({
-  onCreate,
-  onCancel,
-}: {
+interface NewSharedGroupProps {
   onCreate: (name: string) => Promise<void>;
   onCancel: () => void;
-}) => {
+}
+
+/** The "New shared group" form: a name field that shows what is wrong with the name as it is typed, with Cancel and Create. */
+const NewSharedGroup = ({ onCreate, onCancel }: NewSharedGroupProps) => {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
 

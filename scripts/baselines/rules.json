@@ -1212,16 +1212,6 @@
     "selector-outside-hook": 2,
     "shape-inline-props": 1
   },
-  "src/pages/groups/dev/components/GroupDetail.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/groups/dev/components/NewGroupModal.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/groups/dev/sharedGroups/components/NewSharedGroup.tsx": {
-    "labels": 1,
-    "shape-inline-props": 1
-  },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
   },

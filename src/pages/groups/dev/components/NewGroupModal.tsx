@@ -1,14 +1,13 @@
 // Hooks
 import { useState } from "react";
 
-/** The "New group" pop-up: a name field with Cancel and Create buttons. */
-const NewGroupModal = ({
-  onCreate,
-  onClose,
-}: {
+interface NewGroupModalProps {
   onCreate: (name: string) => void;
   onClose: () => void;
-}) => {
+}
+
+/** The "New group" pop-up: a name field with Cancel and Create buttons. */
+const NewGroupModal = ({ onCreate, onClose }: NewGroupModalProps) => {
   const [name, setName] = useState("");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
