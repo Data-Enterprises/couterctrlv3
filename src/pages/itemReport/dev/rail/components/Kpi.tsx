@@ -2,20 +2,17 @@
 import { formatPct, pillClass } from "../../../../../utils/severity";
 import { DELTA_THRESHOLD, fmtUnits } from "../utils";
 
-/** One period cell, matching the KPI strip on Sales: label, the dates it
- *  covers, then the figure — with the comparison pill inline on the two
- *  baselines. */
-const Kpi = ({
-  label,
-  dates,
-  units,
-  pct,
-}: {
+interface KpiProps {
   label: string;
   dates: string;
   units: number | null;
   pct?: number | null;
-}) => (
+}
+
+/** One period cell, matching the KPI strip on Sales: label, the dates it
+ *  covers, then the figure — with the comparison pill inline on the two
+ *  baselines. */
+const Kpi = ({ label, dates, units, pct }: KpiProps) => (
   <div className="px-4 pt-2.5 pb-1.5 text-center">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
       {label}

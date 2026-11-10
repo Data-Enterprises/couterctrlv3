@@ -4,13 +4,7 @@ import { TEMPLATE } from "../utils";
 // Interfaces
 import type { Cell } from "../interfaces";
 
-/** One row of a rail section, its figures on the section's grid. */
-const Line = ({
-  cells,
-  zebra,
-  onClick,
-  template,
-}: {
+interface LineProps {
   cells: Cell[];
   /** Overrides the width-by-count default. Two three-column sections want
    *  different shapes, and widening the shared template for one would silently
@@ -21,7 +15,10 @@ const Line = ({
    *  one. */
   zebra?: boolean;
   onClick?: () => void;
-}) => (
+}
+
+/** One row of a rail section, its figures on the section's grid. */
+const Line = ({ cells, zebra, onClick, template }: LineProps) => (
   <div
     onClick={onClick}
     className={`grid gap-2.5 pl-1 py-1.5 text-[12px] items-center ${

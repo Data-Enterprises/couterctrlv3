@@ -1,20 +1,20 @@
 
 
+interface KpisProps {
+  cells: {
+      label: string;
+      value: string;
+      flagged?: boolean;
+      onClick?: () => void;
+    }[];
+}
+
 /** Three equal tiles, on the KPI strip the rest of the app uses so a nested
  *  strip still reads as native — with one deliberate variation: the values are
  *  `font-medium`, not the canonical `font-bold`. This strip sits inside a row
  *  that is itself inside a section, and bold at that depth competes with the
  *  headline figures above it. Not drift; leave it. */
-const Kpis = ({
-  cells,
-}: {
-  cells: {
-    label: string;
-    value: string;
-    flagged?: boolean;
-    onClick?: () => void;
-  }[];
-}) => (
+const Kpis = ({ cells }: KpisProps) => (
   <div className="grid grid-cols-3 divide-x divide-brand_navy/15 border-t border-brand_navy/15">
     {cells.map((c) => (
       <div

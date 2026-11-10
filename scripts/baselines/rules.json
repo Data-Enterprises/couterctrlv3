@@ -1352,41 +1352,8 @@
   "src/pages/itemReport/ItemReport.tsx": {
     "labels": 1
   },
-  "src/pages/itemReport/dev/ItemReport.tsx": {
-    "one-line-per-source": 2
-  },
-  "src/pages/itemReport/dev/components/DeltaPill.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/components/DetailPopover.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/Block.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/Head.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/Kpi.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/Kpis.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/Line.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/ReceiptDetail.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/itemReport/dev/rail/components/ShowAll.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/itemReport/dev/rail/components/TransactionSheet.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/itemReport/dev/utils/index.ts": {
-    "one-line-per-source": 1
   },
   "src/pages/lookup/ItemLookup.tsx": {
     "labels": 1

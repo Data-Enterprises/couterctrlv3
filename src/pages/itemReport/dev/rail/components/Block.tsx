@@ -4,6 +4,21 @@ import type { ReactNode } from "react";
 // Components
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
+interface BlockProps {
+  /** Stable across renders, unlike `label` — two of these interpolate a day
+   *  count into their heading, and a key that changes would lose the fold. */
+  id: string;
+  label: string;
+  /** Sits opposite the label. For a fact qualifying the whole section — how
+   *  stale the deliveries are, say — which belongs with the heading rather than
+   *  dangling under a list it isn't a row of. */
+  note?: string;
+  noteTone?: string;
+  collapsed: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}
+
 /**
  * One section of the rail.
  *
@@ -20,20 +35,7 @@ const Block = ({
   collapsed,
   onToggle,
   children,
-}: {
-  /** Stable across renders, unlike `label` — two of these interpolate a day
-   *  count into their heading, and a key that changes would lose the fold. */
-  id: string;
-  label: string;
-  /** Sits opposite the label. For a fact qualifying the whole section — how
-   *  stale the deliveries are, say — which belongs with the heading rather than
-   *  dangling under a list it isn't a row of. */
-  note?: string;
-  noteTone?: string;
-  collapsed: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-}) => (
+}: BlockProps) => (
   <div className="px-3 py-2.5 border-b border-brand_navy/15">
     {/* The whole heading is the hit area, not just the chevron — a 12px target
         in a panel this narrow is a miss waiting to happen. */}

@@ -7,6 +7,27 @@ import { LEAVE_MS } from "../utils";
 // Components
 import { XMarkIcon } from "@heroicons/react/16/solid";
 
+interface DetailPopoverProps {
+  /**
+   * Omit it when the trigger already says it.
+   *
+   * These open directly beneath the control that names them, so a heading is
+   * usually the same word twice a line apart — "INVESTIGATE" on the strip and
+   * "Investigate" in the card. Closing is covered without one: the trigger
+   * flips to Hide, and a click anywhere outside dismisses.
+   */
+  title?: string;
+  /** One line under the title, for the caveat that belongs to the whole card
+   *  rather than to any row inside it. */
+  subtitle?: string;
+  /** False starts the leave; the card removes itself when it finishes. */
+  open: boolean;
+  onClose: () => void;
+  /** Background and text colour, e.g. `bg-amber-50 text-amber-900`. */
+  className?: string;
+  children: React.ReactNode;
+}
+
 /**
  * A panel that BEHAVES like the "?" card and is coloured by whatever opened it.
  *
@@ -34,26 +55,7 @@ const DetailPopover = ({
   onClose,
   className,
   children,
-}: {
-  /**
-   * Omit it when the trigger already says it.
-   *
-   * These open directly beneath the control that names them, so a heading is
-   * usually the same word twice a line apart — "INVESTIGATE" on the strip and
-   * "Investigate" in the card. Closing is covered without one: the trigger
-   * flips to Hide, and a click anywhere outside dismisses.
-   */
-  title?: string;
-  /** One line under the title, for the caveat that belongs to the whole card
-   *  rather than to any row inside it. */
-  subtitle?: string;
-  /** False starts the leave; the card removes itself when it finishes. */
-  open: boolean;
-  onClose: () => void;
-  /** Background and text colour, e.g. `bg-amber-50 text-amber-900`. */
-  className?: string;
-  children: React.ReactNode;
-}) => {
+}: DetailPopoverProps) => {
   const ref = useRef<HTMLDivElement>(null);
   /** On screen — true through the whole leave, not just while `open`. */
   const [mounted, setMounted] = useState(open);

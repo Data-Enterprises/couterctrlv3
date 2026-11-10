@@ -2,7 +2,7 @@
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { useActualPricePoints, type ActualFetchState } from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useReceivingWalk, useItemReportCtx } from "./hooks";
 
@@ -21,6 +21,7 @@ import {
   openItemReportInvoice,
   setItemReportInvoiceLines,
   setItemReportInvoiceError,
+  type ItemReportHandoff,
 } from "../../../features/dev/devItemReportSlice";
 
 // Utils
@@ -45,9 +46,7 @@ import { verdictFor } from "./utils/verdict";
 
 // Interfaces
 import type { ReportScope, SheetRow } from "./interfaces";
-import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
-import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";

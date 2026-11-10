@@ -4,6 +4,7 @@ import {
   getItemActions,
   getSubMarginsWithPricePoints,
   ITEM_ACTIONS_MAX_CODES,
+  type ItemActionsResp,
 } from "../../../../api/subMargins";
 
 // Utils
@@ -16,7 +17,6 @@ import { formatDate } from "../../../../utils";
 
 // Interfaces
 import type { ActionKind, ReceiptLine, ReportScope } from "../interfaces";
-import type { ItemActionsResp } from "../../../../api/subMargins";
 import type {
   ReceiverListItem,
   ReceiverListResponse,

@@ -14,6 +14,10 @@ import type { ReceiptLine } from "../../interfaces";
 // Components
 import Kpis from "./Kpis";
 
+interface ReceiptDetailProps {
+  line: ReceiptLine;
+}
+
 /**
  * One delivery, opened up.
  *
@@ -25,7 +29,7 @@ import Kpis from "./Kpis";
  * Vendor is a heading rather than a tile: it is a name of unpredictable length,
  * and a tile is a shape for a number.
  */
-const ReceiptDetail = ({ line }: { line: ReceiptLine }) => {
+const ReceiptDetail = ({ line }: ReceiptDetailProps) => {
   const dispatch = useAppDispatch();
 
   return (
