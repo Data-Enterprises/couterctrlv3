@@ -1,0 +1,2534 @@
+{
+  "src/App.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 2
+  },
+  "src/DevPages.tsx": {
+    "labels": 1
+  },
+  "src/api/admin.ts": {
+    "labels": 1
+  },
+  "src/api/baseGroups.ts": {
+    "labels": 1
+  },
+  "src/api/cats.ts": {
+    "labels": 1
+  },
+  "src/api/company.ts": {
+    "labels": 1
+  },
+  "src/api/coupons.ts": {
+    "labels": 1
+  },
+  "src/api/eventPerf/couponAdapter.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/api/eventPerf/lpAdapter.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/api/exceptionLines.ts": {
+    "labels": 1
+  },
+  "src/api/exportBuilds.ts": {
+    "labels": 1
+  },
+  "src/api/financials.ts": {
+    "labels": 1
+  },
+  "src/api/groups.ts": {
+    "labels": 1
+  },
+  "src/api/invoices.ts": {
+    "labels": 1
+  },
+  "src/api/itemLookup.ts": {
+    "labels": 1
+  },
+  "src/api/login.ts": {
+    "labels": 1
+  },
+  "src/api/lossPrevention.ts": {
+    "labels": 1
+  },
+  "src/api/markdowns.ts": {
+    "labels": 1
+  },
+  "src/api/orders.ts": {
+    "labels": 1
+  },
+  "src/api/password.ts": {
+    "labels": 1
+  },
+  "src/api/portal.ts": {
+    "labels": 1
+  },
+  "src/api/pricePoints.ts": {
+    "labels": 1
+  },
+  "src/api/priceSim.ts": {
+    "labels": 1
+  },
+  "src/api/quicksight.ts": {
+    "labels": 1
+  },
+  "src/api/receivers.ts": {
+    "labels": 1
+  },
+  "src/api/rollup.ts": {
+    "labels": 1
+  },
+  "src/api/sales.ts": {
+    "labels": 1
+  },
+  "src/api/salesExport.ts": {
+    "labels": 1
+  },
+  "src/api/savedConfigs.ts": {
+    "labels": 1
+  },
+  "src/api/savedQueries.ts": {
+    "labels": 1
+  },
+  "src/api/scanner.ts": {
+    "labels": 1
+  },
+  "src/api/security.ts": {
+    "labels": 1
+  },
+  "src/api/sharedGroups.ts": {
+    "labels": 1
+  },
+  "src/api/storeAccess.ts": {
+    "labels": 1
+  },
+  "src/api/subDeptExclusions.ts": {
+    "labels": 1
+  },
+  "src/api/subMargins.ts": {
+    "labels": 1
+  },
+  "src/api/suggested.ts": {
+    "labels": 1
+  },
+  "src/api/team.ts": {
+    "labels": 1
+  },
+  "src/api/tickets.ts": {
+    "labels": 1
+  },
+  "src/api/topItems.ts": {
+    "labels": 1
+  },
+  "src/api/upc.ts": {
+    "commented-code": 4,
+    "labels": 1
+  },
+  "src/api/user.ts": {
+    "labels": 1
+  },
+  "src/components-dev/BottomSheet.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/Checkbox.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/ConfirmDelete.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/ConfirmModal.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/GradeCell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/InfoModal.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/ItemMarginsTable.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/components-dev/ItemSeverityBadge.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/Modal.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/PageInfoButton.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/PagerButton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/SearchCard.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/SelectShown.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/SeverityBadge.tsx": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/components-dev/SignInAsModal.tsx": {
+    "labels": 1,
+    "shape-inline-props": 1
+  },
+  "src/components-dev/SingleSelect.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/SingleStoreSearchCard.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/datePickers/EndDatePicker.tsx": {
+    "commented-code": 1,
+    "labels": 1
+  },
+  "src/components-dev/datePickers/SingleDatePicker.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/datePickers/StartDatePicker.tsx": {
+    "commented-code": 1,
+    "labels": 1
+  },
+  "src/components-dev/eventPerf/components/Empty.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/eventPerf/components/Receipt.tsx": {
+    "one-line-per-source": 1,
+    "shape-inline-props": 1
+  },
+  "src/components-dev/eventPerf/components/Rule.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/eventPerf/components/Total.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/eventPerf/hooks/index.ts": {
+    "one-line-per-source": 2
+  },
+  "src/components-dev/filters/ColFilter.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/filters/Field.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/filters/FilterBar.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/filters/TextFilter.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/filters/ThresholdSlider.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/admin.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/cashiers.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/categories.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/couponSales.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/coupons.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/dataExport.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/forecasting.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/helpDesk.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/index.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/itemActions.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/itemLookup.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/lossPrevention.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/orders.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/priceOpt.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/receivers.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/sales.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/salesInvestigate.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/salesTracker.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/storeGroups.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/subDeptMargins.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/upcList.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/userManagement.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/content/vendors.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/cashiers.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/categories.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/couponSales.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/coupons.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/index.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/itemLookup.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/lossPrevention.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/orders.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/receivers.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/sales.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/storeGroups.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/subDeptMargins.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/phone/vendors.ts": {
+    "labels": 1
+  },
+  "src/components-dev/help/useHelpHighlight.ts": {
+    "labels": 1
+  },
+  "src/components-dev/inputs/TextField.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/itemPerf/components/GroupCard.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/components-dev/itemPerf/components/RowBars.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/components-dev/itemPerf/hooks/index.ts": {
+    "one-line-per-source": 4
+  },
+  "src/components-dev/itemPerf/utils/itemPerfData.ts": {
+    "one-line-per-source": 1
+  },
+  "src/components-dev/modals/ExportModal.tsx": {
+    "any-in-props": 1,
+    "labels": 1
+  },
+  "src/components-dev/modals/ResizableModalShell.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/releaseNotes/Bullets.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/releaseNotes/PageCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/releaseNotes/PageTitle.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/releaseNotes/SectionHeading.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/components-dev/scanner/confirmRead.ts": {
+    "labels": 1
+  },
+  "src/components-dev/scanner/useScanGun.ts": {
+    "labels": 1
+  },
+  "src/components-dev/storePicker/SearchType.tsx": {
+    "commented-code": 1
+  },
+  "src/components-dev/storePicker/SelectGroup.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/storePicker/StorePicker.tsx": {
+    "labels": 1
+  },
+  "src/components-dev/storePicker/index.ts": {
+    "labels": 1
+  },
+  "src/components-dev/tooltip/CursorTip.tsx": {
+    "labels": 1,
+    "shape-inline-props": 1
+  },
+  "src/components-dev/tooltip/CursorTipBox.tsx": {
+    "labels": 1,
+    "shape-inline-props": 1
+  },
+  "src/components-dev/tooltip/useCursorTip.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/components-dev/tooltip/useTipPlacement.ts": {
+    "labels": 1
+  },
+  "src/components-dev/transactions/Transaction.tsx": {
+    "commented-code": 1
+  },
+  "src/components/BottomSheet.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/Carousel.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/ConfirmModal.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/DayCardStrip.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1
+  },
+  "src/components/EmptyPrompt.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/ErrorBoundary.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/HeaderIconButton.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/IconButton.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/InfoButton.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2
+  },
+  "src/components/InfoPopover.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1
+  },
+  "src/components/ItemMarginsTable.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 2,
+    "shape-extra-component": 2,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/KpiTileGrid.tsx": {
+    "doc-comment": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/Modal.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/ResizeHandle.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/SearchCard.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/SeverityBadge.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/components/SingleSelect.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/SingleStoreSearchCard.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/SortHeader.tsx": {
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-named-export": 1
+  },
+  "src/components/TextInput.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/UpcContextMenu.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-extra-type": 1
+  },
+  "src/components/UserDataLoader.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 1
+  },
+  "src/components/datePickers/Calendar.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/datePickers/DatePickers.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/datePickers/EndDatePicker.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/datePickers/SingleDatePicker.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/datePickers/StartDatePicker.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/filters/ColFilter.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/filters/ColFilterPopover.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/filters/FilterBar.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/filters/LocationTabs.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/filters/MultiSelectFilter.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/filters/SelectFilter.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1
+  },
+  "src/components/filters/TextFilter.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/filters/ThresholdFilter.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-props-name": 1
+  },
+  "src/components/filters/ThresholdSlider.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/inputs/CheckBox.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/inputs/Input.tsx": {
+    "doc-comment": 1
+  },
+  "src/components/inputs/PasswordInput.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/loading/EntryCardLoading.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/loading/LoadingIndicator.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/loading/LoadingIndicatorDev.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/MobileInfoSheet.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/MobilePerfCard.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/MobilePerfDetail.tsx": {
+    "labels": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/MobilePerfHeader.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/MobileSortChips.tsx": {
+    "doc-comment": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/perf/PairedBars.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/perf/PerfCardHeader.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/mobile/perf/PerfDayChart.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/modals/ExportModal.tsx": {
+    "any-in-props": 1,
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/modals/ResizableModalShell.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/navigation/TitleBar.tsx": {
+    "prod-imports-dev": 2
+  },
+  "src/components/scanner/ScannerView.tsx": {
+    "labels": 1,
+    "shape-extra-code": 4,
+    "shape-props-name": 1
+  },
+  "src/components/storePicker/SearchStore.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/storePicker/SearchType.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/components/storePicker/SelectGroup.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/storePicker/StorePicker.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/storePicker/index.ts": {
+    "labels": 1
+  },
+  "src/components/toasts/Toast.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/components/toasts/ToastContainer.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/components/toasts/ToastContext.ts": {
+    "labels": 1
+  },
+  "src/components/toasts/ToastProvider.tsx": {
+    "labels": 1
+  },
+  "src/components/toasts/hooks/useToast.ts": {
+    "labels": 1
+  },
+  "src/components/toasts/interfaces/index.ts": {
+    "labels": 1
+  },
+  "src/components/toasts/types/index.ts": {
+    "types-folder": 1
+  },
+  "src/components/transactions/Transaction.tsx": {
+    "commented-code": 1,
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 3
+  },
+  "src/content/posts.ts": {
+    "labels": 1
+  },
+  "src/content/releaseNotes.ts": {
+    "labels": 1
+  },
+  "src/features/adminPageSlice.ts": {
+    "labels": 1
+  },
+  "src/features/appSlice.ts": {
+    "labels": 1
+  },
+  "src/features/baseGroupSlice.ts": {
+    "labels": 1
+  },
+  "src/features/cashiersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/categoriesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/companySlice.ts": {
+    "labels": 1
+  },
+  "src/features/couponSalesSlice.ts": {
+    "labels": 1
+  },
+  "src/features/couponSlice.ts": {
+    "labels": 1
+  },
+  "src/features/ctxMenuSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devAdminPageSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devBaseGroupSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devCashiersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devCategoriesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devCouponSalesSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devCouponSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devEventPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devExportBuilderSlice.ts": {
+    "file-length": 1,
+    "labels": 1
+  },
+  "src/features/dev/devForecastDevSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devForecastSlice.ts": {
+    "file-length": 1,
+    "labels": 1
+  },
+  "src/features/dev/devGroupsPageSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devInvoicesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devItemLookupSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devItemPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devItemReportSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devLossPreventionSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devLpActionsSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devMarkdownsSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devOrdersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devOrganizationSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devPriceOptSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devQsSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devReceiversSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devSalesCacheSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devSalesLedgerSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devSalesPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devSalesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devSalesTrackerSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devSubMarginSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devSuggestedSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devTicketsSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devUpcDevSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/dev/devUpcScannerSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devUsersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/dev/devVendorsSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/eventPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/forecastDevSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/forecastSlice.ts": {
+    "file-length": 1,
+    "labels": 1
+  },
+  "src/features/groupSlice.ts": {
+    "labels": 1
+  },
+  "src/features/groupsPageSlice.ts": {
+    "labels": 1
+  },
+  "src/features/invoicesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/itemLookupSlice.ts": {
+    "labels": 1
+  },
+  "src/features/itemPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/itemReportSlice.ts": {
+    "labels": 1
+  },
+  "src/features/itemScanSlice.ts": {
+    "labels": 1
+  },
+  "src/features/lossPreventionSlice.ts": {
+    "labels": 1
+  },
+  "src/features/lpActionsSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/navSlice.ts": {
+    "labels": 1
+  },
+  "src/features/ordersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/organizationSlice.ts": {
+    "labels": 1
+  },
+  "src/features/qsSlice.ts": {
+    "labels": 1
+  },
+  "src/features/receiversSlice.ts": {
+    "labels": 1
+  },
+  "src/features/salesLedgerSlice.ts": {
+    "labels": 1
+  },
+  "src/features/salesPerfSlice.ts": {
+    "labels": 1
+  },
+  "src/features/salesSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/salesTrackerSlice.ts": {
+    "labels": 1
+  },
+  "src/features/searchSlice.ts": {
+    "labels": 1
+  },
+  "src/features/storeSlice.ts": {
+    "labels": 1
+  },
+  "src/features/subMarginSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/features/suggestedSlice.ts": {
+    "labels": 1
+  },
+  "src/features/ticketsMockData.ts": {
+    "labels": 1
+  },
+  "src/features/upcDevSlice.ts": {
+    "labels": 1
+  },
+  "src/features/upcSlice.ts": {
+    "labels": 1
+  },
+  "src/features/upcUploadSlice.ts": {
+    "commented-code": 1,
+    "labels": 1
+  },
+  "src/features/userSlice.ts": {
+    "labels": 1
+  },
+  "src/features/usersSlice.ts": {
+    "labels": 1
+  },
+  "src/features/vendorsSlice.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/hooks/index.ts": {
+    "labels": 1
+  },
+  "src/hooks/useActualPricePoints.ts": {
+    "labels": 1
+  },
+  "src/hooks/useApiContext.ts": {
+    "labels": 1
+  },
+  "src/hooks/useCriticalReport.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/hooks/useDevApi.ts": {
+    "labels": 1
+  },
+  "src/hooks/useForgetDeletedGroup.ts": {
+    "labels": 1
+  },
+  "src/hooks/usePricePoints.ts": {
+    "labels": 1
+  },
+  "src/hooks/useResizableBox.ts": {
+    "labels": 1
+  },
+  "src/hooks/useSearchScopeLabel.ts": {
+    "labels": 1
+  },
+  "src/interfaces/index.ts": {
+    "file-length": 1,
+    "labels": 1
+  },
+  "src/main.tsx": {
+    "commented-code": 2,
+    "labels": 2
+  },
+  "src/pages/admin/Admin.tsx": {
+    "labels": 1
+  },
+  "src/pages/admin/dev/stores/StoreRecords.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/admin/dev/subExclusions/components/Field.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/cashiers/Cashiers.tsx": {
+    "labels": 1
+  },
+  "src/pages/cashiers/dev/Cashiers.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/cashiers/dev/components/Transaction.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/cashiers/dev/mobile/CashiersMobile.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/cashiers/dev/mobile/SignalTransactionsMobile.tsx": {
+    "selector-outside-hook": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/cashiers/dev/mobile/components/Meta.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/cashiers/dev/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/categories/Categories.tsx": {
+    "labels": 1
+  },
+  "src/pages/categories/dev/components/Kpi.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/categories/dev/components/Stat.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/categories/dev/export/hooks/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/categories/dev/export/utils/index.ts": {
+    "one-line-per-source": 3
+  },
+  "src/pages/categories/dev/hooks/index.ts": {
+    "commented-code": 1
+  },
+  "src/pages/couponSales/CouponSales.tsx": {
+    "labels": 1
+  },
+  "src/pages/couponSales/dev/detail/CpnSalesDetailPanel.tsx": {
+    "one-line-per-source": 1,
+    "selector-outside-hook": 1
+  },
+  "src/pages/couponSales/dev/detail/components/DetailTitleBar.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/couponSales/dev/detail/components/Kpi.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/couponSales/dev/detail/components/SectionList.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/couponSales/dev/detail/components/SectionRow.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/couponSales/dev/detail/components/TransactionsPane.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/couponSales/dev/detail/components/TrendBadge.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/couponSales/dev/export/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/coupons/Coupons.tsx": {
+    "labels": 1
+  },
+  "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
+    "selector-outside-hook": 4
+  },
+  "src/pages/coupons/dev/mobile/CpnExportSheet.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/coupons/dev/mobile/CpnSectionDetail.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/coupons/dev/mobile/CpnStoreList.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/exportBuilder/ExportBuilder.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/ConfigPanel.tsx": {
+    "doc-comment": 1,
+    "file-length": 1,
+    "labels": 1,
+    "shape-extra-code": 8,
+    "shape-extra-component": 3,
+    "shape-extra-type": 1
+  },
+  "src/pages/exportBuilder/dev/CsvPreview.tsx": {
+    "commented-code": 2,
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/DownloadsModal.tsx": {
+    "labels": 1,
+    "shape-extra-code": 2
+  },
+  "src/pages/exportBuilder/dev/ExportBar.tsx": {
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-named-export": 1
+  },
+  "src/pages/exportBuilder/dev/ExportBuilder.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/QueryPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/exportBuilder/dev/SavedExportsModal.tsx": {
+    "labels": 1,
+    "shape-extra-code": 1
+  },
+  "src/pages/exportBuilder/dev/SourcePicker.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/SqlModal.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/SummaryPreview.tsx": {
+    "commented-code": 3,
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/aggregates.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/dateFormats.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/hooks.ts": {
+    "file-length": 1,
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/exportBuilder/dev/query/applyQuery.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/query/configToQuery.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/query/evalQuery.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/exportBuilder/dev/query/parseQuery.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/query/sketchExpr.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/rollup.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/sampleRows.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/savedExports.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/sortRows.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/sources.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/useColumnDrag.ts": {
+    "labels": 1
+  },
+  "src/pages/forecast/Forecasting.tsx": {
+    "labels": 1
+  },
+  "src/pages/forecast/dev/calc/ForecastCalcModal.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/forecast/dev/components/ForecastEntry.tsx": {
+    "selector-outside-hook": 3
+  },
+  "src/pages/forecast/dev/components/ForecastListPanel.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/forecast/dev/components/ForecastRowsTable.tsx": {
+    "selector-outside-hook": 2,
+    "shape-inline-props": 1
+  },
+  "src/pages/forecast/dev/export/ForecastExportModal.tsx": {
+    "selector-outside-hook": 2,
+    "shape-inline-props": 1
+  },
+  "src/pages/groups/dev/components/GroupDetail.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/groups/dev/components/NewGroupModal.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/groups/dev/sharedGroups/components/NewSharedGroup.tsx": {
+    "labels": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/home/Home.tsx": {
+    "doc-comment": 1
+  },
+  "src/pages/home/Login.tsx": {
+    "labels": 1,
+    "shape-extra-code": 2
+  },
+  "src/pages/home/components/CapsLockHint.tsx": {
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/Stage.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/StageCarousel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/about/AboutPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-component": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/about/aboutContent.ts": {
+    "labels": 1
+  },
+  "src/pages/home/portal/fieldNotes/ArticleView.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/fieldNotes/FieldNotesPanel.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/fieldNotes/PostList.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/perspectives/PerspectivesPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/portalContent.tsx": {
+    "labels": 1
+  },
+  "src/pages/home/portal/privacy/PrivacyPanel.tsx": {
+    "labels": 1,
+    "shape-extra-component": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/privacy/privacyContent.ts": {
+    "labels": 1
+  },
+  "src/pages/home/portal/shared/PortalForm.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-extra-type": 3,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/shared/PortalFormDone.tsx": {
+    "doc-comment": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/shared/PortalPanel.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/support/SupportPanel.tsx": {
+    "commented-code": 3,
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/support/supportContent.ts": {
+    "labels": 1
+  },
+  "src/pages/home/portal/terms/TermsPanel.tsx": {
+    "labels": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/terms/termsContent.ts": {
+    "labels": 1
+  },
+  "src/pages/home/portal/walkthrough/WalkthroughPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/home/portal/walkthrough/walkthroughContent.ts": {
+    "labels": 1
+  },
+  "src/pages/inventory/InventorySubDept.tsx": {
+    "labels": 1
+  },
+  "src/pages/inventory/InventoryVendor.tsx": {
+    "labels": 1
+  },
+  "src/pages/invoices/Invoices.tsx": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/AwgInvoices.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 2
+  },
+  "src/pages/invoices/dev/EditableCell.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/invoices/dev/InvoiceCard.tsx": {
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-extra-component": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/invoices/dev/InvoiceExportModal.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/invoices/dev/InvoicesEntry.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/invoices/dev/core/encodeField.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/core/fixedWidth.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/core/overpunch.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/core/reader.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/core/types.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/present.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/invoices/dev/useAwgInvoices.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/allowances.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/applyEdit.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/cost.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/exportCsv.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/exportLines.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/exportOrders.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/group.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/index.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/rebuildFile.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/reconcile.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/retail.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/schema.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/totals.ts": {
+    "labels": 1
+  },
+  "src/pages/invoices/dev/vendors/awg/trailer.ts": {
+    "labels": 1
+  },
+  "src/pages/itemReport/ItemReport.tsx": {
+    "labels": 1
+  },
+  "src/pages/itemReport/dev/ItemReport.tsx": {
+    "one-line-per-source": 2
+  },
+  "src/pages/itemReport/dev/components/DeltaPill.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/components/DetailPopover.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/Block.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/Head.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/Kpi.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/Kpis.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/Line.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/ReceiptDetail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/ShowAll.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/itemReport/dev/rail/components/TransactionSheet.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/itemReport/dev/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lookup/ItemLookup.tsx": {
+    "labels": 1
+  },
+  "src/pages/lookup/dev/desktop/ItemLookupDesktop.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/lookup/dev/desktop/components/LookupDesktopEntry.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/lookup/dev/desktop/components/SaleTypeTimeline.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/lookup/dev/desktop/hooks/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lookup/dev/mobile/ItemLookupMobile.tsx": {
+    "selector-outside-hook": 5
+  },
+  "src/pages/lookup/dev/mobile/LookupEntryScreen.tsx": {
+    "selector-outside-hook": 3
+  },
+  "src/pages/lookup/dev/mobile/components/RecentLookupsCard.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/lookup/dev/mobile/components/RecentLookupsStrip.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/lookup/dev/mobile/components/Tile.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/lossPrevention/LossPrevention.tsx": {
+    "labels": 1
+  },
+  "src/pages/lossPrevention/dev/components/LPDesktop.tsx": {
+    "selector-outside-hook": 3
+  },
+  "src/pages/lossPrevention/dev/components/LPStorePanel.tsx": {
+    "one-line-per-source": 1,
+    "selector-outside-hook": 2
+  },
+  "src/pages/lossPrevention/dev/export/LPExportModal.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lossPrevention/dev/export/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/LPTransactionPanel.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/components/AvgBadge.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/components/ColFilter.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/components/StripCell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/components/TransactionTitleBar.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/lossPrevention/dev/transactions/components/TrendBadge.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/lpActions/LpActions.tsx": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/CashierJourney.tsx": {
+    "labels": 1,
+    "one-line-per-source": 2
+  },
+  "src/pages/lpActions/dev/CashierJourneyChart.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 7,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/JourneySummary.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-component": 2,
+    "shape-inline-props": 1
+  },
+  "src/pages/lpActions/dev/JourneyTransactions.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/LpActions.tsx": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/LpActionsEntry.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/LpExceptionDetail.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/LpExceptionList.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 2,
+    "shape-extra-code": 3,
+    "shape-extra-component": 3,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/ReceiptCase.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseEvidence.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseGrids.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseHeader.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseItems.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseKpis.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseReceipts.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseSummary.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-extra-type": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CaseTabs.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/CashierCase.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "selector-outside-hook": 1,
+    "shape-extra-code": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/ChartTooltip.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-type": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/HourStackChart.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 6,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/WeekLinesChart.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 7,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/case/caseModel.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/case/caseNarrative.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/case/hourProfile.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/case/itemMovement.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/case/storeShare.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/case/useCaseReceipts.ts": {
+    "labels": 1,
+    "selector-outside-hook": 1
+  },
+  "src/pages/lpActions/dev/drill/DrillExportModal.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 1,
+    "shape-extra-type": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/drill/DrillPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-code": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/drill/FacetDetail.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "one-line-per-source": 1,
+    "shape-extra-component": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/drill/FacetDrillChart.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 8,
+    "shape-props-name": 1
+  },
+  "src/pages/lpActions/dev/drill/facetExport.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/drill/facetModel.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/journeyModel.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/journeyTheme.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/lpActionsMetrics.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
+  "src/pages/lpActions/dev/summaryModel.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/useLpExceptionWalk.ts": {
+    "labels": 1
+  },
+  "src/pages/lpActions/dev/useReceiptCase.ts": {
+    "labels": 1
+  },
+  "src/pages/orders/Orders.tsx": {
+    "labels": 1
+  },
+  "src/pages/orders/dev/components/Band.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/Change.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/PickerField.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/Row.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/EditCell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/Head.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/Row.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/SeekField.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/UnitCostCell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/UpcField.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/components/editPanel/components/VendorField.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/export/components/Field.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/mobile/OrdersExportSheet.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/orders/dev/mobile/components/SubDeptChips.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/orders/dev/mobile/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/orders/dev/utils/orderEdit.ts": {
+    "commented-code": 1
+  },
+  "src/pages/organization/Organization.tsx": {
+    "labels": 1
+  },
+  "src/pages/organization/dev/baseGroups/components/NewGroupModal.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/baseGroups/components/Option.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/companies/components/CompanyUsersPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/components/CompanyFilterSelect.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/stores/components/StoreUsersPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/components/OutcomeIcon.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/EffectiveStoresPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/EmptyPicksNotice.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/GrantModeChip.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/ReviewSection.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/Row.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/Rule.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/Section.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/StepAccessType.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/StepReview.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/organization/dev/users/create/components/Stepper.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/quicksight/Dashboard.tsx": {
+    "labels": 1
+  },
+  "src/pages/quicksight/dev/Dashboard.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/pages/receivers/Receivers.tsx": {
+    "labels": 1
+  },
+  "src/pages/receivers/dev/components/detail/ReceiverDetailPanel.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/detail/components/DetailKpiStrip.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/detail/components/DetailNavyHeader.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/detail/components/detailTable/Body.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/detail/components/detailTable/DetailTable.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/detail/components/detailTable/Footer.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/receivers/dev/components/list/ReceiverListPanel.tsx": {
+    "selector-outside-hook": 2,
+    "shape-inline-props": 1
+  },
+  "src/pages/receivers/dev/components/list/components/ListNavyHeader.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/receivers/dev/components/modal/components/CustomColTh.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/receivers/dev/components/modal/interfaces/index.ts": {
+    "labels": 1
+  },
+  "src/pages/receivers/dev/hooks/useReceiversActions.ts": {
+    "labels": 1
+  },
+  "src/pages/receivers/dev/hooks/useReceiversState.ts": {
+    "labels": 1
+  },
+  "src/pages/receivers/dev/mobile/ReceiversMobile.tsx": {
+    "selector-outside-hook": 3
+  },
+  "src/pages/receivers/dev/mobile/components/RcvReceiverList.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/Sales.tsx": {
+    "labels": 1
+  },
+  "src/pages/sales/dev/components/DeltaPill.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/components/InsightToggle.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/components/PeriodKpis.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/components/StoreColFilter.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/groupCompare/GroupComparisonPanel.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/groupCompare/components/QuestionSection.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/groupCompare/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/investigate/components/ActPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Bar.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Carousel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/CauseChips.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Document.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/EventTimeline.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/EvidenceRail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Fold.tsx": {
+    "one-line-per-source": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/GridBody.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/GridContextMenu.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/GridFoot.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/GridHead.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/GridPager.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/HoldsPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Index.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/InvestigationHeader.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/InvestigationTabs.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Ladder.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/LoadNote.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/PriceChart.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Rung.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/SideBySide.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/SkCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/StoreHead.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/SupplyPanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/SupplyWindowNote.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/TabSkeleton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Timeline.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Waves.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/investigate/components/Weeks.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/ledger/SalesLedger.tsx": {
+    "one-line-per-source": 1,
+    "selector-outside-hook": 4
+  },
+  "src/pages/sales/dev/ledger/components/LedgerHeader.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/mobile/perf/SalesPerfMobile.tsx": {
+    "one-line-per-source": 2,
+    "selector-outside-hook": 3
+  },
+  "src/pages/sales/dev/mobile/perf/components/PerfSearchScreen.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/mobile/perf/components/PerfStoreReport.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/mobile/perf/components/StoreListControls.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/mobile/perf/hooks/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/StoreDetailPopup.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/storePanel/components/PopupTipButton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/export/SalesExportModal.tsx": {
+    "commented-code": 1,
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/storePanel/export/hooks/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/export/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/hourly/PopupHourlyView.tsx": {
+    "labels": 1
+  },
+  "src/pages/sales/dev/storePanel/hourly/components/HourDetailPanel.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/hourly/components/HourSignalList.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/hourly/components/HourSignalRow.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/hourly/components/HourlySideBySide.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Block.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Cell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/DeptReport.tsx": {
+    "selector-outside-hook": 2
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Detail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/ListRow.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Mark.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Measure.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptDetailPanel.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptSignalList.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/SubDeptSignalRow.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/storePanel/subDepts/components/Tile.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/DailyRecap.tsx": {
+    "selector-outside-hook": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/PagerButton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapBasketsCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapDayView.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapExceptionsCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapHourTip.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapItemsTable.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapItemsView.tsx": {
+    "one-line-per-source": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapMoneyCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapPager.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapPriceMix.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapShapeCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapSortHead.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapStatCard.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/summary/components/RecapViewItemsButton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/PopupTopItems.tsx": {
+    "selector-outside-hook": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/CtaIcon.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/DeptShareList.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/InvoicesButton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/InvoicesRail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemBuyCost.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemCost.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemCta.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemDisplay.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemHistory.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemIdentity.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemListHead.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemListToolbar.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemRetail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/ItemRows.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/PriceRow.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/Rail.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/Row.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/TopItemsReport.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/sales/dev/storePanel/top200/components/TotalsStrip.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/sales/dev/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/sales/dev/utils/ledgerUtils.ts": {
+    "one-line-per-source": 2
+  },
+  "src/pages/salesTracker/SalesTracker.tsx": {
+    "labels": 1
+  },
+  "src/pages/salesTracker/dev/components/TrackerEntryCard.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/salesTracker/dev/detail/TrackerDetail.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/settings/Settings.tsx": {
+    "doc-comment": 1
+  },
+  "src/pages/subDepts/SubDeptMargins.tsx": {
+    "labels": 1
+  },
+  "src/pages/subDepts/dev/components/Sparkline.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/MarginPerfItemsTable.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/ColFilter.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/GradeCell.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/ItemDayTrend.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/ItemListRow.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/ItemListToolbar.tsx": {
+    "one-line-per-source": 2
+  },
+  "src/pages/subDepts/dev/components/itemsTable/components/ItemSeverityBadge.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/subDepts/dev/components/itemsTable/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/subDepts/dev/export/MarginPerfExportModal.tsx": {
+    "one-line-per-source": 2
+  },
+  "src/pages/subDepts/dev/export/utils/index.ts": {
+    "one-line-per-source": 2
+  },
+  "src/pages/subDepts/dev/utils/index.ts": {
+    "one-line-per-source": 2
+  },
+  "src/pages/suggested/Suggested.tsx": {
+    "labels": 1
+  },
+  "src/pages/suggested/dev/Suggested.tsx": {
+    "labels": 1
+  },
+  "src/pages/suggested/dev/components/Bar.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/export/SuggestedExportModal.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/suggested/dev/hooks/index.ts": {
+    "labels": 1
+  },
+  "src/pages/suggested/dev/orderSheet/components/NotSellingTab.tsx": {
+    "one-line-per-source": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/orderSheet/components/ProductionTab.tsx": {
+    "one-line-per-source": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/orderSheet/components/Row.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/orderSheet/components/SheetSkeleton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/StoreTreePanel.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/components/PanelFrame.tsx": {
+    "labels": 1
+  },
+  "src/pages/suggested/dev/storeTree/components/StoreListSkeleton.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/SuggestedHelpModal.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Defs.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Em.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Example.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Lead.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Note.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/P.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/storeTree/help/components/Pill.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/suggested/dev/utils/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/tickets/Tickets.tsx": {
+    "doc-comment": 1
+  },
+  "src/pages/tickets/dev/components/Caption.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/tickets/dev/components/Fact.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
+    "selector-outside-hook": 3,
+    "shape-inline-props": 1
+  },
+  "src/pages/tickets/dev/components/modals/ReportIssueModal.tsx": {
+    "selector-outside-hook": 1
+  },
+  "src/pages/tickets/dev/components/modals/techsModal/components/TechRow.tsx": {
+    "one-line-per-source": 1
+  },
+  "src/pages/tickets/dev/components/ticketInbox/components/QueueTabs.tsx": {
+    "labels": 1
+  },
+  "src/pages/tickets/dev/components/ticketInbox/components/SearchBar.tsx": {
+    "labels": 1
+  },
+  "src/pages/tickets/dev/components/ticketInbox/components/TicketRow.tsx": {
+    "labels": 1
+  },
+  "src/pages/upc/UpcList.tsx": {
+    "labels": 1
+  },
+  "src/pages/upc/dev/components/UpcExportModal.tsx": {
+    "commented-code": 1,
+    "labels": 1,
+    "shape-extra-code": 5,
+    "shape-extra-type": 2,
+    "shape-props-name": 1
+  },
+  "src/pages/upc/dev/components/UpcKpiStrip.tsx": {
+    "labels": 1
+  },
+  "src/pages/upc/dev/modules/movement/MovementGridPanel.tsx": {
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/upc/dev/modules/movement/MovementTab.tsx": {
+    "labels": 1,
+    "shape-extra-code": 4,
+    "shape-extra-component": 1,
+    "shape-named-export": 1
+  },
+  "src/pages/upc/dev/modules/movement/movementStats.ts": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/UpcScanner.tsx": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/BatchList.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-extra-code": 1,
+    "shape-extra-component": 1
+  },
+  "src/pages/upcScanner/dev/CaptureCard.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/SendSheet.tsx": {
+    "labels": 1,
+    "shape-inline-props": 1
+  },
+  "src/pages/upcScanner/dev/UpcScanner.tsx": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/UpcScannerMobile.tsx": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/tagFile.ts": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/useScanResolve.ts": {
+    "labels": 1
+  },
+  "src/pages/upcScanner/dev/useSendBatch.ts": {
+    "labels": 1
+  },
+  "src/pages/vendors/Vendors.tsx": {
+    "labels": 1
+  },
+  "src/pages/vendors/dev/components/Kpi.tsx": {
+    "shape-inline-props": 1
+  },
+  "src/pages/vendors/dev/export/hooks/index.ts": {
+    "one-line-per-source": 1
+  },
+  "src/pages/vendors/dev/export/utils/index.ts": {
+    "one-line-per-source": 3
+  },
+  "src/pages/vendors/dev/utils/vendorGradedItems.ts": {
+    "one-line-per-source": 1
+  },
+  "src/store/devReducers.ts": {
+    "labels": 1
+  },
+  "src/store/index.ts": {
+    "labels": 1
+  },
+  "src/store/pageReducers.ts": {
+    "labels": 1
+  },
+  "src/svgs/CashierIcon.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/Check.tsx": {
+    "doc-comment": 1
+  },
+  "src/svgs/CheckBoxIcon.tsx": {
+    "doc-comment": 1,
+    "shape-props-name": 1
+  },
+  "src/svgs/ChevronUpDownIcon.tsx": {
+    "doc-comment": 1,
+    "shape-props-name": 1
+  },
+  "src/svgs/CouponIcon.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/DashbordIconV2.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/Eye.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/svgs/GroupsIcon.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/SalesIconV2.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/UpcListIcon.tsx": {
+    "doc-comment": 1,
+    "labels": 1
+  },
+  "src/svgs/X.tsx": {
+    "doc-comment": 1
+  },
+  "src/utils/cogs.ts": {
+    "commented-code": 4
+  },
+  "src/utils/dates.ts": {
+    "labels": 1
+  },
+  "src/utils/forecastCalc.ts": {
+    "commented-code": 2,
+    "labels": 1
+  },
+  "src/utils/grading.ts": {
+    "labels": 1
+  },
+  "src/utils/index.ts": {
+    "labels": 1
+  },
+  "src/utils/itemGrading.ts": {
+    "labels": 1
+  },
+  "src/utils/itemMargins.ts": {
+    "labels": 1
+  },
+  "src/utils/marginRows.ts": {
+    "labels": 1
+  },
+  "src/utils/pageCalls.ts": {
+    "labels": 1
+  },
+  "src/utils/perfPairs.ts": {
+    "labels": 1
+  },
+  "src/utils/pricePoints.ts": {
+    "labels": 1
+  },
+  "src/utils/pricedUnits.ts": {
+    "labels": 1
+  },
+  "src/utils/productCode.ts": {
+    "commented-code": 1
+  },
+  "src/utils/session.ts": {
+    "labels": 1
+  },
+  "src/utils/sessionGuard.ts": {
+    "labels": 1
+  },
+  "src/utils/storeMarginDelta.ts": {
+    "labels": 1
+  },
+  "src/utils/useTriStateSort.ts": {
+    "labels": 1
+  },
+  "src/vitest.setup.ts": {
+    "labels": 1
+  }
+}
