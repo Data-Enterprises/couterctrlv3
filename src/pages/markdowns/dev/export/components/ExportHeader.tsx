@@ -18,7 +18,7 @@ const ExportHeader = ({ onClose }: ExportHeaderProps) => {
           Export CSV
         </p>
         <p className="text-custom-white/95 text-[10px] mt-0.5">
-          {ctx.scopeLabel} — {ctx.startDate} – {ctx.endDate}
+          {ctx.shown.scope} — {ctx.shown.startDate} – {ctx.shown.endDate}
         </p>
       </div>
       <button

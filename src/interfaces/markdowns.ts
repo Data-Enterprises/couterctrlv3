@@ -66,5 +66,12 @@ export interface MarkdownFilters {
   minPercent: number | null;
 }
 
+/** The search a load ran on, as the headers and the file name show it. */
+export interface MarkdownSearch {
+  scope: string;
+  startDate: string;
+  endDate: string;
+}
+
 /** A column the Markdowns grid can sort on. */
 export type MarkdownSortKey = keyof MarkdownItem;

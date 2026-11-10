@@ -41,7 +41,7 @@ const MarkdownsExportModal = ({ onClose }: MarkdownsExportModalProps) => {
     const columns = MARKDOWN_COLUMNS.filter((c) => chosen.has(c.key));
     downloadCsv(
       buildMarkdownsCsv(rows, columns),
-      markdownsFileName(ctx.scopeLabel, ctx.startDate, ctx.endDate),
+      markdownsFileName(ctx.shown.scope, ctx.shown.startDate, ctx.shown.endDate),
     );
     onClose();
   };

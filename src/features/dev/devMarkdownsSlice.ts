@@ -7,6 +7,7 @@ import type { SortState } from "../../utils/useTriStateSort";
 import type {
   MarkdownFilters,
   MarkdownItem,
+  MarkdownSearch,
   MarkdownSortKey,
 } from "../../interfaces/markdowns";
 
@@ -21,6 +22,9 @@ interface DevMarkdownsState {
   /** The search now loading. An older search's late pages check it and stop,
    *  even after the page was left and opened again. */
   requestId: string | null;
+  /** The search the rows came from, so the headers keep naming it after the
+   *  search bar moves on (another page can change it). */
+  searched: MarkdownSearch | null;
 }
 
 const emptyFilters: MarkdownFilters = {
@@ -43,6 +47,7 @@ const initialState: DevMarkdownsState = {
   filters: emptyFilters,
   sort: null,
   requestId: null,
+  searched: null,
 };
 
 const devMarkdownsSlice = createSlice({
@@ -85,8 +90,12 @@ const devMarkdownsSlice = createSlice({
             ? { col, dir: "asc" }
             : null;
     },
-    beginMarkdownsRequest: (state, action: PayloadAction<string>) => {
-      state.requestId = action.payload;
+    beginMarkdownsRequest: (
+      state,
+      action: PayloadAction<{ id: string; searched: MarkdownSearch }>,
+    ) => {
+      state.requestId = action.payload.id;
+      state.searched = action.payload.searched;
     },
     resetMarkdownsSlice: () => initialState,
   },

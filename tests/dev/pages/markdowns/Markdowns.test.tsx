@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
-import { setMarkdownFilters, setMarkdowns } from "@/features/dev/devMarkdownsSlice";
+import { beginMarkdownsRequest, setMarkdownFilters, setMarkdowns } from "@/features/dev/devMarkdownsSlice";
+import { setEndDate, setSelectedStore, setStartDate } from "@/features/searchSlice";
 import Markdowns from "@/pages/markdowns/dev/Markdowns";
 
 // Interfaces
@@ -130,6 +131,22 @@ describe("the Markdowns page", () => {
     );
     expect(screen.getByText("2 of 3 lines")).toBeTruthy();
     expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb"]);
+  });
+
+  it("keeps naming the search the rows came from after the search bar changes", () => {
+    const { store } = setup(false);
+    act(() => {
+      store.dispatch(beginMarkdownsRequest({ id: "a", searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
+      store.dispatch(setMarkdowns(rows));
+      // Another page picks a different store and week.
+      store.dispatch(setSelectedStore({ store_name: "Tupelo Market" } as never));
+      store.dispatch(setStartDate("10/01/2026"));
+      store.dispatch(setEndDate("10/07/2026"));
+    });
+    expect(screen.getAllByText(/Food Giant Hayti/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/11\/03\/2026 – 11\/05\/2026/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Tupelo Market/)).toBeNull();
+    expect(screen.queryByText(/10\/01\/2026/)).toBeNull();
   });
 
   it("draws rows that share an id across stores without mixing them up", () => {

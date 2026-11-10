@@ -28,9 +28,9 @@ const ConfigHeader = ({ onOpenSearch }: ConfigHeaderProps) => {
         </button>
       </div>
       <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
-        <span className="text-custom-white/95 text-[12px] truncate">{ctx.scopeLabel}</span>
+        <span className="text-custom-white/95 text-[12px] truncate">{ctx.shown.scope}</span>
         <span className="text-custom-white/95 text-[12px] flex-shrink-0 ml-auto">
-          {ctx.startDate} – {ctx.endDate}
+          {ctx.shown.startDate} – {ctx.shown.endDate}
         </span>
       </div>
     </div>

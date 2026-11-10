@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
+  beginMarkdownsRequest,
   clearMarkdownFilters,
   setLoading,
   setMarkdownFilters,
@@ -58,6 +59,7 @@ describe("the Markdowns slice", () => {
     store.dispatch(setMarkdowns(rows));
     store.dispatch(setMarkdownFilters({ subIds: [5], types: ["Waste"] }));
     store.dispatch(toggleMarkdownSort("markdown_percent"));
+    store.dispatch(beginMarkdownsRequest({ id: "a", searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
     store.dispatch(setNotice("No markdowns came back for this search."));
     store.dispatch(resetAppSlice());
     expect(store.getState().dev.markdowns).toEqual(fresh());
@@ -70,6 +72,13 @@ describe("the Markdowns slice", () => {
     expect(s.sort).toEqual({ col: "markdown_percent", dir: "asc" });
     s = reducer(s, toggleMarkdownSort("markdown_percent"));
     expect(s.sort).toBeNull();
+  });
+
+  it("remembers the search a load began on, and the newest one wins", () => {
+    let s = reducer(fresh(), beginMarkdownsRequest({ id: "a", searched: { scope: "Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
+    s = reducer(s, beginMarkdownsRequest({ id: "b", searched: { scope: "Tupelo", startDate: "11/01/2026", endDate: "11/02/2026" } }));
+    expect(s.requestId).toBe("b");
+    expect(s.searched).toEqual({ scope: "Tupelo", startDate: "11/01/2026", endDate: "11/02/2026" });
   });
 
   it("starts a new column descending", () => {

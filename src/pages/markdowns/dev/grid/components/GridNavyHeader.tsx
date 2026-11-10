@@ -19,7 +19,7 @@ const GridNavyHeader = ({ shown, onExport }: GridNavyHeaderProps) => {
       <div className="text-[13px] font-semibold text-custom-white min-w-0 truncate">
         Markdowns
         <span className="ml-2 text-[11px] font-normal text-custom-white">
-          — {ctx.scopeLabel} · {ctx.startDate} – {ctx.endDate}
+          — {ctx.shown.scope} · {ctx.shown.startDate} – {ctx.shown.endDate}
         </span>
       </div>
       <div className="flex items-center gap-3 mt-0.5 flex-shrink-0">

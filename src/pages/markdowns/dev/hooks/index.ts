@@ -45,6 +45,9 @@ export const useMarkdownsCtx = () => {
     selectedGroup,
   } = useAppSelector((state) => state.search);
   const markdowns = useAppSelector((state) => state.dev.markdowns);
+  const scopeLabel = isGroupSearch(type)
+    ? (selectedGroup?.group_name ?? "Group")
+    : (selectedStore?.store_name ?? "Store");
 
   return {
     dispatch,
@@ -55,11 +58,11 @@ export const useMarkdownsCtx = () => {
     endDate,
     lastStore,
     lastGroup,
-    /** The store or group searched, as the panel headers name it. */
-    scopeLabel: isGroupSearch(type)
-      ? (selectedGroup?.group_name ?? "Group")
-      : (selectedStore?.store_name ?? "Store"),
-    ...markdowns, // markdowns, loading, progress, notice, filters, sort
+    /** The store or group in the search bar now. */
+    scopeLabel,
+    ...markdowns, // markdowns, loading, progress, notice, filters, sort, searched
+    /** The search the rows came from, for the headers and the file name. */
+    shown: markdowns.searched ?? { scope: scopeLabel, startDate, endDate },
   };
 };
 
@@ -83,7 +86,16 @@ export const useLoadMarkdowns = () => {
     // A newer search, even one started after the page was left and opened
     // again, makes this one's late pages stale. Checked through the store.
     const id = `${Date.now()}-${Math.random()}`;
-    ctx.dispatch(beginMarkdownsRequest(id));
+    ctx.dispatch(
+      beginMarkdownsRequest({
+        id,
+        searched: {
+          scope: ctx.scopeLabel,
+          startDate: ctx.startDate,
+          endDate: ctx.endDate,
+        },
+      }),
+    );
     const stale = () =>
       ctx.dispatch((_, getState) => getState().dev.markdowns.requestId !== id);
     const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
