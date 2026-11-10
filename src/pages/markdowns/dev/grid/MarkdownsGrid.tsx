@@ -8,6 +8,7 @@ import { DEFAULT_PAGE_SIZE } from "./utils";
 
 // Components
 import GridNavyHeader from "./components/GridNavyHeader";
+import GridKpiStrip from "./components/GridKpiStrip";
 import GridHeader from "./components/GridHeader";
 import GridRow from "./components/GridRow";
 import GridPager from "./components/GridPager";
@@ -17,7 +18,8 @@ interface MarkdownsGridProps {
 }
 
 /** The right panel, as Receivers' detail panel draws its line items: navy
- *  header, the table of every markdown the filters keep, and a pager. */
+ *  header, the KPI strip, the table of every markdown the filters keep, and
+ *  a pager. */
 const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
   const visible = useVisibleMarkdowns();
   const [page, setPage] = useState(0);
@@ -40,6 +42,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
       style={{ flex: 1, minWidth: 0 }}
     >
       <GridNavyHeader shown={visible.length} onExport={onExport} />
+      <GridKpiStrip rows={visible} />
 
       <div className="flex-1 overflow-auto thin-scrollbar">
         <table data-help="lines" className="w-full border-collapse text-[12px]">

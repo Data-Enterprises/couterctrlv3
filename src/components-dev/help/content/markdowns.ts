@@ -73,6 +73,21 @@ export const MARKDOWNS_HELP: HelpContent = {
       anchor: "filters",
     },
     {
+      term: "Markdown $",
+      def: "Each line's markdown per unit times its quantity, or its weight for a scaled item, added up for the lines shown.",
+      anchor: "kpis",
+    },
+    {
+      term: "Avg MD %",
+      def: "The markdown dollars over what the same lines sold for before the markdown, so a big line counts for more than a small one.",
+      anchor: "kpis",
+    },
+    {
+      term: "Waste $",
+      def: "The markdown dollars on Waste lines alone.",
+      anchor: "kpis",
+    },
+    {
       term: "Type",
       def: "How the markdown was keyed: a new price, a percentage off, or waste.",
       anchor: "lines",

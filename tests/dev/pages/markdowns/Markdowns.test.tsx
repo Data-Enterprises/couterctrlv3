@@ -93,6 +93,24 @@ describe("the Markdowns page", () => {
     expect(headings).not.toContain("Category #");
   });
 
+  it("shows the strip's figures for the rows on screen, and follows the filters", () => {
+    const { store, view } = setup();
+    const kpi = (label: string) => {
+      const strip = view.container.querySelector<HTMLElement>('[data-help="kpis"]')!;
+      return within(strip).getByText(label).nextElementSibling?.textContent;
+    };
+    // Each row: $1 off a unit, 14 units.
+    expect(kpi("Markdowns")).toBe("3");
+    expect(kpi("Items")).toBe("1");
+    expect(kpi("Markdown $")).toBe("$42.00");
+    expect(kpi("Waste $")).toBe("$14.00");
+    act(() => {
+      store.dispatch(setMarkdownFilters({ types: ["Price"] }));
+    });
+    expect(kpi("Markdowns")).toBe("1");
+    expect(kpi("Waste $")).toBe("$0.00");
+  });
+
   it("narrows the grid and the counts when a filter is set", () => {
     const { store } = setup();
     act(() => {
