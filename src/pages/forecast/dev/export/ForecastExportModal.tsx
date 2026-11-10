@@ -27,11 +27,15 @@ import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSli
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 
+interface ForecastExportModalProps {
+  onClose: () => void;
+}
+
 /**
  * Forecast export, with the other export modals' shell and Presets/Custom
  * split. Presets are multi-select: each ticked one downloads as its own file.
  */
-const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
+const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
   const {
     rowData,
     checkedUpcs,

@@ -1143,12 +1143,10 @@
     "selector-outside-hook": 2
   },
   "src/pages/forecast/dev/components/ForecastRowsTable.tsx": {
-    "selector-outside-hook": 2,
-    "shape-inline-props": 1
+    "selector-outside-hook": 2
   },
   "src/pages/forecast/dev/export/ForecastExportModal.tsx": {
-    "selector-outside-hook": 2,
-    "shape-inline-props": 1
+    "selector-outside-hook": 2
   },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1

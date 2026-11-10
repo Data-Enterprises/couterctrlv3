@@ -33,17 +33,17 @@ import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 
+interface ForecastRowsTableProps {
+  onExportClick: () => void;
+}
+
 /**
  * The forecast grid: a CSS grid on a shared column template, with one
  * tri-state sort (`useTriStateSort`). Detail is in the calculator popup on
  * double-click. Notes are set in bulk from the toolbar, or per item in the
  * popup.
  */
-const ForecastRowsTable = ({
-  onExportClick,
-}: {
-  onExportClick: () => void;
-}) => {
+const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
   const dispatch = useAppDispatch();
   const {
     rowData,
