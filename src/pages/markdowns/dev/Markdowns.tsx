@@ -48,7 +48,9 @@ const Markdowns = () => {
           })}
         </SearchPopup>
       )}
-      {exportOpen && <MarkdownsExportModal onClose={() => setExportOpen(false)} />}
+      {exportOpen && (
+        <MarkdownsExportModal onClose={() => setExportOpen(false)} />
+      )}
     </div>
   );
 };

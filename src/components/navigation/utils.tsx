@@ -14,7 +14,6 @@ import {
   CircleStackIcon,
   Cog6ToothIcon,
   BuildingOfficeIcon,
-  Squares2X2Icon,
   TruckIcon,
   ArchiveBoxIcon,
   ClockIcon,
@@ -35,6 +34,8 @@ import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
 import CouponIcon from "../../svgs/CouponIcon";
+import { performancePages } from "./categoryPages/performance";
+import { analyticsPages } from "./categoryPages/analytics";
 
 export type Navigation = {
   name: string;
@@ -303,127 +304,12 @@ export const categories: NavCategory[] = [
   {
     name: "Performance",
     icon: ArrowTrendingUpIcon,
-    pages: [
-      {
-        name: "Sales",
-        href: "sales",
-        icon: SalesIconV2,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Loss Prevention",
-        href: "loss-prevention",
-        icon: CashierIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Sub Dept Margins",
-        href: "sub-dept-margins",
-        icon: CurrencyDollarIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Categories",
-        href: "categories",
-        icon: Squares2X2Icon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Vendors",
-        href: "vendors",
-        icon: TruckIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Coupon Sales",
-        href: "coupon-sales",
-        icon: CouponIcon,
-        // Has its own mobile view (pages/shared/eventPerf, shared with Loss
-        // Prevention) — store list, per-store report, receipts. The Data-category
-        // Coupons page is a different report, not this one's phone version.
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-    ],
+    pages: performancePages,
   },
   {
     name: "Analytics",
     icon: ChartBarSquareIcon,
-    pages: [
-      {
-        name: "Item Lookup",
-        href: "item-lookup",
-        icon: MagnifyingGlassIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Cashiers",
-        href: "cashiers",
-        icon: MagnifyingGlassCircleIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Upc List",
-        href: "upc-upload",
-        icon: UpcListIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Forecasting",
-        href: "forecasting",
-        icon: ArrowTrendingUpIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-    ],
+    pages: analyticsPages,
   },
   {
     name: "Data",
