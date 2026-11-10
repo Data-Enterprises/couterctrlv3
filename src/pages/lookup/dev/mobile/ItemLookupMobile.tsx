@@ -1,6 +1,7 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
+import { useAppDispatch, useStoreName } from "../../../../hooks";
+import { useLookupCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -48,9 +49,12 @@ import LookupItemReport from "./LookupItemReport";
 const ItemLookupMobile = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { assignedStores } = useAppSelector((s) => s.user);
   const {
+    url,
+    token,
+    assignedStores,
+    availableStoreNumbers,
+    selectedStoreNumber,
     selectedStore,
     itemsLoaded,
     productCode,
@@ -60,13 +64,9 @@ const ItemLookupMobile = () => {
     itemLookupHistoryAll,
     totalSales,
     totalQty,
-  } = useAppSelector((s) => s.dev.item);
+  } = useLookupCtx();
   const [isLoading, setIsLoading] = useState(false);
   const resolvedStoreName = useStoreName(selectedStore);
-  const availableStoreNumbers = useAppSelector(
-    (s) => s.dev.item.availableStoreNumbers,
-  );
-  const selectedStoreNumber = useAppSelector((s) => s.dev.item.selectedStoreNumber);
   // Co-located stores resolve to one assignedStores record — rewrite the
   // embedded number to the location on screen. See utils/storeIdentity.
   const storeName = applyStoreNumberToName(

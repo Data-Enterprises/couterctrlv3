@@ -1,6 +1,7 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector, useStoreName } from "../../../../hooks";
+import { useStoreName } from "../../../../hooks";
+import { useLookupCtx } from "../hooks";
 import { useLookupQueue } from "./hooks";
 
 // Utils
@@ -24,7 +25,7 @@ import LookupExportModal from "./components/LookupExportModal";
 /** The desktop Item lookup page: the search card first, then the item queue beside the selected item's report,
  *  with the search and export pop-ups. */
 const ItemLookupDesktop = () => {
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { selectedStore } = useLookupCtx();
   const resolvedStoreName = useStoreName(selectedStore);
   const {
     queue,

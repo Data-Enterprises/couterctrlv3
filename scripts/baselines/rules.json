@@ -931,24 +931,6 @@
   "src/pages/lookup/ItemLookup.tsx": {
     "labels": 1
   },
-  "src/pages/lookup/dev/desktop/ItemLookupDesktop.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/lookup/dev/desktop/components/LookupDesktopEntry.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/lookup/dev/mobile/ItemLookupMobile.tsx": {
-    "selector-outside-hook": 5
-  },
-  "src/pages/lookup/dev/mobile/LookupEntryScreen.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/lookup/dev/mobile/components/RecentLookupsCard.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/lookup/dev/mobile/components/RecentLookupsStrip.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/lossPrevention/LossPrevention.tsx": {
     "labels": 1
   },

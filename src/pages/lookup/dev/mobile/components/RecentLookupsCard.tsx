@@ -1,5 +1,5 @@
 // Hooks
-import { useAppSelector } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
@@ -17,7 +17,7 @@ interface RecentLookupsCardProps {
  * gets the width. A scale item shows pounds (it rings `qty: 0`).
  */
 const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) => {
-  const { recentLookups } = useAppSelector((s) => s.dev.item);
+  const { recentLookups } = useLookupCtx();
   if (!recentLookups.length) return null;
 
   const rows = (

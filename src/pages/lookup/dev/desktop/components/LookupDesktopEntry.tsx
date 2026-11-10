@@ -1,10 +1,7 @@
 // Hooks
 import { useState } from "react";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useStoreName,
-} from "../../../../../hooks";
+import { useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
 
 // Redux
 import { setSelectedStore } from "../../../../../features/dev/devItemLookupSlice";
@@ -23,8 +20,7 @@ interface LookupDesktopEntryProps {
  *  Enter or the button runs the lookup once a store and a UPC are entered. */
 const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { assignedStores, selectedStore } = useLookupCtx();
   const storeName = useStoreName(selectedStore, "");
   const [rawUpcs, setRawUpcs] = useState("");
 

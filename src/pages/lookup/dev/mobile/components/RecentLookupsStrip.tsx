@@ -1,5 +1,5 @@
 // Hooks
-import { useAppSelector } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
@@ -16,7 +16,7 @@ const RecentLookupsStrip = ({
   onSelect,
   variant = "cards",
 }: RecentLookupsStripProps) => {
-  const { recentLookups } = useAppSelector((s) => s.dev.item);
+  const { recentLookups } = useLookupCtx();
   if (!recentLookups.length) return null;
 
   if (variant === "list") {

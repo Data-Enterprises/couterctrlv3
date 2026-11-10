@@ -1,6 +1,7 @@
 // Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useLookupCtx } from "../hooks";
 import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
 
 // Redux
@@ -29,9 +30,7 @@ const LookupEntryScreen = ({
   onSelectRecent,
 }: LookupEntryScreenProps) => {
   const dispatch = useAppDispatch();
-  const { error } = useAppSelector((s) => s.itemScan);
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { scanError: error, assignedStores, selectedStore } = useLookupCtx();
   const [manualUpc, setManualUpc] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);
