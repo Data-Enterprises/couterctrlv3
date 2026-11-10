@@ -7,9 +7,8 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 // Redux
 import {
   beginMarkdownsRequest,
-  clearMarkdownFilters,
+  finishMarkdownsSearch,
   setLoading,
-  setMarkdowns,
   setNotice,
   setProgress,
 } from "../../../../features/dev/devMarkdownsSlice";
@@ -78,6 +77,8 @@ export const useVisibleMarkdowns = () => {
 /**
  * Loads every markdown for the current search: page 1, then the rest one at a
  * time, so "page 2 of 4" is true and no burst of 3 MB pages lands at once.
+ * The pages are gathered off to the side and replace what is on screen only
+ * once all of them are in, so a search that fails leaves the last results.
  */
 export const useLoadMarkdowns = () => {
   const ctx = useMarkdownsCtx();
@@ -86,16 +87,14 @@ export const useLoadMarkdowns = () => {
     // A newer search, even one started after the page was left and opened
     // again, makes this one's late pages stale. Checked through the store.
     const id = `${Date.now()}-${Math.random()}`;
-    ctx.dispatch(
-      beginMarkdownsRequest({
-        id,
-        searched: {
-          scope: ctx.scopeLabel,
-          startDate: ctx.startDate,
-          endDate: ctx.endDate,
-        },
-      }),
-    );
+    const searched = {
+      scope: ctx.scopeLabel,
+      startDate: ctx.startDate,
+      endDate: ctx.endDate,
+    };
+    // Whether there are results on screen for a failure to leave in place.
+    const hadRows = ctx.markdowns.length > 0;
+    ctx.dispatch(beginMarkdownsRequest({ id }));
     const stale = () =>
       ctx.dispatch((_, getState) => getState().dev.markdowns.requestId !== id);
     const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
@@ -103,9 +102,6 @@ export const useLoadMarkdowns = () => {
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 
-    ctx.dispatch(setMarkdowns([]));
-    // The last search's picks may not exist in this one's rows, as in Orders.
-    ctx.dispatch(clearMarkdownFilters());
     ctx.dispatch(setNotice(null));
     ctx.dispatch(setLoading(true));
 
@@ -130,13 +126,14 @@ export const useLoadMarkdowns = () => {
         return;
       }
       if (first.total_records === 0) {
+        // A search that worked and found nothing: that is the answer now.
+        ctx.dispatch(finishMarkdownsSearch({ rows: [], searched }));
         ctx.dispatch(setNotice("No markdowns came back for this search."));
         return;
       }
 
       total = first.total_pages;
       let rows: MarkdownItem[] = first.markdowns;
-      ctx.dispatch(setMarkdowns(rows));
 
       for (let page = 2; page <= total; page++) {
         reading = page;
@@ -156,8 +153,10 @@ export const useLoadMarkdowns = () => {
         if (stale()) return;
         if (next.error !== 0) throw { message: next.msg };
         rows = [...rows, ...next.markdowns];
-        ctx.dispatch(setMarkdowns(rows));
       }
+      // Every page is in: swap it in. The last search's picks may not exist
+      // in these rows, as in Orders, so they go with it.
+      ctx.dispatch(finishMarkdownsSearch({ rows, searched }));
     } catch (err) {
       // The backend answers "No stores found" and the like with a 4xx, which
       // axios throws: show its message rather than the HTTP one.
@@ -167,11 +166,15 @@ export const useLoadMarkdowns = () => {
       };
       if (stale()) return;
       toast.error(e.response?.data?.msg ?? e.message);
-      // Part of a search would read as all of it, so show none of it.
+      // Part of a search would read as all of it, so none of it is shown:
+      // whatever was on screen before stays.
       if (reading > 1) {
-        ctx.dispatch(setMarkdowns([]));
         ctx.dispatch(
-          setNotice(`Page ${reading} of ${total} didn't load, so nothing is shown. Search again.`),
+          setNotice(
+            hadRows
+              ? `Page ${reading} of ${total} didn't load, so the last results are still shown. Search again.`
+              : `Page ${reading} of ${total} didn't load, so nothing is shown. Search again.`,
+          ),
         );
       }
     } finally {

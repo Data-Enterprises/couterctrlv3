@@ -90,12 +90,20 @@ const devMarkdownsSlice = createSlice({
             ? { col, dir: "asc" }
             : null;
     },
-    beginMarkdownsRequest: (
-      state,
-      action: PayloadAction<{ id: string; searched: MarkdownSearch }>,
-    ) => {
+    /** A search starts. What is on screen stays until it has every page. */
+    beginMarkdownsRequest: (state, action: PayloadAction<{ id: string }>) => {
       state.requestId = action.payload.id;
+    },
+    /** A search finished: its rows replace the last ones in one step, the
+     *  last search's filter picks go, and the headers name this search. */
+    finishMarkdownsSearch: (
+      state,
+      action: PayloadAction<{ rows: MarkdownItem[]; searched: MarkdownSearch }>,
+    ) => {
+      state.markdowns = action.payload.rows;
+      state.filters = emptyFilters;
       state.searched = action.payload.searched;
+      state.notice = null;
     },
     resetMarkdownsSlice: () => initialState,
   },
@@ -111,5 +119,6 @@ export const {
   clearMarkdownFilters,
   toggleMarkdownSort,
   beginMarkdownsRequest,
+  finishMarkdownsSearch,
 } = devMarkdownsSlice.actions;
 export default devMarkdownsSlice.reducer;

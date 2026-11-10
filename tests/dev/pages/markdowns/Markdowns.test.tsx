@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
-import { beginMarkdownsRequest, setMarkdownFilters, setMarkdowns } from "@/features/dev/devMarkdownsSlice";
+import { finishMarkdownsSearch, setMarkdownFilters, setMarkdowns } from "@/features/dev/devMarkdownsSlice";
 import { setEndDate, setSelectedStore, setStartDate } from "@/features/searchSlice";
 import Markdowns from "@/pages/markdowns/dev/Markdowns";
 
@@ -136,8 +136,7 @@ describe("the Markdowns page", () => {
   it("keeps naming the search the rows came from after the search bar changes", () => {
     const { store } = setup(false);
     act(() => {
-      store.dispatch(beginMarkdownsRequest({ id: "a", searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
-      store.dispatch(setMarkdowns(rows));
+      store.dispatch(finishMarkdownsSearch({ rows, searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
       // Another page picks a different store and week.
       store.dispatch(setSelectedStore({ store_name: "Tupelo Market" } as never));
       store.dispatch(setStartDate("10/01/2026"));

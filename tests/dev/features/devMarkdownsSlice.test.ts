@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
   beginMarkdownsRequest,
+  finishMarkdownsSearch,
   clearMarkdownFilters,
   setLoading,
   setMarkdownFilters,
@@ -59,7 +60,8 @@ describe("the Markdowns slice", () => {
     store.dispatch(setMarkdowns(rows));
     store.dispatch(setMarkdownFilters({ subIds: [5], types: ["Waste"] }));
     store.dispatch(toggleMarkdownSort("markdown_percent"));
-    store.dispatch(beginMarkdownsRequest({ id: "a", searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
+    store.dispatch(beginMarkdownsRequest({ id: "a" }));
+    store.dispatch(finishMarkdownsSearch({ rows, searched: { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
     store.dispatch(setNotice("No markdowns came back for this search."));
     store.dispatch(resetAppSlice());
     expect(store.getState().dev.markdowns).toEqual(fresh());
@@ -74,11 +76,27 @@ describe("the Markdowns slice", () => {
     expect(s.sort).toBeNull();
   });
 
-  it("remembers the search a load began on, and the newest one wins", () => {
-    let s = reducer(fresh(), beginMarkdownsRequest({ id: "a", searched: { scope: "Hayti", startDate: "11/03/2026", endDate: "11/05/2026" } }));
-    s = reducer(s, beginMarkdownsRequest({ id: "b", searched: { scope: "Tupelo", startDate: "11/01/2026", endDate: "11/02/2026" } }));
+  it("lets the newest search win, and leaves what is shown alone until it finishes", () => {
+    const hayti = { scope: "Hayti", startDate: "11/03/2026", endDate: "11/05/2026" };
+    let s = reducer(fresh(), finishMarkdownsSearch({ rows, searched: hayti }));
+    s = reducer(s, setMarkdownFilters({ types: ["Waste"] }));
+    s = reducer(s, beginMarkdownsRequest({ id: "a" }));
+    s = reducer(s, beginMarkdownsRequest({ id: "b" }));
     expect(s.requestId).toBe("b");
-    expect(s.searched).toEqual({ scope: "Tupelo", startDate: "11/01/2026", endDate: "11/02/2026" });
+    expect(s.markdowns).toEqual(rows);
+    expect(s.filters.types).toEqual(["Waste"]);
+    expect(s.searched).toEqual(hayti);
+  });
+
+  it("swaps a finished search in at once: its rows and name, with no old picks or notice", () => {
+    const tupelo = { scope: "Tupelo", startDate: "11/01/2026", endDate: "11/02/2026" };
+    let s = reducer(fresh(), setMarkdownFilters({ types: ["Waste"] }));
+    s = reducer(s, setNotice("Page 2 of 3 didn't load, so nothing is shown. Search again."));
+    s = reducer(s, finishMarkdownsSearch({ rows: rows.slice(0, 1), searched: tupelo }));
+    expect(s.markdowns).toEqual(rows.slice(0, 1));
+    expect(s.searched).toEqual(tupelo);
+    expect(s.filters.types).toEqual([]);
+    expect(s.notice).toBeNull();
   });
 
   it("starts a new column descending", () => {

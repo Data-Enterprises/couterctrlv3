@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import type { ReactNode } from "react";
 import { setupStore } from "@/store";
 import { setLastGroup, setLastStore, setType } from "@/features/searchSlice";
+import { finishMarkdownsSearch, setMarkdownFilters } from "@/features/dev/devMarkdownsSlice";
 import { useLoadMarkdowns } from "@/pages/markdowns/dev/hooks";
 
 // Interfaces
@@ -176,6 +177,90 @@ describe("useLoadMarkdowns", () => {
     expect(s.notice).toBe("Page 2 of 3 didn't load, so nothing is shown. Search again.");
     expect(toast.error).toHaveBeenCalledWith("Query timed out");
     expect(s.loading).toBe(false);
+  });
+
+  describe("a re-search over results already on screen", () => {
+    const hayti = { scope: "Food Giant Hayti", startDate: "11/03/2026", endDate: "11/05/2026" };
+    // Last week's results, with a filter picked, before the new search.
+    const withResults = () => {
+      const ctx = setup();
+      act(() => {
+        ctx.store.dispatch(finishMarkdownsSearch({ rows: [row(70), row(71)], searched: hayti }));
+        ctx.store.dispatch(setMarkdownFilters({ types: ["Waste"] }));
+        ctx.store.dispatch(setLastStore(301));
+      });
+      return ctx;
+    };
+    const unchanged = (store: ReturnType<typeof setupStore>) => {
+      const s = store.getState().dev.markdowns;
+      expect(s.markdowns.map((r) => r.id)).toEqual([70, 71]);
+      expect(s.filters.types).toEqual(["Waste"]);
+      expect(s.searched).toEqual(hayti);
+      expect(s.loading).toBe(false);
+    };
+
+    it("keeps them when a later page fails, and says they are the last results", async () => {
+      getMarkdowns
+        .mockResolvedValueOnce(page(1, 3, [1, 2]))
+        .mockRejectedValueOnce({ message: "Network Error" });
+      const { store, load } = withResults();
+
+      await act(load);
+
+      unchanged(store);
+      expect(store.getState().dev.markdowns.notice).toBe(
+        "Page 2 of 3 didn't load, so the last results are still shown. Search again.",
+      );
+      expect(toast.error).toHaveBeenCalledWith("Network Error");
+    });
+
+    it("keeps them when the first page fails", async () => {
+      getMarkdowns.mockRejectedValueOnce({ message: "Network Error" });
+      const { store, load } = withResults();
+
+      await act(load);
+
+      unchanged(store);
+      expect(toast.error).toHaveBeenCalledWith("Network Error");
+    });
+
+    it("keeps them when the backend refuses the search", async () => {
+      getMarkdowns.mockResolvedValueOnce({ data: { error: 1, success: false, msg: "No stores found" } });
+      const { store, load } = withResults();
+
+      await act(load);
+
+      unchanged(store);
+      expect(toast.warn).toHaveBeenCalledWith("No stores found");
+    });
+
+    it("keeps showing them while the new search loads", async () => {
+      let release!: (v: unknown) => void;
+      getMarkdowns.mockReturnValueOnce(new Promise((res) => { release = res; }));
+      const { store, load } = withResults();
+
+      let done!: Promise<void>;
+      await act(async () => { done = load(); });
+      expect(store.getState().dev.markdowns.markdowns.map((r) => r.id)).toEqual([70, 71]);
+
+      await act(async () => { release(page(1, 1, [1])); await done; });
+      expect(store.getState().dev.markdowns.markdowns.map((r) => r.id)).toEqual([1]);
+    });
+
+    it("replaces them, and the old picks, once every page of the new search is in", async () => {
+      getMarkdowns
+        .mockResolvedValueOnce(page(1, 2, [1]))
+        .mockResolvedValueOnce(page(2, 2, [2]));
+      const { store, load } = withResults();
+
+      await act(load);
+
+      const s = store.getState().dev.markdowns;
+      expect(s.markdowns.map((r) => r.id)).toEqual([1, 2]);
+      expect(s.filters.types).toEqual([]);
+      expect(s.searched).not.toEqual(hayti);
+      expect(s.notice).toBeNull();
+    });
   });
 
   it("does the same when a later page fails on the network", async () => {
