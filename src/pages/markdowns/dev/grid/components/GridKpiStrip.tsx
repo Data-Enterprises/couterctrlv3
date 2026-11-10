@@ -9,8 +9,8 @@ import { markdownTotals } from "../utils";
 import type { MarkdownItem } from "../../../../../interfaces/markdowns";
 
 // Components
-import GridKpi from "./GridKpi";
-import StoresKpi from "./StoresKpi";
+import GridKpi from "../../../../../components-dev/kpi/GridKpi";
+import StoresKpi from "../../../../../components-dev/kpi/StoresKpi";
 
 interface GridKpiStripProps {
   /** The rows the filters keep. */
