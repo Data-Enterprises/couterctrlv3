@@ -1,12 +1,12 @@
 // Hooks
 import { NavLink } from "react-router";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 
 // Redux
-import { setLastRoute, setIsNavOpen } from "../../../../features/navSlice";
+import { setLastRoute, setIsNavOpen } from "../../../features/navSlice";
 
 // Interfaces
-import type { NavCategory } from "../../interfaces";
+import type { NavCategory } from "../interfaces";
 
 // Components
 import { ChevronDownIcon } from "@heroicons/react/16/solid";

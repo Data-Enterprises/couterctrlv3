@@ -1,14 +1,14 @@
 // Hooks
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 
 // Redux
-import { setIsNavOpen, setLastRoute } from "../../../../features/navSlice";
+import { setIsNavOpen, setLastRoute } from "../../../features/navSlice";
 
 // Interfaces
-import type { NavCategory } from "../../interfaces";
+import type { NavCategory } from "../interfaces";
 
 // Components
-import NavSheet from "./NavSheet";
+import NavSheet from "./components/NavSheet";
 
 interface MobileBottomNavProps {
   openCategory: string | null;

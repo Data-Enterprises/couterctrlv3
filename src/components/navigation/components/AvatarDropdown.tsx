@@ -1,6 +1,6 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useNavigate } from "react-router";
 
 // Redux
@@ -10,14 +10,14 @@ import {
   setApiEnv,
   setUiMode,
   SHOW_API_ENV_SWITCH,
-} from "../../../../features/appSlice";
+} from "../../../features/appSlice";
 
 // Utils
 import { impersonatedBy } from "@/utils/session";
-import { legacyEntryPath } from "../../../../constants/legacyPages";
+import { legacyEntryPath } from "../../../constants/legacyPages";
 
 // Interfaces
-import type { NavCategory } from "../../interfaces";
+import type { NavCategory } from "../interfaces";
 
 // Components
 import { ChevronDownIcon } from "@heroicons/react/16/solid";

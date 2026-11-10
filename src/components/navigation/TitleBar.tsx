@@ -18,9 +18,9 @@ import type { JsonError } from "../../interfaces";
 // Components
 import SignInAsModal from "../../components-dev/SignInAsModal";
 import ReleaseNotesModal from "../../components-dev/releaseNotes/ReleaseNotesModal";
-import AvatarDropdown from "./components/avatar/AvatarDropdown";
-import MobileBottomNav from "./components/mobile/MobileBottomNav";
-import CategoryNavList from "./components/cats/CategoryNavList";
+import AvatarDropdown from "./components/AvatarDropdown";
+import MobileBottomNav from "./mobile/MobileBottomNav";
+import CategoryNavList from "./components/CategoryNavList";
 import Logo from "./components/Logo";
 import DevPill from "./components/DevPill";
 
