@@ -1,11 +1,12 @@
 // Hooks
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useDevApi } from "../../../../hooks/useDevApi";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
+  beginMarkdownsRequest,
   clearMarkdownFilters,
   setLoading,
   setMarkdowns,
@@ -78,11 +79,13 @@ export const useVisibleMarkdowns = () => {
 export const useLoadMarkdowns = () => {
   const ctx = useMarkdownsCtx();
   const toast = useToast();
-  // A newer search makes an older one's late pages stale.
-  const run = useRef(0);
-
   return async () => {
-    const thisRun = ++run.current;
+    // A newer search, even one started after the page was left and opened
+    // again, makes this one's late pages stale. Checked through the store.
+    const id = `${Date.now()}-${Math.random()}`;
+    ctx.dispatch(beginMarkdownsRequest(id));
+    const stale = () =>
+      ctx.dispatch((_, getState) => getState().dev.markdowns.requestId !== id);
     const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
     const searchValue = useGroups ? ctx.lastGroup : ctx.lastStore;
     const start = formatGoliathDate(ctx.startDate);
@@ -106,7 +109,7 @@ export const useLoadMarkdowns = () => {
           1,
         )
       ).data;
-      if (thisRun !== run.current) return;
+      if (stale()) return;
       if (first.error !== 0) {
         toast.warn(first.msg);
         return;
@@ -132,7 +135,7 @@ export const useLoadMarkdowns = () => {
             page,
           )
         ).data;
-        if (thisRun !== run.current) return;
+        if (stale()) return;
         rows = [...rows, ...next.markdowns];
         ctx.dispatch(setMarkdowns(rows));
         ctx.dispatch(setProgress({ page, total: first.total_pages }));
@@ -146,7 +149,7 @@ export const useLoadMarkdowns = () => {
       };
       toast.error(e.response?.data?.msg ?? e.message);
     } finally {
-      if (thisRun === run.current) {
+      if (!stale()) {
         ctx.dispatch(setProgress(null));
         ctx.dispatch(setLoading(false));
       }

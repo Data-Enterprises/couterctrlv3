@@ -119,4 +119,29 @@ describe("useLoadMarkdowns", () => {
 
     expect(store.getState().dev.markdowns.markdowns.map((r) => r.id)).toEqual([9]);
   });
+
+  it("ignores an old search's pages after the page was left and a new search started", async () => {
+    let releaseOld: (v: unknown) => void = () => {};
+    getMarkdowns
+      .mockResolvedValueOnce(page(1, 2, [1, 2])) // old search, page 1
+      .mockReturnValueOnce(new Promise((r) => { releaseOld = r; })) // old search, page 2: slow
+      .mockResolvedValueOnce(page(1, 1, [9])); // new search
+    const store = setupStore();
+    const wrapper = ({ children }: { children: ReactNode }) => <Provider store={store}>{children}</Provider>;
+
+    // Start the old search, then leave the page while page 2 is in flight.
+    const first = renderHook(() => useLoadMarkdowns(), { wrapper });
+    let old!: Promise<void>;
+    await act(async () => { old = first.result.current(); await Promise.resolve(); });
+    first.unmount();
+
+    // Come back: a fresh mount runs a new search.
+    const second = renderHook(() => useLoadMarkdowns(), { wrapper });
+    await act(() => second.result.current());
+    await act(async () => { releaseOld(page(2, 2, [3, 4])); await old; });
+
+    const s = store.getState().dev.markdowns;
+    expect(s.markdowns.map((r) => r.id)).toEqual([9]);
+    expect(s.loading).toBe(false);
+  });
 });

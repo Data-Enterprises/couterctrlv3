@@ -18,6 +18,9 @@ interface DevMarkdownsState {
   filters: MarkdownFilters;
   /** Null keeps the backend's order: order_date, storeid, markdown_id, id. */
   sort: SortState<MarkdownSortKey>;
+  /** The search now loading. An older search's late pages check it and stop,
+   *  even after the page was left and opened again. */
+  requestId: string | null;
 }
 
 const emptyFilters: MarkdownFilters = {
@@ -39,6 +42,7 @@ const initialState: DevMarkdownsState = {
   notice: null,
   filters: emptyFilters,
   sort: null,
+  requestId: null,
 };
 
 const devMarkdownsSlice = createSlice({
@@ -81,6 +85,9 @@ const devMarkdownsSlice = createSlice({
             ? { col, dir: "asc" }
             : null;
     },
+    beginMarkdownsRequest: (state, action: PayloadAction<string>) => {
+      state.requestId = action.payload;
+    },
     resetMarkdownsSlice: () => initialState,
   },
 });
@@ -94,5 +101,6 @@ export const {
   setNotice,
   clearMarkdownFilters,
   toggleMarkdownSort,
+  beginMarkdownsRequest,
 } = devMarkdownsSlice.actions;
 export default devMarkdownsSlice.reducer;
