@@ -9,6 +9,7 @@ import {
   setStoreRecords,
   setStoreSearch,
   setStoreStatusFilter,
+  type StatusFilter,
 } from "../../../../features/dev/devAdminPageSlice";
 
 // API
@@ -31,7 +32,6 @@ import { UNKNOWN_NOTE } from "./utils";
 
 // Interfaces
 import type { JsonError, Store } from "../../../../interfaces";
-import type { StatusFilter } from "../../../../features/dev/devAdminPageSlice";
 import type { StoreForm } from "./interfaces";
 
 // Components

@@ -999,12 +999,6 @@
   "src/pages/admin/Admin.tsx": {
     "labels": 1
   },
-  "src/pages/admin/dev/stores/StoreRecords.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/admin/dev/subExclusions/components/Field.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
