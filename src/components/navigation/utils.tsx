@@ -17,25 +17,28 @@ import {
   TruckIcon,
   ArchiveBoxIcon,
   ClockIcon,
-  ShieldExclamationIcon,
   DocumentArrowUpIcon,
-  TicketIcon,
-  DocumentArrowDownIcon,
-  QrCodeIcon,
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
   COMING_SOON_LEVELS,
   PROGRAMMER_ONLY_LEVELS,
 } from "../../utils/comingSoon";
+
+// Utils
+import { performancePages } from "./categoryPages/performance";
+import { analyticsPages } from "./categoryPages/analytics";
+import { dataPages } from "./categoryPages/dataPages";
+import { configPages } from "./categoryPages/configPages";
+
+// Components
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
 import CouponIcon from "../../svgs/CouponIcon";
-import { performancePages } from "./categoryPages/performance";
-import { analyticsPages } from "./categoryPages/analytics";
+import { comingSoonPages } from "./categoryPages/comingSoon";
 
 export type Navigation = {
   name: string;
@@ -314,80 +317,12 @@ export const categories: NavCategory[] = [
   {
     name: "Data",
     icon: CircleStackIcon,
-    pages: [
-      {
-        name: "Orders",
-        href: "orders",
-        icon: DocumentCheckIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Receivers",
-        href: "receivers",
-        icon: ClipboardDocumentCheckIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Coupons",
-        href: "coupons",
-        icon: CouponIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-    ],
+    pages: dataPages,
   },
   {
     name: "Config",
     icon: Cog6ToothIcon,
-    pages: [
-      {
-        name: "Groups",
-        href: "groups",
-        icon: GroupsIcon,
-        mobile: true,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "User Management",
-        href: "user-management",
-        icon: BuildingOfficeIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: ["5", "7", "8", "9"],
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Admin",
-        href: "admin",
-        icon: KeyIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: ["5", "7", "8", "9"],
-        isHovering: false,
-        isVisible: true,
-      },
-    ],
+    pages: configPages,
   },
   /**
    * Pages that are built and routed but not released.
@@ -399,199 +334,23 @@ export const categories: NavCategory[] = [
    * reach, so there is no empty heading to explain.
    *
    * Two gates, not one, because the category holds two kinds of page:
-   *
-   *   COMING_SOON_LEVELS (7, 8, 9) — unfinished but usable. An owner running
-   *   one against real data is the point.
-   *
-   *   PROGRAMMER_ONLY_LEVELS (9) — not answerable to a client yet. LP Actions,
-   *   Invoices and both Price Opt pages depend on backend decisions that are
-   *   still open, so putting them in front of an owner buys a support call
-   *   rather than feedback.
+   *   COMING_SOON_LEVELS (7, 8, 9) — not prod ready but testable
+   *   PROGRAMMER_ONLY_LEVELS (9) — for programmers only
    *
    * Levels are matched exactly, not as a floor (see `canSee`), so "and up" has
    * to be spelled out. 8 is undocumented in the list above but is used by the
    * existing Admin and User Management gates, so it is included in the wider
    * gate too.
-   *
-   * Promoting a page from 9 to owner-visible is a one-word change to its
-   * `userLevels`. Moving a page out of here entirely is the release: cut its
-   * entry back to the category it belongs to and restore `userLevels: ["*"]`.
    */
   {
     name: COMING_SOON_CATEGORY,
     icon: ClockIcon,
-    pages: [
-      {
-        name: "Item Actions",
-        href: "item-report",
-        icon: ClipboardDocumentListIcon,
-        // Desktop only — the two-panel report has no mobile form yet.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "LP Actions",
-        href: "lp-actions",
-        icon: ShieldExclamationIcon,
-        // Desktop only — the two-panel ledger has no mobile form yet.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Data Export",
-        href: "data-export",
-        icon: DocumentArrowUpIcon,
-        // Desktop only — a two-panel builder with a 102-column file in it has
-        // no phone form.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        // Level 9 while it is being tested. It stays in Coming Soon, so it is
-        // still dev-API only — but a build here writes a real file to S3 from
-        // real store data, which is not something an owner should reach by
-        // wandering into the section.
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Upc Scanner",
-        href: "upc-scanner",
-        icon: QrCodeIcon,
-        // The first mobile-only page in here. Scanning needs a scanner, so the
-        // desktop route renders a notice rather than a second build of it.
-        mobile: true,
-        children: [],
-        childOpen: false,
-        // Level 9 while the file format is open: a send writes a real file a
-        // client's tag printer picks up. Same reasoning as Data Export.
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Sales Tracker",
-        href: "sales-tracker",
-        icon: ArrowTrendingUpIcon,
-        // Desktop only — the two-panel tracker has no mobile form yet.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Price Opt Sub Dept",
-        href: "inventory-sub-department",
-        icon: ArchiveBoxIcon,
-        // Desktop only — the two-panel tree has no mobile form yet.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Price Opt Vendor",
-        href: "inventory-vendor",
-        icon: TruckIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "AWG Invoices",
-        href: "invoices",
-        icon: DocumentArrowUpIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      {
-        name: "Markdowns",
-        href: "markdowns",
-        icon: DocumentArrowDownIcon,
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
-      // Commented out for publish — `suggested/order_weight` is dev-API only.
-      // Restore this entry, the ScaleIcon import and the route in main.tsx
-      // together when the endpoint ships.
-      // {
-      //   name: "Suggested Weight",
-      //   href: "suggested-weight",
-      //   icon: ScaleIcon,
-      //   // Desktop only — the order sheet is a two-panel report with no mobile
-      //   // form yet.
-      //   mobile: false,
-      //   children: [],
-      //   childOpen: false,
-      //   // Programmer tier, and for a harder reason than the rest of this
-      //   // category: `suggested/order_weight` is only deployed to the dev API,
-      //   // so on prod the page would render an error rather than an unfinished
-      //   // feature. It moves to COMING_SOON_LEVELS the day the endpoint ships.
-      //   userLevels: PROGRAMMER_ONLY_LEVELS,
-      //   isHovering: false,
-      //   isVisible: true,
-      // },
-      {
-        name: "Tickets",
-        href: "tickets",
-        icon: TicketIcon,
-        // Every level. Who sees which tickets is the server's answer, by tier:
-        // below Manager their own, a Manager also their stores', an Owner
-        // also their companies'. Report an issue already files from any
-        // level in dev, so a level gate here only hid the tickets people had
-        // just filed, from the very readers the "own" tier exists for.
-        //
-        // Still Coming Soon: dev UI tree only, against the dev API, desktop
-        // only. The category is offered on the dev API alone, and only 7+
-        // can switch to it, so on prod no client sees this entry.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: ["*"],
-        isHovering: false,
-        isVisible: true,
-      },
-    ],
+    pages: comingSoonPages,
   },
 ];
 
 /**
  * The menu for the current mode.
- *
- * The same menu either way now.
- *
- * Dev used to differ: Store Groups had been folded into User Management as a
- * User Groups tab, so dev dropped it from the menu and opened User Management
- * to everyone to keep people's own groups reachable. Both tabs have since
- * moved back out, to Config > Groups — a user group is somebody's own saved
- * set of their own stores and a shared group is one passed to a colleague,
- * and neither is an administrator's to set, which is all User Management now
- * holds. So Groups belongs in the menu again, and User Management goes back to
- * its own levels: with Users at 5 and the rest at owner, opening it to
- * everyone would show a level 2 a page of nothing.
  */
 export const categoriesFor = (_apiEnv: "dev" | "prod"): NavCategory[] =>
   categories;
