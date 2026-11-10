@@ -1,5 +1,5 @@
 import React from "react";
-import PasswordField from "./PasswordField";
+import PasswordField from "../components/PasswordField";
 import { SIGN_IN_COPY } from "./portalContent";
 import logo from "../../../assets/portal/logo.webp";
 

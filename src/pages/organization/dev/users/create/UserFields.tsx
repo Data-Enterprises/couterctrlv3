@@ -10,7 +10,8 @@ import {
 import { checkEmail, checkUsername } from "../../../../../api/team";
 import type { JsonError } from "../../../../../interfaces";
 import { roles } from "../../constants";
-import { NOT_AVAILABLE, passwordOk, passwordRules } from "./wizardRules";
+import { NOT_AVAILABLE } from "./wizardRules";
+import { passwordOk, passwordRules } from "../../../../../utils/passwordRules";
 import Input from "../../../../../components-dev/inputs/Input";
 import PasswordInput from "../../../../../components-dev/inputs/PasswordInput";
 

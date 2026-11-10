@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import CapsLockHint from "./CapsLockHint";
-import { SIGN_IN_COPY } from "./portalContent";
+import { SIGN_IN_COPY } from "../portal/portalContent";
 
 interface Props {
   value: string;
