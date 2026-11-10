@@ -52,7 +52,7 @@ export const ORDERS_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I go back or start a new search?",
       a: [
-        "Tap the back arrow on the order list to return to the store list. Tap the search icon on the store list to go back to the search form.",
+        "Tap Back on the order list to return to the store list, and Back on the store list to return to the search form.",
       ],
     },
   ],

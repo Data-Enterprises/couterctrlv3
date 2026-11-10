@@ -9,7 +9,7 @@ import { fmtOrderDate, padStoreNumber } from "../utils";
 import type { OrderDoc } from "../interfaces";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import PickerField from "./PickerField";
 
 interface OrderPickerPanelProps {
@@ -140,13 +140,7 @@ const OrderPickerPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             {tab === "problems" ? "Cost problems" : "Order to edit"}
           </span>
-          <button
-            onClick={onOpenSearch}
-            title="New search"
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
+          <BackButton onClick={onOpenSearch} />
         </div>
         <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
           <span className="text-custom-white/95 text-[12px] truncate">

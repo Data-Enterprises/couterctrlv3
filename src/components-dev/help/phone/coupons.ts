@@ -52,7 +52,7 @@ export const COUPONS_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I go back or start a new search?",
       a: [
-        "Tap the back arrow to step back one screen. From the first results screen it takes you to the search form. For a group, the search icon at the top also takes you straight there.",
+        "Tap Back to step back one screen. From the first results screen it takes you to the search form. For a group, Back at the top of the store list also takes you straight there.",
       ],
     },
   ],

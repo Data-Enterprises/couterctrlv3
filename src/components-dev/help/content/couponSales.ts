@@ -21,7 +21,9 @@ export const COUPON_SALES_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass at the top of the store list.",
+          pre: "Click",
+          chip: "Back",
+          post: "at the top of the store list.",
           anchor: "search",
         },
       ],

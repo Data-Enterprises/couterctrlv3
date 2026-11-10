@@ -6,8 +6,8 @@ import { signedPct } from "../utils/trackerTone";
 import type { TrackerBasis } from "../interfaces";
 
 // Components
+import BackButton from "../../../../components-dev/BackButton";
 import {
-  MagnifyingGlassIcon,
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
@@ -79,13 +79,7 @@ const TrackerHeader = ({
         data-help="scope"
         className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]"
       >
-        <button
-          onClick={onOpenSearch}
-          className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          aria-label="Search stores"
-        >
-          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-        </button>
+        <BackButton onClick={onOpenSearch} />
 
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 

@@ -36,7 +36,9 @@ export const ORDERS_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass at the top of the Available Orders list.",
+          pre: "Click",
+          chip: "Back",
+          post: "at the top of the Available Orders list.",
           anchor: "search",
         },
       ],

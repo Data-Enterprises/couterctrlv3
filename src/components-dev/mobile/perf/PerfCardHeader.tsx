@@ -2,9 +2,9 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import InfoButton from "../../InfoButton";
+import BackButton from "../../BackButton";
 
 interface PerfCardHeaderProps {
   /** What the card is about — the store, the group, the item, the lens. */
@@ -75,14 +75,7 @@ const PerfCardHeader = ({
       {/* The same bordered 7x7 the desktop panels use for New search — the box
           is what makes it read as a button rather than as decoration beside
           the title. */}
-      <button
-        type="button"
-        onClick={onSearch}
-        aria-label="New search"
-        className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-      >
-        <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-      </button>
+      <BackButton onClick={onSearch} tone="light" />
       {onTitleTap ? (
         <button
           type="button"

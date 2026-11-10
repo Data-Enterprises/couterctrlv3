@@ -34,9 +34,9 @@ import type { JsonError, TransactionListItem } from "../../../interfaces";
 import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
 
 // Components
+import BackButton from "../../../components-dev/BackButton";
 import {
   ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import CashiersExportModal from "./components/CashiersExportModal";
@@ -289,13 +289,7 @@ const Cashiers = () => {
               capped — {truncated} older transactions not loaded
             </span>
           )}
-          <button data-help="search"
-            onClick={() => setSearchOpen(true)}
-            title="New search"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={() => setSearchOpen(true)} helpAnchor="search" />
           <button
             onClick={() => setExportOpen(true)}
             title="Export CSV"

@@ -21,8 +21,8 @@ import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interface
 import { COLS, ORDER } from "../utils";
 
 // Components
+import BackButton from "../../../../components-dev/BackButton";
 import {
-  MagnifyingGlassIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
 import ColFilter from "../../../../components-dev/filters/ColFilter";
@@ -193,9 +193,7 @@ const ItemReportSheet = ({
 
           {/* Row 2: search + export | scope | grading basis | about */}
           <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-            <HeaderIconButton onClick={onSearchOpen} title="New search">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
+            <BackButton onClick={onSearchOpen} />
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
             <div className="flex-1" />

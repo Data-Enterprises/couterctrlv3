@@ -5,7 +5,7 @@ import { useAppSelector } from "../../../../../../hooks";
 import { fmtDateLabel } from "../utils";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import BackButton from "../../../../../../components-dev/BackButton";
 import PageInfoButton from "../../../../../../components-dev/PageInfoButton";
 
 interface ListNavyHeaderProps {
@@ -45,16 +45,9 @@ const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
           </div>
         )}
       </div>
-      {/* Row 2: re-search icon + store name */}
+      {/* Row 2: back + store name */}
       <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-        <button
-          data-help="search"
-          onClick={onOpenSearch}
-          className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          aria-label="New search"
-        >
-          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-        </button>
+        <BackButton onClick={onOpenSearch} helpAnchor="search" />
         {state.storeid && (
           <span className="text-[11px] font-medium text-custom-white truncate">
             {storeName}
