@@ -1633,23 +1633,10 @@
     "selector-outside-hook": 1
   },
   "src/pages/receivers/dev/components/list/ReceiverListPanel.tsx": {
-    "selector-outside-hook": 2,
-    "shape-inline-props": 1
+    "selector-outside-hook": 2
   },
   "src/pages/receivers/dev/components/list/components/ListNavyHeader.tsx": {
     "selector-outside-hook": 2
-  },
-  "src/pages/receivers/dev/components/modal/components/CustomColTh.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/receivers/dev/components/modal/interfaces/index.ts": {
-    "labels": 1
-  },
-  "src/pages/receivers/dev/hooks/useReceiversActions.ts": {
-    "labels": 1
-  },
-  "src/pages/receivers/dev/hooks/useReceiversState.ts": {
-    "labels": 1
   },
   "src/pages/receivers/dev/mobile/ReceiversMobile.tsx": {
     "selector-outside-hook": 3
