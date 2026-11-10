@@ -2,10 +2,10 @@
 import { passwordOk } from "../../../../utils/passwordRules";
 
 // Components
+import PasswordRules from "../../../../components/PasswordRules";
 import PasswordField from "../../components/PasswordField";
 import BackLink from "./BackLink";
 import FormError from "./FormError";
-import PasswordRules from "./PasswordRules";
 import StepTitle from "./StepTitle";
 import SubmitButton from "./SubmitButton";
 

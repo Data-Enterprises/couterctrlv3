@@ -1,5 +1,5 @@
 // Utils
-import { passwordRules } from "../../../../utils/passwordRules";
+import { passwordRules } from "../utils/passwordRules";
 
 interface PasswordRulesProps {
   password: string;
