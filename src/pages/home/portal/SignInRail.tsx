@@ -8,7 +8,7 @@ import { SIGN_IN_COPY } from "./portalContent";
 import logo from "../../../assets/portal/logo.webp";
 import PasswordField from "../components/PasswordField";
 
-interface SigninRailProps {
+interface SignInRailProps {
   username: string;
   password: string;
   onUsernameChange: (v: string) => void;
@@ -45,7 +45,7 @@ const SignInRail = ({
   version,
   onTerms,
   onPrivacy,
-}: SigninRailProps) => (
+}: SignInRailProps) => (
   <section className="relative bg-custom-white flex flex-col overflow-hidden h-dvh border-r border-brand_line portal_stack:h-auto portal_stack:overflow-visible portal_stack:border-r-0 portal_stack:border-b">
     <div className="flex-1 min-h-0 flex flex-col justify-center px-[46px] py-8 w-full max-w-[430px] mx-auto portal_short:py-6 portal_stack:px-[26px] portal_stack:pt-[34px] portal_stack:pb-[26px]">
       <div className="mb-[34px] portal_short:mb-[26px] portal_shorter:mb-5">
