@@ -209,6 +209,12 @@ Every file groups its imports under these labels, in this order, leaving out any
 - Files are CRLF; keep them that way. `sed -i` strips the CRs.
 - `docs/` is gitignored and never committed. Repo working docs (change log, theme reference,
   checklists) live there.
+- **The pre-commit hook must pass; never `--no-verify`.** It runs eslint, `check:rules` and
+  `audit:theme` on what is staged. `npm install` turns it on (`core.hooksPath .githooks`).
+- **Baselines** (`scripts/baselines/`) record the rule and theme breaks that were already there.
+  Only a new break fails. A move commit carries its files' entries to their new paths
+  (`npm run check:rules -- --update-baseline`, and the same for `audit:theme`); a fix lowers the
+  baseline the same way. A logic commit never raises it: fix the code instead.
 
 ## 10. Verification, after every step
 
@@ -217,6 +223,7 @@ npx tsc -b
 npx eslint <files or folders touched>
 npx vitest run --coverage.enabled=false
 npm run check:tests
+npm run check:rules          # must end 0 new hit(s)
 node scripts/check-split.mjs <page>
 npm run audit:theme          # must end TOTAL: 0 hit(s)
 npm run build
@@ -224,6 +231,10 @@ npm run build
 
 `tsc --noEmit` proves nothing here, because the root tsconfig compiles nothing. **Don't start the
 app or a dev server.** It is tested by hand.
+
+**What the scripts can't check** stays with you and review: Redux or `useState`, prop drilling,
+splitting along what the user sees, moves kept apart from logic, and whether a comment is worth
+keeping. ESLint bans the global `location` (use `useLocation()`) and `@/` imports under `src`.
 
 ## 11. Theme
 
@@ -310,6 +321,10 @@ public portal and login shell, one copy shared with prod, with the portal palett
 ramp (`heatColor.ts`), the hourly chart's series colours, LP Actions' caution strip, and `InfoButton`
 itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
 
+**The shared library** (`src/components`: the title bar, toasts and other parts both modes draw) is
+audited as a ratchet. Its known hits are in `scripts/baselines/theme-shared.json` and are fixed with a
+promotion, because clients see them; a new hit fails the audit.
+
 ## 12. Also
 
 - **Tooltips:** use `src/components-dev/tooltip` (`CursorTip`); a plain `title` works in dev code.
@@ -337,4 +352,5 @@ itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
       (InfoButton, BackButton, MobileBackLink, SearchBackButton, tooltip) rather than hand-rolled
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
+- [ ] The pre-commit hook passes; a baseline only went down, or moved with a move commit
 - [ ] Verification is green
