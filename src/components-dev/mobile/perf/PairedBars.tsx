@@ -72,13 +72,20 @@ const PairedBars = ({
 }: PairedBarsProps) => {
   const safeMax = max > 0 ? max : 1;
   // Graded against last year, falling back to last week when last year has
-  // nothing on file. No comparison at all is not a rise: with nothing to be
-  // above, the bar stays the neutral blue rather than claiming a gain.
-  const against = !lyUnavailable
-    ? ly
-    : lw !== undefined && !lwUnavailable
-      ? lw
-      : null;
+  // nothing to compare: no history, or a zero. The zero case matters once a
+  // last-week bar is drawn: the change figure beside it already falls back
+  // (`gradedChangePct`), and a row that sold $1.69 last week and nothing this
+  // week read "-100%" in red over a green "not below last year's $0" bar.
+  // Without a last-week bar a zero last year is still a real reading (a rise
+  // from nothing), as it always was. No comparison at all is not a rise: with
+  // nothing to be above, the bar stays the neutral blue.
+  const lwUsable = lw !== undefined && !lwUnavailable;
+  const against =
+    !lyUnavailable && (ly > 0 || !lwUsable)
+      ? ly
+      : lwUsable
+        ? lw
+        : null;
   const tyColour =
     against === null ? TY_COLOR : ty >= against ? UP_COLOR : DOWN_COLOR;
 
