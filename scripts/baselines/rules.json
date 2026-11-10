@@ -724,21 +724,6 @@
   "src/pages/forecast/Forecasting.tsx": {
     "labels": 1
   },
-  "src/pages/forecast/dev/calc/ForecastCalcModal.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/forecast/dev/components/ForecastEntry.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/forecast/dev/components/ForecastListPanel.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/forecast/dev/components/ForecastRowsTable.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/forecast/dev/export/ForecastExportModal.tsx": {
-    "selector-outside-hook": 2
-  },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
   },

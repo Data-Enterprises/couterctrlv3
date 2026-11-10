@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useForecastCtx } from "../hooks";
 
 // Redux
 import {
@@ -26,10 +27,7 @@ interface ForecastListPanelProps {
  */
 const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
   const dispatch = useAppDispatch();
-  const search = useAppSelector((s) => s.search);
-  const { rowData, checkedUpcs, listFilter, adListRows } = useAppSelector(
-    (s) => s.dev.forecastDev,
-  );
+  const { search, rowData, checkedUpcs, listFilter, adListRows } = useForecastCtx();
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
   const locationLabel =

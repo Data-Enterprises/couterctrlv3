@@ -1,6 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useForecastCtx } from "../hooks";
 
 // Redux
 import {
@@ -30,9 +31,7 @@ import ForecastScenarios from "./components/ForecastScenarios";
  */
 const ForecastCalcModal = () => {
   const dispatch = useAppDispatch();
-  const { selectedUpc, forecastResults, rowData } = useAppSelector(
-    (s) => s.dev.forecastDev,
-  );
+  const { selectedUpc, forecastResults, rowData } = useForecastCtx();
 
   const row = useMemo(
     () => rowData.find((r) => r.upc === selectedUpc) ?? null,

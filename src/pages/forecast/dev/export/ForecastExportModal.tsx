@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../../hooks";
+import { useForecastCtx } from "../hooks";
 
 // Utils
 import { exportData } from "../../../../utils/export";
@@ -43,8 +43,9 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
     adListRows,
     storeids,
     tierFilter,
-  } = useAppSelector((s) => s.dev.forecastDev);
-  const singleDate = useAppSelector((s) => s.search.singleDate);
+    search,
+  } = useForecastCtx();
+  const singleDate = search.singleDate;
 
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<PresetId>>(

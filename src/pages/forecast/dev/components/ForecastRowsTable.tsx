@@ -1,6 +1,7 @@
 // Hooks
 import { Fragment, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useForecastCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Redux
@@ -54,8 +55,9 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
     forecastResults,
     tierFilter,
     initialRowData,
-  } = useAppSelector((s) => s.dev.forecastDev);
-  const singleDate = useAppSelector((s) => s.search.singleDate);
+    search,
+  } = useForecastCtx();
+  const singleDate = search.singleDate;
 
   const [batchAdDays, setBatchAdDays] = useState("");
   const [batchPrice, setBatchPrice] = useState("");

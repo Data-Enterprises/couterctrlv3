@@ -1,6 +1,7 @@
 // Hooks
 import { useRef } from "react";
-import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
+import { useAppDispatch, useSearchPick } from "../../../../hooks";
+import { useForecastCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -53,14 +54,10 @@ const ForecastEntry = ({
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const adRef = useRef<HTMLInputElement>(null);
-  const search = useAppSelector((s) => s.search);
   const { nothingPicked, pickLabel } = useSearchPick();
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
   // Dev's own list — see the note in forecastDevSlice. Nothing loaded here
   // reaches the legacy page or the UPC List page.
-  const { upcs, upcText, adListRows, adListFileName } = useAppSelector(
-    (s) => s.dev.forecastDev,
-  );
+  const { search, assignedStores, upcs, upcText, adListRows, adListFileName } = useForecastCtx();
 
   const handleParseText = () => {
     const parsed = parseUpcs(upcText);
