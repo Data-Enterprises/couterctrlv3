@@ -54,7 +54,20 @@ describe("buildOptions", () => {
       { value: "2", label: "Fresh Meat" },
       { value: "5", label: "Produce" },
     ]);
-    expect(o.storeNumbers).toEqual([{ value: "301", label: "Food Giant Hayti" }]);
+    expect(o.storeNumbers).toEqual([{ value: "301", label: "301 — Food Giant Hayti" }]);
+  });
+
+  it("tells apart two locations that share a store's name, in number order", () => {
+    const o = buildOptions([
+      row({ id: 1, storenumber: "370", storename: "Food Giant" }),
+      row({ id: 2, storenumber: "369", storename: "Food Giant" }),
+      row({ id: 3, storenumber: "42", storename: "" }),
+    ]);
+    expect(o.storeNumbers).toEqual([
+      { value: "42", label: "042" },
+      { value: "369", label: "369 — Food Giant" },
+      { value: "370", label: "370 — Food Giant" },
+    ]);
   });
 
   it("lists dates newest first, written dd/mm/yyyy", () => {

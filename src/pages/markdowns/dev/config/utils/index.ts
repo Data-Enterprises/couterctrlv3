@@ -1,4 +1,5 @@
 // Utils
+import { padStoreNumber } from "../../../../../utils/storeIdentity";
 import { fmtDmy, LIST_FILTERS, filterValue, passesFilters } from "../../utils";
 
 // Interfaces
@@ -8,8 +9,9 @@ import type { MarkdownAvailable, MarkdownFilterKey, MarkdownOption } from "../..
 /** The label a filter shows for one row's value. */
 const labelOf = (r: MarkdownItem, key: MarkdownFilterKey, value: string): string => {
   switch (key) {
+    // The number first: two locations can share a name, as Orders lists them.
     case "storeNumbers":
-      return r.storename || value;
+      return r.storename ? `${padStoreNumber(value)} — ${r.storename}` : padStoreNumber(value);
     case "dates":
       return fmtDmy(value);
     case "subIds":
