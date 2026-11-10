@@ -73,12 +73,15 @@ describe("the Markdowns page", () => {
   it("shows the search card until markdowns are loaded", () => {
     setup(false);
     expect(screen.getByText("Select a store or group and date range to load its markdowns.")).toBeTruthy();
-    expect(screen.queryByText("Configuration")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Back to the search" })).toBeNull();
   });
 
   it("shows the filters and every loaded markdown once loaded, dates dd/mm/yyyy", () => {
-    setup();
-    expect(screen.getByText("Configuration")).toBeTruthy();
+    const { view } = setup();
+    // The left panel's header names the page.
+    const left = view.container.querySelector<HTMLElement>("div.bg-brand_navy.px-3")!;
+    expect(within(left).getByText("Markdowns")).toBeTruthy();
+    expect(screen.queryByText("Configuration")).toBeNull();
     expect(screen.getByText("3 of 3 lines")).toBeTruthy();
     expect(gridOrder()).toEqual(["Strawberries 1lb", "Ground beef", "Wheat bread"]);
     expect(screen.getByText("04/11/2026")).toBeTruthy();
