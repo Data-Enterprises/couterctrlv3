@@ -104,16 +104,46 @@ describe("the Markdowns page", () => {
       const strip = view.container.querySelector<HTMLElement>('[data-help="kpis"]')!;
       return within(strip).getByText(label).nextElementSibling?.textContent;
     };
-    // Each row: $1 off a unit, 14 units.
-    expect(kpi("Markdowns")).toBe("3");
-    expect(kpi("Items")).toBe("1");
+    // Each row: $1 off a unit, 14 units, $41.86 retail.
+    expect(kpi("Stores")).toBe("1");
     expect(kpi("Markdown $")).toBe("$42.00");
-    expect(kpi("Waste $")).toBe("$14.00");
+    expect(kpi("Retail $")).toBe("$125.58");
+    expect(kpi("Items")).toBe("1");
     act(() => {
       store.dispatch(setMarkdownFilters({ types: ["Price"] }));
     });
-    expect(kpi("Markdowns")).toBe("1");
-    expect(kpi("Waste $")).toBe("$0.00");
+    expect(kpi("Markdown $")).toBe("$14.00");
+    expect(kpi("Retail $")).toBe("$41.86");
+  });
+
+  it("drops the list of stores in the grid over it from Stores, and closes it", () => {
+    const store = setupStore();
+    store.dispatch(
+      setMarkdowns([
+        row({ id: 1, storeid: 1302, storename: "Food Giant Kennett" }),
+        row({ id: 2, storeid: 1301, storename: "Food Giant Hayti" }),
+        row({ id: 3, storeid: 1301, storename: "Food Giant Hayti" }),
+      ]),
+    );
+    const view = render(
+      <Provider store={store}>
+        <Markdowns />
+      </Provider>,
+    );
+    const button = screen.getByRole("button", { name: /Stores/ });
+    expect(button.textContent).toContain("2");
+    const list = view.container.querySelector<HTMLElement>('[aria-label="Stores in the grid"]')!;
+    expect(list.getAttribute("aria-hidden")).toBe("true");
+
+    fireEvent.click(button);
+    expect(list.getAttribute("aria-hidden")).toBe("false");
+    expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+      "Food Giant Hayti",
+      "Food Giant Kennett",
+    ]);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(list.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("narrows the grid and the counts when a filter is set", () => {

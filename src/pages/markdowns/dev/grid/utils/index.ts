@@ -17,15 +17,17 @@ export const unitsOf = (r: MarkdownItem) =>
  *  markdown over total original price, so a big line counts for more. */
 export const markdownTotals = (rows: MarkdownItem[]): MarkdownTotals => {
   const items = new Set<string>();
+  const stores = new Set<string>();
   let dollars = 0;
+  let retail = 0;
   let original = 0;
   let pctBase = 0;
-  let waste = 0;
   for (const r of rows) {
     items.add(r.product_code);
+    stores.add(r.storename);
+    retail += r.retail ?? 0;
     const md = (r.markdown ?? 0) * unitsOf(r);
     dollars += md;
-    if (r.type === "Waste") waste += md;
     // Only lines with both prices count toward the average.
     if (r.markdown !== null && r.original_price !== null) {
       pctBase += md;
@@ -33,10 +35,10 @@ export const markdownTotals = (rows: MarkdownItem[]): MarkdownTotals => {
     }
   }
   return {
-    lines: rows.length,
     items: items.size,
     dollars,
     avgPct: original > 0 ? (pctBase / original) * 100 : null,
-    waste,
+    retail,
+    stores: [...stores].sort((a, b) => a.localeCompare(b)),
   };
 };

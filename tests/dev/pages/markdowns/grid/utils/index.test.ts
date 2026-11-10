@@ -26,16 +26,24 @@ describe("unitsOf", () => {
 });
 
 describe("markdownTotals", () => {
-  it("adds up lines, different items, markdown dollars and waste dollars", () => {
+  it("counts different items and adds up markdown dollars", () => {
     const t = markdownTotals([
       row({ product_code: "100", markdown: 1, qty: 10 }),
       row({ product_code: "100", markdown: 0.5, qty: 4 }),
       row({ product_code: "200", markdown: 3, qty: 2, type: "Waste" }),
     ]);
-    expect(t.lines).toBe(3);
     expect(t.items).toBe(2);
     expect(t.dollars).toBe(18);
-    expect(t.waste).toBe(6);
+  });
+
+  it("adds up retail and lists each store once, A to Z", () => {
+    const t = markdownTotals([
+      row({ storename: "Kennett", retail: 10 }),
+      row({ storename: "Hayti", retail: 2.5 }),
+      row({ storename: "Kennett", retail: null }),
+    ]);
+    expect(t.retail).toBe(12.5);
+    expect(t.stores).toEqual(["Hayti", "Kennett"]);
   });
 
   it("weights the average percent by dollars, not by line", () => {

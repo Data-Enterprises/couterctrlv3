@@ -73,6 +73,11 @@ export const MARKDOWNS_HELP: HelpContent = {
       anchor: "filters",
     },
     {
+      term: "Stores",
+      def: "How many stores the lines shown come from. Click it for the list.",
+      anchor: "kpis",
+    },
+    {
       term: "Markdown $",
       def: "Each line's markdown per unit times its quantity, or its weight for a scaled item, added up for the lines shown.",
       anchor: "kpis",
@@ -83,8 +88,8 @@ export const MARKDOWNS_HELP: HelpContent = {
       anchor: "kpis",
     },
     {
-      term: "Waste $",
-      def: "The markdown dollars on Waste lines alone.",
+      term: "Retail $",
+      def: "The Retail column added up for the lines shown.",
       anchor: "kpis",
     },
     {
