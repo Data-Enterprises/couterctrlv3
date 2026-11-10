@@ -4,13 +4,14 @@ import { useVisibleMarkdowns } from "../hooks";
 
 // Utils
 import { GRID_COLUMNS, rowKey } from "../utils";
-import { DEFAULT_PAGE_SIZE } from "./utils";
+import { DEFAULT_PAGE_SIZE, markdownTotals } from "./utils";
 
 // Components
 import GridNavyHeader from "./components/GridNavyHeader";
 import GridKpiStrip from "./components/GridKpiStrip";
 import GridHeader from "./components/GridHeader";
 import GridRow from "./components/GridRow";
+import GridFooter from "./components/GridFooter";
 import GridPager from "./components/GridPager";
 
 interface MarkdownsGridProps {
@@ -18,12 +19,15 @@ interface MarkdownsGridProps {
 }
 
 /** The right panel, as Receivers' detail panel draws its line items: navy
- *  header, the KPI strip, the table of every markdown the filters keep, and
- *  a pager. */
+ *  header, the KPI strip, the table of every markdown the filters keep with
+ *  its totals row, and a pager. */
 const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
   const visible = useVisibleMarkdowns();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  // One pass over the filtered rows feeds the strip and the totals row.
+  const totals = useMemo(() => markdownTotals(visible), [visible]);
 
   const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
   // A filter that shortens the list can leave the page past its end.
@@ -42,7 +46,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
       style={{ flex: 1, minWidth: 0 }}
     >
       <GridNavyHeader onExport={onExport} />
-      <GridKpiStrip rows={visible} />
+      <GridKpiStrip totals={totals} />
 
       <div className="flex-1 overflow-auto thin-scrollbar">
         <table data-help="lines" className="w-full border-collapse text-[12px]">
@@ -62,6 +66,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
               </tr>
             )}
           </tbody>
+          {visible.length > 0 && <GridFooter totals={totals} />}
         </table>
       </div>
 

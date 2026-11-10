@@ -1,4 +1,4 @@
-/** The KPI strip's figures for the rows on screen. */
+/** The KPI strip's and totals row's figures for the rows on screen. */
 export interface MarkdownTotals {
   lines: number;
   /** Different UPCs. */
@@ -9,4 +9,8 @@ export interface MarkdownTotals {
   avgPct: number | null;
   /** The markdown dollars on Waste lines. */
   waste: number;
+  qty: number;
+  weight: number;
+  /** The Retail column added up. */
+  retail: number;
 }

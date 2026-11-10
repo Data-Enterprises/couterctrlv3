@@ -62,11 +62,11 @@ const setup = (seed = true) => {
   return { store, view };
 };
 
-/** The descriptions in the grid, top to bottom. */
+/** The descriptions in the grid's body, top to bottom. */
 const gridOrder = () =>
   screen
     .getAllByRole("row")
-    .slice(1)
+    .filter((tr) => tr.parentElement?.tagName === "TBODY")
     .map((tr) => within(tr).queryByText(/Strawberries|Ground beef|Wheat bread/)?.textContent);
 
 describe("the Markdowns page", () => {
@@ -114,6 +114,24 @@ describe("the Markdowns page", () => {
     });
     expect(kpi("Markdowns")).toBe("1");
     expect(kpi("Waste $")).toBe("$0.00");
+  });
+
+  it("ends the grid with a totals row for the rows on screen, which follows the filters", () => {
+    const { store, view } = setup();
+    const foot = () => view.container.querySelector("tfoot tr")!;
+    const cell = (label: string) => {
+      const i = screen.getAllByRole("columnheader").findIndex((th) => th.textContent === label);
+      return foot().children[i].textContent;
+    };
+    expect(cell("Description")).toBe("Totals");
+    expect(cell("Markdown")).toBe("$42.00");
+    expect(cell("Qty")).toBe("42");
+    expect(cell("Retail")).toBe("$125.58");
+    expect(cell("UPC")).toBe("");
+    act(() => {
+      store.dispatch(setMarkdownFilters({ types: ["Waste"] }));
+    });
+    expect(cell("Qty")).toBe("14");
   });
 
   it("narrows the grid and the counts when a filter is set", () => {
