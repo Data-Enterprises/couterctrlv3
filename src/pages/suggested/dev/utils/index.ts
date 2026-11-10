@@ -6,7 +6,7 @@ import {
   SCOPE_TEXT,
   suggestedAction,
 } from "./figures";
-import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../utils/csvExport";
 
 // Interfaces
 import type {
@@ -20,7 +20,7 @@ import type {
   NotSellingFilter,
   SuggestedTab,
 } from "../../../../features/dev/devSuggestedSlice";
-import type { AggFn } from "../../../../utils/csvExport";
+
 
 /** The page's table header cell, and its sortable variant. */
 export const TH =

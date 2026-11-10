@@ -9,6 +9,10 @@ import { SECTIONS } from "./utils/helpSections";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 
+interface SuggestedHelpModalProps {
+  onClose: () => void;
+}
+
 /**
  * The page's explainer, opened from the store panel's "?".
  *
@@ -24,7 +28,7 @@ import ResizableModalShell from "../../../../../components-dev/modals/ResizableM
  *
  * Every figure is the author's and is reproduced verbatim.
  */
-const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
+const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
   const scroller = useRef<HTMLDivElement>(null);
   const [landed, setLanded] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);

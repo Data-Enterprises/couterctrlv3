@@ -25,6 +25,12 @@ import InfoButton from "../../../../components-dev/InfoButton";
 import SuggestedHelpModal from "./help/SuggestedHelpModal";
 import StoreListSkeleton from "./components/StoreListSkeleton";
 
+interface StoreTreePanelProps {
+  onSelectDepartment: (key: SheetKey) => void;
+  onOpenStore: (storeid: number, storeLabel: string) => void;
+  onOpenSearch: () => void;
+}
+
 /**
  * Store, then department, then the sheet.
  *
@@ -33,15 +39,7 @@ import StoreListSkeleton from "./components/StoreListSkeleton";
  * department is what triggers the second request. That keeps the page at one
  * call on load rather than one per store.
  */
-const StoreTreePanel = ({
-  onSelectDepartment,
-  onOpenStore,
-  onOpenSearch,
-}: {
-  onSelectDepartment: (key: SheetKey) => void;
-  onOpenStore: (storeid: number, storeLabel: string) => void;
-  onOpenSearch: () => void;
-}) => {
+const StoreTreePanel = ({ onSelectDepartment, onOpenStore, onOpenSearch }: StoreTreePanelProps) => {
   const ctx = useSuggestedCtx();
   const [infoOpen, setInfoOpen] = useState(false);
 

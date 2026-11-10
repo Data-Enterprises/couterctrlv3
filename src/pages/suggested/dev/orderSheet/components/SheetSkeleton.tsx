@@ -4,13 +4,17 @@ import { NAME_W } from "../../utils";
 // Components
 import Bar from "../../components/Bar";
 
+interface SheetSkeletonProps {
+  rows?: number;
+}
+
 /**
  * The right panel while a store's items are on the way.
  *
  * Keeps a band where the KPI tiles will be so the table does not slide up the
  * moment they render, then rows in the item grid's proportions.
  */
-const SheetSkeleton = ({ rows = 12 }: { rows?: number }) => (
+const SheetSkeleton = ({ rows = 12 }: SheetSkeletonProps) => (
   <div className="flex-1 overflow-hidden" role="status" aria-label="Loading the sheet">
     <div className="grid grid-cols-5 border-b border-gray-100 bg-gray-50">
       {Array.from({ length: 5 }, (_, i) => (

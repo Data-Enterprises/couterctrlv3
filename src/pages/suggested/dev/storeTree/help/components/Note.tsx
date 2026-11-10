@@ -1,8 +1,13 @@
 // Interfaces
 import type { ReactNode } from "react";
 
+interface NoteProps {
+  warn?: boolean;
+  children: ReactNode;
+}
+
 /** A side note in the help, amber when it warns. */
-const Note = ({ warn, children }: { warn?: boolean; children: ReactNode }) => (
+const Note = ({ warn, children }: NoteProps) => (
   <div
     className={`border-l-4 px-4 py-3 rounded-r text-[14px] leading-[1.65] ${
       warn

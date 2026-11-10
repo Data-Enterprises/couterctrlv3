@@ -1,15 +1,12 @@
-/** One line of the working popover: a key and its value, bold or dimmed. */
-const Row = ({
-  k,
-  v,
-  strong,
-  soft,
-}: {
+interface RowProps {
   k: string;
   v: string;
   strong?: boolean;
   soft?: boolean;
-}) => (
+}
+
+/** One line of the working popover: a key and its value, bold or dimmed. */
+const Row = ({ k, v, strong, soft }: RowProps) => (
   <div className="flex items-baseline justify-between gap-6 px-3 py-1.5">
     <span
       className={`text-[12px] ${strong ? "font-semibold text-content" : soft ? "text-content/95" : "text-content"}`}

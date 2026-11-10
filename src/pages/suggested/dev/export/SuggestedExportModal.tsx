@@ -7,6 +7,8 @@ import {
   rowsToCsv,
   downloadCsv,
   aggregateRows,
+  type AggFn,
+  type AggRow,
 } from "../../../../utils/csvExport";
 import { deptLabel, suggestedAction } from "../utils/figures";
 import {
@@ -30,7 +32,6 @@ import type {
   SuggestedNotSelling,
   NotSellingItem,
 } from "../../../../interfaces";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import type { MetricSelection, ModalMode, PresetId } from "../interfaces";
 
 // Components

@@ -1,8 +1,9 @@
+// Hooks
 import { useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSuggestedGroup, getSuggestedItems } from "../../../api/suggested";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Redux
 import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setGroupRows,
@@ -24,8 +25,16 @@ import {
   type SheetKey,
 } from "../../../features/dev/devSuggestedSlice";
 import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getSuggestedGroup, getSuggestedItems } from "../../../api/suggested";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
 import { getStoreName } from "../../../utils";
 import { deptLabel, sheetRows } from "./utils/figures";
+
+// Interfaces
 import type {
   JsonError,
   Store,
@@ -33,6 +42,7 @@ import type {
   SuggestedItemsResp,
 } from "../../../interfaces";
 
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import SuggestedExportModal from "./export/SuggestedExportModal";

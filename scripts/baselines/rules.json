@@ -1978,68 +1978,6 @@
   "src/pages/suggested/Suggested.tsx": {
     "labels": 1
   },
-  "src/pages/suggested/dev/Suggested.tsx": {
-    "labels": 1
-  },
-  "src/pages/suggested/dev/components/Bar.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/export/SuggestedExportModal.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/suggested/dev/hooks/index.ts": {
-    "labels": 1
-  },
-  "src/pages/suggested/dev/orderSheet/components/NotSellingTab.tsx": {
-    "one-line-per-source": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/orderSheet/components/ProductionTab.tsx": {
-    "one-line-per-source": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/orderSheet/components/Row.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/orderSheet/components/SheetSkeleton.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/StoreTreePanel.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/components/PanelFrame.tsx": {
-    "labels": 1
-  },
-  "src/pages/suggested/dev/storeTree/components/StoreListSkeleton.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/SuggestedHelpModal.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Defs.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Em.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Example.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Lead.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Note.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/P.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/storeTree/help/components/Pill.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/suggested/dev/utils/index.ts": {
-    "one-line-per-source": 1
-  },
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
   },

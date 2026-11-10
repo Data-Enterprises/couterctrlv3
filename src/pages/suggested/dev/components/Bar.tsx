@@ -1,3 +1,7 @@
+interface BarProps {
+  w?: string;
+}
+
 /**
  * One shimmering bar. Widths vary per row so the block reads as a list of
  * different names rather than a striped placeholder.
@@ -16,7 +20,7 @@
  * with the real ones, so the panel does not jump when the data lands, and
  * nobody has to read a label to know what is on its way.
  */
-const Bar = ({ w = "100%" }: { w?: string }) => (
+const Bar = ({ w = "100%" }: BarProps) => (
   <div
     className="h-3 rounded bg-gray-200 animate-pulse"
     style={{ width: w }}

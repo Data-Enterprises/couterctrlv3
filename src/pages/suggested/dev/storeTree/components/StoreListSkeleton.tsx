@@ -4,8 +4,12 @@ import { NAME_W, STORE_COLS } from "../../utils";
 // Components
 import Bar from "../../components/Bar";
 
+interface StoreListSkeletonProps {
+  rows?: number;
+}
+
 /** The store tree, mid-load. Mirrors the real row grid and its `py-3`. */
-const StoreListSkeleton = ({ rows = 8 }: { rows?: number }) => (
+const StoreListSkeleton = ({ rows = 8 }: StoreListSkeletonProps) => (
   <div
     className="flex-1 overflow-hidden"
     role="status"

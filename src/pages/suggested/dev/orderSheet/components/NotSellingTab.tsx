@@ -8,6 +8,7 @@ import {
   setNotSellingStatus,
   setNsDescFilter,
   setNsUpcFilter,
+  type NotSellingFilter,
 } from "../../../../../features/dev/devSuggestedSlice";
 
 // Utils
@@ -17,7 +18,6 @@ import { SORT_TH, STATUS_PILL, STATUSES, TH } from "../../utils";
 
 // Interfaces
 import type { NotSellingItem } from "../../../../../interfaces";
-import type { NotSellingFilter } from "../../../../../features/dev/devSuggestedSlice";
 import type { NotSellingSortCol } from "../../interfaces";
 
 // Components
@@ -25,14 +25,14 @@ import ColFilter from "../../../../../components-dev/filters/ColFilter";
 import SortHeader from "../../../../../components-dev/SortHeader";
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
+interface NotSellingTabProps {
+  subDepartment: number | null;
+}
+
 /** Suggested's Not Selling tab for one sub department: status chips with counts (all, dead,
  *  stopped, declining) over a table of recent vs prior lb/day, change and lost lb, with
  *  totals. */
-const NotSellingTab = ({
-  subDepartment,
-}: {
-  subDepartment: number | null;
-}) => {
+const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
   const ctx = useSuggestedCtx();
   const { sort, handleSort, applySort } = useTriStateSort<NotSellingSortCol>();
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(

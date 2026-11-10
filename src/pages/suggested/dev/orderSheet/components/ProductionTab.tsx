@@ -4,16 +4,23 @@ import { useSuggestedCtx } from "../../hooks";
 
 // Utils
 import { buildBenchmark, deptLabel, fmtLb, median } from "../../utils/figures";
-import { dailyKey } from "../../../../../interfaces";
+import { dailyKey, type SuggestedGroupRow } from "../../../../../interfaces";
 import { getStoreName } from "../../../../../utils";
 import { DAYS, SHORT } from "../../utils";
 
 // Interfaces
-import type { SuggestedGroupRow } from "../../../../../interfaces";
 
 // Components
 import SoldPerDayStrip from "./SoldPerDayStrip";
 import BarTooltip from "./BarTooltip";
+
+interface ProductionTabProps {
+  groupRow?: SuggestedGroupRow;
+  /** Taken from the sheet key rather than off `groupRow`, which can be missing —
+   *  falling back to null there would benchmark the "No department" bucket
+   *  against a department that simply had no rollup row. */
+  subDepartment: number | null;
+}
 
 /**
  * What this department produces, what it actually sold, and how that compares.
@@ -27,16 +34,7 @@ import BarTooltip from "./BarTooltip";
  * is what someone planning a production week needs. Stacked under the actual
  * days, the gap between the two rows is the whole point of the tab.
  */
-const ProductionTab = ({
-  groupRow,
-  subDepartment,
-}: {
-  groupRow?: SuggestedGroupRow;
-  /** Taken from the sheet key rather than off `groupRow`, which can be missing —
-   *  falling back to null there would benchmark the "No department" bucket
-   *  against a department that simply had no rollup row. */
-  subDepartment: number | null;
-}) => {
+const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
   const ctx = useSuggestedCtx();
   const [hoverDay, setHoverDay] = useState<number | null>(null);
 
