@@ -1,7 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../utils";
 import { DOWN_COLOR, LY_COLOR, TY_COLOR, UP_COLOR } from "./perfColors";
 
-interface Props {
+interface PairedBarsProps {
   ty: number;
   ly: number;
   /** The largest figure anywhere in the list, so every row shares one scale.
@@ -59,7 +60,7 @@ const PairedBars = ({
   labels = ["TY", "LY"],
   format = formatCurrency2,
   lyUnavailable = false,
-}: Props) => {
+}: PairedBarsProps) => {
   const safeMax = max > 0 ? max : 1;
   // No comparison on file is not a rise: with nothing to be above, the bar
   // stays the neutral blue rather than claiming a gain from nothing.

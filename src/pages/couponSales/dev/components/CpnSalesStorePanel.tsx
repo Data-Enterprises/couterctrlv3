@@ -1,8 +1,10 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
 import { useMemo, useRef } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import { useAppDispatch } from "../../../../hooks";
+import { useCouponSalesCtx } from "../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -13,35 +15,50 @@ import {
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
   type CouponTierFilter,
-  type CouponMetric,
 } from "../../../../features/dev/devCouponSalesSlice";
+
+// Utils
+import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import {
+  couponDotClass,
+  couponPillClass,
+  type CouponRow,
+  type CouponTotals,
+  METRIC_OPTS,
+} from "../utils";
+
+// Interfaces
+import type { StoreSortCol } from "../interfaces";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
-const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
-  { key: "trend", label: "Trend" },
-  { key: "avg", label: "Avg $" },
-];
-
-type StoreSortCol = "amount" | "trans" | "count";
-
-interface Props {
+interface CpnSalesStorePanelProps {
   rows: CouponRow[];
   totals: CouponTotals;
   rangeLabel: string;
   onOpenSearch: () => void;
 }
 
-const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
+/** Coupon Sales' left panel: the week's totals, a Trend / Avg $ switch with its threshold,
+ *  tier chips, a store filter and the graded store list (sortable by amount, trans and
+ *  count). Clicking a store selects it. */
+const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSalesStorePanelProps) => {
   const dispatch = useAppDispatch();
-  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
+  const {
+    threshold: rawThreshold,
+    trendThreshold: rawTrendThreshold,
+    metric,
+    tierFilter,
+    storeFilter,
+    selectedStoreKey,
+  } = useCouponSalesCtx();
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
-  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.dev.couponSales.metric);
   const isTrend = metric === "trend";
   const activeRaw = isTrend ? rawTrendThreshold : rawThreshold;
 
@@ -51,9 +68,6 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
     rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
   );
   if (rawTrendThreshold !== null) lastValidTrendRef.current = rawTrendThreshold;
-  const tierFilter = useAppSelector((s) => s.dev.couponSales.tierFilter);
-  const storeFilter = useAppSelector((s) => s.dev.couponSales.storeFilter);
-  const selectedStoreKey = useAppSelector((s) => s.dev.couponSales.selectedStoreKey);
 
   // Clearing the numeric input dispatches null; grading deliberately holds the
   // last valid amount so rows don't reshuffle mid-edit. The slider has to sit
@@ -94,21 +108,21 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
           </span>
           <div className="flex-1" />
           <div className="flex items-center gap-3 text-custom-white">
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Amount{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatCurrencyCompact(totals.amount)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Coupons{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatBigNumber(totals.lines, 0)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Avg{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
                 {formatCurrency2(totals.avgAmount)}
@@ -121,7 +135,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button data-help="search"
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -311,7 +325,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       {/* ── Rows ───────────────────────────────────────────────────────── */}
       <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-[12px] text-content/60">
+          <div className="flex items-center justify-center h-24 text-[12px] text-content/95">
             No stores match
           </div>
         ) : (
@@ -377,7 +391,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
                   <span
                     className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
                       row.trendPct === null
-                        ? "text-content/40"
+                        ? "text-content/95"
                         : row.trendPct > 0
                           ? "text-severity_critical_text"
                           : "text-severity_healthy_text"

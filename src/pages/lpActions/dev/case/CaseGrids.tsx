@@ -40,7 +40,7 @@ const CaseGrids = ({
 }: Props) => (
   <div className="grid grid-cols-2 border-t border-gray-100">
     <div className="min-w-0 border-r border-gray-100">
-      <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/95">
         {isAll(saleType) ? "Items" : `${saleType} items`}
       </div>
       <CaseItems
@@ -53,7 +53,7 @@ const CaseGrids = ({
     </div>
 
     <div className="min-w-0">
-      <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/95">
         Largest receipts
       </div>
       <CaseReceipts

@@ -1,18 +1,24 @@
+// Hooks
 import { useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/dev/devUpcDevSlice";
 
-import UpcKpiStrip from "./UpcKpiStrip";
-import UpcExportModal from "./UpcExportModal";
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import SalesCompTab from "../modules/salesComp/SalesCompTab";
 import MovementTab from "../modules/movement/MovementTab";
-
 import PriceOptTab from "../modules/priceOpt/PriceOptTab";
 import TrendTab from "../modules/trend/TrendTab";
 import AssociationTab from "../modules/association/AssociationTab";
+import UpcKpiStrip from "./UpcKpiStrip";
+import UpcExportModal from "./UpcExportModal";
 
+/** The UPC List's right panel: the export button, the tab bar, the KPI strip and the tab
+ *  content. All tabs stay mounted so their fetches start at once; "No UPCs selected"
+ *  covers them when nothing is ticked. */
 const UpcRightPanel = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -64,10 +70,10 @@ const UpcRightPanel = () => {
         <div className="flex-1 overflow-hidden flex flex-col min-h-0 relative">
           {ctx.selectedUpcs.length === 0 && (
             <div className="absolute inset-0 z-10 bg-custom-white flex flex-col items-center justify-center gap-2">
-              <div className="text-[11px] font-medium text-content/85">
+              <div className="text-[11px] font-medium text-content/95">
                 No UPCs selected
               </div>
-              <div className="text-[10px] text-content/85">
+              <div className="text-[10px] text-content/95">
                 Select one or more items from the left panel
               </div>
             </div>

@@ -134,7 +134,7 @@ export const unAssignStoreToBaseGroup = async (
  * rebuilt to fix.
  *
  * One store per call, many groups. The caller fans out across a selection; see
- * `pages/organization/dev/baseGroups/storeMembership`.
+ * `pages/organization/dev/baseGroups/utils`.
  *
  * Rejects a store whose company differs from the group's, as a 400 rather than
  * a body with `error: 1` — nothing in the schema ties the two together, so

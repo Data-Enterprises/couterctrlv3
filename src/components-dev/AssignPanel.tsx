@@ -1,12 +1,13 @@
+// Hooks
 import { useEffect, useRef, useState, type ReactNode } from "react";
+
+// Interfaces
+import type { AssignPanelItem } from "./interfaces";
+
+// Components
 import TextFilter from "./filters/TextFilter";
 import ConfirmModal from "./ConfirmModal";
-
-interface AssignPanelItem {
-  id: number;
-  label: string;
-  sublabel?: string;
-}
+import SelectShown from "./SelectShown";
 
 interface AssignPanelProps {
   leftTitle: string;
@@ -68,50 +69,9 @@ interface AssignPanelProps {
   ) => { message: string; confirmLabel: string } | null;
 }
 
-/**
- * Stage or clear every row the column is currently showing.
- *
- * The complaint these filters came from was the clicking, and narrowing 405
- * users down to 12 is no help if all twelve still have to be clicked one at a
- * time. This acts on what is SHOWN and never on the hidden rest -- `Assign
- * all` is the button that ignores the search, and it does so deliberately.
- *
- * Selecting ADDS to what is already staged rather than replacing it, so a
- * selection can be built across several searches: narrow to one company, take
- * all of them, narrow to the next, take those too, then assign once. The
- * running count is there because that only makes sense if you can see it.
- */
-const SelectShown = ({
-  shown,
-  selected,
-  onSelectAll,
-  onClear,
-}: {
-  shown: number;
-  selected: number;
-  onSelectAll: () => void;
-  onClear: () => void;
-}) => (
-  <div className="flex items-center gap-2 mb-1 text-[10px] text-content/85">
-    <button
-      onClick={onSelectAll}
-      disabled={shown === 0}
-      className="font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
-    >
-      Select all {shown} shown
-    </button>
-    {selected > 0 && (
-      <>
-        <span aria-hidden="true">·</span>
-        <span className="font-semibold text-content">{selected} selected</span>
-        <button onClick={onClear} className="hover:underline">
-          Clear
-        </button>
-      </>
-    )}
-  </div>
-);
-
+/** Two searchable columns with Assign / Unassign buttons between them: pick rows
+ *  in one column and move them to the other, or move all of them after a
+ *  confirm. */
 // Shared staged dual-column assign/unassign control — used by the create-user
 // wizard's Assignments step, the user profile's Companies/Base groups/Stores
 // tabs, and a base group's Assign stores panel.
@@ -253,7 +213,7 @@ const AssignPanel = ({
               <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
                 <div className="truncate">{r.label}</div>
                 {r.sublabel && (
-                  <div className="text-[10.5px] text-content/85 truncate">{r.sublabel}</div>
+                  <div className="text-[10.5px] text-content/95 truncate">{r.sublabel}</div>
                 )}
               </li>
             ))}
@@ -278,7 +238,7 @@ const AssignPanel = ({
           {leftFilters && <div className="flex-shrink-0">{leftFilters}</div>}
         </div>
         {searchHint && (
-          <p className="text-[10px] text-content/85 leading-snug mb-1">
+          <p className="text-[10px] text-content/95 leading-snug mb-1">
             {searchHint}
           </p>
         )}

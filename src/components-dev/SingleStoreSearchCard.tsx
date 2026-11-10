@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
+import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import SingleSelect from "./SingleSelect";
 import EntryCardLoading from "./loading/EntryCardLoading";
+import SearchBackButton from "./SearchBackButton";
 import type { Store } from "../interfaces";
 
 interface SingleStoreSearchCardProps {
@@ -52,6 +53,9 @@ interface SingleStoreSearchCardProps {
   loadingMessage?: string;
 }
 
+/** Search card for pages that take one store: a store dropdown, a "Searching"
+ *  line naming the pick, optional date or other fields, and a Search button
+ *  that stays off until a store is chosen. */
 const SingleStoreSearchCard = ({
   title,
   description,
@@ -77,7 +81,7 @@ const SingleStoreSearchCard = ({
     <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
       <div>
         <h2 className="text-base font-semibold text-content">{title}</h2>
-        <p className="text-[12px] text-content/50 mt-1">{description}</p>
+        <p className="text-[12px] text-content/95 mt-1">{description}</p>
       </div>
 
       {/* Form stays mounted but unpainted while the search runs — holds the
@@ -89,7 +93,7 @@ const SingleStoreSearchCard = ({
           style={loading ? { visibility: "hidden" } : undefined}
         >
           {notice && (
-            <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+            <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-severity_watch_text text-[11.5px] leading-snug">
               {notice}
             </div>
           )}
@@ -174,18 +178,7 @@ const SingleStoreSearchCard = ({
               : (blockedLabel ?? buttonLabel)}
           </button>
 
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="flex w-full items-center justify-center gap-1.5 py-2.5 transition-colors"
-              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-            >
-              <ArrowLeftIcon className="h-4 w-4 text-brand_navy" />
-              <span className="text-[13px] font-semibold text-brand_navy underline underline-offset-2">
-                {backLabel}
-              </span>
-            </button>
-          )}
+          {onBack && <SearchBackButton label={backLabel} onClick={onBack} />}
 
           {children}
         </div>

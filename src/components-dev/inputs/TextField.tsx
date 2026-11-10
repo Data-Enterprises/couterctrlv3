@@ -39,7 +39,7 @@ const TextField = ({
         style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
       />
     </span>
-    {hint && <span className="text-[11px] text-content/55">{hint}</span>}
+    {hint && <span className="text-[11px] text-content/95">{hint}</span>}
   </label>
 );
 

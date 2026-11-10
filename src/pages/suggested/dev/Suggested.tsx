@@ -25,7 +25,7 @@ import {
 } from "../../../features/dev/devSuggestedSlice";
 import { isGroupSearch } from "../../../features/searchSlice";
 import { getStoreName } from "../../../utils";
-import { deptLabel, sheetRows } from ".";
+import { deptLabel, sheetRows } from "./utils/figures";
 import type {
   JsonError,
   Store,
@@ -34,9 +34,9 @@ import type {
 } from "../../../interfaces";
 
 import SearchCard from "../../../components-dev/SearchCard";
-import SuggestedExportModal from "./SuggestedExportModal";
-import StoreTreePanel from "./StoreTreePanel";
-import OrderSheetPanel from "./OrderSheetPanel";
+import SuggestedExportModal from "./export/SuggestedExportModal";
+import StoreTreePanel from "./storeTree/StoreTreePanel";
+import OrderSheetPanel from "./orderSheet/OrderSheetPanel";
 
 /**
  * Suggested Weight — pounds to buy for each scale item.
@@ -192,7 +192,7 @@ const Suggested = () => {
     <div className="flex flex-col gap-2">
       <div className="flex items-start gap-3">
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
           Days until delivery
         </span>
         <input
@@ -207,7 +207,7 @@ const Suggested = () => {
         />
       </label>
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
           Cover days
         </span>
         <input
@@ -225,7 +225,7 @@ const Suggested = () => {
       {/* States what the two are, not what they should be. Every version of
           this that used an example ended up prescribing an ordering rhythm --
           Friday and Monday trucks are one store's week, not everyone's. */}
-      <p className="text-[12px] text-content/85 leading-snug">
+      <p className="text-[12px] text-content/95 leading-snug">
         Days until delivery runs from placing the order to the truck arriving.
         Cover days runs from that truck to the next one.
       </p>

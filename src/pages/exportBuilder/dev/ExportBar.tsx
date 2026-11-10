@@ -69,14 +69,14 @@ const ExportBar = () => {
       <div
         className={`flex-shrink-0 rounded-xl px-4 py-3 border ${
           ctx.staleBuild
-            ? "bg-amber-50 border-amber-300"
+            ? "bg-severity_watch_bg border-severity_watch_text/20"
             : "bg-card_bg border-brand_green"
         }`}
       >
         {/* A file left on screen while the configuration moves under it looks
             like the answer and is not. */}
         {ctx.staleBuild && (
-          <div className="text-[12px] font-semibold text-amber-900 mb-2">
+          <div className="text-[12px] font-semibold text-severity_watch_text mb-2">
             The configuration has changed since this file was built — it does
             not match what is on screen. Build export again for a file that
             does.
@@ -91,22 +91,22 @@ const ExportBar = () => {
               <div className="text-[13px] font-semibold truncate">
                 {f.key.split("/").pop()}
                 {ctx.builtQueryName && (
-                  <span className="font-normal text-content/85">
+                  <span className="font-normal text-content/95">
                     {" "}
                     · {ctx.builtQueryName}
                   </span>
                 )}
               </div>
-              <div className="text-[11.5px] text-content/85 mt-0.5">
+              <div className="text-[11.5px] text-content/95 mt-0.5">
                 {formatBigNumber(ctx.rowsUploaded, 0)} rows · {mb(f.bytes)} ·
                 built in {ctx.elapsedSeconds.toFixed(1)}s
               </div>
             </div>
             <div className="text-right mr-1">
-              <div className="text-[11.5px] font-semibold text-amber-900">
+              <div className="text-[11.5px] font-semibold text-severity_watch_text">
                 Link expires in {ctx.urlExpiresInMinutes} min
               </div>
-              <div className="text-[11px] text-content/85 mt-0.5">
+              <div className="text-[11px] text-content/95 mt-0.5">
                 Build it again after that
               </div>
             </div>
@@ -128,7 +128,7 @@ const ExportBar = () => {
             </button>
           </div>
         ))}
-        <div className="text-[11px] text-content/85 mt-2">
+        <div className="text-[11px] text-content/95 mt-2">
           {ctx.manifestWritten
             ? "This build is in Previous builds, with the settings that made it."
             : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
@@ -145,7 +145,7 @@ const ExportBar = () => {
           <div className="text-[13px] font-semibold text-custom-white">
             {ctx.slow ? "Still building" : "Building your file"}
           </div>
-          <div className="text-[11.5px] text-custom-white/85 mt-0.5">
+          <div className="text-[11.5px] text-custom-white/95 mt-0.5">
             {ctx.slow
               ? "Past the point the connection usually waits. It is still being written — if no link arrives, try a shorter range."
               : "Written straight to storage — nothing downloads here."}
@@ -179,19 +179,19 @@ const ExportBar = () => {
               }`}{" "}
           · {ctx.flags.fileFormat.toUpperCase()}
           {narrowed.length > 0 && (
-            <span className="font-normal text-custom-white/85">
+            <span className="font-normal text-custom-white/95">
               {" "}
               · {narrowed.length} filter{narrowed.length === 1 ? "" : "s"}
             </span>
           )}
         </div>
         {pii > 0 && (
-          <div className="text-[11.5px] text-custom-white/85 mt-1">
+          <div className="text-[11.5px] text-custom-white/95 mt-1">
             Includes {pii} personal column{pii === 1 ? "" : "s"}
           </div>
         )}
         {ctx.exportError && (
-          <div className="flex items-center gap-1.5 mt-1.5 text-[11.5px] text-amber-200">
+          <div className="flex items-center gap-1.5 mt-1.5 text-[11.5px] text-severity_watch_bg">
             <ClockIcon className="w-3.5 h-3.5 flex-shrink-0" />
             {ctx.exportError}
           </div>
@@ -242,7 +242,7 @@ const ExportBar = () => {
           Build export
         </button>
         {ctx.blocked && (
-          <span className="text-[11px] text-amber-200 text-right max-w-[34ch]">
+          <span className="text-[11px] text-severity_watch_bg text-right max-w-[34ch]">
             {ctx.blocked}
           </span>
         )}

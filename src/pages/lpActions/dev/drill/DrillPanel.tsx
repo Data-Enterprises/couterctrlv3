@@ -55,7 +55,7 @@ const DrillPanel = ({
           <ArrowLeftIcon className="w-3.5 h-3.5" />
           All types
         </button>
-        <span className="flex-1 min-w-0 text-[11px] font-semibold uppercase tracking-wide text-content/85 truncate">
+        <span className="flex-1 min-w-0 text-[11px] font-semibold uppercase tracking-wide text-content/95 truncate">
           {saleType} by {spec.label.toLowerCase()}
         </span>
         <button
@@ -88,7 +88,7 @@ const DrillPanel = ({
       </div>
 
       {branches.length === 0 ? (
-        <div className="h-[180px] flex items-center justify-center text-center text-[12px] text-content/85 px-4">
+        <div className="h-[180px] flex items-center justify-center text-center text-[12px] text-content/95 px-4">
           {emptyText(spec, linesLoading)}
         </div>
       ) : (
@@ -102,7 +102,7 @@ const DrillPanel = ({
         />
       )}
 
-      <p className="text-[11.5px] text-content/85 leading-snug px-1">
+      <p className="text-[11.5px] text-content/95 leading-snug px-1">
         Each branch is the same {saleType.toLowerCase()} cut by{" "}
         {spec.label.toLowerCase()}. Click one to read it against every other
         axis, and to narrow the timeline and the receipts beside it.

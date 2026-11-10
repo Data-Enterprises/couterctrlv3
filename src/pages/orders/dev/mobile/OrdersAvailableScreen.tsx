@@ -1,12 +1,21 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
-import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
-interface Props {
+// Utils
+import { fmtDate } from "./utils";
+
+// Interfaces
+import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
+
+interface OrdersAvailableScreenProps {
   cards: GroupedOrderCard[];
   selectedKey: SelectedOrderKey;
   loading: boolean;
@@ -17,11 +26,9 @@ interface Props {
   onOpenSearch: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
+/** The phone Orders first screen: orders found for the search, grouped by order type (tabs, collapsible in All)
+ *  with a store filter, a date filter and per-store order counts. Tapping a store, or "Select all N stores",
+ *  opens its orders. */
 const OrdersAvailableScreen = ({
   cards,
   selectedKey,
@@ -31,7 +38,7 @@ const OrdersAvailableScreen = ({
   onSelectStore,
   onSelectAllStores,
   onOpenSearch,
-}: Props) => {
+}: OrdersAvailableScreenProps) => {
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");

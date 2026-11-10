@@ -1,11 +1,19 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import BottomSheet from "../../../../components-dev/BottomSheet";
+
+// Utils
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
+
+// Interfaces
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "../components/ordersExportShared";
+import type { ModalMode, ExportDataset, MetricSelection } from "./interfaces";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import BottomSheet from "../../../../components-dev/BottomSheet";
 
 interface OrdersExportSheetProps {
   onClose: () => void;
@@ -17,14 +25,8 @@ interface OrdersExportSheetProps {
   selectedOrder: SelectedOrder;
 }
 
-type ModalMode = "presets" | "custom";
-type ExportDataset = "all" | "selected" | "subDepts";
-
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
-}
-
+/** The phone Orders export sheet. Presets picks All Orders, the selected order, or chosen sub depts; Custom groups
+ *  by chosen fields with sum/avg metrics over the chosen sub depts. */
 const OrdersExportSheet = ({
   onClose,
   storeNames,

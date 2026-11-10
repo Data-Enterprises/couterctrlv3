@@ -1,15 +1,20 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Components
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import UpcItemList from "./UpcItemList";
 
-interface Props {
+interface UpcLeftPanelProps {
   onReSearch: () => void;
 }
 
-const UpcLeftPanel = ({ onReSearch }: Props) => {
+/** The UPC List's left panel: a navy header with the date range, the searched store or
+ *  group, a search-again button and help, above the UPC list. */
+const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
   const ctx = useUpcDevCtx();
 
   // What was searched, from ctx, not the search being edited in the re-search
@@ -61,7 +66,6 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
 
           <PageInfoButton
             page="upc-list"
-            section={ctx.activeTab}
             className="flex-shrink-0"
           />
         </div>

@@ -1,17 +1,17 @@
-export type HeatStyle = { bg: string; color: string };
+// Interfaces
+import type { HeatStyle } from "../interfaces";
 
 const HEAT: HeatStyle[] = [
-  { bg: "transparent", color: "#9ca3af" },
+  { bg: "transparent", color: "rgb(var(--color-brand-slate-2))" },
   { bg: "#e6f1fb", color: "#185fa5" },
   { bg: "#b5d4f4", color: "#0c447c" },
   { bg: "#85b7eb", color: "#0c447c" },
-  { bg: "#378add", color: "#fff" },
-  { bg: "#185fa5", color: "#fff" },
+  { bg: "#378add", color: "rgb(var(--color-custom-white))" },
+  { bg: "#185fa5", color: "rgb(var(--color-custom-white))" },
 ];
 
-// Shared magnitude-to-color ramp — any module coloring a value against a max
-// (day-of-week heat grids today, potentially other magnitude visualizations
-// later) should reuse this rather than defining its own scale.
+// The shared magnitude-to-colour ramp: reuse it for any value coloured
+// against a max.
 export function heatStyle(value: number, max: number): HeatStyle {
   if (max === 0 || value === 0) return HEAT[0];
   const r = value / max;

@@ -1,12 +1,15 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useCategoryData, useCategoriesCtx } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useCategoryData } from "./useCategoryData";
-import CategoryListPanel from "./CategoryListPanel";
-import CategoryDetailPanel from "./CategoryDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
+import CategoryListPanel from "./components/CategoryListPanel";
+import CategoryDetailPanel from "./components/CategoryDetailPanel";
 
 /**
  * Categories — Performance.
@@ -23,7 +26,7 @@ const Categories = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.

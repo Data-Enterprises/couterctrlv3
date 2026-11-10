@@ -1,8 +1,18 @@
+// Hooks
 import { useMemo, type ReactNode } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { matchesPick, type OrderDoc } from "../orderEdit";
 
-interface Props {
+// Utils
+import { matchesPick } from "../utils/orderEdit";
+import { fmtOrderDate, padStoreNumber } from "../utils";
+
+// Interfaces
+import type { OrderDoc } from "../interfaces";
+
+// Components
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import PickerField from "./PickerField";
+
+interface OrderPickerPanelProps {
   /** Every order in the range, newest first. */
   docs: OrderDoc[];
   /** The one being edited, if any. */
@@ -41,14 +51,6 @@ interface Props {
   problems: ReactNode;
 }
 
-/** The same three-digit pad the report panel uses. */
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
-
 /**
  * The left panel while an order is being edited.
  *
@@ -84,7 +86,7 @@ const OrderPickerPanel = ({
   onTab,
   problemsToDo,
   problems,
-}: Props) => {
+}: OrderPickerPanelProps) => {
   /**
    * What each filter offers, narrowed by the other two.
    *
@@ -185,7 +187,7 @@ const OrderPickerPanel = ({
       ) : (
       <>
       <div className="flex-shrink-0 px-3 pt-3 pb-2 flex flex-col gap-2">
-        <Field label="Store">
+        <PickerField label="Store">
           <select
             value={storeNumber}
             onChange={(e) => onStore(e.target.value)}
@@ -203,9 +205,9 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
 
-        <Field label="Order date">
+        <PickerField label="Order date">
           <select
             value={orderDate}
             onChange={(e) => onDate(e.target.value)}
@@ -223,9 +225,9 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
 
-        <Field label="Order type">
+        <PickerField label="Order type">
           <select
             value={orderType}
             onChange={(e) => onType(e.target.value)}
@@ -243,7 +245,7 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
       </div>
 
       <div className="flex items-center gap-2 px-3 pb-2 flex-shrink-0">
@@ -337,14 +339,5 @@ const OrderPickerPanel = ({
     </div>
   );
 };
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-1">
-      {label}
-    </span>
-    {children}
-  </div>
-);
 
 export default OrderPickerPanel;

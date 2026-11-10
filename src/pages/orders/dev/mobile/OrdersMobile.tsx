@@ -1,9 +1,9 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
-import { useOrdersCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { getAllOrders, getAvailableOrders } from "../../../../api/orders";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+import { useOrdersCtx } from "../hooks";
+
+// Redux
 import { setSelectedGroupStores } from "../../../../features/userSlice";
 import {
   setAllOrders,
@@ -18,24 +18,32 @@ import {
   type GroupedOrderCard,
   type UniqueSub,
 } from "../../../../features/dev/devOrdersSlice";
-import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
-import { getCogs, getERet } from "..";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
+import { getAllOrders, getAvailableOrders } from "../../../../api/orders";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+
+// Utils
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
+import { getCogs, getERet } from "../utils";
+import { fmtExportDate } from "./utils";
+
+// Interfaces
+import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
+import type { MobileStep } from "./interfaces";
+
+// Components
 import SearchCard from "../../../../components-dev/SearchCard";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
-import { isGroupSearch } from "../../../../features/searchSlice";
 
-type MobileStep = "available" | "list";
-
-const fmtExportDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
+/** The phone Orders page. It holds the search card, then moves through the available orders, the order list and a
+ *  bottom sheet of one order's lines, and owns the order fetches and the export sheet. */
 const OrdersMobile = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();

@@ -1,7 +1,10 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
+
+// Redux
 import {
   setDevDataLoaded,
   seedDevUpcItems,
@@ -10,39 +13,22 @@ import {
   removeDevUpcs,
   clearDevUpcData,
 } from "../../../features/dev/devUpcDevSlice";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { upcQueue } from "./upcQueue";
 
+// API
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { upcQueue } from "./upcQueue";
+import { buildScopeKey, sameStores } from "./utils";
+
+// Components
 import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";
 
-/** Everything except the UPC list that decides whether loaded data is still
- *  valid. Two searches with the same scope key differ only in their UPCs, which
- *  is the case a pure removal can be answered from state. Built from the search
- *  *selection* rather than resolved storeids so the check costs nothing — a
- *  group's store list is fetched, and a pure removal shouldn't pay even for
- *  that. */
-const buildScopeKey = (
-  type: string,
-  storeid: number | string | undefined,
-  groupId: number | string | undefined,
-  startDate: string,
-  endDate: string,
-) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
-
-/** Whether two comma-joined store lists hold the same stores, in any order. */
-const sameStores = (a: string, b: string) => {
-  const norm = (s: string) =>
-    s
-      .split(",")
-      .map(Number)
-      .filter((n) => Number.isFinite(n) && n > 0)
-      .sort((x, y) => x - y)
-      .join(",");
-  return norm(a) === norm(b);
-};
-
+/** The UPC List page: the search card until a search runs, then the UPC list on the left
+ *  and the tabs on the right, with a re-search overlay. A search that only removes UPCs
+ *  prunes loaded rows; one for the same store and dates fetches only what's missing. */
 const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -50,11 +36,8 @@ const UpcList = () => {
   const searchState = useAppSelector((s) => s.search);
   const [reSearchOpen, setReSearchOpen] = useState(false);
   /**
-   * Which search is the newest. A group search waits on the group's store
-   * lookup, and two pressed in quick succession could finish in either order:
-   * the older one landing last put its stores under the newer one's header.
-   * Each search takes a number, and one whose lookup returns after a newer
-   * search has started is dropped.
+   * Which search is the newest. Each search takes a number; one whose group
+   * store lookup returns after a newer search has started is dropped.
    */
   const searchSeq = useRef(0);
   const [lookingUp, setLookingUp] = useState(false);
@@ -107,9 +90,8 @@ const UpcList = () => {
     }
     const seq = ++searchSeq.current;
 
-    // The live search, not ctx: ctx serves the tabs the search their data
-    // answers, and this is the one place that has to read what is about to be
-    // asked.
+    // The live search, not ctx: this is the one place that reads what is
+    // about to be asked.
     const scopeKey = buildScopeKey(
       searchState.type,
       searchState.selectedStore?.storeid,
@@ -120,21 +102,13 @@ const UpcList = () => {
     const removed = ctx.searchedUpcs.filter((u) => !ctx.upcs.includes(u));
     const added = ctx.upcs.filter((u) => !ctx.searchedUpcs.includes(u));
 
-    // A search that only took UPCs away asks for a strict subset of what's
-    // already loaded, so it can be answered by arithmetic instead of three
-    // heavy calls. Every module's rows are keyed on product_code and carry
-    // only that UPC's own numbers, so pruning them lands on exactly the state
-    // a re-fetch would have produced.
-    //
-    // Conditions are deliberately narrow: same store/group, same dates, and
-    // nothing added. Any of those changing means the loaded rows are answers
-    // to a different question and have to be re-fetched.
+    // A search that only removed UPCs is a subset of what's loaded, so it is
+    // answered by pruning rows (keyed on product_code) instead of re-fetching.
+    // Only when the store/group and dates are the same and nothing was added.
     if (ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && removed.length && !added.length) {
-      // Anything still loading is fetching the pre-prune UPC set, and every
-      // module setter replaces its whole array — so that response would put
-      // the removed UPC straight back a second after it disappeared. Aborting
-      // leaves that module unloaded, and the version bump inside removeDevUpcs
-      // sends it back for the reduced set when the user next looks at it.
+      // Anything still loading is fetching the old UPC set and would put the
+      // removed UPC back; aborting leaves it unloaded, and removeDevUpcs's
+      // version bump re-asks for the reduced set on the next visit.
       upcQueue.startRun();
       dispatch(removeDevUpcs(removed));
       // No lookup here, but an older search's may still be pending; it was
@@ -157,30 +131,20 @@ const UpcList = () => {
 
     setReSearchOpen(false);
 
-    // Past this point the previous run's results are unwanted: its queued jobs
-    // are dropped before they reach the network and its in-flight ones are
-    // aborted. Deliberately below resolveStoreids, which can bail out (no store
-    // picked, group lookup failed) and leave the page on its existing data —
-    // killing that data's in-flight refreshes for a search that never happened
-    // would strand it half-loaded.
+    // From here the previous run's queued jobs are dropped and in-flight ones
+    // aborted. Kept below resolveStoreids, which can bail out and leave the
+    // page on its existing data.
     upcQueue.startRun();
 
-    // Two shapes of search, and the difference is the whole point of the
-    // coverage model:
+    // Two shapes of search:
     //
-    //  - Same store, same dates, UPCs added: the loaded rows are still true
-    //    answers, they just don't cover the new UPCs. Nothing is wiped; each
-    //    module's coverage stays as it was, so its next fetch asks only for
-    //    what it's missing. Adding one UPC to a nine-UPC search costs one
-    //    one-UPC call per module the user actually opens.
+    //  - Same store, same dates, UPCs added: nothing is wiped; each module's
+    //    next fetch asks only for what it's missing.
+    //  - Anything else: the loaded rows answer a different question, so
+    //    everything goes.
     //
-    //  - Anything else (different store, different dates, first search): the
-    //    loaded rows answer a different question, so everything goes.
-    //
-    // The same group can hold different stores than it did last time: one
-    // deactivated or added since. The scope key names the group, not its
-    // stores, so the stores just looked up are compared too; without that the
-    // new list was thrown away and every fetch kept asking for the old one.
+    // A group can hold different stores than last time, so the stores just
+    // looked up are compared too, not only the group in the scope key.
     const incremental =
       ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && sameStores(storeids, ctx.storeids);
     if (incremental) {
@@ -190,9 +154,8 @@ const UpcList = () => {
       dispatch(setDevStoreids(storeids));
     }
 
-    // The roster is the searched UPC list, not whatever an endpoint returned,
-    // so the left panel is complete and stable from the moment the search
-    // commits. Descriptions arrive as modules respond.
+    // The roster is the searched UPC list, so the left panel is complete from
+    // the moment the search commits; descriptions arrive as modules respond.
     dispatch(seedDevUpcItems(ctx.upcs));
     dispatch(
       setDevSearchSnapshot({
@@ -208,9 +171,8 @@ const UpcList = () => {
       }),
     );
     dispatch(setDevDataLoaded(true));
-    // No fetch here. Every module — Sales Comp included — asks for its own
-    // delta when the user actually opens it. A search costs zero calls on its
-    // own; the tab you land on makes exactly one.
+    // No fetch here: each tab asks for its own delta when opened, so a search
+    // costs nothing and the tab you land on makes one call.
   };
 
   if (!ctx.dataLoaded) {
@@ -229,9 +191,8 @@ const UpcList = () => {
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setReSearchOpen(false)}
         >
-          {/* Wrapper only shrink-wraps the card — the backdrop does the
-              centering. If this spanned the viewport its stopPropagation
-              would eat every backdrop click. Matches SmDevSearchOverlay. */}
+          {/* Shrink-wraps the card; the backdrop centers. Spanning the
+              viewport would swallow backdrop clicks. */}
           <div className="mx-4" onClick={(e) => e.stopPropagation()}>
             <UpcSearchCard
               onSearch={handleSearch}

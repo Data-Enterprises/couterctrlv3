@@ -103,7 +103,7 @@ const WeekLinesChart = ({ types, windows, selected }: Props) => {
           x2={X1}
           y2={Y1}
           stroke="currentColor"
-          className="text-gray-300"
+          className="text-brand_line_2"
         />
 
         {hover !== null && (
@@ -113,7 +113,7 @@ const WeekLinesChart = ({ types, windows, selected }: Props) => {
             x2={x(hover)}
             y2={Y1}
             stroke="currentColor"
-            className="text-gray-300"
+            className="text-brand_line_2"
           />
         )}
 

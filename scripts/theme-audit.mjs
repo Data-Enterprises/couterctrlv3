@@ -14,12 +14,15 @@
  * Legacy trees are reported separately and never mixed into the totals: they
  * are being replaced, and folding them in buries the signal.
  *
+ * Scans src/pages (dev trees; prod snapshots are skipped) and src/components-dev.
+ *
  * Run: npm run audit:theme        (add --verbose for every hit, not just 3)
+ * A clean run ends "TOTAL: 0 hit(s)"; any hit outside legacy exits 1.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 
-const ROOT = "src/pages";
+const ROOTS = ["src/pages", "src/components-dev"];
 const VERBOSE = process.argv.includes("--verbose");
 
 /* ── page families ──────────────────────────────────────────────────────── */
@@ -54,8 +57,8 @@ const strip = (src) =>
  *             not meant to edit. Everything under dev/ is audited normally —
  *             that is where changes land.
  *
- * The component libraries (src/components and src/components-dev) are outside
- * src/pages and have never been scanned by this audit.
+ * src/components-dev, the dev library, is scanned too (as "components-dev").
+ * src/components, the prod library, is not: it changes by promotion.
  */
 // `.*` rather than `[^/]+`: the shared pages keep their prod copy two levels
 // down (src/pages/shared/eventPerf/prod/), so a single segment missed them and
@@ -101,11 +104,11 @@ const RULES = [
   },
   {
     id: "bespoke-info-button",
-    scope: DESKTOP,
-    why: "the header ? button is src/components/InfoButton.tsx; hand-rolled copies drift in variant and opacity",
+    scope: ALL,
+    why: "the header ? button is components-dev/InfoButton.tsx; hand-rolled copies drift in variant and opacity",
     re: /QuestionMarkCircleIcon/g,
-    // charts legitimately use the icon inline, not as a header button
-    skip: (f) => /charts|TopSub|MarginKpi/.test(f.path),
+    // charts and caution strips use the icon inline, not as a button; InfoButton is the component itself
+    skip: (f) => /charts|TopSub|MarginKpi|CaseSummary|components-dev\/InfoButton\.tsx$/.test(f.path),
   },
   {
     id: "mobile-italic",
@@ -120,13 +123,16 @@ const RULES = [
     re: /text-\[(?:[1-9])px\]/g,
   },
   {
-    id: "mobile-opacity-floor",
-    scope: MOBILE,
+    id: "text-opacity-floor",
+    scope: ALL,
     // A dimmed lone separator glyph is decoration, not unreadable text.
     lineSkip: /className="[^"]*">\s*[·•|/\-]\s*</,
-    why: "dev mobile text-colour opacity floor is /95",
-    // disabled:/placeholder: states are meant to read as dimmed — not drift.
-    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-8][0-9]|9[0-4])\b/g,
+    why: "text-colour opacity floor is /95, desktop and phone (9 Nov 2026)",
+    // The public portal and login shell (src/pages/home) are one copy shared
+    // with prod, with their own portal palette; they change on their own.
+    skip: (f) => /^src\/pages\/home\//.test(f.path),
+    // disabled:/placeholder:/hover:/focus:/active: states are meant to read as dimmed.
+    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover|active):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-8][0-9]|9[0-4])\b/g,
   },
   {
     id: "navy-header-padding",
@@ -143,10 +149,26 @@ const RULES = [
   {
     id: "hardcoded-severity-palette",
     scope: ALL,
-    why: "severity pills must use the severity_* tokens; Tailwind's red/amber/emerald-100 are brighter and don't follow a token change",
-    // The -100/-800 pair is the *pill* register. Plain bg-red-500 etc. are the
-    // list dots, which are deliberately saturated — not a violation.
-    re: /\b(?:bg|text)-(?:red|amber|emerald|yellow|green)-(?:100|800)\b/g,
+    why: "meaning colours are tokens: severity_* (grades), delta_* (direction), brand_danger* (errors), severity_watch_* (notices); Tailwind's palette is brighter and doesn't follow a token change",
+    // The pale fills and dark texts are the pill and notice register. Plain
+    // bg-red-500 etc. are the list dots, deliberately saturated — not a violation.
+    re: /\b(?:bg|text|border)-(?:red|amber|emerald|yellow|green|orange|rose)-(?:50|100|200|700|800|900)\b/g,
+  },
+  {
+    id: "grey-text",
+    scope: ALL,
+    why: "text is text-content (/95 at least), text-brand_slate for small mono labels, placeholder:text-brand_placeholder for placeholders; Tailwind greys measured below contrast",
+    re: /(?<!(?:disabled|placeholder):)\btext-(?:gray|slate)-(?:300|400|500)\b/g,
+  },
+  {
+    id: "raw-hex",
+    scope: ALL,
+    why: "colours come from the tokens in src/index.css (a class, or rgb(var(--color-…)) where a class won't do); a raw hex doesn't follow a token change",
+    // Exceptions: the public portal (its own palette, shared with prod), the
+    // Upc List heat ramp and chart series colours, which the chart library
+    // takes as plain colour strings and which no token stands for.
+    skip: (f) => /^src\/pages\/home\/|heatColor\.ts$|HourTrendChart\.tsx$/.test(f.path),
+    re: /\b(?:bg|text|border|from|to|via|ring|fill|stroke)-\[#[0-9a-fA-F]{3,8}\]|(?:color|background|backgroundColor|borderColor)\s*:\s*["'`]#[0-9a-fA-F]{3,8}/g,
   },
   {
     id: "local-shared-helper",
@@ -179,16 +201,27 @@ let treeCopies = 0;
     else if (e.endsWith(".tsx") || e.endsWith(".ts")) {
       const rel = p.split(sep).join("/");
       if (isTreeCopy(rel)) { treeCopies++; continue; }
+      const page = rel.startsWith("src/components-dev/") ? "components-dev" : rel.split("/")[2];
       files.push({
         path: rel,
-        page: rel.split("/")[2],
-        family: FAMILY[rel.split("/")[2]] ?? "Other",
+        page,
+        family: FAMILY[page] ?? "Other",
         legacy: isLegacy(rel),
         src: strip(readFileSync(p, "utf8")),
       });
     }
   }
-})(ROOT);
+})(ROOTS[0]);
+for (const r of ROOTS.slice(1)) (function walk(dir) {
+  for (const e of readdirSync(dir)) {
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) walk(p);
+    else if ((e.endsWith(".tsx") || e.endsWith(".ts")) && !/\.test\./.test(e)) {
+      const rel = p.split(sep).join("/");
+      files.push({ path: rel, page: "components-dev", family: "Library", legacy: false, src: strip(readFileSync(p, "utf8")) });
+    }
+  }
+})(r);
 
 /* ── run ────────────────────────────────────────────────────────────────── */
 
@@ -262,4 +295,8 @@ for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
 const legacyTotal = RULES.reduce(
   (a, r) => a + results.get(r.id).filter((h) => h.f.legacy).length, 0);
 console.log(`\n\nLEGACY (not counted above): ${legacyTotal} hit(s) — being replaced, ignore unless porting.`);
+const liveTotal = RULES.reduce(
+  (a, r) => a + results.get(r.id).filter((h) => !h.f.legacy).length, 0);
+console.log(`TOTAL: ${liveTotal} hit(s)`);
 console.log("");
+if (liveTotal > 0) process.exitCode = 1;

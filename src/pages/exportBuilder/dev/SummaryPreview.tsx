@@ -29,24 +29,24 @@ const SummaryPreview = () => {
   return (
     <div className="flex-1 min-w-0 bg-card_bg border border-brand_line rounded-xl flex flex-col min-h-0 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-2.5 bg-custom-white border-b border-brand_line flex-shrink-0">
-        <TableCellsIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+        <TableCellsIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
         <span className="font-mono text-[12.5px] font-semibold truncate">
           {name}
         </span>
-        <span className="text-[11.5px] text-content/85 flex-shrink-0">
+        <span className="text-[11.5px] text-content/95 flex-shrink-0">
           {keys.length} key{keys.length === 1 ? "" : "s"} ·{" "}
           {ctx.aggregates.length} measure
           {ctx.aggregates.length === 1 ? "" : "s"}
         </span>
         <div className="flex-1" />
-        <span className="text-[11.5px] text-content/85 flex-shrink-0">
+        <span className="text-[11.5px] text-content/95 flex-shrink-0">
           {ctx.selectedStoreIds.length} store
           {ctx.selectedStoreIds.length === 1 ? "" : "s"}
         </span>
       </div>
 
-      <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex-shrink-0">
-        <span className="text-[11.5px] text-amber-900">
+      <div className="px-4 py-2 bg-severity_watch_bg border-b border-severity_watch_text/20 flex-shrink-0">
+        <span className="text-[11.5px] text-severity_watch_text">
           Sample numbers, from {ctx.visibleRows.length} line
           {ctx.visibleRows.length === 1 ? "" : "s"}. The file is built from the
           whole range.
@@ -57,7 +57,7 @@ const SummaryPreview = () => {
         <div className="flex-1 flex items-center justify-center text-center px-6">
           <div className="max-w-[36ch]">
             <div className="text-[13px] font-semibold">Nothing to group yet</div>
-            <div className="text-[12.5px] text-content/85 mt-1.5">
+            <div className="text-[12.5px] text-content/95 mt-1.5">
               Pick what the rows should be on the left, then what to measure for
               each one.
             </div>
@@ -76,7 +76,7 @@ const SummaryPreview = () => {
                       key={c}
                       className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${
                         isPii(c)
-                          ? "bg-amber-50 text-amber-900"
+                          ? "bg-severity_watch_bg text-severity_watch_text"
                           : isKey
                             ? "bg-row_selected text-content"
                             : "bg-filter_active text-content"
@@ -91,7 +91,7 @@ const SummaryPreview = () => {
             <tbody>
               {rows.map((row, r) => (
                 <tr key={r}>
-                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
+                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/95">
                     {r + 1}
                   </td>
                   {columns.map((c) => {
@@ -129,7 +129,7 @@ const SummaryPreview = () => {
       )}
 
       {columns.length > 0 && rows.length === 0 && (
-        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/85 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/95 flex-shrink-0">
           None of the sample lines survive the filters, so there is nothing to
           group here. The file can still hold plenty: the sample is two hundred
           lines taken where the scan landed.

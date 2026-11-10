@@ -6,6 +6,9 @@ interface BottomSheetProps {
   closeRef?: React.MutableRefObject<(() => void) | null>;
 }
 
+/** Phone bottom sheet that slides up over a blurred backdrop. Closes on a
+ *  backdrop tap or a downward swipe on its drag handle; the parent can trigger
+ *  the slide-down through `closeRef`. */
 const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startY: number; currentY: number } | null>(null);

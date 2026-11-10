@@ -1,22 +1,37 @@
+// Hooks
 import { useAppDispatch } from "../../../../hooks";
+import { useGroupCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-import Input from "../../../../components-dev/inputs/Input";
-import type { JsonError } from "../../../../interfaces";
-import { updateGroup } from "../../../../api/groups";
-import { useGroupCtx } from "..";
 
+// Redux
+import {
+  setSelectedGroup,
+  type Group,
+  emptyGroup,
+} from "../../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { updateGroup } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
+// Components
+import Input from "../../../../components-dev/inputs/Input";
+
+/** The phone's Update form: tap one of your own (not shared) groups, type a new name and Submit.
+ *  A name already in use disables Submit. */
 const UpdateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, createInput } =
     useGroupCtx();
 
-  // Shared groups are built and maintained by whoever shared the base group
-  // they came from, so they are not offered as an edit target here. Unlike the
-  // desktop page, these pickers exist only to choose something to change —
-  // there is no view mode a disabled row would still be useful in.
+  // Shared groups are built and maintained by whoever shared the base group they came from, so they are not offered as an edit target here.
   const editableGroups = groups.filter((g) => !g.is_shared);
 
   const groupNames = groups.map((g) => g.group_name);

@@ -1,13 +1,25 @@
-import { useGroupCtx } from "..";
+// Hooks
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { createGroup } from "../../../../api/groups";
+
+// Interfaces
 import type { JsonError } from "../../../../interfaces";
 
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-
-import { createGroup } from "../../../../api/groups";
+// Components
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Create form: the existing group names as chips, a name field and Submit.
+ *  A name that already exists shows a warning and disables Submit. */
 const CreateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();

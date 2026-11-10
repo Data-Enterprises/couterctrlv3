@@ -1,0 +1,161 @@
+// Hooks
+import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
+
+// Redux
+import { setSelectedStore } from "../../../../features/dev/devItemLookupSlice";
+import { setError } from "../../../../features/itemScanSlice";
+
+// Components
+import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
+import ScannerView from "../../../../components-dev/scanner/ScannerView";
+import RecentLookupsStrip from "./components/RecentLookupsStrip";
+import RecentLookupsCard from "./components/RecentLookupsCard";
+
+interface LookupEntryScreenProps {
+  onSearch: (upc: string) => void;
+  onSelectRecent: (productCode: string) => void;
+}
+
+/**
+ * Item Lookup's landing screen, on the same `SingleStoreSearchCard` every
+ * mobile page opens with, without a date picker (a lookup takes a code). The
+ * scanner, the UPC field and the recent list ride in its `children` slot.
+ */
+const LookupEntryScreen = ({
+  onSearch,
+  onSelectRecent,
+}: LookupEntryScreenProps) => {
+  const dispatch = useAppDispatch();
+  const { error } = useAppSelector((s) => s.itemScan);
+  const { assignedStores } = useAppSelector((s) => s.user);
+  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const [manualUpc, setManualUpc] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  const hasStore = selectedStore > 0;
+  // Option A's recents card: on in the dev tree, off in prod until promoted.
+  const devView = true;
+
+  const handleManualSearch = () => {
+    if (!manualUpc.trim() || !hasStore) return;
+    onSearch(manualUpc.trim());
+  };
+
+  const handleScan = (upc: string) => {
+    setCameraOpen(false);
+    onSearch(upc);
+  };
+
+  // A scan-gun read is already normalised, so it searches at once; with no
+  // store picked it waits in the field until a store is chosen.
+  const gun = useScanGun((upc) => {
+    if (!hasStore) {
+      setManualUpc(upc);
+      return;
+    }
+    setManualUpc("");
+    handleScan(upc);
+  });
+
+  return (
+    // pb-14 clears the fixed 56px bottom tab bar. Gated because this screen is
+    // shared with prod, which stays as it is (the bug is there too).
+    <div
+      className={`h-[calc(100dvh-3rem)] overflow-y-auto ${devView ? "pb-14" : ""}`}
+    >
+      <div className="mx-4 pb-2 pt-4">
+        <SingleStoreSearchCard
+          title="Item Lookup"
+          description="Pick a store, then scan a barcode or enter a UPC."
+          buttonLabel="Search"
+          stores={assignedStores}
+          selectedStoreId={selectedStore}
+          onStoreSelect={(id) => dispatch(setSelectedStore(Number(id)))}
+          onSearch={handleManualSearch}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-px bg-content/15" />
+            <span className="text-[10.5px] text-content/95">
+              or scan the barcode
+            </span>
+            <div className="flex-1 h-px bg-content/15" />
+          </div>
+
+          <input
+            type="text"
+            ref={gun.ref}
+            inputMode={gun.inputMode}
+            value={manualUpc}
+            onChange={(e) => setManualUpc(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleManualSearch()}
+            placeholder="UPC or product code"
+            className="basic-input bg-custom-white w-full py-1.5 text-[13px]"
+          />
+
+          <div className="relative">
+            {cameraOpen ? (
+              <>
+                {/* The shared camera: stops on the read, and `onError` keeps the
+                    message in this screen's own error panel. */}
+                <ScannerView
+                  onDetected={handleScan}
+                  stopOnRead
+                  retryKey={retryKey}
+                  onError={(message) => dispatch(setError(message))}
+                />
+                <button
+                  className="mt-1.5 text-[11.5px] text-content/95 underline"
+                  onClick={() => setCameraOpen(false)}
+                >
+                  Close camera
+                </button>
+                {error.length > 0 && (
+                  <div className="absolute left-2 right-2 bottom-2 bg-brand_danger_bg border border-brand_danger_line rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-1.5">
+                      <ExclamationTriangleIcon className="w-3.5 h-3.5 text-brand_danger" />
+                      <span className="text-[12px] font-medium text-brand_danger">
+                        Couldn't read that clearly
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-brand_danger mt-0.5 mb-2">
+                      Hold steady and try again, or enter the code above.
+                    </p>
+                    <button
+                      className="w-full bg-brand_navy text-custom-white text-[11.5px] rounded-md py-1.5"
+                      onClick={() => setRetryKey((k) => k + 1)}
+                    >
+                      Try scanning again
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <button
+                disabled={!hasStore}
+                onClick={() => setCameraOpen(true)}
+                className="w-full flex items-center justify-center gap-2 border border-brand_navy disabled:border-content/20 disabled:text-content/20 text-brand_navy text-[13px] font-medium rounded-lg py-2"
+              >
+                <CameraIcon className="w-4 h-4" />
+                Scan barcode
+              </button>
+            )}
+          </div>
+        </SingleStoreSearchCard>
+
+        <div className="mt-3">
+          {devView ? (
+            <RecentLookupsCard onSelect={onSelectRecent} />
+          ) : (
+            <RecentLookupsStrip onSelect={onSelectRecent} variant="list" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LookupEntryScreen;

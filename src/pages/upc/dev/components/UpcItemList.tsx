@@ -1,6 +1,9 @@
+// Hooks
 import { useMemo } from "react";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import {
   toggleDevSelectedUpc,
   setDevAllSelectedUpcs,
@@ -8,6 +11,8 @@ import {
   setDevFilterText,
 } from "../../../../features/dev/devUpcDevSlice";
 
+/** The UPC List's left-panel list: a filter box, All/None buttons and one tick row per
+ *  searched UPC with its description. */
 const UpcItemList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -68,18 +73,15 @@ const UpcItemList = () => {
       {/* list */}
       <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-16 text-[10px] text-content/85">
+          <div className="flex items-center justify-center h-16 text-[10px] text-content/95">
             {ctx.filterText ? "No matches" : "No items"}
           </div>
         ) : (
           visible.map((item) => {
             const selected = ctx.selectedUpcs.includes(item.product_code);
-            // The roster is seeded from the searched UPC list, so a code sits
-            // here from the moment the search commits and gets its name only
-            // once some module returns a row for it. A blank stays blank for a
-            // UPC no module has data on, which is worth showing rather than
-            // hiding — the user typed it and deserves to see it came back
-            // empty.
+            // The roster comes from the searched UPCs, so a code shows from the
+            // start and gets its name once a module returns a row; one no module
+            // has data on stays blank, on purpose.
             const desc = item.description || "—";
             return (
               <button

@@ -1,8 +1,26 @@
+// Hooks
 import { useMemo } from "react";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import DayCardStrip, { type DayCardEntry } from "../../../../components-dev/DayCardStrip";
-import { avgCouponAmount, sumCouponAmount } from "../shared/couponGrading";
+import { avgOf, isoOf, weekdayOf } from "../utils";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
+import type { DayCardEntry } from "../../../../components-dev/interfaces";
+
+// Components
+import DayCardStrip from "../../../../components-dev/DayCardStrip";
+
+interface CpnSalesDayCardsProps {
+  /** This week's coupons for the selected store. */
+  coupons: CouponItem[];
+  /** The prior two weeks for the same store. */
+  baseline: CouponItem[];
+  /** "" means all week. */
+  selectedDay: string;
+  onSelect: (iso: string) => void;
+}
 
 /**
  * Day-of-week cards for the selected store, matching the strip on Sales, Sub
@@ -17,22 +35,6 @@ import type { CouponItem } from "../../../../interfaces";
  * per coupon, so however many coupons sit behind each side, the two averages
  * compare directly.
  */
-interface CpnSalesDayCardsProps {
-  /** This week's coupons for the selected store. */
-  coupons: CouponItem[];
-  /** The prior two weeks for the same store. */
-  baseline: CouponItem[];
-  /** "" means all week. */
-  selectedDay: string;
-  onSelect: (iso: string) => void;
-}
-
-const isoOf = (c: CouponItem) => c.sale_date.split("T")[0];
-const weekdayOf = (iso: string) => new Date(iso + "T12:00:00").getDay();
-
-const avgOf = (rows: CouponItem[]): number | null =>
-  rows.length === 0 ? null : avgCouponAmount(sumCouponAmount(rows), rows.length);
-
 const CpnSalesDayCards = ({
   coupons,
   baseline,

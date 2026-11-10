@@ -1,14 +1,24 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { lineFlags } from "../utils/ordersRows";
+import { FLAG_DOT, FLAG_TITLE } from "./utils";
+
+// Interfaces
+import type { GridSort, SortKey } from "../interfaces";
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder } from "../../../../interfaces";
-import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
-import { FLAG_DOT, FLAG_TITLE } from "./flagStyles";
+import PagerButton from "./PagerButton";
+import Kpi from "./Kpi";
 
-interface Props {
+interface OrderReportPanelProps {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
   sort: GridSort;
@@ -49,7 +59,7 @@ const OrderReportPanel = ({
   onExport,
   onEnterEdit,
   canEdit,
-}: Props) => {
+}: OrderReportPanelProps) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
@@ -143,7 +153,7 @@ const OrderReportPanel = ({
           <button data-help="export"
             onClick={onExport}
             title="Export CSV"
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
           </button>
@@ -281,7 +291,7 @@ const OrderReportPanel = ({
           </div>
 
           <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
-            <span className="text-[11px] text-content/85">
+            <span className="text-[11px] text-content/95">
               {visible.length === 0
                 ? "No rows"
                 : `${(safePage * pageSize + 1).toLocaleString()}–${Math.min(
@@ -290,7 +300,7 @@ const OrderReportPanel = ({
                   ).toLocaleString()} of ${visible.length.toLocaleString()}`}
             </span>
 
-            <label className="flex items-center gap-1.5 text-[11px] text-content/85">
+            <label className="flex items-center gap-1.5 text-[11px] text-content/95">
               Rows
               <select
                 value={pageSize}
@@ -339,32 +349,5 @@ const OrderReportPanel = ({
     </div>
   );
 };
-
-const PagerButton = ({
-  label,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
-  >
-    {label}
-  </button>
-);
-
-const Kpi = ({ label, value }: { label: string; value: string }) => (
-  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </div>
-    <div className="text-[13px] font-bold text-content truncate">{value}</div>
-  </div>
-);
 
 export default OrderReportPanel;

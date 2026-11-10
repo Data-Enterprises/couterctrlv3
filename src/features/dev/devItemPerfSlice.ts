@@ -1,6 +1,6 @@
 /**
  * Dev copy of `features/itemPerfSlice.ts`, mounted at `state.dev.itemPerf` and read only
- * by `pages/shared/itemPerf/dev`. Edit this one while changing dev shared/itemPerf; when dev is
+ * by `components-dev/itemPerf`. Edit this one while changing dev itemPerf; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";

@@ -1,29 +1,37 @@
-import type { DayDot } from "./LedgerRow";
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
+
+// Redux
+import { setLedgerSelectedDate } from "../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { getHolidayName } from "../../../../utils/holidays";
 import {
   formatCurrency2,
   formatBigNumber,
   sameWeekDayLastYear,
 } from "../../../../utils";
-import { computeDayMatchedTotals } from "../shared/ledgerUtils";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import { computeDayMatchedTotals } from "../utils/ledgerUtils";
+import { fmtPct } from "../utils";
+
+// Interfaces
+import type { DayDot } from "../../../../interfaces";
+
+// Components
 import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
   days: DayDot[];
-  selectedDate: string | null;
-  gradingMetric: GradingMetric;
-  onSelect: (date: string | null) => void;
 }
 
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-
-const PopupDaySidebar = ({
-  days,
-  selectedDate,
-  gradingMetric,
-  onSelect,
-}: PopupDaySidebarProps) => {
+/** The day strip across the store popup: an All Week card and one card per day with its sales or quantity
+ *  and change against last year or last week (starred for holidays). Clicking a card selects that day. */
+const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
+  const dispatch = useAppDispatch();
+  const { selectedDate, gradingMetric } = useSalesCtx();
+  const onSelect = (date: string | null) =>
+    dispatch(setLedgerSelectedDate(date));
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? formatBigNumber(qty, 0) : formatCurrency2(dollars);

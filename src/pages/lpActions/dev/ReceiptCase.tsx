@@ -20,7 +20,7 @@ interface Props {
 
 const Metric = ({ label, value }: { label: string; value: string }) => (
   <div className="min-w-0 px-3 py-2 text-center border-r border-gray-100 last:border-r-0 flex-1">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
       {label}
     </div>
     <div className="text-[14px] font-bold text-content tabular-nums truncate">
@@ -50,7 +50,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
           <p className="text-[12.5px] font-semibold text-content truncate">
             {saleId}
           </p>
-          <p className="text-[11.5px] text-content/85 truncate">
+          <p className="text-[11.5px] text-content/95 truncate">
             {head
               ? `${formatDateSimple(head.sale_date.slice(0, 10))} · lane ${head.terminal || "—"} · ${head.cashier_name}`
               : "Opening receipt…"}
@@ -59,14 +59,14 @@ const ReceiptCase = ({ state, onClose }: Props) => {
         <button
           onClick={onClose}
           title="Back to the summary"
-          className="flex-shrink-0 p-1 rounded text-content/85 hover:text-content hover:bg-gray-100 transition-colors"
+          className="flex-shrink-0 p-1 rounded text-content/95 hover:text-content hover:bg-gray-100 transition-colors"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
 
       {loading && (
-        <div className="py-8 text-center text-[12px] text-content/85">
+        <div className="py-8 text-center text-[12px] text-content/95">
           Opening receipt…
         </div>
       )}
@@ -91,7 +91,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
           {summary.types.length > 1 && (
             <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-content/85">
+              <span className="text-[11px] text-content/95">
                 Also on this receipt:
               </span>
               {summary.types
@@ -117,7 +117,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                     flagged ? "bg-severity_critical_bg" : ""
                   }`}
                 >
-                  <span className="text-[11px] tabular-nums text-content/85 w-6 flex-shrink-0 text-right">
+                  <span className="text-[11px] tabular-nums text-content/95 w-6 flex-shrink-0 text-right">
                     {l.line_number}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -130,7 +130,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                     >
                       {l.product_description || l.product_code}
                     </span>
-                    <span className="block text-[11px] text-content/85 truncate">
+                    <span className="block text-[11px] text-content/95 truncate">
                       {l.product_code}
                       {l.price_type ? ` · ${l.price_type}` : ""}
                       {flagged ? ` · ${l.sale_type}` : ""}
@@ -138,7 +138,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                       {l.is_discounted ? " · discounted" : ""}
                     </span>
                   </span>
-                  <span className="text-[11.5px] tabular-nums text-content/85 w-8 text-right flex-shrink-0">
+                  <span className="text-[11.5px] tabular-nums text-content/95 w-8 text-right flex-shrink-0">
                     {l.qty ?? 1}
                   </span>
                   <span

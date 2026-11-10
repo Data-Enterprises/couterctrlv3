@@ -1,20 +1,10 @@
+// Hooks
 import { useMemo, useState } from "react";
-import CashiersExportModal from "./explorer/CashiersExportModal";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
-import { useCashierCtx } from ".";
 import { useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
-import {
-  getSaleTypes,
-  getCashierTable,
-  getTransactionList,
-} from "../../../api/lossPrevention";
-import type { JsonError, TransactionListItem } from "../../../interfaces";
-import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
+import { useCashierCtx, useCashierSignals } from "./hooks";
+
+// Redux
 import {
   setExplorerSaleTypes,
   setExplorerException,
@@ -26,29 +16,37 @@ import {
   setExplorerRows,
   setSelectedSaleType,
 } from "../../../features/dev/devCashiersSlice";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import ExplorerSearch from "./explorer/ExplorerSearch";
-import LensPanel from "./explorer/LensPanel";
-import SignalDetail from "./explorer/SignalDetail";
-import CashiersMobile from "./mobile/CashiersMobile";
-import { useCashierSignals } from "./useCashierSignals";
 import { isGroupSearch } from "../../../features/searchSlice";
 
-// LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
-// explorer uses the same ceiling rather than inventing a second notion of
-// "recent" — and it keeps the group-scope fetch below bounded.
-const MAX_RANGE_DAYS = 14;
-// A group query can span hundreds of stores. Past this many transactions the
-// receipt fetch stops being interactive, so it's capped and the user is told.
-const MAX_TRANSACTIONS = 1500;
+// API
+import {
+  getSaleTypes,
+  getCashierTable,
+  getTransactionList,
+} from "../../../api/lossPrevention";
 
-const dayDiff = (start: string, end: string) => {
-  const a = new Date(start).getTime();
-  const b = new Date(end).getTime();
-  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
-  return Math.round(Math.abs(b - a) / 86400000) + 1;
-};
+// Utils
+import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
+import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
 
+// Interfaces
+import type { JsonError, TransactionListItem } from "../../../interfaces";
+import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
+
+// Components
+import {
+  ArrowDownTrayIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import CashiersExportModal from "./components/CashiersExportModal";
+import ExplorerSearch from "./components/ExplorerSearch";
+import LensPanel from "./components/LensPanel";
+import SignalDetail from "./components/SignalDetail";
+import CashiersMobile from "./mobile/CashiersMobile";
+
+/** The Cashiers page: the exception explorer entry card, then the loaded exceptions with a KPI strip,
+ *  a lens list of signals (by cashier, store, item and so on) and the transactions behind the picked one, with CSV export. */
 const Cashiers = () => {
   const toast = useToast();
   const ctx = useCashierCtx();
@@ -143,19 +141,17 @@ const Cashiers = () => {
     return [...rows, ...rest.flat()];
   };
 
-  // Stage two — walk every page of cashier_table for the chosen exception,
-  // then pull the full receipts for those transactions. transaction_list returns
-  // every line of a receipt, not just the exception lines, which is what makes
-  // transaction position ("line 12 of 12") and the inline receipt possible.
+  // Stage two: walk every page of cashier_table for the chosen exception, then
+  // pull those transactions' full receipts (transaction_list returns every
+  // line, which gives "line 12 of 12" and the inline receipt).
   const runExplore = async () => {
     const { start, end, useGroups, searchValue, singleStore } = scopeArgs();
     const exception = explorerException;
     setTruncated(0);
     ctx.dispatch(setExplorerLoading(true));
     ctx.dispatch(setExplorerMessage("Loading transactions…"));
-    // The shared Transaction receipt component reads selectedSaleType off the
-    // slice to decide how it totals voids vs refunds, so it has to be set here
-    // for the drill-down receipts to add up correctly.
+    // The shared Transaction receipt reads selectedSaleType to total voids vs
+    // refunds, so it is set here for the drill-down receipts.
     ctx.dispatch(setSelectedSaleType(exception));
     setSearchOpen(false);
 
@@ -257,9 +253,8 @@ const Cashiers = () => {
 
   if (ctx.isMobile) return <CashiersMobile />;
 
-  // Stay on the entry card until an explore has actually returned — both
-  // preflight and the first explore report progress through the card's own
-  // button rather than swapping to an empty shell.
+  // Stay on the entry card until an explore has returned; progress shows on
+  // the card's own button.
   if (!explorerSearched) {
     return (
       <ExplorerSearch
@@ -284,27 +279,27 @@ const Cashiers = () => {
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Cashiers
           </span>
-          <span className="text-custom-white/85 text-[12px] truncate">
+          <span className="text-custom-white/95 text-[12px] truncate">
             {explorerScopeLabel} · {ctx.startDate} – {ctx.endDate} ·{" "}
             {explorerFetchedException}
           </span>
           <div className="flex-1" />
           {truncated > 0 && (
-            <span className="text-amber-200 text-[10.5px] flex-shrink-0">
+            <span className="text-custom-white/95 text-[10.5px] flex-shrink-0">
               capped — {truncated} older transactions not loaded
             </span>
           )}
           <button data-help="search"
             onClick={() => setSearchOpen(true)}
             title="New search"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setExportOpen(true)}
             title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
@@ -329,7 +324,7 @@ const Cashiers = () => {
               key={kpi.label}
               className="px-3 py-2 border-r border-gray-100 last:border-r-0"
             >
-              <div className="text-[11px] text-content/85">{kpi.label}</div>
+              <div className="text-[11px] text-content/95">{kpi.label}</div>
               <div className="text-[16px] font-medium text-content">
                 {kpi.value}
               </div>
@@ -342,7 +337,7 @@ const Cashiers = () => {
             <LoadingIndicator message={explorerMessage || "Loading…"} />
           </div>
         ) : exceptionRows.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/60">
+          <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/95">
             No {explorerFetchedException.toLowerCase()} transactions in this
             range
           </div>
@@ -361,9 +356,8 @@ const Cashiers = () => {
               onSearchChange={setSignalSearch}
             />
             {selected ? (
-              // Keyed so picking a different signal remounts the panel and
-              // drops any open receipt — otherwise the receipt view survives
-              // the switch and shows a transaction from the previous signal.
+              // Keyed so picking another signal remounts the panel and drops
+              // any open receipt from the previous signal.
               <SignalDetail
                 key={`${explorerLens}-${selected.key}`}
                 signal={selected}
@@ -372,7 +366,7 @@ const Cashiers = () => {
                 transactionLengths={transactionLengths}
               />
             ) : (
-              <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/60 px-6 text-center">
+              <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/95 px-6 text-center">
                 Select a row to see the transactions behind it
               </div>
             )}

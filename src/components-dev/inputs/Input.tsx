@@ -19,6 +19,9 @@ interface InputProps {
   autoComplete?: string;
 }
 
+/** Labelled text field. Enter runs `onKeyDown`, or the username or email
+ *  availability check when one is given, which also adds a "Check Availability"
+ *  link. */
 const Input = ({
   value,
   setValue,

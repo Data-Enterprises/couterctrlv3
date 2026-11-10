@@ -1,9 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {
-  ProductSummary,
-  SubDeptSummary,
-  VendorSummary,
-} from "../../pages/inventory/dev/inventoryData";
+
+// Interfaces
+import type { ProductSummary, SubDeptSummary, VendorSummary } from "../../pages/inventory/dev/interfaces";
 
 /**
  * What the two Price Opt pages have already loaded, kept across navigation.

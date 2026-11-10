@@ -1,20 +1,27 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useAppSelector } from "../../../../hooks";
+
+// Utils
 import {
   applyStoreNumberToName,
   numbersByStoreId,
 } from "../../../../utils/storeIdentity";
 import { resolveStoreName } from "../../../../utils";
-import { useAppSelector } from "../../../../hooks";
+import { sumCouponAmount } from "../../../../utils/couponValue";
+
+// Interfaces
 import type { CouponItem } from "../../../../interfaces";
+
+// Components
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import InfoModal from "../../../../components-dev/InfoModal";
 import CpnExportSheet from "./CpnExportSheet";
 import CpnListControls from "./CpnListControls";
 import CpnSectionRow from "./CpnSectionRow";
 import CpnTotalsCard from "./CpnTotalsCard";
-import { sumCouponAmount } from "../../../../utils/couponValue";
 
-interface Props {
+interface CpnStoreListProps {
   coupons: CouponItem[];
   groupName: string;
   dateRangeLabel: string;
@@ -25,6 +32,8 @@ interface Props {
   onSearch: () => void;
 }
 
+/** The phone Coupons store list for a group search: a header card, group totals, and an "All stores" row plus one
+ *  row per store with its coupon count and value. Also opens the info modal and the export sheet. */
 const CpnStoreList = ({
   coupons,
   groupName,
@@ -33,11 +42,10 @@ const CpnStoreList = ({
   onSortMetric,
   onSelect,
   onSearch,
-}: Props) => {
+}: CpnStoreListProps) => {
   const [exportOpen, setExportOpen] = useState(false);
-  // Store names come from assignedStores, never the coupon payload — see
-  // utils/getStoreName. groupStores covers stores in the searched group that
-  // aren't personally assigned to this user, matching CouponListPanel.
+  // Store names come from assignedStores, never the coupon payload; groupStores
+  // covers searched-group stores this user isn't assigned to.
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -112,9 +120,8 @@ const CpnStoreList = ({
               onExport={() => setExportOpen(true)}
             />
 
-            {/* Group-wide row, matching desktop's "All stores". Without it the
-                group total is visible on the card above but not explorable —
-                you could only ever drill into one store at a time. */}
+            {/* Group-wide row, matching desktop's "All stores", so the group
+                total can be drilled into. */}
             <CpnSectionRow
               label="All stores"
               count={coupons.length}

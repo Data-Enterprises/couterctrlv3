@@ -1,12 +1,15 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useVendorSearch, useVendorsCtx } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useVendorSearch } from "./useVendorSearch";
-import VendorListPanel from "./VendorListPanel";
-import VendorDetailPanel from "./VendorDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
+import VendorListPanel from "./components/VendorListPanel";
+import VendorDetailPanel from "./components/VendorDetailPanel";
 
 /**
  * Vendors — Performance.
@@ -23,7 +26,7 @@ const Vendors = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const vend = useAppSelector((s) => s.dev.vendors);
+  const vend = useVendorsCtx();
   const { runSearch, applyLocation } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);

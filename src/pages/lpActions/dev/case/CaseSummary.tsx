@@ -79,7 +79,7 @@ const CaseSummary = ({ type, headline, finding, lines, caution }: Props) => {
               const Icon = ICON[l.icon];
               return (
                 <div key={l.text} className="flex items-baseline gap-2">
-                  <Icon className="w-4 h-4 flex-shrink-0 text-content/85 translate-y-0.5" />
+                  <Icon className="w-4 h-4 flex-shrink-0 text-content/95 translate-y-0.5" />
                   <span className="text-[13px] leading-relaxed text-content">
                     {l.text}
                   </span>

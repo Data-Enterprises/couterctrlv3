@@ -6,6 +6,8 @@ import { useAppSelector } from "../../hooks";
 import { setStartDate } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 
+/** The Start Date dropdown: shows the chosen start date as month/day and opens
+ *  a calendar that sets it in the search state. */
 const StartDatePicker = () => {
   const dispatch = useDispatch();
 
@@ -52,7 +54,7 @@ const StartDatePicker = () => {
           {formatDisplay()}
           <ChevronDownIcon
             aria-hidden="true"
-            className="-mr-1 size-5 text-gray-400"
+            className="-mr-1 size-5 text-brand_slate"
           />
         </MenuButton>
       </div>

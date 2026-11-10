@@ -1,60 +1,23 @@
+// Hooks
 import { memo } from "react";
-import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
-import { severityDotClass } from "./utils";
-import DeltaPill from "./DeltaPill";
-import { applyStoreNumberToName } from "../shared/ledgerUtils";
-import { selectionFor } from "../shared/storeComparison";
-import type { Severity } from "../../../../utils/severity";
-import { isCompleteCoverage, type GradeBasis } from "../shared/ledgerUtils";
+
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
+import { severityDotClass } from "../utils/index";
+import { selectionFor } from "../utils/storeComparison";
+import {
+  applyStoreNumberToName,
+  isCompleteCoverage,
+} from "../utils/ledgerUtils";
+
+// Interfaces
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { StoreSelection } from "../../../../interfaces";
+import type { LedgerRowData } from "../interfaces";
 
-import type { DayDot, StoreSelection } from "../../../../interfaces";
-// Defined in src/interfaces — the Sales slices hold them.
-export type { DayDot, Severity, StoreSelection };
-
-export type LedgerRowData = {
-  storeid: number;
-  store_name: string;
-  store_number: string;
-  /** Every store_number this storeid returned. Length > 1 means co-located
-   * stores sharing one id — the name resolves by storeid and is identical for
-   * both, so the number is what tells them apart. Feeds
-   * applyStoreNumberToName, which needs the full set to know which digits in
-   * the name are the store number. */
-  storeNumbersForId: string[];
-  twTotal: number;
-  lwTotal: number;
-  lyTotal: number;
-  twQty: number;
-  lwQty: number;
-  lyQty: number;
-  /** The TW side of each comparison — only the days that found a match.
-   *  `twTotal` above is the whole week and is NOT the base of vsLWPct or
-   *  vsLYPct; a rollup that adds these instead stays weighted by store size
-   *  without ever dividing a seven-day figure by a three-day one. */
-  twTotalForLW: number;
-  twQtyForLW: number;
-  twTotalForLY: number;
-  twQtyForLY: number;
-  /** Coverage, so a percentage over three of seven days can be presented as
-   *  the weaker claim it is. */
-  dayCount: number;
-  lwDayCount: number;
-  lyDayCount: number;
-  vsLWPct: number;
-  vsLYPct: number;
-  vsLYDollar: number;
-  hasLW: boolean;
-  hasLY: boolean;
-  /** The comparison that decided `severity` — last year only when it covers
-   *  the whole week, else last week, else neither. */
-  gradedOn: GradeBasis;
-  /** Null when neither comparison covers the whole week: not graded, and not
-   *  counted under Critical, Watch or OK. */
-  severity: Severity | null;
-  days: DayDot[];
-};
+// Components
+import DeltaPill from "./DeltaPill";
 
 interface LedgerRowProps {
   row: LedgerRowData;
@@ -83,7 +46,6 @@ interface LedgerRowProps {
  * Categories and the other performance pages already use. Nothing new is being
  * invented here; Sales was the one page that had drifted off it.
  */
-
 const LedgerRow = ({
   row,
   isSelected,
@@ -130,7 +92,7 @@ const LedgerRow = ({
         <div className="text-[13px] font-medium text-content truncate">
           {displayName}
         </div>
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW{" "}
           <span className="font-semibold">
             {row.hasLW ? fmtMetric(row.lwTotal, row.lwQty) : "—"}

@@ -1,10 +1,15 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { AllOrder } from "../../../../interfaces";
-import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import type { Store } from "../../../../interfaces";
+// Utils
 import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import { chipStyle, fmtDate } from "./utils";
 
-interface Props {
+// Interfaces
+import type { AllOrder, Store } from "../../../../interfaces";
+import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+
+interface OrdersLineItemsScreenProps {
   orders: AllOrder[];
   selectedKey: SelectedOrderKey;
   /** The full identity — id alone doesn't identify an order across stores. */
@@ -14,17 +19,9 @@ interface Props {
   onExport: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: Props) => {
+/** The phone Orders sheet for one order: store, order number and date, item/retail/cost chips with an Export button,
+ *  and the order's line items. Only that order's store and location are counted. */
+const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: OrdersLineItemsScreenProps) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.
   const storeName = resolveStoreName(

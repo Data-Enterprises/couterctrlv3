@@ -1,0 +1,517 @@
+// Hooks
+import { useMemo, useState } from "react";
+import { useAppDispatch } from "../../../../hooks";
+import { useItemReportCtx } from "../hooks";
+
+// Redux
+import {
+  setItemReportActionFilter,
+  setItemReportUpcFilter,
+  setItemReportDescFilter,
+  setItemReportDeptFilter,
+  setItemReportVendorFilter,
+} from "../../../../features/dev/devItemReportSlice";
+
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
+import { ACTION_TONE } from "../utils/actionTone";
+import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
+import { daysSince } from "../utils/metrics";
+import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interfaces";
+import { COLS, ORDER } from "../utils";
+
+// Components
+import {
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/20/solid";
+import ColFilter from "../../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import DetailPopover from "./DetailPopover";
+import DeltaPill from "./DeltaPill";
+
+/**
+ * The report itself: one row per item, its action, and the evidence for it.
+ *
+ * A spreadsheet on purpose. The people reading this live in Excel, and the
+ * value isn't in replacing that with a dashboard — it's in a sheet that has
+ * already done the reading. Columns stay aligned and scannable; what's added is
+ * that every row states what to do and why, so scanning down the page is the
+ * diagnosis rather than the input to one.
+ *
+ * Rows stay neutral and the action chip carries the colour. Tinting whole rows
+ * by action turns a 300-row sheet into a rainbow and destroys the one thing a
+ * spreadsheet is good at.
+ *
+ * The action chip is the answer; the reasoning behind it lives in the detail
+ * panel's CTA strip and in the export's evidence column. It used to sit under
+ * every row, which put a paragraph between each row's figures and cost the list
+ * a third of its height — the numbers lost their vertical rhythm and the list
+ * stopped being scannable, which is the one thing a sheet has to be.
+ */
+
+interface ItemReportSheetProps {
+  rows: SheetRow[];
+  counts: Record<ActionKind, number>;
+  receiptsByUpc: Record<string, ReceiptLine[]>;
+  selectedUpc: string | null;
+  onSelect: (row: SheetRow) => void;
+  onSearchOpen: () => void;
+  onExportOpen: () => void;
+  storeName: string;
+  dateLabel: string;
+  receivingComplete: boolean;
+  receivingProgress: string;
+  /** False when `receivers/` returned nothing at all for this store. */
+  receivingAvailable: boolean;
+  /** Items with no receiver invoice in the lookback, and the list's size. Shown
+   *  as one figure above the sheet — it is a fact about the data, not a verdict
+   *  about any row, and it used to be both. */
+  noReceiverCount: number;
+  /** The items behind that count. The banner states the number; this is what
+   *  the number is, one click away — a count nobody can enumerate is a claim
+   *  the reader has to take on faith. */
+  noReceiverItems: ReportItem[];
+  itemCount: number;
+}
+
+/** The Item Actions sheet: the navy header, the action piles that narrow it,
+ *  and one row per item graded from sales against receivers. */
+const ItemReportSheet = ({
+  rows,
+  counts,
+  receiptsByUpc,
+  selectedUpc,
+  onSelect,
+  onSearchOpen,
+  onExportOpen,
+  storeName,
+  dateLabel,
+  receivingComplete,
+  receivingProgress,
+  receivingAvailable,
+  noReceiverCount,
+  noReceiverItems,
+  itemCount,
+}: ItemReportSheetProps) => {
+  const dispatch = useAppDispatch();
+  // Filters live in the slice with everything else. A route change would
+  // otherwise silently reset which pile someone was working through, and they
+  // would come back to a sheet that looks the same but isn't.
+  const {
+    actionFilter: only,
+    upcFilter: upcTerm,
+    descFilter: descTerm,
+    deptFilter: dept,
+    vendorFilter: vendor,
+  } = useItemReportCtx();
+  // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
+  const [noReceiverOpen, setNoReceiverOpen] = useState(false);
+  // Draft stays local — a half-typed UPC is not page state, and only the value
+  // behind Apply changes what the list shows. Same split ItemMarginsTable uses.
+  const [draftUpc, setDraftUpc] = useState("");
+  const [draftDesc, setDraftDesc] = useState("");
+
+  // Row 1 is the three-slot panel header the graded pages use: the entity on
+  // the left, what you are looking at in the centre, controls on the right.
+  //
+  // The centre names the page, not the source. A list can span many departments
+  // — a vendor's range routinely does, and an uploaded file almost always does —
+  // so a single department name in the title would be wrong more often than
+  // right. Where the list came from is on row 2, next to the rule that cut it.
+  const centreLabel = ["Item Actions", dateLabel].filter(Boolean).join(" · ");
+
+  /**
+   * The groupings this list actually spans, taken from the rows rather than a
+   * fixed list — an uploaded file and a vendor handoff cover wildly different
+   * ground, and offering a department with nothing behind it is a dead end.
+   *
+   * Built off `rows`, so both menus follow whatever the sheet is showing.
+   */
+  const [deptOpts, vendorOpts] = useMemo(() => {
+    const depts = new Set<string>();
+    const vendors = new Set<string>();
+    for (const r of rows) {
+      if (r.item.department) depts.add(r.item.department);
+      if (r.item.vendorName) vendors.add(r.item.vendorName);
+    }
+    const opts = (set: Set<string>) =>
+      [...set]
+        .sort((a, b) => a.localeCompare(b))
+        .map((v) => ({ label: v, value: v }));
+    return [opts(depts), opts(vendors)];
+  }, [rows]);
+
+  const upcQ = upcTerm.trim();
+  const descQ = descTerm.trim().toLowerCase();
+  const visible = useMemo(() => {
+    const matched = rows.filter((r) => {
+      if (only && r.verdict.action !== only) return false;
+      if (dept && r.item.department !== dept) return false;
+      if (vendor && r.item.vendorName !== vendor) return false;
+      if (upcQ && !r.item.productCode.includes(upcQ)) return false;
+      if (descQ && !r.item.description.toLowerCase().includes(descQ))
+        return false;
+      return true;
+    });
+    // Action first, then money — the biggest loss inside the worst pile.
+    return [...matched].sort(
+      (a, b) =>
+        ACTION_RANK[a.verdict.action] - ACTION_RANK[b.verdict.action] ||
+        b.item.ty.sales - a.item.ty.sales,
+    );
+  }, [rows, only, upcQ, descQ, dept, vendor]);
+
+  const noLastYear = rows.length > 0 && rows.every((r) => !r.item.ly);
+
+  return (
+    <div className="flex-1 min-w-0 shadow-lg">
+      <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
+        {/* Two rows split by a hairline, matching LedgerHeader: identity and
+            the headline count above, the controls that change them below. */}
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+          {/* Row 1: store | what you are looking at | count + export */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-h-[26px]">
+            <span className="text-custom-white font-semibold text-[13px] truncate justify-self-start">
+              {storeName}
+            </span>
+            <span className="text-custom-white font-semibold text-[13px] justify-self-center truncate">
+              {centreLabel}
+            </span>
+            <div data-help="export" className="flex items-center gap-2 justify-self-end">
+              <span className="text-[14px] font-semibold text-custom-white tabular-nums">
+                {rows.length} items
+              </span>
+              <HeaderIconButton onClick={onExportOpen} title="Export CSV">
+                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              </HeaderIconButton>
+            </div>
+          </div>
+
+          {/* Row 2: search + export | scope | grading basis | about */}
+          <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+            <HeaderIconButton onClick={onSearchOpen} title="New search">
+              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+            </HeaderIconButton>
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+
+            <div className="flex-1" />
+
+            {/* What every row is built from, and how far back the delivery
+                side reaches — the question "Last" and "Recv" always raise.
+                Register lines are deliberately not named here: they load per
+                item on the right, and no action on this side depends on them. */}
+            <span className="text-[11px] text-custom-white font-medium flex-shrink-0 truncate">
+              Sales vs Receivers · 90 days
+            </span>
+
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+
+            <div className="relative flex-shrink-0">
+              <PageInfoButton page="item-actions" />
+            </div>
+          </div>
+        </div>
+
+        {/* The piles. Clicking one narrows the sheet, but the sheet is already
+            complete — this is for working one kind of problem at a time. */}
+        <div
+          data-help="piles"
+          className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap"
+        >
+          {ORDER.map((action) => (
+            <button
+              key={action}
+              onClick={() =>
+                dispatch(
+                  setItemReportActionFilter(only === action ? null : action),
+                )
+              }
+              className={`text-[12px] font-semibold px-2 py-1 rounded-full transition-shadow ${ACTION_TONE[action].chip} ${
+                only === action
+                  ? `ring-2 shadow-sm ${ACTION_TONE[action].ring}`
+                  : ""
+              }`}
+            >
+              {ACTION_LABEL[action]}{" "}
+              <span className="tabular-nums">{counts[action]}</span>
+            </button>
+          ))}
+          <div className="flex-1" />
+          {/* Exact-match narrowing, beside the substring box rather than in the
+              chip row: the chips are one dimension (what to do) and these are
+              another (whose shelf it is), so they combine rather than compete.
+              
+              Both render even when the list holds a single department or a
+              single vendor. Hiding them there was tempting — the menu can only
+              repeat what the header says — but it moved the toolbar depending
+              on which page you arrived from, and a control you cannot learn the
+              position of costs more than a menu of one. */}
+          <SelectFilter
+            options={deptOpts}
+            value={dept}
+            onChange={(v) => dispatch(setItemReportDeptFilter(v))}
+            placeholder="All sub depts"
+            className="w-[150px]"
+          />
+          <SelectFilter
+            options={vendorOpts}
+            value={vendor}
+            onChange={(v) => dispatch(setItemReportVendorFilter(v))}
+            placeholder="All vendors"
+            className="w-[150px]"
+          />
+        </div>
+
+        {!receivingComplete && (
+          <div className="flex-shrink-0 px-4 py-1.5 bg-severity_watch_bg text-severity_watch_text text-[11px]">
+            Reading deliveries — {receivingProgress}. Actions that depend on
+            receivers are provisional until this finishes.
+          </div>
+        )}
+
+        {/* Said once, here, instead of once per row down the Action column.
+            The wording is careful on two counts: the orders are missing from
+            OUR DATA, which is not a claim that the store received nothing; and
+            only the delivery-side calls are withheld, because price and trend
+            come from sales and do not need an invoice. */}
+        {/* The number opens the items behind it, the way the "?" opens its
+            glossary. A count nobody can enumerate asks to be taken on trust,
+            and this one decides whether two whole actions can fire — the shape
+            of the list is the finding: a whole vendor missing reads very
+            differently from a scattered handful. */}
+        {/* Said once when nothing in the list has a last year. Each verdict then
+            falls back to last week without saying so, and "a seasonal dip is
+            not mistaken for a problem" can't hold for this store (finding T). */}
+        {noLastYear && (
+          <div className="flex-shrink-0 px-4 py-1.5 bg-gray-100 text-[11px] text-content">
+            No last-year sales on file for this store, so trends compare against
+            last week only. A seasonal dip can read as a problem.
+          </div>
+        )}
+
+        {receivingComplete && noReceiverCount > 0 && (
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setNoReceiverOpen((o) => !o)}
+              className="w-full text-left px-4 py-1.5 bg-severity_watch_bg text-[11px] text-severity_watch_text hover:brightness-95 transition-all"
+            >
+              {receivingAvailable
+                ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
+                : "No received orders on file for this store in the last 90 days"}
+              {/* Reorder can still fire for these, from sales stopping
+                  mid-week (T-Bone, in the review). The banner used to say it
+                  couldn't, beside a row that had (finding M). */}
+              {" — Call vendor can't be judged for those, and Reorder only from sales stopping. Price and trend are unaffected."}
+              <span className="underline ml-1">
+                {noReceiverOpen ? "Hide" : "Show them"}
+              </span>
+            </button>
+            <DetailPopover
+              open={noReceiverOpen}
+              onClose={() => setNoReceiverOpen(false)}
+              className="bg-severity_watch_bg text-severity_watch_text"
+            >
+              {noReceiverItems.map((it) => (
+                <div
+                  key={it.productCode}
+                  className="px-4 py-1.5 border-b border-current/10 last:border-b-0"
+                >
+                  <div className="text-[11.5px] font-semibold truncate">
+                    {it.description}
+                  </div>
+                  <div className="text-[11px] opacity-90 truncate">
+                    {it.productCode} · {it.department} · {it.vendorName}
+                  </div>
+                </div>
+              ))}
+            </DetailPopover>
+          </div>
+        )}
+
+        <div
+          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+          style={{ gridTemplateColumns: COLS }}
+        >
+          <span>Action</span>
+          {/* The item grids' own heading filters — two labelled triggers with
+              a dot when applied, not a search box parked in the chip row. */}
+          <span className="flex items-center gap-2 min-w-0">
+            Item
+            <ColFilter
+              label="UPC"
+              active={!!upcTerm}
+              onApply={() => dispatch(setItemReportUpcFilter(draftUpc))}
+              onClear={() => {
+                dispatch(setItemReportUpcFilter(""));
+                setDraftUpc("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colInputStyle}
+                placeholder="Search UPC…"
+                value={draftUpc}
+                onChange={(e) => setDraftUpc(e.target.value)}
+              />
+            </ColFilter>
+            <ColFilter
+              label="Desc"
+              active={!!descTerm}
+              onApply={() => dispatch(setItemReportDescFilter(draftDesc))}
+              onClear={() => {
+                dispatch(setItemReportDescFilter(""));
+                setDraftDesc("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colInputStyle}
+                placeholder="Search description…"
+                value={draftDesc}
+                onChange={(e) => setDraftDesc(e.target.value)}
+              />
+            </ColFilter>
+          </span>
+          <span className="text-right">Units</span>
+          {/* Units, not dollars: Top 200's "vs LW" is sales, and the same
+              label meaning two things read as two answers for one item
+              (finding Q). */}
+          <span className="text-right" title="Change in units sold against last week">
+            Units vs LW
+          </span>
+          <span className="text-right" title="Change in units sold against the same week last year">
+            Units vs LY
+          </span>
+          <span
+            className="text-right"
+            title="Selling units received, last 14 days"
+          >
+            Recv
+          </span>
+          {/* Received less sold over the days both are known for. A change, not
+              a level — there is no opening balance anywhere in the data. */}
+          <span className="text-right" title="Received less sold, last 14 days">
+            Net
+          </span>
+          <span className="text-right">Last</span>
+          {/* Trailing and uncoloured on purpose. Money decides which of forty
+              reorders gets done first, but it isn't what the row is about. */}
+          <span className="text-right">Sales</span>
+        </div>
+
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
+          {visible.length === 0 && (
+            <div className="py-8 text-center text-[12px] text-content/95">
+              No items matched
+            </div>
+          )}
+
+          {visible.map(({ item, verdict }) => {
+            const isSel = item.productCode === selectedUpc;
+            const receipts = receiptsByUpc[item.productCode] ?? [];
+            const lastDays = receipts[0] ? daysSince(receipts[0].date) : null;
+            const tone = ACTION_TONE[verdict.action];
+            return (
+              <button
+                key={item.productCode}
+                onClick={() => onSelect({ item, verdict })}
+                className={`w-full text-left border-b border-gray-100 border-l-2 transition-colors ${
+                  isSel ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
+                } ${tone.rule}`}
+              >
+                <div
+                  // Symmetric now that nothing sits beneath it. The evidence
+                  // line used to carry the bottom padding, so removing it left
+                  // every row top-padded and flush against its own border.
+                  className="grid gap-3 px-3 py-2.5 items-center"
+                  style={{ gridTemplateColumns: COLS }}
+                >
+                  {/* Truncating, not wrapping. "Insufficient" is wider than
+                      the 92px this column allows, and a chip that wraps to two
+                      lines drags the whole row taller than its neighbours — the
+                      list stops scanning as a grid. The full label is one hover
+                      away, and the colour identifies the action before the text
+                      does. */}
+                  <span
+                    title={ACTION_LABEL[verdict.action]}
+                    className={`justify-self-start min-w-0 max-w-full truncate px-2 py-px rounded-full text-[12px] font-semibold ${tone.chip}`}
+                  >
+                    {ACTION_LABEL[verdict.action]}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-medium text-content truncate">
+                      {item.description}
+                    </span>
+                    <span className="block text-[12px] font-medium text-content/95 truncate">
+                      {item.productCode} · {item.department} · {item.vendorName}
+                    </span>
+                  </span>
+                  {/* Priced selling units — the same basis as Recv and Net,
+                      which is what lets the three be read across the row. */}
+                  <span
+                    className={`text-right text-[13px] font-semibold tabular-nums ${
+                      item.ty.units > 0 ? "text-content" : "text-severity_critical_text"
+                    }`}
+                  >
+                    {item.ty.units % 1 === 0
+                      ? item.ty.units
+                      : item.ty.units.toFixed(1)}
+                  </span>
+                  <DeltaPill pct={item.lwPct} />
+                  <DeltaPill pct={item.lyPct} />
+                  <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                    {item.movement === null ? "—" : item.movement.received}
+                  </span>
+                  <span
+                    className={`text-right text-[12px] font-medium tabular-nums ${
+                      item.movement === null
+                        ? "text-content/95"
+                        : item.movement.net > 0
+                          ? "text-severity_watch_text"
+                          : "text-content/95"
+                    }`}
+                    title={
+                      item.movement
+                        ? `${item.movement.received} received, ${item.movement.sold} sold over ${item.movement.days} days`
+                        : undefined
+                    }
+                  >
+                    {item.movement === null
+                      ? "—"
+                      : `${item.movement.net > 0 ? "+" : ""}${item.movement.net}`}
+                  </span>
+                  <span
+                    className={`text-right text-[12px] font-medium tabular-nums ${
+                      lastDays === null
+                        ? "text-content/95"
+                        : lastDays > 21
+                          ? "text-severity_critical_text"
+                          : "text-content/95"
+                    }`}
+                  >
+                    {lastDays === null
+                      ? receivingComplete
+                        ? "none"
+                        : "…"
+                      : `${lastDays}d`}
+                  </span>
+                  <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
+                    {item.ty.sales > 0
+                      ? formatCurrencyCompact(item.ty.sales)
+                      : "$0"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ItemReportSheet;

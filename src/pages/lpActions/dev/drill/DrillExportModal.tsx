@@ -184,7 +184,7 @@ const DrillExportModal = ({
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/85 hover:text-custom-white transition-colors justify-self-end"
+          className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -241,7 +241,7 @@ const DrillExportModal = ({
                 );
               })}
             </div>
-            <p className="text-[11px] text-content/85 mt-3 leading-relaxed">
+            <p className="text-[11px] text-content/95 mt-3 leading-relaxed">
               One row per value, with the cut named in its own column — six cuts
               stack into one sheet rather than six. Share of occurrences is
               included, because a count without its denominator is the one thing
@@ -261,7 +261,7 @@ const DrillExportModal = ({
       </div>
 
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-        <span className="text-[11.5px] text-content/85">
+        <span className="text-[11.5px] text-content/95">
           {ordered.length === 0
             ? "Nothing selected"
             : `${rowCount} ${rowCount === 1 ? "row" : "rows"} across ${ordered.length} ${ordered.length === 1 ? "cut" : "cuts"}`}

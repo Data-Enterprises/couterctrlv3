@@ -1,6 +1,10 @@
+// Interfaces
 import type { UpdateFileResp } from "../../../../interfaces";
 
-interface Props {
+// Components
+import Row from "./Row";
+
+interface SubmitReceiptProps {
   receipt: UpdateFileResp | null;
   /** How many order files the Submit sent. */
   orderCount: number;
@@ -31,7 +35,7 @@ const SubmitReceipt = ({
   addedCount,
   onClose,
   onEditAgain,
-}: Props) => (
+}: SubmitReceiptProps) => (
   <div
     className={`absolute top-0 right-0 bottom-0 z-40 w-[400px] max-w-full bg-custom-white shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none flex flex-col ${
       receipt ? "translate-x-0" : "translate-x-full"
@@ -108,17 +112,6 @@ const SubmitReceipt = ({
         </button>
       </div>
     )}
-  </div>
-);
-
-const Row = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline justify-between gap-3 border-b border-brand_line pb-1">
-    <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </span>
-    <span className="font-mono text-[11px] text-right text-content break-all">
-      {value}
-    </span>
   </div>
 );
 

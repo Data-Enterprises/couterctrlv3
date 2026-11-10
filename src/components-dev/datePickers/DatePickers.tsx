@@ -1,20 +1,25 @@
-import StartDatePicker from "./StartDatePicker";
-import EndDatePicker from "./EndDatePicker";
+// Hooks
 import { useAppSelector } from "../../hooks";
 
-interface Props {
+// Components
+import StartDatePicker from "./StartDatePicker";
+import EndDatePicker from "./EndDatePicker";
+
+interface DatePickersProps {
   handleQuery?: () => void;
   btnPadding?: string;
   showBtn?: boolean;
   stacked?: boolean;
 }
 
+/** The Start Date and End Date dropdowns side by side (or stacked), with an
+ *  optional Search button underneath. */
 const DatePickers = ({
   handleQuery,
   btnPadding = "",
   showBtn = true,
   stacked = false,
-}: Props) => {
+}: DatePickersProps) => {
   const context = useAppSelector((state) => state.app);
 
   const handleClick = () => {

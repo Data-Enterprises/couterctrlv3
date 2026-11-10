@@ -1,0 +1,134 @@
+// Utils
+import { basisWord } from "../../utils";
+
+// Interfaces
+import type { ExportArgs } from "../interfaces";
+
+const esc = (v: string | number) => {
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+const num = (v: number | null, dp = 2) => (v === null ? "" : v.toFixed(dp));
+
+/**
+ * The open department as a spreadsheet: a row per week, then per day. Blob and
+ * an anchor click, never `navigator.share` (it fails silently on mobile).
+ */
+export const exportTracker = ({ row, scopeLabel, plan }: ExportArgs) => {
+  const lines: string[] = [];
+
+  lines.push(`Sales Tracker,${esc(scopeLabel)}`);
+  lines.push(`Sub department,${esc(row.desc)}`);
+  lines.push(`Window,${plan.tyStart} to ${plan.tyEnd}`);
+  lines.push(
+    `Compared to,${plan.lyStart} to ${plan.lyEnd} (${basisWord(plan.basis)})`,
+  );
+  lines.push("");
+
+  const header = [
+    "Level",
+    "Label",
+    "Start",
+    "End",
+    "TY Sales",
+    `${plan.basis} Sales`,
+    "Transactions",
+    "ATS Sales",
+    `$ vs ${plan.basis}`,
+    `% vs ${plan.basis}`,
+  ];
+  lines.push(header.join(","));
+
+  lines.push(
+    [
+      "Window",
+      esc(row.desc),
+      plan.tyStart,
+      plan.tyEnd,
+      num(row.salesTy),
+      num(row.salesLy),
+      row.trans,
+      num(row.ats),
+      num(row.dollarChange),
+      num(row.pctChange),
+    ].join(","),
+  );
+
+  for (const w of row.weeks) {
+    lines.push(
+      [
+        "Week",
+        `Week ${w.index + 1}`,
+        w.start,
+        w.end,
+        num(w.salesTy),
+        num(w.salesLy),
+        w.trans,
+        num(w.ats),
+        num(w.dollarChange),
+        num(w.pctChange),
+      ].join(","),
+    );
+    for (const d of w.days) {
+      lines.push(
+        [
+          "Day",
+          new Date(d.date + "T12:00:00").toLocaleDateString("en-US", {
+            weekday: "short",
+          }),
+          d.date,
+          d.lyDate,
+          num(d.salesTy),
+          num(d.salesLy),
+          d.trans,
+          num(d.ats),
+          num(d.dollarChange),
+          num(d.pctChange),
+        ].join(","),
+      );
+    }
+  }
+
+  if (plan.collisions.length > 0) {
+    lines.push("");
+    lines.push("Holiday pairing note");
+    lines.push(
+      esc(
+        "These dates this year share a matched date last year, so their comparison counts the same last-year day twice: " +
+          plan.collisions.join(" "),
+      ),
+    );
+  }
+
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `sales-tracker_${row.desc.replace(/[^a-z0-9]+/gi, "-")}_${plan.tyStart}_${plan.tyEnd}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+/** A yyyy-mm-dd day as m/d. */
+export const shortDate = (d: string) => {
+  const dt = new Date(d + "T12:00:00");
+  return `${dt.getMonth() + 1}/${dt.getDate()}`;
+};
+
+/** A yyyy-mm-dd day's short weekday name. */
+export const dayName = (d: string) =>
+  new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
+
+/** The week card's column headings. */
+export const HEAD =
+  "text-[10.5px] font-semibold uppercase tracking-wide text-content/95";
+
+/** Two periods, not two verdicts — so navy and a lighter tint of it, never the
+ *  severity palette. The comparison carries the judgement, the lines don't. */
+export const TY_COLOR = "rgb(var(--color-brand-navy))";
+export const LY_COLOR = "#8aa4c4";

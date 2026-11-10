@@ -1,4 +1,4 @@
-import type { KpiCell } from "../../types";
+// Utils
 import {
   fmtMovement,
   fmtRate,
@@ -8,14 +8,13 @@ import {
   type MovementGrid,
 } from "./movementStats";
 
+// Interfaces
+import type { KpiCell } from "../../interfaces";
+
 /**
- * The strip above Movement, for the item the grid is showing.
- *
- * One item rather than every ticked UPC: a rate per store per week means
- * nothing across a mix of items, least of all when one is counted in pounds
- * and another in units. The two totals the strip used to carry repeated the
- * grid's bottom row; these two say what the grid leaves you to work out:
- * how fast the item sells where it is carried, and which way it is heading.
+ * The strip above Movement, for the one item the grid shows (a rate across
+ * mixed items, pounds and units, means nothing): how fast it sells where
+ * carried, and which way it is heading.
  */
 export function getMovementKpis(grid: MovementGrid, weeks: number, weekEnding: string): KpiCell[] {
   const unit = grid.weighed ? "lbs" : "units";

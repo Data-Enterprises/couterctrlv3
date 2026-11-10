@@ -1,10 +1,11 @@
+// Hooks
 import { useEffect, useRef } from "react";
 
-interface SeverityUpcs {
-  critical: string[];
-  watch: string[];
-  healthy: string[];
-}
+// Utils
+import { copyToClipboard } from "./utils";
+
+// Interfaces
+import type { SeverityUpcs } from "./interfaces";
 
 interface UpcContextMenuProps {
   x: number;
@@ -16,8 +17,8 @@ interface UpcContextMenuProps {
   onClose: () => void;
 }
 
-const copyToClipboard = (upcs: string[]) => navigator.clipboard.writeText(upcs.join(", "));
-
+/** Right-click menu for a UPC at the cursor: copy this UPC, copy all UPCs, copy
+ *  by severity when given, plus any extra actions. Closes on an outside click. */
 const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +58,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
     >
       {upc && (
         <div className="px-3 py-1.5 border-b border-gray-100">
-          <div className="text-[9px] font-semibold uppercase tracking-wide text-gray-400">UPC</div>
+          <div className="text-[9px] font-semibold uppercase tracking-wide text-brand_slate">UPC</div>
           <div className="text-[12px] font-semibold text-content tabular-nums">{upc}</div>
         </div>
       )}
@@ -74,7 +75,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
         >
           <span>{item.label}</span>
           {item.count !== null && (
-            <span className="text-[10px] text-gray-400 tabular-nums">{item.count}</span>
+            <span className="text-[10px] text-brand_slate tabular-nums">{item.count}</span>
           )}
         </button>
       ))}

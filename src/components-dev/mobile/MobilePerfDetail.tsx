@@ -1,12 +1,13 @@
+// Hooks
 import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 
-export interface DetailTab<K extends string> {
-  key: K;
-  label: string;
-}
+// Interfaces
+import type { DetailTab } from "./interfaces";
 
-interface Props<K extends string> {
+// Components
+import MobileBackLink from "./MobileBackLink";
+
+interface MobilePerfDetailProps<K extends string> {
   /**
    * The breakdowns on offer.
    *
@@ -57,7 +58,7 @@ const MobilePerfDetail = <K extends string>({
   onBack,
   levelKey,
   children,
-}: Props<K>) => {
+}: MobilePerfDetailProps<K>) => {
   const scroller = useRef<HTMLDivElement>(null);
 
   // Switching breakdown, or opening a row's own level, is a different list —
@@ -69,14 +70,7 @@ const MobilePerfDetail = <K extends string>({
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
       <header className="flex-shrink-0 border-b border-gray-200 bg-custom-white px-3 pb-2.5 pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="-ml-1.5 flex items-center gap-0.5 rounded-lg py-1 pr-2 text-[12.5px] font-semibold text-content active:bg-bkg"
-        >
-          <ChevronLeftIcon className="h-4 w-4" />
-          {backLabel}
-        </button>
+        <MobileBackLink label={backLabel} onClick={onBack} />
         <p className="truncate font-display text-[15px] font-bold text-content">
           {scopeName}
         </p>

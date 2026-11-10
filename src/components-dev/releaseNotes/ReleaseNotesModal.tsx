@@ -1,23 +1,27 @@
-import { useEffect, useRef, useState, type ComponentType } from "react";
-import {
-  ArrowUpCircleIcon,
-  GlobeAltIcon,
-  SparklesIcon,
-  WrenchScrewdriverIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
-import Modal from "../Modal";
+// Hooks
+import { useEffect, useRef, useState } from "react";
+
+// Utils
 import {
   PAGE_SECTIONS,
   SECTION_TITLE,
   lastChangedRelease,
   pageHits,
-  type PageSection,
   type Release,
-  type ReleasePage,
 } from "../../content/releaseNotes";
+import { countOf, LOOK, railDate } from "./utils";
 
-interface Props {
+// Interfaces
+import type { SectionKey } from "./interfaces";
+
+// Components
+import { SparklesIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import Modal from "../Modal";
+import SectionHeading from "./SectionHeading";
+import Bullets from "./Bullets";
+import PageCard from "./PageCard";
+
+interface ReleaseNotesModalProps {
   releases: Release[];
   /** Made-up notes for trying the window out, and the window says so. */
   sample: boolean;
@@ -28,134 +32,6 @@ interface Props {
   pageName: string | null;
   onClose: () => void;
 }
-
-type SectionKey = PageSection | "platform";
-
-/**
- * How each section reads at a glance: an icon and a tint, so the four can be
- * told apart before a word is read. Brand and filter tints only — none of these
- * is a grade, so the severity and delta families stay out of it.
- */
-const LOOK: Record<
-  SectionKey,
-  { Icon: ComponentType<{ className?: string }>; tile: string; chip: string }
-> = {
-  platform: {
-    Icon: GlobeAltIcon,
-    tile: "bg-brand_navy text-custom-white",
-    chip: "bg-row_selected text-content",
-  },
-  nowAvailable: {
-    Icon: SparklesIcon,
-    tile: "bg-brand_green_tint text-brand_green_darker",
-    chip: "bg-brand_green_tint text-brand_green_darker",
-  },
-  updates: {
-    Icon: ArrowUpCircleIcon,
-    tile: "bg-filter_active text-brand_navy_hover",
-    chip: "bg-filter_active text-brand_navy_hover",
-  },
-  fixes: {
-    Icon: WrenchScrewdriverIcon,
-    tile: "bg-row_selected text-brand_slate",
-    chip: "bg-row_selected text-content",
-  },
-};
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-/** "Nov 2" and "2026" for the rail, from the string rather than a `Date`. */
-const railDate = (date: string) => {
-  const [y, m, d] = date.split("-");
-  return { day: `${MONTHS[Number(m) - 1] ?? m} ${Number(d)}`, year: y };
-};
-
-/** How many things a section holds: pages for the page sections, bullets
- *  for Platform Updates, which has no pages. */
-const countOf = (release: Release, key: SectionKey) =>
-  key === "platform" ? release.platform.length : release[key].length;
-
-const SectionHeading = ({
-  sectionKey,
-  count,
-}: {
-  sectionKey: SectionKey;
-  count: number;
-}) => {
-  const { Icon, tile } = LOOK[sectionKey];
-  return (
-    <div className="flex items-center gap-2.5">
-      <span
-        className={`flex h-7 w-7 flex-none items-center justify-center rounded-lg ${tile}`}
-      >
-        <Icon className="h-4 w-4" />
-      </span>
-      <h4 className="m-0 text-[14px] font-semibold text-content">
-        {SECTION_TITLE[sectionKey]}
-      </h4>
-      <span className="text-[12px] tabular-nums text-content/95">{count}</span>
-    </div>
-  );
-};
-
-const Bullets = ({ items }: { items: string[] }) => (
-  <ul className="m-0 list-disc space-y-0.5 pl-5 text-[13.5px] leading-relaxed marker:text-brand_navy">
-    {items.map((b) => (
-      <li key={b}>{b}</li>
-    ))}
-  </ul>
-);
-
-/** The menu path, with the page itself standing out from where it lives. */
-const PageTitle = ({ page }: { page: string }) => {
-  const cut = page.lastIndexOf("→");
-  return cut === -1 ? (
-    <span className="font-semibold text-content">{page}</span>
-  ) : (
-    <span>
-      <span className="text-content/95">{page.slice(0, cut + 1)} </span>
-      <span className="font-semibold text-content">
-        {page.slice(cut + 1).trim()}
-      </span>
-    </span>
-  );
-};
-
-const PageCard = ({ p, mine }: { p: ReleasePage; mine: boolean }) => (
-  <div
-    data-this-page={mine}
-    className={`rounded-xl border px-4 py-3 shadow-sm ${
-      mine
-        ? "border-row_selected_border bg-row_selected"
-        : "border-brand_line bg-custom-white"
-    }`}
-  >
-    <div className="mb-1.5 flex items-baseline gap-2 text-[13px]">
-      <span className="min-w-0 flex-1">
-        <PageTitle page={p.page} />
-      </span>
-      {mine && (
-        <span className="flex-none rounded-full bg-brand_navy px-2 py-0.5 text-[10.5px] font-semibold text-custom-white">
-          This page
-        </span>
-      )}
-    </div>
-    <Bullets items={p.bullets} />
-  </div>
-);
 
 /**
  * Release Notes, as a window over the page you are on.
@@ -179,7 +55,7 @@ const ReleaseNotesModal = ({
   href,
   pageName,
   onClose,
-}: Props) => {
+}: ReleaseNotesModalProps) => {
   const [date, setDate] = useState(releases[0]?.date ?? "");
   const pane = useRef<HTMLDivElement>(null);
   /** The pinned date and pills, measured so a jump lands below them. */

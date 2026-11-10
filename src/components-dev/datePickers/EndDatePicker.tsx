@@ -6,6 +6,8 @@ import { useAppSelector } from "../../hooks";
 import { setEndDate } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 
+/** The End Date dropdown: shows the chosen end date as month/day and opens a
+ *  calendar that sets it in the search state. */
 const EndDatePicker = () => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
@@ -51,7 +53,7 @@ const EndDatePicker = () => {
           {formatDisplay()}
           <ChevronDownIcon
             aria-hidden="true"
-            className="-mr-1 size-5 text-gray-400"
+            className="-mr-1 size-5 text-brand_slate"
           />
         </MenuButton>
       </div>

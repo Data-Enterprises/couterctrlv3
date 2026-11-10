@@ -59,7 +59,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           <p className="text-custom-white text-[13px] font-semibold truncate">
             {row.saleType}
           </p>
-          <p className="text-custom-white/85 text-[12px] truncate">
+          <p className="text-custom-white/95 text-[12px] truncate">
             {row.storeName}
           </p>
         </div>
@@ -103,13 +103,13 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </button>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
+        <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/95">
           Cashiers in the latest week
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
           {row.cashiers.filter((c) => c.latest > 0).length === 0 && (
-            <div className="py-8 text-center text-[12px] text-content/85">
+            <div className="py-8 text-center text-[12px] text-content/95">
               Nothing rang against this exception in the latest week.
             </div>
           )}
@@ -144,11 +144,11 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
                     <span className="block text-[13px] font-medium text-content truncate">
                       {c.cashierName}
                     </span>
-                    <span className="block text-[12px] text-content/85">
+                    <span className="block text-[12px] text-content/95">
                       Cashier {c.cashierNumber}
                     </span>
                   </span>
-                  <span className="text-[12px] text-content/85 flex-shrink-0">
+                  <span className="text-[12px] text-content/95 flex-shrink-0">
                     was {c.baseline.toFixed(1)}/wk
                   </span>
                   <span

@@ -1,8 +1,13 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
 import zxcvbn from "zxcvbn";
+
+// Components
 import Eye from "../../svgs/Eye";
 
-interface PasswrodInputProps {
+interface PasswordInputProps {
   label: string;
   name: string;
   text: string;
@@ -19,6 +24,8 @@ interface PasswrodInputProps {
   autoComplete?: string;
 }
 
+/** Password field with a show/hide eye. The password field shows a strength
+ *  label and bar; the confirm field says whether it matches. */
 const PasswordInput = ({
   label,
   name,
@@ -28,7 +35,7 @@ const PasswordInput = ({
   leftCompare,
   rightCompare,
   autoComplete,
-}: PasswrodInputProps) => {
+}: PasswordInputProps) => {
   const [inputType, setInputType] = useState<string>("password");
   const [encrypted, setEncrypted] = useState(inputType === "password");
 

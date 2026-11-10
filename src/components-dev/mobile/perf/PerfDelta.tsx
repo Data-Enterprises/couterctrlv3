@@ -1,7 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../utils";
 import { DOWN_COLOR, UP_COLOR } from "./perfColors";
 
-interface Props {
+interface PerfDeltaProps {
   ty: number;
   ly: number;
   /** How the figure reads. Counts are not money, and the margin cards are
@@ -47,7 +48,7 @@ const PerfDelta = ({
   format = formatCurrency2,
   unavailable = false,
   className = "",
-}: Props) => {
+}: PerfDeltaProps) => {
   if (unavailable) return null;
 
   const delta = ty - ly;

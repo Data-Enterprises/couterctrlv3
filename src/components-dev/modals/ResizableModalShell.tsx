@@ -2,6 +2,23 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { useResizableBox } from "../../hooks/useResizableBox";
 import ResizeHandle from "../ResizeHandle";
 
+interface ResizableModalShellProps {
+  onClose: () => void;
+  /** localStorage key — unique per modal so sizes don't bleed across pages. */
+  storageKey: string;
+  defaultWidth: number;
+  defaultHeight: number;
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+  /** False for modals that intentionally don't close on backdrop click. */
+  closeOnBackdrop?: boolean;
+  /** Extra classes for the panel. */
+  className?: string;
+  children: ReactNode;
+}
+
 /**
  * Backdrop + drag-to-resize panel for the dev export modals — the same
  * useResizableBox treatment the Config page containers use, wrapped once so all
@@ -23,23 +40,6 @@ import ResizeHandle from "../ResizeHandle";
  * so capping the height lets a drag shrink them without a fixed height
  * squashing headers and footers that were never laid out for it.
  */
-interface ResizableModalShellProps {
-  onClose: () => void;
-  /** localStorage key — unique per modal so sizes don't bleed across pages. */
-  storageKey: string;
-  defaultWidth: number;
-  defaultHeight: number;
-  minWidth?: number;
-  maxWidth?: number;
-  minHeight?: number;
-  maxHeight?: number;
-  /** False for modals that intentionally don't close on backdrop click. */
-  closeOnBackdrop?: boolean;
-  /** Extra classes for the panel. */
-  className?: string;
-  children: ReactNode;
-}
-
 const ResizableModalShell = ({
   onClose,
   storageKey,

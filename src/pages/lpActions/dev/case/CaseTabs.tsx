@@ -36,7 +36,7 @@ const label = (t: CaseType) =>
 const TONE: Record<string, string> = {
   investigate: "text-severity_critical_text",
   watch: "text-severity_watch_text",
-  steady: "text-content/85",
+  steady: "text-content/95",
 };
 
 const CaseTabs = ({ all, types, selected, onSelect }: Props) => {

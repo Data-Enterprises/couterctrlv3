@@ -1,11 +1,12 @@
+// Components
 import {
   ChevronDownIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoButton from "../../InfoButton";
 
-interface Props {
+interface PerfCardHeaderProps {
   /** What the card is about — the store, the group, the item, the lens. */
   title: string;
   /** A short qualifier beside the title, e.g. "5 stores". */
@@ -62,7 +63,7 @@ const PerfCardHeader = ({
   onToggle,
   open = false,
   onTitleTap,
-}: Props) => (
+}: PerfCardHeaderProps) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
         baseline alignment hung it off the bottom of the title's text box. */}
@@ -99,14 +100,12 @@ const PerfCardHeader = ({
       )}
       {onInfo && (
         // Same solid 20px mark as the desktop headers' "?".
-        <button
-          type="button"
+        <InfoButton
+          variant="light"
           onClick={onInfo}
-          aria-label="What this page shows"
-          className="-mr-1 ml-auto flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
-        >
-          <QuestionMarkCircleIcon className="h-5 w-5" />
-        </button>
+          title="What this page shows"
+          className="-mr-1 ml-auto flex-none"
+        />
       )}
     </div>
     {/* The date line doubles as the expand control when the card is one. The

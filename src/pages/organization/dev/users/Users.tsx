@@ -1,15 +1,23 @@
+// Hooks
 import { useState } from "react";
 import { useOrganizationCtx } from "../hooks";
+
+// Redux
 import {
   resetUserInfo,
   setSelectedUserForm,
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
-import UserGrid from "./UserGrid";
+
+// Interfaces
+import type { View } from "./interfaces";
+
+// Components
+import UserGrid from "./components/UserGrid";
 import UserWizard from "./create/UserWizard";
 
-type View = "grid" | "create";
-
+/** The Users tab: the user list, or the Add or Edit wizard when a user is being created or opened.
+ *  Someone above the viewer's own level can't be opened. */
 const Users = () => {
   const ctx = useOrganizationCtx();
   const [view, setView] = useState<View>("grid");
@@ -23,9 +31,8 @@ const Users = () => {
     ctx.dispatch(setSelectedUserForm(""));
   };
 
-  // Edit is Add, filled in — the same four steps. Somebody above your own
-  // level is not yours to edit, so their row opens nothing rather than a form
-  // whose every save the server would refuse.
+  // Edit is Add, filled in: the same four steps. Someone above your own level
+  // is not yours to edit, so their row opens nothing.
   if (isDetail) {
     const target = ctx.users.find((u) => u.id === ctx.selectedUserId);
     if (!target || target.user_level > ctx.userLevel) return null;

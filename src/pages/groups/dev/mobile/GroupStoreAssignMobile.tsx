@@ -1,31 +1,38 @@
+// Hooks
 import { useState } from "react";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Redux
+import {
+  setStoresWithGroupStatus,
+  updateStoresWithStatus,
+} from "../../../../features/dev/devGroupsPageSlice";
 import { setSelectedGroup } from "../../../../features/groupSlice";
-import { setStoresWithGroupStatus, updateStoresWithStatus } from "../../../../features/dev/devGroupsPageSlice";
-import type { StoreWithGroupStatus } from "../../../../interfaces";
-import type { JsonError } from "../../../../interfaces";
+
+// API
 import {
   addStoreToGroup,
   getStoresAssignedToUserGroup,
   removeStoreFromGroup,
 } from "../../../../api/groups";
 
+// Interfaces
+import type { StoreWithGroupStatus, JsonError } from "../../../../interfaces";
+
+// Components
 import SingleSelect from "../../../../components-dev/SingleSelect";
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Assign form: pick one of your own groups, then tap stores in the searchable Unassigned and Assigned columns to move them. */
 const GroupStoreAssignMobile = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } =
     useGroupCtx();
 
-  // Shared groups are built and maintained by whoever shared the base group
-  // they came from, so they are not offered as an edit target here. Unlike the
-  // desktop page, these pickers exist only to choose something to change —
-  // there is no view mode a disabled row would still be useful in.
+  // Shared groups are built and maintained by whoever shared the base group they came from, so they are not offered as an edit target here
   const editableGroups = groups.filter((g) => !g.is_shared);
 
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
@@ -124,9 +131,6 @@ const GroupStoreAssignMobile = () => {
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      {/* <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full">
-                        Inactive
-                      </div> */}
                     </div>
                   ),
                 )}
@@ -156,9 +160,6 @@ const GroupStoreAssignMobile = () => {
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      {/* <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full">
-                        Active
-                      </div> */}
                     </div>
                   ),
                 )}

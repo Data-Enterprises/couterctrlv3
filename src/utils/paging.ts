@@ -43,3 +43,11 @@ export const fetchAllPages = async <T>(
  *  when a store's category list runs to several thousand rows. */
 export const pageCount = (firstPage: PagedResponse) =>
   Math.max(firstPage.total_pages ?? 1, 1);
+
+/** A list cut into request-sized batches, in order. */
+export const inBatches = <T>(items: T[], size: number): T[][] => {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    out.push(items.slice(i, i + size));
+  return out;
+};

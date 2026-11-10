@@ -1,11 +1,10 @@
+// Hooks
 import { useState } from "react";
-import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { useAppSelector, useStoreName } from "../../../../hooks";
-import LookupDesktopEntry from "./LookupDesktopEntry";
-import LookupQueuePanel from "./LookupQueuePanel";
-import LookupReportPanel from "./LookupReportPanel";
-import LookupExportModal from "./LookupExportModal";
-import { useLookupQueue } from "./useLookupQueue";
+import { useLookupQueue } from "./hooks";
+
+// Utils
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import {
   buildDayBuckets,
   buildSaleTypeBreakdown,
@@ -13,8 +12,16 @@ import {
   computeTrend,
   findGaps,
   rowsOfSaleType,
-} from "../lookupMetrics";
+} from "../utils";
 
+// Components
+import LookupDesktopEntry from "./components/LookupDesktopEntry";
+import LookupQueuePanel from "./components/LookupQueuePanel";
+import LookupReportPanel from "./components/LookupReportPanel";
+import LookupExportModal from "./components/LookupExportModal";
+
+/** The desktop Item lookup page: the search card first, then the item queue beside the selected item's report,
+ *  with the search and export pop-ups. */
 const ItemLookupDesktop = () => {
   const { selectedStore } = useAppSelector((s) => s.dev.item);
   const resolvedStoreName = useStoreName(selectedStore);
@@ -118,7 +125,7 @@ const ItemLookupDesktop = () => {
       ) : (
         <div className="flex-1 min-w-0 shadow-lg">
           <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">
-            <p className="text-[13px] text-content/60">Select an item from the queue</p>
+            <p className="text-[13px] text-content/95">Select an item from the queue</p>
           </div>
         </div>
       )}

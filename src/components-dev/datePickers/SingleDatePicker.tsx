@@ -9,6 +9,8 @@ interface SingleDatePickerProps {
   className?: string;
 }
 
+/** The single-date dropdown: shows the chosen day as month/day plus weekday and
+ *  opens a calendar that sets it in the search state. */
 const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
@@ -56,7 +58,7 @@ const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
           {formatDisplay()}
           <ChevronDownIcon
             aria-hidden="true"
-            className="-mr-1 size-5 text-gray-400"
+            className="-mr-1 size-5 text-brand_slate"
           />
         </MenuButton>
       </div>

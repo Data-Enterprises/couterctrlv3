@@ -1,8 +1,9 @@
+// Hooks
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { scopeToStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getReceiversList } from "../../../api/receivers";
-import type { JsonError, ReceiverListResponse } from "../../../interfaces";
+
+// Redux
 import {
   reQuery,
   resetReceiverSlice,
@@ -16,14 +17,28 @@ import {
   setStoreId,
 } from "../../../features/dev/devReceiversSlice";
 
+// API
+import { getReceiversList } from "../../../api/receivers";
+
+// Utils
+import {
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../utils/storeIdentity";
+
+// Interfaces
+import type { JsonError, ReceiverListResponse } from "../../../interfaces";
+
+// Components
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import ReceiverListPanel from "./ReceiverListPanel";
-import ReceiverDetailPanel from "./ReceiverDetailPanel";
+import ReceiverListPanel from "./components/list/ReceiverListPanel";
+import ReceiverDetailPanel from "./components/detail/ReceiverDetailPanel";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import { useEffect, useState } from "react";
 import ReceiversMobile from "./mobile/ReceiversMobile";
 
+/** The Receivers page: a store and date search card, then the receiver list beside its detail panel.
+ *  Shows a loading state, a no-results card, and the phone view on mobile. */
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -67,7 +82,6 @@ const Receivers = () => {
             : j.recievers;
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(rows));
-
         } else {
           toast.warn("No receivers came back for this search.");
           dispatch(setNoReceivers(true));
@@ -103,8 +117,12 @@ const Receivers = () => {
           stores={assignedStores}
           selectedStoreId={state.storeid}
           onStoreSelect={setSelectedStore}
-          onSearch={() => { dispatch(resetReceiverSlice()); }}
-          datePicker={<DatePickers showBtn={false} handleQuery={getReceivers} />}
+          onSearch={() => {
+            dispatch(resetReceiverSlice());
+          }}
+          datePicker={
+            <DatePickers showBtn={false} handleQuery={getReceivers} />
+          }
         />
       </div>
     );
@@ -123,7 +141,9 @@ const Receivers = () => {
           onSearch={getReceivers}
           loading={state.isFetchingList}
           loadingMessage="Finding receivers..."
-          datePicker={<DatePickers showBtn={false} handleQuery={getReceivers} />}
+          datePicker={
+            <DatePickers showBtn={false} handleQuery={getReceivers} />
+          }
         />
       </div>
     );
@@ -144,10 +164,21 @@ const Receivers = () => {
               stores={assignedStores}
               selectedStoreId={state.storeid}
               onStoreSelect={setSelectedStore}
-              onSearch={() => { setSearchModalOpen(false); getReceivers(); }}
+              onSearch={() => {
+                setSearchModalOpen(false);
+                getReceivers();
+              }}
               loading={state.isFetchingList}
               loadingMessage="Finding receivers..."
-              datePicker={<DatePickers showBtn={false} handleQuery={() => { setSearchModalOpen(false); getReceivers(); }} />}
+              datePicker={
+                <DatePickers
+                  showBtn={false}
+                  handleQuery={() => {
+                    setSearchModalOpen(false);
+                    getReceivers();
+                  }}
+                />
+              }
             />
           </div>
         </div>

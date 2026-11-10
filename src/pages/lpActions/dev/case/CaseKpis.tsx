@@ -33,7 +33,7 @@ const Kpi = ({
     <div className="text-[15px] font-semibold tabular-nums text-content leading-tight truncate">
       {value}
     </div>
-    <div className="text-[10.5px] uppercase tracking-wide text-content/85 truncate">
+    <div className="text-[10.5px] uppercase tracking-wide text-content/95 truncate">
       {label}
       {sub ? <span className="normal-case"> · {sub}</span> : null}
     </div>

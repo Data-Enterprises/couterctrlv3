@@ -22,7 +22,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     <button
       onClick={onBack}
       title={`Back to ${backLabel}`}
-      className="flex-shrink-0 p-1 -ml-1 rounded text-custom-white/85 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
+      className="flex-shrink-0 p-1 -ml-1 rounded text-custom-white/95 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
     >
       <ArrowLeftIcon className="w-4 h-4" />
     </button>
@@ -31,7 +31,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
       <p className="text-custom-white text-[13px] font-semibold truncate">
         {core.cashierName}
       </p>
-      <p className="text-custom-white/85 text-[12px] truncate">
+      <p className="text-custom-white/95 text-[12px] truncate">
         Cashier {core.cashierNumber} &middot; {core.storeName}
       </p>
     </div>
