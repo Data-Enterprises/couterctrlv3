@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCouponContext } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -50,8 +51,8 @@ const CpnSectionDetail = ({
 }: CpnSectionDetailProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const txLines: any[] = useAppSelector((s) => s.dev.coupons.receiptLines);
+  const { url, token, receiptLines } = useCouponContext();
+  const txLines: any[] = receiptLines;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedSaleId, setSelectedSaleId] = useState("");

@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useState, useMemo } from "react";
-import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
+import { useAppDispatch, useSearchPick } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useCouponContext, useCouponActions } from "../hooks";
 
@@ -41,10 +41,7 @@ const CouponsMobile = () => {
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
   const toast = useToast();
-  const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
-  const userid = useAppSelector((s) => s.user.userid);
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
+  const { selectedGroup, userid, assignedStores, selectedGroupStores: groupStores } = ctx;
 
   const [screen, setScreen] = useState<Screen>("entry");
   // null in group mode means "All stores" — the whole group, unscoped.

@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../../hooks";
+import { useCouponContext } from "../hooks";
 
 // Utils
 import {
@@ -46,8 +46,7 @@ const CpnStoreList = ({
   const [exportOpen, setExportOpen] = useState(false);
   // Store names come from assignedStores, never the coupon payload; groupStores
   // covers searched-group stores this user isn't assigned to.
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
+  const { assignedStores, selectedGroupStores: groupStores } = useCouponContext();
   const [infoOpen, setInfoOpen] = useState(false);
   // Still needed for the All-stores row; the card derives its own.
   const totalAmount = sumCouponAmount(coupons);

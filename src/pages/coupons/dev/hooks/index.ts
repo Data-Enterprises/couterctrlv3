@@ -23,7 +23,7 @@ export const useCouponContext = () => {
   } = useAppSelector((state) => state.dev.coupons);
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
     useAppSelector((state) => state.search);
-  const { selectedGroupStores, assignedStores } = useAppSelector(
+  const { selectedGroupStores, assignedStores, userid } = useAppSelector(
     (state) => state.user,
   );
   const { url, token, isMobile } = useAppSelector((state) => state.app);
@@ -53,6 +53,7 @@ export const useCouponContext = () => {
     selectedGroup,
     selectedGroupStores,
     assignedStores,
+    userid,
   };
 };
 

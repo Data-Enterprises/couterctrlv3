@@ -629,15 +629,6 @@
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
   },
-  "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
-    "selector-outside-hook": 4
-  },
-  "src/pages/coupons/dev/mobile/CpnSectionDetail.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/coupons/dev/mobile/CpnStoreList.tsx": {
-    "selector-outside-hook": 2
-  },
   "src/pages/exportBuilder/ExportBuilder.tsx": {
     "labels": 1
   },
