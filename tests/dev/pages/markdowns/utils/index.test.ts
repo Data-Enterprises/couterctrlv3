@@ -6,10 +6,12 @@ import {
   fmtDmy,
   fmtDmyTime,
   sortRows,
+  withStoreNames,
 } from "@/pages/markdowns/dev/utils";
 
 // Interfaces
 import type { MarkdownFilters, MarkdownItem } from "@/interfaces/markdowns";
+import type { Store } from "@/interfaces";
 
 const row = (over: Partial<MarkdownItem>): MarkdownItem => ({
   id: 1,
@@ -94,6 +96,38 @@ describe("the columns", () => {
     expect(show("MD %")).toBe("25.06%");
     expect(show("Weight")).toBe("—");
     expect(show("Scalable")).toBe("No");
+  });
+});
+
+describe("withStoreNames", () => {
+  const store = (storeid: number, store_name: string) => ({ storeid, store_name }) as Store;
+  const names = (rs: MarkdownItem[]) => rs.map((r) => r.storename);
+
+  it("names each store as the user's stores do, not as the payload does", () => {
+    const rows = [row({ storeid: 1301, storename: "FG HAYTI #301" })];
+    expect(names(withStoreNames(rows, [store(1301, "Food Giant Hayti")], []))).toEqual(["Food Giant Hayti"]);
+  });
+
+  it("falls back to the group search's stores, then to the store number", () => {
+    const rows = [
+      row({ storeid: 1302, storenumber: "302", storename: "x" }),
+      row({ storeid: 1303, storenumber: "303", storename: "y" }),
+    ];
+    expect(names(withStoreNames(rows, [], [store(1302, "Food Giant Kennett")]))).toEqual([
+      "Food Giant Kennett",
+      "Store 303",
+    ]);
+  });
+
+  it("names a storeid that covers two stores by each one's own number", () => {
+    const rows = [
+      row({ storeid: 685, storenumber: "369" }),
+      row({ storeid: 685, storenumber: "370" }),
+    ];
+    expect(names(withStoreNames(rows, [store(685, "Bruces Foodland 369")], []))).toEqual([
+      "Bruces Foodland 369",
+      "Bruces Foodland 370",
+    ]);
   });
 });
 

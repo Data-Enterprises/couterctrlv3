@@ -1,8 +1,10 @@
 // Utils
-import { formatCurrency2 } from "../../../../utils";
+import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { SortState } from "../../../../utils/useTriStateSort";
+import type { Store } from "../../../../interfaces";
 import type {
   MarkdownFilters,
   MarkdownItem,
@@ -212,6 +214,28 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
 
 /** The columns the grid draws: all but the sub department and category numbers. */
 export const GRID_COLUMNS = MARKDOWN_COLUMNS.filter((c) => c.grid !== false);
+
+/**
+ * Each row's store as the user knows it, never the payload's name (the
+ * store-name rule): the assigned store's name, else the group search's. A
+ * storeid that covers two stores names each by its own number.
+ */
+export const withStoreNames = (
+  rows: MarkdownItem[],
+  assignedStores: Store[],
+  groupStores: Store[],
+): MarkdownItem[] => {
+  const numbers = numbersByStoreId(rows, (r) => r.storeid, (r) => r.storenumber);
+  const names = new Map<number, string>();
+  return rows.map((r) => {
+    let name = names.get(r.storeid);
+    if (name === undefined) {
+      name = resolveStoreName(assignedStores, groupStores, r.storeid, `Store ${r.storenumber}`);
+      names.set(r.storeid, name);
+    }
+    return { ...r, storename: applyStoreNumberToName(name, r.storenumber, numbers[r.storeid] ?? []) };
+  });
+};
 
 /** A row's identity. The table's key is (storeid, id, order_date): an id alone
  *  repeats across stores and dates. */

@@ -19,7 +19,7 @@ import { getMarkdowns } from "../../../../api/markdowns";
 
 // Utils
 import { formatGoliathDate } from "../../../../utils";
-import { filterRows, sortRows } from "../utils";
+import { filterRows, sortRows, withStoreNames } from "../utils";
 
 // Interfaces
 import type {
@@ -43,6 +43,7 @@ export const useMarkdownsCtx = () => {
     selectedStore,
     selectedGroup,
   } = useAppSelector((state) => state.search);
+  const { assignedStores, selectedGroupStores } = useAppSelector((state) => state.user);
   const markdowns = useAppSelector((state) => state.dev.markdowns);
   const scopeLabel = isGroupSearch(type)
     ? (selectedGroup?.group_name ?? "Group")
@@ -57,6 +58,8 @@ export const useMarkdownsCtx = () => {
     endDate,
     lastStore,
     lastGroup,
+    assignedStores,
+    selectedGroupStores,
     /** The store or group in the search bar now. */
     scopeLabel,
     ...markdowns, // markdowns, loading, progress, notice, filters, sort, searched
@@ -155,8 +158,14 @@ export const useLoadMarkdowns = () => {
         rows = [...rows, ...next.markdowns];
       }
       // Every page is in: swap it in. The last search's picks may not exist
-      // in these rows, as in Orders, so they go with it.
-      ctx.dispatch(finishMarkdownsSearch({ rows, searched }));
+      // in these rows, as in Orders, so they go with it. Store names are
+      // resolved here, once, so the grid, sort, filters and export share them.
+      ctx.dispatch(
+        finishMarkdownsSearch({
+          rows: withStoreNames(rows, ctx.assignedStores, ctx.selectedGroupStores),
+          searched,
+        }),
+      );
     } catch (err) {
       // The backend answers "No stores found" and the like with a 4xx, which
       // axios throws: show its message rather than the HTTP one.

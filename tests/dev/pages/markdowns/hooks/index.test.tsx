@@ -4,11 +4,13 @@ import { Provider } from "react-redux";
 import type { ReactNode } from "react";
 import { setupStore } from "@/store";
 import { setLastGroup, setLastStore, setType } from "@/features/searchSlice";
+import { setAssignedStores } from "@/features/userSlice";
 import { finishMarkdownsSearch, setMarkdownFilters } from "@/features/dev/devMarkdownsSlice";
 import { useLoadMarkdowns } from "@/pages/markdowns/dev/hooks";
 
 // Interfaces
 import type { MarkdownItem } from "@/interfaces/markdowns";
+import type { Store } from "@/interfaces";
 
 const getMarkdowns = vi.fn();
 vi.mock("@/api/markdowns", () => ({
@@ -60,6 +62,21 @@ describe("useLoadMarkdowns", () => {
     expect(s.markdowns.map((r) => r.id)).toEqual([1, 2, 3, 4, 5]);
     expect(s.loading).toBe(false);
     expect(s.progress).toBeNull();
+  });
+
+  it("keeps each row's store under the name the user's stores give it", async () => {
+    getMarkdowns.mockResolvedValueOnce({
+      data: { ...page(1, 1, [1]).data, markdowns: [{ ...row(1), storename: "FG HAYTI #301" }] },
+    });
+    const { store, load } = setup();
+    act(() => {
+      store.dispatch(setAssignedStores([{ storeid: 301, store_name: "Food Giant Hayti" } as Store]));
+      store.dispatch(setLastStore(301));
+    });
+
+    await act(load);
+
+    expect(store.getState().dev.markdowns.markdowns[0].storename).toBe("Food Giant Hayti");
   });
 
   it("names the page in flight while it waits for it", async () => {
