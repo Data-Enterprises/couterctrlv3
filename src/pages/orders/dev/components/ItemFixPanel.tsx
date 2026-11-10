@@ -5,7 +5,8 @@ import { useMemo, useState } from "react";
 import { formatCurrency2 } from "../../../../utils";
 import { commonUnit, itemStoreRows } from "../utils/problemItems";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
-import { fmtOrderDate, padStoreNumber, pct } from "../utils";
+import { fmtOrderDate, pct } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { ProblemItem, OrderDraft } from "../interfaces";

@@ -74,9 +74,6 @@ export const fmtOrderDate = (iso: string) => {
   return `${+m}/${+d}/${y}`;
 };
 
-/** A store number padded to three digits. */
-export const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
 /** A margin to one decimal with %, or a dash when unknown. */
 export const pct = (m: number | null) => (m === null ? "—" : `${m.toFixed(1)}%`);
 

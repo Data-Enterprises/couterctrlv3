@@ -13,7 +13,8 @@ import { availableOptions } from "../utils/orderFilters";
 import { markAvailability } from "../../../../utils/filterAvailability";
 import { lineFlags } from "../utils/ordersRows";
 import { FLAG_LABEL, FLAG_ON } from "./utils";
-import { fmtOrderDate, padStoreNumber } from "../utils";
+import { fmtOrderDate } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { AllOrder } from "../../../../interfaces";

@@ -3,7 +3,8 @@ import { useMemo, type ReactNode } from "react";
 
 // Utils
 import { matchesPick } from "../utils/orderEdit";
-import { fmtOrderDate, padStoreNumber } from "../utils";
+import { fmtOrderDate } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { OrderDoc } from "../interfaces";
