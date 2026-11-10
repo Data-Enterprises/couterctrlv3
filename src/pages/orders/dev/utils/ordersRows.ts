@@ -1,6 +1,10 @@
+// Utils
+import { resolveStoreName } from "../../../../utils";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+
 // Interfaces
 import type { SortKey } from "../interfaces";
-import type { AllOrder } from "../../../../interfaces";
+import type { AllOrder, Store } from "../../../../interfaces";
 import type {
   OrderFlag,
   OrdersFilters,
@@ -108,3 +112,24 @@ export const buildRows = (
   ) => AllOrder[],
 ): AllOrder[] =>
   applySort(defaultOrder(applyFilters(lines, filters)), sortValue);
+
+/**
+ * Every store in the lines, by the name the user knows it (the store-name
+ * rule: never the payload's), A to Z. A storeid that covers two stores names
+ * each by its own number, so the list matches the Stores count.
+ */
+export const storeNamesIn = (
+  rows: AllOrder[],
+  assignedStores: Store[],
+  groupStores: Store[],
+): string[] => {
+  const numbers = numbersByStoreId(rows, (r) => r.storeid, (r) => r.storenumber);
+  const seen = new Map<string, string>();
+  for (const r of rows) {
+    const key = `${r.storeid}|${r.storenumber}`;
+    if (seen.has(key)) continue;
+    const name = resolveStoreName(assignedStores, groupStores, r.storeid, `Store ${r.storenumber}`);
+    seen.set(key, applyStoreNumberToName(name, r.storenumber, numbers[r.storeid] ?? []));
+  }
+  return [...seen.values()].sort((a, b) => a.localeCompare(b));
+};

@@ -1,9 +1,10 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useOrdersCtx } from "../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { lineFlags } from "../utils/ordersRows";
+import { lineFlags, storeNamesIn } from "../utils/ordersRows";
 import { FLAG_DOT, FLAG_TITLE } from "./utils";
 
 // Interfaces
@@ -16,7 +17,8 @@ import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
 import PagerButton from "../../../../components-dev/PagerButton";
-import Kpi from "./Kpi";
+import GridKpi from "../../../../components-dev/kpi/GridKpi";
+import StoresKpi from "../../../../components-dev/kpi/StoresKpi";
 
 interface OrderReportPanelProps {
   /** Already filtered, searched and sorted by the page. */
@@ -60,6 +62,7 @@ const OrderReportPanel = ({
   onEnterEdit,
   canEdit,
 }: OrderReportPanelProps) => {
+  const { assignedStores, selectedGroupStores } = useOrdersCtx();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
@@ -88,17 +91,21 @@ const OrderReportPanel = ({
     let eRet = 0;
     let cogs = 0;
     let weight = 0;
-    const stores = new Set<string>();
     const orders = new Set<string>();
     for (const o of visible) {
       eRet += o.e_ret ?? 0;
       cogs += o.cogs ?? 0;
       weight += o.weight ?? 0;
-      stores.add(o.storenumber);
       orders.add(`${o.storenumber}:${o.order_id}`);
     }
-    return { eRet, cogs, weight, stores: stores.size, orders: orders.size };
-  }, [visible]);
+    return {
+      eRet,
+      cogs,
+      weight,
+      storeNames: storeNamesIn(visible, assignedStores, selectedGroupStores),
+      orders: orders.size,
+    };
+  }, [visible, assignedStores, selectedGroupStores]);
 
 
   /** Right-aligned and sortable, on the shared tri-state header. */
@@ -172,12 +179,12 @@ const OrderReportPanel = ({
       ) : (
         <>
           <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
-            <Kpi label="Lines" value={visible.length.toLocaleString()} />
-            <Kpi label="Orders" value={totals.orders.toLocaleString()} />
-            <Kpi label="Stores" value={totals.stores.toLocaleString()} />
-            <Kpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
-            <Kpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
-            <Kpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
+            <GridKpi label="Lines" value={visible.length.toLocaleString()} />
+            <GridKpi label="Orders" value={totals.orders.toLocaleString()} />
+            <StoresKpi stores={totals.storeNames} />
+            <GridKpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+            <GridKpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
+            <GridKpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
           </div>
 
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
