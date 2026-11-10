@@ -6,6 +6,9 @@ interface LogoProps {
   onNavy: boolean;
 }
 
+/** The CounterCtrl logo at the left of the title bar. It is sized by height,
+ *  so on a 390px phone it can't push the avatar (and Sign out) off the edge.
+ *  The light and reversed logos cross-fade as the bar turns navy. */
 const Logo = ({ onNavy }: LogoProps) => {
   return (
     <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">

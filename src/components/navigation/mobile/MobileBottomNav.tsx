@@ -1,11 +1,9 @@
 // Hooks
 import { useAppDispatch } from "../../../hooks";
+import { useNavCtx } from "../hooks";
 
 // Redux
 import { setIsNavOpen, setLastRoute } from "../../../features/navSlice";
-
-// Interfaces
-import type { NavCategory } from "../interfaces";
 
 // Components
 import NavSheet from "./components/NavSheet";
@@ -13,20 +11,16 @@ import NavSheet from "./components/NavSheet";
 interface MobileBottomNavProps {
   openCategory: string | null;
   setOpenCategory: (category: string | null) => void;
-  visibleCategories: NavCategory[];
-  canSee: (userLevels: string[], href?: string | undefined) => boolean;
-  activeCategory: NavCategory | undefined;
 }
 
+/** The phone's bottom tab bar, one tab per category. A tab opens that
+ *  category's pages in a sheet over the page. */
 const MobileBottomNav = ({
   openCategory,
   setOpenCategory,
-  visibleCategories,
-  canSee,
-  activeCategory,
 }: MobileBottomNavProps) => {
   const dispatch = useAppDispatch();
-  const currentPath = location.pathname.replace(/^\//, "");
+  const { visibleCategories, canSee, activeCategory } = useNavCtx();
 
   const handleMobileNavClick = (href: string) => {
     dispatch(setLastRoute(href));
@@ -52,7 +46,6 @@ const MobileBottomNav = ({
               visiblePages={visiblePages}
               onClose={() => setOpenCategory(null)}
               onNavigate={handleMobileNavClick}
-              currentPath={currentPath}
             />
           );
         })()}

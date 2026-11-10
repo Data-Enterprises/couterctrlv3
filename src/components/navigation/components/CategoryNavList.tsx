@@ -1,37 +1,30 @@
 // Hooks
-import { NavLink } from "react-router";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useNavCtx } from "../hooks";
 
 // Redux
 import { setLastRoute, setIsNavOpen } from "../../../features/navSlice";
 
-// Interfaces
-import type { NavCategory } from "../interfaces";
-
 // Components
+import { NavLink } from "react-router";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 
 interface CategoryNavListProps {
   openCategory: string | null;
   setOpenCategory: (category: string | null) => void;
-  visibleCategories: NavCategory[];
-  canSee: (userLevels: string[], href?: string | undefined) => boolean;
-  activeCategory: NavCategory | undefined;
-  handleCategoryEnter: (category: string) => void;
-  handleCategoryLeave: () => void;
+  onCategoryEnter: (category: string) => void;
+  onCategoryLeave: () => void;
 }
 
+/** The desktop category menus in the title bar. Each opens on hover and
+ *  lists the pages in it this user can see. */
 const CategoryNavList = ({
   openCategory,
   setOpenCategory,
-  visibleCategories,
-  canSee,
-  activeCategory,
-  handleCategoryEnter,
-  handleCategoryLeave,
-
+  onCategoryEnter,
+  onCategoryLeave,
 }: CategoryNavListProps) => {
-  const onNavy = useAppSelector((state) => state.app.apiEnv === "dev");
+  const { onNavy, visibleCategories, canSee, activeCategory } = useNavCtx();
   const dispatch = useAppDispatch();
 
   return (
@@ -46,8 +39,8 @@ const CategoryNavList = ({
           <div
             key={cat.name}
             className="relative flex items-stretch"
-            onMouseEnter={() => handleCategoryEnter(cat.name)}
-            onMouseLeave={handleCategoryLeave}
+            onMouseEnter={() => onCategoryEnter(cat.name)}
+            onMouseLeave={onCategoryLeave}
           >
             <button
               // Navy now carries the ACTIVE category rather than the

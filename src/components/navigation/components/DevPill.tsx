@@ -2,6 +2,8 @@ interface DevPillProps {
   onNavy: boolean;
 }
 
+/** The DEV MODE pill: says in words what the navy bar says in colour. It
+ *  slides in and out with the bar rather than popping. */
 const DevPill = ({ onNavy }: DevPillProps) => {
   return (
     <div

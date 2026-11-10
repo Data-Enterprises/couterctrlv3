@@ -1,7 +1,8 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useNavigate } from "react-router";
+import { useNavCtx } from "../hooks";
 
 // Redux
 import {
@@ -13,11 +14,8 @@ import {
 } from "../../../features/appSlice";
 
 // Utils
-import { impersonatedBy } from "@/utils/session";
+import { impersonatedBy } from "../../../utils/session";
 import { legacyEntryPath } from "../../../constants/legacyPages";
-
-// Interfaces
-import type { NavCategory } from "../interfaces";
 
 // Components
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
@@ -25,24 +23,31 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 interface AvatarDropdownProps {
   setReleaseNotesOpen: (open: boolean) => void;
   setSignInAsOpen: (open: boolean) => void;
-  activeCategory: NavCategory | undefined;
 }
 
+/** The initials button at the right of the title bar and its menu: who is
+ *  signed in, the View and Mode switches, the dev tools, and Sign out. */
 const AvatarDropdown = ({
   setReleaseNotesOpen,
   setSignInAsOpen,
-  activeCategory,
 }: AvatarDropdownProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
-  const context = useAppSelector((state) => state.app);
+  const {
+    app: context,
+    user,
+    onNavy,
+    pathname,
+    activeCategory,
+    currentPage,
+  } = useNavCtx();
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const onNavy = context.apiEnv === "dev";
+  /** Who is really behind this session, when it is someone else's. */
   const realUser = impersonatedBy(context.token);
-  const currentPath = location.pathname.replace(/^\//, "");
 
-    const handleSignOut = () => {
+  // One action empties the store (the root reducer in store/index.ts); only
+  // the username survives.
+  const handleSignOut = () => {
     navigate("/");
     dispatch(resetAppSlice());
   };
@@ -168,7 +173,7 @@ const AvatarDropdown = ({
                       // back to where you last were over there, and to Sales
                       // if that is nowhere yet.
                       const to = legacyEntryPath(
-                        location.pathname,
+                        pathname,
                         context.legacyLastRoute,
                       );
                       if (to) navigate(to);
@@ -220,10 +225,8 @@ const AvatarDropdown = ({
                   setAvatarOpen(false);
                   dispatch(
                     openReportIssue({
-                      from: location.pathname,
-                      page: activeCategory?.pages.find(
-                        (p) => p.href === currentPath,
-                      )?.name,
+                      from: pathname,
+                      page: currentPage?.name,
                       area: activeCategory?.name,
                     }),
                   );

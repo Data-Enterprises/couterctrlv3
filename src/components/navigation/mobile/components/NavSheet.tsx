@@ -1,26 +1,24 @@
 // Hooks
-import { NavLink } from "react-router";
 import { useRef, useEffect } from "react";
+import { useNavCtx } from "../../hooks";
 
 // Interfaces
-import type { Navigation } from "../../interfaces";
+import type { Navigation, NavCategory } from "../../interfaces";
 
+// Components
+import { NavLink } from "react-router";
 
 interface NavSheetProps {
-  cat: { name: string; pages: any[] };
+  cat: NavCategory;
   visiblePages: Navigation[];
   onClose: () => void;
   onNavigate: (href: string) => void;
-  currentPath: string;
 }
 
-const NavSheet = ({
-  cat,
-  visiblePages,
-  onClose,
-  onNavigate,
-  currentPath,
-}: NavSheetProps) => {
+/** A category's pages as a sheet that slides up over the phone screen.
+ *  Drag it down past 80px, or tap outside it, to close. */
+const NavSheet = ({ cat, visiblePages, onClose, onNavigate }: NavSheetProps) => {
+  const { currentPath } = useNavCtx();
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startY: number; currentY: number } | null>(null);
 
