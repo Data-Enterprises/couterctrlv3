@@ -14,7 +14,7 @@ const GridKpi = ({ label, value, onClick, open }: GridKpiProps) =>
       type="button"
       onClick={onClick}
       aria-expanded={open}
-      className={`px-4 py-2 text-center transition-colors hover:bg-brand_navy/[0.06] ${
+      className={`w-full h-full px-4 py-2 text-center transition-colors hover:bg-brand_navy/[0.06] ${
         open ? "bg-brand_navy/[0.06]" : ""
       }`}
     >

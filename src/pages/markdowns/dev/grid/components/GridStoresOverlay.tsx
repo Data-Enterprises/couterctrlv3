@@ -8,8 +8,8 @@ interface GridStoresOverlayProps {
   onClose: () => void;
 }
 
-/** The list the Stores figure drops down over the grid: every store in the
- *  rows the filters keep. A click outside or Escape closes it. */
+/** The list the Stores figure drops down over the grid, as wide as the
+ *  figure: every store it counts. A click outside or Escape closes it. */
 const GridStoresOverlay = ({ open, stores, onClose }: GridStoresOverlayProps) => {
   useEffect(() => {
     if (!open) return;
@@ -33,7 +33,7 @@ const GridStoresOverlay = ({ open, stores, onClose }: GridStoresOverlayProps) =>
             : "pointer-events-none opacity-0 -translate-y-2"
         }`}
       >
-        <ul className="grid grid-cols-3 gap-x-6 gap-y-1 px-4 py-3 text-[13px] text-content/95">
+        <ul className="flex flex-col gap-1 px-4 py-3 text-[13px] text-content/95">
           {stores.map((name) => (
             <li key={name} className="truncate">
               {name}
