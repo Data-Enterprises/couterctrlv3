@@ -179,9 +179,8 @@ export const useCategoryData = () => {
     const category = cats.selectedCategory;
     if (category === null || !cats.twStart || !cats.twEnd) return;
 
-    // Clicking down the list faster than the network responds would otherwise
-    // let an earlier, slower period land after a later one and render under the
-    // wrong category.
+    // Clicking down the list faster than the network responds could otherwise
+    // land an earlier, slower period after a later one, under the wrong category.
     let cancelled = false;
     dispatch(setLoadingItems(true));
 

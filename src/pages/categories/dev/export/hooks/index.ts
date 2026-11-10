@@ -2,7 +2,14 @@
 import { useMemo, useState } from "react";
 
 // Utils
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../../utils/csvExport";
 import { fmtDayLabel } from "../../../../../utils/dateLabels";
 import { shiftIso, LW_OFFSET, LY_OFFSET } from "../../utils";
 import {
@@ -19,7 +26,6 @@ import {
 } from "../utils";
 
 // Interfaces
-import type { AggFn, AggRow } from "../../../../../utils/csvExport";
 import type { ItemGradingMetric } from "../../../../../utils/itemMargins";
 import type {
   CategoryExportProps,

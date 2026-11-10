@@ -1030,21 +1030,6 @@
   "src/pages/categories/Categories.tsx": {
     "labels": 1
   },
-  "src/pages/categories/dev/components/Kpi.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/categories/dev/components/Stat.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/categories/dev/export/hooks/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/categories/dev/export/utils/index.ts": {
-    "one-line-per-source": 3
-  },
-  "src/pages/categories/dev/hooks/index.ts": {
-    "commented-code": 1
-  },
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
   },
