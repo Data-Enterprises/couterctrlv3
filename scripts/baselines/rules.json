@@ -1160,36 +1160,6 @@
   "src/pages/receivers/Receivers.tsx": {
     "labels": 1
   },
-  "src/pages/receivers/dev/components/detail/ReceiverDetailPanel.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/DetailKpiStrip.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/DetailNavyHeader.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/Body.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/DetailTable.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/Footer.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/receivers/dev/components/list/ReceiverListPanel.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/receivers/dev/components/list/components/ListNavyHeader.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/receivers/dev/mobile/ReceiversMobile.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/receivers/dev/mobile/components/RcvReceiverList.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/sales/Sales.tsx": {
     "labels": 1
   },

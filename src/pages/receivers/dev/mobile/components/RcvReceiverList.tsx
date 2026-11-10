@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useReceiversCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // API
@@ -54,7 +54,7 @@ const RcvReceiverList = ({
   onSearch,
 }: RcvReceiverListProps) => {
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
+  const { url, token } = useReceiversCtx();
 
   const [openDates, setOpenDates] = useState<Set<string>>(new Set());
   const [selectedReceiver, setSelectedReceiver] =

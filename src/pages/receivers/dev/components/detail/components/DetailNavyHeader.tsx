@@ -1,5 +1,5 @@
 // Hooks
-import { useAppSelector } from "../../../../../../hooks";
+import { useReceiversState } from "../../../hooks";
 
 // Utils
 import { formatDate } from "../../../../../../utils";
@@ -14,7 +14,7 @@ interface DetailNavyHeaderProps {
 /** The navy header of the receiver detail: vendor, cashier and date of the selected receiver.
  *  Once its line items load it adds the export button and the invoice, reference and item counts. */
 const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
-  const state = useAppSelector((s) => s.dev.receivers);
+  const state = useReceiversState();
   const selectedReceiver = state.selectedInvoice
     ? (state.list.find(
         (r) => r.invoiceid.toString() === state.selectedInvoice,

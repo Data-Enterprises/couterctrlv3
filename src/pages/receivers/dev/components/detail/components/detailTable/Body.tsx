@@ -1,12 +1,12 @@
 // Hooks
-import { useAppSelector } from "../../../../../../../hooks";
+import { useReceiversState } from "../../../../hooks";
 
 // Components
 import BodyRow from "./BodyRow";
 
 /** The line-item rows of the selected receiver's detail table. */
 const Body = () => {
-  const state = useAppSelector((s) => s.dev.receivers);
+  const state = useReceiversState();
 
   return (
     <tbody className="divide-y divide-brand_navy/15 text-[13px]">

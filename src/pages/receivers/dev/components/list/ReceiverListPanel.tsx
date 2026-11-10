@@ -1,10 +1,7 @@
 // Hooks
 import { useState, useMemo } from "react";
-import {
-  useAppSelector,
-  useAppDispatch,
-  useStoreName,
-} from "../../../../../hooks";
+import { useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useReceiversCtx, useReceiversState } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // Redux
@@ -49,8 +46,8 @@ interface ReceiverListPanelProps {
 const ReceiverListPanel = ({ onOpenSearch }: ReceiverListPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((s) => s.app);
-  const state = useAppSelector((s) => s.dev.receivers);
+  const { url, token } = useReceiversCtx();
+  const state = useReceiversState();
 
   const [openDates, setOpenDates] = useState<Set<string>>(new Set());
   const [vendorFilter, setVendorFilter] = useState("");

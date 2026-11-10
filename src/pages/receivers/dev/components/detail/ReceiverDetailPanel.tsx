@@ -1,6 +1,6 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useReceiversState } from "../../hooks";
 
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
@@ -14,7 +14,7 @@ import DetailKpiStrip from "./components/DetailKpiStrip";
  *  Also opens the CSV export modal for the selected receiver. */
 const ReceiverDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
-  const state = useAppSelector((s) => s.dev.receivers);
+  const state = useReceiversState();
 
   const selectedReceiver = state.selectedInvoice
     ? (state.list.find(

@@ -1,5 +1,5 @@
 // Hooks
-import { useAppSelector } from "../../../../../../hooks";
+import { useReceiversCtx, useReceiversState } from "../../../hooks";
 
 // Utils
 import { fmtDateLabel } from "../utils";
@@ -16,8 +16,8 @@ interface ListNavyHeaderProps {
 /** The navy header of the receiver list: title, date range and receiver total, plus the re-search button,
  *  store name and page info button. */
 const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
-  const state = useAppSelector((s) => s.dev.receivers);
-  const search = useAppSelector((s) => s.search);
+  const state = useReceiversState();
+  const { search } = useReceiversCtx();
   const dateLabel = fmtDateLabel(search.startDate, search.endDate);
   
   return (

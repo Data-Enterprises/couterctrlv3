@@ -1,12 +1,8 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useStoreName,
-} from "../../../../hooks";
-import { useReceiversActions, useReceiversState } from "../hooks";
+import { useAppDispatch, useStoreName } from "../../../../hooks";
+import { useReceiversActions, useReceiversCtx, useReceiversState } from "../hooks";
 
 // API
 import { getReceiversList } from "../../../../api/receivers";
@@ -35,9 +31,8 @@ const ReceiversMobile = () => {
   const rcv = useReceiversState();
   const actions = useReceiversActions();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { startDate, endDate } = useAppSelector((s) => s.search);
+  const { url, token, assignedStores, search } = useReceiversCtx();
+  const { startDate, endDate } = search;
 
   const [screen, setScreen] = useState<Screen>("entry");
 
