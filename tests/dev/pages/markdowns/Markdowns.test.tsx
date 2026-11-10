@@ -170,9 +170,9 @@ describe("the Markdowns page", () => {
     expect(dupes).toEqual([]);
   });
 
-  it("opens the re-search over the page from the magnifier, and the export from the download icon", () => {
+  it("opens the re-search over the page from Back, and the export from the download icon", () => {
     setup();
-    fireEvent.click(screen.getByTitle("New search"));
+    fireEvent.click(screen.getByRole("button", { name: "Back to the search" }));
     expect(screen.getByText("Select a store or group and date range to load its markdowns.")).toBeTruthy();
     fireEvent.click(screen.getByTitle("Export CSV"));
     expect(screen.getByText("3 rows, as filtered and sorted on screen")).toBeTruthy();

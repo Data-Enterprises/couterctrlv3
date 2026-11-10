@@ -31,7 +31,9 @@ export const MARKDOWNS_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass at the top of the filters. If the new search fails, the last results stay on screen.",
+          pre: "Press",
+          chip: "Back",
+          post: "at the top of the filters. If the new search fails, the last results stay on screen.",
           anchor: "search",
         },
       ],
