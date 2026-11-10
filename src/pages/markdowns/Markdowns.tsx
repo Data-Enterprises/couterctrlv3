@@ -10,11 +10,7 @@ import DevMarkdowns from "./dev/Markdowns";
  *  anywhere else (it is a Coming Soon page with no prod tree). */
 const Markdowns = () => {
   const { apiEnv, url } = useAppSelector((state) => state.app);
-
-  if (apiEnv !== 'dev' || url !== DEV_API_URL) {
-    return <DevOnlyNotice />;
-  }
-
+  if (apiEnv !== "dev" || url !== DEV_API_URL) return <DevOnlyNotice />;
   return <DevMarkdowns />;
 };
 
