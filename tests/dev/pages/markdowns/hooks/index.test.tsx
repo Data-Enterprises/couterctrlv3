@@ -144,4 +144,33 @@ describe("useLoadMarkdowns", () => {
     expect(s.markdowns.map((r) => r.id)).toEqual([9]);
     expect(s.loading).toBe(false);
   });
+
+  it("shows nothing rather than part of the search when a later page is refused", async () => {
+    getMarkdowns
+      .mockResolvedValueOnce(page(1, 3, [1, 2]))
+      .mockResolvedValueOnce({ data: { error: 1, success: false, msg: "Query timed out" } });
+    const { store, load } = setup();
+
+    await act(load);
+
+    const s = store.getState().dev.markdowns;
+    expect(getMarkdowns).toHaveBeenCalledTimes(2);
+    expect(s.markdowns).toEqual([]);
+    expect(s.notice).toBe("Page 2 of 3 didn't load, so nothing is shown. Search again.");
+    expect(toast.error).toHaveBeenCalledWith("Query timed out");
+    expect(s.loading).toBe(false);
+  });
+
+  it("does the same when a later page fails on the network", async () => {
+    getMarkdowns
+      .mockResolvedValueOnce(page(1, 2, [1]))
+      .mockRejectedValueOnce({ message: "Network Error" });
+    const { store, load } = setup();
+
+    await act(load);
+
+    expect(store.getState().dev.markdowns.markdowns).toEqual([]);
+    expect(store.getState().dev.markdowns.notice).toBe("Page 2 of 2 didn't load, so nothing is shown. Search again.");
+    expect(toast.error).toHaveBeenCalledWith("Network Error");
+  });
 });

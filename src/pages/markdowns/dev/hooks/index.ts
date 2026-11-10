@@ -97,6 +97,9 @@ export const useLoadMarkdowns = () => {
     ctx.dispatch(setNotice(null));
     ctx.dispatch(setLoading(true));
 
+    // Which page is in flight, so a failure can say so.
+    let reading = 1;
+    let total = 1;
     try {
       const first: MarkdownResponse = (
         await getMarkdowns(
@@ -119,11 +122,13 @@ export const useLoadMarkdowns = () => {
         return;
       }
 
+      total = first.total_pages;
       let rows: MarkdownItem[] = first.markdowns;
       ctx.dispatch(setMarkdowns(rows));
-      ctx.dispatch(setProgress({ page: 1, total: first.total_pages }));
+      ctx.dispatch(setProgress({ page: 1, total }));
 
-      for (let page = 2; page <= first.total_pages; page++) {
+      for (let page = 2; page <= total; page++) {
+        reading = page;
         const next: MarkdownResponse = (
           await getMarkdowns(
             ctx.url,
@@ -136,9 +141,10 @@ export const useLoadMarkdowns = () => {
           )
         ).data;
         if (stale()) return;
+        if (next.error !== 0) throw { message: next.msg };
         rows = [...rows, ...next.markdowns];
         ctx.dispatch(setMarkdowns(rows));
-        ctx.dispatch(setProgress({ page, total: first.total_pages }));
+        ctx.dispatch(setProgress({ page, total }));
       }
     } catch (err) {
       // The backend answers "No stores found" and the like with a 4xx, which
@@ -147,7 +153,15 @@ export const useLoadMarkdowns = () => {
         response?: { data?: { msg?: string } };
         message: string;
       };
+      if (stale()) return;
       toast.error(e.response?.data?.msg ?? e.message);
+      // Part of a search would read as all of it, so show none of it.
+      if (reading > 1) {
+        ctx.dispatch(setMarkdowns([]));
+        ctx.dispatch(
+          setNotice(`Page ${reading} of ${total} didn't load, so nothing is shown. Search again.`),
+        );
+      }
     } finally {
       if (!stale()) {
         ctx.dispatch(setProgress(null));
