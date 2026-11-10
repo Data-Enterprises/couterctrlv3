@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
@@ -125,8 +125,9 @@ const PopupTopItems = ({
 }: PopupTopItemsProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((state) => state.app);
   const {
+    url,
+    token,
     topItems,
     topItemPoints,
     topItemsLW,

@@ -76,6 +76,14 @@ export const useSalesCtx = () =>
       topItemsLoading: s.dev.salesLedger.topItemsLoading,
       topItemsCache: s.dev.salesLedger.topItemsCache,
       topItemsTyCache: s.dev.salesLedger.topItemsTyCache,
+      // The API connection, the search and the user's stores.
+      url: s.app.url,
+      token: s.app.token,
+      userid: s.user.userid,
+      assignedStores: s.user.assignedStores,
+      selectedGroupStores: s.user.selectedGroupStores,
+      search: s.search,
+      groupName: s.search.selectedGroup?.group_name,
     }),
     shallowEqual,
   );

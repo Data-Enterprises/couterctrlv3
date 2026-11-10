@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 import { useDayMix } from "./hooks/useDayMix";
 import { usePanelSize } from "./hooks/usePanelSize";
 import { useWeekExceptions } from "./hooks/useWeekExceptions";
@@ -61,7 +61,7 @@ const DailyRecap = ({
   days: dayDots,
   selectedDate,
 }: DailyRecapProps) => {
-  const { rawSubs, rawHourly } = useAppSelector((s) => s.dev.salesLedger);
+  const { rawSubs, rawHourly } = useSalesCtx();
   // The popup rebuilds its date list on every render; key it on its content
   // so nothing below re-runs (or re-asks) unless the week really changed.
   const datesKey = datesIn.join(",");

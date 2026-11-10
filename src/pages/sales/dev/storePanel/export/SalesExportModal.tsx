@@ -1,7 +1,6 @@
 // Hooks
 import { useState } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { useAppSelector } from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
 import { useCustomExport, useRecapWeekItems } from "./hooks/index";
 
@@ -106,10 +105,11 @@ const SalesExportModal = ({
     financialsWindow,
     financialsTruncated,
     financialsLoading,
+    url,
+    token,
   } = useSalesCtx();
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
   const toast = useToast();
-  const { url, token } = useAppSelector((state) => state.app);
   const loadRecapWeek = useRecapWeekItems(storeId, storeNumber);
 
   // ── Preset state — no default selections ──

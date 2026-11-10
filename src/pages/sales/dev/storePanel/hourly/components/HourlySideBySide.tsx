@@ -1,6 +1,5 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../../../../../../hooks";
 import { useSalesCtx, useSalesState } from "../../../hooks";
 
 // API
@@ -76,8 +75,7 @@ const HourlySideBySide = ({
   onBack,
 }: HourlySideBySideProps) => {
   // A day picked in the strip above narrows both sides to that day.
-  const { selectedDate, gradingMetric } = useSalesCtx();
-  const context = useAppSelector((state) => state.app);
+  const { selectedDate, gradingMetric, url, token } = useSalesCtx();
   // The open store's three weeks are already here — the panel fetched them
   // for its own Hourly tab, which is why only the counterpart is asked for.
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
@@ -105,7 +103,7 @@ const HourlySideBySide = ({
     setPicked(null);
 
     const ask = (from: string, to: string) =>
-      getHourly(context.url, context.token, from, to, 0, compareStoreId, 1);
+      getHourly(url, token, from, to, 0, compareStoreId, 1);
 
     Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
       .then(([tw, lw, ly]) => {
@@ -144,7 +142,7 @@ const HourlySideBySide = ({
       live = false;
     };
   }, [
-    context.url, context.token,
+    url, token,
     twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
     compareStoreId, compareStoreNumber,
     lwKey, lyKey, selectedDate,

@@ -329,3 +329,6 @@ export const usePerfItems = (itemKey: string | null, itemScope: ItemScope) => {
       });
   }, [itemKey]);
 };
+
+/** The phone Performance slice, read where it is used instead of passed down. */
+export const useSalesPerfState = () => useAppSelector((s) => s.dev.salesPerf);

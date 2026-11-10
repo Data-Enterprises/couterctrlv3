@@ -1,5 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+import { useAppDispatch } from "../../../../../../hooks";
+import { useSalesPerfState } from "../hooks";
 
 // Redux
 import { setPerfStoreSort } from "../../../../../../features/dev/devSalesPerfSlice";
@@ -26,7 +27,7 @@ const StoreListControls = ({
   setStoreFilter,
 }: StoreListControlsProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.salesPerf);
+  const perf = useSalesPerfState();
   return (
   <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
     <MobileSortChips

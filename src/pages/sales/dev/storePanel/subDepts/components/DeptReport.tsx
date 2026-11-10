@@ -1,7 +1,8 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+import { useAppDispatch } from "../../../../../../hooks";
 import { useSalesCtx, useSalesState } from "../../../hooks";
+import { useCounterpartCache } from "../hooks";
 
 // Redux
 import { setInvestigation } from "../../../../../../features/dev/devSalesLedgerSlice";
@@ -100,9 +101,8 @@ const DeptReport = ({
   // A day picked in the strip above narrows both sides to that day. The
   // open store's departments arrive already narrowed; without this the
   // counterpart stayed a whole week, and one Friday was "behind" a week.
-  const { selectedDate } = useSalesCtx();
+  const { selectedDate, url, token } = useSalesCtx();
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them
   // for its own Sub dept tab, which is why only the counterpart is asked for.
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
@@ -119,9 +119,7 @@ const DeptReport = ({
     lyStart,
     lyEnd,
   ].join("|");
-  const cached = useAppSelector(
-    (state) => state.dev.salesCache.counterpart[cacheKey],
-  );
+  const cached = useCounterpartCache(cacheKey);
 
   /** The cache holds the counterpart's whole weeks; this narrows them exactly
    *  as the open store's were narrowed, so picking a day costs no request. */
@@ -158,7 +156,7 @@ const DeptReport = ({
     let live = true;
     setFailed(false);
     const ask = (from: string, to: string) =>
-      getSubs(context.url, context.token, from, to, 0, compareStoreId, 1);
+      getSubs(url, token, from, to, 0, compareStoreId, 1);
 
     Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
       .then(([tw, lw, ly]) => {
@@ -182,8 +180,8 @@ const DeptReport = ({
       live = false;
     };
   }, [
-    context.url,
-    context.token,
+    url,
+    token,
     twStart,
     twEnd,
     lwStart,

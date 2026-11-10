@@ -1163,42 +1163,6 @@
   "src/pages/sales/Sales.tsx": {
     "labels": 1
   },
-  "src/pages/sales/dev/groupCompare/GroupComparisonPanel.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/ledger/SalesLedger.tsx": {
-    "selector-outside-hook": 4
-  },
-  "src/pages/sales/dev/mobile/perf/SalesPerfMobile.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/sales/dev/mobile/perf/components/PerfSearchScreen.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/mobile/perf/components/StoreListControls.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/StoreDetailPopup.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/export/SalesExportModal.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/hourly/components/HourlySideBySide.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/subDepts/components/DeptReport.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/sales/dev/storePanel/summary/DailyRecap.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/PopupTopItems.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/sales/dev/storePanel/top200/components/TopItemsReport.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1
   },

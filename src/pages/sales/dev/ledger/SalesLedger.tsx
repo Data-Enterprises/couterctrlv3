@@ -1,6 +1,6 @@
 // Hooks
 import { useState, useRef, useMemo, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useSalesCtx, useSalesState } from "../hooks";
@@ -63,9 +63,6 @@ import LedgerHeader from "./components/LedgerHeader";
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const context = useAppSelector((state) => state.app);
-  const { userid } = useAppSelector((state) => state.user);
-  const search = useAppSelector((state) => state.search);
   const {
     weeklySales = [],
     weeklySalesLastWeek = [],
@@ -79,8 +76,12 @@ const SalesLedger = () => {
     gradingMetric,
     investigation,
     matrixOpen,
+    url,
+    token,
+    userid,
+    search,
+    assignedStores,
   } = useSalesCtx();
-  const { assignedStores } = useAppSelector((state) => state.user);
 
   // Grading should never move stores around on its own when the threshold
   // input is cleared — with no new number typed, keep grading against the
@@ -214,8 +215,8 @@ const SalesLedger = () => {
     if (FINANCIALS_READY) {
     dispatch(setFinancialsLoading(true));
     getFinancials(
-      context.url,
-      context.token,
+      url,
+      token,
       twStart,
       twEnd,
       searchValue,
@@ -242,8 +243,8 @@ const SalesLedger = () => {
     if (isGroup) {
       try {
         const groupResp = await getStoresAssignedToUserGroup(
-          context.url,
-          context.token,
+          url,
+          token,
           userid,
           search.lastGroup,
         );
@@ -258,8 +259,8 @@ const SalesLedger = () => {
             stores.map((store) =>
               Promise.all([
                 getWeekly(
-                  context.url,
-                  context.token,
+                  url,
+                  token,
                   twStart,
                   twEnd,
                   0,
@@ -267,8 +268,8 @@ const SalesLedger = () => {
                   1,
                 ),
                 getWeekly(
-                  context.url,
-                  context.token,
+                  url,
+                  token,
                   lwStart,
                   lwEnd,
                   0,
@@ -276,8 +277,8 @@ const SalesLedger = () => {
                   1,
                 ),
                 getWeekly(
-                  context.url,
-                  context.token,
+                  url,
+                  token,
                   lyStart,
                   lyEnd,
                   0,
@@ -308,8 +309,8 @@ const SalesLedger = () => {
     try {
       const [twResp, lwResp, lyResp] = await Promise.all([
           getWeekly(
-            context.url,
-            context.token,
+            url,
+            token,
             twStart,
             twEnd,
             useGroups,
@@ -317,8 +318,8 @@ const SalesLedger = () => {
             singleStore,
           ),
           getWeekly(
-            context.url,
-            context.token,
+            url,
+            token,
             lwStart,
             lwEnd,
             useGroups,
@@ -326,8 +327,8 @@ const SalesLedger = () => {
             singleStore,
           ),
           getWeekly(
-            context.url,
-            context.token,
+            url,
+            token,
             lyStart,
             lyEnd,
             useGroups,

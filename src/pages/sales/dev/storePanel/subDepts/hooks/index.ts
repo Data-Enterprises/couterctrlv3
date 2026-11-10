@@ -267,3 +267,7 @@ export const useSubDeptItems = (
 
   return itemsLoading;
 };
+
+/** The counterpart store's cached weeks under this key, if they were fetched already. */
+export const useCounterpartCache = (cacheKey: string) =>
+  useAppSelector((state) => state.dev.salesCache.counterpart[cacheKey]);

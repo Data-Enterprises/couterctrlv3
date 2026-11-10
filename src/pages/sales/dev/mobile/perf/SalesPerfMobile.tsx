@@ -1,12 +1,14 @@
 // Hooks
 import { useDeferredValue, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 import {
   usePerfFetch,
   usePerfItems,
   usePerfScope,
   usePerfStoreBundle,
   usePerfWeek,
+  useSalesPerfState,
 } from "./hooks";
 
 // Redux
@@ -105,9 +107,8 @@ import StoreListControls from "./components/StoreListControls";
  */
 const SalesPerfMobile = () => {
   const dispatch = useAppDispatch();
-  const search = useAppSelector((s) => s.search);
-  const perf = useAppSelector((s) => s.dev.salesPerf);
-  const { assignedStores, selectedGroupStores } = useAppSelector((s) => s.user);
+  const { search, assignedStores, selectedGroupStores } = useSalesCtx();
+  const perf = useSalesPerfState();
 
   /** Narrows a long group list. Ephemeral by design — it describes what you
    *  are looking for right now, not what the search returned. */

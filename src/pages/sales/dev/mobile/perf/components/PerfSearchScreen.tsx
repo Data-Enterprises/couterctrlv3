@@ -1,5 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
+import { useAppDispatch } from "../../../../../../hooks";
+import { useSalesPerfState } from "../hooks";
 
 // Redux
 import { setPerfHasSearched } from "../../../../../../features/dev/devSalesPerfSlice";
@@ -15,7 +16,7 @@ interface PerfSearchScreenProps {
  *  search that came back empty. */
 const PerfSearchScreen = ({ onSearch }: PerfSearchScreenProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.salesPerf);
+  const perf = useSalesPerfState();
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden">
       <SearchCard

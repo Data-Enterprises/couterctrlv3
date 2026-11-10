@@ -1,6 +1,5 @@
 // Hooks
 import { useMemo } from "react";
-import { useAppSelector } from "../../../../hooks";
 import { useSalesCtx } from "../hooks";
 
 // Utils
@@ -46,12 +45,9 @@ const GroupComparisonPanel = ({
   threshold,
   onSelectStore,
 }: GroupComparisonPanelProps) => {
-  const { selectedDate, gradingMetric } = useSalesCtx();
   // The panel's title names the group it is reading, because "By store" did
   // not say which stores.
-  const groupName = useAppSelector(
-    (state) => state.search.selectedGroup?.group_name,
-  );
+  const { selectedDate, gradingMetric, groupName } = useSalesCtx();
 
   const isQty = gradingMetric === "qty";
 

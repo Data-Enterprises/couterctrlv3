@@ -1,6 +1,6 @@
 // Hooks
 import { useState, memo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useSalesCtx } from "../hooks";
 import {
   useDateLabels,
@@ -54,8 +54,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   // compare against and the tab is never offered.
   const hasGroup = !!groupRows && groupRows.length > 1;
   const dispatch = useAppDispatch();
-  const search = useAppSelector((state) => state.search);
   const {
+    search,
     tab,
     selectedDate,
     gradingMetric,
