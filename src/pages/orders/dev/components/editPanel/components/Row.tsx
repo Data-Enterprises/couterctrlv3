@@ -19,6 +19,25 @@ import EditCell from "./EditCell";
 import UpcField from "./UpcField";
 import VendorField from "./VendorField";
 
+interface RowProps {
+  line: DraftLine;
+  /** Set on the line being composed: it shows a tick instead of a number. */
+  pendingSeq?: number;
+  onConfirm?: () => void;
+  locked: boolean;
+  lookingUp: boolean;
+  resetNonce: number;
+  vendors: VendorOption[];
+  subDepts: SubDeptOption[];
+  loadingSubDepts: boolean;
+  onField: (lineNumber: number, field: EditableField, value: number) => void;
+  onUnitCost: (lineNumber: number, unit: number) => void;
+  onRevertLine: (lineNumber: number) => void;
+  onDropLine: (lineNumber: number) => void;
+  onLookup: (lineNumber: number, upc: string) => void;
+  onPatch: (lineNumber: number, patch: LinePatch) => void;
+}
+
 /**
  * One line.
  *
@@ -44,24 +63,7 @@ const Row = ({
   subDepts,
   loadingSubDepts,
   pendingSeq,
-}: {
-  line: DraftLine;
-  /** Set on the line being composed: it shows a tick instead of a number. */
-  pendingSeq?: number;
-  onConfirm?: () => void;
-  locked: boolean;
-  lookingUp: boolean;
-  resetNonce: number;
-  vendors: VendorOption[];
-  subDepts: SubDeptOption[];
-  loadingSubDepts: boolean;
-  onField: (lineNumber: number, field: EditableField, value: number) => void;
-  onUnitCost: (lineNumber: number, unit: number) => void;
-  onRevertLine: (lineNumber: number) => void;
-  onDropLine: (lineNumber: number) => void;
-  onLookup: (lineNumber: number, upc: string) => void;
-  onPatch: (lineNumber: number, patch: LinePatch) => void;
-}) => {
+}: RowProps) => {
   const composing = pendingSeq !== undefined;
   const fresh = isAdded(line);
   const edited = isEdited(line);

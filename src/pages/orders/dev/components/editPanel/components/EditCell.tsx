@@ -4,6 +4,15 @@ import { FIELD_LABEL } from "../../../utils/orderEdit";
 // Interfaces
 import type { DraftLine, EditableField } from "../../../interfaces";
 
+interface EditCellProps {
+  field: EditableField;
+  line: DraftLine;
+  tint: string;
+  resetNonce: number;
+  disabled: boolean;
+  onField: (lineNumber: number, field: EditableField, value: number) => void;
+}
+
 /**
  * One typable field.
  *
@@ -11,21 +20,7 @@ import type { DraftLine, EditableField } from "../../../interfaces";
  * untouched — it is what keeps the row from changing height the moment an
  * edit puts a "was" under the number.
  */
-const EditCell = ({
-  field,
-  line,
-  tint,
-  resetNonce,
-  disabled,
-  onField,
-}: {
-  field: EditableField;
-  line: DraftLine;
-  tint: string;
-  resetNonce: number;
-  disabled: boolean;
-  onField: (lineNumber: number, field: EditableField, value: number) => void;
-}) => {
+const EditCell = ({ field, line, tint, resetNonce, disabled, onField }: EditCellProps) => {
   const original = line.original;
   const changed = original !== null && line[field] !== original[field];
   const value = field === "qty" ? String(line.qty) : Number(line[field]).toFixed(2);

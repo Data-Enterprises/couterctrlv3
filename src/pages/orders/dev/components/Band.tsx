@@ -1,16 +1,15 @@
 // Interfaces
 import type { ReactNode } from "react";
 
+interface BandProps {
+  children: ReactNode;
+  onLeaveEdit: () => void;
+}
+
 /** The navy band, with the way back to the read-only grid. */
 /** The navy band with the Browse / Edit switch. Shared with the Problems
  *  tab's item view, so the two read as one screen in two states. */
-const Band = ({
-  children,
-  onLeaveEdit,
-}: {
-  children: ReactNode;
-  onLeaveEdit: () => void;
-}) => (
+const Band = ({ children, onLeaveEdit }: BandProps) => (
   <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0 flex items-center gap-2.5">
     <div className="flex rounded-md bg-custom-white/10 p-0.5 gap-0.5 flex-shrink-0">
       <button

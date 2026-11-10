@@ -2,13 +2,19 @@
 import { useState, useMemo } from "react";
 
 // Utils
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
 import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
 
 // Interfaces
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import type { ModalMode, ExportDataset, MetricSelection } from "./interfaces";
 
 // Components

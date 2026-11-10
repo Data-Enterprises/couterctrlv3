@@ -1,19 +1,15 @@
 
 
-/** A labelled text box in the Orders edit panel for finding a line, with a placeholder hint. */
-const SeekField = ({
-  id,
-  label,
-  value,
-  placeholder,
-  onChange,
-}: {
+interface SeekFieldProps {
   id: string;
   label: string;
   value: string;
   placeholder: string;
   onChange: (value: string) => void;
-}) => (
+}
+
+/** A labelled text box in the Orders edit panel for finding a line, with a placeholder hint. */
+const SeekField = ({ id, label, value, placeholder, onChange }: SeekFieldProps) => (
   <label htmlFor={id} className="flex items-center gap-1.5">
     <span className="text-[10px] font-bold uppercase tracking-wide text-content">
       {label}

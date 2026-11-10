@@ -1,6 +1,13 @@
 // Interfaces
 import type { Figures } from "../interfaces";
 
+interface ChangeProps {
+  now: Figures;
+  after: Figures | null;
+  pick: (f: Figures) => string;
+  unchanged?: boolean;
+}
+
 /**
  * One figure, now and after.
  *
@@ -8,17 +15,7 @@ import type { Figures } from "../interfaces";
  * cost says so, rather than showing the same number twice and leaving the
  * reader to spot that nothing moved.
  */
-const Change = ({
-  now,
-  after,
-  pick,
-  unchanged = false,
-}: {
-  now: Figures;
-  after: Figures | null;
-  pick: (f: Figures) => string;
-  unchanged?: boolean;
-}) => (
+const Change = ({ now, after, pick, unchanged = false }: ChangeProps) => (
   <td className="px-2.5 py-2 text-right tabular-nums text-content whitespace-nowrap">
     {after ? (
       <>

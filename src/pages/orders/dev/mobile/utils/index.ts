@@ -1,9 +1,8 @@
 // Utils
-import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../../utils/csvExport";
 
 // Interfaces
 import type { AllOrder } from "../../../../../interfaces";
-import type { AggFn } from "../../../../../utils/csvExport";
 import type { DimDef, MetricDef } from "../interfaces";
 
 export const fmtDate = (iso: string) => {

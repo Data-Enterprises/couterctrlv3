@@ -1,6 +1,12 @@
 // Interfaces
 import type { VendorOption } from "../../../interfaces";
 
+interface VendorFieldProps {
+  value: string;
+  vendors: VendorOption[];
+  onChange: (vendorId: string) => void;
+}
+
 /**
  * The vendor on an added line.
  *
@@ -9,15 +15,7 @@ import type { VendorOption } from "../../../interfaces";
  * options are the vendors already on this store's orders, because a vendor id
  * the POS does not know is worse than no line at all.
  */
-const VendorField = ({
-  value,
-  vendors,
-  onChange,
-}: {
-  value: string;
-  vendors: VendorOption[];
-  onChange: (vendorId: string) => void;
-}) => (
+const VendorField = ({ value, vendors, onChange }: VendorFieldProps) => (
     <select
       value={value}
       aria-label="Vendor for the added line"

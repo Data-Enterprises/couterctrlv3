@@ -1,8 +1,12 @@
 // Utils
 import { MAX_CHIPS } from "../utils";
 
+interface SubDeptChipsProps {
+  subDepts: string[];
+}
+
 /** An order's sub departments as chips, the rest as +N. */
-const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
+const SubDeptChips = ({ subDepts }: SubDeptChipsProps) => {
   const visible = subDepts.slice(0, MAX_CHIPS);
   const overflow = subDepts.slice(MAX_CHIPS);
   return (

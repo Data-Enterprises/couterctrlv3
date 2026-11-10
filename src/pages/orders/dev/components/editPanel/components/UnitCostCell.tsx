@@ -4,6 +4,14 @@ import { perCase, unitCostOf } from "../../../utils/orderEdit";
 // Interfaces
 import type { DraftLine } from "../../../interfaces";
 
+interface UnitCostCellProps {
+  line: DraftLine;
+  tint: string;
+  resetNonce: number;
+  disabled: boolean;
+  onUnitCost: (lineNumber: number, unit: number) => void;
+}
+
 /**
  * Unit cost — typed here, stored as the case cost it implies.
  *
@@ -14,19 +22,7 @@ import type { DraftLine } from "../../../interfaces";
  * A line with no case size has nothing to divide by, so unit and case are the
  * same number — it is still typable, it just writes the same value through.
  */
-const UnitCostCell = ({
-  line,
-  tint,
-  resetNonce,
-  disabled,
-  onUnitCost,
-}: {
-  line: DraftLine;
-  tint: string;
-  resetNonce: number;
-  disabled: boolean;
-  onUnitCost: (lineNumber: number, unit: number) => void;
-}) => {
+const UnitCostCell = ({ line, tint, resetNonce, disabled, onUnitCost }: UnitCostCellProps) => {
   const original = line.original;
   const changed = original !== null && line.base_cost !== original.base_cost;
   const value = unitCostOf(line).toFixed(2);

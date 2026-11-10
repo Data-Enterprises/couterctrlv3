@@ -333,7 +333,7 @@ export const blankLine = (draft: OrderDraft): DraftLine | null => {
     // Left unset rather than inherited from the sibling: a different item is
     // not in the same sub department because it is on the same order, and
     // `items/itemlookup` does not return one. The column is nullable; the
-    // import and the POS classify the line.
+    // line is classified later by the import and the POS.
     sub_department: 0,
     sub_department_description: "",
     category: 0,

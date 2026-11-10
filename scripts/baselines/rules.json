@@ -1601,54 +1601,6 @@
   "src/pages/orders/Orders.tsx": {
     "labels": 1
   },
-  "src/pages/orders/dev/components/Band.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/Change.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/PickerField.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/Row.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/EditCell.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/Head.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/Row.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/SeekField.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/UnitCostCell.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/UpcField.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/components/editPanel/components/VendorField.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/export/components/Field.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/mobile/OrdersExportSheet.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/orders/dev/mobile/components/SubDeptChips.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/orders/dev/mobile/utils/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/orders/dev/utils/orderEdit.ts": {
-    "commented-code": 1
-  },
   "src/pages/organization/Organization.tsx": {
     "labels": 1
   },
