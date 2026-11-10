@@ -1,25 +1,44 @@
+// Hooks
 import React, { useRef, useState } from "react";
-import CapsLockHint from "./CapsLockHint";
-import { SIGN_IN_COPY } from "./portalContent";
 
-interface Props {
+// Utils
+import { SIGN_IN_COPY } from "../portal/portalContent";
+
+// Components
+import CapsLockHint from "./CapsLockHint";
+
+interface PasswordFieldProps {
   value: string;
   onChange: (v: string) => void;
   disabled?: boolean;
   /** Marks the field when submit found it empty. */
   invalid?: boolean;
+  /** The defaults are the sign-in rail's; the reset steps pass their own. */
+  id?: string;
+  label?: string;
+  autoComplete?: string;
+  enterKeyHint?: "go" | "next" | "done";
+  autoFocus?: boolean;
+  placeholder?: string;
 }
 
 /** Password input with the SHOW/HIDE peek toggle and Caps Lock warning.
  *
- *  No onKeyDown submit handler any more — the rail is a real <form>, so Enter
- *  submits natively. That also means password managers reliably offer to save
- *  the credentials, which they did not when submission hung off a click
- *  handler.
- *
+ *  Enter submits the surrounding <form>, so password managers offer to save.
  *  The toggle is <button type="button"> so it never submits, and reports state
  *  through aria-pressed rather than only its visible label. */
-const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
+const PasswordField = ({
+  value,
+  onChange,
+  disabled,
+  invalid,
+  id = "password",
+  label = SIGN_IN_COPY.passwordLabel,
+  autoComplete = "current-password",
+  enterKeyHint = "go",
+  autoFocus,
+  placeholder,
+}: PasswordFieldProps) => {
   const [shown, setShown] = useState(false);
   const [caps, setCaps] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,10 +49,9 @@ const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
     setCaps(native.getModifierState("CapsLock"));
   };
 
+  // Peek, then put the caret back at the end rather than dropping focus.
   const toggle = () => {
     setShown((s) => !s);
-    // Put the caret back at the end rather than dropping focus, matching the
-    // handoff's peek handler.
     const el = inputRef.current;
     if (!el) return;
     requestAnimationFrame(() => {
@@ -48,18 +66,20 @@ const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
 
   return (
     <div className="mb-[15px]">
-      <label htmlFor="password" className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy">
-        {SIGN_IN_COPY.passwordLabel}
+      <label htmlFor={id} className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy">
+        {label}
       </label>
       <div className="relative">
         <input
           ref={inputRef}
-          data-testid="password"
-          id="password"
-          name="password"
+          data-testid={id}
+          id={id}
+          name={id}
           type={shown ? "text" : "password"}
-          autoComplete="current-password"
-          enterKeyHint="go"
+          autoComplete={autoComplete}
+          enterKeyHint={enterKeyHint}
+          autoFocus={autoFocus}
+          placeholder={placeholder}
           required
           value={value}
           disabled={disabled}

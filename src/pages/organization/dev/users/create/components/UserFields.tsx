@@ -15,7 +15,8 @@ import { checkEmail, checkUsername } from "../../../../../../api/team";
 
 // Utils
 import { roles } from "../../utils/roles";
-import { NOT_AVAILABLE, passwordOk, passwordRules } from "../utils/wizardRules";
+import { passwordOk, passwordRules } from "../../../../../../utils/passwordRules";
+import { NOT_AVAILABLE } from "../utils/wizardRules";
 import { nextUp } from "../utils";
 
 // Interfaces

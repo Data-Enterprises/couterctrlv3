@@ -6,8 +6,6 @@ import {
   duplicateCompanies,
   editBlockReason,
   needsSingleStoreTrim,
-  passwordOk,
-  passwordRules,
   reachableLimit,
   readiness,
   singleStoreNote,
@@ -163,18 +161,5 @@ describe("Save changes before what they hold has loaded", () => {
 
   it("stays off after a failed read", () => {
     expect(editBlockReason({ ...dirty, held: "failed" })).toMatch(/didn't load/);
-  });
-});
-
-describe("the password rules", () => {
-  it("are enforced, not just listed", () => {
-    expect(passwordOk("a")).toBe(false);
-    expect(passwordOk("alllowercase123!")).toBe(false);
-    expect(passwordOk("Short1!")).toBe(false);
-    expect(passwordOk("Long-enough-Pass1")).toBe(true);
-  });
-
-  it("say which are met, for the list beside the field", () => {
-    expect(passwordRules("abcdefghijkl").map((r) => r.met)).toEqual([true, false, false, false]);
   });
 });

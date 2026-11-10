@@ -134,18 +134,5 @@ export const singleStoreNote = (
   return `Single Store keeps only ${kept.store_number} · ${kept.store_name}; the other ${dropped} store${dropped === 1 ? "" : "s"} ${dropped === 1 ? "is" : "are"} unpicked. ${back}`;
 };
 
-/**
- * The password rules User info lists, used for both the form and the check.
- * The backend's create_user doesn't enforce them.
- */
-export const passwordRules = (pw: string) => [
-  { met: pw.length >= 12, label: "At least 12 characters" },
-  { met: /[a-z]/.test(pw) && /[A-Z]/.test(pw), label: "Upper and lower case" },
-  { met: /[0-9]/.test(pw), label: "At least one number" },
-  { met: /[^A-Za-z0-9]/.test(pw), label: "At least one symbol" },
-];
-
-export const passwordOk = (pw: string) => passwordRules(pw).every((r) => r.met);
-
 /** The availability check's own words, as the slice holds them. */
 export const NOT_AVAILABLE = "- Not available";
