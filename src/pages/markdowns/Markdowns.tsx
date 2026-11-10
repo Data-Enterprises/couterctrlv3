@@ -6,6 +6,8 @@ import { DEV_API_URL } from "../../hooks/useDevApi";
 import DevOnlyNotice from "../../components/DevOnlyNotice";
 import DevMarkdowns from "./dev/Markdowns";
 
+/** The Markdowns route: the dev page on the dev API, and the dev-only notice
+ *  anywhere else (it is a Coming Soon page with no prod tree). */
 const Markdowns = () => {
   const { apiEnv, url } = useAppSelector((state) => state.app);
 
