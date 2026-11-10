@@ -43,6 +43,7 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     key: "id",
     label: "ID",
     align: "right",
+    grid: false,
     show: (r) => String(r.id),
     csv: (r) => r.id,
   },
@@ -213,8 +214,8 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
   },
 ];
 
-/** The columns the grid draws: all but the sub department and category numbers
- *  and the vendor id. */
+/** The columns the grid draws: all but the table's own row id, the sub
+ *  department and category numbers and the vendor id. */
 export const GRID_COLUMNS = MARKDOWN_COLUMNS.filter((c) => c.grid !== false);
 
 /**

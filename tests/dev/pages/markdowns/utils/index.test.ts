@@ -79,10 +79,10 @@ describe("the columns", () => {
     expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storenumber");
   });
 
-  it("put the sub department and category numbers and the vendor id in the export only", () => {
+  it("put the row id, the sub department and category numbers and the vendor id in the export only", () => {
     const grid = GRID_COLUMNS.map((c) => c.label);
     expect(grid).toEqual([
-      "Date", "ID", "Markdown #", "Type", "Store", "UPC", "Description",
+      "Date", "Markdown #", "Type", "Store", "UPC", "Description",
       "Orig Price", "New Price", "Markdown", "MD %", "Qty", "Weight", "Retail",
       "Case Size", "Case Cost", "Sub Dept", "Category", "Vendor", "User",
       "Scalable", "Updated",
