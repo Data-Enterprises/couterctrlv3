@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect, useMemo, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { useCashierSignals } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCashierSignals, useCashiersState } from "../hooks";
 
 // Redux
 import { setExplorerReceipt } from "../../../../features/dev/devCashiersSlice";
@@ -41,7 +41,7 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
     explorerFetchedException,
     explorerAllRows,
     explorerReceiptSaleId: openSaleId,
-  } = useAppSelector((s) => s.dev.cashier);
+  } = useCashiersState();
   const dispatch = useAppDispatch();
   const { signals, transactionLengths } = useCashierSignals();
   // A receipt left open shouldn't greet you as a sheet the next time you

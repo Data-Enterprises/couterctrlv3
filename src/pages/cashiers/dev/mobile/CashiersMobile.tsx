@@ -1,7 +1,7 @@
 // Hooks
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { useCashierSignals } from "../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCashierSignals, useCashiersState } from "../hooks";
 import { useCashierExplorer } from "./hooks";
 
 // Redux
@@ -43,7 +43,7 @@ const CashiersMobile = () => {
     explorerMobileScreen,
     explorerMobileSearchOpen,
     explorerSignalKey,
-  } = useAppSelector((s) => s.dev.cashier);
+  } = useCashiersState();
   const { runPreflight, runExplore, scopeArgs } = useCashierExplorer();
   const { signals } = useCashierSignals();
 

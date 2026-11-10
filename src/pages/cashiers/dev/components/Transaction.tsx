@@ -1,6 +1,6 @@
 // Hooks
-import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useCashierCtx } from "../hooks";
 
 // API
 import { emailTransaction } from "../../../../api/lossPrevention";
@@ -23,8 +23,7 @@ interface TransactionProps {
 /** One transaction's receipt: its date and time, every line, and the sales, tax, void or refund and total figures. */
 const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
-  const context = useAppSelector((s) => s.app);
-  const { selectedSaleType } = useAppSelector((s) => s.dev.cashier);
+  const { url, token, selectedSaleType } = useCashierCtx();
 
   const first = trans[0];
   const saleId = first.sale_id.split("-")[1];
@@ -157,7 +156,7 @@ const Transaction = ({ trans }: TransactionProps) => {
   };
 
   const handleEmail = () => {
-    emailTransaction(context.url, context.token, first.sale_id)
+    emailTransaction(url, token, first.sale_id)
       .then((resp) => {
         if (resp.data.error === 0)
           toast.success("Transaction emailed successfully");

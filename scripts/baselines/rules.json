@@ -620,18 +620,6 @@
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
-  "src/pages/cashiers/dev/components/Transaction.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/cashiers/dev/mobile/CashiersMobile.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/cashiers/dev/mobile/SignalTransactionsMobile.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/categories/Categories.tsx": {
     "labels": 1
   },

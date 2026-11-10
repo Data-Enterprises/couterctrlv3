@@ -1,8 +1,8 @@
 // Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
-import { useCashierSignals } from "../hooks";
+import { useCashierSignals, useCashiersState } from "../hooks";
 
 // Redux
 import {
@@ -53,7 +53,7 @@ const SignalListMobile = ({
     explorerFetchedException,
     explorerLoading,
     explorerTruncated,
-  } = useAppSelector((s) => s.dev.cashier);
+  } = useCashiersState();
   const { signals, totals } = useCashierSignals();
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   /** The "?" help sheet's state stays here: nothing above this screen needs it. */
