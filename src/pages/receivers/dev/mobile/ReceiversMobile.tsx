@@ -6,8 +6,7 @@ import {
   useAppSelector,
   useStoreName,
 } from "../../../../hooks";
-import { useReceiversState } from "../hooks/useReceiversState";
-import { useReceiversActions } from "../hooks/useReceiversActions";
+import { useReceiversActions, useReceiversState } from "../hooks";
 
 // API
 import { getReceiversList } from "../../../../api/receivers";

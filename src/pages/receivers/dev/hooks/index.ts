@@ -1,5 +1,11 @@
+// Hooks
+import { useAppSelector } from "../../../../hooks";
+
 // Redux
 import * as receiversActions from "../../../../features/dev/devReceiversSlice";
+
+export const useReceiversState = () =>
+  useAppSelector((state) => state.dev.receivers);
 
 /**
  * Receivers' action creators.
