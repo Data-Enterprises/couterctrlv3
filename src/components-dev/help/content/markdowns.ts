@@ -26,7 +26,7 @@ export const MARKDOWNS_HELP: HelpContent = {
           pre: "Press",
           chip: "Load markdowns",
           post: ". A long range reads in pages, and the card says which page it is waiting on.",
-          see: "The filters on the left and every markdown line on the right, with how many are shown and how many were loaded.",
+          see: "The filters on the left and every markdown line on the right, with how many lines the filters keep at the foot of the filters.",
           anchor: "lines",
         },
         {
@@ -90,11 +90,6 @@ export const MARKDOWNS_HELP: HelpContent = {
     {
       term: "Type",
       def: "How the markdown was keyed: a new price, a percentage off, or waste.",
-      anchor: "lines",
-    },
-    {
-      term: "Shown and Loaded",
-      def: "Loaded is every line the search returned; Shown is what the filters keep.",
       anchor: "lines",
     },
     {

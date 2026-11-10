@@ -41,7 +41,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
       style={{ flex: 1, minWidth: 0 }}
     >
-      <GridNavyHeader shown={visible.length} onExport={onExport} />
+      <GridNavyHeader onExport={onExport} />
       <GridKpiStrip rows={visible} />
 
       <div className="flex-1 overflow-auto thin-scrollbar">

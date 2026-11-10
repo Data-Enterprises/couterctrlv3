@@ -5,14 +5,12 @@ import { useMarkdownsCtx } from "../../hooks";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 
 interface GridNavyHeaderProps {
-  /** Rows the filters keep. */
-  shown: number;
   onExport: () => void;
 }
 
 /** The grid's navy header, as Receivers' detail panel has it: the page and
- *  its scope, then export and the row counts. */
-const GridNavyHeader = ({ shown, onExport }: GridNavyHeaderProps) => {
+ *  its scope, then export. */
+const GridNavyHeader = ({ onExport }: GridNavyHeaderProps) => {
   const ctx = useMarkdownsCtx();
   return (
     <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between bg-brand_navy">
@@ -31,24 +29,6 @@ const GridNavyHeader = ({ shown, onExport }: GridNavyHeaderProps) => {
         >
           <ArrowDownTrayIcon className="w-4 h-4" />
         </button>
-        <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
-        <div className="flex items-baseline gap-1 flex-shrink-0">
-          <span className="text-[10px] uppercase tracking-wide text-custom-white">
-            Shown
-          </span>
-          <span className="text-[13px] font-medium text-custom-white">
-            {shown.toLocaleString()}
-          </span>
-        </div>
-        <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
-        <div className="flex items-baseline gap-1 flex-shrink-0">
-          <span className="text-[10px] uppercase tracking-wide text-custom-white">
-            Loaded
-          </span>
-          <span className="text-[13px] font-medium text-custom-white">
-            {ctx.markdowns.length.toLocaleString()}
-          </span>
-        </div>
       </div>
     </div>
   );
