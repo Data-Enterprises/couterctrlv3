@@ -15,7 +15,7 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { cmpShort, cmpWord, pct, sorts } from "../utils";
+import { pct, sorts } from "../utils";
 
 // Interfaces
 import type { MarginRow } from "../utils/itemPerfData";
@@ -27,9 +27,9 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import MobileSortChips from "../../mobile/MobileSortChips";
-import PairedBars from "../../mobile/perf/PairedBars";
 import ScannerView from "../../scanner/ScannerView";
 import { TY_COLOR } from "../../mobile/perf/perfColors";
+import RowBars from "./RowBars";
 
 interface MarginRowListProps {
   onRow: (r: MarginRow) => void;
@@ -45,7 +45,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
   const dispatch = useAppDispatch();
   const perf = useAppSelector((s) => s.dev.itemPerf);
   const {
-    basis,
+    sizeLabel,
     activeSort,
     activeSortDir,
     onSort,
@@ -54,8 +54,6 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
     building,
     shown,
     query,
-    listMax,
-    listNoLy,
     visibleRows,
   } = useItemPerfCtx();
   // A scan gun trigger pull does what a camera read does: the code becomes
@@ -126,17 +124,17 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
         </div>
       )}
       <MobileSortChips
-        options={sorts(basis)}
+        options={sorts(sizeLabel)}
         value={activeSort?.key ?? null}
         dir={activeSortDir}
         onChange={onSort}
       />
       <p className="border-b border-brand_line px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/95">
-        Bars: sales, TY vs {cmpShort(basis)}
+        Bars: {sizeLabel.toLowerCase()}, TY vs LY and LW
       </p>
       {listPartial && (
         <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-          {cmpWord(basis)}: {weekMatch.lyDays} of {weekMatch.days} days matched
+          Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
         </p>
       )}
       {building ? (
@@ -192,13 +190,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
                 {r.sub}
               </div>
               <div className="mt-2">
-                <PairedBars
-                  ty={r.sales}
-                  ly={r.salesLy}
-                  max={listMax}
-                  labels={["TY", cmpShort(basis)]}
-                  lyUnavailable={listNoLy}
-                />
+                <RowBars r={r} />
               </div>
             </button>
           ))}

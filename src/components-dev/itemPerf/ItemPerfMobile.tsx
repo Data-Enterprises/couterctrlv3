@@ -39,8 +39,13 @@ interface ItemPerfMobileProps {
  *
  * Margin leads throughout: the hero is GPM and each row shows its own
  * percentage. Every bar on the screen — card, day chart and rows — carries
- * sales, so no two bars mean different things; profit dollars are printed
- * beside them. Percent answers how healthy, bars answer how much.
+ * sales, or units when the switch in the store's card says so, so no two bars
+ * mean different things; profit dollars are printed beside them. Percent
+ * answers how healthy, bars answer how much.
+ *
+ * The bars are TY, LY and LW. The TY bar's colour and every change figure
+ * read against last year, and against last week only where last year has
+ * nothing on file — the rule mobile Sales uses.
  */
 const ItemPerfMobile = ({ dimension, title, listLabel }: ItemPerfMobileProps) => {
   const perf = useAppSelector((s) => s.dev.itemPerf);

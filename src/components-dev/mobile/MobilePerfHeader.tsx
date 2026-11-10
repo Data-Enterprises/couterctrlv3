@@ -3,12 +3,8 @@ import type { ReactNode } from "react";
 import type { HelpPage } from "../../constants/helpPages";
 
 // Components
-import {
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-} from "@heroicons/react/20/solid";
+import BackButton from "../BackButton";
 import PageInfoButton from "../PageInfoButton";
-import HeaderIconButton from "../HeaderIconButton";
 
 interface MobilePerfHeaderProps {
   /** e.g. "Vendors" — the left of row two. */
@@ -88,16 +84,11 @@ const MobilePerfHeader = ({
           controls, threshold and "?" */}
       <div className="flex items-center justify-between gap-2 mt-2">
         <div className="flex items-center gap-2 min-w-0">
-          {onBack && (
-            <HeaderIconButton onClick={onBack} title="Back">
-              <ChevronLeftIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          )}
-          {onSearch && (
-            <HeaderIconButton onClick={onSearch} title="New search">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          )}
+          {/* One or the other: a list's step back up the drill, or the way
+              back to the search from the top of it. They look the same
+              because to the reader they are the same thing. */}
+          {onBack && <BackButton onClick={onBack} title="Back" />}
+          {onSearch && <BackButton onClick={onSearch} />}
           <span className="text-[12px] font-semibold text-custom-white truncate">
             {pageName}
           </span>

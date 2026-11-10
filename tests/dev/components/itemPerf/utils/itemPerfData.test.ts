@@ -4,12 +4,24 @@ import {
   buildDailyRows,
   buildGroupRows,
   buildItemRows,
+  buildMarginDays,
   buildMarginTotals,
+  changeVsLw,
+  changeVsLy,
   findItem,
+  gradedChange,
   matchWeek,
   priceRows,
   sortMarginRows,
+  type MarginRow,
 } from "@/components-dev/itemPerf/utils/itemPerfData";
+import { asLastYearSlots } from "@/utils/perfPairs";
+import {
+  DEPT_RING_KEY,
+  DEPT_RING_LABEL,
+  DEPT_RING_NOTE,
+  foldDepartmentRings,
+} from "@/utils/departmentRings";
 
 const S = { storeid: 685, store_number: "369", store_name: "Arab" };
 
@@ -368,9 +380,29 @@ describe("whole-week day matching around a moving holiday", () => {
   });
 });
 
+/** A list row with only the figures a test names; the rest read zero. */
+const marginRow = (o: Partial<MarginRow> & { key: string }): MarginRow => ({
+  label: o.key,
+  sub: "",
+  sales: 0,
+  salesForLy: 0,
+  salesLy: 0,
+  salesForLw: 0,
+  salesLw: 0,
+  units: 0,
+  unitsForLy: 0,
+  unitsLy: 0,
+  unitsForLw: 0,
+  unitsLw: 0,
+  profit: 0,
+  profitLy: 0,
+  gpm: null,
+  ...o,
+});
+
 describe("sortMarginRows", () => {
   const row = (key: string, label: string, profit: number, sales: number, salesLy: number, gpm: number | null) =>
-    ({ key, label, sub: "", sales, salesForLy: sales, salesLy, profit, profitLy: 0, gpm });
+    marginRow({ key, label, sales, salesForLy: sales, salesLy, profit, gpm });
   const rows = [
     row("a", "Bakery", 50, 400, 800, 12.5), // sales -50%
     row("b", "Produce", 200, 300, 225, 40), // sales +33%
@@ -387,5 +419,140 @@ describe("sortMarginRows", () => {
   it("gpm lowest first and change biggest drop first, unknowns last", () => {
     expect(keys(sortMarginRows(rows, "gpm"))).toEqual(["a", "b", "c"]);
     expect(keys(sortMarginRows(rows, "change"))).toEqual(["a", "b", "c"]);
+  });
+});
+
+/** Last week as the page stores it: re-dated into last year's slots, then
+ *  priced, so `_day` matches what the builders look up. */
+const lwItem = (date: string, opts: Partial<ItemRow> & { sales: number }) =>
+  priceRows(asLastYearSlots([item(date, opts)]))[0];
+
+describe("last week beside last year", () => {
+  // TY Mon 8/24 and Tue 8/25. Last week has only Mon 8/17, which lands in the
+  // slot last year's Mon 8/25/2025 would fill.
+  const ty = [
+    item(TY_MON, { sales: 100, qty: 4 }),
+    item(TY_TUE, { sales: 50, qty: 2 }),
+  ];
+  const lw = [lwItem("2026-08-17", { sales: 80, qty: 5 })];
+  const matchLw = matchWeek(ty, lw);
+
+  it("sums last week over its matched days, apart from last year", () => {
+    const t = buildMarginTotals(ty, [], "subdept", null, null, null, matchWeek(ty, []), lw, matchLw);
+    expect(t).toMatchObject({
+      sales: 150,
+      salesLy: 0,
+      salesLw: 80,
+      // This year only over the day last week has.
+      salesForLw: 100,
+      units: 6,
+      unitsLw: 5,
+      unitsForLw: 4,
+    });
+  });
+
+  it("group and item rows carry last week too", () => {
+    const [g] = buildGroupRows(ty, [], "subdept", null, undefined, lw, matchLw);
+    expect(g).toMatchObject({ sales: 150, salesLw: 80, salesForLw: 100 });
+    const [i] = buildItemRows(ty, [], "subdept", null, null, "", undefined, lw, matchLw);
+    expect(i).toMatchObject({ salesLw: 80, unitsLw: 5 });
+  });
+
+  it("a selected day reads last week's same weekday", () => {
+    const t = buildMarginTotals(ty, [], "subdept", TY_MON, null, null, undefined, lw, matchLw);
+    expect(t.salesLw).toBe(80);
+    expect(
+      buildMarginTotals(ty, [], "subdept", TY_TUE, null, null, undefined, lw, matchLw).salesLw,
+    ).toBe(0);
+  });
+});
+
+describe("gradedChange", () => {
+  it("reads against last year when it has anything", () => {
+    const r = marginRow({ key: "a", salesForLy: 120, salesLy: 100, salesForLw: 50, salesLw: 100 });
+    expect(gradedChange(r)).toBeCloseTo(20);
+    expect(changeVsLw(r)).toBeCloseTo(-50);
+  });
+
+  it("falls back to last week only where last year has nothing", () => {
+    const r = marginRow({ key: "a", salesForLy: 120, salesLy: 0, salesForLw: 90, salesLw: 60 });
+    expect(changeVsLy(r)).toBeNull();
+    expect(gradedChange(r)).toBeCloseTo(50);
+  });
+
+  it("is null with neither", () => {
+    expect(gradedChange(marginRow({ key: "a", sales: 10, salesForLy: 10 }))).toBeNull();
+  });
+});
+
+describe("the units measure", () => {
+  const rows = [
+    // Bigger in dollars, smaller in units.
+    marginRow({ key: "a", sales: 900, units: 10, unitsForLy: 10, unitsLy: 20, unitsForLw: 10, unitsLw: 5 }),
+    marginRow({ key: "b", sales: 100, units: 50, unitsForLy: 50, unitsLy: 25, unitsForLw: 50, unitsLw: 100 }),
+  ];
+  const keys = (r: { key: string }[]) => r.map((x) => x.key);
+
+  it("orders the size sort by units", () => {
+    expect(keys(sortMarginRows(rows, "sales"))).toEqual(["a", "b"]);
+    expect(keys(sortMarginRows(rows, "sales", false, "units"))).toEqual(["b", "a"]);
+  });
+
+  it("changes are worked in units", () => {
+    expect(changeVsLy(rows[0], "units")).toBeCloseTo(-50);
+    expect(changeVsLw(rows[1], "units")).toBeCloseTo(-50);
+    expect(gradedChange(rows[1], "units")).toBeCloseTo(100);
+  });
+
+  it("sorts by change vs LW, biggest drop first", () => {
+    expect(keys(sortMarginRows(rows, "changeLw", false, "units"))).toEqual(["b", "a"]);
+  });
+
+  it("the day chart draws units", () => {
+    const ty = [item(TY_MON, { sales: 100, qty: 3 })];
+    const ly = [item("2025-08-25", { sales: 90, qty: 7 })];
+    const [mon] = buildMarginDays(ty, ly, "subdept", null, null, [TY_MON], "units");
+    expect(mon).toMatchObject({ ty: 3, ly: 7 });
+    const [monSales] = buildMarginDays(ty, ly, "subdept", null, null, [TY_MON]);
+    expect(monSales).toMatchObject({ ty: 100, ly: 90 });
+  });
+});
+
+describe("sales rung on the department key", () => {
+  // The catch-all rows: a 0, a blank, and the Refunded twin, each named after
+  // the department.
+  const rows = priceRows(
+    foldDepartmentRings([
+      item(TY_MON, { sales: 40, product_code: 0 as unknown as string, product_description: "Grocery" }),
+      item(TY_MON, { sales: 25, product_code: "", product_description: "Grocery" }),
+      item(TY_TUE, { sales: -5, product_code: "0", product_description: "Refunded" }),
+      item(TY_MON, { sales: 10 }),
+    ]),
+  );
+
+  it("fold into one labelled row, refunds netted", () => {
+    const out = buildItemRows(rows, [], "subdept", null, null, "");
+    expect(out).toHaveLength(2);
+    const dept = out.find((r) => r.key === DEPT_RING_KEY);
+    expect(dept).toMatchObject({
+      label: DEPT_RING_LABEL,
+      sub: DEPT_RING_NOTE,
+      sales: 60,
+    });
+  });
+
+  it("stay inside their sub department, so the list adds up to it", () => {
+    const [group] = buildGroupRows(rows, [], "subdept", null);
+    const items = buildItemRows(rows, [], "subdept", null, group.key, "");
+    expect(items.reduce((a, r) => a + r.sales, 0)).toBe(group.sales);
+  });
+
+  it("on Vendors, sit under the vendor they were rung against", () => {
+    const vendorless = priceRows(
+      foldDepartmentRings([item(TY_MON, { sales: 40, product_code: "0", vendor_id: "0", vendor_name: "" })]),
+    );
+    const [group] = buildGroupRows(vendorless, [], "vendor", null);
+    expect(group.label).toBe("No Vendor");
+    expect(buildItemRows(vendorless, [], "vendor", null, group.key, "")[0].key).toBe(DEPT_RING_KEY);
   });
 });

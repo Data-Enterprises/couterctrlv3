@@ -5,9 +5,9 @@ import { fmtRangeDate } from "../utils";
 import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
 
 // Components
+import BackButton from "../../../../../components-dev/BackButton";
 import {
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
@@ -74,13 +74,7 @@ const LookupQueuePanel = ({
           </div>
         </div>
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button data-help="search"
-            onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            aria-label="New search"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
           <span className="text-[11px] font-medium text-custom-white truncate">
             {storeName}
           </span>

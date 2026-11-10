@@ -1,8 +1,5 @@
-// Utils
-import { cmpShort } from "./perfData";
-
 // Interfaces
-import type { CmpBasis, PairSort, PerfPair } from "./perfData";
+import type { PairSort, PerfPair } from "./perfData";
 import type {
   DetailTab,
   SortOption,
@@ -15,36 +12,47 @@ import type {
  *  alphabetical order answers a question nobody brought to a Performance
  *  page; `PairSort` keeps the "name" case because the store list still sorts
  *  by store number, which is an identifier rather than a name. */
-export const subSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
+/** Both comparisons can order a list, since both are drawn on every row. */
+export const changeSorts: SortOption<PairSort>[] = [
+  { key: "change", label: "Change vs LY" },
+  { key: "changeLw", label: "Change vs LW" },
 ];
 
-/** The hourly list's sort chips, the change chip naming the basis. */
-export const hourSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
+/** The sub department list's sort chips; the size sort is named for what is
+ *  measured ("Sales" or "Units"). */
+export const subSorts = (size: string): SortOption<PairSort>[] => [
+  { key: "sales", label: size },
+  ...changeSorts,
+];
+
+/** The hourly list's sort chips. */
+export const hourSorts = (size: string): SortOption<PairSort>[] => [
   { key: "time", label: "Time" },
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
+  { key: "sales", label: size },
+  ...changeSorts,
 ];
 
-/** The item list's sort chips, the change chip naming the basis. */
-export const itemSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-];
+/** The item list's sort chips: the same as a sub department's. */
+export const itemSorts = subSorts;
 
 /** The scale every row in one drill shares. 1 floors it so an all-zero list
  *  divides by something. */
 export const scaleOf = (pairs: PerfPair[]) =>
-  Math.max(...pairs.map((p) => Math.max(p.ty, p.noLy ? 0 : p.ly)), 1);
+  Math.max(
+    ...pairs.map((p) =>
+      Math.max(p.ty, p.noLy ? 0 : p.ly, p.noLw ? 0 : (p.lw ?? 0)),
+    ),
+    1,
+  );
 
 /** Darkest to lightest, so the stack and the legend agree. */
 export const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
 
-/** The store list's sort chips, the change chip naming the basis. */
-export const storeSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
+/** The store list's sort chips. Both comparisons can order the list, since
+ *  both are drawn on every card. */
+export const storeSorts = (size: string): SortOption<PairSort>[] => [
+  { key: "sales", label: size },
+  ...changeSorts,
   { key: "name", label: "Store #" },
 ];
 

@@ -20,7 +20,8 @@ import { padStoreNumber } from "../../../../utils/storeIdentity";
 import type { AllOrder } from "../../../../interfaces";
 
 // Components
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import BackButton from "../../../../components-dev/BackButton";
+import { ArrowPathIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
@@ -220,14 +221,7 @@ const OrdersConfigPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             Configuration
           </span>
-          <button
-            data-help="search"
-            onClick={onOpenSearch}
-            title="New search"
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
         </div>
         <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
           <span className="text-custom-white/95 text-[12px] truncate">

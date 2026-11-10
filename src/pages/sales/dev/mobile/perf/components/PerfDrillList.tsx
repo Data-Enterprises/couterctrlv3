@@ -1,13 +1,12 @@
 // Utils
 import {
-  cmpWord,
   fmtChange,
-  pairChangePct,
-  type CmpBasis,
+  gradedChangePct,
   type PerfPair,
   type PairSort,
 } from "../utils/perfData";
 import { hourSorts, itemSorts, scaleOf, subSorts } from "../utils";
+import { DEPT_RING_KEY } from "../../../utils/ledgerUtils";
 
 // Interfaces
 import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
@@ -33,8 +32,6 @@ interface PerfDrillListProps {
   onSort: (s: PairSort) => void;
   listPartial: boolean;
   listNote: string;
-  /** Which period the sub-department and hour rows are drawn against. */
-  basis: CmpBasis;
   shownDay: string | null;
   /** The store's bundle is still in flight. */
   loading: boolean;
@@ -45,6 +42,10 @@ interface PerfDrillListProps {
   openSubDept: { id: number; label: string } | null;
   onOpenSubDept: (v: { id: number; label: string } | null) => void;
   items: ItemProps;
+  /** How figures read, and what the size sort is called: "Sales" or
+   *  "Units", per the switch at the top of the screen. */
+  fmt: (n: number) => string;
+  sizeLabel: string;
 }
 
 /**
@@ -67,7 +68,6 @@ const PerfDrillList = ({
   onSort,
   listPartial,
   listNote,
-  basis,
   shownDay,
   loading,
   storeName,
@@ -75,6 +75,8 @@ const PerfDrillList = ({
   openSubDept,
   onOpenSubDept,
   items,
+  fmt,
+  sizeLabel,
 }: PerfDrillListProps) => {
   // A department opens its items; an hour has nothing below it. The group
   // card can't open either — `subs/subs` answers for a store id.
@@ -152,7 +154,7 @@ const PerfDrillList = ({
         </div>
 
         <MobileSortChips
-          options={itemSorts(items.basis)}
+          options={itemSorts(sizeLabel)}
           value={items.sort}
           dir={items.sortDir}
           onChange={items.onSort}
@@ -166,7 +168,7 @@ const PerfDrillList = ({
 
         {!shownDay && items.partial && (
           <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-            {cmpWord(items.basis)}: {items.note}
+            Last year: {items.note}
           </p>
         )}
 
@@ -189,7 +191,10 @@ const PerfDrillList = ({
           // row — see `scaleOf`.
           ((itemMax) =>
           items.pairs.map((p) => {
-            const change = pairChangePct(p);
+            // The department's own sales, folded into one row
+            // (`foldDepartmentRings`). It has no UPC, so the line where one
+            // would sit says what it is instead.
+            const deptRing = p.key === DEPT_RING_KEY;
             return (
               <div
                 key={p.key}
@@ -200,13 +205,13 @@ const PerfDrillList = ({
                     {p.label}
                   </span>
                   <span className="flex-none text-[12px] font-semibold text-content/95">
-                    <PerfChange pct={change} format={fmtChange} />
+                    <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
                   </span>
                 </div>
                 <div className="font-mono text-[10px] tracking-wider text-content/95">
-                  {p.key}
+                  {deptRing ? "No item scanned: rung on the department key" : p.key}
                 </div>
-                <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={itemMax} basis={items.basis} />
+                <Bars p={p} max={itemMax} fmt={fmt} />
               </div>
             );
           }))(scaleOf(items.pairs))
@@ -218,7 +223,7 @@ const PerfDrillList = ({
   return (
     <div>
       <MobileSortChips
-        options={opensItems ? subSorts(basis) : hourSorts(basis)}
+        options={opensItems ? subSorts(sizeLabel) : hourSorts(sizeLabel)}
         value={sort}
         dir={sortDir}
         onChange={onSort}
@@ -236,7 +241,7 @@ const PerfDrillList = ({
 
       {listPartial && (
         <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-          {cmpWord(basis)}: {listNote}
+          Last year: {listNote}
         </p>
       )}
 
@@ -247,7 +252,6 @@ const PerfDrillList = ({
       ) : (
         ((listMax) =>
         pairs.map((p) => {
-          const change = pairChangePct(p);
           const Row = opensItems ? "button" : "div";
           return (
             <Row
@@ -271,13 +275,13 @@ const PerfDrillList = ({
                     read off the rows. Neutral: no grading on mobile. A dash
                     when last year sold nothing. */}
                 <span className="flex-none text-[12px] font-semibold text-content/95">
-                  <PerfChange pct={change} format={fmtChange} />
+                  <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
                 </span>
                 {opensItems && (
                   <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
                 )}
               </div>
-              <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={listMax} basis={basis} />
+              <Bars p={p} max={listMax} fmt={fmt} />
             </Row>
           );
         }))(scaleOf(pairs))

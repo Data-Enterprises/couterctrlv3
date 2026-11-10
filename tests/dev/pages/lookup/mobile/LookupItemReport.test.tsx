@@ -135,7 +135,7 @@ describe("LookupItemReport", () => {
       within(headline).getByRole("button", { name: "What this page shows" }),
     ).toBeInTheDocument();
     expect(
-      within(headline).getByRole("button", { name: "New search" }),
+      within(headline).getByRole("button", { name: "Back to the search" }),
     ).toBeInTheDocument();
   });
 

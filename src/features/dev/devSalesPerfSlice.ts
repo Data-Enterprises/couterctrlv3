@@ -59,6 +59,10 @@ export interface PerfBundle {
   subsLy: SubSale[];
   hourlyTy: HourlySale[];
   hourlyLy: HourlySale[];
+  /** Last week, re-dated into last year's slots (`asLastYearSlots`), shown
+   *  beside last year. Optional for the same reason as `basis`. */
+  subsLw?: SubSale[];
+  hourlyLw?: HourlySale[];
   /** Which period `subsLy`/`hourlyLy` actually came from. A bundle is always
    *  one scope, so one answer covers it.
    *
@@ -75,7 +79,12 @@ export interface PerfItems {
   /** Resolved: last year, or last week re-dated into its slots. */
   ly: SubDeptMargin[];
   basis: CmpBasis;
+  /** Last week, re-dated into last year's slots, shown beside last year. */
+  lw: SubDeptMargin[];
 }
+
+/** What every figure, bar and sort on the screen measures. */
+export type PerfMeasure = "sales" | "units";
 
 export const emptyBundle = (): PerfBundle => ({
   subsTy: [],
@@ -92,8 +101,11 @@ export const emptyBundle = (): PerfBundle => ({
  * none of it. Sharing one slice would mean either carrying dead grading state
  * or gutting a slice the graded screen still depends on while both exist.
  *
- * Every period here is THIS YEAR against LAST YEAR. There is no last week:
- * the screen compares two points, and a third made every row a paragraph.
+ * Every figure is this year against last year, with last week beside it.
+ * Last week was left out once, on the grounds that a third period made every
+ * row a paragraph; a client asked for it back (Amanda, 28 Oct), as desktop
+ * shows it. The bars stay two: this year and last year. Last week is a second
+ * change figure, not a third bar.
  */
 interface SalesPerfState {
   hasSearched: boolean;
@@ -113,6 +125,11 @@ interface SalesPerfState {
   weekLy: WeeklySale[];
   /** Which period each store's comparison came from, keyed by `storeKeyOf`. */
   cmpBasis: Record<string, CmpBasis>;
+  /** Last week for every store, re-dated into last year's slots, so it pairs
+   *  and matches exactly the way `weekLy` does. */
+  weekLw: WeeklySale[];
+  /** Sales or units. A preference, so a new search keeps it. */
+  measure: PerfMeasure;
 
   /** Sub-department and hourly rows for the whole search, aggregated across
    *  every store. Cannot be filtered by store — a group response does not say
@@ -228,6 +245,8 @@ const initialState: SalesPerfState = {
   weekTy: [],
   weekLy: [],
   cmpBasis: {},
+  weekLw: [],
+  measure: "sales",
   groupData: emptyBundle(),
   storeData: {},
   storeLoading: null,
@@ -265,11 +284,16 @@ const salesPerfSlice = createSlice({
         ty: WeeklySale[];
         ly: WeeklySale[];
         basis: Record<string, CmpBasis>;
+        lw: WeeklySale[];
       }>,
     ) => {
       state.weekTy = action.payload.ty;
       state.weekLy = action.payload.ly;
       state.cmpBasis = action.payload.basis;
+      state.weekLw = action.payload.lw;
+    },
+    setPerfMeasure: (state, action: PayloadAction<PerfMeasure>) => {
+      state.measure = action.payload;
     },
     setPerfGroupData: (state, action: PayloadAction<PerfBundle>) => {
       state.groupData = action.payload;
@@ -408,6 +432,7 @@ export const {
   setPerfLoading,
   setPerfHasSearched,
   setPerfWeek,
+  setPerfMeasure,
   setPerfGroupData,
   clearPerfStoreCache,
   setPerfStoreLoading,

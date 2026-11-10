@@ -26,7 +26,7 @@ import type { DayBucket, MarginResult, TrendResult } from "../interfaces";
 import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import InfoButton from "../../../../components-dev/InfoButton";
 import InfoModal from "../../../../components-dev/InfoModal";
@@ -164,15 +164,7 @@ const LookupItemReport = ({
             {/* Search and "?" together in the corner, as MobilePerfCard does:
                 search leads back to the search card and its recent lookups. */}
             <div className="flex flex-none items-center gap-1.5">
-              <button
-                type="button"
-                onClick={onBack}
-                title="New search"
-                aria-label="New search"
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-              >
-                <MagnifyingGlassIcon className="h-4 w-4" />
-              </button>
+              <BackButton onClick={onBack} tone="light" />
               <InfoButton
                 variant="light"
                 onClick={() => setInfoOpen(true)}

@@ -18,7 +18,7 @@ import type { SevFilter } from "../../../../utils/severity";
 import type { LpSortCol } from "../interfaces";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
@@ -209,13 +209,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
         {/* Row 2: search left | legend right */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button data-help="search"
-            onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            aria-label="Search stores"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
           <div className="flex-1" />
           <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/95 flex-shrink-0">Exception activity vs baseline</span>
           <div className="relative flex-shrink-0">

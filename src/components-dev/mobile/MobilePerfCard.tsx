@@ -2,10 +2,10 @@
 import type { ReactNode } from "react";
 
 // Components
+import BackButton from "../BackButton";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import InfoButton from "../InfoButton";
 
@@ -43,6 +43,9 @@ interface MobilePerfCardProps {
   onSearch?: () => void;
   /** Opens the page's "?" sheet. Same case again. */
   onInfo?: () => void;
+  /** Controls for the whole page, just left of the "?" — only drawn in the
+   *  single-result case, where this card is the page. */
+  actions?: ReactNode;
   /** The report body. Rendered only while open. */
   children?: ReactNode;
 }
@@ -71,6 +74,7 @@ const MobilePerfCard = ({
   when,
   onSearch,
   onInfo,
+  actions,
   children,
 }: MobilePerfCardProps) => {
   const Header = onToggle ? "button" : "div";
@@ -88,18 +92,12 @@ const MobilePerfCard = ({
       {(onSearch || onInfo) && (
         <div className="flex items-center gap-2 px-3.5 pb-1 pt-3">
           {onSearch && (
-            <button
-              type="button"
-              onClick={onSearch}
-              aria-label="New search"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-            >
-              <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-            </button>
+            <BackButton onClick={onSearch} tone="light" />
           )}
           <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
             {when}
           </span>
+          {actions && <div className="flex-none">{actions}</div>}
           {onInfo && (
             <InfoButton
               variant="light"

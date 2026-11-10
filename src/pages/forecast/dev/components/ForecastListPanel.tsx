@@ -13,7 +13,7 @@ import {
 import { formatCurrency2 } from "../../../../utils";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 
 interface ForecastListPanelProps {
@@ -75,14 +75,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
         </div>
 
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button data-help="search"
-            onClick={onReSearch}
-            aria-label="New search"
-            title="Search again"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={onReSearch} helpAnchor="search" />
           <span className="text-[11px] font-medium text-custom-white truncate">
             {locationLabel}
           </span>

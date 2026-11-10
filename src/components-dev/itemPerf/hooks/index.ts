@@ -19,6 +19,7 @@ import {
 // Utils
 import {
   addDays,
+  formatCurrency2,
   formatDateSimple,
   formatGoliathDate,
   getStoreName,
@@ -38,15 +39,17 @@ import {
   matchWeek,
   noLyHistory,
   findItem,
-  priceRows,
   marginDirOf,
+  measuredOf,
   sortMarginRows,
 } from "../utils/itemPerfData";
+import { fmtUnits, prepared } from "../utils";
 
 // Interfaces
 import type { UIEvent } from "react";
 import type { JsonError } from "../../../interfaces";
 import type { ItemDimension, MarginSort } from "../../../features/dev/devItemPerfSlice";
+import type { CmpBasis } from "../../../utils/perfPairs";
 import type { MarginRow, PricedRow } from "../utils/itemPerfData";
 import type { ItemPerfCtxValue, ItemPerfScreen } from "../interfaces";
 
@@ -156,21 +159,23 @@ export const useItemPerfLoad = (dimension: ItemDimension) => {
           () => null,
         ),
       ]);
-      // No last year means both "the endpoint had no records" — which is what
-      // a store onboarded this year answers with, and which `fetchSubDeptRows`
-      // raises rather than returns — and an outright failure. Either way there
-      // is nothing to compare against, so last week stands in where it can.
+      // Last year as it is, and last week beside it rather than in its place:
+      // every bar draws both, so a store with no last year (the endpoint
+      // answers an error, which `fetchSubDeptRows` raises) shows "no history"
+      // on its LY bar instead of last week twice. `basis` records which one
+      // grades the screen.
       //
-      // Re-dated into last year's slots before it is stored, so `_day` comes
-      // out of `priceRows` already matching what every builder below looks
-      // for. See `asLastYearSlots`.
+      // Last week is re-dated into last year's slots before it is stored, so
+      // `_day` comes out of `priceRows` already matching what every builder
+      // below looks for. See `asLastYearSlots`.
       const haveLy = ly !== null && ly.length > 0;
-      const cmp = haveLy ? ly : lw && lw.length > 0 ? asLastYearSlots(lw) : null;
+      const haveLw = lw !== null && lw.length > 0;
       dispatch(
         setItemPerfRows({
           ty,
-          ly: cmp,
-          basis: haveLy || cmp === null ? "ly" : "lw",
+          ly,
+          lw: lw === null ? null : asLastYearSlots(lw),
+          basis: haveLy || !haveLw ? "ly" : "lw",
           gen,
           source,
           end: twEnd,
@@ -239,22 +244,17 @@ export const useItemPerfView = (
   // plain filter is safe — and applied to last year too, so a year that only
   // recorded the other location can't stand in for this one.
   const ty = useMemo(
-    () =>
-      priceRows(
-        perf.storeNumber
-          ? perf.itemsTy.filter((r) => r.store_number === perf.storeNumber)
-          : perf.itemsTy,
-      ),
+    () => prepared(perf.itemsTy, perf.storeNumber),
     [perf.itemsTy, perf.storeNumber],
   );
   const ly = useMemo(
-    () =>
-      priceRows(
-        perf.storeNumber
-          ? perf.itemsLy.filter((r) => r.store_number === perf.storeNumber)
-          : perf.itemsLy,
-      ),
+    () => prepared(perf.itemsLy, perf.storeNumber),
     [perf.itemsLy, perf.storeNumber],
+  );
+  /** Last week, in last year's slots. */
+  const lw = useMemo(
+    () => prepared(perf.itemsLw, perf.storeNumber),
+    [perf.itemsLw, perf.storeNumber],
   );
 
   /**
@@ -264,6 +264,9 @@ export const useItemPerfView = (
    * days, and this is also what keeps the dates in between out of every sum.
    */
   const weekMatch = useMemo(() => matchWeek(ty, ly), [ty, ly]);
+  /** The same for last week. It sits in last year's slots, so the one
+   *  matcher serves both. */
+  const weekMatchLw = useMemo(() => matchWeek(ty, lw), [ty, lw]);
   /** Last year has some of the week, not all of it. */
   const weekPartial = !perf.lyMissing && isPartialMatch(weekMatch);
   /**
@@ -274,8 +277,21 @@ export const useItemPerfView = (
    */
   const weekNoLy = perf.lyMissing || noLyHistory(weekMatch, null);
   const cardNoLy = perf.lyMissing || noLyHistory(weekMatch, perf.selectedDay);
-  /** One store per screen here, so one answer covers every bar on it. */
-  const basis = perf.cmpBasis;
+  /** Nothing on file last week either, for the LW bar. */
+  const cardNoLw =
+    perf.lwMissing || noLyHistory(weekMatchLw, perf.selectedDay);
+  /**
+   * The day chart's second column: last year, or last week where last year
+   * has nothing on file. One store per screen, so one answer covers it; the
+   * bars under it draw both.
+   */
+  const chartBasis: CmpBasis = weekNoLy ? "lw" : "ly";
+
+  /** Sales or units: what the bars and the size sort measure. Margin, profit
+   *  and cost are money whichever it is. */
+  const measure = perf.measure;
+  const fmt = measure === "units" ? fmtUnits : formatCurrency2;
+  const sizeLabel = measure === "units" ? "Units" : "Sales";
 
   /** The item screen reports on one item; everything else reports on the
    *  group that is open, or the whole store. Search spans the store, so it
@@ -294,16 +310,38 @@ export const useItemPerfView = (
         groupKey,
         itemCode,
         weekMatch,
+        lw,
+        weekMatchLw,
       ),
-    [ty, ly, dimension, perf.selectedDay, groupKey, itemCode, weekMatch],
+    [
+      ty,
+      ly,
+      lw,
+      dimension,
+      perf.selectedDay,
+      groupKey,
+      itemCode,
+      weekMatch,
+      weekMatchLw,
+    ],
   );
+  const totalsV = measuredOf(totals, measure);
   /** Bars and change compare like with like: over only the matched days. */
   const totalsPartial = !perf.selectedDay && weekPartial;
 
-  const days = useMemo(
-    () => buildMarginDays(ty, ly, dimension, groupKey, itemCode, weekDates),
-    [ty, ly, dimension, groupKey, itemCode, weekDates],
+  /** Each comparison by day: the chart draws one of them, and an item's day
+   *  rows draw both. */
+  const daysLy = useMemo(
+    () =>
+      buildMarginDays(ty, ly, dimension, groupKey, itemCode, weekDates, measure),
+    [ty, ly, dimension, groupKey, itemCode, weekDates, measure],
   );
+  const daysLw = useMemo(
+    () =>
+      buildMarginDays(ty, lw, dimension, groupKey, itemCode, weekDates, measure),
+    [ty, lw, dimension, groupKey, itemCode, weekDates, measure],
+  );
+  const days = chartBasis === "lw" ? daysLw : daysLy;
 
   const query = perf.itemQuery.trim();
 
@@ -351,6 +389,7 @@ export const useItemPerfView = (
       query: listQuery,
       groupSort: perf.groupSort,
       itemSort: perf.itemSort,
+      measure,
     }),
     [
       screen,
@@ -359,6 +398,7 @@ export const useItemPerfView = (
       listQuery,
       perf.groupSort,
       perf.itemSort,
+      measure,
     ],
   );
   const listFor = useDeferredValue(listInputs);
@@ -371,18 +411,31 @@ export const useItemPerfView = (
     const ordered = (
       built: MarginRow[],
       sort: typeof listFor.groupSort,
-    ) => (sort ? sortMarginRows(built, sort.key, sort.reversed) : built);
+    ) =>
+      sort
+        ? sortMarginRows(built, sort.key, sort.reversed, listFor.measure)
+        : built;
 
     if (listFor.screen === "list")
       return ordered(
-        buildGroupRows(ty, ly, dimension, listFor.day, weekMatch),
+        buildGroupRows(ty, ly, dimension, listFor.day, weekMatch, lw, weekMatchLw),
         listFor.groupSort,
       );
 
     if (listFor.screen === "search") {
       if (!listFor.query) return [];
       return ordered(
-        buildItemRows(ty, ly, dimension, listFor.day, null, listFor.query, weekMatch),
+        buildItemRows(
+          ty,
+          ly,
+          dimension,
+          listFor.day,
+          null,
+          listFor.query,
+          weekMatch,
+          lw,
+          weekMatchLw,
+        ),
         listFor.itemSort,
       );
     }
@@ -397,13 +450,15 @@ export const useItemPerfView = (
           listFor.groupKey,
           listFor.query,
           weekMatch,
+          lw,
+          weekMatchLw,
         ),
         listFor.itemSort,
       );
 
     // The item screen has its own table.
     return [];
-  }, [ty, ly, dimension, listFor, weekMatch]);
+  }, [ty, ly, lw, dimension, listFor, weekMatch, weekMatchLw]);
 
   /** Recently opened items, resolved back to rows so they carry their figures.
    *  Only built for Search, and only while nothing is typed. */
@@ -422,30 +477,49 @@ export const useItemPerfView = (
       null,
       "",
       weekMatch,
+      lw.filter(mine),
+      weekMatchLw,
     );
     return perf.recentItems
       .map((code) => all.find((r) => r.key === code))
       .filter((r): r is MarginRow => Boolean(r));
-  }, [ty, ly, dimension, screen, perf.recentItems, query, weekMatch]);
+  }, [ty, ly, lw, dimension, screen, perf.recentItems, query, weekMatch, weekMatchLw]);
 
   const dailyRows = useMemo(
     () => buildDailyRows(ty, itemCode, weekDates),
     [ty, itemCode, weekDates],
   );
 
-  /** The open item's week, by date, so each day row can draw its own pair. */
-  const dayPairs = useMemo(
-    () => new Map(days.map((d) => [d.iso, d])),
-    [days],
-  );
+  /** The open item's week, by date, so each day row can draw its own bars:
+   *  this year, last year and last week. */
+  const dayPairs = useMemo(() => {
+    const lwOn = new Map(daysLw.map((d) => [d.iso, d.ly]));
+    return new Map(
+      daysLy.map((d) => [
+        d.iso,
+        {
+          ty: d.ty,
+          ly: d.ly,
+          lw: lwOn.get(d.iso) ?? 0,
+          noLy: perf.lyMissing || noLyHistory(weekMatch, d.iso),
+          noLw: perf.lwMissing || noLyHistory(weekMatchLw, d.iso),
+        },
+      ]),
+    );
+  }, [daysLy, daysLw, weekMatch, weekMatchLw, perf.lyMissing, perf.lwMissing]);
   /** One scale for the seven days, so Monday and Saturday are comparable.
-   *  Last year is left out of it when there is no history, the same way the
-   *  list scale is — otherwise every bar is measured against a zero nobody
-   *  recorded. */
+   *  A comparison is left out of it on a day it has no history, the same way
+   *  the list scale is — otherwise every bar is measured against a zero
+   *  nobody recorded. */
   const dayMax = useMemo(
     () =>
-      Math.max(...days.map((d) => Math.max(d.ty, cardNoLy ? 0 : d.ly)), 1),
-    [days, cardNoLy],
+      Math.max(
+        ...[...dayPairs.values()].map((d) =>
+          Math.max(d.ty, d.noLy ? 0 : d.ly, d.noLw ? 0 : d.lw),
+        ),
+        1,
+      ),
+    [dayPairs],
   );
 
   /** The group list, narrowed by the filter field. Applied before paging so
@@ -472,10 +546,11 @@ export const useItemPerfView = (
   const listPartial = !listFor.day && weekPartial;
   // Store-level, so one answer covers every row in the list.
   const listNoLy = perf.lyMissing || noLyHistory(weekMatch, listFor.day);
-  const listMax = shown.reduce(
-    (m, r) => Math.max(m, r.sales, listNoLy ? 0 : r.salesLy),
-    0,
-  );
+  const listNoLw = perf.lwMissing || noLyHistory(weekMatchLw, listFor.day);
+  const listMax = shown.reduce((m, r) => {
+    const v = measuredOf(r, measure);
+    return Math.max(m, v.ty, listNoLy ? 0 : v.ly, listNoLw ? 0 : v.lw);
+  }, 0);
   const selectedItem = findItem(perf.selectedItemCode, ty, ly);
 
   const dayLabel = perf.selectedDay
@@ -521,14 +596,21 @@ export const useItemPerfView = (
     screen,
     ty,
     ly,
+    lw,
     weekMatch,
+    weekMatchLw,
     weekPartial,
     weekNoLy,
     cardNoLy,
-    basis,
+    cardNoLw,
+    chartBasis,
+    measure,
+    fmt,
+    sizeLabel,
     itemCode,
     groupKey,
     totals,
+    totalsV,
     totalsPartial,
     days,
     query,
@@ -543,6 +625,7 @@ export const useItemPerfView = (
     shown,
     listPartial,
     listNoLy,
+    listNoLw,
     listMax,
     selectedItem,
     dayLabel,

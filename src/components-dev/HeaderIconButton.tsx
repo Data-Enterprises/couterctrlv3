@@ -14,8 +14,9 @@ interface HeaderIconButtonProps {
  * A 22px icon button in a navy panel header.
  *
  * The same class string had been written out five times — `InfoButton`, the
- * search and back buttons in `MobilePerfHeader`, and the export buttons on the
- * Data pages — and had already drifted once (28px on Coupons and Receivers,
+ * old search and back icons in `MobilePerfHeader` (now `BackButton`, which says
+ * "Back" in words), and the export buttons on the Data pages — and had already
+ * drifted once (28px on Coupons and Receivers,
  * 22px everywhere else, so the Data-page headers sat a row taller than the
  * Performance ones). It lives here now so the next change lands once.
  *

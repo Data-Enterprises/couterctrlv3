@@ -46,7 +46,7 @@ export const RECEIVERS_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I export an invoice or start over?",
       a: [
-        "Tap Export in an open invoice to download its lines as a CSV. Tap the search icon at the top to change the store or dates, and use Back to results to return without searching again.",
+        "Tap Export in an open invoice to download its lines as a CSV. Tap Back at the top to change the store or dates, and use Back to results to return without searching again.",
       ],
     },
   ],

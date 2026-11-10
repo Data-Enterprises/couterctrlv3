@@ -10,7 +10,7 @@ export const SALES_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I load my sales?",
       a: [
-        "Pick a store or group and an end date, then tap Load sales. You get the seven days ending on that date, this year against the same days last year. Tap the search button on the top card to search again.",
+        "Pick a store or group and an end date, then tap Load sales. You get the seven days ending on that date, this year against the same days last year. Tap Back on the top card to search again.",
       ],
     },
     {

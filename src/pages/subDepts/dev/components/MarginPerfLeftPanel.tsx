@@ -46,7 +46,7 @@ import type { SubDeptMargin } from "../../../../interfaces";
 import type { SdSortCol } from "../interfaces";
 
 // Components
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
@@ -305,14 +305,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
 
         {/* Row 2: search btn + store | metric toggle | threshold | help btn */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button
-            data-help="search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            onClick={onSearchOpen}
-            title="Search"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={onSearchOpen} helpAnchor="search" />
 
           <span className="text-[11px] font-medium text-custom-white truncate min-w-0">{storeName}</span>
 

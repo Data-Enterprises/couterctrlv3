@@ -47,6 +47,11 @@ export const TY_COLOR = "#178ec6";
  *  read as. */
 export const LY_COLOR = "#5a6c84";
 
+/** Last week, when a screen draws it beside last year. --color-row-selected-
+ *  border: the same grey-blue family as last year, a step lighter, so the two
+ *  baselines read as a pair and neither looks like the verdict. */
+export const LW_COLOR = "#8a9bb0";
+
 /**
  * This year, at or above last year. --color-delta-positive-mid.
  *

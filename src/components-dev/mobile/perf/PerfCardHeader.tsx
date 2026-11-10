@@ -2,9 +2,9 @@
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import InfoButton from "../../InfoButton";
+import BackButton from "../../BackButton";
 
 interface PerfCardHeaderProps {
   /** What the card is about — the store, the group, the item, the lens. */
@@ -36,6 +36,9 @@ interface PerfCardHeaderProps {
    * doing both would be guessing which was meant.
    */
   onTitleTap?: () => void;
+  /** Controls that belong to the whole card, drawn just left of the "?":
+   *  Sales puts its Sales / Units switch here. */
+  actions?: React.ReactNode;
 }
 
 /**
@@ -63,6 +66,7 @@ const PerfCardHeader = ({
   onToggle,
   open = false,
   onTitleTap,
+  actions,
 }: PerfCardHeaderProps) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
@@ -71,14 +75,7 @@ const PerfCardHeader = ({
       {/* The same bordered 7x7 the desktop panels use for New search — the box
           is what makes it read as a button rather than as decoration beside
           the title. */}
-      <button
-        type="button"
-        onClick={onSearch}
-        aria-label="New search"
-        className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-      >
-        <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-      </button>
+      <BackButton onClick={onSearch} tone="light" />
       {onTitleTap ? (
         <button
           type="button"
@@ -98,13 +95,14 @@ const PerfCardHeader = ({
       {note && (
         <span className="flex-none text-[12px] text-content/95">{note}</span>
       )}
+      {actions && <div className="ml-auto flex-none">{actions}</div>}
       {onInfo && (
         // Same solid 20px mark as the desktop headers' "?".
         <InfoButton
           variant="light"
           onClick={onInfo}
           title="What this page shows"
-          className="-mr-1 ml-auto flex-none"
+          className={`-mr-1 flex-none${actions ? "" : " ml-auto"}`}
         />
       )}
     </div>

@@ -52,7 +52,7 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I look up another item?",
       a: [
-        "Tap the back arrow at the top left to return to the search. To see an item you checked recently, tap it in the list under the search, or tap the clock icon on the results screen.",
+        "Tap Back, beside the ? at the top, to return to the search. To see an item you checked recently, tap it in the list under the search, or tap the clock icon on the results screen.",
       ],
     },
   ],

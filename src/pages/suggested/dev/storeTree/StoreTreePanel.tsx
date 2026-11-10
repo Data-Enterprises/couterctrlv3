@@ -16,7 +16,8 @@ import { getStoreName } from "../../../../utils";
 import { DEPT_COLS, STORE_COLS } from "../utils";
 
 // Components
-import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import BackButton from "../../../../components-dev/BackButton";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import PanelFrame from "./components/PanelFrame";
 import FilterBar from "../../../../components-dev/filters/FilterBar";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
@@ -133,13 +134,7 @@ const StoreTreePanel = ({
       style={{ width: "31%" }}
       secondRow={
         <>
-          <button
-            onClick={onOpenSearch}
-            aria-label="New search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          <BackButton onClick={onOpenSearch} />
           <span className="text-[11px] font-medium text-custom-white truncate">
             {scopeLabel}
           </span>

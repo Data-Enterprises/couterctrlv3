@@ -2,9 +2,7 @@
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 
 // Components
-import {
-  MagnifyingGlassIcon,
-} from "@heroicons/react/16/solid";
+import BackButton from "../../../../components-dev/BackButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import UpcItemList from "./UpcItemList";
 
@@ -51,14 +49,7 @@ const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
 
         {/* Row 2: search icon + location label + ? icon */}
         <div className="flex items-center gap-1.5 pt-1.5 mt-1 text-custom-white">
-          <button data-help="search"
-            onClick={onReSearch}
-            title="Search again"
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
-          >
-            <MagnifyingGlassIcon className="w-3 h-3" />
-          </button>
+          <BackButton onClick={onReSearch} helpAnchor="search" />
 
           <span className="flex-1 text-[11px] truncate text-custom-white">
             {locationLabel}

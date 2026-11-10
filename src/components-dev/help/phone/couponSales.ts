@@ -16,7 +16,7 @@ export const COUPON_SALES_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I run a search?",
       a: [
-        "Choose a store or group and a week ending date, then tap Load coupons. To search again, tap the magnifying glass on the top card.",
+        "Choose a store or group and a week ending date, then tap Load coupons. To search again, tap Back on the top card.",
       ],
     },
     {

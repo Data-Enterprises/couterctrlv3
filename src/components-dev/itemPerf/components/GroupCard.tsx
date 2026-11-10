@@ -10,8 +10,8 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { salesChangePct } from "../utils/itemPerfData";
-import { cmpShort, cmpWord, fmtChange } from "../utils";
+import { gradedChange, noLyHistory } from "../utils/itemPerfData";
+import { cmpWord, fmtChange } from "../utils";
 
 // Interfaces
 import type { MarginRow } from "../utils/itemPerfData";
@@ -19,11 +19,11 @@ import type { MarginRow } from "../utils/itemPerfData";
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import MobilePerfCard from "../../mobile/MobilePerfCard";
-import PairedBars from "../../mobile/perf/PairedBars";
 import PerfChange from "../../mobile/perf/PerfChange";
 import PerfDayChart from "../../mobile/perf/PerfDayChart";
 import { LY_COLOR, TY_SWATCH_BG } from "../../mobile/perf/perfColors";
 import MarginSummary from "./MarginSummary";
+import RowBars from "./RowBars";
 
 interface GroupCardProps {
   row: MarginRow;
@@ -34,22 +34,16 @@ interface GroupCardProps {
 const GroupCard = ({ row: r }: GroupCardProps) => {
   const dispatch = useAppDispatch();
   const perf = useAppSelector((s) => s.dev.itemPerf);
-  const { listMax, basis, listNoLy, days, listFor, weekNoLy } = useItemPerfCtx();
+  const { measure, chartBasis, weekMatchLw, days, listFor } = useItemPerfCtx();
   const isOpen = perf.openGroup?.key === r.key;
-  const change = salesChangePct(r);
+  // Against last year, or last week where last year has nothing: the same
+  // rule that colours the TY bar.
+  const change = gradedChange(r, measure);
   return (
     <MobilePerfCard
       label={r.label}
       change={<PerfChange pct={change} format={fmtChange} />}
-      bars={
-        <PairedBars
-          ty={r.sales}
-          ly={r.salesLy}
-          max={listMax}
-          labels={["TY", cmpShort(basis)]}
-          lyUnavailable={listNoLy}
-        />
-      }
+      bars={<RowBars r={r} />}
       open={isOpen}
       minimised={!isOpen && perf.openGroup !== null}
       onToggle={() =>
@@ -80,7 +74,12 @@ const GroupCard = ({ row: r }: GroupCardProps) => {
                 className="h-2 w-3.5 rounded-sm"
                 style={{ background: LY_COLOR }}
               />
-              {weekNoLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
+              {/* Last year, or last week when last year has nothing on
+                  file; the legend says which. */}
+              {chartBasis === "lw" &&
+              (perf.lwMissing || noLyHistory(weekMatchLw, null))
+                ? "Last week: no history"
+                : cmpWord(chartBasis)}
             </span>
           </div>
           <p className="px-1 pt-1 text-[12px] text-content/95">

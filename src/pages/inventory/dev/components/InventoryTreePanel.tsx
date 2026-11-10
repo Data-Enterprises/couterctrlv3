@@ -9,10 +9,10 @@ import type { TreeGroup, ProductSummary } from "../interfaces";
 import type { HelpPage } from "../../../../constants/helpPages";
 
 // Components
+import BackButton from "../../../../components-dev/BackButton";
 import {
   ChevronRightIcon,
   ChevronDownIcon,
-  MagnifyingGlassIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
@@ -111,9 +111,7 @@ const InventoryTreePanel = ({
             <HeaderIconButton onClick={onExportOpen} title="Export CSV">
               <ArrowDownTrayIcon className="h-3 w-3" />
             </HeaderIconButton>
-            <HeaderIconButton onClick={onSearchOpen} title="New search">
-              <MagnifyingGlassIcon className="h-3 w-3" />
-            </HeaderIconButton>
+            <BackButton onClick={onSearchOpen} />
           </div>
         </div>
 

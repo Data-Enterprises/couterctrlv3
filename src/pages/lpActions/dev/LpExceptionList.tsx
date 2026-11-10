@@ -6,15 +6,14 @@ import {
 } from "../../../features/dev/devLpActionsSlice";
 import type { LpSevFilter } from "../../../features/dev/devLpActionsSlice";
 import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
-import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import {
-  MagnifyingGlassIcon,
   ChevronRightIcon,
   ChevronDownIcon,
 } from "@heroicons/react/20/solid";
 import type { ExceptionRow, LpSeverity, TypeGroup } from "./lpActionsMetrics";
 import { buildTypeGroups } from "./lpActionsMetrics";
 import { useMemo } from "react";
+import BackButton from "../../../components-dev/BackButton";
 
 /**
  * Every store-and-exception pair, worst movement first.
@@ -210,9 +209,7 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
             </span>
           </div>
           <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-            <HeaderIconButton onClick={onSearchOpen} title="New search">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
+            <BackButton onClick={onSearchOpen} />
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
             <span className="text-[11px] text-custom-white/95">
               {weeks} weeks &middot; latest week graded on the {weeks - 1}{" "}

@@ -10,7 +10,7 @@ export const CASHIERS_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I search?",
       a: [
-        "Pick a store or group and a date, then tap Find exceptions. You'll see the week ending on that date. The button reads \"Select Store\" or \"Select Group\" until you have picked one. To search again, tap the magnifying glass in the header.",
+        "Pick a store or group and a date, then tap Find exceptions. You'll see the week ending on that date. The button reads \"Select Store\" or \"Select Group\" until you have picked one. To search again, tap Back in the header.",
       ],
     },
     {

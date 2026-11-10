@@ -10,6 +10,12 @@ import {
   type GradeBasis,
 } from "../../../../utils/grading";
 import { getHolidayName, getHolidayLastYear } from "../../../../utils/holidays";
+import {
+  DEPT_RING_KEY,
+  DEPT_RING_LABEL,
+  foldDepartmentRings,
+  isDepartmentRing,
+} from "../../../../utils/departmentRings";
 
 // Interfaces
 import type { HolidayName } from "../../../../utils/holidays";
@@ -164,15 +170,11 @@ export const SECTION_TEXT: Record<Severity, string> = {
  */
 export const withProductCode = <T extends { product_code: string }>(
   rows: T[],
-): T[] =>
-  rows.filter((r) => {
-    const code = r.product_code;
-    if (code === null || code === undefined) return false;
-    const text = String(code).trim();
-    if (text === "" || text.toLowerCase() === "null") return false;
-    // `0` and `0.0` are the department bucket, never a scanned item.
-    return Number(text) !== 0;
-  });
+): T[] => rows.filter((r) => !isDepartmentRing(r.product_code));
+
+// Moved to utils so the margin screens can label them too; re-exported for the
+// Sales call sites.
+export { DEPT_RING_KEY, DEPT_RING_LABEL, foldDepartmentRings, isDepartmentRing };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

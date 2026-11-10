@@ -10,7 +10,7 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
     {
       q: "What does this page show?",
       a: [
-        "The store’s week at the top, then a card for each category, biggest sellers first. Last year (LY) is the same weekdays last year, so a Monday is compared with a Monday. Tap the search icon on the store card to change the store or week.",
+        "The store’s week at the top, then a card for each category, biggest sellers first. Last year (LY) is the same weekdays last year, so a Monday is compared with a Monday. Tap Back on the store card to change the store or week.",
       ],
     },
     {

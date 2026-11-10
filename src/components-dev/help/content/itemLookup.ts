@@ -31,7 +31,9 @@ export const ITEM_LOOKUP_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass above the item list.",
+          pre: "Click",
+          chip: "Back",
+          post: "above the item list.",
           anchor: "search",
         },
       ],

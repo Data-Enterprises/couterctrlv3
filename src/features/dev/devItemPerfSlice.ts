@@ -74,8 +74,19 @@ export type MarginSortState = SortState<MarginSort>;
 export const ROWS_PER_PAGE = 100;
 
 /** How a list of departments, vendors, categories or items can be ordered.
- *  Sales is the default: it is what the bars show. */
-export type MarginSort = "profit" | "sales" | "gpm" | "change" | "name";
+ *  Sales is the default: it is what the bars show. "sales" orders by whatever
+ *  the Sales / Units switch measures. */
+export type MarginSort =
+  | "profit"
+  | "sales"
+  | "gpm"
+  | "change"
+  | "changeLw"
+  | "name";
+
+/** What the bars and the size sort measure. Margin, profit and cost stay
+ *  money whichever it is. */
+export type MarginMeasure = "sales" | "units";
 
 /**
  * State for the ungraded mobile Margins screen, shared by Sub Dept Margins and
@@ -84,8 +95,8 @@ export type MarginSort = "profit" | "sales" | "gpm" | "change" | "name";
  * Separate from subMarginSlice and vendorsSlice, both of which are built around
  * grading — thresholds, tiers, severity filters. This screen has none of it.
  *
- * Single store only, and this year against last year only. No group scope, no
- * last week, so a search is two paged reads.
+ * Single store only, this year against last year and last week. No group
+ * scope, so a search is three paged reads.
  */
 interface ItemPerfState {
   /** Which endpoint the rows in here came from. */
@@ -143,8 +154,23 @@ interface ItemPerfState {
    * whole fetch and leave the page on its search card.
    */
   lyMissing: boolean;
-  /** Which period the comparison is drawn from. */
+  /** Which period grades the screen: last year, or last week for a store
+   *  with no last year on file. */
   cmpBasis: CmpBasis;
+
+  /**
+   * Last week, re-dated into the slots last year's rows would fill (see
+   * `asLastYearSlots`), so it matches day for day the same way.
+   *
+   * Its own period, beside last year rather than in place of it: every bar
+   * draws both, and a store with no last year says so on the LY bar.
+   */
+  itemsLw: ItemRow[];
+  /** Last week could not be read. As `lyMissing`, for the LW bar. */
+  lwMissing: boolean;
+
+  /** Sales or units. A preference, so it holds across pages and searches. */
+  measure: MarginMeasure;
 
   /**
    * The expanded card in the group list, or null when they are all closed.
@@ -231,11 +257,12 @@ interface ItemPerfState {
  * `loadGen` and `infoOpen` are deliberately outside it: the counter has to
  * keep climbing across pages so a load left in flight by one can never land on
  * another, and the sheet is a thing on screen now rather than a thing a page
- * remembers.
+ * remembers. `measure` too: it is how the reader likes to look, not where a
+ * page was left.
  */
 type ItemPerfSnapshot = Omit<
   ItemPerfState,
-  "loadGen" | "infoOpen" | "active" | "stash"
+  "loadGen" | "infoOpen" | "active" | "stash" | "measure"
 >;
 
 const SNAPSHOT_KEYS = [
@@ -251,6 +278,8 @@ const SNAPSHOT_KEYS = [
   "itemsTy",
   "itemsLy",
   "lyMissing",
+  "itemsLw",
+  "lwMissing",
   "openGroup",
   "detailOpen",
   "searchOpen",
@@ -277,6 +306,8 @@ const ROW_KEYS = [
   "itemsTy",
   "itemsLy",
   "lyMissing",
+  "itemsLw",
+  "lwMissing",
   "hasSearched",
   "storeId",
 ] as const;
@@ -297,6 +328,9 @@ const initialState: ItemPerfState = {
   itemsLy: [],
   lyMissing: false,
   cmpBasis: "ly",
+  itemsLw: [],
+  lwMissing: false,
+  measure: "sales",
   openGroup: null,
   detailOpen: false,
   searchOpen: false,
@@ -342,8 +376,10 @@ const itemPerfSlice = createSlice({
         ty: ItemRow[];
         /** Null when last year could not be read at all — see `lyMissing`. */
         ly: ItemRow[] | null;
-        /** Which period `ly` actually holds. This page is one store, so one
-         *  answer covers the screen. */
+        /** Last week in last year's slots, or null when it could not be read. */
+        lw: ItemRow[] | null;
+        /** Which period grades the screen. This page is one store, so one
+         *  answer covers it. */
         basis: CmpBasis;
         gen: number;
         source: ItemSource;
@@ -367,6 +403,8 @@ const itemPerfSlice = createSlice({
       state.itemsTy = action.payload.ty;
       state.itemsLy = action.payload.ly ?? [];
       state.lyMissing = action.payload.ly === null;
+      state.itemsLw = action.payload.lw ?? [];
+      state.lwMissing = action.payload.lw === null;
       state.cmpBasis = action.payload.basis;
       // A new window invalidates every drill into the old one.
       state.openGroup = null;
@@ -443,6 +481,9 @@ const itemPerfSlice = createSlice({
     setItemPerfItemSort: (state, action: PayloadAction<MarginSort>) => {
       state.itemSort = cycleSort(state.itemSort, action.payload);
       state.listLimit = ROWS_PER_PAGE;
+    },
+    setItemPerfMeasure: (state, action: PayloadAction<MarginMeasure>) => {
+      state.measure = action.payload;
     },
     setItemPerfInfoOpen: (state, action: PayloadAction<boolean>) => {
       state.infoOpen = action.payload;
@@ -563,6 +604,7 @@ export const {
   setItemPerfGroupSort,
   setItemPerfItemSort,
   setItemPerfInfoOpen,
+  setItemPerfMeasure,
   setItemPerfHasSearched,
   setItemPerfStore,
   setItemPerfRows,
