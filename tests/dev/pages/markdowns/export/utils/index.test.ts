@@ -22,9 +22,9 @@ describe("buildMarkdownsCsv", () => {
   it("writes the chosen columns, under their headings, rows in the order given", () => {
     const csv = buildMarkdownsCsv([row({ id: 2 }), row({ id: 1 })], pick("ID", "Date", "Store"));
     expect(csv.split("\n")).toEqual([
-      "Date,Store,ID",
-      "03/11/2026,Food Giant Hayti,2",
-      "03/11/2026,Food Giant Hayti,1",
+      "Date,ID,Store",
+      "03/11/2026,2,Food Giant Hayti",
+      "03/11/2026,1,Food Giant Hayti",
     ]);
   });
 

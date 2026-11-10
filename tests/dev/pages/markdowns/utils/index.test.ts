@@ -72,20 +72,25 @@ describe("the columns", () => {
   it("export 25 under plain headings, without storeid or storenumber", () => {
     const labels = MARKDOWN_COLUMNS.map((c) => c.label);
     expect(labels).toHaveLength(25);
-    expect(labels.slice(0, 5)).toEqual(["Date", "Type", "Store", "UPC", "Description"]);
+    expect(labels.slice(0, 7)).toEqual(["Date", "ID", "Markdown #", "Type", "Store", "UPC", "Description"]);
     expect(labels.at(-1)).toBe("Updated");
     expect(labels.every((l) => !l.includes("_"))).toBe(true);
     expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storeid");
     expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storenumber");
   });
 
-  it("put the sub department and category numbers in the export only", () => {
+  it("put the sub department and category numbers and the vendor id in the export only", () => {
     const grid = GRID_COLUMNS.map((c) => c.label);
-    expect(grid).toHaveLength(23);
-    expect(grid).not.toContain("Sub Dept #");
-    expect(grid).not.toContain("Category #");
-    expect(grid).toContain("Sub Dept");
-    expect(grid).toContain("Category");
+    expect(grid).toEqual([
+      "Date", "ID", "Markdown #", "Type", "Store", "UPC", "Description",
+      "Orig Price", "New Price", "Markdown", "MD %", "Qty", "Weight", "Retail",
+      "Case Size", "Case Cost", "Sub Dept", "Category", "Vendor", "User",
+      "Scalable", "Updated",
+    ]);
+    const labels = MARKDOWN_COLUMNS.map((c) => c.label);
+    expect(labels.indexOf("Sub Dept #")).toBe(labels.indexOf("Sub Dept") - 1);
+    expect(labels.indexOf("Category #")).toBe(labels.indexOf("Category") - 1);
+    expect(labels.indexOf("Vendor ID")).toBe(labels.indexOf("Vendor") - 1);
   });
 
   it("show money, percent, dates, yes/no and blanks the way a person reads them", () => {

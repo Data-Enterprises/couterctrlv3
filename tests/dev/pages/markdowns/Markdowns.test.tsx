@@ -84,13 +84,14 @@ describe("the Markdowns page", () => {
     expect(screen.getByText("04/11/2026")).toBeTruthy();
   });
 
-  it("headings are plain names, without the sub department and category numbers", () => {
+  it("headings are plain names, without the sub department and category numbers or the vendor id", () => {
     setup();
     const headings = screen.getAllByRole("columnheader").map((th) => th.textContent);
-    expect(headings.slice(0, 5)).toEqual(["Date", "Type", "Store", "UPC", "Description"]);
-    expect(headings).toHaveLength(23);
+    expect(headings.slice(0, 7)).toEqual(["Date", "ID", "Markdown #", "Type", "Store", "UPC", "Description"]);
+    expect(headings).toHaveLength(22);
     expect(headings).not.toContain("Sub Dept #");
     expect(headings).not.toContain("Category #");
+    expect(headings).not.toContain("Vendor ID");
   });
 
   it("shows the strip's figures for the rows on screen, and follows the filters", () => {

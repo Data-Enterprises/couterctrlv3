@@ -27,9 +27,9 @@ const text = (s: string | number | null) =>
   s === null || s === "" ? "—" : String(s);
 
 /**
- * Every column the export offers, in order: the event, the item, the prices,
+ * Every column the export offers, in order: the markdown, the item, the prices,
  * the item's details, then who keyed it. storeid and storenumber are left
- * out: Store names the store.
+ * out: Store names the store. Each code sits just before its name.
  */
 export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
   {
@@ -38,6 +38,20 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     align: "left",
     show: (r) => fmtDmy(r.order_date),
     csv: (r) => fmtDmy(r.order_date),
+  },
+  {
+    key: "id",
+    label: "ID",
+    align: "right",
+    show: (r) => String(r.id),
+    csv: (r) => r.id,
+  },
+  {
+    key: "markdown_id",
+    label: "Markdown #",
+    align: "right",
+    show: (r) => text(r.markdown_id),
+    csv: (r) => r.markdown_id,
   },
   {
     key: "type",
@@ -66,43 +80,6 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     align: "left",
     show: (r) => text(r.description),
     csv: (r) => r.description,
-  },
-  {
-    key: "sub_department",
-    label: "Sub Dept #",
-    align: "right",
-    grid: false,
-    show: (r) => text(r.sub_department),
-    csv: (r) => r.sub_department,
-  },
-  {
-    key: "sub_department_description",
-    label: "Sub Dept",
-    align: "left",
-    show: (r) => text(r.sub_department_description),
-    csv: (r) => r.sub_department_description,
-  },
-  {
-    key: "category",
-    label: "Category #",
-    align: "right",
-    grid: false,
-    show: (r) => text(r.category),
-    csv: (r) => r.category,
-  },
-  {
-    key: "category_description",
-    label: "Category",
-    align: "left",
-    show: (r) => text(r.category_description),
-    csv: (r) => r.category_description,
-  },
-  {
-    key: "vendor_name",
-    label: "Vendor",
-    align: "left",
-    show: (r) => text(r.vendor_name),
-    csv: (r) => r.vendor_name,
   },
   {
     key: "original_price",
@@ -169,18 +146,49 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     csv: (r) => r.case_cost,
   },
   {
-    key: "scalable",
-    label: "Scalable",
+    key: "sub_department",
+    label: "Sub Dept #",
+    align: "right",
+    grid: false,
+    show: (r) => text(r.sub_department),
+    csv: (r) => r.sub_department,
+  },
+  {
+    key: "sub_department_description",
+    label: "Sub Dept",
     align: "left",
-    show: (r) => (r.scalable === null ? "—" : r.scalable ? "Yes" : "No"),
-    csv: (r) => r.scalable,
+    show: (r) => text(r.sub_department_description),
+    csv: (r) => r.sub_department_description,
+  },
+  {
+    key: "category",
+    label: "Category #",
+    align: "right",
+    grid: false,
+    show: (r) => text(r.category),
+    csv: (r) => r.category,
+  },
+  {
+    key: "category_description",
+    label: "Category",
+    align: "left",
+    show: (r) => text(r.category_description),
+    csv: (r) => r.category_description,
   },
   {
     key: "vendor_id",
     label: "Vendor ID",
     align: "left",
+    grid: false,
     show: (r) => text(r.vendor_id),
     csv: (r) => r.vendor_id,
+  },
+  {
+    key: "vendor_name",
+    label: "Vendor",
+    align: "left",
+    show: (r) => text(r.vendor_name),
+    csv: (r) => r.vendor_name,
   },
   {
     key: "userid",
@@ -190,18 +198,11 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     csv: (r) => r.userid,
   },
   {
-    key: "markdown_id",
-    label: "Markdown #",
-    align: "right",
-    show: (r) => text(r.markdown_id),
-    csv: (r) => r.markdown_id,
-  },
-  {
-    key: "id",
-    label: "ID",
-    align: "right",
-    show: (r) => String(r.id),
-    csv: (r) => r.id,
+    key: "scalable",
+    label: "Scalable",
+    align: "left",
+    show: (r) => (r.scalable === null ? "—" : r.scalable ? "Yes" : "No"),
+    csv: (r) => r.scalable,
   },
   {
     key: "last_update_time",
@@ -212,7 +213,8 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
   },
 ];
 
-/** The columns the grid draws: all but the sub department and category numbers. */
+/** The columns the grid draws: all but the sub department and category numbers
+ *  and the vendor id. */
 export const GRID_COLUMNS = MARKDOWN_COLUMNS.filter((c) => c.grid !== false);
 
 /**
