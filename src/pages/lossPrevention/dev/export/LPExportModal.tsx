@@ -2,7 +2,14 @@
 import { useState, useMemo } from "react";
 
 // Utils
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
 import {
   AGG_OPTIONS,
   buildCashiersCsv,
@@ -17,7 +24,6 @@ import {
 
 // Interfaces
 import type { TransactionOverview } from "../../../../interfaces";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import type { CashierGrade, CashierSeverity } from "../interfaces";
 import type {
   CustomSource,

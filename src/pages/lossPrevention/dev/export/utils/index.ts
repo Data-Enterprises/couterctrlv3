@@ -1,11 +1,11 @@
 // Utils
-import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../../utils/csvExport";
 
 // Interfaces
 import type { TransactionOverview } from "../../../../../interfaces";
 import type { CashierGrade, CashierSeverity } from "../../interfaces";
 import type { DimDef, MetricDef } from "../interfaces";
-import type { AggFn } from "../../../../../utils/csvExport";
+
 
 /** A yyyy-mm-dd date as mm/dd/yyyy. */
 export const fmtDate = (iso: string) => {

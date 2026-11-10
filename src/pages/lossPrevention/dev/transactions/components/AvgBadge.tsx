@@ -1,15 +1,13 @@
 
 
-/** A cashier's figure against the peer average, as a change. */
-const AvgBadge = ({
-  pct,
-  avg,
-  textSize = "text-[11px]",
-}: {
+interface AvgBadgeProps {
   pct: number;
   avg: number;
   textSize?: string;
-}) => {
+}
+
+/** A cashier's figure against the peer average, as a change. */
+const AvgBadge = ({ pct, avg, textSize = "text-[11px]" }: AvgBadgeProps) => {
   if (avg === 0) return null;
   const isUp = pct > 0;
   return (

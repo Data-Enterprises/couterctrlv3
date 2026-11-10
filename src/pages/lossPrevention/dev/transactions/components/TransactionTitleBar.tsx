@@ -1,8 +1,7 @@
 // Utils
-import { severityHeaderBgClass } from "../../../../../utils/severity";
+import { severityHeaderBgClass, type Severity } from "../../../../../utils/severity";
 
 // Interfaces
-import type { Severity } from "../../../../../utils/severity";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";

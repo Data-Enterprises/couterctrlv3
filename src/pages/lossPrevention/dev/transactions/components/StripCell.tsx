@@ -1,6 +1,15 @@
 // Interfaces
 import type { ReactNode } from "react";
 
+interface StripCellProps {
+  label: string;
+  value: string;
+  baselineValue?: string;
+  badge: ReactNode;
+  className?: string;
+  valueClassName?: string;
+}
+
 /** One figure in a strip: its label, its baseline, the value and a badge. */
 const StripCell = ({
   label,
@@ -9,14 +18,7 @@ const StripCell = ({
   badge,
   className = "px-4 pt-2.5 text-center",
   valueClassName = "text-[14px] font-bold text-content",
-}: {
-  label: string;
-  value: string;
-  baselineValue?: string;
-  badge: ReactNode;
-  className?: string;
-  valueClassName?: string;
-}) => (
+}: StripCellProps) => (
   <div className={className}>
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
       {label}

@@ -7,14 +7,13 @@ import { useTriStateSort } from "../../../../utils/useTriStateSort";
 // Utils
 import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
-import { severityDotClass } from "../../../../utils/severity";
+import { severityDotClass, type SevFilter } from "../../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../utils/grading";
 import { SEV_RANK } from "../utils";
 import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
 import type { CashierDetails } from "../../../../interfaces";
-import type { SevFilter } from "../../../../utils/severity";
 import type { LpSortCol } from "../interfaces";
 
 // Components

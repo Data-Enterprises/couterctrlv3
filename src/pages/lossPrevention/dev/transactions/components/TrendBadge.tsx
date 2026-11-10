@@ -1,16 +1,14 @@
 
 
-/** The store figure against its baseline, as a change. Up is red: on this
- *  page more exceptions is worse. */
-const TrendBadge = ({
-  current,
-  trend,
-  useAbs = false,
-}: {
+interface TrendBadgeProps {
   current: number;
   trend: number;
   useAbs?: boolean;
-}) => {
+}
+
+/** The store figure against its baseline, as a change. Up is red: on this
+ *  page more exceptions is worse. */
+const TrendBadge = ({ current, trend, useAbs = false }: TrendBadgeProps) => {
   if (trend === 0) return null;
   const c = useAbs ? Math.abs(current) : current;
   const t = useAbs ? Math.abs(trend) : trend;

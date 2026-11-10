@@ -1392,32 +1392,10 @@
     "selector-outside-hook": 3
   },
   "src/pages/lossPrevention/dev/components/LPStorePanel.tsx": {
-    "one-line-per-source": 1,
     "selector-outside-hook": 2
-  },
-  "src/pages/lossPrevention/dev/export/LPExportModal.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/lossPrevention/dev/export/utils/index.ts": {
-    "one-line-per-source": 1
   },
   "src/pages/lossPrevention/dev/transactions/LPTransactionPanel.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/lossPrevention/dev/transactions/components/AvgBadge.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/lossPrevention/dev/transactions/components/ColFilter.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/lossPrevention/dev/transactions/components/StripCell.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/lossPrevention/dev/transactions/components/TransactionTitleBar.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/lossPrevention/dev/transactions/components/TrendBadge.tsx": {
-    "shape-inline-props": 1
   },
   "src/pages/lpActions/LpActions.tsx": {
     "labels": 1
