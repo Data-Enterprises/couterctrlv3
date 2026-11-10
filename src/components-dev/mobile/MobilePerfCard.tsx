@@ -43,6 +43,9 @@ interface MobilePerfCardProps {
   onSearch?: () => void;
   /** Opens the page's "?" sheet. Same case again. */
   onInfo?: () => void;
+  /** Controls for the whole page, just left of the "?" — only drawn in the
+   *  single-result case, where this card is the page. */
+  actions?: ReactNode;
   /** The report body. Rendered only while open. */
   children?: ReactNode;
 }
@@ -71,6 +74,7 @@ const MobilePerfCard = ({
   when,
   onSearch,
   onInfo,
+  actions,
   children,
 }: MobilePerfCardProps) => {
   const Header = onToggle ? "button" : "div";
@@ -100,6 +104,7 @@ const MobilePerfCard = ({
           <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
             {when}
           </span>
+          {actions && <div className="flex-none">{actions}</div>}
           {onInfo && (
             <InfoButton
               variant="light"

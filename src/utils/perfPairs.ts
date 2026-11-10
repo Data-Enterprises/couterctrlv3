@@ -32,6 +32,15 @@ export interface PerfPair {
   /** Nothing on file last year for this row's scope — see noLyHistory. Absent
    *  when no matching was given. */
   noLy?: boolean;
+  /**
+   * Last week, for a screen that shows both comparisons (`mergeLastWeek`).
+   * The same three facts as the last-year side: last week on its matched
+   * dates, this year over the days last week can match, and whether last week
+   * has anything on file. Absent where a page compares one period only.
+   */
+  lw?: number;
+  tyForLw?: number;
+  noLw?: boolean;
 }
 
 /**
@@ -263,17 +272,63 @@ export const pairBy = <T extends StoreRow & { sale_date: string }>(
   return [...acc.values()].sort((a, b) => b.ty - a.ty);
 };
 
+/**
+ * Put last week beside last year on every pair.
+ *
+ * `lwPairs` is the same list built against last week's rows (re-dated into
+ * last year's slots by `asLastYearSlots`), so its `ly` side IS last week. A
+ * row only last week has, sold then and not this year or last, still gets a
+ * row: it is the same rule `pairBy` follows for last year.
+ */
+export const mergeLastWeek = (
+  lyPairs: PerfPair[],
+  lwPairs: PerfPair[],
+): PerfPair[] => {
+  const lwBy = new Map(lwPairs.map((p) => [p.key, p]));
+  const out = lyPairs.map((p) => {
+    const w = lwBy.get(p.key);
+    return {
+      ...p,
+      lw: w?.ly ?? 0,
+      tyForLw: w?.tyForLy ?? p.ty,
+      noLw: w?.noLy,
+    };
+  });
+  const seen = new Set(lyPairs.map((p) => p.key));
+  for (const w of lwPairs) {
+    if (seen.has(w.key)) continue;
+    out.push({
+      key: w.key,
+      label: w.label,
+      ty: w.ty,
+      ly: 0,
+      tyForLy: w.ty,
+      lw: w.ly,
+      tyForLw: w.tyForLy,
+      noLw: w.noLy,
+    });
+  }
+  return out;
+};
+
 /** How a list of pairs can be ordered.
- *  - sales:  this year, largest first
- *  - change: vs last year, biggest drop first
- *  - name:   A-Z, numbers in number order ("9" before "10")
- *  - time:   by key as a number — hours of the day */
-export type PairSort = "sales" | "change" | "name" | "time";
+ *  - sales:    this year, largest first
+ *  - change:   vs last year, biggest drop first
+ *  - changeLw: vs last week, biggest drop first
+ *  - name:     A-Z, numbers in number order ("9" before "10")
+ *  - time:     by key as a number — hours of the day */
+export type PairSort = "sales" | "change" | "changeLw" | "name" | "time";
 
 /** This year against last year as a percentage, over the matched days. Null
  *  when last year is zero: there is nothing to take a percentage of. */
 export const pairChangePct = (p: PerfPair): number | null =>
   p.ly > 0 ? ((p.tyForLy - p.ly) / p.ly) * 100 : null;
+
+/** The same against last week. Null without a last-week figure, or at zero. */
+export const pairChangePctLw = (p: PerfPair): number | null =>
+  p.lw !== undefined && p.lw > 0
+    ? (((p.tyForLw ?? p.ty) - p.lw) / p.lw) * 100
+    : null;
 
 /**
  * A list's order: which column, and whether it is reversed from that column's
@@ -316,6 +371,7 @@ export const cycleSort = <K extends string>(
 export const SORT_DIR: Record<PairSort, "asc" | "desc"> = {
   sales: "desc",
   change: "asc",
+  changeLw: "asc",
   name: "asc",
   time: "asc",
 };
@@ -355,9 +411,11 @@ export const sortPairs = (
     case "sales":
       return out.sort((a, b) => bySize(a, b) * flip);
     case "change":
+    case "changeLw":
       return out.sort((a, b) => {
-        const pa = pairChangePct(a);
-        const pb = pairChangePct(b);
+        const pct = sort === "change" ? pairChangePct : pairChangePctLw;
+        const pa = pct(a);
+        const pb = pct(b);
         // Checked before the flip, so an absent comparison stays last in both
         // directions.
         if (pa === null && pb === null) return bySize(a, b);
@@ -431,3 +489,7 @@ export const buildDays = <T extends StoreRow & { sale_date: string }>(
  */
 export const netOf = (r: { total_sales: number; total_tax: number }) =>
   r.total_sales - r.total_tax;
+
+/** Units: the `qty` every sales endpoint carries, the same figure desktop
+ *  Sales grades on when its toggle is on Units. */
+export const qtyOf = (r: { qty: number }) => r.qty ?? 0;

@@ -1,6 +1,6 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { cmpLabels, cmpWord, type CmpBasis } from "../utils/perfData";
+import { cmpWord, type CmpBasis } from "../utils/perfData";
 import { COUPON_KEYS } from "../utils";
 
 // Interfaces
@@ -20,9 +20,8 @@ interface PerfStoreReportProps {
   /** Nothing on file last year for this store — drawn as "no history" rather
    *  than a $0.00 bar. */
   noLy: boolean;
-  /** Which period this store's comparison came from. A store onboarded this
-   *  year has no last year, so its card reads against last week instead and
-   *  has to say so. */
+  /** What the day chart's second column is: last year, or last week for a
+   *  store with no last year on file. The bars below always draw both. */
   basis: CmpBasis;
   totals: PerfTotals;
   /** The store's own bundle is still in flight, so the four figures it owns
@@ -32,6 +31,8 @@ interface PerfStoreReportProps {
   totalsNote: string;
   /** Leaves the card for the full-screen breakdowns. */
   onViewDetails: () => void;
+  /** How the measured figure reads: currency for sales, a count for units. */
+  fmt: (n: number) => string;
 }
 
 /**
@@ -62,7 +63,10 @@ const PerfStoreReport = ({
   totalsPartial,
   totalsNote,
   onViewDetails,
+  fmt,
 }: PerfStoreReportProps) => (
+  // `totals.value*` is whatever the Sales / Units switch measures; the four
+  // figures below stay money whatever it is set to.
   <div className="border-t border-brand_line">
     {/* ── the week ───────────────────────────────────────────────── */}
     <div className="px-3.5 pb-1 pt-2.5">
@@ -84,9 +88,9 @@ const PerfStoreReport = ({
             className="h-2 w-3.5 rounded-sm"
             style={{ background: LY_COLOR }}
           />
-          {/* No record isn't a zero — the columns can't say so, the legend
-              can. */}
-          {noLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
+          {/* The second column is last year, or last week when last year has
+              nothing on file; the legend says which. */}
+          {cmpWord(basis)}
         </span>
       </div>
       <p className="px-1 pt-1 text-[12px] text-content/95">
@@ -100,31 +104,37 @@ const PerfStoreReport = ({
     <div className="px-3.5 pb-3 pt-1.5">
       <div className="flex flex-wrap items-baseline gap-x-2.5">
         <span className="font-display text-[32px] font-extrabold leading-none tracking-tight text-content">
-          {formatCurrency2(totals.sales)}
+          {fmt(totals.value)}
         </span>
+        {/* Against last year, or last week when last year has nothing: the
+            same rule that colours the TY bar. */}
         <PerfDelta
-          ty={totals.sales}
-          ly={totals.salesLy}
-          unavailable={noLy}
+          ty={totals.value}
+          ly={noLy ? totals.valueLw : totals.valueLy}
+          format={fmt}
+          unavailable={noLy && totals.noLw}
           className="ml-auto"
         />
       </div>
 
       <div className="mt-2.5">
-        {/* This year is the full week; last year is its matched dates only,
-            so a short last year reads as short rather than borrowing days
-            that match nothing. */}
+        {/* This year is the full week; last year and last week are their
+            matched dates only, so a short comparison reads as short rather
+            than borrowing days that match nothing. */}
         <PairedBars
-          ty={totals.sales}
-          ly={totals.salesLy}
-          max={Math.max(totals.sales, totals.salesLy)}
+          ty={totals.value}
+          ly={totals.valueLy}
+          lw={totals.valueLw}
+          max={Math.max(totals.value, totals.valueLy, totals.valueLw)}
           compact
-          labels={cmpLabels(basis)}
+          labels={["TY", "LY", "LW"]}
+          format={fmt}
           lyUnavailable={noLy}
+          lwUnavailable={totals.noLw}
         />
         {totalsPartial && (
           <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
-            {cmpWord(basis)}: {totalsNote}
+            Last year: {totalsNote}
           </p>
         )}
       </div>

@@ -8,23 +8,20 @@ import { setPerfStoreSort } from "../../../../../../features/dev/devSalesPerfSli
 import { dirOf } from "../utils/perfData";
 import { storeSorts } from "../utils";
 
-// Interfaces
-import type { CmpBasis } from "../utils/perfData";
-
 // Components
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import MobileSortChips from "../../../../../../components-dev/mobile/MobileSortChips";
 
 interface StoreListControlsProps {
-  /** What the group card compares against, for the change chip's label. */
-  groupBasis: CmpBasis;
+  /** What the size sort is called: "Sales" or "Units", per the switch. */
+  sizeLabel: string;
   storeFilter: string;
   setStoreFilter: (v: string) => void;
 }
 
 /** How the store list is ordered and narrowed: sort chips and a filter box. */
 const StoreListControls = ({
-  groupBasis,
+  sizeLabel,
   storeFilter,
   setStoreFilter,
 }: StoreListControlsProps) => {
@@ -33,7 +30,7 @@ const StoreListControls = ({
   return (
   <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
     <MobileSortChips
-      options={storeSorts(groupBasis)}
+      options={storeSorts(sizeLabel)}
       value={perf.storeSort?.key ?? null}
       dir={
         perf.storeSort

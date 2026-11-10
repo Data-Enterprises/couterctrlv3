@@ -1,5 +1,7 @@
 // Utils
 import {
+  pairChangePct as pairChangePctOf,
+  pairChangePctLw as pairChangePctLwOf,
   buildDays as buildDaysCore,
   dayOf,
   inScope,
@@ -8,7 +10,9 @@ import {
   pickComparison,
   type CmpBasis,
   netOf,
+  noLyHistory,
   pairBy,
+  qtyOf,
   storeKeyOf,
   sumFor,
   type DayMatch,
@@ -25,6 +29,20 @@ import type {
 } from "../../../../../../interfaces";
 
 export { lyDateFor, storeKeyOf };
+
+/** What a figure measures: net sales, or units. Every builder below takes one,
+ *  so the Sales / Units switch is one choice made at the top. */
+export type Pick = (r: {
+  total_sales: number;
+  total_tax: number;
+  qty: number;
+}) => number;
+export const pickFor = (measure: "sales" | "units"): Pick =>
+  measure === "units" ? qtyOf : netOf;
+
+/** Units are whole things; a weighed line's qty can carry a fraction, which a
+ *  total rounds away rather than printing. */
+export const fmtUnits = (n: number) => Math.round(n).toLocaleString("en-US");
 export { pickComparison, type CmpBasis } from "../../../../../../utils/perfPairs";
 
 /**
@@ -85,12 +103,22 @@ export const resolveWeekComparison = (
 export {
   dirOf,
   isPartialMatch,
+  mergeLastWeek,
   noLyHistory,
   pairChangePct,
+  pairChangePctLw,
   sortPairs,
   type PairSort,
 } from "../../../../../../utils/perfPairs";
 export type { DayMatch, PerfDay, PerfPair };
+
+/**
+ * The change a row is graded on: against last year, or against last week when
+ * last year has nothing to compare (no history, or nothing sold then). The same
+ * rule colours the TY bar, so the figure and the colour always agree.
+ */
+export const gradedChangePct = (p: PerfPair): number | null =>
+  pairChangePctOf(p) ?? pairChangePctLwOf(p);
 
 /**
  * A change against last year, as a signed percentage.
@@ -148,7 +176,51 @@ export interface PerfTotals {
   coupons: number;
   couponSplit: CouponSplit;
   avgBasket: number;
+  /** The measured figure (sales or units, per the switch), this year, and
+   *  against last year and last week on each one's matched dates. `sales`
+   *  above stays net sales whatever is measured: the basket is money. */
+  value: number;
+  valueForLy: number;
+  valueLy: number;
+  valueForLw: number;
+  valueLw: number;
+  /** Nothing on file last week for this scope. */
+  noLw: boolean;
 }
+
+/** One comparison period's sums for a scope: this year over the days it
+ *  matches, and the period itself on those days only. */
+const cmpSums = (
+  weekTy: WeeklySale[],
+  weekCmp: WeeklySale[],
+  day: string | null,
+  store: string | null,
+  pick: Pick,
+) => {
+  if (day) {
+    return {
+      forCmp: sumFor(weekTy, day, store, pick),
+      cmp: sumFor(weekCmp, lyDateFor(day), store, pick),
+      none: noLyHistory(scopeMatch(weekTy, weekCmp, store), day),
+    };
+  }
+  const match = scopeMatch(weekTy, weekCmp, store);
+  return {
+    forCmp: sumFor(
+      weekTy.filter((r) => match.tyDates.has(dayOf(r))),
+      null,
+      store,
+      pick,
+    ),
+    cmp: sumFor(
+      weekCmp.filter((r) => match.lyDates.has(dayOf(r))),
+      null,
+      store,
+      pick,
+    ),
+    none: noLyHistory(match, null),
+  };
+};
 
 /**
  * The totals card.
@@ -165,6 +237,9 @@ export const buildTotals = (
   subsTy: SubSale[],
   day: string | null,
   store: string | null,
+  /** Last week, re-dated into last year's slots. */
+  weekLw: WeeklySale[] = [],
+  pick: Pick = netOf,
 ): PerfTotals => {
   const lyDay = day ? lyDateFor(day) : null;
 
@@ -198,7 +273,16 @@ export const buildTotals = (
     couponSplit.elecInstore +
     couponSplit.store;
 
+  const vsLy = cmpSums(weekTy, weekLy, day, store, pick);
+  const vsLw = cmpSums(weekTy, weekLw, day, store, pick);
+
   return {
+    value: sumFor(weekTy, day, store, pick),
+    valueForLy: vsLy.forCmp,
+    valueLy: vsLy.cmp,
+    valueForLw: vsLw.forCmp,
+    valueLw: vsLw.cmp,
+    noLw: vsLw.none,
     sales,
     salesForLy,
     salesLy,
@@ -218,7 +302,8 @@ export const buildDays = (
   weekTy: WeeklySale[],
   weekLy: WeeklySale[],
   store: string | null,
-) => buildDaysCore(weekTy, weekLy, store, netOf);
+  pick: Pick = netOf,
+) => buildDaysCore(weekTy, weekLy, store, pick);
 
 /** The store list is never narrowed by store — selecting one highlights it in
  *  place rather than reducing the list to a single row. */
@@ -229,6 +314,7 @@ export const buildStorePairs = (
   /** How a store is named. Passed in rather than read off the row: the name
    *  the user knows comes from their assigned stores, never from a payload. */
   nameOf: (storeid: number, fallback?: string) => string,
+  pick: Pick = netOf,
 ) => {
   // Each store matches on its own dates: one store missing last year's
   // weekend says nothing about the store beside it.
@@ -244,7 +330,7 @@ export const buildStorePairs = (
     null,
     storeKeyOf,
     (r) => nameOf(r.storeid, r.store_name),
-    netOf,
+    pick,
     matchOf,
   );
 };
@@ -256,6 +342,7 @@ export const buildSubPairs = (
   subsLy: SubSale[],
   day: string | null,
   match?: DayMatch,
+  pick: Pick = netOf,
 ) =>
   pairBy(
     subsTy,
@@ -264,7 +351,7 @@ export const buildSubPairs = (
     null,
     (r) => String(r.sub_department),
     (r) => r.sub_department_description,
-    netOf,
+    pick,
     match,
   );
 
@@ -284,6 +371,7 @@ export const buildHourPairs = (
   hourlyLy: HourlySale[],
   day: string | null,
   match?: DayMatch,
+  pick: Pick = netOf,
 ) =>
   pairBy(
     hourlyTy,
@@ -292,7 +380,7 @@ export const buildHourPairs = (
     null,
     (r) => String(r.hour),
     (r) => hourLabel(r.hour),
-    netOf,
+    pick,
     match,
   )
     // Hours read as a timeline, not a ranking, once you are inside a single
@@ -312,6 +400,7 @@ export const buildItemPairs = (
   itemsLy: SubDeptMargin[],
   day: string | null,
   match?: DayMatch,
+  pick: Pick = netOf,
 ) =>
   pairBy(
     itemsTy,
@@ -320,7 +409,7 @@ export const buildItemPairs = (
     null,
     (r) => String(r.product_code),
     (r) => r.product_description || String(r.product_code),
-    netOf,
+    pick,
     match,
   );
 

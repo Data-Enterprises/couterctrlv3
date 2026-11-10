@@ -30,7 +30,8 @@ import {
   fetchSubDeptRowsSafe,
 } from "../../../../../../utils/marginRows";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
-import { withProductCode } from "../../../utils/ledgerUtils";
+import { foldDepartmentRings } from "../../../utils/ledgerUtils";
+import { asLastYearSlots } from "../../../../../../utils/perfPairs";
 import { pickComparison, resolveWeekComparison, storeKeyOf } from "../utils/perfData";
 
 // Interfaces
@@ -120,10 +121,17 @@ export const usePerfFetch = () => {
       rows(sLw) as SubSale[],
     );
     return {
+      // Last year as it is. Last week is its own bar now, so a store with no
+      // last year shows "no history" there rather than last week twice.
+      // `basis` still records which one grades it.
       hourlyTy: rows(hTy) as HourlySale[],
-      hourlyLy: hourly.rows,
+      hourlyLy: rows(hLy) as HourlySale[],
       subsTy: rows(sTy) as SubSale[],
-      subsLy: subs.rows,
+      subsLy: rows(sLy) as SubSale[],
+      // Last week as well, shown beside last year rather than only in place
+      // of it. Re-dated into last year's slots so it pairs the same way.
+      hourlyLw: asLastYearSlots(rows(hLw) as HourlySale[]),
+      subsLw: asLastYearSlots(rows(sLw) as SubSale[]),
       basis: subs.basis === "lw" && hourly.basis === "lw" ? "lw" : subs.basis,
     };
   };
@@ -149,12 +157,16 @@ export const usePerfFetch = () => {
       ]);
 
       const ty = wTy.data.error === 0 ? wTy.data.sales : [];
-      const cmp = resolveWeekComparison(
-        ty,
-        wLy.data.error === 0 ? wLy.data.sales : [],
-        wLw.data.error === 0 ? wLw.data.sales : [],
+      const ly = wLy.data.error === 0 ? wLy.data.sales : [];
+      const lw = wLw.data.error === 0 ? wLw.data.sales : [];
+      dispatch(
+        setPerfWeek({
+          ty,
+          ly,
+          basis: resolveWeekComparison(ty, ly, lw).basis,
+          lw: asLastYearSlots(lw),
+        }),
       );
-      dispatch(setPerfWeek({ ty, ly: cmp.rows, basis: cmp.basis }));
       dispatch(setPerfGroupData(bundle));
       dispatch(setPerfHasSearched(true));
     } catch (err) {
@@ -239,8 +251,11 @@ export const usePerfItems = (itemKey: string | null, itemScope: ItemScope) => {
     const { storeid, storeNumber } = itemScope;
     const subId = perf.openSubDept.id;
     const gen = perf.storeCacheGen;
+    // The department's own sales (rung on the department key, no item) are
+    // kept as one labelled row rather than dropped, so the list adds up to the
+    // department figure above it.
     const scoped = (rows: SubDeptMargin[]) =>
-      withProductCode(rows).filter(
+      foldDepartmentRings(rows).filter(
         (r) =>
           storeNumber === null ||
           String(r.store_number).trim().replace(/^0+/, "") ===
@@ -298,7 +313,12 @@ export const usePerfItems = (itemKey: string | null, itemScope: ItemScope) => {
         dispatch(
           cachePerfItems({
             key,
-            items: { ty: scoped(ty), ly: cmp.rows, basis: cmp.basis },
+            items: {
+              ty: scoped(ty),
+              ly: scoped(ly),
+              basis: cmp.basis,
+              lw: asLastYearSlots(scoped(lw)),
+            },
             gen,
           }),
         );

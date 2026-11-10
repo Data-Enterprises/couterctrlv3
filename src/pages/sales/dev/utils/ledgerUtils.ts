@@ -164,15 +164,44 @@ export const SECTION_TEXT: Record<Severity, string> = {
  */
 export const withProductCode = <T extends { product_code: string }>(
   rows: T[],
+): T[] => rows.filter((r) => !isDepartmentRing(r.product_code));
+
+/** Whether a code is the department's own bucket rather than an item: null,
+ *  blank, or `0` / `0.0`. */
+export const isDepartmentRing = (code: unknown): boolean => {
+  if (code === null || code === undefined) return true;
+  const text = String(code).trim();
+  if (text === "" || text.toLowerCase() === "null") return true;
+  // `0` and `0.0` are the department bucket, never a scanned item.
+  return Number(text) === 0;
+};
+
+/** The key and the words the department's own sales go under in an item list. */
+export const DEPT_RING_KEY = "department";
+export const DEPT_RING_LABEL = "Sold directly to the sub department";
+
+/**
+ * Keep the department's own sales as one labelled row instead of dropping them.
+ *
+ * What a cashier rings on the department key, rather than by scanning an item,
+ * arrives as the bucket rows `withProductCode` throws away, and with them goes
+ * real money: the item list stops adding up to the department above it. Here
+ * every bucket row, its `Refunded` twin included, takes one key and one name,
+ * so the list pairs them into a single row that says what it is, and the
+ * refunds net against the sales.
+ *
+ * Mobile Sales asked for this (Amanda, 28 Oct). Desktop still drops them.
+ */
+export const foldDepartmentRings = <
+  T extends { product_code: string; product_description: string },
+>(
+  rows: T[],
 ): T[] =>
-  rows.filter((r) => {
-    const code = r.product_code;
-    if (code === null || code === undefined) return false;
-    const text = String(code).trim();
-    if (text === "" || text.toLowerCase() === "null") return false;
-    // `0` and `0.0` are the department bucket, never a scanned item.
-    return Number(text) !== 0;
-  });
+  rows.map((r) =>
+    isDepartmentRing(r.product_code)
+      ? { ...r, product_code: DEPT_RING_KEY, product_description: DEPT_RING_LABEL }
+      : r,
+  );
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

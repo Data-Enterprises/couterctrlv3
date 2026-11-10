@@ -1,14 +1,22 @@
-// Utils
-import { cmpLabels } from "../utils/perfData";
-
 // Interfaces
-import type { CmpBasis } from "../utils/perfData";
+import type { PerfPair } from "../utils/perfData";
 
 // Components
 import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 
+interface BarsProps {
+  p: PerfPair;
+  max: number;
+  /** How figures read: money or units, per the Sales / Units switch. */
+  fmt: (n: number) => string;
+}
+
 /**
- * This year against last year, under the row's name.
+ * This year against last year and last week, under the row's name.
+ *
+ * Last week is a third bar (asked for on 28 Oct), graded the same way as the
+ * row: the TY bar's colour reads against last year, and against last week
+ * only when last year has nothing on file.
  *
  * Was two lines of mono figures, on the reasoning that these lists are read by
  * scanning names and twenty sub departments of bars turn a list into a scroll.
@@ -22,26 +30,17 @@ import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars"
  * `max` is the list's own largest figure, never the row's, so a $200
  * department and a $20,000 one are not drawn the same width.
  */
-const Bars = ({
-  ty,
-  ly,
-  noLy,
-  max,
-  basis,
-}: {
-  ty: number;
-  ly: number;
-  noLy?: boolean;
-  max: number;
-  basis: CmpBasis;
-}) => (
+const Bars = ({ p, max, fmt }: BarsProps) => (
   <div className="mt-1.5">
     <PairedBars
-      ty={ty}
-      ly={ly}
+      ty={p.ty}
+      ly={p.ly}
+      lw={p.lw ?? 0}
       max={max}
-      labels={cmpLabels(basis)}
-      lyUnavailable={noLy}
+      labels={["TY", "LY", "LW"]}
+      format={fmt}
+      lyUnavailable={p.noLy}
+      lwUnavailable={p.noLw}
       compact
     />
   </div>

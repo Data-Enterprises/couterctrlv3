@@ -36,6 +36,9 @@ interface PerfCardHeaderProps {
    * doing both would be guessing which was meant.
    */
   onTitleTap?: () => void;
+  /** Controls that belong to the whole card, drawn just left of the "?":
+   *  Sales puts its Sales / Units switch here. */
+  actions?: React.ReactNode;
 }
 
 /**
@@ -63,6 +66,7 @@ const PerfCardHeader = ({
   onToggle,
   open = false,
   onTitleTap,
+  actions,
 }: PerfCardHeaderProps) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
@@ -98,13 +102,14 @@ const PerfCardHeader = ({
       {note && (
         <span className="flex-none text-[12px] text-content/95">{note}</span>
       )}
+      {actions && <div className="ml-auto flex-none">{actions}</div>}
       {onInfo && (
         // Same solid 20px mark as the desktop headers' "?".
         <InfoButton
           variant="light"
           onClick={onInfo}
           title="What this page shows"
-          className="-mr-1 ml-auto flex-none"
+          className={`-mr-1 flex-none${actions ? "" : " ml-auto"}`}
         />
       )}
     </div>
