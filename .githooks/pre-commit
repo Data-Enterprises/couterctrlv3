@@ -1,0 +1,30 @@
+#!/bin/sh
+# Runs the fast checks on what is being committed (CLAUDE.md §10). The full
+# suite (tsc -b, vitest, build) stays the step before a merge.
+# Turned on by `npm install` (the prepare script sets core.hooksPath).
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx')
+[ -z "$files" ] && exit 0
+
+src=$(printf '%s\n' "$files" | grep '^src/')
+
+echo "pre-commit: eslint"
+npx eslint --no-warn-ignored $files || { echo "pre-commit: eslint failed"; exit 1; }
+
+if [ -n "$src" ]; then
+  echo "pre-commit: check:rules"
+  node scripts/check-rules.mjs $src || { echo "pre-commit: check:rules found new rule breaks"; exit 1; }
+
+  echo "pre-commit: audit:theme"
+  node scripts/theme-audit.mjs > /tmp/theme-audit.$$ 2>&1
+  status=$?
+  grep -q "^TOTAL: 0 hit(s)" /tmp/theme-audit.$$ || status=1
+  if [ $status -ne 0 ]; then
+    grep -E "NEW|^\s+src/|TOTAL" /tmp/theme-audit.$$ | head -40
+    rm -f /tmp/theme-audit.$$
+    echo "pre-commit: audit:theme failed (npm run audit:theme for the full report)"
+    exit 1
+  fi
+  rm -f /tmp/theme-audit.$$
+fi
+exit 0

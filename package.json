@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prepare": "git config core.hooksPath .githooks",
     "dev:mobile": "node scripts/dev-mobile.mjs",
     "test": "vitest --ui --api 9527",
     "lint": "eslint .",
