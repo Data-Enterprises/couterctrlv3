@@ -16,14 +16,23 @@
  *
  * Scans src/pages (dev trees; prod snapshots are skipped) and src/components-dev.
  *
+ * src/components, the shared library both modes render, is scanned as a
+ * ratchet: today's hits are recorded in scripts/baselines/theme-shared.json and
+ * only hits above that count fail. Its fixes land with a promotion, since they
+ * change what clients see; until then nothing new may be added.
+ *
  * Run: npm run audit:theme        (add --verbose for every hit, not just 3)
+ *      npm run audit:theme -- --update-baseline   (after fixing or moving a shared file)
  * A clean run ends "TOTAL: 0 hit(s)"; any hit outside legacy exits 1.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, sep } from "node:path";
 
 const ROOTS = ["src/pages", "src/components-dev"];
+const SHARED_ROOT = "src/components";
+const BASELINE = "scripts/baselines/theme-shared.json";
 const VERBOSE = process.argv.includes("--verbose");
+const UPDATE = process.argv.includes("--update-baseline");
 
 /* ── page families ──────────────────────────────────────────────────────── */
 
@@ -222,6 +231,16 @@ for (const r of ROOTS.slice(1)) (function walk(dir) {
     }
   }
 })(r);
+(function walk(dir) {
+  for (const e of readdirSync(dir)) {
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) walk(p);
+    else if ((e.endsWith(".tsx") || e.endsWith(".ts")) && !/\.test\./.test(e)) {
+      const rel = p.split(sep).join("/");
+      files.push({ path: rel, page: "components", family: "Shared library", legacy: isLegacy(rel), shared: true, src: strip(readFileSync(p, "utf8")) });
+    }
+  }
+})(SHARED_ROOT);
 
 /* ── run ────────────────────────────────────────────────────────────────── */
 
@@ -267,7 +286,7 @@ console.log("=".repeat(76));
 
 for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   const rules = RULES.filter((r) => {
-    const h = results.get(r.id).filter((x) => !x.f.legacy);
+    const h = results.get(r.id).filter((x) => !x.f.legacy && !x.f.shared);
     return h.length && bucket(h) === level;
   });
   if (!rules.length) continue;
@@ -276,7 +295,7 @@ for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   console.log("-".repeat(76));
 
   for (const r of rules) {
-    const hits = results.get(r.id).filter((h) => !h.f.legacy);
+    const hits = results.get(r.id).filter((h) => !h.f.legacy && !h.f.shared);
     const byPage = {};
     for (const h of hits) (byPage[h.f.page] ??= []).push(h);
 
@@ -292,11 +311,40 @@ for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   }
 }
 
+/* ── shared library ratchet ─────────────────────────────────────────────── */
+
+const shared = {}; // path -> rule -> hits[]
+for (const r of RULES)
+  for (const h of results.get(r.id).filter((x) => x.f.shared && !x.f.legacy))
+    ((shared[h.f.path] ??= {})[r.id] ??= []).push(h);
+const counts = Object.fromEntries(Object.entries(shared).sort().map(([p, rs]) =>
+  [p, Object.fromEntries(Object.entries(rs).sort().map(([id, hs]) => [id, hs.length]))]));
+if (UPDATE) {
+  writeFileSync(BASELINE, JSON.stringify(counts, null, 2) + "\n");
+  console.log(`\nBaseline written: ${BASELINE}`);
+}
+let base = {};
+try { base = JSON.parse(readFileSync(BASELINE, "utf8")); } catch { /* no baseline yet: every hit is new */ }
+let over = 0, under = 0;
+const sharedTotal = Object.values(counts).reduce((a, rs) => a + Object.values(rs).reduce((b, n) => b + n, 0), 0);
+console.log(`\n\nSHARED LIBRARY (src/components): ${sharedTotal} known hit(s), held for the promotion`);
+for (const [p, rs] of Object.entries(shared)) for (const [id, hs] of Object.entries(rs)) {
+  const allowed = base[p]?.[id] ?? 0;
+  if (hs.length > allowed) {
+    over += hs.length - allowed;
+    console.log(`  NEW  [${id}] ${p}: ${hs.length} hit(s), baseline ${allowed}`);
+    for (const h of hs) console.log(`        ${p}:${h.line}  ${h.text}`);
+  }
+}
+for (const [p, rs] of Object.entries(base)) for (const [id, n] of Object.entries(rs))
+  if ((counts[p]?.[id] ?? 0) < n) under += n - (counts[p]?.[id] ?? 0);
+if (under && !UPDATE) console.log(`  ${under} fewer than the baseline: run with --update-baseline to lock that in.`);
+
 const legacyTotal = RULES.reduce(
   (a, r) => a + results.get(r.id).filter((h) => h.f.legacy).length, 0);
-console.log(`\n\nLEGACY (not counted above): ${legacyTotal} hit(s) — being replaced, ignore unless porting.`);
+console.log(`\nLEGACY (not counted above): ${legacyTotal} hit(s) — being replaced, ignore unless porting.`);
 const liveTotal = RULES.reduce(
-  (a, r) => a + results.get(r.id).filter((h) => !h.f.legacy).length, 0);
+  (a, r) => a + results.get(r.id).filter((h) => !h.f.legacy && !h.f.shared).length, 0) + over;
 console.log(`TOTAL: ${liveTotal} hit(s)`);
 console.log("");
 if (liveTotal > 0) process.exitCode = 1;
