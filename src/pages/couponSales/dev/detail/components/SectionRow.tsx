@@ -6,10 +6,10 @@ import { setSelectedCouponSection } from "../../../../../features/dev/devCouponS
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import { couponDotClass } from "../../utils";
+import { couponDotClass, type buildBreakdownRows } from "../../utils";
 
 // Interfaces
-import type { buildBreakdownRows } from "../../utils";
+
 
 interface SectionRowProps {
   row: ReturnType<typeof buildBreakdownRows>[number];

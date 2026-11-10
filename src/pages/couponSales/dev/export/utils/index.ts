@@ -9,11 +9,12 @@ import {
   buildItemRows,
   buildTransactions,
   type CouponRow,
+  type GradingOptions,
 } from "../../utils";
 
 // Interfaces
 import type { CouponItem, Store } from "../../../../../interfaces";
-import type { GradingOptions } from "../../utils";
+
 
 /** What the export is grouped by. Mirrors the page's own breakdowns, so an
  *  exported file matches what was on screen when it was pulled. */

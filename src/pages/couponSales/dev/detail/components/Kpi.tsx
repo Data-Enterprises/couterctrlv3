@@ -1,19 +1,16 @@
 // Components
 import TrendBadge from "./TrendBadge";
 
-/** Mirrors LP's StripCell: label, the baseline figure, then the value with its
- *  trend badge beside it. */
-const Kpi = ({
-  label,
-  value,
-  baselineValue,
-  trendPct,
-}: {
+interface KpiProps {
   label: string;
   value: string;
   baselineValue?: string;
   trendPct?: number | null;
-}) => (
+}
+
+/** Mirrors LP's StripCell: label, the baseline figure, then the value with its
+ *  trend badge beside it. */
+const Kpi = ({ label, value, baselineValue, trendPct }: KpiProps) => (
   <div className="px-4 pt-2.5 pb-2 text-center">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
       {label}

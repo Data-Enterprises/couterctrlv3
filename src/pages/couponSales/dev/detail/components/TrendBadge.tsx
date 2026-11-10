@@ -1,6 +1,10 @@
+interface TrendBadgeProps {
+  pct: number | null;
+}
+
 /** Percentage move against the baseline, styled like LP's TrendBadge. Up is
  *  the bad direction here — coupons growing past the store's own norm. */
-const TrendBadge = ({ pct }: { pct: number | null }) => {
+const TrendBadge = ({ pct }: TrendBadgeProps) => {
   if (pct === null) return null;
   const isUp = pct > 0;
   return (

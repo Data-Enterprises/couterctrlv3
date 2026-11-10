@@ -2,13 +2,15 @@
 import { useAppDispatch } from "../../../../../hooks";
 
 // Redux
-import { setCouponExportOpen } from "../../../../../features/dev/devCouponSalesSlice";
+import {
+  setCouponExportOpen,
+  type CouponTier,
+} from "../../../../../features/dev/devCouponSalesSlice";
 
 // Utils
 import { couponHeaderBgClass } from "../../utils";
 
 // Interfaces
-import type { CouponTier } from "../../../../../features/dev/devCouponSalesSlice";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";

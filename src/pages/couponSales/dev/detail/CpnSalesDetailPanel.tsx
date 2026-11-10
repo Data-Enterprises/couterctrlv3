@@ -6,7 +6,12 @@ import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useCouponSalesCtx } from "../hooks";
 
 // Redux
-import { setCouponBreakdown, setCouponReceiptLines } from "../../../../features/dev/devCouponSalesSlice";
+import {
+  setCouponBreakdown,
+  setCouponReceiptLines,
+  type CouponTier,
+  type CouponTierFilter,
+} from "../../../../features/dev/devCouponSalesSlice";
 
 // API
 import { getCashierTransaction } from "../../../../api/lossPrevention";
@@ -24,7 +29,6 @@ import {
 import { transactionCsv } from "./utils";
 
 // Interfaces
-import type { CouponTier, CouponTierFilter } from "../../../../features/dev/devCouponSalesSlice";
 import type { CouponItem, JsonError, TransactionListItem } from "../../../../interfaces";
 import type { SectionSortCol, TxSortCol } from "./interfaces";
 

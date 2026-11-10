@@ -6,11 +6,10 @@ import { setSelectedCouponSection } from "../../../../../features/dev/devCouponS
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
-import { totalsFor } from "../../utils";
+import { totalsFor, type buildBreakdownRows, type CouponTransaction } from "../../utils";
 
 // Interfaces
 import type { CouponItem } from "../../../../../interfaces";
-import type { buildBreakdownRows, CouponTransaction } from "../../utils";
 import type { TxSortCol } from "../interfaces";
 import type { useTriStateSort } from "../../../../../utils/useTriStateSort";
 

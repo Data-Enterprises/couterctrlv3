@@ -3,14 +3,16 @@ import { useAppDispatch } from "../../../../../hooks";
 import { useCouponSalesCtx } from "../../hooks";
 
 // Redux
-import { setCouponSectionFilter } from "../../../../../features/dev/devCouponSalesSlice";
+import {
+  setCouponSectionFilter,
+  type CouponTierFilter,
+} from "../../../../../features/dev/devCouponSalesSlice";
 
 // Utils
 import { SECTION_COL_LABEL } from "../utils";
 
 // Interfaces
 import type { Dispatch, SetStateAction } from "react";
-import type { CouponTierFilter } from "../../../../../features/dev/devCouponSalesSlice";
 import type { buildBreakdownRows, GradingOptions } from "../../utils";
 import type { SectionSortCol } from "../interfaces";
 import type { useTriStateSort } from "../../../../../utils/useTriStateSort";

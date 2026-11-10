@@ -1021,32 +1021,10 @@
     "labels": 1
   },
   "src/pages/couponSales/dev/detail/CpnSalesDetailPanel.tsx": {
-    "one-line-per-source": 1,
     "selector-outside-hook": 1
-  },
-  "src/pages/couponSales/dev/detail/components/DetailTitleBar.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/couponSales/dev/detail/components/Kpi.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/couponSales/dev/detail/components/SectionList.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/couponSales/dev/detail/components/SectionRow.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/couponSales/dev/detail/components/TransactionsPane.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/couponSales/dev/detail/components/TrendBadge.tsx": {
-    "shape-inline-props": 1
   },
   "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
     "selector-outside-hook": 2
-  },
-  "src/pages/couponSales/dev/export/utils/index.ts": {
-    "one-line-per-source": 1
   },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
