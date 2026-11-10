@@ -638,12 +638,6 @@
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
   },
-  "src/pages/couponSales/dev/detail/CpnSalesDetailPanel.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
-    "selector-outside-hook": 2
-  },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
   },

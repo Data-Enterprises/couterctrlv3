@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useCouponSalesCtx } from "../hooks";
@@ -69,8 +69,7 @@ const CpnSalesDetailPanel = ({
 }: CpnSalesDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { receiptLines: txLines, breakdown, selectedSectionKey, selectedStoreKey, sectionFilter } =
+  const { url, token, receiptLines: txLines, breakdown, selectedSectionKey, selectedStoreKey, sectionFilter } =
     useCouponSalesCtx();
 
   // Which transaction the right pane is showing, if any. Local like dev

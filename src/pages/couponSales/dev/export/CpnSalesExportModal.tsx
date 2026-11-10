@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useCouponSalesCtx } from "../hooks";
 
 // Redux
@@ -55,9 +55,9 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
     trendThreshold: rawTrendThreshold,
     metric,
     baselineCoupons,
+    assignedStores,
+    groupStores,
   } = useCouponSalesCtx();
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const threshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
 
   const [mode, setMode] = useState<Mode>("presets");
