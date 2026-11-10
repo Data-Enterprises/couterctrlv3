@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useAppDispatch } from "../../../../../hooks";
 import { useTicketsCtx } from "../../hooks";
 
 // Redux
@@ -15,8 +15,8 @@ import NewTicketModal from "./NewTicketModal";
  */
 const ReportIssueModal = () => {
   const dispatch = useAppDispatch();
-  const from = useAppSelector((state) => state.app.reportIssue);
   const ctx = useTicketsCtx();
+  const from = ctx.reportIssue;
 
   useEffect(() => {
     if (!ctx.lookups) ctx.loadLookups();

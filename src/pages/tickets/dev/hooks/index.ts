@@ -74,6 +74,7 @@ export const useTicketsCtx = () => {
   const toast = useToast();
   const tickets = useAppSelector((state) => state.dev.tickets);
   const userid = useAppSelector((state) => state.user.userid);
+  const reportIssue = useAppSelector((state) => state.app.reportIssue);
 
   /**
    * Which view this is: both flags come back on every response, and there is
@@ -469,6 +470,7 @@ export const useTicketsCtx = () => {
     ...tickets,
     dispatch,
     userid,
+    reportIssue,
     isTech,
     canManage,
     canManageTechs,

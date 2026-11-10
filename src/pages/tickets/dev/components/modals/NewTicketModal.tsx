@@ -1,11 +1,10 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
 import { useDevApi } from "../../../../../hooks/useDevApi";
 import { useTicketsCtx } from "../../hooks";
+import { useTicketScope } from "./hooks";
 
 // Redux
-import { shallowEqual } from "react-redux";
 import { openNew } from "../../../../../features/dev/devTicketsSlice";
 
 // API
@@ -40,7 +39,7 @@ import {
   searchSummary,
   suggestedTitle,
 } from "./utils/ticketOrigin";
-import { pageStoreOf, searchForPage } from "./utils";
+import { searchForPage } from "./utils";
 
 // Components
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
@@ -71,14 +70,9 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
   const origin = from?.from
     ? originOf({ reportFrom: from.from, page: from.page, area: from.area })
     : null;
-  const shared = useAppSelector((state) => state.search);
-  const assignedStores = useAppSelector((state) => state.user.assignedStores);
   // A page with its own store picker is about its own store, not the last one
   // searched on Sales; everything below reads `search`.
-  const own = useAppSelector(
-    (state) => (origin ? pageStoreOf(state, origin.href) : undefined),
-    shallowEqual,
-  );
+  const { shared, assignedStores, own } = useTicketScope(origin ? origin.href : null);
   const search = useMemo(
     () => searchForPage(shared, own, assignedStores),
     [shared, own, assignedStores],

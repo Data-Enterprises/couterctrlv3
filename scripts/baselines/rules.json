@@ -1307,12 +1307,6 @@
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
   },
-  "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/tickets/dev/components/modals/ReportIssueModal.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/upc/UpcList.tsx": {
     "labels": 1
   },
