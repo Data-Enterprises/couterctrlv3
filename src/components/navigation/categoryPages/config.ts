@@ -1,5 +1,5 @@
 // Interfaces
-import type { Navigation } from "../utils";
+import type { Navigation } from "../interfaces";
 
 // Components
 import { KeyIcon, BuildingOfficeIcon } from "@heroicons/react/16/solid";

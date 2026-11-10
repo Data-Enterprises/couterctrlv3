@@ -21,7 +21,7 @@ import LpActions from "./pages/lpActions/LpActions.tsx";
 import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
 import ExportBuilder from "./pages/exportBuilder/ExportBuilder.tsx";
 import UpcScanner from "./pages/upcScanner/UpcScanner.tsx";
-// Suggested Weight — commented out for publish; dev-API only (see navigation/utils.tsx)
+// Suggested Weight — commented out for publish; dev-API only (see navigation/categoryPages/comingSoon.ts)
 // import Suggested from "./pages/suggested/Suggested.tsx";
 import {
   SalesPage,

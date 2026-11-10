@@ -6,14 +6,16 @@ import {
 } from "../../utils/comingSoon";
 import { performancePages } from "./categoryPages/performance";
 import { analyticsPages } from "./categoryPages/analytics";
-import { dataPages } from "./categoryPages/dataPages";
-import { configPages } from "./categoryPages/configPages";
+import { dataPages } from "./categoryPages/data";
+import { configPages } from "./categoryPages/config";
 import { comingSoonPages } from "./categoryPages/comingSoon";
+
+// Interfaces
+import type { Navigation, NavCategory } from "./interfaces";
 
 // Components
 import {
   HomeIcon,
-  UsersIcon,
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
@@ -37,19 +39,6 @@ import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
 import CouponIcon from "../../svgs/CouponIcon";
-
-export type Navigation = {
-  name: string;
-  href: string;
-  icon: typeof UsersIcon | any;
-  current?: boolean;
-  children: Navigation[];
-  childOpen: boolean;
-  mobile: boolean;
-  userLevels: string[];
-  isHovering: boolean;
-  isVisible: boolean;
-};
 
 /**
  * User Levels: current
@@ -294,12 +283,6 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
 ];
-
-export type NavCategory = {
-  name: string;
-  icon: typeof UsersIcon | any;
-  pages: Navigation[];
-};
 
 export const categories: NavCategory[] = [
   {
