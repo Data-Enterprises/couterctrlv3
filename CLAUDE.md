@@ -291,10 +291,16 @@ light as they like (`border-brand_navy/15`, `bg-brand_navy/[0.06]`).
 - Content sits in `<section>` cards: `rounded-2xl border border-gray-200 bg-custom-white shadow-md`,
   stacked with `gap-3` inside `p-3`. A filter goes inside the card it filters; navigation goes in a bar
   under the header.
-- **Back:** going back a level is `MobileBackLink` ("‹ Back to stores", top-left of a white header;
-  `MobilePerfDetail` draws it from `backLabel`). Leaving a re-search is the search card's own
-  `onBack` / `backLabel`, which draws `SearchBackButton` ("← Back to results"). A navy header
-  (`MobilePerfHeader`) keeps its chevron `HeaderIconButton`. Never a fourth kind.
+- **Back** (phone and desktop) comes in exactly three kinds; never a fourth, and never a magnifying
+  glass as the way back (a client's IT lead: nobody reads the icon as "back"):
+  - **From a page's results to its search:** `BackButton` ("‹ Back"; `tone="navy"` in a navy
+    panel header, `tone="light"` on a white phone card). It also steps back up a phone drill
+    (`MobilePerfHeader`'s `onBack`).
+  - **Back a level to a named screen:** `MobileBackLink` ("‹ Back to stores", top-left of a white
+    header; `MobilePerfDetail` draws it from `backLabel`).
+  - **Closing a re-search:** the search card's own `onBack` / `backLabel`, which draws
+    `SearchBackButton` ("← Back to results").
+  A magnifying glass is only ever a search box's icon or a filter's Apply.
 - Building blocks, in `src/components-dev/mobile`: `MobilePerfCard` (a row that opens in place;
   expanding is not navigation), `MobilePerfDetail` (a breakdown as its own screen), `PerfCardHeader`,
   `MobileSortChips`, `PairedBars`, `PerfDayChart`. `KpiTileGrid` is desktop only.
@@ -328,7 +334,7 @@ itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
 - [ ] State and effects moved into a child still reset and run when they did before (check unmounts,
       early returns and mount effects)
 - [ ] Colours are tokens for what they mean; text at `/95` or more; classes literal; shared parts
-      (InfoButton, MobileBackLink, SearchBackButton, tooltip) rather than hand-rolled
+      (InfoButton, BackButton, MobileBackLink, SearchBackButton, tooltip) rather than hand-rolled
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
 - [ ] Verification is green
