@@ -8,7 +8,8 @@ import { clearPerfItem } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
 import { formatCurrency2 } from "../../../utils";
-import { cmpShort, pct } from "../utils";
+import { pct } from "../utils";
+import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
 
 // Components
 import MobilePerfDetail from "../../mobile/MobilePerfDetail";
@@ -27,8 +28,9 @@ const ItemWeekScreen = () => {
     dailyRows,
     dayPairs,
     dayMax,
-    basis,
     cardNoLy,
+    cardNoLw,
+    fmt,
   } = useItemPerfCtx();
   return (
     <>
@@ -37,7 +39,10 @@ const ItemWeekScreen = () => {
         active="week"
         onTab={() => {}}
         scopeName={selectedItem?.product_description ?? "Item"}
-        when={`${itemCode ?? ""} · ${windowLabel}`}
+        // The department's own sales have no UPC to show; the note says why.
+        when={`${
+          itemCode === DEPT_RING_KEY ? DEPT_RING_NOTE : (itemCode ?? "")
+        } · ${windowLabel}`}
         // Back names where it goes, because this screen is reached two ways.
         backLabel={perf.searchOpen ? "Search" : (perf.openGroup?.label ?? "Items")}
         onBack={() => dispatch(clearPerfItem())}
@@ -99,11 +104,14 @@ const ItemWeekScreen = () => {
                       className="border-b border-brand_line px-3.5 pb-2.5"
                     >
                       <PairedBars
-                        ty={pair?.ty ?? d.sales}
+                        ty={pair?.ty ?? 0}
                         ly={pair?.ly ?? 0}
+                        lw={pair?.lw ?? 0}
                         max={dayMax}
-                        labels={["TY", cmpShort(basis)]}
-                        lyUnavailable={cardNoLy}
+                        labels={["TY", "LY", "LW"]}
+                        format={fmt}
+                        lyUnavailable={pair?.noLy ?? cardNoLy}
+                        lwUnavailable={pair?.noLw ?? cardNoLw}
                         compact
                       />
                     </td>

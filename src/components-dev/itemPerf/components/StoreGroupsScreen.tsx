@@ -8,6 +8,7 @@ import {
   openItemSearch,
   setItemPerfHasSearched,
   setItemPerfInfoOpen,
+  setItemPerfMeasure,
   setItemPerfStoreNumber,
 } from "../../../features/dev/devItemPerfSlice";
 
@@ -18,6 +19,7 @@ import { sorts } from "../utils";
 import { BackspaceIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import MobileSortChips from "../../mobile/MobileSortChips";
 import PerfCardHeader from "../../mobile/perf/PerfCardHeader";
+import MeasureSwitch from "../../mobile/perf/MeasureSwitch";
 import MarginSummary from "./MarginSummary";
 import GroupCard from "./GroupCard";
 import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
@@ -33,7 +35,8 @@ const StoreGroupsScreen = () => {
     scopeLabel,
     dayLabel,
     windowLabel,
-    basis,
+    sizeLabel,
+    measure,
     activeSort,
     activeSortDir,
     onSort,
@@ -93,6 +96,14 @@ const StoreGroupsScreen = () => {
               when={dayLabel || windowLabel}
               onSearch={() => dispatch(setItemPerfHasSearched(false))}
               onInfo={() => dispatch(setItemPerfInfoOpen(true))}
+              // Sales or units: it changes every bar on the screen, so it sits
+              // in the page's own card beside the "?".
+              actions={
+                <MeasureSwitch
+                  value={measure}
+                  onChange={(m) => dispatch(setItemPerfMeasure(m))}
+                />
+              }
             />
             <MarginSummary />
           </section>
@@ -111,7 +122,7 @@ const StoreGroupsScreen = () => {
           {/* ── the groups ──────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
             <MobileSortChips
-              options={sorts(basis)}
+              options={sorts(sizeLabel)}
               value={activeSort?.key ?? null}
               dir={activeSortDir}
               onChange={onSort}

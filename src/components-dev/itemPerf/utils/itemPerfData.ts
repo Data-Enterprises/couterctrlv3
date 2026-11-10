@@ -2,11 +2,13 @@
 import { calculateCogs } from "../../../utils/cogs";
 import { dayOf, lyDateFor, netOf } from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
+import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
 
 // Interfaces
 import type {
   ItemDimension,
   ItemRow,
+  MarginMeasure,
   MarginSort,
 } from "../../../features/dev/devItemPerfSlice";
 import type { DayMatch } from "../../../utils/perfPairs";
@@ -106,7 +108,13 @@ const labelOf = (r: ItemRow, d: ItemDimension) => {
 const onDay = (rows: PricedRow[], day: string | null) =>
   day ? rows.filter((r) => r._day === day) : rows;
 
-export interface MarginTotals {
+/**
+ * The two figures the bars can measure, each in the three periods.
+ *
+ * Kept side by side rather than chosen when the rows are built, so the Sales /
+ * Units switch is a read, not a rebuild of every list.
+ */
+export interface Measured {
   /** This year, every day in scope — the headline figures. */
   sales: number;
   /** This year over only the days last year matched — what the TY/LY bars
@@ -114,6 +122,18 @@ export interface MarginTotals {
   salesForLy: number;
   /** Last year, and everything below suffixed Ly, on matched dates only. */
   salesLy: number;
+  /** This year over the days last week matched, and last week on them. */
+  salesForLw: number;
+  salesLw: number;
+  /** The same in units (weight for weighed items, else qty). */
+  units: number;
+  unitsForLy: number;
+  unitsLy: number;
+  unitsForLw: number;
+  unitsLw: number;
+}
+
+export interface MarginTotals extends Measured {
   /** Days this year has, and how many matched last year. Null inside a day,
    *  or when no matching was given. */
   days: number | null;
@@ -124,28 +144,49 @@ export interface MarginTotals {
   profitLy: number;
   gpm: number | null;
   gpmLy: number | null;
-  units: number;
   itemCount: number;
   tax: number;
 }
+
+const sum = (rows: PricedRow[], pick: (r: PricedRow) => number) =>
+  rows.reduce((a, r) => a + pick(r), 0);
+
+/** This year over the dates a comparison matched, or all of it without one. */
+const sumOn = (
+  rows: PricedRow[],
+  pick: (r: PricedRow) => number,
+  match: DayMatch | undefined,
+) =>
+  match
+    ? rows.reduce((a, r) => (match.tyDates.has(r._day) ? a + pick(r) : a), 0)
+    : sum(rows, pick);
+
+const net = (r: PricedRow) => r._net;
+const qty = (r: PricedRow) => r._units;
 
 const totalsOf = (
   ty: PricedRow[],
   ly: PricedRow[],
   match: DayMatch | undefined,
+  lw: PricedRow[],
+  matchLw: DayMatch | undefined,
 ): MarginTotals => {
-  const sales = ty.reduce((a, r) => a + r._net, 0);
-  const cogs = ty.reduce((a, r) => a + r._cogs, 0);
-  const salesLy = ly.reduce((a, r) => a + r._net, 0);
-  const cogsLy = ly.reduce((a, r) => a + r._cogs, 0);
-  const salesForLy = match
-    ? ty.reduce((a, r) => (match.tyDates.has(r._day) ? a + r._net : a), 0)
-    : sales;
+  const sales = sum(ty, net);
+  const cogs = sum(ty, (r) => r._cogs);
+  const salesLy = sum(ly, net);
+  const cogsLy = sum(ly, (r) => r._cogs);
 
   return {
     sales,
-    salesForLy,
+    salesForLy: sumOn(ty, net, match),
     salesLy,
+    salesForLw: sumOn(ty, net, matchLw),
+    salesLw: sum(lw, net),
+    units: sum(ty, qty),
+    unitsForLy: sumOn(ty, qty, match),
+    unitsLy: sum(ly, qty),
+    unitsForLw: sumOn(ty, qty, matchLw),
+    unitsLw: sum(lw, qty),
     days: match ? match.days : null,
     lyDays: match ? match.lyDays : null,
     cogs,
@@ -154,7 +195,6 @@ const totalsOf = (
     profitLy: salesLy - cogsLy,
     gpm: gpmOf(sales, cogs),
     gpmLy: gpmOf(salesLy, cogsLy),
-    units: ty.reduce((a, r) => a + r._units, 0),
     itemCount: new Set(ty.map((r) => r.product_code)).size,
     tax: ty.reduce((a, r) => a + r.total_tax, 0),
   };
@@ -199,8 +239,13 @@ export const buildMarginTotals = (
   /** The store week's matching (matchWeek over the store's rows). Ignored
    *  inside a single day, which names its one LY date. */
   match?: DayMatch,
+  /** Last week, in last year's slots (see `asLastYearSlots`), and its own
+   *  matching. Matched exactly as last year is, so one rule covers both. */
+  itemsLw: PricedRow[] = [],
+  matchLw?: DayMatch,
 ): MarginTotals => {
   const m = day ? undefined : match;
+  const mLw = day ? undefined : matchLw;
   return totalsOf(
     scopeItems(itemsTy, dimension, day, groupKey, itemCode),
     // Last year is matched day for day, so a Saturday never lands against a
@@ -216,21 +261,27 @@ export const buildMarginTotals = (
       m,
     ),
     m,
+    lyForWeek(
+      scopeItems(
+        itemsLw,
+        dimension,
+        day ? lyDateFor(day) : null,
+        groupKey,
+        itemCode,
+      ),
+      mLw,
+    ),
+    mLw,
   );
 };
 
 /** One row in any of the three lists. Sales drive the bars, the same figure
  *  the card's bars show; the percentage sits beside the name because it
  *  answers a different question. */
-export interface MarginRow {
+export interface MarginRow extends Measured {
   key: string;
   label: string;
   sub: string;
-  sales: number;
-  /** This year over the days last year matched — the side the change and the
-   *  bars compare. Equal to `sales` inside a day or on a complete week. */
-  salesForLy: number;
-  salesLy: number;
   profit: number;
   profitLy: number;
   gpm: number | null;
@@ -244,19 +295,30 @@ const rowsBy = (
   subFn: (r: PricedRow) => string,
   /** TY dates that matched last year; every TY row counts when absent. */
   tyDates?: Set<string>,
+  /** Last week, already narrowed to its matched dates, and the TY dates it
+   *  matched. */
+  lw: PricedRow[] = [],
+  tyDatesLw?: Set<string>,
 ): MarginRow[] => {
   type Acc = {
     label: string;
     sub: string;
     s: number;
     sFor: number;
+    sForLw: number;
+    u: number;
+    uFor: number;
+    uForLw: number;
     c: number;
     sLy: number;
+    uLy: number;
     cLy: number;
+    sLw: number;
+    uLw: number;
   };
   const acc = new Map<string, Acc>();
 
-  const add = (rows: PricedRow[], side: "ty" | "ly") =>
+  const add = (rows: PricedRow[], side: "ty" | "ly" | "lw") =>
     rows.forEach((r) => {
       const k = keyFn(r);
       const a = acc.get(k) ?? {
@@ -264,27 +326,47 @@ const rowsBy = (
         sub: subFn(r),
         s: 0,
         sFor: 0,
+        sForLw: 0,
+        u: 0,
+        uFor: 0,
+        uForLw: 0,
         c: 0,
         sLy: 0,
+        uLy: 0,
         cLy: 0,
+        sLw: 0,
+        uLw: 0,
       };
       if (side === "ty") {
         a.s += r._net;
+        a.u += r._units;
         a.c += r._cogs;
-        if (!tyDates || tyDates.has(r._day)) a.sFor += r._net;
-      } else {
+        if (!tyDates || tyDates.has(r._day)) {
+          a.sFor += r._net;
+          a.uFor += r._units;
+        }
+        if (!tyDatesLw || tyDatesLw.has(r._day)) {
+          a.sForLw += r._net;
+          a.uForLw += r._units;
+        }
+      } else if (side === "ly") {
         a.sLy += r._net;
+        a.uLy += r._units;
         a.cLy += r._cogs;
+      } else {
+        a.sLw += r._net;
+        a.uLw += r._units;
       }
       acc.set(k, a);
     });
 
-  // Both periods fill the accumulator independently. Iterating this year and
+  // Every period fills the accumulator independently. Iterating this year and
   // looking last year up — what buildItemRows in utils/itemMargins does — drops
   // anything that sold last year and nothing this year, which on a screen built
   // around a year-over-year comparison fails silently.
   add(ty, "ty");
   add(ly, "ly");
+  add(lw, "lw");
 
   return (
     [...acc.entries()]
@@ -295,6 +377,13 @@ const rowsBy = (
         sales: a.s,
         salesForLy: a.sFor,
         salesLy: a.sLy,
+        salesForLw: a.sForLw,
+        salesLw: a.sLw,
+        units: a.u,
+        unitsForLy: a.uFor,
+        unitsLy: a.uLy,
+        unitsForLw: a.uForLw,
+        unitsLw: a.uLw,
         profit: a.s - a.c,
         profitLy: a.sLy - a.cLy,
         gpm: gpmOf(a.s, a.c),
@@ -316,15 +405,22 @@ export const buildGroupRows = (
   day: string | null,
   /** The store week's matching; see buildMarginTotals. */
   match?: DayMatch,
+  /** Last week and its matching; see buildMarginTotals. */
+  itemsLw: PricedRow[] = [],
+  matchLw?: DayMatch,
 ) => {
   const m = day ? undefined : match;
+  const mLw = day ? undefined : matchLw;
+  const lyDay = day ? lyDateFor(day) : null;
   return rowsBy(
     onDay(itemsTy, day),
-    lyForWeek(onDay(itemsLy, day ? lyDateFor(day) : null), m),
+    lyForWeek(onDay(itemsLy, lyDay), m),
     (r) => keyOf(r, dimension),
     (r) => labelOf(r, dimension),
     () => "",
     m?.tyDates,
+    lyForWeek(onDay(itemsLw, lyDay), mLw),
+    mLw?.tyDates,
     // Profit, not sales: the TY bar already prints this row's sales.
   ).map((r) => ({ ...r, sub: `${money(r.profit)} gross profit` }));
 };
@@ -339,6 +435,9 @@ export const buildItemRows = (
   query: string,
   /** The store week's matching; see buildMarginTotals. */
   weekMatch?: DayMatch,
+  /** Last week and its matching; see buildMarginTotals. */
+  itemsLw: PricedRow[] = [],
+  matchLw?: DayMatch,
 ) => {
   const q = query.trim().toLowerCase();
   const match = (r: PricedRow) =>
@@ -346,30 +445,39 @@ export const buildItemRows = (
     r.product_code.toLowerCase().includes(q) ||
     r.product_description.toLowerCase().includes(q);
   const m = day ? undefined : weekMatch;
+  const mLw = day ? undefined : matchLw;
+  const lyDay = day ? lyDateFor(day) : null;
 
   return rowsBy(
     scopeItems(itemsTy, dimension, day, groupKey, null).filter(match),
     lyForWeek(
-      scopeItems(
-        itemsLy,
-        dimension,
-        day ? lyDateFor(day) : null,
-        groupKey,
-        null,
-      ).filter(match),
+      scopeItems(itemsLy, dimension, lyDay, groupKey, null).filter(match),
       m,
     ),
     (r) => r.product_code,
     (r) => r.product_description,
     // The subtitle carries the dimension the page is NOT grouped by, so a row
     // always says something the list around it does not already say.
+    //
+    // The department's own sales (see foldDepartmentRings) have no UPC, so
+    // the note takes its place. Nothing follows it: the one row folds every
+    // department key in scope, across vendors on Sub Dept Margins and
+    // Categories and across sub departments on Vendors, so the first row's
+    // vendor or department would name only part of it.
     (r) =>
-      `${r.product_code} · ${
-        dimension === "vendor"
-          ? (r.sub_department_description ?? r.category_description ?? "")
-          : vendorLabel(r)
-      }`,
+      r.product_code === DEPT_RING_KEY
+        ? DEPT_RING_NOTE
+        : `${r.product_code} · ${
+            dimension === "vendor"
+              ? (r.sub_department_description ?? r.category_description ?? "")
+              : vendorLabel(r)
+          }`,
     m?.tyDates,
+    lyForWeek(
+      scopeItems(itemsLw, dimension, lyDay, groupKey, null).filter(match),
+      mLw,
+    ),
+    mLw?.tyDates,
   );
 };
 
@@ -416,7 +524,14 @@ export const buildDailyRows = (
   });
 };
 
-/** Sales by day, for the chart — the same figure as the card's bars above it. */
+/**
+ * The measure by day, for the chart — the same figure as the card's bars above
+ * it.
+ *
+ * `itemsLy` is whichever period the chart's second column draws: last year,
+ * or last week (in last year's slots) for a store with no last year. Both are
+ * dated the same way, so one lookup serves either.
+ */
 export const buildMarginDays = (
   itemsTy: PricedRow[],
   itemsLy: PricedRow[],
@@ -424,8 +539,10 @@ export const buildMarginDays = (
   groupKey: string | null,
   itemCode: string | null,
   weekDates: string[],
-) =>
-  weekDates.map((iso) => {
+  measure: MarginMeasure = "sales",
+) => {
+  const pick = measure === "units" ? qty : net;
+  return weekDates.map((iso) => {
     const ty = scopeItems(itemsTy, dimension, iso, groupKey, itemCode);
     const ly = scopeItems(
       itemsLy,
@@ -439,10 +556,11 @@ export const buildMarginDays = (
       label: new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", {
         weekday: "short",
       }),
-      ty: ty.reduce((a, r) => a + r._net, 0),
-      ly: ly.reduce((a, r) => a + r._net, 0),
+      ty: sum(ty, pick),
+      ly: sum(ly, pick),
     };
   });
+};
 
 /** Find an item's row in whichever period has one. Items that sold last year
  *  and nothing this year are listed, so they must open too — looking in this
@@ -459,10 +577,56 @@ export const findItem = (
   return undefined;
 };
 
-/** Sales this year against last, as a percentage, over the matched days —
- *  what the bars compare. Null when last year sold nothing to compare against. */
-export const salesChangePct = (r: MarginRow): number | null =>
-  r.salesLy > 0 ? ((r.salesForLy - r.salesLy) / r.salesLy) * 100 : null;
+/** The three figures the bars draw, in whichever measure is on. */
+export const measuredOf = (r: Measured, measure: MarginMeasure) =>
+  measure === "units"
+    ? {
+        ty: r.units,
+        forLy: r.unitsForLy,
+        ly: r.unitsLy,
+        forLw: r.unitsForLw,
+        lw: r.unitsLw,
+      }
+    : {
+        ty: r.sales,
+        forLy: r.salesForLy,
+        ly: r.salesLy,
+        forLw: r.salesForLw,
+        lw: r.salesLw,
+      };
+
+/** This year against last, as a percentage, over the matched days — what the
+ *  bars compare. Null when last year sold nothing to compare against. */
+export const changeVsLy = (
+  r: Measured,
+  measure: MarginMeasure = "sales",
+): number | null => {
+  const v = measuredOf(r, measure);
+  return v.ly > 0 ? ((v.forLy - v.ly) / v.ly) * 100 : null;
+};
+
+/** The same against last week. */
+export const changeVsLw = (
+  r: Measured,
+  measure: MarginMeasure = "sales",
+): number | null => {
+  const v = measuredOf(r, measure);
+  return v.lw > 0 ? ((v.forLw - v.lw) / v.lw) * 100 : null;
+};
+
+/**
+ * The change a row is graded on: against last year, or against last week when
+ * last year has nothing to compare (no history, or nothing sold then). The same
+ * rule colours the TY bar, so the figure and the colour always agree — and the
+ * same one mobile Sales uses (`gradedChangePct`).
+ */
+export const gradedChange = (
+  r: Measured,
+  measure: MarginMeasure = "sales",
+): number | null => changeVsLy(r, measure) ?? changeVsLw(r, measure);
+
+/** Sales against last year. Kept for the callers that only ever meant sales. */
+export const salesChangePct = (r: MarginRow): number | null => changeVsLy(r);
 
 /**
  * Order a margin list. Returns a new array.
@@ -480,9 +644,12 @@ export const sortMarginRows = (
   rows: MarginRow[],
   sort: MarginSort,
   reversed: boolean = false,
+  /** What "sales" orders by, and what ties fall back to: the bars' measure. */
+  measure: MarginMeasure = "sales",
 ): MarginRow[] => {
   const flip = reversed ? -1 : 1;
-  const bySales = (a: MarginRow, b: MarginRow) => b.sales - a.sales;
+  const size = (r: MarginRow) => (measure === "units" ? r.units : r.sales);
+  const bySales = (a: MarginRow, b: MarginRow) => size(b) - size(a);
   const nullsLast = (
     pick: (r: MarginRow) => number | null,
     dir: number,
@@ -505,7 +672,9 @@ export const sortMarginRows = (
       return out.sort(nullsLast((r) => r.gpm, flip));
     case "change":
       // Biggest drop first.
-      return out.sort(nullsLast(salesChangePct, flip));
+      return out.sort(nullsLast((r) => changeVsLy(r, measure), flip));
+    case "changeLw":
+      return out.sort(nullsLast((r) => changeVsLw(r, measure), flip));
     case "name":
       return out.sort(
         (a, b) =>
@@ -527,6 +696,7 @@ export const MARGIN_SORT_DIR: Record<MarginSort, "asc" | "desc"> = {
   profit: "desc",
   gpm: "asc",
   change: "asc",
+  changeLw: "asc",
   name: "asc",
 };
 

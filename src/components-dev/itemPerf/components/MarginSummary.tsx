@@ -3,7 +3,7 @@ import { useItemPerfCtx } from "../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../utils";
-import { cmpShort, cmpWord, pct } from "../utils";
+import { fmtUnits, pct } from "../utils";
 
 // Components
 import PairedBars from "../../mobile/perf/PairedBars";
@@ -12,8 +12,17 @@ import PerfDelta from "../../mobile/perf/PerfDelta";
 /** The margin figures for whatever is in scope: the group card, the store
  *  card and the item screen ask the same question of a different scope. */
 const MarginSummary = () => {
-  const { totals, cardNoLy, selectedItem, basis, totalsPartial, weekMatch } =
-    useItemPerfCtx();
+  const {
+    totals,
+    totalsV,
+    cardNoLy,
+    cardNoLw,
+    selectedItem,
+    totalsPartial,
+    weekMatch,
+    fmt,
+    sizeLabel,
+  } = useItemPerfCtx();
   return (
     <div className="px-3.5 pb-3.5 pt-2">
       {/* Three even thirds, not a flex row with the +/- shoved right by
@@ -70,26 +79,31 @@ const MarginSummary = () => {
 
       <div className="mt-3">
         <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/95">
-          <span>Sales</span>
+          <span>{sizeLabel}</span>
           <span>
             {selectedItem
-              ? `${totals.units.toLocaleString("en-US")} qty`
+              ? `${fmtUnits(totals.units)} qty`
               : `${totals.itemCount.toLocaleString("en-US")} ${
                   totals.itemCount === 1 ? "item" : "items"
                 }`}
           </span>
         </div>
+        {/* The TY bar's colour reads against last year, and against last
+            week only when last year has nothing on file. */}
         <PairedBars
-          ty={totals.sales}
-          ly={totals.salesLy}
-          max={Math.max(totals.sales, totals.salesLy)}
-          labels={["TY", cmpShort(basis)]}
+          ty={totalsV.ty}
+          ly={totalsV.ly}
+          lw={totalsV.lw}
+          max={Math.max(totalsV.ty, totalsV.ly, totalsV.lw)}
+          labels={["TY", "LY", "LW"]}
+          format={fmt}
           compact
           lyUnavailable={cardNoLy}
+          lwUnavailable={cardNoLw}
         />
         {totalsPartial && (
           <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
-            {cmpWord(basis)}: {weekMatch.lyDays} of {weekMatch.days} days matched
+            Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
           </p>
         )}
       </div>
