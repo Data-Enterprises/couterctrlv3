@@ -1,5 +1,9 @@
+// Utils
+import { MARKDOWN_COLUMNS } from "../../utils";
+
 // Interfaces
-import type { MarkdownItem } from "../../../../../interfaces/markdowns";
+import type { SortState } from "../../../../../utils/useTriStateSort";
+import type { MarkdownItem, MarkdownSortKey } from "../../../../../interfaces/markdowns";
 import type { MarkdownTotals } from "../interfaces";
 
 /** The pager's page sizes, as Orders offers them. */
@@ -7,6 +11,24 @@ export const PAGE_SIZES = [100, 250, 500, 1000];
 
 /** Rows a page shows until someone picks another size. */
 export const DEFAULT_PAGE_SIZE = 500;
+
+/** The columns holding a date, which sort newest or oldest first. */
+const DATE_COLUMNS: MarkdownSortKey[] = ["order_date", "last_update_time"];
+
+/** The grid's order in words, for its header: the backend sends the rows by
+ *  date, so with no sort they are in date order. */
+export const sortLabel = (sort: SortState<MarkdownSortKey>) => {
+  if (!sort) return "In date order";
+  const col = MARKDOWN_COLUMNS.find((c) => c.key === sort.col);
+  if (!col) return "In date order";
+  const desc = sort.dir === "desc";
+  const dir = DATE_COLUMNS.includes(col.key)
+    ? desc ? "newest first" : "oldest first"
+    : col.align === "right"
+      ? desc ? "high to low" : "low to high"
+      : desc ? "Z to A" : "A to Z";
+  return `Sorted by ${col.label}, ${dir}`;
+};
 
 /** How much of the item a line marked down: its weight for a scaled item,
  *  otherwise its quantity. The prices and markdown are per unit. */

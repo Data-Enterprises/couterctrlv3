@@ -160,9 +160,12 @@ describe("the Markdowns page", () => {
 
   it("sorts by a heading: descending, ascending, then back to the backend's order", () => {
     setup();
+    expect(screen.getByText(/In date order/)).toBeTruthy();
     const pct = screen.getByRole("button", { name: /MD %/ });
     fireEvent.click(pct);
     expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb", "Wheat bread"]);
+    // The grid's header says what order the rows are in.
+    expect(screen.getByText(/Sorted by MD %, high to low/)).toBeTruthy();
     fireEvent.click(pct);
     expect(gridOrder()).toEqual(["Wheat bread", "Strawberries 1lb", "Ground beef"]);
     fireEvent.click(pct);

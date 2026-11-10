@@ -1,6 +1,9 @@
 // Hooks
 import { useMarkdownsCtx } from "../../hooks";
 
+// Utils
+import { sortLabel } from "../utils";
+
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 
@@ -9,7 +12,7 @@ interface GridNavyHeaderProps {
 }
 
 /** The grid's navy header, as Receivers' detail panel has it: the page and
- *  its scope, then export. */
+ *  the order its rows are in, then export. */
 const GridNavyHeader = ({ onExport }: GridNavyHeaderProps) => {
   const ctx = useMarkdownsCtx();
   return (
@@ -17,7 +20,7 @@ const GridNavyHeader = ({ onExport }: GridNavyHeaderProps) => {
       <div className="text-[13px] font-semibold text-custom-white min-w-0 truncate">
         Markdowns
         <span className="ml-2 text-[11px] font-normal text-custom-white">
-          — {ctx.shown.scope} · {ctx.shown.startDate} – {ctx.shown.endDate}
+          — {sortLabel(ctx.sort)}
         </span>
       </div>
       <div className="flex items-center gap-3 mt-0.5 flex-shrink-0">

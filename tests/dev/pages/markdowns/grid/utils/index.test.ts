@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { markdownTotals, unitsOf } from "@/pages/markdowns/dev/grid/utils";
+import { markdownTotals, sortLabel, unitsOf } from "@/pages/markdowns/dev/grid/utils";
 
 // Interfaces
 import type { MarkdownItem } from "@/interfaces/markdowns";
@@ -61,5 +61,18 @@ describe("markdownTotals", () => {
     const t = markdownTotals([row({}), row({ original_price: null, markdown: 5, qty: 1 })]);
     expect(t.avgPct).toBeCloseTo(25);
     expect(t.dollars).toBe(15);
+  });
+});
+
+describe("sortLabel", () => {
+  it("says date order with no sort, the backend's own order", () => {
+    expect(sortLabel(null)).toBe("In date order");
+  });
+
+  it("names the column and the direction in words that suit it", () => {
+    expect(sortLabel({ col: "markdown_percent", dir: "desc" })).toBe("Sorted by MD %, high to low");
+    expect(sortLabel({ col: "qty", dir: "asc" })).toBe("Sorted by Qty, low to high");
+    expect(sortLabel({ col: "order_date", dir: "desc" })).toBe("Sorted by Date, newest first");
+    expect(sortLabel({ col: "storename", dir: "asc" })).toBe("Sorted by Store, A to Z");
   });
 });
