@@ -976,15 +976,6 @@
   "src/pages/lossPrevention/LossPrevention.tsx": {
     "labels": 1
   },
-  "src/pages/lossPrevention/dev/components/LPDesktop.tsx": {
-    "selector-outside-hook": 3
-  },
-  "src/pages/lossPrevention/dev/components/LPStorePanel.tsx": {
-    "selector-outside-hook": 2
-  },
-  "src/pages/lossPrevention/dev/transactions/LPTransactionPanel.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/lpActions/LpActions.tsx": {
     "labels": 1
   },

@@ -1,6 +1,5 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../../hooks";
 import { useLossPreventionCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
@@ -39,8 +38,7 @@ interface LPStorePanelProps {
  *  baseline. Clicking a store loads its transactions. */
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: LPStorePanelProps) => {
   const cashier = useLossPreventionCtx();
-  const search = useAppSelector((s) => s.search);
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const { search, assignedStores } = cashier;
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<LpSortCol>();

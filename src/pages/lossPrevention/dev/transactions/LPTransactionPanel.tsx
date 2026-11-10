@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector, useAppDispatch, useStoreName } from "../../../../hooks";
+import { useAppDispatch, useStoreName } from "../../../../hooks";
 import { useLossPreventionCtx } from "../hooks";
 
 // Redux
@@ -51,7 +51,7 @@ interface LPTransactionPanelProps {
 const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => {
   const dispatch = useAppDispatch();
   const cashier = useLossPreventionCtx();
-  const search = useAppSelector((s) => s.search);
+  const { search } = cashier;
 
   const [selectedOverview, setSelectedOverview] =
     useState<TransactionOverview | null>(null);
