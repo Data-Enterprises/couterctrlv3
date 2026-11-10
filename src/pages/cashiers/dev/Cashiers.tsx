@@ -15,6 +15,7 @@ import {
   setExplorerScopeLabel,
   setExplorerRows,
   setSelectedSaleType,
+  type ExplorerLens,
 } from "../../../features/dev/devCashiersSlice";
 import { isGroupSearch } from "../../../features/searchSlice";
 
@@ -31,7 +32,6 @@ import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
 
 // Interfaces
 import type { JsonError, TransactionListItem } from "../../../interfaces";
-import type { ExplorerLens } from "../../../features/dev/devCashiersSlice";
 
 // Components
 import BackButton from "../../../components-dev/BackButton";

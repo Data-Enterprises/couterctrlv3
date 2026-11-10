@@ -6,6 +6,7 @@ import {
   rowsToCsv,
   downloadCsv,
   aggregateRows,
+  type AggFn,
 } from "../../../../utils/csvExport";
 import {
   AGG_OPTIONS,
@@ -24,7 +25,6 @@ import {
 import type { Dataset, ModalMode, Signal } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import type { AggFn } from "../../../../utils/csvExport";
 
 // Components
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";

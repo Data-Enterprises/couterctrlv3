@@ -24,13 +24,17 @@ import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail
 import Transaction from "../../../../components-dev/transactions/Transaction";
 import Meta from "./components/Meta";
 
+interface SignalTransactionsMobileProps {
+  onBack: () => void;
+}
+
 /**
  * One signal's transactions, between the signal list and a receipt: a screen
  * (the receipt is the sheet) in `MobilePerfDetail`, with one tab (no tab row).
  * The band under the header is `describeSignal()`, the explorer's reading of
  * what the signal means.
  */
-const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
+const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => {
   const {
     explorerSignalKey,
     explorerLens,

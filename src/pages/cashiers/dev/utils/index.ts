@@ -1,12 +1,12 @@
 // Utils
 import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
-import { fmtNum, rowsToCsv } from "../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn, type AggRow } from "../../../../utils/csvExport";
 
 // Interfaces
 import type { ExplorerTotals, Signal, SignalTransaction, SpreadKind, StoreNameResolver } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
+
 
 export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "store", label: "Store" },

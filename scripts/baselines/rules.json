@@ -1002,12 +1002,6 @@
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
-  "src/pages/cashiers/dev/Cashiers.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
-    "one-line-per-source": 1
-  },
   "src/pages/cashiers/dev/components/Transaction.tsx": {
     "selector-outside-hook": 2
   },
@@ -1018,14 +1012,7 @@
     "selector-outside-hook": 1
   },
   "src/pages/cashiers/dev/mobile/SignalTransactionsMobile.tsx": {
-    "selector-outside-hook": 1,
-    "shape-inline-props": 1
-  },
-  "src/pages/cashiers/dev/mobile/components/Meta.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/cashiers/dev/utils/index.ts": {
-    "one-line-per-source": 1
+    "selector-outside-hook": 1
   },
   "src/pages/categories/Categories.tsx": {
     "labels": 1
