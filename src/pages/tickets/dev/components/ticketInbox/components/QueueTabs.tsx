@@ -1,4 +1,7 @@
+// Utils
 import { CLIENT_QUEUE, QUEUE } from "../utils";
+
+// Interfaces
 import type { QueueTab } from "../../../../../../features/dev/devTicketsSlice";
 
 interface QueueTabsProps {

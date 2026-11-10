@@ -2254,30 +2254,11 @@
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
   },
-  "src/pages/tickets/dev/components/Caption.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/tickets/dev/components/Fact.tsx": {
-    "shape-inline-props": 1
-  },
   "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
-    "selector-outside-hook": 3,
-    "shape-inline-props": 1
+    "selector-outside-hook": 3
   },
   "src/pages/tickets/dev/components/modals/ReportIssueModal.tsx": {
     "selector-outside-hook": 1
-  },
-  "src/pages/tickets/dev/components/modals/techsModal/components/TechRow.tsx": {
-    "one-line-per-source": 1
-  },
-  "src/pages/tickets/dev/components/ticketInbox/components/QueueTabs.tsx": {
-    "labels": 1
-  },
-  "src/pages/tickets/dev/components/ticketInbox/components/SearchBar.tsx": {
-    "labels": 1
-  },
-  "src/pages/tickets/dev/components/ticketInbox/components/TicketRow.tsx": {
-    "labels": 1
   },
   "src/pages/upc/UpcList.tsx": {
     "labels": 1

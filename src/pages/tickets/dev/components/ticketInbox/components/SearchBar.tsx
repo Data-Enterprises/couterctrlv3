@@ -1,3 +1,4 @@
+// Interfaces
 import type { QueueTab } from "../../../../../../features/dev/devTicketsSlice";
 
 interface SearchBarProps {

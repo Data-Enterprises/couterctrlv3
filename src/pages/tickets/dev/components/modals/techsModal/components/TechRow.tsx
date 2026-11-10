@@ -6,12 +6,13 @@ import { useToast } from "../../../../../../../components/toasts/hooks/useToast"
 import {
   updateTicketTech,
   ticketFailed,
+  type TechWriteResp,
+  type TicketTech,
 } from "../../../../../../../api/tickets";
 
 // Interfaces
 import type { Mode } from "../../interfaces";
 import type { SetStateAction } from "react";
-import type { TechWriteResp, TicketTech } from "../../../../../../../api/tickets";
 
 // Components
 import Checkbox from "../../../../../../../components-dev/Checkbox";

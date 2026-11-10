@@ -1,6 +1,3 @@
-// Interfaces
-import type { Ticket } from "../../../../../../api/tickets";
-
 // Utils
 import { storeChipText, storesOf } from "../../../utils";
 import {
@@ -11,6 +8,9 @@ import {
   visibleLabels,
   whenText,
 } from "../../../utils/ticketsUtils";
+
+// Interfaces
+import type { Ticket } from "../../../../../../api/tickets";
 
 interface TicketRowProps {
   ticket: Ticket;

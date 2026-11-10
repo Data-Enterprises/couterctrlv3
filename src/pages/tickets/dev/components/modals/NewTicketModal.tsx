@@ -51,21 +51,20 @@ import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import StoreChecklist from "../StoreChecklist";
 import NewTicketAttachments from "./components/NewTicketAttachments";
 
-/**
- * Filing: two fields are required and the queue works out the rest. No
- * company picker: the server takes the filer's company and refuses any other.
- */
-const NewTicketModal = ({
-  from,
-  onClose,
-}: {
+interface NewTicketModalProps {
   /** Where the reporter was when they raised it. Absent when the form is
    *  opened from the help desk itself, which is nowhere in particular. */
   from?: { from: string; page?: string; area?: string } | null;
   /** Filing from another page closes back to that page rather than to the
    *  queue, so the caller says what closing means. */
   onClose?: () => void;
-}) => {
+}
+
+/**
+ * Filing: two fields are required and the queue works out the rest. No
+ * company picker: the server takes the filer's company and refuses any other.
+ */
+const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
   const ctx = useTicketsCtx();
   const { url, token } = useDevApi();
 
