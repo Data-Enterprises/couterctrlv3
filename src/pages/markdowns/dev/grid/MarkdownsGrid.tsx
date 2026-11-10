@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useVisibleMarkdowns } from "../hooks";
 
 // Utils
-import { MARKDOWN_COLUMNS } from "../utils";
+import { MARKDOWN_COLUMNS, rowKey } from "../utils";
 import { DEFAULT_PAGE_SIZE } from "./utils";
 
 // Components
@@ -46,7 +46,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
           <GridHeader />
           <tbody className="divide-y divide-brand_navy/15 text-[13px]">
             {paged.map((row) => (
-              <GridRow key={row.id} row={row} />
+              <GridRow key={rowKey(row)} row={row} />
             ))}
             {visible.length === 0 && (
               <tr>

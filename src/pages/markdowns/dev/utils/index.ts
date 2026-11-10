@@ -207,6 +207,11 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
   },
 ];
 
+/** A row's identity. The table's key is (storeid, id, order_date): an id alone
+ *  repeats across stores and dates. */
+export const rowKey = (r: MarkdownItem) =>
+  `${r.storeid}-${r.id}-${r.order_date}`;
+
 /** A row's value for one list filter, as the filter stores it. */
 export const filterValue = (
   r: MarkdownItem,

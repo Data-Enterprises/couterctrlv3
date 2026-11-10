@@ -132,6 +132,28 @@ describe("the Markdowns page", () => {
     expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb"]);
   });
 
+  it("draws rows that share an id across stores without mixing them up", () => {
+    // The table's key is (storeid, id, order_date): an id repeats across stores.
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const store = setupStore();
+    store.dispatch(
+      setMarkdowns([
+        row({ id: 7, storeid: 1301, storename: "Food Giant Hayti", description: "Strawberries 1lb", markdown_percent: 10 }),
+        row({ id: 7, storeid: 1302, storename: "Food Giant Kennett", description: "Ground beef", markdown_percent: 90 }),
+      ]),
+    );
+    render(
+      <Provider store={store}>
+        <Markdowns />
+      </Provider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /markdown_percent/ }));
+    expect(gridOrder()).toEqual(["Ground beef", "Strawberries 1lb"]);
+    const dupes = errors.mock.calls.filter((c) => String(c[0]).includes("same key"));
+    errors.mockRestore();
+    expect(dupes).toEqual([]);
+  });
+
   it("opens the re-search over the page from the magnifier, and the export from the download icon", () => {
     setup();
     fireEvent.click(screen.getByTitle("New search"));
