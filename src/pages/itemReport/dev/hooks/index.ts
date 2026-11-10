@@ -15,9 +15,12 @@ import { fetchReceiversByItem, toReceiptLineFromSearch } from "../../../../utils
 import { fetchInvoices, RECEIVING_LOOKBACK_DAYS } from "../utils";
 import type { ReportScope, ReceiptLine } from "../interfaces";
 
-/** The page's slice, read where it is used instead of passed down. */
-export const useItemReportCtx = () =>
-  useAppSelector((s) => s.dev.itemReport, shallowEqual);
+/** The page's slice and the API connection, read where they are used instead of passed down. */
+export const useItemReportCtx = () => {
+  const report = useAppSelector((s) => s.dev.itemReport, shallowEqual);
+  const { url, token } = useAppSelector((s) => s.app);
+  return { ...report, url, token };
+};
 
 /**
  * The receiving half of Item Actions.

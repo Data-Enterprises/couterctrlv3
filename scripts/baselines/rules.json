@@ -970,9 +970,6 @@
   "src/pages/itemReport/ItemReport.tsx": {
     "labels": 1
   },
-  "src/pages/itemReport/dev/rail/components/TransactionSheet.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/lookup/ItemLookup.tsx": {
     "labels": 1
   },

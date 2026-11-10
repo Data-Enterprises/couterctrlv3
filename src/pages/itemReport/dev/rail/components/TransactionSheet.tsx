@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../../../../../hooks";
+import { useItemReportCtx } from "../../hooks";
 
 // API
 import { getTransactionList } from "../../../../../api/lossPrevention";
@@ -58,7 +58,7 @@ const TransactionSheet = ({
   action,
   onClose,
 }: TransactionSheetProps) => {
-  const { url, token } = useAppSelector((s) => s.app);
+  const { url, token } = useItemReportCtx();
   const [openSale, setOpenSale] = useState<TransactionListItem | null>(null);
   const [basket, setBasket] = useState<TransactionListItem[]>([]);
   const [loading, setLoading] = useState(false);
