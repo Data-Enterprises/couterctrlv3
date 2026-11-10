@@ -87,7 +87,7 @@ describe("the Markdowns page", () => {
   it("headings are plain names, without the sub department and category numbers", () => {
     setup();
     const headings = screen.getAllByRole("columnheader").map((th) => th.textContent);
-    expect(headings.slice(0, 5)).toEqual(["Date", "Store", "Type", "UPC", "Description"]);
+    expect(headings.slice(0, 5)).toEqual(["Date", "Type", "Store", "UPC", "Description"]);
     expect(headings).toHaveLength(23);
     expect(headings).not.toContain("Sub Dept #");
     expect(headings).not.toContain("Category #");

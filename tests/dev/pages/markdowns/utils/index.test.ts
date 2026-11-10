@@ -70,7 +70,7 @@ describe("the columns", () => {
   it("export 25 under plain headings, without storeid or storenumber", () => {
     const labels = MARKDOWN_COLUMNS.map((c) => c.label);
     expect(labels).toHaveLength(25);
-    expect(labels.slice(0, 5)).toEqual(["Date", "Store", "Type", "UPC", "Description"]);
+    expect(labels.slice(0, 5)).toEqual(["Date", "Type", "Store", "UPC", "Description"]);
     expect(labels.at(-1)).toBe("Updated");
     expect(labels.every((l) => !l.includes("_"))).toBe(true);
     expect(MARKDOWN_COLUMNS.map((c) => c.key)).not.toContain("storeid");

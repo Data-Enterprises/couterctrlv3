@@ -38,18 +38,18 @@ export const MARKDOWN_COLUMNS: MarkdownColumn[] = [
     csv: (r) => fmtDmy(r.order_date),
   },
   {
-    key: "storename",
-    label: "Store",
-    align: "left",
-    show: (r) => r.storename,
-    csv: (r) => r.storename,
-  },
-  {
     key: "type",
     label: "Type",
     align: "left",
     show: (r) => text(r.type),
     csv: (r) => r.type,
+  },
+  {
+    key: "storename",
+    label: "Store",
+    align: "left",
+    show: (r) => r.storename,
+    csv: (r) => r.storename,
   },
   {
     key: "product_code",
