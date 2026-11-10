@@ -3,7 +3,11 @@
  * by `pages/couponSales/dev`. Edit this one while changing dev couponSales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { CouponItem, TransactionListItem } from "../../interfaces";
 
 /** Coupon Sales grades on a dollar amount, not a percentage change, and there

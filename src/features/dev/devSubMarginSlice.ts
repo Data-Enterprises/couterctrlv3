@@ -3,10 +3,13 @@
  * by `pages/subDepts/dev`. Edit this one while changing dev subDepts; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
-import type { Coverage, MarginDollars } from "../../utils/grading";
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin, SubDept, SubDeptCost } from "../../interfaces";
-import type { ItemRow, ItemRowMobile } from "../../interfaces";
+
+// Interfaces
+import type { Coverage, MarginDollars } from "../../utils/grading";
+import type { SubDeptMargin, SubDept, SubDeptCost, ItemRow, ItemRowMobile } from "../../interfaces";
 import type { ItemLookupHistory } from "../itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost" | "nocost";

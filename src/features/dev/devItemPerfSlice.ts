@@ -3,14 +3,18 @@
  * by `components-dev/itemPerf`. Edit this one while changing dev itemPerf; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   cycleSort,
   type CmpBasis,
   type SortState,
 } from "../../utils/perfPairs";
-import type { CatItem, SubDeptMargin } from "../../interfaces";
 import { storeNumbersIn } from "../../utils/storeIdentity";
+
+// Interfaces
+import type { CatItem, SubDeptMargin } from "../../interfaces";
 
 /**
  * How this page groups its rows. One per page, never a switch.

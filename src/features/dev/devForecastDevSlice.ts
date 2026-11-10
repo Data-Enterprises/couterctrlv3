@@ -3,15 +3,18 @@
  * by `pages/forecast/dev`. Edit this one while changing dev forecast; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../utils/forecastCalc";
+
+// Interfaces
 import type {
   ForecastItem,
   ForecastTier as Tier,
   PriceHistoryResult,
 } from "../../interfaces";
-import type { AdListRow } from "./devForecastSlice";
-import type { ForecastOutlierRow } from "./devForecastSlice";
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../utils/forecastCalc";
+import type { AdListRow, ForecastOutlierRow } from "./devForecastSlice";
 
 /**
  * Forecast (dev).

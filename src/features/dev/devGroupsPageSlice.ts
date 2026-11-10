@@ -3,7 +3,11 @@
  * by `pages/groups/dev`. Edit this one while changing dev groups; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   FilterOption,
   GroupFormType,

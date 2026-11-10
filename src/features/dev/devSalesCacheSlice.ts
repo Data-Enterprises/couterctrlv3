@@ -1,5 +1,10 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+// Redux
 import { setHasSearched } from "./devSalesLedgerSlice";
+
+// Utils
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { SubSale } from "../../interfaces";
 import type {
   OrdersWave,

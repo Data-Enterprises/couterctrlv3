@@ -3,16 +3,24 @@
  * by `pages/sales/dev`. Edit this one while changing dev Sales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  lruPut,
+  lruTouch,
+} from "../../pages/sales/dev/utils/storeCache";
+import {
+  RECAP_ITEMS_MAX,
+  RECAP_MIX_MAX,
+} from "../../pages/sales/dev/storePanel/summary/utils/recapKeys";
+
+// Interfaces
 import type { FinancialsRow } from "../../api/financials";
 import type {
   TopItemRow,
   TopItemPricePoint,
 } from "../../api/topItems";
-import {
-  lruPut,
-  lruTouch,
-} from "../../pages/sales/dev/utils/storeCache";
 import type {
   CatSale,
   HourlySale,
@@ -25,10 +33,6 @@ import type {
   RecapItem,
   RecapMix,
 } from "../../pages/sales/dev/storePanel/summary/interfaces/index";
-import {
-  RECAP_ITEMS_MAX,
-  RECAP_MIX_MAX,
-} from "../../pages/sales/dev/storePanel/summary/utils/recapKeys";
 
 export type GradingMetric = "sales" | "qty";
 

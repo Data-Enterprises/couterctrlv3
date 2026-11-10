@@ -3,10 +3,11 @@
  * by `pages/salesTracker/dev`. Edit this one while changing dev salesTracker; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+// Redux
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubSale } from "../../interfaces";
 
 // Interfaces
+import type { SubSale } from "../../interfaces";
 import type { TrackerBasis } from "../../pages/salesTracker/dev/interfaces";
 
 /**

@@ -3,7 +3,11 @@
  * by `pages/admin/dev`. Edit this one while changing dev admin; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { Company, Store, StoreWithActivity } from "../../interfaces";
 import type { SubDeptCatalogRow, SubDeptExclusionRow } from "../../api/subDeptExclusions";
 

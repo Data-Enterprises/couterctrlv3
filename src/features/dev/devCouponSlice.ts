@@ -3,7 +3,11 @@
  * by `pages/coupons/dev`. Edit this one while changing dev coupons; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { CouponItem, ThresholdValue, TransactionListItem } from "../../interfaces";
 
 /** The detail grid's applied column filters. */

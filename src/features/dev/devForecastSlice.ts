@@ -3,7 +3,12 @@
  * by `pages/forecast/dev`. Edit this one while changing dev forecast; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../utils/forecastCalc";
+
+// Interfaces
 import type {
   Store,
   ForecastItem,
@@ -11,7 +16,6 @@ import type {
   SimListItem,
   SimReplayItem,
 } from "../../interfaces";
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../utils/forecastCalc";
 
 export interface SelectedHistory {
   upc: string;

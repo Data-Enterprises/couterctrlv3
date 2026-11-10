@@ -3,9 +3,19 @@
  * by `pages/categories/dev`. Edit this one while changing dev categories; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CategoryMetric, CategoryRow, CategoryTier } from "../../interfaces";
-import type { CatItem, CatSalesDaily, CatSalesHourly } from "../../interfaces";
+
+// Interfaces
+import type {
+  CategoryMetric,
+  CategoryRow,
+  CategoryTier,
+  CatItem,
+  CatSalesDaily,
+  CatSalesHourly,
+} from "../../interfaces";
 
 /** Categories (Performance).
  *

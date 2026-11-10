@@ -3,8 +3,12 @@
  * by `components-dev/eventPerf`. Edit this one while changing dev eventPerf; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { cycleSort, type SortState } from "../../utils/perfPairs";
+
+// Interfaces
 import type { SaleReceiptLine as ReceiptLine } from "../../interfaces";
 
 /**

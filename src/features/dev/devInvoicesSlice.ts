@@ -3,12 +3,15 @@
  * by `pages/invoices/dev`. Edit this one while changing dev invoices; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+
+// Utils
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   ALL_INVOICES,
   type InvoiceEdit,
 } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+
+// Interfaces
 import type { DiscardedInvoice } from "../../api/invoices";
 
 /**

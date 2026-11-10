@@ -3,19 +3,23 @@
  * by `pages/sales/dev`. Edit this one while changing dev Sales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {
-  HourlySale,
-  SubDeptMargin,
-  SubSale,
-  WeeklySale,
-} from "../../interfaces";
 import {
   cycleSort,
   type CmpBasis,
   type PairSort,
   type SortState,
 } from "../../utils/perfPairs";
+
+// Interfaces
+import type {
+  HourlySale,
+  SubDeptMargin,
+  SubSale,
+  WeeklySale,
+} from "../../interfaces";
 
 /** Which list a sort preference belongs to. The store list is the screen;
  *  subs and hours are drills inside an expanded card. All three render the

@@ -3,15 +3,19 @@
  * by `pages/sales/dev`. Edit this one while changing dev Sales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   TopTenItem,
   SelectedSalesPanel,
   WeeklySale,
   HourlySale,
   SubSale,
+  TopSub,
 } from "../../interfaces";
-import type { TopSub } from "../../interfaces";
 
 export type SubTracker = {
   id: number;

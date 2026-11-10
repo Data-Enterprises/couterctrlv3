@@ -3,8 +3,11 @@
  * by `pages/lpActions/dev`. Edit this one while changing dev lpActions; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+
+// Utils
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   ExceptionRow,
   WeekWindow,
