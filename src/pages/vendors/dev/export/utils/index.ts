@@ -1,7 +1,12 @@
 // Utils
-import { fmtNum, rowsToCsv } from "../../../../../utils/csvExport";
+import { fmtNum, rowsToCsv, type AggFn } from "../../../../../utils/csvExport";
 import { calculateCogs } from "../../../../../utils/cogs";
-import { buildItemRows, getItemSeverity } from "../../../../../utils/itemMargins";
+import {
+  buildItemRows,
+  getItemSeverity,
+  type ItemSeverity,
+  type ItemGradingMetric,
+} from "../../../../../utils/itemMargins";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -11,14 +16,11 @@ import {
   pctChange,
   tierOfDelta,
 } from "../../../../../utils/grading";
-import { getVendorTier, marginPct } from "../../utils";
+import { getVendorTier, marginPct, type VendorMetric, type VendorRow } from "../../utils";
 
 // Interfaces
-import type { AggFn } from "../../../../../utils/csvExport";
-import type { ItemSeverity, ItemGradingMetric } from "../../../../../utils/itemMargins";
 import type { SubDeptMargin } from "../../../../../interfaces";
 import type { GradedItem, GradedSev } from "../../interfaces";
-import type { VendorMetric, VendorRow } from "../../utils";
 import type { CustomSource, MetricSelection } from "../interfaces";
 
 export const netSales = (m: SubDeptMargin) => m.total_sales - m.total_tax;

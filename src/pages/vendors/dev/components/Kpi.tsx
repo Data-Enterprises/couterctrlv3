@@ -1,17 +1,7 @@
 // Utils
 import { comparisonPillClass, formatPct } from "../../../../utils/severity";
 
-/** One KPI cell, matching the Sales strip. The date line is load-bearing: the
- *  figure means something different once a day is selected. */
-const Kpi = ({
-  title,
-  dateLabel,
-  value,
-  pct,
-  threshold,
-  complete = true,
-  coverageNote,
-}: {
+interface KpiProps {
   title: string;
   dateLabel: string;
   value: string;
@@ -21,7 +11,11 @@ const Kpi = ({
   complete?: boolean;
   /** "3 of 7 days matched", shown under a partial comparison. */
   coverageNote?: string;
-}) => (
+}
+
+/** One KPI cell, matching the Sales strip. The date line is load-bearing: the
+ *  figure means something different once a day is selected. */
+const Kpi = ({ title, dateLabel, value, pct, threshold, complete = true, coverageNote }: KpiProps) => (
   <div className="px-4 pt-2.5 pb-2 text-center">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
       {title}

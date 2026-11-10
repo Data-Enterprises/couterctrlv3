@@ -5,11 +5,10 @@ import {
   type ItemGradingMetric,
 } from "../../../../utils/itemMargins";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../../utils/grading";
-import { rowsForVendor } from "./index";
+import { rowsForVendor, type VendorRow } from "./index";
 
 // Interfaces
 import type { SubDeptMargin } from "../../../../interfaces";
-import type { VendorRow } from "./index";
 import type { GradedItem, GradedSev } from "../interfaces";
 
 /**

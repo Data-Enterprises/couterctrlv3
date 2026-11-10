@@ -2396,18 +2396,6 @@
   "src/pages/vendors/Vendors.tsx": {
     "labels": 1
   },
-  "src/pages/vendors/dev/components/Kpi.tsx": {
-    "shape-inline-props": 1
-  },
-  "src/pages/vendors/dev/export/hooks/index.ts": {
-    "one-line-per-source": 1
-  },
-  "src/pages/vendors/dev/export/utils/index.ts": {
-    "one-line-per-source": 3
-  },
-  "src/pages/vendors/dev/utils/vendorGradedItems.ts": {
-    "one-line-per-source": 1
-  },
   "src/store/devReducers.ts": {
     "labels": 1
   },
