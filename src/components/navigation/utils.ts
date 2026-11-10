@@ -1,9 +1,5 @@
 // Utils
-import {
-  COMING_SOON_CATEGORY,
-  COMING_SOON_LEVELS,
-  PROGRAMMER_ONLY_LEVELS,
-} from "../../utils/comingSoon";
+import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { performancePages } from "./categoryPages/performance";
 import { analyticsPages } from "./categoryPages/analytics";
 import { dataPages } from "./categoryPages/data";
@@ -11,34 +7,16 @@ import { configPages } from "./categoryPages/config";
 import { comingSoonPages } from "./categoryPages/comingSoon";
 
 // Interfaces
-import type { Navigation, NavCategory } from "./interfaces";
+import type { NavCategory } from "./interfaces";
 
 // Components
 import {
-  HomeIcon,
-  MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
-  ClipboardDocumentCheckIcon,
-  CurrencyDollarIcon,
-  KeyIcon,
-  MagnifyingGlassCircleIcon,
-  DocumentCheckIcon,
   ChartBarSquareIcon,
-  ClipboardDocumentListIcon,
   CircleStackIcon,
   Cog6ToothIcon,
-  BuildingOfficeIcon,
-  TruckIcon,
-  ArchiveBoxIcon,
   ClockIcon,
-  DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
-import SalesIconV2 from "../../svgs/SalesIconV2";
-import CashierIcon from "../../svgs/CashierIcon";
-import GroupsIcon from "../../svgs/GroupsIcon";
-import UpcListIcon from "../../svgs/UpcListIcon";
-import DashboardIconV2 from "../../svgs/DashbordIconV2";
-import CouponIcon from "../../svgs/CouponIcon";
 
 /**
  * User Levels: current
@@ -48,242 +26,6 @@ import CouponIcon from "../../svgs/CouponIcon";
  * 7 => Owner
  * 9 => Programmer
  */
-export const navigation: Navigation[] = [
-  {
-    name: "Home",
-    href: "/",
-    icon: HomeIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["9"],
-    isHovering: false,
-    isVisible: false,
-  },
-  {
-    name: "Sales",
-    href: "sales",
-    icon: SalesIconV2,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "User Management",
-    href: "user-management",
-    icon: BuildingOfficeIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["5", "7", "8", "9"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Loss Prevention",
-    href: "loss-prevention",
-    icon: CashierIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "User Groups",
-    href: "groups",
-    icon: GroupsIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Upc List",
-    href: "upc-upload",
-    icon: UpcListIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Item Lookup",
-    href: "item-lookup",
-    icon: MagnifyingGlassIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  // The unreleased pages that also appear in this flat list. Gated here as well
-  // as in the "Coming Soon" category below — this list feeds the Settings nav
-  // editor, which would otherwise offer every user a page they cannot reach.
-  // Two different gates, per page: see the category's docblock. LP Actions and
-  // Sales Tracker are absent from this list entirely, which is why neither
-  // appears below.
-  {
-    name: "Item Actions",
-    href: "item-report",
-    icon: ClipboardDocumentListIcon,
-    // Desktop only — the two-panel report has no mobile form yet.
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Price Opt Sub Dept",
-    href: "inventory-sub-department",
-    icon: ArchiveBoxIcon,
-    // Desktop only — the two-panel tree has no mobile form yet.
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Price Opt Vendor",
-    href: "inventory-vendor",
-    icon: TruckIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "AWG Invoices",
-    href: "invoices",
-    icon: DocumentArrowUpIcon,
-    // Desktop only — correcting a line means eight columns side by side.
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: PROGRAMMER_ONLY_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Forecasting",
-    href: "forecasting",
-    icon: ArrowTrendingUpIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Quicksight",
-    href: "quicksight",
-    icon: DashboardIconV2,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["9"],
-    isHovering: false,
-    isVisible: false,
-  },
-  {
-    name: "Receivers",
-    href: "receivers",
-    icon: ClipboardDocumentCheckIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Coupons",
-    href: "coupons",
-    icon: CouponIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Sub Dept Margins",
-    href: "sub-dept-margins",
-    icon: CurrencyDollarIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Cashiers",
-    href: "cashiers",
-    icon: MagnifyingGlassCircleIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Orders",
-    href: "orders",
-    icon: DocumentCheckIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userLevels: ["*"],
-    isHovering: false,
-    isVisible: true,
-  },
-  {
-    name: "Admin",
-    href: "admin",
-    icon: KeyIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    // Level 5 and up. The page itself narrows what each of them can see —
-    // below 9 the companies and stores are scoped to their own assignments,
-    // and the Companies tab stays out of reach entirely.
-    userLevels: ["5", "7", "8", "9"],
-    isHovering: false,
-    isVisible: true,
-  },
-  // This fake link is just to show that user types can be restricted
-  {
-    name: "fake link",
-    href: "fake-link",
-    icon: HomeIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: ["9999", "22"],
-    isHovering: false,
-    isVisible: true,
-  },
-];
-
 export const categories: NavCategory[] = [
   {
     name: "Performance",
