@@ -61,6 +61,23 @@ describe("useLoadMarkdowns", () => {
     expect(s.progress).toBeNull();
   });
 
+  it("names the page in flight while it waits for it", async () => {
+    let release!: (v: unknown) => void;
+    getMarkdowns
+      .mockResolvedValueOnce(page(1, 3, [1]))
+      .mockReturnValueOnce(new Promise((res) => { release = res; }))
+      .mockResolvedValueOnce(page(3, 3, [3]));
+    const { store, load } = setup();
+    act(() => { store.dispatch(setLastStore(301)); });
+
+    let done!: Promise<void>;
+    await act(async () => { done = load(); });
+    expect(store.getState().dev.markdowns.progress).toEqual({ page: 2, total: 3 });
+
+    await act(async () => { release(page(2, 3, [2])); await done; });
+    expect(store.getState().dev.markdowns.progress).toBeNull();
+  });
+
   it("sends a store search as a store and a group search as a group", async () => {
     getMarkdowns.mockResolvedValue(page(1, 1, [1]));
     const { store, load } = setup();
