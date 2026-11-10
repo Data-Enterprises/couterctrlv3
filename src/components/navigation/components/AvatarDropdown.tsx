@@ -66,12 +66,9 @@ const AvatarDropdown = ({
             : ""
         }`}
       >
-        {/* A translucent white disc is invisible on a white bar, so the
-            initials sit on navy — the same navy that marks the active
-            category. */}
+        {/* Navy initials on the white bar, inverted on the navy one. */}
         <div
           className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors duration-300 ease-in-out ${
-            // A navy disc on a navy bar disappears, so dev inverts it.
             onNavy
               ? "bg-custom-white text-brand_navy"
               : "bg-brand_navy text-custom-white"
@@ -104,48 +101,14 @@ const AvatarDropdown = ({
                   {user.email}
                 </div>
               )}
-              {/* Said plainly, because nothing else on screen would: an
-                  impersonated session looks exactly like theirs. The name
-                  comes from the token's `imp` claim. */}
+              {/* An impersonated session looks like theirs, so say so. */}
               {realUser && (
                 <div className="text-[11px] font-medium text-amber-900 mt-1.5">
                   Signed in as them by {realUser}. Sign out to return.
                 </div>
               )}
             </div>
-            {/* Client Help Desk — parked 2026-08-19, not deleted. The
-                /tickets route and its page are untouched, so restoring this is
-                uncommenting the block.
-            {user.userLevel === 9 && (
-              <button
-                onClick={() => {
-                  setAvatarOpen(false);
-                  navigate("/tickets");
-                }}
-                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100"
-              >
-                Client Help Desk
-              </button>
-            )}
-            */}
-            {/* Which backend this session talks to — and so which UI tree
-                each page renders (prod or dev).
-
-                Owner and up (7, 8, 9): support and programmers. A segmented
-                control rather than a menu item, and the only row here that
-                does NOT close the dropdown — switching environments is
-                something you do and then verify, so the badge has to stay on
-                screen to confirm it took. */}
-            {/* Live / Legacy — the pages as published, or the ones the
-                dev/prod separation replaced. Same audience as Mode (7, 8, 9):
-                a client cannot reach Legacy at all.
-
-                Above Mode because it decides for Mode: Legacy is prod-only,
-                so turning it on settles the row below it.
-
-                Level 9 only, narrower than Mode's 7+: these pages are kept
-                for reference, not for support work, and every one of them has
-                a live replacement that is the one to be looking at. */}
+            {/* View: Live or Legacy pages. Level 9; Legacy is prod-only, so it settles Mode. */}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 9 ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-[13px] font-medium text-content flex-1">
@@ -166,12 +129,7 @@ const AvatarDropdown = ({
                   <button
                     onClick={() => {
                       dispatch(setUiMode("legacy"));
-                      // The page you are on may not exist in Legacy — Vendors,
-                      // say. Leaving the route alone would render its live
-                      // version under the legacy frame, which is the one thing
-                      // a legacy view must not do: look current. So it falls
-                      // back to where you last were over there, and to Sales
-                      // if that is nowhere yet.
+                      // A page Legacy doesn't have falls back to your last legacy page, or Sales.
                       const to = legacyEntryPath(
                         pathname,
                         context.legacyLastRoute,
@@ -190,13 +148,7 @@ const AvatarDropdown = ({
                 </div>
               </div>
             ) : null}
-            {/* Release Notes, as a window over the page you are on.
-
-                Dev tree for now, and it moves to prod with the dev-to-prod
-                migration like any other page; the real notes are written then.
-                Until there are real ones it opens the sample set, so it is
-                level 9 only: support in dev mode would read a sample as news.
-                Dev's actual release notes are the weekly meeting doc. */}
+            {/* Release Notes: the sample set until real notes exist, so level 9 and dev only. */}
             {context.apiEnv === "dev" && user.userLevel === 9 ? (
               <button
                 onClick={() => {
@@ -209,16 +161,7 @@ const AvatarDropdown = ({
                 <span className="text-[11px] text-content/95">sample</span>
               </button>
             ) : null}
-            {/* File a ticket about the page you are on.
-
-                Raises a flag rather than navigating: sending somebody to the
-                help desk to describe a problem they are looking at asks them
-                to leave the evidence behind. App draws the form over
-                whatever page they are on.
-
-                The flag is on the shared slice because this bar is prod-tree
-                and the form is dev. It carries the page and its area, which
-                the nav has already worked out for its own highlight. */}
+            {/* Report an issue opens the form over this page, so the problem stays in view. */}
             {context.apiEnv === "dev" ? (
               <button
                 onClick={() => {
@@ -239,10 +182,7 @@ const AvatarDropdown = ({
                 </span>
               </button>
             ) : null}
-            {/* Sign in as someone. Level 9 only, which the server checks
-                again from the database, and dev only, because the endpoint
-                is on the dev API alone so far. Replaced the impersonate
-                checkbox on the sign-in page. */}
+            {/* Sign in as someone: level 9 (checked again by the server), dev API only. */}
             {context.apiEnv === "dev" && user.userLevel === 9 ? (
               <button
                 onClick={() => {
@@ -255,6 +195,7 @@ const AvatarDropdown = ({
                 <span className="text-[11px] text-content/85">level 9</span>
               </button>
             ) : null}
+            {/* Mode: dev or prod API, 7+. Doesn't close the menu, so you can see it took. */}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
                 className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${
