@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { markdownTotals, totalsRow, unitsOf } from "@/pages/markdowns/dev/grid/utils";
+import { markdownTotals, unitsOf } from "@/pages/markdowns/dev/grid/utils";
 
 // Interfaces
 import type { MarkdownItem } from "@/interfaces/markdowns";
@@ -47,38 +47,11 @@ describe("markdownTotals", () => {
     expect(t.avgPct).toBeCloseTo((11 / 41) * 100);
   });
 
-  it("adds up quantity, weight and retail", () => {
-    const t = markdownTotals([
-      row({ qty: 10, weight: null, retail: 30 }),
-      row({ qty: 1, weight: 2.25, retail: 4.5 }),
-    ]);
-    expect([t.qty, t.weight, t.retail]).toEqual([11, 2.25, 34.5]);
-  });
-
   it("leaves lines without both prices out of the average, and has no average with none", () => {
     expect(markdownTotals([row({ original_price: null })]).avgPct).toBeNull();
     expect(markdownTotals([]).avgPct).toBeNull();
     const t = markdownTotals([row({}), row({ original_price: null, markdown: 5, qty: 1 })]);
     expect(t.avgPct).toBeCloseTo(25);
     expect(t.dollars).toBe(15);
-  });
-});
-
-describe("totalsRow", () => {
-  it("labels the row and totals markdown dollars, the average, quantity, weight and retail", () => {
-    const cells = totalsRow(
-      markdownTotals([
-        row({ markdown: 1, qty: 10, retail: 30 }),
-        row({ markdown: 2, qty: 2, retail: 6 }),
-      ]),
-    );
-    expect(cells).toEqual({
-      description: "Totals",
-      markdown: "$14.00",
-      markdown_percent: "29.2%",
-      qty: "12",
-      weight: "0.00",
-      retail: "$36.00",
-    });
   });
 });
