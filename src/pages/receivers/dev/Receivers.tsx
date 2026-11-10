@@ -35,6 +35,7 @@ import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard
 import ReceiverListPanel from "./components/list/ReceiverListPanel";
 import ReceiverDetailPanel from "./components/detail/ReceiverDetailPanel";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import ReceiversMobile from "./mobile/ReceiversMobile";
 
 /** The Receivers page: a store and date search card, then the receiver list beside its detail panel.
@@ -152,36 +153,31 @@ const Receivers = () => {
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="mx-4" onClick={(e) => e.stopPropagation()}>
-            <SingleStoreSearchCard
-              title="Receivers"
-              description="Select a store and date range to load receiving history."
-              buttonLabel="Load Receivers"
-              stores={assignedStores}
-              selectedStoreId={state.storeid}
-              onStoreSelect={setSelectedStore}
-              onSearch={() => {
-                setSearchModalOpen(false);
-                getReceivers();
-              }}
-              loading={state.isFetchingList}
-              loadingMessage="Finding receivers..."
-              datePicker={
-                <DatePickers
-                  showBtn={false}
-                  handleQuery={() => {
-                    setSearchModalOpen(false);
-                    getReceivers();
-                  }}
-                />
-              }
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SingleStoreSearchCard
+            title="Receivers"
+            description="Select a store and date range to load receiving history."
+            buttonLabel="Load Receivers"
+            stores={assignedStores}
+            selectedStoreId={state.storeid}
+            onStoreSelect={setSelectedStore}
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getReceivers();
+            }}
+            loading={state.isFetchingList}
+            loadingMessage="Finding receivers..."
+            datePicker={
+              <DatePickers
+                showBtn={false}
+                handleQuery={() => {
+                  setSearchModalOpen(false);
+                  getReceivers();
+                }}
+              />
+            }
+          />
+        </SearchPopup>
       )}
       <ReceiverListPanel onOpenSearch={() => setSearchModalOpen(true)} />
       <ReceiverDetailPanel />

@@ -28,6 +28,7 @@ import type {
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
@@ -238,12 +239,7 @@ const InventoryVendor = () => {
       {/* Re-search is an overlay, so changing one field never loses this
           expensive load. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       {/* Every vendor's items, not just the open one: they're all in hand.

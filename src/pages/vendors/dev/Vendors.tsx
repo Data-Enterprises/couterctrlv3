@@ -8,6 +8,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
 import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import VendorListPanel from "./components/VendorListPanel";
 import VendorDetailPanel from "./components/VendorDetailPanel";
 
@@ -87,12 +88,7 @@ const Vendors = () => {
           the loaded week to change one field is the thing that pattern exists
           to prevent. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">

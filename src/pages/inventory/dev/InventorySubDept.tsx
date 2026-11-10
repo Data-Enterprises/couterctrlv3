@@ -31,6 +31,7 @@ import type {
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
@@ -230,12 +231,7 @@ const InventorySubDept = () => {
       {/* Re-search is an overlay, never a return to the entry screen — losing
           the loaded window to change one field is what that pattern prevents. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       {/* Built here, not held in state: the roll-up only needs to exist
