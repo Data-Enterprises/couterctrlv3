@@ -1,5 +1,6 @@
 // Hooks
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesTrackerCtx } from "../hooks";
 
 // Redux
 import { setStartDate } from "../../../../features/searchSlice";
@@ -27,7 +28,7 @@ const TrackerEntryCard = ({
   notice,
 }: TrackerEntryCardProps) => {
   const dispatch = useAppDispatch();
-  const { startDate, endDate } = useAppSelector((s) => s.search);
+  const { startDate, endDate } = useSalesTrackerCtx();
 
   const applyPreset = (weeks: number) => {
     // Anchored on whatever end date is already chosen, so a preset changes the

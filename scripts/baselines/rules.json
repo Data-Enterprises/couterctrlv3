@@ -1301,12 +1301,6 @@
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1
   },
-  "src/pages/salesTracker/dev/components/TrackerEntryCard.tsx": {
-    "selector-outside-hook": 1
-  },
-  "src/pages/salesTracker/dev/detail/TrackerDetail.tsx": {
-    "selector-outside-hook": 1
-  },
   "src/pages/settings/Settings.tsx": {
     "doc-comment": 1
   },

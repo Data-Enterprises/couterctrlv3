@@ -1,6 +1,7 @@
 // Hooks
 import { useMemo } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesTrackerCtx } from "../hooks";
 
 // Redux
 import { toggleWeek, setAllWeeksOpen } from "../../../../features/dev/devSalesTrackerSlice";
@@ -31,7 +32,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
   // The plan knows which period it paired against; nothing else needs to.
   const basis = plan.basis;
   const dispatch = useAppDispatch();
-  const expandedWeeks = useAppSelector((s) => s.dev.salesTracker.expandedWeeks);
+  const { expandedWeeks } = useSalesTrackerCtx();
 
   // The panel header formats its dates; the strip underneath was printing them
   // raw, so the same window appeared twice in two different notations.
