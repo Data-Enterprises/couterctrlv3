@@ -130,17 +130,11 @@
   "src/api/user.ts": {
     "labels": 1
   },
-  "src/components-dev/ConfirmDelete.tsx": {
-    "catalogued-look": 1
-  },
   "src/components-dev/ItemMarginsTable.tsx": {
     "catalogued-look": 2
   },
   "src/components-dev/SearchCard.tsx": {
     "catalogued-look": 2
-  },
-  "src/components-dev/SignInAsModal.tsx": {
-    "catalogued-look": 1
   },
   "src/components-dev/SingleStoreSearchCard.tsx": {
     "catalogued-look": 1
@@ -1252,24 +1246,6 @@
   },
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
-  },
-  "src/pages/tickets/dev/components/modals/CloseTicketModal.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/modals/EditStoresModal.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/modals/techsModal/components/AddTech.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/modals/techsModal/components/RosterList.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/modals/techsModal/components/StandDown.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/upc/UpcList.tsx": {
     "labels": 1

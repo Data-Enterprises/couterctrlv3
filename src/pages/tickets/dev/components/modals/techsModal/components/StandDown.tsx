@@ -92,7 +92,7 @@ const StandDown = ({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-brand_line_2 px-4 py-1.5 text-[12.5px] font-medium transition-colors hover:border-brand_slate"
+          className="cc-btn-outline text-[12.5px]"
         >
           Cancel
         </button>

@@ -45,7 +45,7 @@ const ConfirmDelete = ({
         <button
           type="button"
           onClick={onCancel}
-          className="text-[12.5px] font-medium px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+          className="text-[12.5px] cc-btn-outline"
         >
           Cancel
         </button>
