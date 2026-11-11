@@ -468,3 +468,17 @@ export const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
   { key: "trend", label: "Trend" },
   { key: "avg", label: "Avg $" },
 ];
+
+/** One week-ending date (MM/DD/YYYY) drives both windows, matching LP: the
+ *  week is end-6..end and the baseline the two weeks before it, end-20..end-7. */
+export const weekWindow = (singleDate: string) => {
+  const [m, d, y] = singleDate.split("/").map(Number);
+  const pad = (dt: Date) =>
+    `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  return {
+    weekEnd: pad(new Date(y, m - 1, d)),
+    weekStart: pad(new Date(y, m - 1, d - 6)),
+    baseEnd: pad(new Date(y, m - 1, d - 7)),
+    baseStart: pad(new Date(y, m - 1, d - 20)),
+  };
+};

@@ -11,6 +11,7 @@ import {
   setCouponSalesData,
   setCouponSalesFetching,
   setCouponSalesHasSearched,
+  setCouponSalesSearchedDate,
   setNoCouponSalesFound,
   reQueryCouponSales,
   COUPON_THRESHOLD_DEFAULT,
@@ -30,7 +31,7 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 
 // Utils
 import { formatDateSimple } from "../../../utils";
-import { buildStoreRows, storeKeyOf, totalsFor } from "./utils";
+import { buildStoreRows, storeKeyOf, totalsFor, weekWindow } from "./utils";
 
 // Interfaces
 import type { CouponsResponse, JsonError } from "../../../interfaces";
@@ -61,19 +62,11 @@ const CouponSales = () => {
     (s) => s.search,
   );
 
-  // One week-ending date drives both windows, matching LP: the searched week
-  // is end-6..end and the baseline is the two weeks before it, end-20..end-7.
-  const { weekStart, weekEnd, baseStart, baseEnd } = useMemo(() => {
-    const [m, d, y] = singleDate.split("/").map(Number);
-    const pad = (dt: Date) =>
-      `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-    return {
-      weekEnd: pad(new Date(y, m - 1, d)),
-      weekStart: pad(new Date(y, m - 1, d - 6)),
-      baseEnd: pad(new Date(y, m - 1, d - 7)),
-      baseStart: pad(new Date(y, m - 1, d - 20)),
-    };
-  }, [singleDate]);
+  // The picker's week, for a new search.
+  const { weekStart, weekEnd, baseStart, baseEnd } = useMemo(
+    () => weekWindow(singleDate),
+    [singleDate],
+  );
   const {
     coupons,
     baselineCoupons,
@@ -86,6 +79,7 @@ const CouponSales = () => {
     selectedStoreKey,
     exportOpen,
     mobileLines,
+    searchedDate,
   } = useCouponSalesCtx();
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -109,6 +103,7 @@ const CouponSales = () => {
   const getData = () => {
     dispatch(reQueryCouponSales());
     dispatch(setCouponSalesHasSearched(true));
+    dispatch(setCouponSalesSearchedDate(singleDate));
     dispatch(setCouponSalesFetching(true));
 
     if (isGroupSearch(type)) {
@@ -204,7 +199,8 @@ const CouponSales = () => {
 
   // MM/DD/YYYY, zero-padded — normalised through the same value sent to the
   // API so the label can't drift from what was actually queried.
-  const rangeLabel = `${formatDateSimple(weekStart)} – ${formatDateSimple(weekEnd)}`;
+  const shown = weekWindow(searchedDate ?? singleDate);
+  const rangeLabel = `${formatDateSimple(shown.weekStart)} – ${formatDateSimple(shown.weekEnd)}`;
 
   // Mobile gets its own three-screen stack rather than a squeezed two-panel
   // layout. Fetching, the baseline and every grading input stay here so the
