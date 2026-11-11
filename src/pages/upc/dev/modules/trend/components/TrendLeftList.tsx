@@ -20,7 +20,7 @@ interface TrendLeftListProps {
  *  units, Trend's own unit, matching the KPI strip. */
 const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLeftListProps) => {
   return (
-    <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
+    <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
       {rows.map(({ t, status }) => {
         const phrase = getTrendPhrase(status);
         const impact = Math.round(impactUnits(t, fixes, window));

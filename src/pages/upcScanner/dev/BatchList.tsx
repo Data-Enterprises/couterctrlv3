@@ -53,7 +53,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
   };
 
   return (
-    <div className="border-b border-gray-100 bg-brand_paper px-3 py-2.5">
+    <div className="border-b border-line_hair bg-brand_paper px-3 py-2.5">
       <div className="text-[14px] font-bold text-content">Fix this code</div>
       <input
         autoFocus
@@ -130,7 +130,7 @@ const BatchList = () => {
             ) : (
               <div
                 key={row.raw}
-                className="flex items-center gap-2 border-b border-gray-100 px-3 py-2"
+                className="flex items-center gap-2 border-b border-line_hair px-3 py-2"
               >
                 {/* The item's name leads. It is what the clerk is checking
                     against the shelf in front of them; the digits are only

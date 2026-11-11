@@ -13,7 +13,7 @@ interface VendorPickProps {
 /** Which vendors the two store-wide datasets cover; empty means all. */
 const VendorPick = ({ rows, value, onChange }: VendorPickProps) => {
   return (
-    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+    <div className="flex items-center gap-2 pt-3 border-t border-line_hair">
       <span className="text-[11px] text-content">Vendors</span>
       <MultiSelectFilter
         options={rows.map((v) => ({

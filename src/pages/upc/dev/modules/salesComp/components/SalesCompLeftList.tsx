@@ -15,7 +15,7 @@ interface SalesCompLeftListProps {
  *  status phrase vs last year. */
 const SalesCompLeftList = ({ stats, selectedCode, onSelect }: SalesCompLeftListProps) => {
   return (
-    <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
+    <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
       {stats.map((s) => {
         const phrase = getStatusPhrase(s.vsLYPct, s.wowPct);
         const isSelected = s.code === selectedCode;

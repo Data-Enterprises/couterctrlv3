@@ -399,7 +399,7 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
       />
 
       {/* Filter row */}
-      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">
+      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair">
         <div data-help="severity-chips" className="flex items-center gap-1.5 flex-wrap">
           {chip("critical", "Crit", counts.critical)}
           {chip("watch", "Watch", counts.watch)}
@@ -415,16 +415,16 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
       </div>
 
       {noVendor.count > 0 && (
-        <div className="px-4 py-1.5 bg-custom-white border-x border-b border-gray-100 text-[11px] text-content/95 flex-shrink-0">
+        <div className="px-4 py-1.5 bg-custom-white border-x border-b border-line_hair text-[11px] text-content/95 flex-shrink-0">
           <span className="font-medium text-content">{fmt(noVendor.value)}</span> booked
           without a vendor — coupon lines and anything else the POS records with no
           supplier. Counted in the store total so the vendors below still add up.
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex flex-col bg-custom-white border-x border-b border-gray-100 rounded-b-xl overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col bg-custom-white border-x border-b border-line_hair rounded-b-xl overflow-hidden">
         {/* Column headers */}
-        <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
             Vendor

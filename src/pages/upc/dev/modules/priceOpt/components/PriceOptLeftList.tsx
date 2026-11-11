@@ -16,7 +16,7 @@ interface PriceOptLeftListProps {
  *  current price to compare. */
 const PriceOptLeftList = ({ rows, selectedCode, onSelect }: PriceOptLeftListProps) => {
   return (
-    <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
+    <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
       {rows.map((r) => {
         const phrase = getPriceOptPhrase(r.points, r.elasticity);
         const isSelected = r.code === selectedCode;

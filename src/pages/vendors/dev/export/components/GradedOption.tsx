@@ -21,7 +21,7 @@ interface GradedOptionProps {
 const GradedOption = ({ title, description, disabled, checked, onToggle, sevs, onSev, divided = false }: GradedOptionProps) => {
   return (
     <div
-      className={`flex items-start gap-3 ${divided ? "pt-3 border-t border-gray-100 " : ""}${disabled ? "opacity-40" : ""}`}
+      className={`flex items-start gap-3 ${divided ? "pt-3 border-t border-line_hair " : ""}${disabled ? "opacity-40" : ""}`}
     >
       <input
         type="checkbox"
