@@ -16,7 +16,7 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
-  DocumentArrowDownIcon,
+  // DocumentArrowDownIcon, (Markdowns, below)
   QrCodeIcon,
 } from "@heroicons/react/16/solid";
 
@@ -123,17 +123,19 @@ export const comingSoonPages: Navigation[] = [
     isHovering: false,
     isVisible: true,
   },
-  {
-    name: "Markdowns",
-    href: "markdowns",
-    icon: DocumentArrowDownIcon,
-    mobile: false,
-    children: [],
-    childOpen: false,
-    userLevels: PROGRAMMER_ONLY_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
+  // Commented out for the 11 Nov publish. Restore this entry and the
+  // DocumentArrowDownIcon import together.
+  // {
+  //   name: "Markdowns",
+  //   href: "markdowns",
+  //   icon: DocumentArrowDownIcon,
+  //   mobile: false,
+  //   children: [],
+  //   childOpen: false,
+  //   userLevels: PROGRAMMER_ONLY_LEVELS,
+  //   isHovering: false,
+  //   isVisible: true,
+  // },
   // Commented out for publish — `suggested/order_weight` is dev-API only.
   // Restore this entry, the ScaleIcon import and the route in main.tsx
   // together when the endpoint ships.
