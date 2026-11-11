@@ -187,7 +187,7 @@ const UpcScannerMobile = () => {
         type="button"
         disabled={rows.length === 0}
         onClick={() => setSheetOpen(true)}
-        className="h-14 w-full rounded-xl bg-brand_navy font-display text-[17px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
+        className="h-14 w-full rounded-xl bg-brand_navy active:bg-brand_navy_hover font-display text-[17px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
       >
         {rows.length === 0
           ? "Send for tags"

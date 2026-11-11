@@ -124,7 +124,7 @@ const LookupEntryScreen = ({
                       Hold steady and try again, or enter the code above.
                     </p>
                     <button
-                      className="w-full bg-brand_navy text-custom-white text-[11.5px] rounded-md py-1.5"
+                      className="w-full bg-brand_navy active:bg-brand_navy_hover text-custom-white text-[11.5px] rounded-md py-1.5"
                       onClick={() => setRetryKey((k) => k + 1)}
                     >
                       Try scanning again

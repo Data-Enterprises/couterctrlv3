@@ -445,7 +445,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                       ? goHome()
                       : setView({ mode: "guide", id: guide.id, step: view.step + 1 })
                   }
-                  className="h-9 px-5 rounded-lg bg-brand_navy text-custom-white text-[12.5px] font-semibold"
+                  className="h-9 px-5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white text-[12.5px] font-semibold"
                 >
                   {view.step === guide.steps.length - 1 ? "Done" : "Next"}
                 </button>

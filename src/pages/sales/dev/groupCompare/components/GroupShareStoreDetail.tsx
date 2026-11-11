@@ -284,7 +284,7 @@ const GroupShareStoreDetail = ({
 
         <button
           onClick={onOpenReport}
-          className="mt-3 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:opacity-90 transition-opacity"
+          className="mt-3 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:bg-brand_navy_hover transition-colors"
         >
           Open Store Comparison
         </button>

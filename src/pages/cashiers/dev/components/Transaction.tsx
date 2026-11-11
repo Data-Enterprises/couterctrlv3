@@ -180,13 +180,13 @@ const Transaction = ({ trans }: TransactionProps) => {
           <div className="flex gap-1.5 flex-shrink-0">
             <button
               onClick={handleEmail}
-              className="flex items-center gap-1 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1 text-[11px] font-medium bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white rounded-md px-2.5 py-1.5"
             >
               Email
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1.5 text-[11px] font-medium bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white rounded-md px-2.5 py-1.5"
             >
               <ArrowDownTrayIcon className="w-3 h-3" />
               CSV

@@ -90,7 +90,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
           <button
             type="button"
             onClick={() => dispatch(retryRow(row.raw))}
-            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white"
+            className="h-12 flex-1 rounded-lg bg-brand_navy active:bg-brand_navy_hover text-[15px] font-bold text-custom-white"
           >
             Check again
           </button>
@@ -99,7 +99,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
             type="button"
             onClick={save}
             disabled={!isEnterableUpc(draft) || draft.trim() === row.raw}
-            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+            className="h-12 flex-1 rounded-lg bg-brand_navy active:bg-brand_navy_hover text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
           >
             Save
           </button>
