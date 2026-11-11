@@ -95,6 +95,7 @@ export default {
         fill_track: "rgb(var(--color-fill-track) / <alpha-value>)",
         fill_track_strong:
           "rgb(var(--color-fill-track-strong) / <alpha-value>)",
+        ungraded: "rgb(var(--color-ungraded) / <alpha-value>)",
         brand_danger: "rgb(var(--color-brand-danger) / <alpha-value>)",
         brand_danger_bg: "rgb(var(--color-brand-danger-bg) / <alpha-value>)",
         brand_danger_line:

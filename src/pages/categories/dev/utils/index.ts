@@ -391,5 +391,5 @@ export const CHIP_ON: Record<CategoryTier, string> = {
   critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
   watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
   healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
-  ungraded: "ring-2 ring-gray-400/40 shadow-sm",
+  ungraded: "ring-2 ring-ungraded/40 shadow-sm",
 };

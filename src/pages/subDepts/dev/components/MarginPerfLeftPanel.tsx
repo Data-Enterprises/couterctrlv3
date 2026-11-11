@@ -481,7 +481,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                     >
                       <span
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                          tier === "ungraded" ? "bg-gray-400" : severityDotClass[tier]
+                          tier === "ungraded" ? "bg-ungraded" : severityDotClass[tier]
                         }`}
                         title={
                           tier === "ungraded"

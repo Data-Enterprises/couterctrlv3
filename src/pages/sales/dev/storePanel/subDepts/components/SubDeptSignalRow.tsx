@@ -43,7 +43,7 @@ const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps
     >
       <span
         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-          sev ? severityDotClass[sev] : "bg-gray-400"
+          sev ? severityDotClass[sev] : "bg-ungraded"
         }`}
       />
       <span

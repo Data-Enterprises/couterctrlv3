@@ -80,7 +80,7 @@ const LedgerRow = ({
         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
           // Grey: neither last week nor last year covers the whole week, so
           // there is nothing to grade on.
-          row.severity ? severityDotClass[row.severity] : "bg-gray-400"
+          row.severity ? severityDotClass[row.severity] : "bg-ungraded"
         }`}
         title={
           row.severity

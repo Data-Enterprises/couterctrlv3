@@ -255,6 +255,7 @@ body {
     --color-fill-muted: 243 244 246; /* was gray-100: muted chips and wells */
     --color-fill-track: 229 231 235; /* was gray-200: bar tracks, skeletons */
     --color-fill-track-strong: 209 213 219; /* was gray-300: a darker track */
+    --color-ungraded: 156 163 175; /* was gray-400: the dot or ring of something not graded */
     /* Error/validation. Distinct from severity-critical, which grades data —
        these dress form errors and the Critical marketing chip. */
     --color-brand-danger: 176 22 57;

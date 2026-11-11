@@ -45,7 +45,7 @@ export const ctaClasses = (tone: ItemTone) =>
   tone === "unknown" ? NEUTRAL_CTA : CTA_SEVERITY_CLASSES[tone as Severity];
 
 export const dotClass = (tone: ItemTone) =>
-  tone === "unknown" ? "bg-gray-400" : severityDotClass[tone as Severity];
+  tone === "unknown" ? "bg-ungraded" : severityDotClass[tone as Severity];
 
 /** Money, or a dash when there is none. */
 export const moneyText = (n: number | null | undefined) =>

@@ -42,7 +42,7 @@ const HourSignalRow = ({ row: r, coverage, threshold }: HourSignalRowProps) => {
       }`}
     >
       <span
-        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${sev ? severityDotClass[sev] : "bg-gray-400"}`}
+        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${sev ? severityDotClass[sev] : "bg-ungraded"}`}
       />
       <span className="text-[12px] font-medium text-content truncate flex-1">
         {formatHourRange(r.hour)}
