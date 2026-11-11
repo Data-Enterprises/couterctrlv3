@@ -380,9 +380,9 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {isLoadingMore && (
-          <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 border-b border-blue-100 flex-shrink-0">
-            <div className="w-3 h-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin shrink-0" />
-            <span className="text-[11px] text-blue-600 font-medium">
+          <div className="flex items-center gap-2 px-3 py-1 bg-brand_navy/[0.06] border-b border-brand_navy/15 flex-shrink-0">
+            <div className="w-3 h-3 rounded-full border-2 border-brand_navy/40 border-t-transparent animate-spin shrink-0" />
+            <span className="text-[11px] text-brand_navy font-medium">
               Loading more items…
             </span>
           </div>
@@ -575,7 +575,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
                           <div className="text-[12.5px] font-medium text-content truncate flex items-center gap-1">
                             <span className="truncate">{row.description}</span>
                             {row.adListData && (
-                              <span className="shrink-0 text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
+                              <span className="shrink-0 text-[9px] bg-brand_navy text-custom-white rounded px-0.5 font-medium">
                                 AD
                               </span>
                             )}

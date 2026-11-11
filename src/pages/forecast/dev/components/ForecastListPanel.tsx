@@ -177,7 +177,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
                     >
                       <span className="truncate">{row.description}</span>
                       {adListRows[row.upc] && (
-                        <span className="flex-shrink-0 text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
+                        <span className="flex-shrink-0 text-[9px] bg-brand_navy text-custom-white rounded px-0.5 font-medium">
                           AD
                         </span>
                       )}

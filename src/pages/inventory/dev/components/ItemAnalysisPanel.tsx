@@ -233,16 +233,16 @@ const ItemAnalysisPanel = ({
 
         {suggestion && (
           <div data-help="suggestion" className="px-4 pt-3 flex-shrink-0">
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
+            <div className="rounded-lg border border-brand_navy/15 bg-brand_navy/[0.06] px-3 py-2.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <ArrowTrendingUpIcon className="w-4 h-4 text-blue-800 flex-shrink-0" />
-                <span className="text-[12px] font-semibold uppercase tracking-wide text-blue-900">
+                <ArrowTrendingUpIcon className="w-4 h-4 text-brand_navy flex-shrink-0" />
+                <span className="text-[12px] font-semibold uppercase tracking-wide text-brand_navy">
                   Moves fastest at
                 </span>
-                <span className="text-[16px] font-bold text-blue-900 tabular-nums">
+                <span className="text-[16px] font-bold text-brand_navy tabular-nums">
                   {formatCurrency2(suggestion.best.point.price)}
                 </span>
-                <span className="text-[12px] text-blue-900">
+                <span className="text-[12px] text-brand_navy">
                   {suggestion.best.point.priceType} ·{" "}
                   {suggestion.best.velocity.toFixed(1)}/day over{" "}
                   {suggestion.best.point.daysSeen}{" "}
@@ -258,14 +258,14 @@ const ItemAnalysisPanel = ({
                   </span>
                 )}
                 {suggestion.isCurrent && (
-                  <span className="text-[11px] px-1.5 py-px rounded bg-blue-100 text-blue-900 font-medium">
+                  <span className="text-[11px] px-1.5 py-px rounded bg-brand_navy/10 text-brand_navy font-medium">
                     Already selling here
                   </span>
                 )}
               </div>
 
               {suggestion.current && (
-                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[12px] text-blue-900">
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[12px] text-brand_navy">
                   <span>
                     Now at{" "}
                     <span className="tabular-nums font-medium">
@@ -291,7 +291,7 @@ const ItemAnalysisPanel = ({
               )}
 
               {suggestion.isCheapest && !suggestion.isCurrent && (
-                <div className="mt-1.5 text-[11.5px] text-blue-900/95">
+                <div className="mt-1.5 text-[11.5px] text-brand_navy/95">
                   This is also the lowest price on record — volume at the
                   cheapest price is expected, not a finding.
                 </div>
@@ -394,7 +394,7 @@ const ItemAnalysisPanel = ({
                 Actually charged
               </span>
               {isCurrent && !actual.loading && act.exactCount > 0 && (
-                <span className="text-[11px] px-1.5 py-px rounded bg-blue-50 text-blue-800">
+                <span className="text-[11px] px-1.5 py-px rounded bg-brand_navy/[0.06] text-brand_navy">
                   {act.isWeighted ? "$/lb" : "Exact"} · {act.exactCount} trans
                 </span>
               )}
