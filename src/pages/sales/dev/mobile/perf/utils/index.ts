@@ -1,3 +1,8 @@
+// Utils
+import { isGroupSearch, type SEARCH_TYPE } from "../../../../../../features/searchSlice";
+import { shiftIso } from "../../../../../../utils/grading";
+import { formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
+
 // Interfaces
 import type { PairSort, PerfPair } from "./perfData";
 import type {
@@ -68,3 +73,33 @@ export const DETAIL_TABS: DetailTab<"subs" | "hours">[] = [
  *  name the user knows the store by, which needn't start with it. */
 export const storeNumberOf = (p: { key: string; label: string }) =>
   p.key.split("__")[1] ?? p.label;
+
+/** What a search asks the endpoints for: one store, or a group. */
+export const perfScopeOf = (s: { type: SEARCH_TYPE; lastStore: number; lastGroup: number }) => {
+  const isStore = !isGroupSearch(s.type);
+  return {
+    isStore,
+    useGroups: isStore ? 0 : 1,
+    searchValue: isStore ? s.lastStore : s.lastGroup,
+    singleStore: isStore ? 1 : 0,
+  };
+};
+
+/**
+ * The week ending on a search date (MM/DD/YYYY), its day-matched days last
+ * year, and the week before. Every day is shifted rather than only the two
+ * endpoints: an endpoint on a fixed-date holiday snaps to the holiday while the
+ * other keeps a weekday shift, and the range stops lining up with the per-day
+ * lookups.
+ */
+export const perfWeekOf = (singleDate: string) => {
+  const twEnd = formatGoliathDate(singleDate);
+  const twStart = shiftIso(twEnd, -6);
+  const lyDates = Array.from({ length: 7 }, (_, i) =>
+    sameWeekDayLastYear(shiftIso(twStart, i)).date,
+  ).sort();
+  // Last week is fetched beside last year and used where last year is empty.
+  const lwStart = shiftIso(twStart, -7);
+  const lwEnd = shiftIso(twEnd, -7);
+  return { twStart, twEnd, lyDates, lwStart, lwEnd };
+};

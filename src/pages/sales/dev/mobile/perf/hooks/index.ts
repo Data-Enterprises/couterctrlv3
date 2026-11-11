@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
 import { useToast } from "../../../../../../components/toasts/hooks/useToast";
 
 // Redux
-import { isGroupSearch } from "../../../../../../features/searchSlice";
 import {
   cachePerfItems,
   cachePerfStoreData,
@@ -15,6 +14,7 @@ import {
   GROUP_KEY,
   setPerfGroupData,
   setPerfHasSearched,
+  setPerfSearched,
   setPerfItemLoading,
   setPerfLoading,
   setPerfStoreLoading,
@@ -26,15 +26,14 @@ import {
 import { getHourly, getSubs, getWeekly } from "../../../../../../api/sales";
 
 // Utils
-import { shiftIso } from "../../../../../../utils/grading";
 import {
   fetchSubDeptRowsOrEmpty,
   fetchSubDeptRowsSafe,
 } from "../../../../../../utils/marginRows";
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
 import { foldDepartmentRings } from "../../../utils/ledgerUtils";
 import { asLastYearSlots } from "../../../../../../utils/perfPairs";
 import { pickComparison, resolveWeekComparison, storeKeyOf } from "../utils/perfData";
+import { perfScopeOf, perfWeekOf } from "../utils";
 
 // Interfaces
 import type {
@@ -45,42 +44,34 @@ import type {
 } from "../../../../../../interfaces";
 import type { ItemScope } from "../interfaces";
 
+/** What was searched, else the picker before a search. */
+export const usePerfSearched = () => {
+  const search = useAppSelector((s) => s.search);
+  const searched = useAppSelector((s) => s.dev.salesPerf.searched);
+  return (
+    searched ?? {
+      singleDate: search.singleDate,
+      type: search.type,
+      lastStore: search.lastStore,
+      lastGroup: search.lastGroup,
+      groupName: search.selectedGroup?.group_name ?? "",
+    }
+  );
+};
+
 /** What the search asked for: one store, or a group. */
 export const usePerfScope = () => {
-  const search = useAppSelector((s) => s.search);
-  const isStore = !isGroupSearch(search.type);
-  const useGroups = isStore ? 0 : 1;
-  const searchValue = isStore ? search.lastStore : search.lastGroup;
-  const singleStore = isStore ? 1 : 0;
-  return { isStore, useGroups, searchValue, singleStore };
+  const { type, lastStore, lastGroup } = usePerfSearched();
+  return useMemo(
+    () => perfScopeOf({ type, lastStore, lastGroup }),
+    [type, lastStore, lastGroup],
+  );
 };
 
 /** The searched week, its day-matched days last year, and the week before. */
 export const usePerfWeek = () => {
-  const singleDate = useAppSelector((s) => s.search.singleDate);
-  return useMemo(() => {
-    /** The seven days of the selected week, and their day-matched partners last
-     *  year. Shifting only the two endpoints breaks when one lands on a
-     *  fixed-date holiday: that end snaps to the holiday while the other keeps a
-     *  weekday shift, and the range stops lining up with the per-day lookups. */
-    // singleDate is m/d/yyyy off formatDate; Goliath wants yyyy-mm-dd. Passing
-    // the raw picker value returns an empty result rather than an error.
-    const twEnd = formatGoliathDate(singleDate);
-    const twStart = addDays(singleDate, -6).toISOString().split("T")[0];
-    const lyDates = Array.from(
-      { length: 7 },
-      (_, i) =>
-        sameWeekDayLastYear(shiftIso(twStart, i)).date,
-    ).sort();
-    /** The same week, seven days back. Fetched beside last year on every call,
-     *  and used only where last year came back empty — a store onboarded this
-     *  year has no last year, and one bar is not a comparison. Asking for both
-     *  up front rather than refetching on a miss keeps it to one round trip:
-     *  the miss is only known once the answer is in. */
-    const lwStart = shiftIso(twStart, -7);
-    const lwEnd = shiftIso(twEnd, -7);
-    return { twStart, twEnd, lyDates, lwStart, lwEnd };
-  }, [singleDate]);
+  const { singleDate } = usePerfSearched();
+  return useMemo(() => perfWeekOf(singleDate), [singleDate]);
 };
 
 /** The two loads behind the screen: the week for the search (with a single
@@ -89,15 +80,18 @@ export const usePerfFetch = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
-  const { isStore, useGroups, searchValue, singleStore } = usePerfScope();
-  const { twStart, twEnd, lyDates, lwStart, lwEnd } = usePerfWeek();
+  const search = useAppSelector((s) => s.search);
+  const searchedWeek = usePerfWeek();
 
-  /** Sub-department and hourly rows for one scope, both periods. */
+  /** Sub-department and hourly rows for one scope, both periods: a card opened
+   *  later loads the searched week; the search passes the picker's. */
   const fetchBundle = async (
     grouped: number,
     value: number,
     single: number,
+    week = searchedWeek,
   ): Promise<PerfBundle> => {
+    const { twStart, twEnd, lyDates, lwStart, lwEnd } = week;
     const args = [grouped, value, single] as const;
     const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
       getHourly(context.url, context.token, twStart, twEnd, ...args),
@@ -138,6 +132,18 @@ export const usePerfFetch = () => {
   };
 
   const fetchPerf = async () => {
+    const { isStore, useGroups, searchValue, singleStore } = perfScopeOf(search);
+    const week = perfWeekOf(search.singleDate);
+    const { twStart, twEnd, lyDates, lwStart, lwEnd } = week;
+    dispatch(
+      setPerfSearched({
+        singleDate: search.singleDate,
+        type: search.type,
+        lastStore: search.lastStore,
+        lastGroup: search.lastGroup,
+        groupName: search.selectedGroup?.group_name ?? "",
+      }),
+    );
     dispatch(setPerfLoading(true));
     // Every cached store bundle belongs to the old date range.
     dispatch(clearPerfStoreCache());
@@ -153,7 +159,7 @@ export const usePerfFetch = () => {
         // store still needs one up front, because its one card opens with the
         // screen. That takes a group search from six calls to two.
         isStore
-          ? fetchBundle(useGroups, searchValue, singleStore)
+          ? fetchBundle(useGroups, searchValue, singleStore, week)
           : Promise.resolve(emptyBundle()),
       ]);
 

@@ -20,6 +20,17 @@ import type {
   SubSale,
   WeeklySale,
 } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+
+/** What a phone Performance search asked for. Card and item loads and the
+ *  labels read this, not the live picker, which other pages move. */
+export interface PerfSearched {
+  singleDate: string;
+  type: SEARCH_TYPE;
+  lastStore: number;
+  lastGroup: number;
+  groupName: string;
+}
 
 /** Which list a sort preference belongs to. The store list is the screen;
  *  subs and hours are drills inside an expanded card. All three render the
@@ -113,6 +124,8 @@ export const emptyBundle = (): PerfBundle => ({
  */
 interface SalesPerfState {
   hasSearched: boolean;
+  /** The last search's scope and week; null before one. */
+  searched: PerfSearched | null;
   loading: boolean;
 
   /**
@@ -245,6 +258,7 @@ interface SalesPerfState {
 
 const initialState: SalesPerfState = {
   hasSearched: false,
+  searched: null,
   loading: false,
   weekTy: [],
   weekLy: [],
@@ -278,6 +292,9 @@ const salesPerfSlice = createSlice({
   reducers: {
     setPerfLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
+    },
+    setPerfSearched: (state, action: PayloadAction<PerfSearched | null>) => {
+      state.searched = action.payload;
     },
     setPerfHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
@@ -435,6 +452,7 @@ const salesPerfSlice = createSlice({
 export const {
   setPerfLoading,
   setPerfHasSearched,
+  setPerfSearched,
   setPerfWeek,
   setPerfMeasure,
   setPerfGroupData,

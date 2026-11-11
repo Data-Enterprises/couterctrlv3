@@ -6,6 +6,7 @@ import {
   usePerfFetch,
   usePerfItems,
   usePerfScope,
+  usePerfSearched,
   usePerfStoreBundle,
   usePerfWeek,
   useSalesPerfState,
@@ -107,7 +108,8 @@ import StoreListControls from "./components/StoreListControls";
  */
 const SalesPerfMobile = () => {
   const dispatch = useAppDispatch();
-  const { search, assignedStores, selectedGroupStores } = useSalesCtx();
+  const { assignedStores, selectedGroupStores } = useSalesCtx();
+  const searched = usePerfSearched();
   const perf = useSalesPerfState();
 
   /** Narrows a long group list. Ephemeral by design — it describes what you
@@ -406,9 +408,9 @@ const SalesPerfMobile = () => {
   const whenLabel =
     dayLabel ?? `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`;
 
-  const scopeName = isGroupSearch(search.type)
-    ? search.selectedGroup.group_name
-    : nameOf(search.lastStore, perf.weekTy[0]?.store_name);
+  const scopeName = isGroupSearch(searched.type)
+    ? searched.groupName
+    : nameOf(searched.lastStore, perf.weekTy[0]?.store_name);
 
   /** What the open card is about, for the detail view's header. */
   const openStoreName = groupOpen
@@ -506,7 +508,7 @@ const SalesPerfMobile = () => {
               Skipped entirely on a single-store search — there is no group and
               no list, so that page's one card carries the search and ? itself
               rather than having the store's name printed above it twice. */}
-          {isGroupSearch(search.type) && (
+          {isGroupSearch(searched.type) && (
             <section
               ref={groupOpen ? openCard : undefined}
               className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
@@ -590,7 +592,7 @@ const SalesPerfMobile = () => {
           )}
 
           {/* ── how the list is ordered and narrowed ─────────────── */}
-          {isGroupSearch(search.type) && (
+          {isGroupSearch(searched.type) && (
             <StoreListControls
               sizeLabel={sizeLabel}
               storeFilter={storeFilter}
