@@ -1,5 +1,6 @@
 // Hooks
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAppSelector } from "../../hooks";
 
 // Utils
 import { normalizeUpc } from ".";
@@ -84,9 +85,13 @@ export const useIsScanGunDevice = (): boolean => {
  *
  * Listens natively on `beforeinput`: React's onBeforeInput is a polyfill that
  * doesn't carry `inputType`.
+ *
+ * Dev mode only: in production the handheld scans through RHC's own scanner,
+ * so moving this tree to production leaves the field an ordinary input.
  */
 export const useScanGun = (onScan: (upc: string, raw: string) => void) => {
-  const isGun = useIsScanGunDevice();
+  const devMode = useAppSelector((s) => s.app.apiEnv === "dev");
+  const isGun = useIsScanGunDevice() && devMode;
   const [typing, setTyping] = useState(false);
 
   // Read at scan time, so the page's latest handler runs.
@@ -94,6 +99,8 @@ export const useScanGun = (onScan: (upc: string, raw: string) => void) => {
   cb.current = onScan;
   const gunRef = useRef(isGun);
   gunRef.current = isGun;
+  const devRef = useRef(devMode);
+  devRef.current = devMode;
 
   const cleanup = useRef<(() => void) | null>(null);
   const node = useRef<HTMLInputElement | null>(null);
@@ -105,7 +112,7 @@ export const useScanGun = (onScan: (upc: string, raw: string) => void) => {
     if (!el) return;
 
     const onBeforeInput = (e: InputEvent) => {
-      if (!isWedgeScan(e)) return;
+      if (!devRef.current || !isWedgeScan(e)) return;
       if (e.cancelable) e.preventDefault();
       // Normalized for a lookup, raw as printed — same pair the camera hands
       // back, since a page showing the code needs the digits the clerk sees.
