@@ -59,7 +59,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
           </span>
           {headerVsLWPct !== null && (
             <span
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+              className={`text-[11px] cc-tag ${
                 headerLWDays < headerDays
                   ? PARTIAL_PILL_CLASS
                   : pillClass(headerVsLWPct, THRESHOLD)
@@ -98,7 +98,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
             <span
               /* Grey, not red or green, when days are missing: right over the
                  days it has, but not enough for a verdict. */
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+              className={`text-[11px] cc-tag ${
                 headerLYDays < headerDays
                   ? PARTIAL_PILL_CLASS
                   : pillClass(headerVsLYPct, THRESHOLD)

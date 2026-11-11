@@ -353,7 +353,7 @@ const HourlySideBySide = ({
                   </span>
                 </div>
                 {focus.b === 0 && (
-                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+                  <span className="inline-block mt-1.5 text-[10px] cc-tag uppercase tracking-wide bg-severity_watch_bg text-severity_watch_text">
                     {compareStoreNumber} rang nothing
                   </span>
                 )}

@@ -68,7 +68,7 @@ const Ladder = ({ ladder, label, mine }: LadderProps) => {
           {label}
         </span>
         {ladder.promo && (
-          <span className="flex-shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded bg-delta_positive_bg text-delta_positive_text">
+          <span className="flex-shrink-0 text-[11px] cc-tag bg-delta_positive_bg text-delta_positive_text">
             Promotion
           </span>
         )}
@@ -76,7 +76,7 @@ const Ladder = ({ ladder, label, mine }: LadderProps) => {
             different total on every package, so the old chip fired on all of
             them — this says what the spread actually is. */}
         {ladder.weighted && (
-          <span className="flex-shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+          <span className="flex-shrink-0 text-[11px] cc-tag bg-severity_watch_bg text-severity_watch_text">
             By weight
           </span>
         )}

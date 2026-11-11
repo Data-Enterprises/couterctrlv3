@@ -24,7 +24,7 @@ const Kpi = ({ label, dates, units, pct }: KpiProps) => (
       </span>
       {pct !== undefined && (
         <span
-          className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(pct ?? null, DELTA_THRESHOLD)}`}
+          className={`text-[11px] cc-tag ${pillClass(pct ?? null, DELTA_THRESHOLD)}`}
         >
           {pct === null || pct === undefined ? "—" : formatPct(pct)}
         </span>

@@ -288,7 +288,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
               </div>
               <div className="flex items-center justify-end">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 ${typeBadgeClass(isVoid, item.sale_type)}`}
+                  className={`text-[10px] cc-tag uppercase tracking-wide ${typeBadgeClass(isVoid, item.sale_type)}`}
                 >
                   {item.sale_type}
                 </span>

@@ -83,7 +83,7 @@ const TotalsStrip = ({
               rounding error. */}
           {gap !== null && (
             <span
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+              className={`text-[11px] cc-tag ${
                 gap > 0
                   ? "bg-delta_positive_bg text-delta_positive_text"
                   : gap < 0

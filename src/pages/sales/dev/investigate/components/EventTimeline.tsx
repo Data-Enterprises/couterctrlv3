@@ -43,7 +43,7 @@ const EventTimeline = ({ events, ready, tint, label }: EventTimelineProps) => (
               {e.date.slice(5)}
             </span>
             <span
-              className={`text-[12px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${EVENT_CLASS[e.kind]}`}
+              className={`text-[12px] cc-tag uppercase tracking-wide ${EVENT_CLASS[e.kind]}`}
             >
               {e.kind}
             </span>

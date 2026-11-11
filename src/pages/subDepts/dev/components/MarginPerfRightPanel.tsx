@@ -516,7 +516,7 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && lwMarginDelta !== null && (
                 <span
-                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(lwMarginDelta, lwComplete, gradingThreshold)}`}
+                  className={`text-[11px] cc-tag ${comparisonPillClass(lwMarginDelta, lwComplete, gradingThreshold)}`}
                 >
                   {lwMarginDelta >= 0 ? "+" : ""}
                   {lwMarginDelta.toFixed(2)} pts
@@ -525,7 +525,7 @@ const MarginPerfRightPanel = () => {
               {gradingMetric === "sales" &&
                 (salesKpis?.vsLw ?? lwSalesDelta) !== null && (
                   <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass((salesKpis?.vsLw ?? lwSalesDelta)!, lwComplete, gradingThreshold)}`}
+                    className={`text-[11px] cc-tag ${comparisonPillClass((salesKpis?.vsLw ?? lwSalesDelta)!, lwComplete, gradingThreshold)}`}
                   >
                     {(salesKpis?.vsLw ?? lwSalesDelta)! >= 0 ? "+" : ""}
                     {(salesKpis?.vsLw ?? lwSalesDelta)!.toFixed(2)}%
@@ -559,7 +559,7 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && marginDelta !== null && (
                 <span
-                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(marginDelta, lyComplete, gradingThreshold)}`}
+                  className={`text-[11px] cc-tag ${comparisonPillClass(marginDelta, lyComplete, gradingThreshold)}`}
                 >
                   {marginDelta >= 0 ? "+" : ""}
                   {marginDelta.toFixed(2)} pts
@@ -568,7 +568,7 @@ const MarginPerfRightPanel = () => {
               {gradingMetric === "sales" &&
                 (salesKpis?.vsLy ?? salesDelta) !== null && (
                   <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass((salesKpis?.vsLy ?? salesDelta)!, lyComplete, gradingThreshold)}`}
+                    className={`text-[11px] cc-tag ${comparisonPillClass((salesKpis?.vsLy ?? salesDelta)!, lyComplete, gradingThreshold)}`}
                   >
                     {(salesKpis?.vsLy ?? salesDelta)! >= 0 ? "+" : ""}
                     {(salesKpis?.vsLy ?? salesDelta)!.toFixed(2)}%

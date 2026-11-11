@@ -41,7 +41,7 @@ const PeriodKpis = ({
         {row.lwQty > 0 && <span className={UNITS}>{row.lwQty.toLocaleString()} u</span>}
         {row.hasLW && (
           <span
-            className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(row.vsLWPct, isCompleteCoverage(coverage.lwDayCount, coverage.dayCount), threshold)}`}
+            className={`text-[10px] cc-tag ${comparisonPillClass(row.vsLWPct, isCompleteCoverage(coverage.lwDayCount, coverage.dayCount), threshold)}`}
           >
             {formatPct(row.vsLWPct)}
           </span>
@@ -56,7 +56,7 @@ const PeriodKpis = ({
         {row.lyQty > 0 && <span className={UNITS}>{row.lyQty.toLocaleString()} u</span>}
         {row.hasLY && (
           <span
-            className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(row.vsLYPct, isCompleteCoverage(coverage.lyDayCount, coverage.dayCount), threshold)}`}
+            className={`text-[10px] cc-tag ${comparisonPillClass(row.vsLYPct, isCompleteCoverage(coverage.lyDayCount, coverage.dayCount), threshold)}`}
           >
             {formatPct(row.vsLYPct)}
           </span>

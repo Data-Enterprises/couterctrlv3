@@ -62,7 +62,7 @@ const CaseSummary = ({ type, headline, finding, lines, caution }: Props) => {
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex items-center gap-2 mb-1">
           <span
-            className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded flex-shrink-0 ${verdict.tone}`}
+            className={`text-[10px] cc-tag uppercase tracking-wide flex-shrink-0 ${verdict.tone}`}
           >
             {verdict.text}
           </span>

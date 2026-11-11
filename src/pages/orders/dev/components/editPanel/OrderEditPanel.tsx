@@ -429,7 +429,7 @@ const OrderEditPanel = ({
           {checks.map((c) => (
             <span
               key={c.id}
-              className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+              className={`cc-tag text-[10px] ${
                 c.ok
                   ? "bg-severity_healthy_bg text-severity_healthy_text"
                   : "bg-delta_negative_bg text-delta_negative_text"

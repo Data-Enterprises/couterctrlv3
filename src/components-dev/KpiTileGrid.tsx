@@ -40,7 +40,7 @@ const KpiTileGrid = ({ items }: KpiTileGridProps) => {
             </span>
             {kpi.sub && (
               <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                className={`text-[10px] cc-tag ${
                   kpi.subVariant === "up"
                     ? "bg-severity_healthy_bg text-severity_healthy_text"
                     : kpi.subVariant === "neutral"

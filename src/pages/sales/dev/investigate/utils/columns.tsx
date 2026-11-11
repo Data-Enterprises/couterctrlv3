@@ -91,7 +91,7 @@ const signedWith =
     const show = force ?? fmt;
     return (
       <span
-        className={`inline-block px-1.5 py-0.5 rounded font-bold ${
+        className={`inline-block cc-tag ${
           v === 0
             ? "bg-fill_muted text-content/95"
             : v > 0

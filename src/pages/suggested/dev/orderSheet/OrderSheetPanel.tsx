@@ -638,7 +638,7 @@ const OrderSheetPanel = () => {
                               {shrinkLabel(r)}
                             </span>
                             {r.shrink_clamped && (
-                              <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+                              <span className="ml-1 text-[10px] cc-tag bg-severity_watch_bg text-severity_watch_text">
                                 Cap
                               </span>
                             )}

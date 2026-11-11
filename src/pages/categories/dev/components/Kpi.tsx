@@ -28,7 +28,7 @@ const Kpi = ({ title, dateLabel, value, pct, threshold, complete = true, coverag
         <span className="text-[14px] font-bold text-content">{value}</span>
         {pct !== null && (
           <span
-            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(pct, complete, threshold)}`}
+            className={`text-[11px] cc-tag ${comparisonPillClass(pct, complete, threshold)}`}
           >
             {formatPct(pct)}
           </span>
