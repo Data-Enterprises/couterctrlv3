@@ -400,7 +400,7 @@ const MarginPerfRightPanel = () => {
   if (ctx.selectedSubDeptId == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
-        <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">
+        <div className="cc-panel shadow-sm h-full items-center justify-center gap-2">
           <p className="text-[13px] font-medium text-content">
             Select a sub department
           </p>
@@ -415,7 +415,7 @@ const MarginPerfRightPanel = () => {
   if (!ctx.weekOneMargins.length) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
-        <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full relative">
+        <div className="cc-panel shadow-sm h-full relative">
           <LoadingIndicator message="Loading margins..." />
         </div>
       </div>
@@ -424,7 +424,7 @@ const MarginPerfRightPanel = () => {
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
-      <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="cc-panel shadow-sm h-full">
         {/* ── Title bar — tinted to the selected sub dept's tier ── */}
         <div
           className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier]}`}

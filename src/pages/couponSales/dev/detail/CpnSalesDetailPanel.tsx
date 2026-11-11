@@ -234,7 +234,7 @@ const CpnSalesDetailPanel = ({
   const selectedSection = sectionRows.find((r) => r.key === selectedSectionKey);
 
   return (
-    <div className="flex flex-col min-w-0 h-full bg-custom-white rounded-xl shadow-sm overflow-hidden">
+    <div className="cc-panel min-w-0 h-full shadow-sm">
       <DetailTitleBar storeTier={storeTier} storeLabel={storeLabel} rangeLabel={rangeLabel} />
 
       <DetailKpiStrip totals={totals} baselineTotals={baselineTotals} />

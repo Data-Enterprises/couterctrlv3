@@ -105,7 +105,7 @@ const CouponListPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
+      className="cc-panel shadow-lg flex-shrink-0"
       style={{ width: "22%" }}
     >
       {/* Navy header */}

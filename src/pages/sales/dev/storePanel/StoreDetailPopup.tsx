@@ -87,7 +87,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   );
 
   return (
-    <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="cc-panel shadow-sm h-full">
       <StorePopupHeader
         selection={selection}
         loading={loading}

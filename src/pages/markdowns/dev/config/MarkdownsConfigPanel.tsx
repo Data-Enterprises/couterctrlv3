@@ -51,7 +51,7 @@ const MarkdownsConfigPanel = ({ onOpenSearch }: MarkdownsConfigPanelProps) => {
   return (
     <div
       data-help="filters"
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
+      className="cc-panel shadow-lg flex-shrink-0"
       style={{ width: 300 }}
     >
       <ConfigHeader onOpenSearch={onOpenSearch} />

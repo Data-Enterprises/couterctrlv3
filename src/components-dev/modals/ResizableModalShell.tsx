@@ -100,7 +100,7 @@ const ResizableModalShell = ({
         // Never taller than the viewport it sits in — the backdrop's p-4 is
         // the 2rem. Only ever reduces the chosen height, never raises it.
         style={{ width, maxHeight: `min(${height}px, calc(100vh - 2rem))` }}
-        className={`relative bg-custom-white rounded-xl shadow-xl overflow-hidden flex flex-col ${className}`}
+        className={`relative cc-panel shadow-xl ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

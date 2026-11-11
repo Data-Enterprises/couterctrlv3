@@ -48,7 +48,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
   const comparableWeeks = row.weeks.filter((w) => w.salesLy !== null).length;
 
   return (
-    <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="cc-panel shadow-sm h-full">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 bg-brand_navy">
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start truncate">
           {row.desc}

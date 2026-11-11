@@ -88,7 +88,7 @@ const TicketInbox = ({
     filters.stores.length > 0;
 
   return (
-    <div className="flex h-full w-[379px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg xl:w-[410px] 2xl:w-[460px]">
+    <div className="cc-panel h-full w-[379px] flex-none shadow-lg xl:w-[410px] 2xl:w-[460px]">
       {/* InboxHeader.tsx: One row: Urgent and Refresh sit beside the search box they act on. */}
       <InboxHeader
         isTech={isTech}

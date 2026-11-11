@@ -219,7 +219,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
-      <div className="bg-custom-white rounded-xl overflow-hidden flex flex-col h-full">
+      <div className="cc-panel h-full">
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-brand_navy">
           <div className="text-[13px] cc-navy-title leading-tight">

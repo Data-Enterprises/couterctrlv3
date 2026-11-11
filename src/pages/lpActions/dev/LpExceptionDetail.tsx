@@ -54,7 +54,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
+      <div className="cc-panel shadow-sm h-full">
         <div className="flex-shrink-0 bg-brand_navy px-4 py-2.5">
           <p className="cc-navy-title text-[13px] truncate">
             {row.saleType}

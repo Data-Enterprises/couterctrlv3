@@ -148,7 +148,7 @@ const CashierJourney = () => {
       onMouseDown={close}
     >
       <div
-        className="bg-custom-white rounded-xl shadow-xl w-full max-w-[1120px] max-h-[92vh] flex flex-col overflow-hidden"
+        className="cc-panel shadow-xl w-full max-w-[1120px] max-h-[92vh]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex-shrink-0 bg-brand_navy px-4 py-2.5 flex items-start gap-3">

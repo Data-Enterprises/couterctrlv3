@@ -242,7 +242,7 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
           }
         />
       ) : (
-        <div className="flex flex-col flex-1 min-h-0 rounded-xl overflow-hidden bg-custom-white">
+        <div className="cc-panel flex-1 min-h-0">
           <TransactionTitleBar
             tier={tier}
             storeName={storeName}

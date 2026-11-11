@@ -98,7 +98,7 @@ const GroupComparisonPanel = ({
   );
 
   return (
-    <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+    <div className="cc-panel shadow-sm h-full">
       {/* The panel's own bar. By store and By department were two readings
           of one group and the share panel below is the reading that answers
           the question, so the tabs went -- the header did not. */}

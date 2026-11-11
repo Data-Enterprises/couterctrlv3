@@ -177,7 +177,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   );
 
   return (
-    <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ width: "39%", flexShrink: 0 }}>
+    <div className="cc-panel shadow-lg" style={{ width: "39%", flexShrink: 0 }}>
       {/* Navy header */}
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "rgb(var(--color-brand-navy))" }}>
         {/* Row 1: date | totals */}

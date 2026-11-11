@@ -111,7 +111,7 @@ const Admin = () => {
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
         ref={boxRef}
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] cc-panel shadow-lg self-start"
         style={{ width, height }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">

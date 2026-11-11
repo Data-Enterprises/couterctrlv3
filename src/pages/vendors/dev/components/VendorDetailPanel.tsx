@@ -261,7 +261,7 @@ const VendorDetailPanel = () => {
       : null;
 
   return (
-    <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl overflow-hidden flex flex-col">
+    <div className="flex-1 min-w-0 shadow-lg cc-panel">
       {exportOpen && (
         <VendorExportModal
           onClose={() => setExportOpen(false)}

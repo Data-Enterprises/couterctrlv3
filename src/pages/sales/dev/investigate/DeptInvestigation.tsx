@@ -291,7 +291,7 @@ const DeptInvestigation = ({
 
   return (
     <div
-      className={`h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-card-sm ${
+      className={`h-full cc-panel shadow-card-sm ${
         leaving ? "animate-nb-leave" : ""
       }`}
     >

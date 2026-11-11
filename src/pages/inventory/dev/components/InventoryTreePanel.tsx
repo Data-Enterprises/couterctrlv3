@@ -96,7 +96,7 @@ const InventoryTreePanel = ({
     /* 26%, as on Receivers: both are nested lists with full descriptions on
        the second level. */
     <div className="flex-shrink-0 shadow-lg" style={{ width: "26%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="cc-panel shadow-sm h-full">
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
           <div className="min-w-0">
             <div className="text-[14px] cc-navy-title leading-tight truncate">

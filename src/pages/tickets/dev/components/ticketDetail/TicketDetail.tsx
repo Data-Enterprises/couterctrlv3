@@ -106,7 +106,7 @@ const TicketDetail = () => {
   ];
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden rounded-xl bg-custom-white shadow-lg flex flex-col">
+    <div className="flex-1 min-h-0 cc-panel shadow-lg">
       <DetailHeader ticket={ticket} />
 
       <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">

@@ -489,7 +489,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
     // so the contents hold their layout while the sleeve closes over them —
     // text reflowing through a width transition is what makes one look
     // broken rather than smooth.
-    <div className="w-[340px] h-full flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
+    <div className="w-[340px] h-full cc-panel min-h-0 border border-brand_line">
       <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
         <span className="text-[11px] cc-caps flex-1">
           Configuration

@@ -462,7 +462,7 @@ const CouponDetailPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
+      className="cc-panel shadow-lg"
       style={{ flex: 1, minWidth: 0 }}
     >
       {exportOpen && (

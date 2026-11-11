@@ -174,7 +174,7 @@ const Organization = () => {
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] cc-panel shadow-lg self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
         style={{
           width: size.width,
           // Auto lets the card end where the form ends. max-h still caps it,

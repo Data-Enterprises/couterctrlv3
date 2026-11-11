@@ -112,7 +112,7 @@ const ItemFixPanel = ({
 
   if (!item) {
     return (
-      <div className="flex flex-col flex-1 min-w-0 rounded-xl shadow-lg overflow-hidden bg-custom-white">
+      <div className="cc-panel flex-1 min-w-0 shadow-lg">
         {header}
         <div className="flex-1 flex items-center justify-center p-6">
           <EmptyPrompt
@@ -133,7 +133,7 @@ const ItemFixPanel = ({
     });
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 rounded-xl shadow-lg overflow-hidden bg-custom-white">
+    <div className="cc-panel flex-1 min-w-0 shadow-lg">
       {header}
 
       <div className="cc-scroll px-4 py-3 flex flex-col gap-3">

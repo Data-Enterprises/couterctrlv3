@@ -156,7 +156,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden relative">
+      <div className="cc-panel shadow-sm h-full relative">
         <CaseHeader
           core={core}
           onBack={onBack}

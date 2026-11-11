@@ -124,7 +124,7 @@ const DeptMatrixPanel = ({
   const soloStore = (matrix?.rows.length ?? 0) < 2;
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm">
+    <div className="h-full cc-panel shadow-sm">
       <div className="flex-shrink-0 flex items-center gap-1 px-4 py-2.5 bg-brand_navy">
         {expanded ? (
           <button

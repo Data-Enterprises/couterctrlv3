@@ -41,7 +41,7 @@ const PanelFrame = ({
   style,
 }: PanelFrameProps) => (
   <div
-    className={`flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white min-h-0 ${className}`}
+    className={`cc-panel shadow-lg min-h-0 ${className}`}
     style={style}
   >
     <div

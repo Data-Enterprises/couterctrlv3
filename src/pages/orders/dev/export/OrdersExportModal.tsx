@@ -155,7 +155,7 @@ const OrdersExportModal = ({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[88vh] w-[560px] max-w-[94vw] flex-col overflow-hidden rounded-xl bg-custom-white shadow-xl"
+        className="cc-panel max-h-[88vh] w-[560px] max-w-[94vw] shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 bg-brand_navy px-4 py-2.5 flex-shrink-0">

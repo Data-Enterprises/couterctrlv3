@@ -213,7 +213,7 @@ const OrdersConfigPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
+      className="cc-panel shadow-lg flex-shrink-0"
       style={{ width: 300 }}
     >
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">

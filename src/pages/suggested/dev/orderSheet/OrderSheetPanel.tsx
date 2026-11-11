@@ -283,7 +283,7 @@ const OrderSheetPanel = () => {
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white min-h-0"
+      className="cc-panel shadow-lg min-h-0"
       style={{ flex: 1, minWidth: 0 }}
     >
       {/* Navy header — one row, title left, actions and metadata right. */}
