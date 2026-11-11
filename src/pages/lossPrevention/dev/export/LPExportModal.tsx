@@ -251,7 +251,7 @@ const LPExportModal = ({
                   className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">Transaction List</p>
+                  <p className="text-[13px] cc-row-title">Transaction List</p>
                   <p className="text-[11px] text-content/95 mt-0.5">{transactions.length} transactions currently in view (filters applied)</p>
                 </div>
               </label>

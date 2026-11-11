@@ -291,7 +291,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                   className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
+                  <p className="text-[13px] cc-row-title">
                     {pr.label}
                   </p>
                   <p className="text-[11px] text-content/95 mt-0.5">{pr.desc}</p>

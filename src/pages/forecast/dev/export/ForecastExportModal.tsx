@@ -282,7 +282,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
                   className={CHECKBOX}
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
+                  <p className="text-[13px] cc-row-title">
                     {label}
                   </p>
                   <p className="text-[11px] text-content mt-0.5">
