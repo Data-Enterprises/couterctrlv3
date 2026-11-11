@@ -74,7 +74,7 @@ const ForecastScenarios = ({
 
   return (
     <div className="flex flex-col min-h-0 overflow-hidden border border-gray-200 rounded-lg">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
           Price scenarios
         </span>

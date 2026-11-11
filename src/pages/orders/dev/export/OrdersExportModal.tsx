@@ -273,7 +273,7 @@ const OrdersExportModal = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
+        <div className="flex items-center gap-3 border-t border-line_hair px-4 py-2.5 flex-shrink-0">
           <span className="flex-1 text-[12px] text-content/95">
             {rows.length.toLocaleString()} line{rows.length === 1 ? "" : "s"} ·{" "}
             {chosen.length} column{chosen.length === 1 ? "" : "s"}

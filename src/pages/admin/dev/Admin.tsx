@@ -149,7 +149,7 @@ const Admin = () => {
           <PageInfoButton page="admin" title="About Admin" />
         </div>
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
+        <div className="flex border-b border-line_hair flex-shrink-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}

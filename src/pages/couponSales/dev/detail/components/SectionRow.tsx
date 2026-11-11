@@ -28,7 +28,7 @@ const SectionRow = ({ row, isSel, isItemView }: SectionRowProps) => {
       onClick={() => dispatch(setSelectedCouponSection(isSel ? null : row.key))}
       className={`w-full ${
         isItemView ? "block" : "grid items-center"
-      } border-b border-gray-100 border-l-2 text-left transition-colors ${
+      } border-b border-line_hair border-l-2 text-left transition-colors ${
         isSel
           ? "bg-row_selected border-l-row_selected_border"
           : "border-l-transparent hover:bg-gray-50"

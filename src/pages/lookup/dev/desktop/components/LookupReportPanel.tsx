@@ -93,7 +93,7 @@ const LookupReportPanel = ({
         </div>
 
         {/* 7-col KPI strip — margin first */}
-        <div className="grid grid-cols-7 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-7 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
               Margin
@@ -251,7 +251,7 @@ const LookupReportPanel = ({
           ) : (
           <>
           <div
-            className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+            className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-line_hair sticky top-0 bg-custom-white"
             style={salesGrid}
           >
             <span>Date</span>

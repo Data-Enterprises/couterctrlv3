@@ -398,7 +398,7 @@ const OrderEditPanel = ({
         </table>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-wrap border-t border-line_hair px-3 py-1.5 flex-shrink-0">
         <span className="text-[11px] text-content">
           Showing{" "}
           <span className="font-semibold tabular-nums">{rows.length}</span> of{" "}

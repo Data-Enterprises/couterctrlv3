@@ -148,7 +148,7 @@ const InvoiceSheet = ({
                 heading. Sharing the scroll container is what makes them line
                 up; sticky is what keeps them visible. */}
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: ROW_COLS }}
             >
               <span className="text-right">#</span>
@@ -181,7 +181,7 @@ const InvoiceSheet = ({
                 <div
                   key={`${l.line_number}-${l.product_code}`}
                   ref={isFrom ? fromRef : undefined}
-                  className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 ${
+                  className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair ${
                     isFrom
                       ? // The same wash as this item's action chip on the sheet
                         // behind the modal, so the line you came for is

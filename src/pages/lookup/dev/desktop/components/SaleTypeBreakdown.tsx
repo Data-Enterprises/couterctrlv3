@@ -44,7 +44,7 @@ const SaleTypeBreakdown = ({
   return (
     <div>
       <div
-        className={`${grid} ${px} py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100`}
+        className={`${grid} ${px} py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-line_hair`}
         style={gridStyle}
       >
         <span>Sale type</span>

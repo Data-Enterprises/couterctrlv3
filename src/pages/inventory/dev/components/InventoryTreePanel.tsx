@@ -115,7 +115,7 @@ const InventoryTreePanel = ({
           </div>
         </div>
 
-        <div className="px-3 py-2 border-b border-gray-100 flex-shrink-0">
+        <div className="px-3 py-2 border-b border-line_hair flex-shrink-0">
           <TextFilter
             value={filter}
             onChange={setFilter}

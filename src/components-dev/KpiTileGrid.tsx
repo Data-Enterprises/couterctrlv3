@@ -18,7 +18,7 @@ interface KpiTileGridProps {
 const KpiTileGrid = ({ items }: KpiTileGridProps) => {
   return (
     <div
-      className="grid divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 leading-snug"
+      className="grid divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 leading-snug"
       style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}
     >
       {items.map((kpi) => (

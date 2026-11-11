@@ -43,7 +43,7 @@ const CaseTabs = ({ all, types, selected, onSelect }: Props) => {
   const names = types.map((t) => t.saleType);
 
   return (
-    <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
+    <div className="flex items-center border-b border-line_hair px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
       {[all, ...types].map((t) => {
         const on = t.saleType === selected;
         return (

@@ -88,7 +88,7 @@ const ActualPriceRow = ({
       </div>
 
       {open && (
-        <div className="bg-brand_navy/[0.03] border-b border-gray-100 pl-5 pr-2 py-1.5">
+        <div className="bg-brand_navy/[0.03] border-b border-line_hair pl-5 pr-2 py-1.5">
           <div
             className="grid py-1 text-[10px] font-medium uppercase tracking-wide text-content/95"
             style={{ gridTemplateColumns: TXN_COLS }}

@@ -40,11 +40,11 @@ const StoreColumn = ({
       <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
         {title} ({stores.length})
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-gray-100">
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-line_hair">
         {stores.map((s) => (
           <div
             key={s.storeid}
-            className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-gray-100 ${
+            className={`flex items-center justify-between gap-2 px-2.5 py-2 text-[12px] text-content border-b border-line_hair ${
               pending.has(s.storeid) ? "opacity-40" : ""
             }`}
           >

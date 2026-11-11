@@ -287,7 +287,7 @@ const CpnSectionDetail = ({
       {/* Transaction bottom sheet */}
       {selectedSaleId && (
         <BottomSheet onClose={handleSheetClose}>
-          <div className="px-4 pb-3 border-b border-gray-100 flex items-start justify-between gap-2">
+          <div className="px-4 pb-3 border-b border-line_hair flex items-start justify-between gap-2">
             <div>
               <div className="text-[13px] font-bold text-content">
                 {txMeta?.cashier_name ?? "Loading…"}
@@ -323,7 +323,7 @@ const CpnSectionDetail = ({
             <>
               <div className="overflow-y-auto max-h-[420px]">
                 <div
-                  className="grid px-4 py-1.5 bg-gray-50 border-b border-gray-100"
+                  className="grid px-4 py-1.5 bg-gray-50 border-b border-line_hair"
                   style={{ gridTemplateColumns: "18px 1fr 20px 56px 40px" }}
                 >
                   {["#", "Description", "Qty", "Total", "Type"].map((h, i) => (
@@ -390,7 +390,7 @@ const CpnSectionDetail = ({
                   );
                 })}
               </div>
-              <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-gray-100 bg-gray-50">
+              <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-line_hair bg-gray-50">
                 {txCoupons > 0 && (
                   <span className="text-[10px] text-severity_watch_text">
                     Cpns{" "}

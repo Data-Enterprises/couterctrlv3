@@ -24,7 +24,7 @@ const GridPager = ({
   onPage,
   onPageSize,
 }: GridPagerProps) => (
-  <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
+  <div className="flex items-center gap-3 border-t border-line_hair px-3 py-1.5 flex-shrink-0">
     <span className="text-[11px] text-content/95">
       {total === 0
         ? "No rows"

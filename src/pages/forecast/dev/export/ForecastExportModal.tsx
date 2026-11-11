@@ -298,7 +298,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
             </p>
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair mt-2">
             <button
               onClick={onClose}
               className="text-[12px] text-content transition-colors"
@@ -320,7 +320,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
       {/* ── CUSTOM ── */}
       {mode === "custom" && (
         <>
-          <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+          <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <div>
                 <p className={SECTION_LABEL}>Rows</p>
@@ -379,7 +379,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
 
             {/* Preview */}
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
                 <p className="text-[11px] font-semibold text-content uppercase tracking-wide">
                   Preview
                 </p>
@@ -412,7 +412,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
                         {activeCols.map((c) => (
                           <th
                             key={c.key}
-                            className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap"
+                            className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap"
                           >
                             {c.label}
                           </th>
@@ -421,7 +421,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
                     </thead>
                     <tbody>
                       {customRows.slice(0, PREVIEW_ROWS).map((r) => (
-                        <tr key={r.upc} className="border-b border-gray-100">
+                        <tr key={r.upc} className="border-b border-line_hair">
                           {activeCols.map((c) => (
                             <td
                               key={c.key}
@@ -439,7 +439,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
             <button
               onClick={onClose}
               className="text-[12px] text-content transition-colors"

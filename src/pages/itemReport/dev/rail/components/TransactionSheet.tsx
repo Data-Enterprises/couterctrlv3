@@ -297,7 +297,7 @@ const TransactionSheet = ({
         ) : inBasket ? (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: BASKET_COLS }}
             >
               <span>Item</span>
@@ -315,7 +315,7 @@ const TransactionSheet = ({
               return (
                 <div
                   key={`${l.code}-${l.discount ? "dc" : "item"}`}
-                  className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 ${
+                  className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair ${
                     // The line you came for, marked among the rest of the
                     // basket — that contrast is the whole point of the view,
                     // and it wears the action's colour so it matches the chip
@@ -393,7 +393,7 @@ const TransactionSheet = ({
         ) : (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: LIST_COLS }}
             >
               <span>Transaction</span>
@@ -408,7 +408,7 @@ const TransactionSheet = ({
               <div
                 key={r.sale.sale_id}
                 onClick={() => setOpenSale(r.sale)}
-                className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 cursor-pointer hover:bg-brand_navy/[0.06] ${
+                className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair cursor-pointer hover:bg-brand_navy/[0.06] ${
                   i % 2 === 1 ? "bg-row_stripe" : ""
                 }`}
                 style={{ gridTemplateColumns: LIST_COLS }}

@@ -64,7 +64,7 @@ const DayCardStrip = ({
   const weekRange = `${md(days[0].iso)} – ${md(days[days.length - 1].iso)}`;
 
   return (
-    <div className="flex-shrink-0 flex gap-1.5 p-1.5 border-b border-gray-100 bg-gray-50">
+    <div className="flex-shrink-0 flex gap-1.5 p-1.5 border-b border-line_hair bg-gray-50">
       {/* All week card */}
       <button
         onClick={() => onSelect("")}

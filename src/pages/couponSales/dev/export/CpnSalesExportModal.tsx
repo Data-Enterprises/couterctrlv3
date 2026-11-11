@@ -303,7 +303,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
 
         {/* CUSTOM MODE */}
         {mode === "custom" && (
-          <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 flex-1 min-h-0">
+          <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair flex-1 min-h-0">
             {/* Left: config */}
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <div>
@@ -401,7 +401,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
 
             {/* Right: preview */}
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
                 <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
                   Preview
                 </p>
@@ -428,7 +428,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                         {previewColumns.map((c) => (
                           <th
                             key={c.key}
-                            className="text-left px-3 py-2 text-content/95 font-semibold border-b border-gray-100 whitespace-nowrap"
+                            className="text-left px-3 py-2 text-content/95 font-semibold border-b border-line_hair whitespace-nowrap"
                           >
                             {c.label}
                           </th>
@@ -457,7 +457,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
           <button
             onClick={close}
             className="text-[12px] text-content/95 hover:text-content transition-colors"

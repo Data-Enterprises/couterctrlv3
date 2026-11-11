@@ -238,7 +238,7 @@ const SharedGroupDetail = ({
         shared with {recipients} {recipients === 1 ? "person" : "people"}
       </div>
 
-      <div className="flex border-b border-gray-100 mb-4">
+      <div className="flex border-b border-line_hair mb-4">
         {(["stores", "users"] as const).map((t) => (
           <button
             key={t}

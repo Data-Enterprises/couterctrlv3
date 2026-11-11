@@ -420,7 +420,7 @@ const AwgInvoices = () => {
               : ""}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 px-3.5 py-2.5">
+          <div className="flex flex-wrap items-center gap-2 border-t border-line_hair px-3.5 py-2.5">
             {/* Fixed, not flex-1. Growing to fill the row took width the
                 store chooser needed more -- a store name is longer than
                 anything typed in here. 280 fits its own placeholder. */}
@@ -541,7 +541,7 @@ const AwgInvoices = () => {
           {/* A file cut off between two invoices still reconciles invoice by
               invoice, so the trailer counts are the only sign it is short. */}
           {trailerProblem && (
-            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+            <p className="border-t border-line_hair bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
               {trailerProblem}
             </p>
           )}
@@ -549,7 +549,7 @@ const AwgInvoices = () => {
               exists to prevent, so the reason sits under the control rather
               than only in its tooltip. */}
           {!allReconciled && (
-            <p className="border-t border-gray-100 bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
+            <p className="border-t border-line_hair bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
               {failedCount} {failedCount === 1 ? "invoice does" : "invoices do"}{" "}
               not reconcile here. The server decodes the file again and reaches
               its own verdict, so this does not stop a send &mdash; but the two
@@ -560,7 +560,7 @@ const AwgInvoices = () => {
             allReconciled &&
             serverWarnings.length === 0 &&
             serverDiscarded.length === 0 && (
-            <p className="border-t border-gray-100 bg-severity_healthy_bg px-3.5 py-2 text-[12px] text-severity_healthy_text">
+            <p className="border-t border-line_hair bg-severity_healthy_bg px-3.5 py-2 text-[12px] text-severity_healthy_text">
               Sent. Any correction made from here replaces what was sent.
             </p>
           )}
@@ -568,7 +568,7 @@ const AwgInvoices = () => {
               with the server's reason, because each is an invoice that is
               missing from the import until it is corrected and sent again. */}
           {sentAt && serverDiscarded.length > 0 && (
-            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+            <p className="border-t border-line_hair bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
               Sent, but {serverDiscarded.length}{" "}
               {serverDiscarded.length === 1 ? "invoice was" : "invoices were"}{" "}
               not saved: {discardedText(serverDiscarded)}.
@@ -578,7 +578,7 @@ const AwgInvoices = () => {
               among them. Money it saw and did not understand, so a run that
               carries these must not read as a clean one. */}
           {sentAt && serverWarnings.length > 0 && (
-            <p className="border-t border-gray-100 bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
+            <p className="border-t border-line_hair bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
               Sent, with {serverWarnings.length}{" "}
               {serverWarnings.length === 1 ? "record type" : "record types"} the
               decoder has no layout for: {serverWarnings.join(", ")}. Nothing

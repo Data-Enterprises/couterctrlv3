@@ -73,13 +73,13 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </div>
         </div>
 
-        <div className="flex-shrink-0 flex border-b border-gray-100 bg-gray-50">
+        <div className="flex-shrink-0 flex border-b border-line_hair bg-gray-50">
           {row.weeks.map((w, i) => {
             const last = i === row.weeks.length - 1;
             return (
               <div
                 key={w.start}
-                className={`flex-1 min-w-0 px-2 py-2 text-center border-r border-gray-100 ${
+                className={`flex-1 min-w-0 px-2 py-2 text-center border-r border-line_hair ${
                   last && row.severity !== "steady" ? tone : ""
                 }`}
               >
@@ -103,7 +103,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </button>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/95">
+        <div className="flex-shrink-0 px-3 py-1.5 border-b border-line_hair text-[11.5px] font-semibold uppercase tracking-wide text-content/95">
           Cashiers in the latest week
         </div>
 
@@ -138,7 +138,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
                     )
                   }
                   title="Open this cashier's case"
-                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-line_hair hover:bg-gray-50 transition-colors"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-medium text-content truncate">

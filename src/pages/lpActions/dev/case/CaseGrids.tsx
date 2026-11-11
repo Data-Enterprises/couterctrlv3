@@ -38,8 +38,8 @@ const CaseGrids = ({
   saleType,
   onOpenReceipt,
 }: Props) => (
-  <div className="grid grid-cols-2 border-t border-gray-100">
-    <div className="min-w-0 border-r border-gray-100">
+  <div className="grid grid-cols-2 border-t border-line_hair">
+    <div className="min-w-0 border-r border-line_hair">
       <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/95">
         {isAll(saleType) ? "Items" : `${saleType} items`}
       </div>

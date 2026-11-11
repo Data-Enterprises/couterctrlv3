@@ -227,7 +227,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       </div>
 
       {/* ── Tier chips + text filter ───────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100 flex-shrink-0">
+      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair flex-shrink-0">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => toggleTier("critical")}
@@ -274,7 +274,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       </div>
 
       {/* ── Column headers ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
         <span className="flex-1 text-[10px] font-bold uppercase tracking-wide text-content">
           Store
@@ -317,7 +317,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       </div>
 
       {/* ── Rows ───────────────────────────────────────────────────────── */}
-      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
+      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-line_hair rounded-b-xl">
         {visible.length === 0 ? (
           <div className="flex items-center justify-center h-24 text-[12px] text-content/95">
             No stores match

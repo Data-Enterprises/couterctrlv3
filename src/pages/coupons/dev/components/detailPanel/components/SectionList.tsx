@@ -13,7 +13,7 @@ interface SectionListProps {
 /** The left column: one card per group, with its total and count. */
 const SectionList = ({ groupedSections, selectedSection, onSelect }: SectionListProps) => (
     <div
-      className="flex flex-col border-r border-gray-100 flex-shrink-0"
+      className="flex flex-col border-r border-line_hair flex-shrink-0"
       style={{ width: "26%" }}
     >
       {/* Section cards */}
@@ -26,7 +26,7 @@ const SectionList = ({ groupedSections, selectedSection, onSelect }: SectionList
               onClick={() =>
                 onSelect(isSel ? null : section.key)
               }
-              className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
+              className={`w-full px-3 py-2 border-b border-line_hair last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
               style={
                 isSel
                   ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }

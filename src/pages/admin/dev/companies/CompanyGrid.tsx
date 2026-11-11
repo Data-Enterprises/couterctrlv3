@@ -170,7 +170,7 @@ const CompanyGrid = () => {
         </button>
       </div>
 
-      <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
+      <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
           {companyCols.map((title) => (
             <div key={title}>{title}</div>

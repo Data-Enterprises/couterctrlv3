@@ -161,7 +161,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: GroupDetailProps) => {
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
-      <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+      <div className="px-4 py-3 border-b border-line_hair flex-shrink-0">
         <div className="flex items-center gap-1">
           {editing ? (
             <input

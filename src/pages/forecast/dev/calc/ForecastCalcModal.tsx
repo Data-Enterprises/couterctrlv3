@@ -138,7 +138,7 @@ const ForecastCalcModal = () => {
       {/* Item facts the fit stands on: Reg retail is the baseline every
           Markdown figure is measured against; price points is how many prices
           the demand curve is fitted through. */}
-      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 flex-shrink-0">
         {(
           [
             ["Reg retail", formatCurrency2(result.regular_retail_price)],
@@ -220,7 +220,7 @@ const ForecastCalcModal = () => {
 
               {/* The calculator's answer stays in its own section: it writes
                   nothing back. */}
-              <div className="border-t border-gray-100 pt-2 flex flex-col gap-1">
+              <div className="border-t border-line_hair pt-2 flex flex-col gap-1">
                 <div className="text-[10.5px] font-medium text-content/95">
                   At {formatCurrency2(activePrice)} over 7 days
                 </div>
@@ -252,7 +252,7 @@ const ForecastCalcModal = () => {
 
           {/* Note */}
           <div className={SECTION}>
-            <div className="flex items-stretch bg-gray-50 border-b border-gray-100">
+            <div className="flex items-stretch bg-gray-50 border-b border-line_hair">
               <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Note
               </div>
@@ -318,7 +318,7 @@ const ForecastCalcModal = () => {
                   </div>
                 ))}
                 {ad.featureNotes && (
-                  <div className="border-t border-gray-100 pt-1.5 text-[11px] font-medium text-content/95">
+                  <div className="border-t border-line_hair pt-1.5 text-[11px] font-medium text-content/95">
                     {ad.featureNotes}
                   </div>
                 )}

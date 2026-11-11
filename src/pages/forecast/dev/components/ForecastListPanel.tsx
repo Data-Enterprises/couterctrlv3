@@ -86,7 +86,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">
         {/* filter strip */}
-        <div className="flex-shrink-0 px-2 py-1.5 border-b border-gray-100 flex items-center gap-1.5">
+        <div className="flex-shrink-0 px-2 py-1.5 border-b border-line_hair flex items-center gap-1.5">
           <input
             value={listFilter}
             onChange={(e) => dispatch(setListFilter(e.target.value))}
@@ -137,7 +137,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
                 <button
                   key={row.upc}
                   onClick={() => dispatch(toggleCheckedUpc(row.upc))}
-                  className={`w-full text-left flex items-start gap-2 px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                  className={`w-full text-left flex items-start gap-2 px-3 py-2.5 border-b border-line_hair transition-colors ${
                     checked ? "bg-custom-white" : "hover:bg-gray-50"
                   }`}
                   style={

@@ -28,10 +28,10 @@ const CompanyPicker = ({
   return (
     <div
       data-help={helpAnchor}
-      className="flex flex-col border-r border-gray-100 flex-shrink-0"
+      className="flex flex-col border-r border-line_hair flex-shrink-0"
       style={{ width: "220px" }}
     >
-      <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
+      <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
         <span className="text-[9px] font-bold uppercase tracking-wide text-content">
           {mode === "reference" ? "Existing companies" : "Companies"}
         </span>
@@ -50,7 +50,7 @@ const CompanyPicker = ({
                 key={c.id}
                 onClick={() => onSelect?.(c.id)}
                 disabled={mode === "reference"}
-                className={`w-full text-left px-3 py-2 border-b border-gray-100 text-[12px] transition-colors ${
+                className={`w-full text-left px-3 py-2 border-b border-line_hair text-[12px] transition-colors ${
                   mode === "select"
                     ? "cursor-pointer hover:bg-gray-50"
                     : "cursor-default"

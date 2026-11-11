@@ -239,7 +239,7 @@ const ProblemList = ({
         )}
       </div>
 
-      <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
+      <div className="border-t border-line_hair px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
           Across every loaded order — {scopeOrders.toLocaleString()} order
           {scopeOrders === 1 ? "" : "s"}, {scopeStores.toLocaleString()} store

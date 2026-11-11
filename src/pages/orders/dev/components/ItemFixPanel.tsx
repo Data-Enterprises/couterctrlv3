@@ -267,7 +267,7 @@ const ItemFixPanel = ({
         </div>
       </div>
 
-      <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-2.5">
+      <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-3 border-t border-line_hair px-4 py-2.5">
         <span className="text-[12px] text-content/95">
           Staged into each order — sent when you Submit.
         </span>

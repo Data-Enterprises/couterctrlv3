@@ -260,7 +260,7 @@ const DrillExportModal = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
         <span className="text-[11.5px] text-content/95">
           {ordered.length === 0
             ? "Nothing selected"

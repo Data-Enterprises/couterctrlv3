@@ -299,7 +299,7 @@ const Cashiers = () => {
           </button>
         </div>
 
-        <div data-help="kpis" className="grid grid-cols-6 border-b border-gray-100 flex-shrink-0">
+        <div data-help="kpis" className="grid grid-cols-6 border-b border-line_hair flex-shrink-0">
           {[
             {
               label: "Exception lines",
@@ -316,7 +316,7 @@ const Cashiers = () => {
           ].map((kpi) => (
             <div
               key={kpi.label}
-              className="px-3 py-2 border-r border-gray-100 last:border-r-0"
+              className="px-3 py-2 border-r border-line_hair last:border-r-0"
             >
               <div className="text-[11px] text-content/95">{kpi.label}</div>
               <div className="text-[16px] font-medium text-content">

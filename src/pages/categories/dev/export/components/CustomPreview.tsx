@@ -11,7 +11,7 @@ interface CustomPreviewProps {
 const CustomPreview = ({ columns, aggRows, hasItems }: CustomPreviewProps) => {
   return (
     <div className="flex flex-col min-w-0">
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
         <p className="text-[11px] font-semibold text-content uppercase tracking-wide">
           Preview
         </p>
@@ -48,7 +48,7 @@ const CustomPreview = ({ columns, aggRows, hasItems }: CustomPreviewProps) => {
                 {columns.map((c) => (
                   <th
                     key={c.key}
-                    className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap"
+                    className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap"
                   >
                     {c.label}
                   </th>
@@ -57,7 +57,7 @@ const CustomPreview = ({ columns, aggRows, hasItems }: CustomPreviewProps) => {
             </thead>
             <tbody>
               {aggRows.slice(0, PREVIEW_ROWS).map((r, i) => (
-                <tr key={i} className="border-b border-gray-100">
+                <tr key={i} className="border-b border-line_hair">
                   {columns.map((c) => (
                     <td
                       key={c.key}

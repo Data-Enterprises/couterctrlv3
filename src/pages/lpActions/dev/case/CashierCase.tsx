@@ -209,7 +209,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
           />
 
           {detail.truncated > 0 && (
-            <div className="px-4 py-2 border-t border-gray-100 text-[12px] text-content/95">
+            <div className="px-4 py-2 border-t border-line_hair text-[12px] text-content/95">
               {detail.truncated} receipts beyond the cap were not read
             </div>
           )}

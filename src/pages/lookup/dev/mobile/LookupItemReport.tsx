@@ -147,7 +147,7 @@ const LookupItemReport = ({
         >
           {/* One block: the item is the title, the store and window qualify
               it, and the page's controls live on this card. */}
-          <div className="flex items-start gap-2 border-b border-gray-100 px-3.5 py-2.5">
+          <div className="flex items-start gap-2 border-b border-line_hair px-3.5 py-2.5">
             <div className="min-w-0 flex-1">
               <div className="truncate font-display text-[15px] font-bold leading-tight text-content">
                 {description}
@@ -175,7 +175,7 @@ const LookupItemReport = ({
           </div>
 
           {storeNumbers.length > 1 && (
-            <div className="border-b border-gray-100">
+            <div className="border-b border-line_hair">
               <LocationTabs
                 numbers={storeNumbers}
                 selected={selectedStoreNumber}
@@ -185,7 +185,7 @@ const LookupItemReport = ({
             </div>
           )}
           {hasSaleTypeBreakdown(saleTypes) && (
-              <div data-testid="lookup-sale-types" className="border-t border-gray-100">
+              <div data-testid="lookup-sale-types" className="border-t border-line_hair">
                 {/* A caption, not a heading: the item is the card's title. */}
               <div className="px-3.5 pb-1.5 pt-2.5">
                 <span className="text-[9.5px] font-semibold uppercase tracking-wider text-content/95">
@@ -207,7 +207,7 @@ const LookupItemReport = ({
                           isSelected && s.saleType !== "Sale" ? "Sale" : s.saleType,
                         )
                       }
-                      className={`block w-full border-l-2 border-t border-gray-100 px-3.5 py-2.5 text-left first:border-t-0 ${
+                      className={`block w-full border-l-2 border-t border-line_hair px-3.5 py-2.5 text-left first:border-t-0 ${
                         isSelected
                           ? "border-l-brand_navy bg-row_selected"
                           : "border-l-transparent active:bg-bkg"
@@ -250,7 +250,7 @@ const LookupItemReport = ({
           className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
         >
           {isNegative && (
-            <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+            <p className="border-b border-line_hair bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
               Selling below cost
             </p>
           )}
@@ -293,7 +293,7 @@ const LookupItemReport = ({
               )}
             </div>
 
-            <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-gray-100 pt-2">
+            <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line_hair pt-2">
               {day ? (
                 <>
                   <Tile
@@ -366,7 +366,7 @@ const LookupItemReport = ({
 
           {/* Said once, in a sentence — not in two columns, thirteen times. */}
           {isSale && margin.costMissing && (
-            <p className="border-t border-gray-100 bg-bkg px-3.5 py-2 text-[11.5px] text-content/95">
+            <p className="border-t border-line_hair bg-bkg px-3.5 py-2 text-[11.5px] text-content/95">
               No cost on file for this item, so COGS and margin are unavailable.
             </p>
           )}

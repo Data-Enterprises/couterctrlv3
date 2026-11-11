@@ -29,7 +29,7 @@ const Kpi = ({
   label: string;
   sub?: string;
 }) => (
-  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-gray-100 last:border-r-0">
+  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-line_hair last:border-r-0">
     <div className="text-[15px] font-semibold tabular-nums text-content leading-tight truncate">
       {value}
     </div>
@@ -44,7 +44,7 @@ const CaseKpis = ({ facts, profile, profileLoading, saleType }: Props) => {
   const peakHour = profile ? peakHourOf(profile, saleType) : null;
 
   return (
-    <div className="flex items-stretch border-b border-gray-100 bg-gray-50">
+    <div className="flex items-stretch border-b border-line_hair bg-gray-50">
       <Kpi value={String(facts.occurrences)} label="this week" />
       <Kpi value={String(facts.receipts)} label="receipts" />
       <Kpi value={formatCurrency2(facts.value)} label="value" />

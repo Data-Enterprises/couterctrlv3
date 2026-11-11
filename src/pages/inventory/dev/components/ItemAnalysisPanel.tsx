@@ -142,7 +142,7 @@ const ItemAnalysisPanel = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-6 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
           <div className="px-3 pt-2.5 pb-1.5 text-center">
             <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Sales
@@ -324,7 +324,7 @@ const ItemAnalysisPanel = ({
           </div>
         )}
 
-        <div className="flex-1 min-h-0 grid grid-cols-2 divide-x divide-gray-100 overflow-hidden">
+        <div className="flex-1 min-h-0 grid grid-cols-2 divide-x divide-line_hair overflow-hidden">
           {/* Estimated */}
           <div
             data-help="estimated"
@@ -341,7 +341,7 @@ const ItemAnalysisPanel = ({
               </span>
             </div>
             <div
-              className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+              className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-line_hair sticky top-0 bg-custom-white"
               style={{ gridTemplateColumns: EST_COLS }}
             >
               <span>Price</span>
@@ -426,7 +426,7 @@ const ItemAnalysisPanel = ({
                 {act.exact.length > 0 && (
                   <>
                     <div
-                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
+                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-line_hair"
                       style={{ gridTemplateColumns: ACT_COLS }}
                     >
                       <span>{act.isWeighted ? "$/lb" : "Price"}</span>
@@ -461,7 +461,7 @@ const ItemAnalysisPanel = ({
                       </span>
                     </div>
                     <div
-                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-gray-100"
+                      className="grid px-1 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content border-b border-line_hair"
                       style={{ gridTemplateColumns: ACT_COLS }}
                     >
                       <span>Price</span>

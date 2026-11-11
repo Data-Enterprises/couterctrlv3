@@ -16,7 +16,7 @@ const ReceiptView = ({ isReceiptLoading, receiptData, onBack }: ReceiptViewProps
   return (
     <>
       {/* Back bar — same height slot as the filter header so layout doesn't shift */}
-      <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
+      <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-line_hair">
         <button
           onClick={onBack}
           className="text-[12px] font-semibold text-brand_navy hover:text-brand_navy/70 transition-colors"

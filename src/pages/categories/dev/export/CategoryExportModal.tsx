@@ -96,7 +96,7 @@ const CategoryExportModal = (props: CategoryExportProps) => {
 
       {x.mode === "custom" && (
         <>
-          <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+          <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <SourcePicker
                 source={x.source}

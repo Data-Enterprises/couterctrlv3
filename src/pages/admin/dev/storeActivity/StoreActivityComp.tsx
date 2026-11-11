@@ -109,7 +109,7 @@ const StoreActivityComp = ({
 
       <div className="flex flex-col flex-shrink-0">
         <div
-          className="border-r border-gray-100 p-3 flex-shrink-0"
+          className="border-r border-line_hair p-3 flex-shrink-0"
           style={{ width: "220px" }}
         >
           {/* `data-help` is what the help panel points at */}
@@ -152,7 +152,7 @@ const StoreActivityComp = ({
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-line_hair flex-shrink-0">
               <TextFilter
                 value={context.storeNameFilter}
                 onChange={handleStoreNameFilter}

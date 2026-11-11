@@ -98,7 +98,7 @@ const SignalDetail = ({
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
-      <div className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+      <div className="px-4 py-2.5 border-b border-line_hair flex-shrink-0">
         <div className="text-[13.5px] font-medium text-content">
           {signal.label}
         </div>
@@ -114,7 +114,7 @@ const SignalDetail = ({
         <>
           {/* Back bar sits in the same slot as the list's column header so the
               panel doesn't shift height when toggling — same as LP. */}
-          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
+          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-line_hair">
             <button
               onClick={() => setOpenTransaction(null)}
               className="text-[12px] font-semibold text-brand_navy hover:text-brand_navy/70 transition-colors"
@@ -132,7 +132,7 @@ const SignalDetail = ({
       ) : (
         <>
           <div
-            className={`px-4 py-2 border-b border-gray-100 flex-shrink-0 ${
+            className={`px-4 py-2 border-b border-line_hair flex-shrink-0 ${
               isBehaviour ? "bg-severity_critical_bg" : "bg-severity_watch_bg"
             }`}
           >

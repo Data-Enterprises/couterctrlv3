@@ -19,7 +19,7 @@ interface Props {
 }
 
 const Metric = ({ label, value }: { label: string; value: string }) => (
-  <div className="min-w-0 px-3 py-2 text-center border-r border-gray-100 last:border-r-0 flex-1">
+  <div className="min-w-0 px-3 py-2 text-center border-r border-line_hair last:border-r-0 flex-1">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
       {label}
     </div>
@@ -45,7 +45,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
   return (
     <div className="absolute inset-0 z-10 bg-custom-white flex flex-col">
-      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-start gap-2">
+      <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[12.5px] font-semibold text-content truncate">
             {saleId}
@@ -78,7 +78,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
       {!loading && !error && lines.length > 0 && (
         <>
-          <div className="flex-shrink-0 flex border-b border-gray-100 bg-gray-50">
+          <div className="flex-shrink-0 flex border-b border-line_hair bg-gray-50">
             <Metric
               label={exceptionType}
               value={String(summary.flagged.length)}
@@ -90,7 +90,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
           </div>
 
           {summary.types.length > 1 && (
-            <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-1.5 flex-wrap">
               <span className="text-[11px] text-content/95">
                 Also on this receipt:
               </span>
@@ -113,7 +113,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
               return (
                 <div
                   key={`${l.line_number}-${l.product_code}-${l.sale_type}`}
-                  className={`flex items-baseline gap-2 px-3 py-1.5 border-b border-gray-100 ${
+                  className={`flex items-baseline gap-2 px-3 py-1.5 border-b border-line_hair ${
                     flagged ? "bg-severity_critical_bg" : ""
                   }`}
                 >

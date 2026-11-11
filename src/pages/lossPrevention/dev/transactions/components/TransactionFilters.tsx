@@ -52,7 +52,7 @@ const TransactionFilters = ({
   const dispatch = useAppDispatch();
   return (
     <div
-      className="grid sticky top-0 z-10 bg-gray-100 border-b border-gray-100"
+      className="grid sticky top-0 z-10 bg-gray-100 border-b border-line_hair"
       style={{
         gridTemplateColumns: "1fr 0.7fr 0.45fr 0.6fr",
       }}

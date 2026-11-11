@@ -100,7 +100,7 @@ const CaseItems = ({ items, loading, error, showAll, onToggleAll }: Props) => {
       )}
 
       {(steady > 0 || movers.length > shown.length) && (
-        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[38px] border-b border-gray-100">
+        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[38px] border-b border-line_hair">
           <span className="text-[11.5px] text-content/95 flex-1">
             {showAll
               ? `${items.length} items`

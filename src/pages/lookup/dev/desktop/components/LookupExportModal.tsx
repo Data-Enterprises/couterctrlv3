@@ -191,7 +191,7 @@ const LookupExportModal = ({
               <label
                 key={o.key}
                 className={`flex items-start gap-2.5 py-2.5 cursor-pointer ${
-                  i < presetOptions.length - 1 ? "border-b border-gray-100" : ""
+                  i < presetOptions.length - 1 ? "border-b border-line_hair" : ""
                 } ${!available[o.key] ? "opacity-40" : ""}`}
               >
                 <input
@@ -218,7 +218,7 @@ const LookupExportModal = ({
           </div>
         ) : (
           <div className="grid" style={{ gridTemplateColumns: "200px 1fr" }}>
-            <div className="p-3.5 border-r border-gray-100">
+            <div className="p-3.5 border-r border-line_hair">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Data source
               </p>
@@ -263,10 +263,10 @@ const LookupExportModal = ({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
                 Preview
               </p>
-              <div className="border border-gray-100 rounded-md overflow-hidden">
+              <div className="border border-line_hair rounded-md overflow-hidden">
                 <table className="w-full text-[11px]">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
+                    <tr className="bg-gray-50 border-b border-line_hair">
                       {custom.cols.map((c) => (
                         <th
                           key={c.key}

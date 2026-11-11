@@ -173,7 +173,7 @@ const InvoiceExportModal = ({
           {OPTIONS.map((option) => (
             <div
               key={option.id}
-              className="border-b border-gray-100 py-2.5 last:border-b-0"
+              className="border-b border-line_hair py-2.5 last:border-b-0"
             >
               {/* The box pairs with the title, so it lines up with the thing
                   it names rather than floating against the middle of a

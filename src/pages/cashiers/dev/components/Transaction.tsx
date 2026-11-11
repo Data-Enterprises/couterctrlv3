@@ -167,7 +167,7 @@ const Transaction = ({ trans }: TransactionProps) => {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Sub-header */}
-      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-gray-100">
+      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-line_hair">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
             <div className="text-[13px] font-medium text-brand_navy">
@@ -217,7 +217,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3 relative">
         {/* Column headers */}
         <div
-          className="grid gap-2 pb-1.5 border-b border-gray-100 mb-1"
+          className="grid gap-2 pb-1.5 border-b border-line_hair mb-1"
           style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
         >
           {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
@@ -266,7 +266,7 @@ const Transaction = ({ trans }: TransactionProps) => {
 
         {/* Sticky totals */}
         <div
-          className="flex justify-end pt-3 pb-3 border-t border-gray-100 bg-custom-white"
+          className="flex justify-end pt-3 pb-3 border-t border-line_hair bg-custom-white"
           style={{ position: "sticky", bottom: 0 }}
         >
           <div style={{ minWidth: 160 }}>

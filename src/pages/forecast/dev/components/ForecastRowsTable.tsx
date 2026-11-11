@@ -235,7 +235,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {/* KPI strip */}
-        <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 flex-shrink-0">
           {[
             ["Items", String(rows.length)],
             ["Ad fcst units", totals.units.toLocaleString()],
@@ -255,7 +255,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
 
         {/* Contribution tiers, not a grade: A items are the ones the ad's
             numbers rest on. */}
-        <div data-help="bands" className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0">
+        <div data-help="bands" className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-line_hair flex-shrink-0">
           {(
             [
               ["A", counts.A],
@@ -298,7 +298,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {/* batch setter — writes to every ticked row, so the count is named */}
-        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-line_hair flex-shrink-0">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}

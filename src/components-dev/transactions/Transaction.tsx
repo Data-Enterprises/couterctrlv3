@@ -206,7 +206,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Sub-header — trans id + terminal, date/time subtext, action icons */}
-      <div className="flex-shrink-0 flex items-start justify-between gap-2 px-4 py-2.5 border-b border-gray-100">
+      <div className="flex-shrink-0 flex items-start justify-between gap-2 px-4 py-2.5 border-b border-line_hair">
         <div>
           <div className="text-[13px] font-bold text-content">
             Trans #{saleId}
@@ -238,7 +238,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
 
       {/* Column headers */}
       <div
-        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-gray-100 border-b border-gray-100"
+        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-gray-100 border-b border-line_hair"
         style={{ gridTemplateColumns: COLS }}
       >
         {["UPC", compact ? "Desc" : "Description", "Qty", "Net", "Type"].map(
@@ -299,7 +299,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
       </div>
 
       {/* Totals — single inline line */}
-      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-gray-100 bg-gray-50">
+      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-line_hair bg-gray-50">
         <span className="text-[11px] text-content/95">
           Net sales{" "}
           <span className="font-semibold text-content">

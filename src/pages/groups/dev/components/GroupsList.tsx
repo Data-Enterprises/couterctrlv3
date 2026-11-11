@@ -56,8 +56,8 @@ const GroupsList = ({
           : "No shared groups match";
 
   return (
-    <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col min-h-0 bg-gray-50">
-      <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
+    <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col min-h-0 bg-gray-50">
+      <div className="p-2.5 border-b border-line_hair flex gap-1.5">
         <TextFilter
           value={search}
           onChange={setSearch}
@@ -98,7 +98,7 @@ const GroupsList = ({
                   ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
                   : undefined
               }
-              className={`w-full flex items-center gap-1.5 text-left px-3 py-2.5 border-b border-gray-100 text-[12px] font-medium transition-colors ${
+              className={`w-full flex items-center gap-1.5 text-left px-3 py-2.5 border-b border-line_hair text-[12px] font-medium transition-colors ${
                 isSel
                   ? "bg-custom-white text-content"
                   : "hover:bg-gray-50 text-content"

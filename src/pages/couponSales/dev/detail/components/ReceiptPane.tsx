@@ -25,7 +25,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
     <>
     {/* Receipt — same layout as dev Coupons: back bar with cashier
         and terminal, every line of the sale, then the totals. */}
-    <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-custom-white">
+    <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-line_hair bg-custom-white">
       <div className="flex items-center gap-2">
         <button
           onClick={onBack}
@@ -79,7 +79,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
     </div>
 
     {/* Store / address / date strip, same as dev Coupons */}
-    <div className="flex-shrink-0 px-3 py-1.5 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
+    <div className="flex-shrink-0 px-3 py-1.5 flex items-center gap-3 border-b border-line_hair bg-gray-50">
       <span className="text-[11px] font-semibold text-content">
         {txMeta?.store_name}
       </span>
@@ -102,7 +102,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
         <div className="flex-1 overflow-auto thin-scrollbar">
           <table className="w-full border-collapse text-[12px]">
             <thead>
-              <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
+              <tr className="sticky top-0 bg-gray-50 border-b border-line_hair z-10">
                 {(
                   [
                     ["#", "text-right w-7"],
@@ -163,7 +163,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
           </table>
         </div>
 
-        <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-gray-100 bg-gray-50">
+        <div className="flex-shrink-0 flex items-center justify-end gap-4 px-3 py-2 border-t border-line_hair bg-gray-50">
           {txCoupons > 0 && (
             <div className="text-[11px] text-severity_watch_text">
               Coupons

@@ -10,13 +10,13 @@
  * line height rather than setting its own.
  */
 export const GRID_HEAD =
-  "grid gap-2 px-3 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95";
+  "grid gap-2 px-3 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95";
 
 export const GRID_ROW =
-  "grid gap-2 px-3 py-1.5 min-h-[38px] items-center border-b border-gray-100";
+  "grid gap-2 px-3 py-1.5 min-h-[38px] items-center border-b border-line_hair";
 
 export const GRID_NOTE =
-  "px-3 py-2 border-b border-gray-100 text-[11.5px] text-content/95";
+  "px-3 py-2 border-b border-line_hair text-[11.5px] text-content/95";
 
 export const GRID_CELL = "text-[12px] text-content truncate";
 

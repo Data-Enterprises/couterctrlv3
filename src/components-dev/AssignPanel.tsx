@@ -207,7 +207,7 @@ const AssignPanel = ({
               whether the search had narrowed it the way you meant. */}
           <ul
             aria-label={pending.direction === "in" ? "Being assigned" : "Being unassigned"}
-            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-gray-100 rounded-md divide-y divide-gray-100 m-0 p-0 list-none"
+            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-line_hair rounded-md divide-y divide-line_hair m-0 p-0 list-none"
           >
             {pending.rows.map((r) => (
               <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
@@ -253,12 +253,12 @@ const AssignPanel = ({
           }
           onClear={() => setStaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
           {filteredLeft.map((item) => (
             <div
               key={item.id}
               onClick={() => toggleStaged(item.id)}
-              className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 staged.has(item.id)
                   ? "bg-brand_navy text-custom-white"
                   : "hover:bg-gray-50 text-content"
@@ -322,12 +322,12 @@ const AssignPanel = ({
           }
           onClear={() => setUnstaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
           {filteredRight.map((item) => (
             <div
               key={item.id}
               onClick={() => toggleUnstaged(item.id)}
-              className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 unstaged.has(item.id)
                   ? "bg-red-600 text-custom-white"
                   : "hover:bg-gray-50 text-content"

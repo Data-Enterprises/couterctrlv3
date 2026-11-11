@@ -329,7 +329,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}
-      <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
         <Kpi
           title={isQty ? "TY Qty" : "TY Net Sales"}
           dateLabel={twLabel}
@@ -378,7 +378,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
       />
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+      <div className="flex items-center border-b border-line_hair px-3 flex-shrink-0">
         {(["items", "hours"] as const).map((k) => (
           <button
             key={k}
@@ -409,11 +409,11 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
       {/* Two-column: graded list left, report right */}
       <div className={`flex-1 min-h-0 flex ${tab === "items" ? "hidden" : ""}`}>
         <div
-          className="flex flex-col border-r border-gray-100 min-h-0"
+          className="flex flex-col border-r border-line_hair min-h-0"
           style={{ width: "36.5%" }}
         >
           {/* Filter chips + threshold */}
-          <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100 flex-shrink-0">
             {sevChip("critical", "Crit")}
             {sevChip("watch", "Watch")}
             {sevChip("healthy", "OK")}
@@ -499,7 +499,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto thin-scrollbar">
-              <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+              <div className="px-3 py-2 border-b border-line_hair bg-gray-50">
                 <span className="text-[12px] font-bold text-content">{report.title}</span>
               </div>
               {report.stats.map(([label, value]) => (

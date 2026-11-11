@@ -37,7 +37,7 @@ const SectionHeader = ({
     groupTab;
   return (
     <>
-      <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-line_hair flex-shrink-0">
         <span className="text-[12px] font-semibold text-content truncate">
           {sec.label}
         </span>
@@ -45,7 +45,7 @@ const SectionHeader = ({
           {tabLabel} · {dateRangeLabel}
         </span>
       </div>
-      <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 flex-shrink-0">
+      <div className="grid grid-cols-4 divide-x divide-line_hair border-b border-line_hair flex-shrink-0">
         {[
           { label: "Coupons", value: String(secCoupons) },
           {

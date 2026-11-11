@@ -28,7 +28,7 @@ interface Props {
 }
 
 const Stat = ({ value, label }: { value: string; label: string }) => (
-  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-gray-100 last:border-r-0">
+  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-line_hair last:border-r-0">
     <div className="text-[14px] font-semibold tabular-nums text-content leading-tight truncate">
       {value}
     </div>
@@ -54,8 +54,8 @@ const FacetDetail = ({
   const others = FACETS.filter((f) => f.key !== facet);
 
   return (
-    <div className="border-b border-gray-100">
-      <div className="flex items-stretch border-b border-gray-100 bg-gray-50">
+    <div className="border-b border-line_hair">
+      <div className="flex items-stretch border-b border-line_hair bg-gray-50">
         <Stat value={String(branch.count)} label="occurrences" />
         <Stat value={String(branch.receipts)} label="receipts" />
         <Stat value={formatCurrency2(branch.value)} label="value" />

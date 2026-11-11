@@ -92,7 +92,7 @@ const StoreRow = ({ row }: { row: ExceptionRow }) => {
   return (
     <button
       onClick={() => dispatch(setLpSelected(row.id))}
-      className={`w-full text-left flex items-center gap-2.5 pl-3 pr-3 py-2 border-b border-gray-100 transition-colors ${
+      className={`w-full text-left flex items-center gap-2.5 pl-3 pr-3 py-2 border-b border-line_hair transition-colors ${
         row.id === selectedId ? "bg-row_selected" : "hover:bg-gray-50"
       }`}
     >
@@ -126,7 +126,7 @@ const TypeSection = ({ group }: { group: TypeGroup }) => {
     <div>
       <button
         onClick={() => dispatch(toggleLpType(group.saleType))}
-        className="w-full text-left flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+        className="w-full text-left flex items-center gap-2 px-3 py-2.5 border-b border-line_hair hover:bg-gray-50 transition-colors"
       >
         <Chevron className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
         <span
@@ -222,7 +222,7 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
           </div>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-2">
+        <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-2">
           {CHIP.map(({ key, label, cls }) => (
             <button
               key={key}

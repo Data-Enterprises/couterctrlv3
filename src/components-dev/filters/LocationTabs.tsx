@@ -37,7 +37,7 @@ const LocationTabs = ({
 
   return (
     <div
-      className={`flex items-center bg-custom-white border-b border-gray-100 ${
+      className={`flex items-center bg-custom-white border-b border-line_hair ${
         variant === "panel" ? "border-x" : ""
       }`}
     >

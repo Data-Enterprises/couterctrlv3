@@ -103,7 +103,7 @@ const LookupQueuePanel = ({
               <button
                 key={item.upc}
                 onClick={() => onSelect(item.upc)}
-                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                className={`w-full text-left px-3 py-2.5 border-b border-line_hair transition-colors ${
                   isSelected ? "bg-custom-white" : "hover:bg-gray-50"
                 }`}
                 style={
@@ -136,7 +136,7 @@ const LookupQueuePanel = ({
             return (
               <div
                 key={item.upc}
-                className="w-full px-3 py-2.5 border-b border-gray-100"
+                className="w-full px-3 py-2.5 border-b border-line_hair"
               >
                 <div className="flex items-center gap-1.5">
                   <ExclamationTriangleIcon className="w-3 h-3 text-red-600 flex-shrink-0" />
@@ -156,13 +156,13 @@ const LookupQueuePanel = ({
           return (
             <div
               key={item.upc}
-              className="w-full flex items-center gap-2 px-3 py-2.5 border-b border-gray-100"
+              className="w-full flex items-center gap-2 px-3 py-2.5 border-b border-line_hair"
             >
               <div
                 className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                   item.status === "loading"
                     ? "border-gray-200 border-t-brand_navy animate-spin"
-                    : "border-gray-100"
+                    : "border-line_hair"
                 }`}
               />
               <div>

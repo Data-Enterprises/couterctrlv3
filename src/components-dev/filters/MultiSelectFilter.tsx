@@ -216,7 +216,7 @@ const MultiSelectFilter = ({
           {/* Pinned: searching a long list and then scrolling it must not
               carry the field you are typing in off the top. */}
           {showSearch && (
-            <div className="flex items-center gap-1.5 border-b border-gray-100 px-2.5 py-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1.5 border-b border-line_hair px-2.5 py-1.5 flex-shrink-0">
               <MagnifyingGlassIcon className="w-3.5 h-3.5 flex-shrink-0 text-content/95" />
               <input
                 autoFocus
@@ -231,7 +231,7 @@ const MultiSelectFilter = ({
 
           <button
             onClick={() => onChange([])}
-            className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors border-b border-gray-100 flex-shrink-0"
+            className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors border-b border-line_hair flex-shrink-0"
             style={{
               color: isActive
                 ? "rgb(var(--color-brand-navy) / 0.85)"
@@ -248,7 +248,7 @@ const MultiSelectFilter = ({
           {showSearch && query.trim() !== "" && shown.length > 0 && (
             <button
               onClick={toggleShown}
-              className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-brand_navy hover:bg-gray-50 transition-colors border-b border-gray-100 flex-shrink-0"
+              className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-brand_navy hover:bg-gray-50 transition-colors border-b border-line_hair flex-shrink-0"
             >
               {allShownOn ? "Clear" : "Select"} {shown.length} match
               {shown.length === 1 ? "" : "es"}
@@ -293,7 +293,7 @@ const MultiSelectFilter = ({
               })
             )}
             {hiddenCount > 0 && (
-              <div className="px-3 py-2 border-t border-gray-100 text-[11px] text-content/95">
+              <div className="px-3 py-2 border-t border-line_hair text-[11px] text-content/95">
                 {hiddenCount} more{" "}
                 {hiddenCount === 1 ? "option has" : "options have"} nothing left
                 once the other filters are applied.

@@ -463,7 +463,7 @@ const ItemReportExportModal = ({
             return (
               <label
                 key={pr.key}
-                className={`flex items-start gap-2.5 py-2.5 border-b border-gray-100 last:border-b-0 cursor-pointer ${
+                className={`flex items-start gap-2.5 py-2.5 border-b border-line_hair last:border-b-0 cursor-pointer ${
                   presetKey === pr.key || count > 0 ? "" : "opacity-40"
                 }`}
               >
@@ -508,7 +508,7 @@ const ItemReportExportModal = ({
               checkboxes were pushing the download button off the bottom of the
               modal, and the fix has to be here rather than on the whole column
               or the source radios scroll away with them. */}
-          <div className="p-3.5 border-r border-gray-100 flex flex-col min-h-0">
+          <div className="p-3.5 border-r border-line_hair flex flex-col min-h-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
               Data source
             </p>
@@ -553,10 +553,10 @@ const ItemReportExportModal = ({
             <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2 flex-shrink-0">
               Preview
             </p>
-            <div className="border border-gray-100 rounded-md overflow-x-auto">
+            <div className="border border-line_hair rounded-md overflow-x-auto">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
+                  <tr className="bg-gray-50 border-b border-line_hair">
                     {activeCols.map((c) => (
                       <th
                         key={c.key}

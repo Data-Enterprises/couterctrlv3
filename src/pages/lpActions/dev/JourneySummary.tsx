@@ -54,7 +54,7 @@ export const SummaryCard = ({
 }) => (
   <div
     onClick={onClick}
-    className={`px-3 py-2.5 border-b border-gray-100 ${
+    className={`px-3 py-2.5 border-b border-line_hair ${
       onClick ? "cursor-pointer hover:bg-gray-50" : ""
     } ${active ? "bg-row_selected" : ""}`}
   >

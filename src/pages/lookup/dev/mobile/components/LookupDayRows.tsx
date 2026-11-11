@@ -41,7 +41,7 @@ const LookupDayRows = ({ buckets, weighed, selected, isSale }: LookupDayRowsProp
           return (
             <div
               key={b.date}
-              className={`border-t border-gray-100 px-3.5 py-2.5 ${
+              className={`border-t border-line_hair px-3.5 py-2.5 ${
                 i === 0 ? "border-t-0" : ""
               }`}
             >
@@ -58,7 +58,7 @@ const LookupDayRows = ({ buckets, weighed, selected, isSale }: LookupDayRowsProp
         return (
           <div
             key={b.date}
-            className={`border-t border-gray-100 px-3.5 py-2.5 first:border-t-0 ${
+            className={`border-t border-line_hair px-3.5 py-2.5 first:border-t-0 ${
               isSel ? "bg-row_selected" : "odd:bg-row_stripe"
             }`}
           >

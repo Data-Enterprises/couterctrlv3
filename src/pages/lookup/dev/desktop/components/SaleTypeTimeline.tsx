@@ -22,7 +22,7 @@ const SaleTypeTimeline = ({ buckets, weighed, saleType }: SaleTypeTimelineProps)
   return (
     <>
       <div
-        className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+        className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-line_hair sticky top-0 bg-custom-white"
         style={grid}
       >
         <span>Date</span>

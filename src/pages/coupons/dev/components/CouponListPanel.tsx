@@ -178,7 +178,7 @@ const CouponListPanel = ({
 
       {/* Search input — only shown for groups with many stores */}
       {isGroup && storeItems.length > 6 && (
-        <div className="px-2.5 py-2 border-b border-gray-100 flex-shrink-0">
+        <div className="px-2.5 py-2 border-b border-line_hair flex-shrink-0">
           <input
             type="text"
             value={query}

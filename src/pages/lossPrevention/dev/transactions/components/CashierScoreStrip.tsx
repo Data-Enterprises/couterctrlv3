@@ -16,7 +16,7 @@ interface CashierScoreStripProps {
 const CashierScoreStrip = ({ selectedGrade, scoreMetrics, isNoDollar }: CashierScoreStripProps) => {
   return (
     <>
-        <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-gray-100 bg-gray-100">
+        <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-line_hair bg-gray-100">
           <div className="text-[12px] font-semibold text-content">
             {selectedGrade.cashier_name}
           </div>
@@ -25,7 +25,7 @@ const CashierScoreStrip = ({ selectedGrade, scoreMetrics, isNoDollar }: CashierS
           </div>
         </div>
         <div
-          className={`flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
+          className={`flex-shrink-0 grid divide-x divide-line_hair border-b border-line_hair bg-gray-50 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
         >
           {scoreMetrics.map((m) => (
             <StripCell

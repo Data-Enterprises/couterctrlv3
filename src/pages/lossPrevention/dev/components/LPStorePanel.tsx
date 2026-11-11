@@ -216,7 +216,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       </div>
 
       {/* Exception type tabs — Description and Tender excluded until further notice */}
-      <div data-help="type-tabs" className="flex flex-shrink-0 border-b border-gray-100 overflow-x-auto no-scrollbar">
+      <div data-help="type-tabs" className="flex flex-shrink-0 border-b border-line_hair overflow-x-auto no-scrollbar">
         {saleTypes.filter((st) => st.sale_type !== "Description" && st.sale_type !== "Tender").map((st) => (
           <button
             key={st.sale_type}
@@ -233,7 +233,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       </div>
 
       {/* Severity filter chips + text filter */}
-      <div className="flex items-center justify-between gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100">
+      <div className="flex items-center justify-between gap-1.5 px-3 py-2 bg-custom-white border-b border-line_hair">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
@@ -293,7 +293,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
               <span className="w-2.5 flex-shrink-0" />
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Store

@@ -11,7 +11,7 @@ interface GroupTabsProps {
 
 /** Sub dept, Date, Cashier. */
 const GroupTabs = ({ groupTab, onTab }: GroupTabsProps) => (
-    <div data-help="tabs" className="flex items-center border-b border-gray-100 flex-shrink-0">
+    <div data-help="tabs" className="flex items-center border-b border-line_hair flex-shrink-0">
       {GROUP_TABS.map((t) => (
         <button
           key={t.key}

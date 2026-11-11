@@ -50,10 +50,10 @@ const SectionList = ({
   const isItemView = breakdown === "item";
   return (
     <div
-      className="flex flex-col border-r border-gray-100"
+      className="flex flex-col border-r border-line_hair"
       style={{ width: 330, flexShrink: 0 }}
     >
-      <div className="flex-shrink-0 flex items-center gap-1.5 p-2 border-b border-gray-100 bg-gray-100">
+      <div className="flex-shrink-0 flex items-center gap-1.5 p-2 border-b border-line_hair bg-gray-100">
         <button
           onClick={() =>
             setSectionTierFilter((f) => (f === "critical" ? "all" : "critical"))
@@ -99,7 +99,7 @@ const SectionList = ({
 
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
         <div
-          className="sticky top-0 z-10 grid border-b border-gray-100 bg-gray-100"
+          className="sticky top-0 z-10 grid border-b border-line_hair bg-gray-100"
           style={{ gridTemplateColumns: "1fr 0.62fr 0.4fr 0.4fr 0.55fr" }}
         >
           <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-content text-left">

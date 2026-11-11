@@ -173,7 +173,7 @@ const InvoiceCard = ({
           delivery, less pallet allowances — then the rest. An invoice that
           billed nothing has no figures to show. */}
         {row.status !== "nothingBilled" && (
-          <span className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-gray-100 px-3.5 py-2 sm:grid-cols-4 lg:grid-cols-8">
+          <span className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line_hair px-3.5 py-2 sm:grid-cols-4 lg:grid-cols-8">
             <Figure
               label="Total cost"
               value={row.totalCost}
@@ -216,7 +216,7 @@ const InvoiceCard = ({
       </button>
 
       {open && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-line_hair">
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3">
             <div className="min-w-0">
               <div className="mb-0.5 font-mono text-[11px] uppercase tracking-wider text-content">
@@ -233,7 +233,7 @@ const InvoiceCard = ({
           </div>
 
           {/* ── the checks ─────────────────────────────────────────── */}
-          <div className="border-t border-gray-100 px-3.5 py-3">
+          <div className="border-t border-line_hair px-3.5 py-3">
             <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
               Reconciliation
             </div>
@@ -305,7 +305,7 @@ const InvoiceCard = ({
 
           {/* ── what did not ship ───────────────────────────────────── */}
           {row.status === "nothingBilled" && row.exceptions.length > 0 && (
-            <div className="border-t border-gray-100 px-3.5 py-3">
+            <div className="border-t border-line_hair px-3.5 py-3">
               <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Exceptions
               </div>
@@ -313,7 +313,7 @@ const InvoiceCard = ({
                 {row.exceptions.map((exception, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-gray-100 px-2 py-1.5 text-[12px] last:border-b-0"
+                    className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-line_hair px-2 py-1.5 text-[12px] last:border-b-0"
                   >
                     <span className="font-mono text-content/95">
                       {exception.itemCode}
@@ -332,7 +332,7 @@ const InvoiceCard = ({
 
           {/* ── the lines ──────────────────────────────────────────── */}
           {row.status !== "nothingBilled" && (
-            <div className="border-t border-gray-100 px-3.5 py-3">
+            <div className="border-t border-line_hair px-3.5 py-3">
               <div className="mb-1.5 flex items-baseline justify-between gap-2">
                 <span className="font-mono text-[11px] uppercase tracking-wider text-content">
                   Lines
@@ -391,7 +391,7 @@ const InvoiceCard = ({
                     return (
                       <div
                         key={line.lineNumber}
-                        className="grid items-center gap-2.5 border-b border-gray-100 py-0.5 odd:bg-row_stripe"
+                        className="grid items-center gap-2.5 border-b border-line_hair py-0.5 odd:bg-row_stripe"
                         style={{ gridTemplateColumns: LINE_COLS }}
                       >
                         <span className="px-1 text-[11px] tabular-nums text-content/95">

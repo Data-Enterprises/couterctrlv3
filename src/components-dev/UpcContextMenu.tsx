@@ -57,7 +57,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
       className="bg-custom-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[190px]"
     >
       {upc && (
-        <div className="px-3 py-1.5 border-b border-gray-100">
+        <div className="px-3 py-1.5 border-b border-line_hair">
           <div className="text-[9px] font-semibold uppercase tracking-wide text-brand_slate">UPC</div>
           <div className="text-[12px] font-semibold text-content tabular-nums">{upc}</div>
         </div>

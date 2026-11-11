@@ -32,7 +32,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) =
             key={r.productCode}
             type="button"
             onClick={() => onSelect(r.productCode)}
-            className={`block w-full border-t border-gray-100 px-3.5 py-2.5 text-left active:bg-bkg ${
+            className={`block w-full border-t border-line_hair px-3.5 py-2.5 text-left active:bg-bkg ${
               i === 0 ? "border-t-0" : ""
             } ${i % 2 === 1 ? "bg-row_stripe" : ""}`}
           >

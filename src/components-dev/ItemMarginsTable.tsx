@@ -363,10 +363,10 @@ const ItemMarginsTable = ({
       >
         {/* ── Left: item list ── */}
         <div
-          className="flex flex-col border-r border-gray-100 min-w-0"
+          className="flex flex-col border-r border-line_hair min-w-0"
           style={{ width: "47%", flexShrink: 0 }}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
             {sevChip("critical", "Crit")}
             {sevChip("watch", "Watch")}
             {sevChip("healthy", "OK")}
@@ -400,7 +400,7 @@ const ItemMarginsTable = ({
           {/* Right padding is 4px wider than the rows' — matches the reserved
               scrollbar gutter below so columns line up whether or not the list
               is scrollable. */}
-          <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-line_hair flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
             <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1 flex items-center gap-2 min-w-0">
               Item
@@ -600,7 +600,7 @@ const ItemMarginsTable = ({
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center gap-2 px-4 py-2 border-b border-line_hair bg-gray-50">
                   <span className="text-[14px] font-medium text-content truncate">
                     {selectedItem.description}
                   </span>
@@ -612,7 +612,7 @@ const ItemMarginsTable = ({
 
               {/* 40/60 rather than an even split — the supporting table has four
                   columns to fit, the lead card needs room for one number. */}
-              <div className="px-4 py-2.5 border-b border-gray-100">
+              <div className="px-4 py-2.5 border-b border-line_hair">
                 <div className="grid grid-cols-[40%_1fr] gap-2">
                   {reportRows.length > 0 && (
                     <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">

@@ -12,7 +12,7 @@ interface FormNavTabsProps {
 /** The tab strip across the top of the Groups form, one tab per section from `groupsTabs`. */
 const FormNavTabs = ({ setTab, tab }: FormNavTabsProps) => {
   return (
-    <div className="flex border-b border-gray-100 flex-shrink-0">
+    <div className="flex border-b border-line_hair flex-shrink-0">
       {groupsTabs.map(({ id, label }) => (
         <button
           key={id}

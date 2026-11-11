@@ -13,7 +13,7 @@ const GroupTypeTabs = ({ show, setShow, count }: GroupTypeTabsProps) => {
     <div
       role="tablist"
       aria-label="Which groups"
-      className="flex gap-1 px-2.5 py-2 border-b border-gray-100"
+      className="flex gap-1 px-2.5 py-2 border-b border-line_hair"
     >
       {(["all", "mine", "shared"] as const).map((id) => (
         <button

@@ -218,7 +218,7 @@ const ItemReportSheet = ({
             complete — this is for working one kind of problem at a time. */}
         <div
           data-help="piles"
-          className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap"
+          className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-1.5 flex-wrap"
         >
           {ORDER.map((action) => (
             <button
@@ -331,7 +331,7 @@ const ItemReportSheet = ({
         )}
 
         <div
-          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-gray-100 bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
           style={{ gridTemplateColumns: COLS }}
         >
           <span>Action</span>
@@ -417,7 +417,7 @@ const ItemReportSheet = ({
               <button
                 key={item.productCode}
                 onClick={() => onSelect({ item, verdict })}
-                className={`w-full text-left border-b border-gray-100 border-l-2 transition-colors ${
+                className={`w-full text-left border-b border-line_hair border-l-2 transition-colors ${
                   isSel ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
                 } ${tone.rule}`}
               >

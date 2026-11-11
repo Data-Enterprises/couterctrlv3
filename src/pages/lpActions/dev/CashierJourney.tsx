@@ -172,7 +172,7 @@ const CashierJourney = () => {
         </div>
 
         <div className="flex-1 min-h-0 flex overflow-hidden">
-          <div className="w-[58%] flex-shrink-0 border-r border-gray-100 p-3 overflow-y-auto thin-scrollbar">
+          <div className="w-[58%] flex-shrink-0 border-r border-line_hair p-3 overflow-y-auto thin-scrollbar">
             {drilled ? (
               <DrillPanel
                 saleType={drilled}
@@ -206,7 +206,7 @@ const CashierJourney = () => {
           </div>
 
           <div className="flex-1 min-w-0 flex flex-col relative">
-            <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-2">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-2">
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1 truncate">
                 {focus
                   ? `${[focusValue, branch?.label].filter(Boolean).join(" · ")} · ${branchScoped.length} occurrences across ${receiptCount} ${receiptCount === 1 ? "receipt" : "receipts"}`

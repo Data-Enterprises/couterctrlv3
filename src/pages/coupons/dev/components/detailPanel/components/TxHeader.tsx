@@ -17,7 +17,7 @@ interface TxHeaderProps {
 /** Who rang it, when, at which store, with Back and export. */
 const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
     <>
-                      <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-custom-white">
+                      <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-line_hair bg-custom-white">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={onBack}
@@ -78,7 +78,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                           </div>
                         </div>
                       </div>
-                      <div className="flex-shrink-0 px-3 py-1.5 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
+                      <div className="flex-shrink-0 px-3 py-1.5 flex items-center gap-3 border-b border-line_hair bg-gray-50">
                         <span className="text-[11px] font-semibold text-content">
                           {txMeta?.store_name}
                         </span>

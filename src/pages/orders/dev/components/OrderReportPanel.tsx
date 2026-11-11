@@ -190,7 +190,7 @@ const OrderReportPanel = ({
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
             <table data-help="lines" className="w-full border-collapse text-[12px]">
               <thead>
-                <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
+                <tr className="sticky top-0 bg-gray-50 border-b border-line_hair z-10">
                   {/* Narrow and unlabelled: a line can carry two flags at
                       once, and a tint across the row could only show one. */}
                   <th style={{ width: 22 }} aria-label="Cost problems" />
@@ -297,7 +297,7 @@ const OrderReportPanel = ({
             </table>
           </div>
 
-          <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
+          <div className="flex items-center gap-3 border-t border-line_hair px-3 py-1.5 flex-shrink-0">
             <span className="text-[11px] text-content/95">
               {visible.length === 0
                 ? "No rows"
