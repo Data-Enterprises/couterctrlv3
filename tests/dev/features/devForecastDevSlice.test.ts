@@ -11,7 +11,7 @@ import reducer, {
 } from "@/features/dev/devForecastDevSlice";
 
 // Interfaces
-import type { ForecastOutlierRow } from "@/features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "@/features/dev/devForecastDevSlice";
 import type { PriceHistoryResult } from "@/interfaces";
 
 /*

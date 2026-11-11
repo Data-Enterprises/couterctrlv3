@@ -3,7 +3,7 @@ import { TIER_LABEL } from "../../utils/forecastRanking";
 import { formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
-import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastDevSlice";
 import type { RankEntry } from "../../interfaces";
 import type { ColKey, RankedRow } from "../interfaces";
 

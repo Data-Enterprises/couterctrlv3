@@ -14,7 +14,52 @@ import type {
   ForecastTier as Tier,
   PriceHistoryResult,
 } from "../../interfaces";
-import type { AdListRow, ForecastOutlierRow } from "./devForecastSlice";
+
+export interface AdListData {
+  pageName: string;
+  featureDescription: string;
+  pack: string;
+  size: string;
+  cost: number;
+  costPlusFrt: number;
+  amap: number;
+  eba: number;
+  dsdOI: number;
+  edlcBB: number;
+  netUnitCost: number;
+  adCount: number;
+  adRetail: number;
+  unitAdRetail: number;
+  regularRetail: number;
+  mvmt: number;
+  grossProfit: number;
+  featureNotes: string;
+  tprDates: string;
+}
+/** One ad-list line keyed by its UPC. Lived in adListSlice, whose state
+ *  nothing read any more; the row shape is all the forecast needed. */
+export interface AdListRow extends AdListData {
+  upc: string;
+}
+
+
+export type ForecastOutlierRow = {
+  upc: string;
+  description: string;
+  qtySold: number;
+  daysActive: number;
+  adFcst: number;
+  fcstPrice: number;
+  calcNow: 0 | 1;
+  fcstTotal: number;
+  forecastWindow: number;
+  daysAtPrice: number;
+  adDays: number;
+  markdownDollars: number;
+  singlePrice?: boolean;
+  notes?: string;
+  adListData?: AdListData;
+};
 
 /**
  * Forecast (dev).

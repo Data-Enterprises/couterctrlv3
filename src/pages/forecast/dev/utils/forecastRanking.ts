@@ -1,6 +1,6 @@
 // Interfaces
 import type { Exception, ExceptionKind, RankEntry, Tier } from "../interfaces";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastDevSlice";
 import type { PriceHistoryResult } from "../../../../interfaces";
 
 /**

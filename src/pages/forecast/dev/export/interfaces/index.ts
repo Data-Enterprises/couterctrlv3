@@ -1,5 +1,5 @@
 // Interfaces
-import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastDevSlice";
 
 /** A row plus its ranking, flattened so `exportData` can read them as fields. */
 export type RankedRow = ForecastOutlierRow & {

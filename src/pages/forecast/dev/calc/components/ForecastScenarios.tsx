@@ -7,7 +7,7 @@ import { buildScenarioRows, COLS, HEAD } from "../utils";
 
 // Interfaces
 import type { PriceHistory } from "../../../../../interfaces";
-import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastDevSlice";
 
 interface ForecastScenariosProps {
   pricesWithQty: number[][];

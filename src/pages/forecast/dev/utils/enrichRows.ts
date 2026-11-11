@@ -9,7 +9,7 @@ import { formatRowData, formatSinglePriceRowData } from ".";
 
 // Interfaces
 import type { PriceHistoryFromListResp } from "../../../../interfaces";
-import type { AdListData, AdListRow } from "../../../../features/dev/devForecastSlice";
+import type { AdListData, AdListRow } from "../../../../features/dev/devForecastDevSlice";
 
 /**
  * Ad-list enrichment and row formatting, the same arithmetic as legacy (only

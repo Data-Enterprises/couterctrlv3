@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 
 // Interfaces
-import type { AdListRow } from "../../../../features/dev/devForecastSlice";
+import type { AdListRow } from "../../../../features/dev/devForecastDevSlice";
 
 /**
  * AD list workbook → rows, verbatim from `AdListInput` (same column names,

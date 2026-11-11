@@ -1,5 +1,5 @@
 // Interfaces
-import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastDevSlice";
 import type { PriceHistory } from "../../../../../interfaces";
 
 export interface ScenarioRow {

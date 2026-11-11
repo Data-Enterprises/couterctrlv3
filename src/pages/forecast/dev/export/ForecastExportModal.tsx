@@ -21,7 +21,7 @@ import {
 // Interfaces
 import type { ColKey, ModalMode, PresetId } from "./interfaces";
 import type { Tier } from "../interfaces";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastDevSlice";
 
 // Components
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";

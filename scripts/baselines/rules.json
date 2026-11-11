@@ -471,9 +471,6 @@
   "src/features/dev/devExportBuilderSlice.ts": {
     "file-length": 1
   },
-  "src/features/dev/devForecastSlice.ts": {
-    "file-length": 1
-  },
   "src/features/eventPerfSlice.ts": {
     "labels": 1
   },

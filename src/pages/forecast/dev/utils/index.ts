@@ -3,7 +3,7 @@ import { fitLinearDemand, predictQty, forecastUnits } from "../../../../utils/fo
 
 // Interfaces
 import type { PriceHistoryResult } from "../../../../interfaces";
-import type { ForecastOutlierRow } from "../../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../../features/dev/devForecastDevSlice";
 import type { SortCol } from "../interfaces";
 
 export const formatRowData = (data: PriceHistoryResult[]) => {
