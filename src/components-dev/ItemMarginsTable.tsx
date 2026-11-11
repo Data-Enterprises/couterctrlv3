@@ -379,7 +379,7 @@ const ItemMarginsTable = ({
                 Thresh
               </button>
               {threshOpen && (
-                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-line_field bg-custom-white shadow-lg z-20">
+                <div className="cc-dropdown left-0 p-1.5 z-20">
                   <ThresholdFilter
                     value={
                       threshold === null
