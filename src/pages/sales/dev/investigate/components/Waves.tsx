@@ -28,7 +28,7 @@ const Waves = ({ sales, all }: WavesProps) => {
           <span
             className={`w-2 h-2 rounded-full ${
               l.lit
-                ? "bg-severity_ok_text"
+                ? "bg-severity_healthy_text"
                 : "bg-severity_watch_text animate-pulse"
             }`}
           />

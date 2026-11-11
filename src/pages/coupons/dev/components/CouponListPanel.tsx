@@ -207,7 +207,7 @@ const CouponListPanel = ({
               <button
                 onClick={() => onSelect("")}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-                  selectedKey === "" ? "bg-cusom-white" : "hover:bg-gray-50"
+                  selectedKey === "" ? "bg-custom-white" : "hover:bg-gray-50"
                 }`}
                 style={
                   selectedKey === ""
