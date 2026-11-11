@@ -102,7 +102,7 @@ const MarginSummary = () => {
           lwUnavailable={cardNoLw}
         />
         {totalsPartial && (
-          <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+          <p className="mt-1.5 inline-block rounded bg-fill_track px-1.5 py-0.5 text-[11px] font-semibold text-content">
             Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
           </p>
         )}

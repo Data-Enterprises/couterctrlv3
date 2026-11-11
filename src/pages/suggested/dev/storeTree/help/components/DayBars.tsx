@@ -10,7 +10,7 @@ const DayBars = () => (
         className="grid grid-cols-[6.5rem_1fr_5.5rem] gap-3 items-center text-[14px]"
       >
         <span className="text-content">{d.n}</span>
-        <span className="bg-gray-200 rounded-sm h-4 overflow-hidden">
+        <span className="bg-fill_track rounded-sm h-4 overflow-hidden">
           <span
             className="block h-full rounded-sm"
             style={{

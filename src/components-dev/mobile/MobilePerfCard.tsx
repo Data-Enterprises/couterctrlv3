@@ -128,7 +128,7 @@ const MobilePerfCard = ({
           <span
             className={`flex-none text-[12px] font-semibold ${
               flagged
-                ? "rounded bg-gray-200 px-1.5 text-content"
+                ? "rounded bg-fill_track px-1.5 text-content"
                 : "text-content/95"
             }`}
           >

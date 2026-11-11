@@ -34,7 +34,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
           <ArrowLeftIcon className="w-3 h-3" />
           Back
         </button>
-        <div className="w-px h-4 bg-gray-200" />
+        <div className="w-px h-4 bg-fill_track" />
         <div>
           <div className="text-[12px] font-semibold text-content">
             {txMeta?.cashier_name}
@@ -57,7 +57,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
         )}
-        <div className="w-px h-5 bg-gray-200" />
+        <div className="w-px h-5 bg-fill_track" />
         <div className="text-right">
           <div className="text-[9px] uppercase tracking-wide text-content">
             Trans
@@ -66,7 +66,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
             {txMeta?.transaction_id ?? txMeta?.sale_id?.split("-")[1]}
           </div>
         </div>
-        <div className="w-px h-5 bg-gray-200" />
+        <div className="w-px h-5 bg-fill_track" />
         <div className="text-right">
           <div className="text-[9px] uppercase tracking-wide text-content">
             Items

@@ -37,13 +37,13 @@ export const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: 
   },
   flat: {
     bg: "bg-fill_muted",
-    hoverBg: "hover:bg-gray-200",
+    hoverBg: "hover:bg-fill_track",
     text: "text-content",
     border: "border-line_strong",
   },
   muted: {
     bg: "bg-fill_muted",
-    hoverBg: "hover:bg-gray-200",
+    hoverBg: "hover:bg-fill_track",
     text: "text-content",
     border: "border-line_strong",
   },

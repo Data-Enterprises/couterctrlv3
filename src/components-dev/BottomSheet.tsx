@@ -84,7 +84,7 @@ const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div className="w-9 h-1 bg-gray-200 rounded-full" />
+          <div className="w-9 h-1 bg-fill_track rounded-full" />
         </div>
         {children}
       </div>

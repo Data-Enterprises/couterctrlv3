@@ -33,7 +33,7 @@ export const SORT_TH =
 export const STATUS_PILL: Record<NotSellingStatus, string> = {
   stopped: "bg-severity_critical_bg text-severity_critical_text",
   declining: "bg-severity_watch_bg text-severity_watch_text",
-  dead: "bg-gray-200 text-content/95",
+  dead: "bg-fill_track text-content/95",
 };
 
 /**
@@ -417,7 +417,7 @@ export const NAVY = "rgb(var(--color-brand-navy))";
 export const PILL: Record<string, string> = {
   ok: "bg-severity_healthy_bg text-severity_healthy_text",
   warn: "bg-severity_watch_bg text-severity_watch_text",
-  off: "bg-gray-200 text-content/95",
+  off: "bg-fill_track text-content/95",
 };
 
 /** The weekday bars. Same navy as the Production tab's, so the two read as one

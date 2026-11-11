@@ -224,7 +224,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
                   title={`${fmtLb(b.lbPerDay)} lb/day across ${b.itemCount} items`}
                 >
                   <span className="truncate">{b.label}</span>
-                  <span className="bg-gray-200 rounded-sm h-2.5 overflow-hidden">
+                  <span className="bg-fill_track rounded-sm h-2.5 overflow-hidden">
                     <span
                       className="block h-full rounded-sm"
                       style={{

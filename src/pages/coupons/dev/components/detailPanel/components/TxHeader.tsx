@@ -26,7 +26,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                             <ArrowLeftIcon className="w-3 h-3" />
                             Back to coupons
                           </button>
-                          <div className="w-px h-4 bg-gray-200" />
+                          <div className="w-px h-4 bg-fill_track" />
                           <div>
                             <div className="text-[12px] font-semibold text-content">
                               {txMeta?.cashier_name}
@@ -57,7 +57,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                             </button>
                           )}
-                          <div className="w-px h-5 bg-gray-200" />
+                          <div className="w-px h-5 bg-fill_track" />
                           <div className="text-right">
                             <div className="text-[9px] uppercase tracking-wide text-content/95">
                               Trans
@@ -67,7 +67,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                                 txMeta?.sale_id?.split("-")[1]}
                             </div>
                           </div>
-                          <div className="w-px h-5 bg-gray-200" />
+                          <div className="w-px h-5 bg-fill_track" />
                           <div className="text-right">
                             <div className="text-[9px] uppercase tracking-wide text-content/95">
                               Items

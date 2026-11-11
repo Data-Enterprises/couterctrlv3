@@ -8,7 +8,7 @@ interface TrendBeforeAfterTileProps {
  *  Slope), labelled in words. */
 const TrendBeforeAfterTile = ({ label, before, after }: TrendBeforeAfterTileProps) => {
   return (
-    <div className="text-center bg-gray-200/60 rounded py-2 px-1.5">
+    <div className="text-center bg-fill_track/60 rounded py-2 px-1.5">
       <div className="text-[12px] text-content/95 mb-1">{label}</div>
       <div className="text-[12.5px]">
         Before <span className="font-medium">{before}</span>

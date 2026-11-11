@@ -62,7 +62,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
 
       <div className="px-4">
         <div className="mb-5">
-          <div className="text-[11px] font-semibold uppercase tracking-wide bg-gray-200/75 px-2 py-1.5 mb-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
             This year (avg by day of week)
           </div>
           <div className="grid grid-cols-7 gap-1 mb-1">
@@ -105,7 +105,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
             ))}
           </div>
 
-          <div className="text-[11px] font-semibold uppercase tracking-wide bg-gray-200/75 px-2 py-1.5 mb-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
             Last year, same weeks (avg by day of week)
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -138,7 +138,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
         </div>
 
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wide bg-gray-200/75 px-2 py-1.5 mb-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
             Week by week (actual)
           </div>
           <div

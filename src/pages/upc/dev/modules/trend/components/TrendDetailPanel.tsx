@@ -80,7 +80,7 @@ const TrendDetailPanel = ({
 
       <div className="px-4 pb-3.5">
         <div className="mb-5">
-          <div className="flex items-center justify-between bg-gray-200 px-2 py-1.5 mb-1">
+          <div className="flex items-center justify-between bg-fill_track px-2 py-1.5 mb-1">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-content">Status</span>
             <BeforeAfterLegend />
           </div>
@@ -108,7 +108,7 @@ const TrendDetailPanel = ({
         </div>
 
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-content bg-gray-200 px-2 py-1.5 mb-1">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-content bg-fill_track px-2 py-1.5 mb-1">
             Detail
           </div>
           <div className="grid grid-cols-3 gap-2">

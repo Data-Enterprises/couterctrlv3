@@ -15,7 +15,7 @@ interface BarProps {
  */
 const Bar = ({ w = "100%", h = 12 }: BarProps) => (
   <span
-    className="block rounded bg-gray-200 animate-pulse"
+    className="block rounded bg-fill_track animate-pulse"
     style={{ width: w, height: h }}
     aria-hidden
   />

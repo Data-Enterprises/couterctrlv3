@@ -33,7 +33,7 @@ export const BALANCE_TONE: Record<ShareStanding, { pill: string; text: string; b
       bar: severityDotClass.critical,
     },
     consistent: {
-      pill: "bg-gray-200 text-content",
+      pill: "bg-fill_track text-content",
       text: "text-content",
       bar: "bg-brand_navy",
     },
@@ -98,7 +98,7 @@ export const DETAIL_TONE: Record<
     card: "bg-delta_negative_bg",
   },
   consistent: {
-    pill: "bg-gray-200 text-content",
+    pill: "bg-fill_track text-content",
     text: "text-content",
     bar: "bg-brand_navy",
     card: "bg-fill_soft",

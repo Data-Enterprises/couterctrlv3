@@ -132,7 +132,7 @@ const PerfStoreReport = ({
           lwUnavailable={totals.noLw}
         />
         {totalsPartial && (
-          <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+          <p className="mt-1.5 inline-block rounded bg-fill_track px-1.5 py-0.5 text-[11px] font-semibold text-content">
             Last year: {totalsNote}
           </p>
         )}
@@ -162,7 +162,7 @@ const PerfStoreReport = ({
             {fromBundle && bundleLoading ? (
               <span
                 aria-label="Loading"
-                className="mt-1 block h-[15px] w-16 animate-pulse rounded bg-gray-200"
+                className="mt-1 block h-[15px] w-16 animate-pulse rounded bg-fill_track"
               />
             ) : (
               <span className="font-display text-[15px] font-bold text-content">
@@ -181,7 +181,7 @@ const PerfStoreReport = ({
         <div className="mt-2.5 border-t border-brand_line pt-2">
           <span
             aria-label="Loading"
-            className="block h-2 w-full animate-pulse rounded-full bg-gray-200"
+            className="block h-2 w-full animate-pulse rounded-full bg-fill_track"
           />
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
             {COUPON_KEYS.map((k) => (
@@ -193,7 +193,7 @@ const PerfStoreReport = ({
                 <span className="flex-1 truncate text-content/95">
                   {COUPON_LABELS[k]}
                 </span>
-                <span className="block h-[13px] w-12 animate-pulse rounded bg-gray-200" />
+                <span className="block h-[13px] w-12 animate-pulse rounded bg-fill_track" />
               </div>
             ))}
           </div>

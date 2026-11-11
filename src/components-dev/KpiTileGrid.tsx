@@ -44,7 +44,7 @@ const KpiTileGrid = ({ items }: KpiTileGridProps) => {
                   kpi.subVariant === "up"
                     ? "bg-severity_healthy_bg text-severity_healthy_text"
                     : kpi.subVariant === "neutral"
-                    ? "bg-gray-200 text-content"
+                    ? "bg-fill_track text-content"
                     : "bg-severity_critical_bg text-severity_critical_text"
                 }`}
               >

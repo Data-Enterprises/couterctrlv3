@@ -138,7 +138,7 @@ const ForecastScenarios = ({
               >
                 {formatCurrency2(row.price)}
                 {row.isCustom && (
-                  <span className="ml-1 text-[9px] bg-gray-200 text-content rounded px-0.5 font-medium">
+                  <span className="ml-1 text-[9px] bg-fill_track text-content rounded px-0.5 font-medium">
                     new
                   </span>
                 )}
