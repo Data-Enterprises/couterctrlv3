@@ -86,6 +86,15 @@ export default {
         brand_line: "rgb(var(--color-brand-line) / <alpha-value>)",
         brand_line_2: "rgb(var(--color-brand-line-2) / <alpha-value>)",
         brand_paper: "rgb(var(--color-brand-paper) / <alpha-value>)",
+        line_hair: "rgb(var(--color-line-hair) / <alpha-value>)",
+        line_field: "rgb(var(--color-line-field) / <alpha-value>)",
+        line_strong: "rgb(var(--color-line-strong) / <alpha-value>)",
+        line_faint: "rgb(var(--color-line-faint) / <alpha-value>)",
+        fill_soft: "rgb(var(--color-fill-soft) / <alpha-value>)",
+        fill_muted: "rgb(var(--color-fill-muted) / <alpha-value>)",
+        fill_track: "rgb(var(--color-fill-track) / <alpha-value>)",
+        fill_track_strong:
+          "rgb(var(--color-fill-track-strong) / <alpha-value>)",
         brand_danger: "rgb(var(--color-brand-danger) / <alpha-value>)",
         brand_danger_bg: "rgb(var(--color-brand-danger-bg) / <alpha-value>)",
         brand_danger_line:
