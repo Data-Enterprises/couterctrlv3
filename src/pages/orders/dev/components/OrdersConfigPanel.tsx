@@ -223,7 +223,7 @@ const OrdersConfigPanel = ({
           </span>
           <BackButton onClick={onOpenSearch} helpAnchor="search" />
         </div>
-        <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
+        <div className="cc-navy-header-row flex items-baseline gap-2">
           <span className="text-custom-white/95 text-[12px] truncate">
             {scopeLabel}
           </span>

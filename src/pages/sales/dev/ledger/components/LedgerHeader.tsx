@@ -122,7 +122,7 @@ const LedgerHeader = ({
       </div>
 
       {/* Row 2: search + toggle left | threshold + legend right */}
-      <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+      <div className="flex items-center gap-2 cc-navy-header-row">
         {/* Search */}
         <BackButton onClick={onOpenSearch} helpAnchor="search" />
 

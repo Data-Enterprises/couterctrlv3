@@ -192,7 +192,7 @@ const ItemReportSheet = ({
           </div>
 
           {/* Row 2: search + export | scope | grading basis | about */}
-          <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+          <div className="flex items-center gap-2 cc-navy-header-row">
             <BackButton onClick={onSearchOpen} />
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 

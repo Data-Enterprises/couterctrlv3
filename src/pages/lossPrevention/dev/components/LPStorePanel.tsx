@@ -205,7 +205,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
         </div>
 
         {/* Row 2: search left | legend right */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+        <div className="flex items-center gap-2 cc-navy-header-row">
           <BackButton onClick={onOpenSearch} helpAnchor="search" />
           <div className="flex-1" />
           <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/95 flex-shrink-0">Exception activity vs baseline</span>
