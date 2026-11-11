@@ -1,15 +1,11 @@
 ﻿import { useState, useMemo, useRef, useEffect } from "react";
+import { shiftIso } from "../../../../utils/grading";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import {
   setSelectedHour,
   setHourlyThreshold,
 } from "../../../../features/salesLedgerSlice";
-import {
-  formatCurrency2,
-  formatBigNumber,
-  addDays,
-  sameWeekDayLastYear,
-} from "../../../../utils";
+import { formatCurrency2, formatBigNumber, sameWeekDayLastYear } from "../../../../utils";
 import type { GradingMetric } from "../../../../features/salesLedgerSlice";
 import {
   ExclamationTriangleIcon,
@@ -258,7 +254,7 @@ const PopupHourlyView = ({
         .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
 
     return tyDates.map((tyDate) => {
-      const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+      const lwDate = shiftIso(tyDate, -7);
       const lyDate = sameWeekDayLastYear(tyDate).date;
       const label = new Date(tyDate + "T12:00:00").toLocaleDateString("en-US", {
         weekday: "short",

@@ -4,11 +4,11 @@ import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { calculateCogs } from "../../../../../utils/cogs";
 import { getLYDate } from "../../../../../utils/dates";
-import { addDays, formatCurrency2 } from "../../../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
 import { getHolidayName } from "../../../../../utils/holidays";
 import { StarIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../../interfaces";
-import { gradeBasis, type Coverage } from "../../../../../utils/grading";
+import { gradeBasis, type Coverage, shiftIso } from "../../../../../utils/grading";
 
 const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
@@ -54,7 +54,7 @@ const MarginPerfDaySidebar = ({ coverage }: Props) => {
   // every day — the same rule as the sub-dept list.
   const week = useMemo(() => {
     const day = (m: SubDeptMargin) => m.sale_date.split("T")[0];
-    const lwOf = (d: string) => addDays(d, -7).toISOString().split("T")[0];
+    const lwOf = (d: string) => shiftIso(d, -7);
     const lwDates = new Set(ctx.weekTwoMargins.map(day));
     const lyDates = new Set(ctx.weekOneMarginsLY.map(day));
     const lwWanted = new Set(tyDates.map(lwOf));
@@ -138,7 +138,7 @@ const MarginPerfDaySidebar = ({ coverage }: Props) => {
         const isSelected = ctx.selectedWeekDay === tyDate;
 
         const lyDate = getLYDate(tyDate);
-        const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+        const lwDate = shiftIso(tyDate, -7);
 
         const twDay = agg(byDate(ctx.weekOneMargins, tyDate));
         const lyDay = agg(byDate(ctx.weekOneMarginsLY, lyDate));

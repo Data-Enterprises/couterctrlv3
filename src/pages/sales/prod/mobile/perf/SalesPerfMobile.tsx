@@ -1,3 +1,4 @@
+import { shiftIso } from "../../../../../utils/grading";
 import {
   useDeferredValue,
   useEffect,
@@ -166,7 +167,7 @@ const SalesPerfMobile = () => {
   const lyDates = Array.from(
     { length: 7 },
     (_, i) =>
-      sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
+      sameWeekDayLastYear(shiftIso(twStart, i)).date,
   ).sort();
 
   /** Sub-department and hourly rows for one scope, both periods. */
