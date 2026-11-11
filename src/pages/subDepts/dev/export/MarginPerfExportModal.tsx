@@ -533,7 +533,7 @@ const MarginPerfExportModal = ({
                       <thead className="sticky top-0 bg-fill_soft z-10">
                         <tr>
                           {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap">
+                            <th key={c.key} className="cc-th text-content">
                               {c.label}
                             </th>
                           ))}

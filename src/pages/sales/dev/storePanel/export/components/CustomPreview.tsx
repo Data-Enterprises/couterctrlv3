@@ -36,7 +36,7 @@ const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
               {columns.map((c) => (
                 <th
                   key={c.key}
-                  className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap"
+                  className="cc-th text-content"
                 >
                   {c.label}
                 </th>

@@ -365,7 +365,7 @@ const CashiersExportModal = ({
                           {columns.map((c) => (
                             <th
                               key={c.key}
-                              className="text-left px-3 py-2 text-content/95 font-semibold border-b border-line_hair whitespace-nowrap"
+                              className="cc-th text-content/95"
                             >
                               {c.label}
                             </th>
