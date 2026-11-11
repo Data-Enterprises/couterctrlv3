@@ -114,7 +114,7 @@ const BatchList = () => {
   const { rows, editing } = useAppSelector((s) => s.dev.upcScanner);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+    <section className="cc-card-phone">
       <div>
         {rows.length === 0 ? (
           <div className="px-5 py-7 text-center">

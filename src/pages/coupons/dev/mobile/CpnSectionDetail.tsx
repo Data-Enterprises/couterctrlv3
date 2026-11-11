@@ -209,7 +209,7 @@ const CpnSectionDetail = ({
       <div className="flex flex-col gap-3">
         <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
 
-        <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+        <section className="cc-card-phone">
       {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
           the scroll and already clears the fixed tab bar. */}
       <div>

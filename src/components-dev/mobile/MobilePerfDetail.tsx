@@ -112,7 +112,7 @@ const MobilePerfDetail = <K extends string>({
           and would otherwise hide the last row. */}
       <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="p-3">
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             {children}
           </section>
         </div>

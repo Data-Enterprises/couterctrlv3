@@ -136,7 +136,7 @@ const ItemSearchScreen = () => {
       <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {perf.scannerOpen && (
-            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white p-3 shadow-md">
+            <section className="cc-card-phone p-3">
               <ScannerView onDetected={(upc) => dispatch(scannedUpc(upc))} />
             </section>
           )}
@@ -145,7 +145,7 @@ const ItemSearchScreen = () => {
               few items through a shift should not retype a UPC, and a list
               of every item in the store is not a useful thing to land on. */}
           {!query && recents.length > 0 && (
-            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+            <section className="cc-card-phone">
               <div className="px-3.5 pb-1 pt-3 cc-caps-mono text-[9.5px]">
                 Recent items
               </div>
@@ -176,7 +176,7 @@ const ItemSearchScreen = () => {
               </p>
             </section>
           ) : (
-            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+            <section className="cc-card-phone">
                 <MarginRowList
                   onRow={(r) => dispatch(selectPerfItem(r.key))}
                   emptyText={`Nothing matches "${query}".`}

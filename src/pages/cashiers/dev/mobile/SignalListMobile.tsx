@@ -66,7 +66,7 @@ const SignalListMobile = ({
       <div className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── the scope ─────────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             {/* The exception is what the card is about, so it is the title
                 and opens the picker, as Loss Prevention's event type does. */}
             <PerfCardHeader
@@ -123,7 +123,7 @@ const SignalListMobile = ({
           </section>
 
           {/* ── the signals ───────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             <MobileSortChips
               label="Lens"
               options={LENSES.map((l) => ({ key: l.key, label: l.label }))}

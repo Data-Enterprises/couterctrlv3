@@ -24,7 +24,7 @@ const StoreListControls = ({ measure, storeFilter, setStoreFilter }: StoreListCo
   const dispatch = useAppDispatch();
   const { perf } = useEventPerfCtx();
   return (
-    <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+    <section className="cc-card-phone">
       <MobileSortChips
         options={sortOptions(measure, "store")}
         value={perf.sort.stores?.key ?? null}

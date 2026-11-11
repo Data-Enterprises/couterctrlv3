@@ -29,7 +29,7 @@ const StoreListControls = ({
   const dispatch = useAppDispatch();
   const perf = useSalesPerfState();
   return (
-  <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+  <section className="cc-card-phone">
     <MobileSortChips
       options={storeSorts(sizeLabel)}
       value={perf.storeSort?.key ?? null}

@@ -120,7 +120,7 @@ const CpnOverview = ({
         <div className="flex flex-col gap-3">
           <CpnTotalsCard coupons={coupons} caption="Coupon value this week" />
 
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             <CpnListControls
               value={sortMetric}
               onChange={onSortMetric}

@@ -68,7 +68,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) =
   if (bare) return rows;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+    <section className="cc-card-phone">
       <div className="flex items-baseline justify-between gap-2 px-3.5 pb-1.5 pt-2.5">
         <span className="font-display text-[13.5px] font-semibold text-content">
           Recent lookups

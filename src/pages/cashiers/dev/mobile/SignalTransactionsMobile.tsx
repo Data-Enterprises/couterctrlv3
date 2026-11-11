@@ -84,7 +84,7 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
         onBack={onBack}
         levelKey={`signal|${signal.key}`}
       >
-        <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+        <section className="cc-card-phone">
           <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] leading-relaxed text-content/95">
             {describeSignal(signal, explorerLens)}
           </p>

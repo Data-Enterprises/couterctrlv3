@@ -157,19 +157,7 @@
   "src/components-dev/eventPerf/components/EventDrillList.tsx": {
     "catalogued-look": 1
   },
-  "src/components-dev/eventPerf/components/StoreListControls.tsx": {
-    "catalogued-look": 1
-  },
-  "src/components-dev/itemPerf/components/ItemSearchScreen.tsx": {
-    "catalogued-look": 3
-  },
   "src/components-dev/itemPerf/components/MarginRowList.tsx": {
-    "catalogued-look": 1
-  },
-  "src/components-dev/itemPerf/components/StoreGroupsScreen.tsx": {
-    "catalogued-look": 2
-  },
-  "src/components-dev/mobile/MobilePerfDetail.tsx": {
     "catalogued-look": 1
   },
   "src/components-dev/modals/ExportModal.tsx": {
@@ -681,9 +669,6 @@
     "catalogued-look": 2
   },
   "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
-    "catalogued-look": 3
-  },
-  "src/pages/cashiers/dev/mobile/SignalTransactionsMobile.tsx": {
     "catalogued-look": 1
   },
   "src/pages/categories/Categories.tsx": {
@@ -738,18 +723,6 @@
     "catalogued-look": 1
   },
   "src/pages/coupons/dev/mobile/CpnExportSheet.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/coupons/dev/mobile/CpnOverview.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/coupons/dev/mobile/CpnSectionDetail.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/coupons/dev/mobile/CpnStoreList.tsx": {
-    "catalogued-look": 2
-  },
-  "src/pages/coupons/dev/mobile/CpnTotalsCard.tsx": {
     "catalogued-look": 1
   },
   "src/pages/exportBuilder/ExportBuilder.tsx": {
@@ -1087,12 +1060,6 @@
   "src/pages/lookup/dev/desktop/components/LookupQueuePanel.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/lookup/dev/mobile/LookupItemReport.tsx": {
-    "catalogued-look": 3
-  },
-  "src/pages/lookup/dev/mobile/components/RecentLookupsCard.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/lossPrevention/LossPrevention.tsx": {
     "labels": 1
   },
@@ -1408,9 +1375,6 @@
   "src/pages/sales/dev/mobile/perf/components/PerfDrillList.tsx": {
     "catalogued-look": 2
   },
-  "src/pages/sales/dev/mobile/perf/components/StoreListControls.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/dev/storePanel/export/components/CustomPreview.tsx": {
     "catalogued-look": 3
   },
@@ -1510,7 +1474,6 @@
     "labels": 1
   },
   "src/pages/upcScanner/dev/BatchList.tsx": {
-    "catalogued-look": 1,
     "doc-comment": 1,
     "labels": 1,
     "shape-extra-code": 1,

@@ -89,7 +89,7 @@ const StoreGroupsScreen = () => {
           {/* Not a card in the accordion: the store's breakdown IS the list
               under it, so there is nothing for it to open. It carries the
               page's controls because there is nowhere above it for them. */}
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             <PerfCardHeader
               title={storeName}
               label={scopeLabel}
@@ -120,7 +120,7 @@ const StoreGroupsScreen = () => {
           </button>
 
           {/* ── the groups ──────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
+          <section className="cc-card-phone">
             <MobileSortChips
               options={sorts(sizeLabel)}
               value={activeSort?.key ?? null}
