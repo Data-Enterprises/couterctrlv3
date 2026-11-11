@@ -87,7 +87,7 @@ const WeekLinesChart = ({ types, windows, selected }: Props) => {
           x2={X1}
           y2={Y0}
           stroke="currentColor"
-          className="text-gray-200"
+          className="text-line_field"
         />
         <line
           x1={X0}
@@ -95,7 +95,7 @@ const WeekLinesChart = ({ types, windows, selected }: Props) => {
           x2={X1}
           y2={(Y0 + Y1) / 2}
           stroke="currentColor"
-          className="text-gray-200"
+          className="text-line_field"
         />
         <line
           x1={X0}

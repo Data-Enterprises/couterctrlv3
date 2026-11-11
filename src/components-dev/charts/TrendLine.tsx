@@ -103,7 +103,7 @@ const TrendLine = ({
             y2={y(t)}
             stroke="currentColor"
             strokeWidth={1}
-            className="text-gray-200"
+            className="text-line_field"
           />
           <text
             x={PAD_L - 8}
