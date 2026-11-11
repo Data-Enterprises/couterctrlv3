@@ -25,7 +25,7 @@ const ConfirmModal = ({
   children,
 }: ConfirmModalProps) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div className="cc-modal-backdrop z-50">
       <div
         className={`bg-custom-white rounded-xl p-5 shadow-2xl ${
           children ? "w-[400px] max-w-[92vw]" : "w-[300px]"

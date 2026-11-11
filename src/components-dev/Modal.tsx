@@ -61,7 +61,7 @@ const Modal = ({
   return (
     <div
       data-testid="modal"
-      className={`fixed ${className} inset-0 backdrop-blur-sm flex items-center justify-center `}
+      className={`cc-modal-backdrop ${className}  `}
       style={{ zIndex: 5000 }}
     >
       <div

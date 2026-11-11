@@ -12,7 +12,7 @@ interface SearchPopupProps {
  *  darkens. A click outside the card closes it. */
 const SearchPopup = ({ onClose, children }: SearchPopupProps) => (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+    className="cc-modal-backdrop z-50"
     onClick={onClose}
   >
     <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>

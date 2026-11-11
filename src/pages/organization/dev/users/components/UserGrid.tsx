@@ -659,7 +659,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       )}
 
       {securityUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div className="cc-modal-backdrop z-50">
           <div className="bg-custom-white rounded-xl p-5 w-[480px] shadow-2xl">
             <div className="flex items-center justify-between">
               <div className="text-[14px] font-medium text-content">

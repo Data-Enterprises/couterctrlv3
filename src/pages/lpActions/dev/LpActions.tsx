@@ -83,7 +83,7 @@ const LpActions = () => {
 
       {searchOpen && (
         <div
-          className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
+          className="cc-modal-backdrop z-[5000] p-4"
           onMouseDown={() => setSearchOpen(false)}
         >
           <div

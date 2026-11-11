@@ -106,7 +106,7 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div className="cc-modal-backdrop z-50">
       <div className="bg-custom-white rounded-xl p-5 w-[460px] max-h-[80vh] flex flex-col shadow-2xl">
         <div className="text-[15px] font-semibold text-content mb-1.5 flex-shrink-0">
           {done ? `${verb} — result` : `${verb} ${people}`}
