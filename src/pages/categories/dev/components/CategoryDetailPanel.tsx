@@ -449,7 +449,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
           <div className="overflow-y-auto thin-scrollbar flex-1">
             {loadingHourly ? (
               <div className="flex items-center justify-center gap-2 h-24">
-                <div className="w-3.5 h-3.5 border-2 border-line_field border-t-brand_navy rounded-full animate-spin" />
+                <div className="cc-spinner border-t-brand_navy" />
                 <span className="text-[11px] text-content">Loading hours…</span>
               </div>
             ) : shown.length === 0 ? (

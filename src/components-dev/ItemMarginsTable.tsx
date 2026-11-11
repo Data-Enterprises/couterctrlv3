@@ -349,7 +349,7 @@ const ItemMarginsTable = ({
   if (loading) {
     return (
       <div className="flex-1 min-h-0 flex items-center justify-center gap-2">
-        <div className="w-3.5 h-3.5 border-2 border-line_field border-t-brand_navy rounded-full animate-spin" />
+        <div className="cc-spinner border-t-brand_navy" />
         <span className="text-[11px] text-content">Loading items…</span>
       </div>
     );

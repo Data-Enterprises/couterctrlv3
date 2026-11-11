@@ -87,7 +87,7 @@ const PerfDrillList = ({
     return (
       <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
         <span
-          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line_field"
+          className="cc-spinner"
           style={{ borderTopColor: TY_COLOR }}
         />
         Loading {storeName}...
@@ -175,7 +175,7 @@ const PerfDrillList = ({
         {items.loading ? (
           <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
             <span
-              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line_field"
+              className="cc-spinner"
               style={{ borderTopColor: TY_COLOR }}
             />
             Loading items...

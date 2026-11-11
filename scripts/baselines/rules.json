@@ -131,12 +131,6 @@
     "labels": 1
   },
   "src/components-dev/ItemMarginsTable.tsx": {
-    "catalogued-look": 2
-  },
-  "src/components-dev/eventPerf/components/EventDrillList.tsx": {
-    "catalogued-look": 1
-  },
-  "src/components-dev/itemPerf/components/MarginRowList.tsx": {
     "catalogued-look": 1
   },
   "src/components-dev/modals/ExportModal.tsx": {
@@ -626,14 +620,11 @@
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
-  "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/categories/Categories.tsx": {
     "labels": 1
   },
   "src/pages/categories/dev/components/CategoryDetailPanel.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
@@ -1181,9 +1172,6 @@
   "src/pages/sales/dev/components/ThresholdChip.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/sales/dev/mobile/perf/components/PerfDrillList.tsx": {
-    "catalogued-look": 2
-  },
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1
   },
@@ -1192,9 +1180,6 @@
   },
   "src/pages/subDepts/SubDeptMargins.tsx": {
     "labels": 1
-  },
-  "src/pages/subDepts/dev/components/MarginPerfLeftPanel.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/subDepts/dev/components/itemsTable/components/ItemListToolbar.tsx": {
     "catalogued-look": 1
