@@ -349,7 +349,7 @@ const ItemMarginsTable = ({
   if (loading) {
     return (
       <div className="flex-1 min-h-0 flex items-center justify-center gap-2">
-        <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
+        <div className="w-3.5 h-3.5 border-2 border-line_field border-t-brand_navy rounded-full animate-spin" />
         <span className="text-[11px] text-content">Loading items…</span>
       </div>
     );
@@ -379,7 +379,7 @@ const ItemMarginsTable = ({
                 Thresh
               </button>
               {threshOpen && (
-                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20">
+                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-line_field bg-custom-white shadow-lg z-20">
                   <ThresholdFilter
                     value={
                       threshold === null
@@ -622,7 +622,7 @@ const ItemMarginsTable = ({
                       <div className="text-[18px] font-semibold text-content leading-tight">
                         {reportRows[0].ty}
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
+                      <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-line_field">
                         {(["lw", "ly"] as const).map((side) => (
                           <div key={side}>
                             <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
@@ -668,7 +668,7 @@ const ItemMarginsTable = ({
                     {reportRows.slice(1).map((row) => (
                       <div
                         key={row.key}
-                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
+                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-line_field text-[11.5px]"
                       >
                         <span className="font-semibold text-content truncate">
                           {row.label}

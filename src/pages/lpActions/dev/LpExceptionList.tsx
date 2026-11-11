@@ -158,7 +158,7 @@ const TypeSection = ({ group }: { group: TypeGroup }) => {
         // A rule down the left, indented to the parent's chevron. The stores
         // are the type broken apart, and without a guide a long list stops
         // reading as belonging to the row above it.
-        <div className="ml-[19px] border-l-2 border-gray-200">
+        <div className="ml-[19px] border-l-2 border-line_field">
           {group.stores.map((r) => (
             <StoreRow key={r.id} row={r} />
           ))}

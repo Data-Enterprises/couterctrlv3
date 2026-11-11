@@ -36,7 +36,7 @@ const ChartTooltip = ({ xPct, title, rows, names, selected }: Props) => {
       className="absolute top-0 z-10 pointer-events-none"
       style={{ left: `${xPct}%`, transform: `translateX(${shift})` }}
     >
-      <div className="rounded border border-gray-200 bg-custom-white shadow-lg px-2 py-1.5 min-w-[104px]">
+      <div className="rounded border border-line_field bg-custom-white shadow-lg px-2 py-1.5 min-w-[104px]">
         <div className="text-[11px] font-semibold text-content mb-1 whitespace-nowrap">
           {title}
         </div>

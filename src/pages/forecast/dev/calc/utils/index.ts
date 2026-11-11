@@ -60,7 +60,7 @@ export const HEAD =
   "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-shrink-0";
 
 /** The calculator modal's bordered sections, their headings and field labels. */
-export const SECTION = "border border-gray-200 rounded-lg overflow-hidden";
+export const SECTION = "border border-line_field rounded-lg overflow-hidden";
 export const SECTION_HEAD =
   "px-3 py-1.5 bg-gray-50 border-b border-line_hair text-[11px] font-semibold uppercase tracking-wide text-content/95";
 export const FIELD_LABEL = "text-[11px] font-medium text-content/95 ml-0.5";

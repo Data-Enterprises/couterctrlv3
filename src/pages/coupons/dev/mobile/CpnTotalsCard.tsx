@@ -22,7 +22,7 @@ const CpnTotalsCard = ({ coupons, caption }: CpnTotalsCardProps) => {
   const products = new Set(coupons.map((c) => c.product_code)).size;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3.5 pb-3 pt-2.5 shadow-md">
+    <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white px-3.5 pb-3 pt-2.5 shadow-md">
       <div className="text-[12px] text-content/95">{caption}</div>
       <div className="font-display text-[30px] font-extrabold leading-none tracking-tight text-content">
         {formatCurrency2(total)}

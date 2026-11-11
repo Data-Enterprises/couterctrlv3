@@ -484,7 +484,7 @@ const SalesTracker = () => {
                   header and right panel. */}
               {groupTotal && (
                 <div
-                  className="grid items-center gap-3.5 px-4 py-2.5 border-t-2 border-gray-200 bg-gray-50 sticky bottom-0 z-10"
+                  className="grid items-center gap-3.5 px-4 py-2.5 border-t-2 border-line_field bg-gray-50 sticky bottom-0 z-10"
                   style={{ gridTemplateColumns: SUB_GRID }}
                 >
                   {/* "All sub depts", matching the column header. */}

@@ -367,7 +367,7 @@ const CouponsExportModal = ({
                             onChange={(e) =>
                               setMetricFn(m.key, e.target.value as AggFn)
                             }
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
+                            className="text-[10px] border border-line_field rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (

@@ -311,7 +311,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             placeholder="Ad days"
             value={batchAdDays}
             onChange={(e) => setBatchAdDays(e.target.value)}
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <input
@@ -321,7 +321,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             placeholder="Price"
             value={batchPrice}
             onChange={(e) => setBatchPrice(e.target.value)}
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <input
@@ -329,7 +329,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             placeholder="Note"
             value={batchNotes}
             onChange={(e) => setBatchNotes(e.target.value)}
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-32"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-32"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button
@@ -352,7 +352,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             }}
             disabled={!isEdited}
             title="Put price and ad days back to what the search returned"
-            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Reset
           </button>
@@ -370,7 +370,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             }}
             disabled={!hasNotes}
             title="Remove the note from every selected row"
-            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Clear notes
           </button>

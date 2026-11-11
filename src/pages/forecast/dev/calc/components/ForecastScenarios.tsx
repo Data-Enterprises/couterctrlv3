@@ -73,7 +73,7 @@ const ForecastScenarios = ({
   };
 
   return (
-    <div className="flex flex-col min-h-0 overflow-hidden border border-gray-200 rounded-lg">
+    <div className="flex flex-col min-h-0 overflow-hidden border border-line_field rounded-lg">
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
           Price scenarios
@@ -84,12 +84,12 @@ const ForecastScenarios = ({
             onChange={(e) => setAdDaysInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSetAdDays()}
             placeholder="Ad days"
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button
             onClick={handleSetAdDays}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors"
           >
             Set
           </button>
@@ -98,12 +98,12 @@ const ForecastScenarios = ({
             onChange={(e) => setCustomInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Add price"
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button
             onClick={handleAdd}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors"
           >
             Add
           </button>

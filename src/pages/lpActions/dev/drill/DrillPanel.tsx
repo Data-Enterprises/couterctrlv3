@@ -61,7 +61,7 @@ const DrillPanel = ({
         <button
           onClick={onExport}
           title="Export these cuts to CSV"
-          className="flex-shrink-0 flex items-center gap-1 text-[11.5px] font-medium px-2 py-0.5 rounded border border-gray-200 text-content hover:bg-gray-50 transition-colors"
+          className="flex-shrink-0 flex items-center gap-1 text-[11.5px] font-medium px-2 py-0.5 rounded border border-line_field text-content hover:bg-gray-50 transition-colors"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           Export
@@ -78,7 +78,7 @@ const DrillPanel = ({
               className={`text-[11.5px] px-2 py-0.5 rounded border transition-colors ${
                 on
                   ? "border-brand_navy bg-brand_navy text-custom-white"
-                  : "border-gray-200 text-content hover:bg-gray-50"
+                  : "border-line_field text-content hover:bg-gray-50"
               }`}
             >
               {f.label}

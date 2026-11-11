@@ -145,7 +145,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
           style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
         >
           <span
-            className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
+            className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line_field"
             style={{ borderTopColor: TY_COLOR }}
           />
           Building the list...

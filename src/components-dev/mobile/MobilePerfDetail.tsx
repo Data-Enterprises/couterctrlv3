@@ -69,7 +69,7 @@ const MobilePerfDetail = <K extends string>({
 
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
-      <header className="flex-shrink-0 border-b border-gray-200 bg-custom-white px-3 pb-2.5 pt-2">
+      <header className="flex-shrink-0 border-b border-line_field bg-custom-white px-3 pb-2.5 pt-2">
         <MobileBackLink label={backLabel} onClick={onBack} />
         <p className="truncate font-display text-[15px] font-bold text-content">
           {scopeName}
@@ -97,7 +97,7 @@ const MobilePerfDetail = <K extends string>({
                   className={`rounded-lg border py-2 text-[11.5px] font-bold transition-colors ${
                     on
                       ? "border-brand_navy bg-brand_navy text-custom-white"
-                      : "border-gray-200 bg-bkg text-content active:bg-gray-100"
+                      : "border-line_field bg-bkg text-content active:bg-gray-100"
                   }`}
                 >
                   {t.label}
@@ -112,7 +112,7 @@ const MobilePerfDetail = <K extends string>({
           and would otherwise hide the last row. */}
       <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="p-3">
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             {children}
           </section>
         </div>

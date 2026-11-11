@@ -209,7 +209,7 @@ const CpnSectionDetail = ({
       <div className="flex flex-col gap-3">
         <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
 
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+        <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
       {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
           the scroll and already clears the fixed tab bar. */}
       <div>
@@ -309,7 +309,7 @@ const CpnSectionDetail = ({
             {txLines.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>

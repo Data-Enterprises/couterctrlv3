@@ -35,7 +35,7 @@ const CursorTipBox = ({ x, y, className = "py-2", children }: CursorTipBoxProps)
     <div
       ref={ref}
       role="tooltip"
-      className={`fixed z-50 pointer-events-none rounded border border-gray-200 bg-custom-white shadow-lg px-3 ${className}`}
+      className={`fixed z-50 pointer-events-none rounded border border-line_field bg-custom-white shadow-lg px-3 ${className}`}
       style={{ left: pos.left, top: pos.top }}
     >
       {children}

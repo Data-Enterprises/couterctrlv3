@@ -33,7 +33,7 @@ const SevChips = ({ value, onToggle, hint }: SevChipsProps) => (
           key={sev}
           onClick={() => onToggle(sev)}
           className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-            value.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
+            value.has(sev) ? activeClass : "bg-custom-white border-line_field text-content"
           }`}
         >
           {label}

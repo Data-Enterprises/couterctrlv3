@@ -10,7 +10,7 @@ const MeasureSwitch = ({ value, onChange }: MeasureSwitchProps) => (
   <div
     role="group"
     aria-label="Measure"
-    className="flex rounded-full border border-gray-200 bg-bkg p-0.5"
+    className="flex rounded-full border border-line_field bg-bkg p-0.5"
   >
     {(["sales", "units"] as const).map((m) => {
       const on = value === m;

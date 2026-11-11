@@ -121,7 +121,7 @@ export const CTA_TONE: Record<ShareStanding, CtaTone> = {
     text: "text-delta_negative_text",
   },
   consistent: {
-    border: "border-gray-200",
+    border: "border-line_field",
     bg: "bg-gray-50",
     hoverBg: "hover:bg-gray-100",
     text: "text-content",

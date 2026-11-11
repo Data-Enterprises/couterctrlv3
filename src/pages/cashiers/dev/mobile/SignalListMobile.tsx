@@ -66,7 +66,7 @@ const SignalListMobile = ({
       <div className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── the scope ─────────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             {/* The exception is what the card is about, so it is the title
                 and opens the picker, as Loss Prevention's event type does. */}
             <PerfCardHeader
@@ -123,7 +123,7 @@ const SignalListMobile = ({
           </section>
 
           {/* ── the signals ───────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             <MobileSortChips
               label="Lens"
               options={LENSES.map((l) => ({ key: l.key, label: l.label }))}
@@ -134,7 +134,7 @@ const SignalListMobile = ({
             {explorerLoading ? (
               <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
                 <span
-                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line_field"
                   style={{ borderTopColor: TY_COLOR }}
                 />
                 Loading signals...

@@ -224,7 +224,7 @@ const ItemAnalysisPanel = ({
             pattern line because it's the answer; the pattern is the caveat. */}
         {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
+            <div className="rounded-lg border border-line_field bg-gray-50 px-3 py-2 flex gap-2 items-start">
               <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0 mt-px" />
               <p className="text-[13px] text-content leading-snug">{withheld}</p>
             </div>

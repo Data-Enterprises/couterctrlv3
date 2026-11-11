@@ -161,7 +161,7 @@ const StoreActivityComp = ({
               <button
                 data-help="missing-filter"
                 onClick={handleMissingClick}
-                className="text-[10px] font-medium text-brand_navy border border-gray-200 rounded-md px-2.5 py-1.5 flex-shrink-0"
+                className="text-[10px] font-medium text-brand_navy border border-line_field rounded-md px-2.5 py-1.5 flex-shrink-0"
               >
                 View all missing
               </button>

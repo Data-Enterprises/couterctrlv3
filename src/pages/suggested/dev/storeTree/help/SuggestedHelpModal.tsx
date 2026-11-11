@@ -90,7 +90,7 @@ const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
         ref={scroller}
         className="flex-1 overflow-y-auto thin-scrollbar bg-gray-50 px-5 py-5"
       >
-        <nav className="rounded-lg border border-gray-200 bg-custom-white shadow-md px-4 py-3.5 mb-4">
+        <nav className="rounded-lg border border-line_field bg-custom-white shadow-md px-4 py-3.5 mb-4">
           <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy mb-2.5">
             Questions
           </div>
@@ -121,7 +121,7 @@ const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
             // text into the tab order.
             tabIndex={-1}
             className={`rounded-lg border bg-custom-white shadow-md outline-none mb-4 transition-colors duration-700 ${
-              landed === sec.id ? "border-brand_navy/40" : "border-gray-200"
+              landed === sec.id ? "border-brand_navy/40" : "border-line_field"
             }`}
             style={{ scrollMarginTop: "0.5rem" }}
           >

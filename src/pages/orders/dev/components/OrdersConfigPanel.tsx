@@ -315,7 +315,7 @@ const OrdersConfigPanel = ({
                       className={`rounded-full border px-2.5 py-[3px] text-[10.5px] font-semibold transition-colors disabled:opacity-50 ${
                         on
                           ? FLAG_ON[flag]
-                          : "border-gray-200 bg-custom-white text-content/95 hover:border-content/35"
+                          : "border-line_field bg-custom-white text-content/95 hover:border-content/35"
                       }`}
                     >
                       {FLAG_LABEL[flag]} {n.toLocaleString()}

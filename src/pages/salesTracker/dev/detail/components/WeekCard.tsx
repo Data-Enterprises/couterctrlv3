@@ -60,7 +60,7 @@ const WeekCard = ({
     // clip, instead of the column scrolling.
     <div
       className={`flex-shrink-0 rounded-lg border overflow-hidden bg-custom-white ${
-        expanded ? "border-row_selected_border" : "border-gray-200"
+        expanded ? "border-row_selected_border" : "border-line_field"
       }`}
     >
       <button
@@ -234,7 +234,7 @@ const WeekCard = ({
           {/* Footer, so the days visibly add up to the line on the card header
               rather than asking the reader to take it on trust. */}
           <div
-            className="grid items-center gap-3 px-3.5 py-2 border-t border-gray-200 bg-gray-50"
+            className="grid items-center gap-3 px-3.5 py-2 border-t border-line_field bg-gray-50"
             style={{ gridTemplateColumns: DAY_GRID }}
           >
             <span className="text-[11px] font-semibold uppercase tracking-wide text-content">

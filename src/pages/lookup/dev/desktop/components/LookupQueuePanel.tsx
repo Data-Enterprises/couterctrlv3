@@ -161,7 +161,7 @@ const LookupQueuePanel = ({
               <div
                 className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                   item.status === "loading"
-                    ? "border-gray-200 border-t-brand_navy animate-spin"
+                    ? "border-line_field border-t-brand_navy animate-spin"
                     : "border-line_hair"
                 }`}
               />

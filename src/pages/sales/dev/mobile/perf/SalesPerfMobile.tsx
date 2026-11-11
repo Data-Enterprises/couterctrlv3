@@ -512,7 +512,7 @@ const SalesPerfMobile = () => {
             <section
               ref={groupOpen ? openCard : undefined}
               className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-                groupOpen ? "border-gray-300" : "border-gray-200"
+                groupOpen ? "border-gray-300" : "border-line_field"
               }`}
             >
               <PerfCardHeader
@@ -602,7 +602,7 @@ const SalesPerfMobile = () => {
 
           {/* ── the stores ──────────────────────────────────────── */}
           {visibleStores.length === 0 ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
+            <section className="rounded-2xl border border-line_field bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
               {storeFilter.trim()
                 ? `No store matches "${storeFilter.trim()}".`
                 : "Nothing recorded for this week."}

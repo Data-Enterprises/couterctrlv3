@@ -55,7 +55,7 @@ const StoreColumn = ({
                 disabled={pending.has(s.storeid)}
                 className={`w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold ${
                   adds ? "text-brand_navy" : "text-red-600"
-                } border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors`}
+                } border border-line_field hover:bg-gray-50 disabled:cursor-not-allowed transition-colors`}
               >
                 {adds ? "+" : "−"}
               </button>

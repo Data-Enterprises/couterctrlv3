@@ -57,7 +57,7 @@ const TrackerEntryCard = ({
           <span className="text-[12px] font-medium text-content">
             Or track back from the end date
           </span>
-          <div className="flex items-center rounded-lg overflow-hidden border border-gray-200">
+          <div className="flex items-center rounded-lg overflow-hidden border border-line_field">
             {WEEK_PRESETS.map((w) => (
               <button
                 key={w}

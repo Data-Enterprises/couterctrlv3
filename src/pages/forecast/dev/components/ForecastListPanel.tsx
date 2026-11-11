@@ -91,7 +91,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
             value={listFilter}
             onChange={(e) => dispatch(setListFilter(e.target.value))}
             placeholder="Filter…"
-            className="flex-1 text-[10px] rounded px-2 py-1 border border-gray-200 bg-gray-50 min-w-0"
+            className="flex-1 text-[10px] rounded px-2 py-1 border border-line_field bg-gray-50 min-w-0"
             style={{
               outline: "none",
               WebkitAppearance: "none",

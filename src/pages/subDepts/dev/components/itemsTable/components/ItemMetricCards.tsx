@@ -34,7 +34,7 @@ const ItemMetricCards = ({ reportRows, thresholdAmt }: ItemMetricCardsProps) => 
             <div className="text-[18px] font-semibold text-content leading-tight">
               {reportRows[0].ty}
             </div>
-            <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
+            <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-line_field">
               {(["lw", "ly"] as const).map((side) => (
                 <div key={side}>
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
@@ -83,7 +83,7 @@ const ItemMetricCards = ({ reportRows, thresholdAmt }: ItemMetricCardsProps) => 
           {reportRows.slice(1).map((row) => (
             <div
               key={row.key}
-              className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
+              className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-line_field text-[11.5px]"
             >
               <span className="font-semibold text-content truncate">
                 {row.label}

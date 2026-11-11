@@ -11,7 +11,7 @@ const EventLoading = () => {
     <div className="flex h-[calc(100dvh-3rem)] items-center justify-center bg-bkg px-8 text-center">
       <div>
         <div
-          className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-gray-200"
+          className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-line_field"
           style={{ borderTopColor: TY_COLOR }}
         />
         <div className="text-[12.5px] text-content/95">

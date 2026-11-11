@@ -41,7 +41,7 @@ const GradedItemsOption = ({ hasItems, checked, onToggle, itemSevs, onSev, basis
               className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
                 itemSevs.has(sev)
                   ? activeClass
-                  : "bg-custom-white border-gray-200 text-content"
+                  : "bg-custom-white border-line_field text-content"
               }`}
             >
               {label}

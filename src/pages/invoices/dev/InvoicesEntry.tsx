@@ -62,7 +62,7 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
           className={`w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-10 transition-colors ${
             dragging
               ? "border-brand_navy bg-filter_active"
-              : "border-gray-200 hover:border-brand_navy/40 hover:bg-gray-50"
+              : "border-line_field hover:border-brand_navy/40 hover:bg-gray-50"
           }`}
         >
           <DocumentArrowUpIcon className="w-6 h-6 text-brand_navy" />

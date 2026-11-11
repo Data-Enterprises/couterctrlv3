@@ -17,7 +17,7 @@ const DayScopePicker = ({ weekDates, exportDays, onAll, onToggle }: DayScopePick
         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
           exportDays.size === 0
             ? "bg-brand_navy border-brand_navy text-custom-white"
-            : "bg-custom-white border-gray-200 text-content"
+            : "bg-custom-white border-line_field text-content"
         }`}
       >
         All week
@@ -29,7 +29,7 @@ const DayScopePicker = ({ weekDates, exportDays, onAll, onToggle }: DayScopePick
           className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
             exportDays.has(iso)
               ? "bg-brand_navy border-brand_navy text-custom-white"
-              : "bg-custom-white border-gray-200 text-content"
+              : "bg-custom-white border-line_field text-content"
           }`}
         >
           {fmtDayLabel(iso)}

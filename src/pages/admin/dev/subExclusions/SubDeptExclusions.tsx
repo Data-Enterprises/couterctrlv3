@@ -377,7 +377,7 @@ const SubDeptExclusions = () => {
           className={`text-[11.5px] font-medium px-3 py-1.5 rounded-md flex-shrink-0 border transition-colors ${
             hashOnly
               ? "bg-brand_navy border-brand_navy text-custom-white"
-              : "bg-custom-white border-gray-200 text-content hover:bg-gray-50"
+              : "bg-custom-white border-line_field text-content hover:bg-gray-50"
           }`}
         >
           Likely hash{suggestedLeft > 0 ? ` (${suggestedLeft})` : ""}

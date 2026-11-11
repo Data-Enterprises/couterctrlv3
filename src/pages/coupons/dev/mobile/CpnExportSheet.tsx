@@ -256,7 +256,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       value={sel.fn}
                       disabled={!sel.enabled}
                       onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                      className="text-[10px] border border-gray-200 rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
+                      className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>

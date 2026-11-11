@@ -84,7 +84,7 @@ const WorkingPopover = ({
         left: Math.min(x, window.innerWidth - 340),
         zIndex: 9999,
       }}
-      className="w-[320px] bg-custom-white border border-gray-200 rounded-lg shadow-xl overflow-hidden"
+      className="w-[320px] bg-custom-white border border-line_field rounded-lg shadow-xl overflow-hidden"
     >
       <div
         className="px-3 py-2 flex items-start justify-between gap-2"
@@ -118,7 +118,7 @@ const WorkingPopover = ({
         days.map((d) => <Row key={d.iso} k={d.label} v={`${fmtLb(d.lb)} lb`} soft />)
       )}
 
-      <div className="border-t border-gray-200">
+      <div className="border-t border-line_field">
         <Row k="Cover demand" v={`${fmtLb(demand)} lb`} />
         {drift && (
           <div className="px-3 pb-1 text-[12px] text-content/95 leading-snug">
@@ -171,7 +171,7 @@ const WorkingPopover = ({
       </div>
 
       {action && (
-        <div className="px-3 py-2.5 border-t border-gray-200 bg-gray-50">
+        <div className="px-3 py-2.5 border-t border-line_field bg-gray-50">
           <div className="flex items-center gap-2 mb-1.5">
             <span
               className={`inline-block px-1.5 py-0.5 rounded text-[12px] font-semibold ${ACTION_TONE[action.tone].chip}`}

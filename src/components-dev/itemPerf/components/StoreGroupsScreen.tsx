@@ -69,7 +69,7 @@ const StoreGroupsScreen = () => {
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
       {perf.storeNumbers.length > 1 && (
-        <div className="flex-shrink-0 border-b border-gray-200 bg-custom-white">
+        <div className="flex-shrink-0 border-b border-line_field bg-custom-white">
           <MobileSortChips
             label="Location"
             options={perf.storeNumbers.map((n) => ({
@@ -89,7 +89,7 @@ const StoreGroupsScreen = () => {
           {/* Not a card in the accordion: the store's breakdown IS the list
               under it, so there is nothing for it to open. It carries the
               page's controls because there is nowhere above it for them. */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             <PerfCardHeader
               title={storeName}
               label={scopeLabel}
@@ -113,14 +113,14 @@ const StoreGroupsScreen = () => {
           <button
             type="button"
             onClick={() => dispatch(openItemSearch(true))}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-custom-white py-3 text-[12.5px] font-bold text-content shadow-md active:bg-bkg"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-line_field bg-custom-white py-3 text-[12.5px] font-bold text-content shadow-md active:bg-bkg"
           >
             <MagnifyingGlassIcon className="h-4 w-4 text-content/95" />
             Find an item or scan
           </button>
 
           {/* ── the groups ──────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             <MobileSortChips
               options={sorts(sizeLabel)}
               value={activeSort?.key ?? null}
@@ -161,13 +161,13 @@ const StoreGroupsScreen = () => {
 
           {building ? (
             <section
-              className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
+              className="rounded-2xl border border-line_field bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
               style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
             >
               Building the list...
             </section>
           ) : shown.length === 0 ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
+            <section className="rounded-2xl border border-line_field bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
               {groupFilter.trim()
                 ? `Nothing matches "${groupFilter.trim()}".`
                 : "Nothing recorded for this selection."}

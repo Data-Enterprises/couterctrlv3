@@ -51,7 +51,7 @@ const FinancialsOptions = ({
           value={from}
           max={to}
           onChange={(e) => onFromChange(e.target.value)}
-          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+          className="text-[11.5px] px-2 py-1 rounded-md border border-line_field text-content bg-custom-white"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -63,7 +63,7 @@ const FinancialsOptions = ({
           value={to}
           min={from}
           onChange={(e) => onToChange(e.target.value)}
-          className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+          className="text-[11.5px] px-2 py-1 rounded-md border border-line_field text-content bg-custom-white"
         />
       </div>
       <button

@@ -270,7 +270,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                     className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
                       scope === sc.key
                         ? "border-brand_navy bg-row_selected text-content"
-                        : "border-gray-200 text-content hover:border-gray-300"
+                        : "border-line_field text-content hover:border-gray-300"
                     }`}
                   >
                     {sc.label}
@@ -383,7 +383,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                               return next;
                             })
                           }
-                          className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
+                          className="text-[10px] border border-line_field rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                           style={{ minWidth: 52 }}
                         >
                           {AGG_OPTIONS.map((o) => (

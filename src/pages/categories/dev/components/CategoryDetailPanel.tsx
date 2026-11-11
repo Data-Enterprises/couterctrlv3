@@ -425,7 +425,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                 Thresh
               </button>
               {threshOpen && (
-                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20">
+                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-line_field bg-custom-white shadow-lg z-20">
                   <div className="flex items-center gap-2">
                     <ThresholdSlider
                       value={threshold}
@@ -449,7 +449,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
           <div className="overflow-y-auto thin-scrollbar flex-1">
             {loadingHourly ? (
               <div className="flex items-center justify-center gap-2 h-24">
-                <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-line_field border-t-brand_navy rounded-full animate-spin" />
                 <span className="text-[11px] text-content">Loading hours…</span>
               </div>
             ) : shown.length === 0 ? (

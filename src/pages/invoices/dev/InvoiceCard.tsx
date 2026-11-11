@@ -120,7 +120,7 @@ const InvoiceCard = ({
   return (
     <section
       className={`overflow-hidden rounded-xl border bg-custom-white shadow-sm ${
-        open ? "border-gray-300" : "border-gray-200"
+        open ? "border-gray-300" : "border-line_field"
       }`}
     >
       {/* The whole visible card opens it — header and figures — not just
@@ -251,8 +251,8 @@ const InvoiceCard = ({
               </p>
             )}
             {row.checks.length > 0 && (
-              <div className="overflow-hidden rounded border border-gray-200">
-                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
+              <div className="overflow-hidden rounded border border-line_field">
+                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-line_field bg-gray-50 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                   <span>Check</span>
                   <span className="text-right">Derived</span>
                   <span className="text-right">Reported</span>
@@ -309,7 +309,7 @@ const InvoiceCard = ({
               <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Exceptions
               </div>
-              <div className="overflow-hidden rounded border border-gray-200">
+              <div className="overflow-hidden rounded border border-line_field">
                 {row.exceptions.map((exception, index) => (
                   <div
                     key={index}
@@ -345,7 +345,7 @@ const InvoiceCard = ({
               <div className="overflow-x-auto">
                 <div className="min-w-[788px]">
                   <div
-                    className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[11px] uppercase tracking-wider text-content"
+                    className="grid gap-2.5 border-b border-line_field pb-1.5 font-mono text-[11px] uppercase tracking-wider text-content"
                     style={{ gridTemplateColumns: LINE_COLS }}
                   >
                     <span>#</span>

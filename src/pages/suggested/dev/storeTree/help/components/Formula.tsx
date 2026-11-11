@@ -8,8 +8,8 @@
  *     suggested_weight = demand(cover window, by weekday) x shrink - on_hand
  */
 const Formula = () => (
-  <div className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
-    <div className="px-3.5 py-3 border-b border-gray-200 bg-custom-white">
+  <div className="rounded-lg border border-line_field bg-gray-50 overflow-hidden">
+    <div className="px-3.5 py-3 border-b border-line_field bg-custom-white">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px] tabular-nums">
         <span className="font-bold text-brand_navy">Suggested weight</span>
         <span className="text-content/95">=</span>
@@ -20,7 +20,7 @@ const Formula = () => (
         <span className="font-semibold text-content">stock on hand</span>
       </div>
     </div>
-    <dl className="m-0 divide-y divide-gray-200">
+    <dl className="m-0 divide-y divide-line_field">
       {[
         {
           t: "demand",
@@ -45,7 +45,7 @@ const Formula = () => (
         </div>
       ))}
     </dl>
-    <div className="px-3.5 py-2.5 border-t border-gray-200 text-[13px] leading-snug text-content/95">
+    <div className="px-3.5 py-2.5 border-t border-line_field text-[13px] leading-snug text-content/95">
       The result is floored at zero — the model never asks for a negative order.
     </div>
   </div>

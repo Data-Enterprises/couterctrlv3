@@ -156,7 +156,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
           {s.weekRows.map(({ week, row }, wi) => (
             <div
               key={week}
-              className="grid gap-1 items-center py-1 border-t border-gray-200"
+              className="grid gap-1 items-center py-1 border-t border-line_field"
               style={{ gridTemplateColumns: WEEK_GRID }}
             >
               <span className="text-[13px] text-content/95 truncate">

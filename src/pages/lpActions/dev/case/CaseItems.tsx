@@ -108,7 +108,7 @@ const CaseItems = ({ items, loading, error, showAll, onToggleAll }: Props) => {
           </span>
           <button
             onClick={onToggleAll}
-            className="text-[11.5px] font-medium px-2 py-0.5 rounded border border-gray-200 text-content hover:bg-gray-50 transition-colors"
+            className="text-[11.5px] font-medium px-2 py-0.5 rounded border border-line_field text-content hover:bg-gray-50 transition-colors"
           >
             {showAll ? "Movers only" : `All ${items.length} items`}
           </button>

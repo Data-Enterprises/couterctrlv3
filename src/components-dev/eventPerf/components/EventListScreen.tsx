@@ -83,13 +83,13 @@ const EventListScreen = ({
           {multiStore &&
             (listBuilding ? (
               <section
-                className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
+                className="rounded-2xl border border-line_field bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
                 style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
               >
                 Building the list...
               </section>
             ) : listRows.length === 0 ? (
-              <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
+              <section className="rounded-2xl border border-line_field bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
                 {storeFilter.trim()
                   ? `No store matches "${storeFilter.trim()}".`
                   : "Nothing recorded for this selection."}
@@ -109,7 +109,7 @@ const EventListScreen = ({
             <button
               type="button"
               onClick={() => dispatch(showMoreEvents())}
-              className="rounded-2xl border border-gray-200 bg-custom-white py-3 text-center text-[12px] font-semibold shadow-md active:bg-bkg"
+              className="rounded-2xl border border-line_field bg-custom-white py-3 text-center text-[12px] font-semibold shadow-md active:bg-bkg"
               style={{ color: TY_COLOR }}
             >
               Show {ROWS_PER_PAGE} more

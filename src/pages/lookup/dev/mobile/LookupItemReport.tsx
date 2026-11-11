@@ -143,7 +143,7 @@ const LookupItemReport = ({
         {/* ── what is being read, and through which lens ─────────── */}
         <section
           data-testid="lookup-header"
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
+          className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md"
         >
           {/* One block: the item is the title, the store and window qualify
               it, and the page's controls live on this card. */}
@@ -247,7 +247,7 @@ const LookupItemReport = ({
         {/* ── the window, and the figure it comes to ─────────────── */}
         <section
           data-testid="lookup-headline"
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
+          className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md"
         >
           {isNegative && (
             <p className="border-b border-line_hair bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
@@ -390,7 +390,7 @@ const LookupItemReport = ({
         {/* ── the days ───────────────────────────────────────────── */}
         <section
           data-testid="lookup-days"
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
+          className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md"
         >
           <div className="flex items-baseline justify-between gap-2 px-3.5 pb-1.5 pt-2.5">
             <span className="font-display text-[13.5px] font-semibold text-content">

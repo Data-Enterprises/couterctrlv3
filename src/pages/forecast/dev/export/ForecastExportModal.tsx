@@ -120,7 +120,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
             className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
               on
                 ? "bg-brand_navy border-brand_navy text-custom-white"
-                : "bg-custom-white border-gray-200 text-content"
+                : "bg-custom-white border-line_field text-content"
             }`}
           >
             {TIER_LABEL[tier]} ({tierCountsFor[tier]})

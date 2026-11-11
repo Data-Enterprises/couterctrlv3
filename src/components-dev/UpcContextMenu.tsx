@@ -54,7 +54,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
       ref={menuRef}
       data-testid="upc-ctx-menu"
       style={{ position: "fixed", top: y, left: x, zIndex: 9999 }}
-      className="bg-custom-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[190px]"
+      className="bg-custom-white border border-line_field rounded-lg shadow-lg py-1 min-w-[190px]"
     >
       {upc && (
         <div className="px-3 py-1.5 border-b border-line_hair">

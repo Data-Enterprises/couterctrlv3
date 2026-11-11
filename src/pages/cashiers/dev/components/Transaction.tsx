@@ -300,7 +300,7 @@ const Transaction = ({ trans }: TransactionProps) => {
                 </span>
               </div>
             )}
-            <div className="border-t border-dashed border-gray-200 mt-1 pt-1.5 flex justify-between">
+            <div className="border-t border-dashed border-line_field mt-1 pt-1.5 flex justify-between">
               <span className="text-[11px] font-semibold text-content">
                 Total
               </span>

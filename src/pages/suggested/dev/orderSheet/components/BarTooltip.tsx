@@ -35,7 +35,7 @@ const BarTooltip = ({ xPct, title, rows }: BarTooltipProps) => {
         transform: `translateX(${shift})`,
       }}
     >
-      <div className="rounded border border-gray-200 bg-custom-white shadow-lg px-2.5 py-2 min-w-[132px]">
+      <div className="rounded border border-line_field bg-custom-white shadow-lg px-2.5 py-2 min-w-[132px]">
         <div className="text-[12px] font-semibold text-content whitespace-nowrap">
           {title}
         </div>

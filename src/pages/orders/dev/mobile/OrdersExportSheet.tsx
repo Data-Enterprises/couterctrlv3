@@ -330,7 +330,7 @@ const OrdersExportSheet = ({
                       className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                         presetSubDepts.has(s.id)
                           ? "bg-brand_navy text-custom-white border-brand_navy"
-                          : "bg-custom-white text-content border-gray-200"
+                          : "bg-custom-white text-content border-line_field"
                       }`}
                     >
                       {s.id}
@@ -417,7 +417,7 @@ const OrdersExportSheet = ({
                       value={sel.fn}
                       disabled={!sel.enabled}
                       onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                      className="text-[10px] border border-gray-200 rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
+                      className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>

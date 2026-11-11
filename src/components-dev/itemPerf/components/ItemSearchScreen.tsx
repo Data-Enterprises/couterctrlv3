@@ -55,7 +55,7 @@ const ItemSearchScreen = () => {
   };
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
-      <header className="flex-shrink-0 border-b border-gray-200 bg-custom-white px-3 pb-2.5 pt-2">
+      <header className="flex-shrink-0 border-b border-line_field bg-custom-white px-3 pb-2.5 pt-2">
         <button
           type="button"
           onClick={() => dispatch(openItemSearch(false))}
@@ -136,7 +136,7 @@ const ItemSearchScreen = () => {
       <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {perf.scannerOpen && (
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white p-3 shadow-md">
+            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white p-3 shadow-md">
               <ScannerView onDetected={(upc) => dispatch(scannedUpc(upc))} />
             </section>
           )}
@@ -145,7 +145,7 @@ const ItemSearchScreen = () => {
               few items through a shift should not retype a UPC, and a list
               of every item in the store is not a useful thing to land on. */}
           {!query && recents.length > 0 && (
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
               <div className="px-3.5 pb-1 pt-3 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
                 Recent items
               </div>
@@ -166,7 +166,7 @@ const ItemSearchScreen = () => {
           )}
 
           {!query ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-5 py-7 text-center shadow-md">
+            <section className="rounded-2xl border border-line_field bg-custom-white px-5 py-7 text-center shadow-md">
               <p className="text-[13px] font-semibold text-content">
                 Search the whole store
               </p>
@@ -176,7 +176,7 @@ const ItemSearchScreen = () => {
               </p>
             </section>
           ) : (
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
                 <MarginRowList
                   onRow={(r) => dispatch(selectPerfItem(r.key))}
                   emptyText={`Nothing matches "${query}".`}

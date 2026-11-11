@@ -32,14 +32,14 @@ const ItemListToolbar = ({
       onChange={(e) => setSearch(e.target.value)}
       placeholder="Search item or UPC…"
       aria-label="Search items"
-      className="flex-1 min-w-[90px] text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
+      className="flex-1 min-w-[90px] text-[11.5px] px-2 py-1 rounded-md border border-line_field bg-custom-white text-content"
     />
     {depts.length > 1 && (
       <select
         value={dept}
         onChange={(e) => setDept(e.target.value)}
         aria-label="Filter by sub department"
-        className="flex-shrink-0 max-w-[170px] text-[11.5px] pl-1.5 pr-5 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
+        className="flex-shrink-0 max-w-[170px] text-[11.5px] pl-1.5 pr-5 py-1 rounded-md border border-line_field bg-custom-white text-content"
       >
         <option value="">All sub depts</option>
         {depts.map((d) => (

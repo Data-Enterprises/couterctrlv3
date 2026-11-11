@@ -47,7 +47,7 @@ const SubDeptItemsOption = ({
             className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
               sevs.has(sev)
                 ? activeClass
-                : "bg-custom-white border-gray-200 text-content"
+                : "bg-custom-white border-line_field text-content"
             }`}
           >
             {label}

@@ -86,7 +86,7 @@ const ColFilter = ({
                   onClear();
                   setOpen(false);
                 }}
-                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
+                className="px-2 rounded py-1 text-[10px] text-content border border-line_field hover:text-content transition-colors"
               >
                 Clear
               </button>

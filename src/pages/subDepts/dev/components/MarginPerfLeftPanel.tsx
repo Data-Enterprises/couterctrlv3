@@ -397,7 +397,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-line_hair flex flex-col">
         {loadingGrades && grades.length === 0 ? (
           <div className="flex-1 flex items-center justify-center gap-2">
-            <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-line_field border-t-brand_navy rounded-full animate-spin" />
             <span className="text-[11px] text-content">Grading sub departments…</span>
           </div>
         ) : (

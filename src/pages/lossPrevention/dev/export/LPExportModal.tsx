@@ -287,7 +287,7 @@ const LPExportModal = ({
                         key={sev}
                         onClick={() => toggleCashierSev(sev)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          cashierSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content/95"
+                          cashierSevs.has(sev) ? activeClass : "bg-custom-white border-line_field text-content/95"
                         }`}
                       >
                         {label}
@@ -375,7 +375,7 @@ const LPExportModal = ({
                             value={sel.fn}
                             disabled={!sel.enabled}
                             onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
+                            className="text-[10px] border border-line_field rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (

@@ -99,7 +99,7 @@ const CpnStoreList = ({
       {/* pb-14 clears the fixed bottom tab bar. */}
       <div className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             <PerfCardHeader
               title="Coupons"
               label={groupName}
@@ -112,7 +112,7 @@ const CpnStoreList = ({
 
           <CpnTotalsCard coupons={coupons} caption="Coupon value this week" />
 
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
             <CpnListControls
               value={sortMetric}
               onChange={onSortMetric}

@@ -49,7 +49,7 @@ const ThresholdChip = ({ value, onChange, ariaLabel }: ThresholdChipProps) => {
       {open && (
         <div
           ref={popRef}
-          className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+          className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-line_field bg-custom-white shadow-lg z-20"
         >
           <div className="flex items-center gap-2">
             <ThresholdSlider

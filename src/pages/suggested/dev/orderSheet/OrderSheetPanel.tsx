@@ -440,7 +440,7 @@ const OrderSheetPanel = () => {
                   className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
                     ctx.actionFilter === "all"
                       ? "bg-brand_navy text-custom-white"
-                      : "bg-custom-white text-content/95 border border-gray-200"
+                      : "bg-custom-white text-content/95 border border-line_field"
                   }`}
                 >
                   All <span className="tabular-nums">{filtered.length}</span>

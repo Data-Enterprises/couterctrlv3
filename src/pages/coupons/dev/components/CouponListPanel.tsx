@@ -184,7 +184,7 @@ const CouponListPanel = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search stores…"
-            className="w-full text-[11px] text-content px-2.5 py-1.5 rounded-md bg-gray-50 border border-gray-200 placeholder:text-content/35"
+            className="w-full text-[11px] text-content px-2.5 py-1.5 rounded-md bg-gray-50 border border-line_field placeholder:text-content/35"
             style={{
               outline: "none",
               WebkitAppearance: "none",

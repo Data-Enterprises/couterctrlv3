@@ -6,8 +6,8 @@ interface ExampleProps {
 /** A worked example: label on the left, figure on the right, one row emphasised
  *  as the answer. */
 const Example = ({ head, rows }: ExampleProps) => (
-  <div className="border border-gray-200 rounded-lg overflow-hidden bg-custom-white">
-    <div className="px-3.5 py-2.5 border-b border-gray-200 bg-gray-50 text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy">
+  <div className="border border-line_field rounded-lg overflow-hidden bg-custom-white">
+    <div className="px-3.5 py-2.5 border-b border-line_field bg-gray-50 text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy">
       {head}
     </div>
     {rows.map((r) => (

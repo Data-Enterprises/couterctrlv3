@@ -133,7 +133,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                 className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                   on
                     ? "bg-brand_navy text-custom-white border-brand_navy"
-                    : "bg-custom-white text-content/95 border-gray-200 hover:border-gray-300"
+                    : "bg-custom-white text-content/95 border-line_field hover:border-gray-300"
                 }`}
               >
                 {s.label} · {counts[s.key].toLocaleString()}

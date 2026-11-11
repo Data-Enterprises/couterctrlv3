@@ -67,7 +67,7 @@ import type { InvoiceEdit } from "./vendors/awg/applyEdit";
 /**
  * The filter row's pills, in the house filter dress.
  *
- * They wore `border-gray-200`, which reads as no border at all beside the
+ * They wore `border-line_field`, which reads as no border at all beside the
  * controls in `components-dev/filters` -- those carry a navy hairline idle
  * and the `filter_active` tint with a ring when they are narrowing something.
  * Same tokens here, so the row looks like every other filter row.
@@ -373,7 +373,7 @@ const AwgInvoices = () => {
     >
       <div className="mx-auto flex h-full max-w-[1180px] flex-col gap-3">
         {/* ── the file, and what to do with it ───────────────────── */}
-        <section className="flex-none overflow-hidden rounded-xl border border-gray-200 bg-custom-white shadow-sm">
+        <section className="flex-none overflow-hidden rounded-xl border border-line_field bg-custom-white shadow-sm">
           <div className="flex items-center gap-2 px-3.5 pt-3">
             {/* A document, not a magnifier: this loads a file, it does not
                 search for one. */}
@@ -382,7 +382,7 @@ const AwgInvoices = () => {
               onClick={() => fileInputRef.current?.click()}
               aria-label="Read another file"
               title="Read another file — or drop one anywhere on this page"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 hover:bg-bkg"
+              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-line_field text-content/95 hover:bg-bkg"
             >
               <DocumentArrowUpIcon className="h-3.5 w-3.5" />
             </button>
@@ -476,7 +476,7 @@ const AwgInvoices = () => {
                 className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
                   nothingBilledOnly
                     ? "border-brand_navy bg-brand_navy text-custom-white"
-                    : "border-gray-200 bg-custom-white text-content/95"
+                    : "border-line_field bg-custom-white text-content/95"
                 }`}
               >
                 Nothing billed ({nothingBilledCount})
@@ -613,7 +613,7 @@ const AwgInvoices = () => {
             ))}
 
             {visible.length === 0 && (
-              <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/95">
+              <p className="rounded-xl border border-line_field bg-custom-white px-4 py-8 text-center text-[13px] text-content/95">
                 {nothingBilledOnly && (failedOnly || overTenCentsOnly)
                   ? "Invoices that billed nothing have nothing to check."
                   : overTenCentsOnly

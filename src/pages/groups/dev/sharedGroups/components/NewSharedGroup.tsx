@@ -52,7 +52,7 @@ const NewSharedGroup = ({ onCreate, onCancel }: NewSharedGroupProps) => {
       <div className="flex justify-end gap-2 mt-3">
         <button
           onClick={onCancel}
-          className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-gray-200 text-content"
+          className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-line_field text-content"
         >
           Cancel
         </button>
