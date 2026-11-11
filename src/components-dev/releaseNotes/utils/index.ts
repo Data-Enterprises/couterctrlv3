@@ -1,70 +1,70 @@
+// Utils
+import {
+  KIND_TITLE,
+  type NoteKind,
+  type Release,
+  type ReleaseNote,
+  type SmallerFixes,
+} from "../../../content/releaseNotes";
+
 // Interfaces
-import type { SectionKey } from "../interfaces";
 import type { ComponentType } from "react";
-import type { Release } from "../../../content/releaseNotes";
+import type { Filter, SummaryRow } from "../interfaces";
 
 // Components
 import {
-  ArrowUpCircleIcon,
-  GlobeAltIcon,
+  ArrowUpIcon,
   SparklesIcon,
-  WrenchScrewdriverIcon,
+  WrenchIcon,
 } from "@heroicons/react/20/solid";
 
+/** How long the panel takes to slide in or out. */
+export const SLIDE_MS = 200;
+
 /**
- * How each section reads at a glance: an icon and a tint, so the four can be
- * told apart before a word is read. Brand and filter tints only — none of these
- * is a grade, so the severity and delta families stay out of it.
+ * Each kind's icon and tile, so a row says what it is before it is read.
+ * Navy only: none of these is a grade, so the severity and delta families
+ * stay out of it.
  */
-export const LOOK: Record<
-  SectionKey,
-  { Icon: ComponentType<{ className?: string }>; tile: string; chip: string }
+export const KIND_LOOK: Record<
+  NoteKind,
+  { Icon: ComponentType<{ className?: string }>; tile: string }
 > = {
-  platform: {
-    Icon: GlobeAltIcon,
-    tile: "bg-brand_navy text-custom-white",
-    chip: "bg-row_selected text-content",
+  new: { Icon: SparklesIcon, tile: "bg-brand_navy text-custom-white" },
+  improvement: {
+    Icon: ArrowUpIcon,
+    tile: "bg-brand_navy/[0.08] text-brand_navy",
   },
-  nowAvailable: {
-    Icon: SparklesIcon,
-    tile: "bg-brand_green_tint text-brand_green_darker",
-    chip: "bg-brand_green_tint text-brand_green_darker",
-  },
-  updates: {
-    Icon: ArrowUpCircleIcon,
-    tile: "bg-filter_active text-brand_navy_hover",
-    chip: "bg-filter_active text-brand_navy_hover",
-  },
-  fixes: {
-    Icon: WrenchScrewdriverIcon,
-    tile: "bg-row_selected text-brand_slate",
-    chip: "bg-row_selected text-content",
-  },
+  fix: { Icon: WrenchIcon, tile: "border border-brand_line text-brand_navy" },
 };
 
-/** Short month names, for the rail's dates. */
-export const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+/** The chips across the top, All first. */
+export const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "new", label: KIND_TITLE.new },
+  { key: "improvement", label: KIND_TITLE.improvement },
+  { key: "fix", label: KIND_TITLE.fix },
 ];
 
-/** "Nov 2" and "2026" for the rail, from the string rather than a `Date`. */
-export const railDate = (date: string) => {
-  const [y, m, d] = date.split("-");
-  return { day: `${MONTHS[Number(m) - 1] ?? m} ${Number(d)}`, year: y };
-};
+/** "And 7 smaller fixes." */
+export const smallerText = (n: number) =>
+  `And ${n} smaller fix${n === 1 ? "" : "es"}.`;
 
-/** How many things a section holds: pages for the page sections, bullets
- *  for Platform Updates, which has no pages. */
-export const countOf = (release: Release, key: SectionKey) =>
-  key === "platform" ? release.platform.length : release[key].length;
+/** A note's page label, saying when the page itself is new. */
+export const pageLabel = (n: ReleaseNote) =>
+  n.newPage ? `${n.page} · new page` : n.page;
+
+/** The release picker's label for one release. */
+export const releaseLabel = (r: Release, latest: boolean) =>
+  latest ? `${r.dateText} · Latest` : r.dateText;
+
+/** The Fixes section's closing row: every page's smaller fixes, counted
+ *  together. Null when there are none. */
+export const smallerRow = (list: SmallerFixes[]): SummaryRow | null => {
+  const count = list.reduce((n, s) => n + s.count, 0);
+  if (count === 0) return null;
+  return {
+    page: list.length === 1 ? list[0].page : `${list.length} pages`,
+    text: smallerText(count),
+  };
+};

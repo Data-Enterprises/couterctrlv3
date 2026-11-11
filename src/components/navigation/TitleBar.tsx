@@ -14,7 +14,7 @@ import type { JsonError } from "../../interfaces";
 
 // Components
 import SignInAsModal from "../../components-dev/SignInAsModal";
-import ReleaseNotesModal from "../../components-dev/releaseNotes/ReleaseNotesModal";
+import ReleaseNotesPanel from "../../components-dev/releaseNotes/ReleaseNotesPanel";
 import AvatarDropdown from "./components/AvatarDropdown";
 import MobileBottomNav from "./mobile/MobileBottomNav";
 import CategoryNavList from "./components/CategoryNavList";
@@ -96,7 +96,7 @@ const TitleBar = () => {
       )}
 
       {releaseNotesOpen && (
-        <ReleaseNotesModal
+        <ReleaseNotesPanel
           releases={SAMPLE_RELEASES}
           sample
           href={currentPath}
