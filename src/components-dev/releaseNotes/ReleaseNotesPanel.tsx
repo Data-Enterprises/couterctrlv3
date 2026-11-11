@@ -10,7 +10,7 @@ import {
   type NoteKind,
   type Release,
 } from "../../content/releaseNotes";
-import { SLIDE_MS, smallerRow } from "./utils";
+import { SLIDE_MS, filterCounts, smallerRow } from "./utils";
 
 // Interfaces
 import type { Filter } from "./interfaces";
@@ -114,6 +114,7 @@ const ReleaseNotesPanel = ({
         onDate={setDate}
         filter={filter}
         onFilter={setFilter}
+        counts={filterCounts(release)}
         sample={sample}
         onClose={close}
       />

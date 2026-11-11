@@ -77,8 +77,9 @@ describe("ReleaseNotesPanel", () => {
 
   it("shows one kind alone, opened, when its chip is picked", async () => {
     show("sales", "Sales");
-    await userEvent.click(screen.getByRole("button", { name: "Improvements" }));
-    expect(screen.getByRole("button", { name: "Improvements" }).getAttribute("aria-pressed")).toBe("true");
+    const chip = screen.getByRole("button", { name: "Improvements 1" });
+    await userEvent.click(chip);
+    expect(chip.getAttribute("aria-pressed")).toBe("true");
     expect(findSection(/^New/)).toBeNull();
     expect(findSection(/^Fixes/)).toBeNull();
     expect(screen.getByText("Pop-ups blur the page behind them.")).toBeTruthy();
@@ -94,6 +95,15 @@ describe("ReleaseNotesPanel", () => {
     expect(screen.getByTestId("release-notes-here").textContent).toContain(
       "The LW / LY pill names its figures.",
     );
+  });
+
+  it("counts each chip's rows, All being every row", () => {
+    show("sales", "Sales");
+    const chips = within(screen.getByRole("group", { name: "Show" }));
+    // New 2, Improvements 1, Fixes 1 note plus the smaller-fixes row.
+    expect(chips.getByRole("button", { name: "All 5" })).toBeTruthy();
+    expect(chips.getByRole("button", { name: "New 2" })).toBeTruthy();
+    expect(chips.getByRole("button", { name: "Fixes 2" })).toBeTruthy();
   });
 
   it("marks the latest release in the picker", () => {

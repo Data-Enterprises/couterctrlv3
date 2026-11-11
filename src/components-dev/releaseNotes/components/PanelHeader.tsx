@@ -14,6 +14,8 @@ interface PanelHeaderProps {
   onDate: (date: string) => void;
   filter: Filter;
   onFilter: (filter: Filter) => void;
+  /** Each chip's count for the release showing. */
+  counts: Record<Filter, number>;
   sample: boolean;
   onClose: () => void;
 }
@@ -25,6 +27,7 @@ const PanelHeader = ({
   onDate,
   filter,
   onFilter,
+  counts,
   sample,
   onClose,
 }: PanelHeaderProps) => (
@@ -59,7 +62,7 @@ const PanelHeader = ({
         <select
           value={date}
           onChange={(e) => onDate(e.target.value)}
-          className="h-[34px] flex-1 rounded-lg border border-brand_line bg-brand_paper px-2.5 text-[13px] font-medium text-content outline-none focus:border-brand_navy"
+          className="h-[34px] flex-1 rounded-lg border border-brand_line bg-brand_paper py-0 pl-2.5 pr-9 text-[13px] font-medium text-content outline-none focus:border-brand_navy"
         >
           {releases.map((r, i) => (
             <option key={r.date} value={r.date}>
@@ -79,13 +82,21 @@ const PanelHeader = ({
             type="button"
             aria-pressed={on}
             onClick={() => onFilter(f.key)}
-            className={`h-[30px] rounded-full border px-3 text-[12.5px] font-semibold transition-colors ${
+            className={`inline-flex h-[30px] items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-semibold transition-colors ${
               on
                 ? "border-brand_navy bg-brand_navy text-custom-white"
                 : "border-brand_line bg-brand_paper text-content hover:border-brand_line_2"
             }`}
           >
-            {f.label}
+            {f.Icon ? <f.Icon aria-hidden className="h-3.5 w-3.5" /> : null}
+            {f.label}{" "}
+            <span
+              className={`rounded-full px-1.5 text-[11px] tabular-nums ${
+                on ? "bg-custom-white/20" : "bg-brand_navy/[0.08]"
+              }`}
+            >
+              {counts[f.key]}
+            </span>
           </button>
         );
       })}

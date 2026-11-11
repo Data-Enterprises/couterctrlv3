@@ -17,28 +17,22 @@ const NoteRow = ({ kind, text, page, ruled }: NoteRowProps) => {
   const { Icon, tile } = KIND_LOOK[kind];
   return (
     <li
-      className={`flex items-start gap-3 px-3.5 py-2.5 ${
+      className={`flex items-center gap-3 px-3.5 py-2.5 ${
         ruled ? "border-t border-brand_line" : ""
       }`}
     >
       <span
         aria-hidden
-        className={`flex h-[30px] w-[30px] flex-none items-center justify-center rounded-lg ${tile}`}
+        className={`flex h-[26px] w-[26px] flex-none items-center justify-center rounded-md ${tile}`}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="min-w-0">
         <span className="sr-only">{KIND_TITLE[kind]}: </span>
         {page ? (
           <div className="cc-caps text-[11.5px] text-brand_slate">{page}</div>
         ) : null}
-        <p
-          className={`m-0 text-[13.5px] leading-normal text-content ${
-            page ? "" : "pt-[5px]"
-          }`}
-        >
-          {text}
-        </p>
+        <p className="m-0 text-[13.5px] leading-normal text-content">{text}</p>
       </div>
     </li>
   );

@@ -38,12 +38,16 @@ export const KIND_LOOK: Record<
   fix: { Icon: WrenchIcon, tile: "border border-brand_line text-brand_navy" },
 };
 
-/** The chips across the top, All first. */
-export const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "new", label: KIND_TITLE.new },
-  { key: "improvement", label: KIND_TITLE.improvement },
-  { key: "fix", label: KIND_TITLE.fix },
+/** The chips across the top, All first; each kind's chip carries its icon. */
+export const FILTERS: {
+  key: Filter;
+  label: string;
+  Icon: ComponentType<{ className?: string }> | null;
+}[] = [
+  { key: "all", label: "All", Icon: null },
+  { key: "new", label: KIND_TITLE.new, Icon: SparklesIcon },
+  { key: "improvement", label: KIND_TITLE.improvement, Icon: ArrowUpIcon },
+  { key: "fix", label: KIND_TITLE.fix, Icon: WrenchIcon },
 ];
 
 /** "And 7 smaller fixes." */
@@ -57,6 +61,16 @@ export const pageLabel = (n: ReleaseNote) =>
 /** The release picker's label for one release. */
 export const releaseLabel = (r: Release, latest: boolean) =>
   latest ? `${r.dateText} · Latest` : r.dateText;
+
+/** How many rows each chip's section holds: its notes, and for Fixes the
+ *  smaller-fixes row. All is every row. */
+export const filterCounts = (release: Release | undefined): Record<Filter, number> => {
+  const n = (k: NoteKind) =>
+    (release?.items.filter((i) => i.kind === k).length ?? 0) +
+    (k === "fix" && release && smallerRow(release.smallerFixes) ? 1 : 0);
+  const counts = { new: n("new"), improvement: n("improvement"), fix: n("fix") };
+  return { all: counts.new + counts.improvement + counts.fix, ...counts };
+};
 
 /** The Fixes section's closing row: every page's smaller fixes, counted
  *  together. Null when there are none. */
