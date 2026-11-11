@@ -11,6 +11,7 @@ import {
 } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
+import { shiftIso } from "../../../../../../utils/grading";
 import {
   addDays,
   formatGoliathDate,
@@ -85,16 +86,16 @@ export const useSubDeptItems = (
     const lyStart = lyWeekDates[0] ?? lwEnd;
     const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
     const lwWeekDates = twRealDates.map(
-      (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+      (d) => shiftIso(d, -7),
     );
 
     const tyStart = selectedDate ?? twStart;
     const tyEnd = selectedDate ?? twEnd;
     const lwDayStart = selectedDate
-      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      ? shiftIso(selectedDate, -7)
       : lwStart;
     const lwDayEnd = selectedDate
-      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      ? shiftIso(selectedDate, -7)
       : lwEnd;
     const lyDayStart = selectedDate
       ? sameWeekDayLastYear(selectedDate).date

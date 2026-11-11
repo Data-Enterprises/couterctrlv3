@@ -6,6 +6,7 @@ import {
   gradeBasis as sharedGradeBasis,
   isCompleteCoverage,
   matchDatedRows,
+  shiftIso,
   type Coverage,
   type GradeBasis,
 } from "../../../../utils/grading";
@@ -524,9 +525,7 @@ export const buildLedgerRows = (
       .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
       .map((r) => {
         const twDate = r.sale_date.split("T")[0];
-        const lwDate = addDays(new Date(twDate), -7)
-          .toISOString()
-          .split("T")[0];
+        const lwDate = shiftIso(twDate, -7);
         const lyDate = sameWeekDayLastYear(twDate).date;
         const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
         const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));

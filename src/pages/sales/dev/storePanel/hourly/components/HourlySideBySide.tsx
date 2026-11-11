@@ -6,7 +6,8 @@ import { useSalesCtx, useSalesState } from "../../../hooks";
 import { getHourly } from "../../../../../../api/sales";
 
 // Utils
-import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../../../../utils";
+import { shiftIso } from "../../../../../../utils/grading";
+import { formatCurrency2, formatBigNumber, sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
 import { byHour, day, hourLabel, MINUS } from "../utils";
 
@@ -120,7 +121,7 @@ const HourlySideBySide = ({
         const lwSet = new Set(lwWeekDates);
         const lySet = new Set(lyWeekDates);
         const lwDay = selectedDate
-          ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+          ? shiftIso(selectedDate, -7)
           : null;
         const lyDay = selectedDate ? sameWeekDayLastYear(selectedDate).date : null;
 
