@@ -76,7 +76,7 @@ const CashierList = ({
           </div>
 
           {/* Column header + scrollable cashier rows + sticky avg footer */}
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className="cc-scroll">
             <div
               className="sticky top-0 z-10 grid border-b border-line_hair bg-fill_muted"
               style={{

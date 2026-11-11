@@ -97,7 +97,7 @@ const SectionList = ({
         />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div className="cc-scroll">
         <div
           className="sticky top-0 z-10 grid border-b border-line_hair bg-fill_muted"
           style={{ gridTemplateColumns: "1fr 0.62fr 0.4fr 0.4fr 0.55fr" }}

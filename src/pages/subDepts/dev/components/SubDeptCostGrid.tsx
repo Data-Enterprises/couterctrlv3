@@ -139,7 +139,7 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
   return (
     <>
     <div
-      className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
+      className="cc-scroll"
       onContextMenu={(e) => openCtxMenu(e, "")}
     >
       {/* Sticky column headers */}

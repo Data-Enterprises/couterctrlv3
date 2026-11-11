@@ -522,7 +522,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             <SortHead label="Last visited" k="visited" />
             <div></div>
           </div>
-          <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
+          <div data-help="grid" className="cc-scroll divide-y divide-brand_navy/15">
             {filtered.map((u) => {
               const outranked = isOutranked(u.user_level);
               // While picking, the whole row is the target, not just the box.

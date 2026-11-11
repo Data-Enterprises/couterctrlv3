@@ -190,7 +190,7 @@ const DrillExportModal = ({
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-4 pb-2">
+      <div className="cc-scroll px-4 pt-4 pb-2">
         {mode === "presets" ? (
           <div className="space-y-3">
             <p className="text-[11px] text-content uppercase tracking-wide font-medium">

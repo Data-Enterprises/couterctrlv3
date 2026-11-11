@@ -532,7 +532,7 @@ const ItemReportExportModal = ({
             <p className="text-[10px] cc-caps mt-3.5 mb-2 flex-shrink-0">
               Columns
             </p>
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-1">
+            <div className="cc-scroll pr-1">
               {COLS[source].map((c) => (
                 <label
                   key={c.key}

@@ -588,7 +588,7 @@ const AwgInvoices = () => {
         </section>
 
         {/* ── the invoices ───────────────────────────────────────── */}
-        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pr-0.5">
+        <div className="cc-scroll pr-0.5">
           <div className="flex flex-col gap-3 pb-1">
             {visible.map((row) => (
               <InvoiceCard

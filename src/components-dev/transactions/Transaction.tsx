@@ -255,7 +255,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
       </div>
 
       {/* Line items */}
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3">
+      <div className="cc-scroll px-4 pt-3">
         {trans.map((item, i) => {
           const isVoid = item.sale_type.toLowerCase().includes("void");
           const isCoupon = item.is_coupon === 1 || item.coupon_amount > 0;

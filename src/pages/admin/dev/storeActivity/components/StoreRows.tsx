@@ -6,7 +6,7 @@ import { useAdminPageCtx } from "../../hooks";
 const StoreRows = () => {
   const { filteredStoresActivity } = useAdminPageCtx();
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
+    <div className="cc-scroll divide-y divide-brand_navy/15">
       {filteredStoresActivity.map((s) => (
         <div
           key={s.storeid}

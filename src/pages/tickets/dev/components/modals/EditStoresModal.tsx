@@ -89,7 +89,7 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalPr
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar px-4 pb-4">
+      <div className="cc-scroll px-4 pb-4">
         <StoreChecklist
           options={loadError ? [] : options}
           picked={picked}

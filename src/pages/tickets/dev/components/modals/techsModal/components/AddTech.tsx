@@ -57,7 +57,7 @@ const AddTech = ({
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto thin-scrollbar px-4 pb-4">
+      <div className="flex cc-scroll flex-col gap-2.5 px-4 pb-4">
         <label className="flex flex-col gap-1.5">
           <span className="text-[12.5px] font-medium">Who</span>
           <SelectFilter

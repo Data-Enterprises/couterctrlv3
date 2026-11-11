@@ -79,7 +79,7 @@ const GroupsList = ({
 
       <div
         data-help="group-list"
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
+        className="cc-scroll"
       >
         {visible.length === 0 && (
           <div className="p-4 text-[11px] text-content text-center">

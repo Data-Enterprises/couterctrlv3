@@ -267,7 +267,7 @@ const StoreRecords = () => {
           <div></div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
+        <div className="cc-scroll divide-y divide-brand_navy/15">
           {filtered.map((s) => (
             <StoreRow
               key={`${s.storeid}__${s.store_number}`}

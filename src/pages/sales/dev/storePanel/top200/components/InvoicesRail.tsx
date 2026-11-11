@@ -44,7 +44,7 @@ const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: Invoi
     {/* Its own scroll: sixty days of a weekly-delivered item is
         seventeen rows, which is what drove the cost window down from
         120 days in the first place. */}
-    <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 py-2">
+    <div className="cc-scroll px-3 py-2">
       <div className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] cc-caps">
         <span>Invoice</span>
         <span>Vendor</span>

@@ -52,7 +52,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar">
+      <div className="cc-scroll">
         {ticket.company_name && (
           <div className="mt-3 px-3.5">
             <div className="rounded-lg bg-bkg px-2.5 py-2">

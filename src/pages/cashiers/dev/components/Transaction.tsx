@@ -214,7 +214,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       </div>
 
       {/* Line items + sticky totals */}
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3 relative">
+      <div className="cc-scroll px-4 pt-3 relative">
         {/* Column headers */}
         <div
           className="grid gap-2 pb-1.5 border-b border-line_hair mb-1"

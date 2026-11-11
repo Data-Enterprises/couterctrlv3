@@ -123,7 +123,7 @@ const InventoryTreePanel = ({
           />
         </div>
 
-        <div data-help="tree" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div data-help="tree" className="cc-scroll">
           {visibleGroups.map((g) => {
             const isOpen = g.id === openGroup;
             return (

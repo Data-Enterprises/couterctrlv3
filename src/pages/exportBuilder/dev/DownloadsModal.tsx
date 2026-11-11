@@ -110,7 +110,7 @@ const DownloadsModal = () => {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-3">
+        <div className="cc-scroll flex flex-col gap-3">
           {groups.map((group) => (
             <div key={group.id ?? "adhoc"} className="flex flex-col gap-1.5">
               <div className="flex items-baseline gap-2">

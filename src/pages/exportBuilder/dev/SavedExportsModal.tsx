@@ -132,7 +132,7 @@ const SavedExportsModal = () => {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-2">
+        <div className="cc-scroll flex flex-col gap-2">
           {ctx.saved.map((saved) => (
             <div
               key={saved.id}

@@ -120,7 +120,7 @@ const ForecastScenarios = ({
         <span />
       </div>
 
-      <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+      <div className="cc-scroll">
         {rows.map((row) => {
           const isActive = Math.abs(row.price - liveFcstPrice) < 0.001;
           return (

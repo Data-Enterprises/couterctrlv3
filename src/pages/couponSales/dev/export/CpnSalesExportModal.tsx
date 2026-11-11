@@ -254,7 +254,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
 
         {/* PRESETS MODE */}
         {mode === "presets" && (
-          <div className="px-4 pt-4 pb-2 space-y-3 flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className="px-4 pt-4 pb-2 space-y-3 cc-scroll">
             <div>
               <p className="text-[11px] text-content uppercase tracking-wide font-medium mb-1.5">
                 Scope

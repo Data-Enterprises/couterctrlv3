@@ -174,7 +174,7 @@ const Rail = ({
 
       <div
         data-help="top200-compare-rail"
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-6"
+        className="cc-scroll px-3.5 py-3 flex flex-col gap-6"
       >
         {/* "Comparison" sits ON the header row with the two store names
             rather than above it, and each name carries its bar swatch so the

@@ -178,7 +178,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
           saleType={selected}
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div className="cc-scroll">
           <CaseSummary
             type={type}
             headline={headlineLine(type, core.types.length)}

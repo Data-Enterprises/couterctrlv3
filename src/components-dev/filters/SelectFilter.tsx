@@ -173,7 +173,7 @@ const SelectFilter = ({
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className="cc-scroll">
             {/* Only when the caller has not supplied one of its own. Both
                 rows clear the selection, so two of them is two ways to do one
                 thing — and the pair read as different answers when the

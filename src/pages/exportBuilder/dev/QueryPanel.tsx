@@ -518,7 +518,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-1.5">
+            <div className="cc-scroll flex flex-col gap-1.5">
               {current && (
                 <button
                   type="button"

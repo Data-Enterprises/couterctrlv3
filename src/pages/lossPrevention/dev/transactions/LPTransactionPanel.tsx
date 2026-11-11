@@ -312,7 +312,7 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
               ) : (
                 <>
                   {/* Transaction list */}
-                  <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+                  <div className="cc-scroll">
                     {filteredOverviews.length === 0 &&
                     !fetchingCashierTransactions ? (
                       <div className="flex items-center justify-center h-24 text-[11px] text-content/95">

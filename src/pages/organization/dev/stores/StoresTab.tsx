@@ -107,7 +107,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
           />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 thin-scrollbar">
+        <div className="cc-scroll p-2 space-y-1">
           {stores === null && (
             <div className="p-3 text-[11px] text-content">Loading stores…</div>
           )}

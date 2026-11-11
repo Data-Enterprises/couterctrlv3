@@ -136,7 +136,7 @@ const ItemFixPanel = ({
     <div className="flex flex-col flex-1 min-w-0 rounded-xl shadow-lg overflow-hidden bg-custom-white">
       {header}
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3">
+      <div className="cc-scroll px-4 py-3 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {item.flags.map((f) => (
             <span

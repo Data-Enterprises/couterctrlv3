@@ -498,7 +498,7 @@ const PopupTopItems = ({
               {/* The whole report scrolls as one. The sections below answer
                   different questions and a reader works down them; pinning
                   the top three and scrolling the rest only moved the seam. */}
-              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+              <div className="cc-scroll">
                 {/* Identity, and how much of the list this is. Contribution
                     sits here rather than in a tile of its own: the figure,
                     the money and the bar fit on one line, and a third tile

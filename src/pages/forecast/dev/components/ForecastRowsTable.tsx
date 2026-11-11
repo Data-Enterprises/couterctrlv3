@@ -424,7 +424,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         )}
 
         {/* rows */}
-        <div data-help="grid" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+        <div data-help="grid" className="cc-scroll">
           <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
             {/* Same construction as ItemMarginsTable's header: the column
                 name, then the two filter labels beside it. */}

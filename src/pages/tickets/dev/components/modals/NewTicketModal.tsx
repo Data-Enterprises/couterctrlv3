@@ -282,7 +282,7 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto thin-scrollbar px-4 pb-4">
+      <div className="flex cc-scroll flex-col gap-3.5 px-4 pb-4">
         {/** What came with you from the page. */}
         {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">

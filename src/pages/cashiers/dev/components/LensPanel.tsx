@@ -60,7 +60,7 @@ const LensPanel = ({
         <div>Lines · transactions</div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
+      <div className="cc-scroll divide-y divide-brand_navy/15">
         {signals.length === 0 && (
           <div className="flex items-center justify-center py-8 text-[12px] text-content">
             No matches

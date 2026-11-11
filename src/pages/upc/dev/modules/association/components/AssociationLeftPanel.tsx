@@ -56,7 +56,7 @@ const AssociationLeftPanel = ({
       <div className="px-2.5 py-1.5 bg-fill_muted border-b border-brand_navy/15 flex-shrink-0">
         <span className="text-[10px] cc-caps-strong">Seed UPCs</span>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div className="cc-scroll">
         {selectedUpcs.map((code) => {
           const seedItem = seedItemsMap.get(code);
           return (

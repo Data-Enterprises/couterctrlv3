@@ -145,7 +145,7 @@ const TicketInbox = ({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar">
+      <div className="cc-scroll">
         {rows.length === 0 && (
           <p className="px-3 py-6 text-center text-[12.5px] text-content/95">
             {loading ? "Reading the queue…" : "Nothing here."}

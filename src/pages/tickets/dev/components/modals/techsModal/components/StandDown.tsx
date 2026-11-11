@@ -39,7 +39,7 @@ const StandDown = ({
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto thin-scrollbar px-4 pb-4">
+      <div className="flex cc-scroll flex-col gap-2.5 px-4 pb-4">
         {holding > 0 && (
           <div className="rounded-lg bg-severity_watch_bg px-3 py-2.5 text-[12px] leading-relaxed text-severity_watch_text">
             <b className="font-semibold">

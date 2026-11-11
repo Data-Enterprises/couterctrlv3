@@ -77,7 +77,7 @@ const RecapItemsTable = ({
         {withPounds && head("pounds", "Weight", true)}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar [scrollbar-gutter:stable]" role="rowgroup">
+      <div className="cc-scroll [scrollbar-gutter:stable]" role="rowgroup">
         {rows.map((r) => {
           const lead = r.vendors[0];
           return (

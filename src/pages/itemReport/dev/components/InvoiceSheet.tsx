@@ -129,7 +129,7 @@ const InvoiceSheet = ({
         </>
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div className="cc-scroll">
         {loading ? (
           <div className="relative h-full min-h-[240px]">
             <LoadingIndicator message="Opening invoice" />

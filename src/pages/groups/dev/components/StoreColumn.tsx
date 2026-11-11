@@ -40,7 +40,7 @@ const StoreColumn = ({
       <div className="px-2.5 py-1.5 text-[9px] cc-caps-strong bg-fill_soft">
         {title} ({stores.length})
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-line_hair">
+      <div className="cc-scroll border border-t-0 border-line_hair">
         {stores.map((s) => (
           <div
             key={s.storeid}

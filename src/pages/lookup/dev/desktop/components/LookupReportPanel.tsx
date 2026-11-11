@@ -241,7 +241,7 @@ const LookupReportPanel = ({
             </button>
           )}
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pb-4">
+        <div className="cc-scroll px-4 pb-4">
           {!showingSales ? (
             <SaleTypeTimeline
               buckets={timeline}

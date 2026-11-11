@@ -22,7 +22,7 @@ const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
       <span className="text-right">Sales</span>
     </div>
 
-    <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+    <div className="cc-scroll">
       {landing.shown.map((d) => {
         const pct =
           landing.top > 0 ? (d.ty / landing.total) * 100 : 0;

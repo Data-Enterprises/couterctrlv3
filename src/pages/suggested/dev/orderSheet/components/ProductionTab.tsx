@@ -211,7 +211,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
             </span>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-0.5">
+          <div className="cc-scroll flex flex-col gap-0.5">
             {bench.map((b) => {
               const me = b.storeid === ctx.activeStoreId;
               return (

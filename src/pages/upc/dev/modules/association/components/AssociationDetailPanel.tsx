@@ -147,7 +147,7 @@ const AssociationDetailPanel = ({
         )}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-2 pb-3.5">
+      <div className="cc-scroll px-2 pb-3.5">
         {items.length > 0 ? (
           <AssociationItemsTable items={items} onReroot={onReroot} onContextMenu={onContextMenu} />
         ) : (

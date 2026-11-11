@@ -107,7 +107,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           Cashiers in the latest week
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
+        <div className="cc-scroll rounded-b-xl">
           {row.cashiers.filter((c) => c.latest > 0).length === 0 && (
             <div className="py-8 text-center text-[12px] text-content/95">
               Nothing rang against this exception in the latest week.
