@@ -14,7 +14,6 @@ import devCategoriesReducer from "../features/dev/devCategoriesSlice";
 import devVendorsReducer from "../features/dev/devVendorsSlice";
 import devCashiersReducer from "../features/dev/devCashiersSlice";
 import devUpcDevReducer from "../features/dev/devUpcDevSlice";
-import devForecastReducer from "../features/dev/devForecastSlice";
 import devForecastDevReducer from "../features/dev/devForecastDevSlice";
 import devItemLookupReducer from "../features/dev/devItemLookupSlice";
 import devOrdersReducer from "../features/dev/devOrdersSlice";
@@ -70,7 +69,6 @@ export const devReducers = {
   vendors: devVendorsReducer,
   cashier: devCashiersReducer,
   upcDev: devUpcDevReducer,
-  forecast: devForecastReducer,
   forecastDev: devForecastDevReducer,
   item: devItemLookupReducer,
   orders: devOrdersReducer,
