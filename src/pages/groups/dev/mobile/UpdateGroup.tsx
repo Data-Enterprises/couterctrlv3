@@ -80,7 +80,7 @@ const UpdateGroup = () => {
             <div
               key={g.id}
               data-testid={`update-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200`}
+              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -96,7 +96,7 @@ const UpdateGroup = () => {
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_navy text-custom-white py-2 rounded-xl border-2 border-brand_navy mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleUpdate}
           >
             Submit

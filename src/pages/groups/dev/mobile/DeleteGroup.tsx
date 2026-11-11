@@ -78,7 +78,7 @@ const DeleteGroup = () => {
             <div
               key={g.id}
               data-testid={`delete-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-blue-200`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -118,7 +118,7 @@ const DeleteGroup = () => {
             </div>
             <div className="grid grid-cols-2 gap-2 mt-4">
               <button
-                className={`bg-[rgb(30,45,80)] text-custom-white py-1.5 rounded-xl border-2 border-[rgb(30,45,80)] w-full`}
+                className={`bg-brand_navy text-custom-white py-1.5 rounded-xl border-2 border-brand_navy w-full`}
                 data-testid="delete-submit-btn"
                 onClick={handleDelete}
               >

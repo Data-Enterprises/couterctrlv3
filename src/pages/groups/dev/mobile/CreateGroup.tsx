@@ -60,7 +60,7 @@ const CreateGroup = () => {
           {groupNames.map((g, i) => (
             <div
               key={i}
-              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} text-center py-1 shadow-md rounded-full`}
+              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} text-center py-1 shadow-md rounded-full`}
             >
               {g}
             </div>
@@ -82,7 +82,7 @@ const CreateGroup = () => {
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_navy text-custom-white py-2 rounded-xl border-2 border-brand_navy mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleCreate}
           >
             Submit
