@@ -27,7 +27,7 @@ const MetricsPicker = ({ metrics, onToggle, onFn }: MetricsPickerProps) => {
                 type="checkbox"
                 checked={sel.enabled}
                 onChange={() => onToggle(m.key)}
-                className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                className="cc-checkbox flex-shrink-0"
               />
               <span className="text-[12px] flex-1 text-content">{m.label}</span>
               <select

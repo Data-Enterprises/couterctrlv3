@@ -210,7 +210,7 @@ const CouponsExportModal = ({
               type="checkbox"
               checked={selectedStores.has(s.number)}
               onChange={() => toggleStore(s.number)}
-              className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+              className="cc-checkbox flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate">{s.name}</span>
             <span className="text-[10px] text-content/95 flex-shrink-0">
@@ -274,7 +274,7 @@ const CouponsExportModal = ({
                     type="checkbox"
                     checked
                     readOnly
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
+                    className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
                   />
                   <div>
                     <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
@@ -332,7 +332,7 @@ const CouponsExportModal = ({
                           type="checkbox"
                           checked={groupBy.has(d.key)}
                           onChange={() => toggleGroupBy(d.key)}
-                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="cc-checkbox flex-shrink-0"
                         />
                         <span className="text-[12px] text-content">
                           {d.label}
@@ -354,7 +354,7 @@ const CouponsExportModal = ({
                             type="checkbox"
                             checked={sel.enabled}
                             onChange={() => toggleMetric(m.key)}
-                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="cc-checkbox flex-shrink-0"
                           />
                           <span
                             className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}

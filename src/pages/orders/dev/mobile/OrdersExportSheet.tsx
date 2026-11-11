@@ -254,7 +254,7 @@ const OrdersExportSheet = ({
               type="checkbox"
               checked={selected.has("all")}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
+              className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">All Orders</div>
@@ -270,7 +270,7 @@ const OrdersExportSheet = ({
               checked={selected.has("selected")}
               disabled={!hasSelected}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
+              className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">
@@ -296,7 +296,7 @@ const OrdersExportSheet = ({
                   }
                   setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
                 }}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
+                className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -372,7 +372,7 @@ const OrdersExportSheet = ({
                       type="checkbox"
                       checked={customSubDepts.has(s.id)}
                       onChange={() => toggleCustomSubDept(s.id)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
                     <span className="text-[10px] text-content/95 flex-shrink-0">{s.count} ln</span>
@@ -391,7 +391,7 @@ const OrdersExportSheet = ({
                     type="checkbox"
                     checked={groupBy.has(d.key)}
                     onChange={() => toggleGroupBy(d.key)}
-                    className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                    className="cc-checkbox flex-shrink-0"
                   />
                   <span className="text-[12px] text-content">{d.label}</span>
                 </label>
@@ -410,7 +410,7 @@ const OrdersExportSheet = ({
                       type="checkbox"
                       checked={sel.enabled}
                       onChange={() => toggleMetric(m.key)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select

@@ -708,7 +708,7 @@
     "catalogued-look": 1
   },
   "src/pages/admin/dev/storeActivity/components/StoreActivityExportModal.tsx": {
-    "catalogued-look": 8
+    "catalogued-look": 6
   },
   "src/pages/admin/dev/stores/components/StoreFormModal.tsx": {
     "catalogued-look": 1
@@ -720,7 +720,7 @@
     "catalogued-look": 3
   },
   "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
-    "catalogued-look": 18
+    "catalogued-look": 15
   },
   "src/pages/cashiers/dev/components/ExplorerSearch.tsx": {
     "catalogued-look": 3
@@ -755,17 +755,11 @@
   "src/pages/categories/dev/export/components/ExportModalHeader.tsx": {
     "catalogued-look": 4
   },
-  "src/pages/categories/dev/export/components/GradedItemsOption.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/categories/dev/export/components/GroupByPicker.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/categories/dev/export/components/MetricsPicker.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/categories/dev/export/components/PresetOption.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
@@ -783,7 +777,7 @@
     "catalogued-look": 1
   },
   "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
-    "catalogued-look": 15
+    "catalogued-look": 12
   },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
@@ -810,13 +804,13 @@
     "catalogued-look": 1
   },
   "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
-    "catalogued-look": 19
+    "catalogued-look": 15
   },
   "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
     "catalogued-look": 1
   },
   "src/pages/coupons/dev/mobile/CpnExportSheet.tsx": {
-    "catalogued-look": 7
+    "catalogued-look": 3
   },
   "src/pages/coupons/dev/mobile/CpnOverview.tsx": {
     "catalogued-look": 1
@@ -1214,7 +1208,7 @@
     "catalogued-look": 2
   },
   "src/pages/lossPrevention/dev/export/LPExportModal.tsx": {
-    "catalogued-look": 19
+    "catalogued-look": 15
   },
   "src/pages/lossPrevention/dev/transactions/LPTransactionPanel.tsx": {
     "catalogued-look": 1
@@ -1391,7 +1385,7 @@
     "selector-outside-hook": 1
   },
   "src/pages/lpActions/dev/drill/DrillExportModal.tsx": {
-    "catalogued-look": 8,
+    "catalogued-look": 7,
     "doc-comment": 1,
     "labels": 1,
     "one-line-per-source": 1,
@@ -1459,9 +1453,6 @@
   "src/pages/markdowns/dev/export/MarkdownsExportModal.tsx": {
     "catalogued-look": 3
   },
-  "src/pages/markdowns/dev/export/components/ColumnPicker.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/markdowns/dev/export/components/ExportHeader.tsx": {
     "catalogued-look": 1
   },
@@ -1499,7 +1490,7 @@
     "catalogued-look": 4
   },
   "src/pages/orders/dev/mobile/OrdersExportSheet.tsx": {
-    "catalogued-look": 9
+    "catalogued-look": 3
   },
   "src/pages/organization/Organization.tsx": {
     "labels": 1
@@ -1514,13 +1505,13 @@
     "catalogued-look": 1
   },
   "src/pages/organization/dev/baseGroups/components/Option.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/organization/dev/components/UsersExportModal.tsx": {
-    "catalogued-look": 8
+    "catalogued-look": 6
   },
   "src/pages/organization/dev/stores/components/StoresExportModal.tsx": {
-    "catalogued-look": 8
+    "catalogued-look": 6
   },
   "src/pages/organization/dev/users/components/SetActiveModal.tsx": {
     "catalogued-look": 2
@@ -1572,13 +1563,13 @@
     "catalogued-look": 1
   },
   "src/pages/receivers/dev/components/modal/components/ModalCustomMode.tsx": {
-    "catalogued-look": 7
+    "catalogued-look": 5
   },
   "src/pages/receivers/dev/components/modal/components/ModalHeader.tsx": {
     "catalogued-look": 4
   },
   "src/pages/receivers/dev/components/modal/components/ModalPresetMode.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 4
   },
   "src/pages/receivers/dev/mobile/components/RcvReceiverList.tsx": {
     "catalogued-look": 1
@@ -1637,19 +1628,10 @@
   "src/pages/sales/dev/storePanel/export/components/ExportModalHeader.tsx": {
     "catalogued-look": 4
   },
-  "src/pages/sales/dev/storePanel/export/components/FinancialsStorePicker.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/sales/dev/storePanel/export/components/GroupByPicker.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/dev/storePanel/export/components/MetricsPicker.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/sales/dev/storePanel/export/components/PresetOption.tsx": {
-    "catalogued-look": 2
-  },
-  "src/pages/sales/dev/storePanel/export/components/SubDeptItemsOption.tsx": {
     "catalogued-look": 1
   },
   "src/pages/sales/dev/storePanel/hourly/components/HourlySideBySide.tsx": {
@@ -1683,13 +1665,13 @@
     "catalogued-look": 1
   },
   "src/pages/subDepts/dev/export/MarginPerfExportModal.tsx": {
-    "catalogued-look": 19
+    "catalogued-look": 13
   },
   "src/pages/suggested/Suggested.tsx": {
     "labels": 1
   },
   "src/pages/suggested/dev/export/SuggestedExportModal.tsx": {
-    "catalogued-look": 18
+    "catalogued-look": 15
   },
   "src/pages/suggested/dev/orderSheet/OrderSheetPanel.tsx": {
     "catalogued-look": 12
@@ -1832,17 +1814,11 @@
   "src/pages/vendors/dev/export/components/ExportModalHeader.tsx": {
     "catalogued-look": 4
   },
-  "src/pages/vendors/dev/export/components/GradedOption.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/vendors/dev/export/components/GroupByPicker.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/vendors/dev/export/components/MetricsPicker.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/vendors/dev/export/components/PresetOption.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/store/devReducers.ts": {
     "labels": 1

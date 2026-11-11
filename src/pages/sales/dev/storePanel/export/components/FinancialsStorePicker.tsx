@@ -56,7 +56,7 @@ const FinancialsStorePicker = ({
                   return n;
                 })
               }
-              className="h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
+              className="cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
             />
             <span className="tabular-nums font-semibold w-[46px] flex-shrink-0">
               {st.store_number}

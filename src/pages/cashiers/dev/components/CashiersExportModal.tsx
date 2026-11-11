@@ -230,7 +230,7 @@ const CashiersExportModal = ({
                     type="checkbox"
                     checked={selected.has(key)}
                     onChange={() => toggleDataset(key)}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
+                    className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
                   />
                   <div>
                     <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
@@ -288,7 +288,7 @@ const CashiersExportModal = ({
                           type="checkbox"
                           checked={groupBy.has(d.key)}
                           onChange={() => toggleGroupBy(d.key)}
-                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="cc-checkbox flex-shrink-0"
                         />
                         <span className="text-[12px] text-content">{d.label}</span>
                       </label>
@@ -309,7 +309,7 @@ const CashiersExportModal = ({
                             type="checkbox"
                             checked={sel.enabled}
                             onChange={() => toggleMetric(m.key)}
-                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="cc-checkbox flex-shrink-0"
                           />
                           <span
                             className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}

@@ -172,7 +172,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               type="checkbox"
               checked={selectedStores.has(s.number)}
               onChange={() => toggleStore(s.number)}
-              className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+              className="cc-checkbox flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate flex-1">{s.name}</span>
             <span className="text-[10px] text-content/95 flex-shrink-0">#{s.number}</span>
@@ -208,7 +208,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div className="flex items-start gap-3">
-            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0" />
+            <input type="checkbox" checked readOnly className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0" />
             <div>
               <div className="text-[13px] font-medium text-content">Coupon Records</div>
               <div className="text-[11px] text-content/95 mt-0.5">
@@ -231,7 +231,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                     type="checkbox"
                     checked={groupBy.has(d.key)}
                     onChange={() => toggleGroupBy(d.key)}
-                    className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                    className="cc-checkbox flex-shrink-0"
                   />
                   <span className="text-[12px] text-content">{d.label}</span>
                 </label>
@@ -249,7 +249,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       type="checkbox"
                       checked={sel.enabled}
                       onChange={() => toggleMetric(m.key)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select

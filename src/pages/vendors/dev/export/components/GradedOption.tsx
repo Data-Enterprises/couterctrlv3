@@ -28,7 +28,7 @@ const GradedOption = ({ title, description, disabled, checked, onToggle, sevs, o
         disabled={disabled}
         checked={checked}
         onChange={onToggle}
-        className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0 disabled:cursor-not-allowed"
+        className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0 disabled:cursor-not-allowed"
       />
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-content">{title}</p>

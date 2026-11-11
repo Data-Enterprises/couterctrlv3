@@ -205,7 +205,7 @@ const DrillExportModal = ({
                   type="checkbox"
                   checked={presets.has(p.id)}
                   onChange={() => togglePreset(p.id)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
+                  className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
                 />
                 <div>
                   <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
