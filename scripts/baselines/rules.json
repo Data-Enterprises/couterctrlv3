@@ -626,9 +626,6 @@
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
-  "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
     "catalogued-look": 1
   },
@@ -641,14 +638,8 @@
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
   },
-  "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
-  },
-  "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/exportBuilder/ExportBuilder.tsx": {
     "labels": 1
@@ -955,9 +946,6 @@
   "src/pages/lossPrevention/LossPrevention.tsx": {
     "labels": 1
   },
-  "src/pages/lossPrevention/dev/export/LPExportModal.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/lpActions/LpActions.tsx": {
     "labels": 1
   },
@@ -1187,9 +1175,6 @@
   "src/pages/receivers/Receivers.tsx": {
     "labels": 1
   },
-  "src/pages/receivers/dev/components/modal/components/CustomModeTable.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/Sales.tsx": {
     "labels": 1
   },
@@ -1198,9 +1183,6 @@
   },
   "src/pages/sales/dev/mobile/perf/components/PerfDrillList.tsx": {
     "catalogued-look": 2
-  },
-  "src/pages/sales/dev/storePanel/export/components/CustomPreview.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1
@@ -1217,14 +1199,8 @@
   "src/pages/subDepts/dev/components/itemsTable/components/ItemListToolbar.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/subDepts/dev/export/MarginPerfExportModal.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/suggested/Suggested.tsx": {
     "labels": 1
-  },
-  "src/pages/suggested/dev/export/SuggestedExportModal.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1

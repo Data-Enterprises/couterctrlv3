@@ -378,7 +378,7 @@ const CashiersExportModal = ({
                             {columns.map((c) => (
                               <td
                                 key={c.key}
-                                className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-line_faint"
+                                className="cc-td text-content/95"
                               >
                                 {row[c.key] ?? "—"}
                               </td>

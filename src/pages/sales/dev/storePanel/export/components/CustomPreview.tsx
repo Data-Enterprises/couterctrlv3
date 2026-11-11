@@ -52,7 +52,7 @@ const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
                 {columns.map((c) => (
                   <td
                     key={c.key}
-                    className="px-3 py-1.5 text-content whitespace-nowrap border-b border-line_faint"
+                    className="cc-td text-content"
                   >
                     {row[c.key] ?? "—"}
                   </td>

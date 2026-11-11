@@ -422,7 +422,7 @@ const LPExportModal = ({
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
                           <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}>
                             {columns.map((c) => (
-                              <td key={c.key} className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-line_faint">
+                              <td key={c.key} className="cc-td text-content/95">
                                 {row[c.key] ?? "—"}
                               </td>
                             ))}
