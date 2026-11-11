@@ -120,7 +120,7 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
               : "They can sign in again, with the companies, base groups and stores they had when they were deactivated."}
         </p>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-brand_line rounded-lg divide-y divide-brand_navy/15 mb-3">
+        <div className="cc-scroll border border-brand_line rounded-lg divide-y divide-brand_navy/15 mb-3">
           {users.map((u) => {
             const out = outcomeOf(u.username);
             const failed = out?.kind === "refused" || out?.kind === "not_found";

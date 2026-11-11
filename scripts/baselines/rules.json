@@ -1147,9 +1147,6 @@
   "src/pages/organization/Organization.tsx": {
     "labels": 1
   },
-  "src/pages/organization/dev/users/components/SetActiveModal.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/quicksight/Dashboard.tsx": {
     "labels": 1
   },
