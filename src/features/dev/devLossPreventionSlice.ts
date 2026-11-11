@@ -18,6 +18,15 @@ import type {
   TransactionOverview,
   ThresholdValue,
 } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+
+/** What a Loss Prevention result was searched for: the week's end date and the store or group. */
+export interface LpSearchScope {
+  singleDate: string;
+  type: SEARCH_TYPE;
+  lastStore: number;
+  lastGroup: number;
+}
 
 type SelectedCashier = {
   cashier_number: number;
@@ -45,6 +54,9 @@ export interface LossPreventionState {
    *  sat inert while it ran, which read as a dead button. */
   loadingSaleTypes: boolean;
   noSaleTypesFound: boolean;
+  /** The search the sale types came from. Every later fetch and label reads
+   *  this, not the live picker, which other pages move. */
+  searchedScope: LpSearchScope | null;
   selectedSaleType: string;
   selectedSaleIds: string[];
   cashierSaleIds: string[];
@@ -96,6 +108,7 @@ const initialState: LossPreventionState = {
   saleTypes: [],
   loadingSaleTypes: false,
   noSaleTypesFound: false,
+  searchedScope: null,
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
@@ -164,6 +177,9 @@ export const lossPreventionSlice = createSlice({
     },
     setLoadingSaleTypes: (state, action: PayloadAction<boolean>) => {
       state.loadingSaleTypes = action.payload;
+    },
+    setSearchedScope: (state, action: PayloadAction<LpSearchScope | null>) => {
+      state.searchedScope = action.payload;
     },
     setNoSaleTypesFound: (state, action: PayloadAction<boolean>) => {
       state.noSaleTypesFound = action.payload;
@@ -334,6 +350,7 @@ export const lossPreventionSlice = createSlice({
 });
 
 export const {
+  setSearchedScope,
   setLoadingCashierDetails,
   setCashierDetails,
   setCashierTrends,

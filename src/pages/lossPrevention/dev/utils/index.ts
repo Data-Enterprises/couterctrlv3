@@ -1,9 +1,13 @@
+// Utils
+import { isGroupSearch } from "../../../../features/searchSlice";
+
 // Interfaces
 import type {
   TransactionListItem,
   TransactionOverview,
 } from "../../../../interfaces";
 import type { Severity } from "../../../../utils/severity";
+import type { LpSearchScope } from "../../../../features/dev/devLossPreventionSlice";
 
 export const chunkSales = (data: TransactionListItem[]) => {
   const chunked: TransactionListItem[][] = [];
@@ -58,3 +62,23 @@ export const totals = (rows: TransactionOverview[]) => ({
 
 /** Worst-first order of the severities. */
 export const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
+
+/**
+ * The fetch parameters for a searched scope: its store or group, and the week
+ * ending on its date with the two weeks before it as the baseline.
+ */
+export const lpParams = (scope: LpSearchScope) => {
+  const [sm, sd, sy] = scope.singleDate.split("/").map(Number);
+  const pad = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const group = isGroupSearch(scope.type);
+  return {
+    useGroups: group ? 1 : 0,
+    singleStore: scope.type === "Store" ? 1 : 0,
+    searchValue: group ? scope.lastGroup : scope.lastStore,
+    lpStart: pad(new Date(sy, sm - 1, sd - 6)),
+    lpEnd: pad(new Date(sy, sm - 1, sd)),
+    lpBaseStart: pad(new Date(sy, sm - 1, sd - 20)),
+    lpBaseEnd: pad(new Date(sy, sm - 1, sd - 7)),
+  };
+};

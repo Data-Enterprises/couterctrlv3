@@ -38,7 +38,7 @@ interface LPStorePanelProps {
  *  baseline. Clicking a store loads its transactions. */
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: LPStorePanelProps) => {
   const cashier = useLossPreventionCtx();
-  const { search, assignedStores } = cashier;
+  const { weekDate, assignedStores } = cashier;
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<LpSortCol>();
@@ -57,7 +57,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
   // The seven days of the searched week, newest first.
   const dayOptions = useMemo(() => {
-    const [m, d, y] = search.singleDate.split("/").map(Number);
+    const [m, d, y] = weekDate.split("/").map(Number);
     const end = new Date(y, m - 1, d);
     return Array.from({ length: 7 }, (_, i) => {
       const dt = new Date(y, m - 1, d - i);
@@ -66,9 +66,9 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
         label: dt.toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" }),
       };
     }).filter(() => !Number.isNaN(end.getTime()));
-  }, [search.singleDate]);
+  }, [weekDate]);
 
-  const dateLabel = weekRangeLabel(search.singleDate);
+  const dateLabel = weekRangeLabel(weekDate);
 
   // Header totals follow the filter — week totals beside day-scoped rows would
   // read as though the rows didn't add up.

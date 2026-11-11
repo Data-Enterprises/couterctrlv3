@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useLossPreventionCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useApiContext } from "../../../../hooks/useApiContext";
 
 // Redux
 import {
@@ -73,10 +72,9 @@ interface LPDesktopProps {
  *  right. Owns the fetches for an exception type, a single day and a store's transactions. */
 const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
   const toast = useToast();
-  const params = useApiContext();
   const dispatch = useAppDispatch();
   const cashier = useLossPreventionCtx();
-  const { apiEnv, url, token, search } = cashier;
+  const { apiEnv, url, token, weekDate, params } = cashier;
   const [loading, setLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
@@ -347,7 +345,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
     dispatch(setTransList([]));
 
     const saleType = cashier.selectedSaleType;
-    const [sm, sd, sy] = search.singleDate.split("/").map(Number);
+    const [sm, sd, sy] = weekDate.split("/").map(Number);
     const endD = new Date(sy, sm - 1, sd);
     const startD = new Date(endD);
     startD.setDate(startD.getDate() - 6);

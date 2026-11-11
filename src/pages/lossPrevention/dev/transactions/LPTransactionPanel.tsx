@@ -51,7 +51,7 @@ interface LPTransactionPanelProps {
 const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => {
   const dispatch = useAppDispatch();
   const cashier = useLossPreventionCtx();
-  const { search } = cashier;
+  const { weekDate } = cashier;
 
   const [selectedOverview, setSelectedOverview] =
     useState<TransactionOverview | null>(null);
@@ -88,7 +88,7 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
     ? storeSeverity(detail, cashier.baselineDetails, selectedSaleType)
     : "healthy";
 
-  const dateLabel = weekRangeLabel(search.singleDate);
+  const dateLabel = weekRangeLabel(weekDate);
 
   // ── Graded cashier list ───────────────────────────────────────────────────
 
@@ -257,7 +257,7 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
               onClose={() => setExportOpen(false)}
               storeName={storeName}
               saleType={selectedSaleType}
-              dateRange={weekRangeFilename(search.singleDate)}
+              dateRange={weekRangeFilename(weekDate)}
               transactions={filteredOverviews}
               cashierGrades={cashierGrades}
             />
