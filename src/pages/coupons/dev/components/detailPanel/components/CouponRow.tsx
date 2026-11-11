@@ -45,13 +45,13 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
         <td className="px-3 py-2 text-content/95 whitespace-nowrap">
           {agg.sub_department_description}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {agg.uses.length}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {agg.count}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
+        <td className="cc-num font-semibold text-content/95">
           {formatCurrency2(agg.total)}
         </td>
       </tr>

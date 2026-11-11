@@ -241,13 +241,13 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-content">
+                  <td className="cc-num text-content">
                     {fmtLb(r.prior_lb_per_day)}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-content">
+                  <td className="cc-num text-content">
                     {fmtLb(r.recent_lb_per_day)}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums">
+                  <td className="cc-num">
                     {r.change_ratio === null ? (
                       <span className="text-content/95">—</span>
                     ) : (
@@ -256,7 +256,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
+                  <td className="cc-num text-content font-semibold">
                     {fmtLb(lostLb(r, recentDays))}
                   </td>
                 </tr>
@@ -268,13 +268,13 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                 <td className="px-3 py-2 text-right text-content/95" colSpan={2}>
                   Totals · {rows.length.toLocaleString()} items
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                <td className="cc-num text-content/95">
                   {fmtLb(totals.prior)}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                <td className="cc-num text-content/95">
                   {fmtLb(totals.recent)}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums">
+                <td className="cc-num">
                   {totals.change === null ? (
                     <span className="text-content/95">—</span>
                   ) : (
@@ -283,7 +283,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                <td className="cc-num text-content/95">
                   {fmtLb(totals.lost)}
                 </td>
               </tr>

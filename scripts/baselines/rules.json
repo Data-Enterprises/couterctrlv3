@@ -788,9 +788,6 @@
   "src/pages/coupons/dev/components/detailPanel/CouponDetailPanel.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/coupons/dev/components/detailPanel/components/CouponRow.tsx": {
-    "catalogued-look": 3
-  },
   "src/pages/coupons/dev/components/detailPanel/components/DetailHeader.tsx": {
     "catalogued-look": 1
   },
@@ -1216,9 +1213,6 @@
   "src/pages/lossPrevention/dev/transactions/components/AvgBadge.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/lossPrevention/dev/transactions/components/TransactionRows.tsx": {
-    "catalogued-look": 2
-  },
   "src/pages/lossPrevention/dev/transactions/components/TrendBadge.tsx": {
     "catalogued-look": 1
   },
@@ -1478,7 +1472,7 @@
     "catalogued-look": 2
   },
   "src/pages/orders/dev/components/OrderReportPanel.tsx": {
-    "catalogued-look": 14
+    "catalogued-look": 4
   },
   "src/pages/orders/dev/components/OrdersConfigPanel.tsx": {
     "catalogued-look": 3
@@ -1540,12 +1534,6 @@
   },
   "src/pages/receivers/dev/components/detail/components/DetailNavyHeader.tsx": {
     "catalogued-look": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/BodyRow.tsx": {
-    "catalogued-look": 10
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/Footer.tsx": {
-    "catalogued-look": 6
   },
   "src/pages/receivers/dev/components/detail/components/detailTable/Header.tsx": {
     "catalogued-look": 1
@@ -1674,13 +1662,7 @@
     "catalogued-look": 15
   },
   "src/pages/suggested/dev/orderSheet/OrderSheetPanel.tsx": {
-    "catalogued-look": 12
-  },
-  "src/pages/suggested/dev/orderSheet/components/NotSellingTab.tsx": {
-    "catalogued-look": 8
-  },
-  "src/pages/suggested/dev/orderSheet/components/TopToOrder.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/suggested/dev/storeTree/components/PanelFrame.tsx": {
     "catalogued-look": 2

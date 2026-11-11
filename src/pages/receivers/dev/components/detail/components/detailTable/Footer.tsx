@@ -14,22 +14,22 @@ const Footer = () => {
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2 text-right text-content/95">Totals</td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {totals.cases}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {totals.units}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {formatCurrency2(totals.ucost)}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {formatCurrency2(totals.ext_cost)}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {formatCurrency2(totals.retail)}
         </td>
-        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+        <td className="cc-num text-content/95">
           {formatCurrency2(totals.ext_retail)}
         </td>
         <td className="px-3 py-2"></td>

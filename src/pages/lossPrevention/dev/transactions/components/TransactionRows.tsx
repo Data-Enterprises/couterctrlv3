@@ -47,10 +47,10 @@ const TransactionRows = ({
           <div className="px-3 py-2 text-[13px] text-content">
             {fmtDate(o.sale_date)}
           </div>
-          <div className="px-3 py-2 text-[13px] text-content text-right tabular-nums">
+          <div className="cc-num text-[13px] text-content">
             {o.qty}
           </div>
-          <div className="px-3 py-2 text-[13px] text-content text-right tabular-nums">
+          <div className="cc-num text-[13px] text-content">
             {formatCurrency2(o.total_sales)}
           </div>
         </div>

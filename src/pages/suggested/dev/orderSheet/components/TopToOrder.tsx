@@ -228,10 +228,10 @@ const TopToOrder = () => {
                   >
                     {deptLabel(r.sub_department_description)}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-content">
+                  <td className="cc-num text-content">
                     {fmtLb(r.avg_daily_weight)}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
+                  <td className="cc-num text-content font-semibold">
                     {fmtLbOrDash(r.suggested_weight)}
                   </td>
                 </tr>
@@ -243,10 +243,10 @@ const TopToOrder = () => {
                 <td className="px-3 py-2 text-right text-content/95">
                   {isFiltered ? `${rows.length} shown` : `Top ${rows.length}`}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                <td className="cc-num text-content/95">
                   {fmtLb(rows.reduce((s, r) => s + (r.avg_daily_weight ?? 0), 0))}
                 </td>
-                <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                <td className="cc-num text-content/95">
                   {fmtLb(shown)}
                 </td>
               </tr>

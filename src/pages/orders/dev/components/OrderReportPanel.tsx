@@ -247,10 +247,10 @@ const OrderReportPanel = ({
                         ))}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
+                    <td className="cc-num font-semibold text-content/95">
                       {o.order_id}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {o.line_number}
                     </td>
                     <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
@@ -265,30 +265,30 @@ const OrderReportPanel = ({
                     <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.storenumber}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {o.qty}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {formatCurrency2(o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {formatCurrency2(o.active_retail_price)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
+                    <td className="cc-num font-semibold text-content/95">
                       {formatCurrency2(o.e_ret)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/95">
+                    <td className="cc-num font-semibold text-content/95">
                       {formatCurrency2(o.e_ret - o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {o.e_ret > 0
                         ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                    <td className="cc-num text-content/95">
                       {o.weight ?? "—"}
                     </td>
                   </tr>

@@ -618,14 +618,14 @@ const OrderSheetPanel = () => {
                           <td className="px-3 py-2 text-content/95 tabular-nums">
                             {r.product_code}
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                          <td className="cc-num text-content">
                             {fmtLb(r.avg_daily_weight)}
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                          <td className="cc-num text-content">
                             {fmtLb(demandFor(r))}
                           </td>
                           <td
-                            className="px-3 py-2 text-right tabular-nums"
+                            className="cc-num"
                             title={shrinkTitle(r)}
                           >
                             <span
@@ -643,12 +643,12 @@ const OrderSheetPanel = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                          <td className="cc-num text-content">
                             {r.markdown_weight_window
                               ? fmtLb0(r.markdown_weight_window)
                               : "—"}
                           </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
+                          <td className="cc-num text-content font-semibold">
                             {fmtLbOrDash(r.suggested_weight)}
                           </td>
                         </tr>
@@ -661,10 +661,10 @@ const OrderSheetPanel = () => {
                         <td className="px-3 py-2 text-right text-content/95">
                           Totals
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                        <td className="cc-num text-content/95">
                           {fmtLb(totals.daily)}
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                        <td className="cc-num text-content/95">
                           {fmtLb(totals.demand)}
                         </td>
                         <td className="px-3 py-2"></td>
@@ -672,10 +672,10 @@ const OrderSheetPanel = () => {
                             than each item's whole life. Lifetime pounds over
                             lifetimes that differ had no period to sum into; this
                             covers the same window as everything beside it. */}
-                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                        <td className="cc-num text-content/95">
                           {fmtLb(totals.markdown)}
                         </td>
-                        <td className="px-3 py-2 text-right tabular-nums text-content/95">
+                        <td className="cc-num text-content/95">
                           {isHistorical ? "—" : fmtLb(totals.order)}
                         </td>
                       </tr>
