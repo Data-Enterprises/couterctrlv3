@@ -26,9 +26,12 @@
  * A clean run ends "TOTAL: 0 hit(s)"; any hit outside legacy exits 1.
  */
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join, sep } from "node:path";
 
 const ROOTS = ["src/pages", "src/components-dev"];
+/** The dev tree's shared looks (cc-*): their @apply lines follow the same colour rules. */
+const DEV_SHEETS = ["src/styles/components-dev.css"];
 const SHARED_ROOT = "src/components";
 const BASELINE = "scripts/baselines/theme-shared.json";
 const VERBOSE = process.argv.includes("--verbose");
@@ -90,6 +93,23 @@ const NO_DEV_FORK = new Set(["forecast", "home", "priceSimulator",
 //  mobile-only floors being reported against desktop and vice versa.
 
 const ALL = () => true;
+
+/** Every colour name Tailwind knows here: the tokens in tailwind.config.js and its
+ *  default palette, flattened the way class names spell them (severity_watch_bg,
+ *  gray-100, accent-1). A colour class naming anything else renders nothing. */
+const require = createRequire(import.meta.url);
+const resolveConfig = require("tailwindcss/resolveConfig");
+const loadConfig = require("tailwindcss/loadConfig");
+const COLOURS = new Set();
+(function flatten(obj, prefix) {
+  for (const [k, v] of Object.entries(obj)) {
+    const name = k === "DEFAULT" ? prefix : prefix ? `${prefix}-${k}` : k;
+    if (v && typeof v === "object") flatten(v, name);
+    else COLOURS.add(name);
+  }
+})(resolveConfig(loadConfig(join(process.cwd(), "tailwind.config.js"))).theme.colors, "");
+/** Values the colour utilities take that are not colours (text-left, border-b, bg-cover…). */
+const NOT_A_COLOUR = /^(?:\d+%?|[trblxyse](?:-\d+)?|xs|sm|base|lg|[2-9]?xl|left|right|center|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip|solid|dashed|dotted|double|wavy|hidden|none|collapse|separate|spacing(?:-.+)?|inset|offset(?:-.+)?|cover|contain|top|bottom|repeat|no-repeat|repeat-[xy]|fixed|local|scroll|auto|from-font|clone|slice|reverse|[xy]-reverse|box|color|current|transparent|inherit|clip-.+|origin-.+|gradient-to-.+|blend-.+)$/;
 const MOBILE = (f) => isMobile(f.path) && !NO_DEV_FORK.has(f.page);
 const DESKTOP = (f) => !isMobile(f.path);
 // A panel header is the only place the navy-header rules mean anything.
@@ -186,6 +206,14 @@ const RULES = [
     re: /^\s*const (pillClass|severityDotClass|formatPct|chipClass|severityHeaderBgClass)\s*[=:]/gm,
   },
   {
+    id: "unknown-colour",
+    scope: ALL,
+    why: "the colour name isn't a token or a Tailwind colour, so Tailwind emits nothing and the element renders uncoloured (bg-cusom-white, bg-severity_ok_text)",
+    re: /(?<![\w\-.$])(?:[a-z0-9-]+:)*(?:bg|text|border(?:-[trblxyse])?|divide|ring(?:-offset)?|outline|accent|fill|stroke|from|via|to|decoration|caret|shadow)-([a-z][a-z0-9_-]*?)(?:\/(?:\d+|\[[\d.]+\]))?(?![\w\-\[])/g,
+    // A name ending in "-" is the front half of an interpolated class, judged by its own rule.
+    keep: (m) => !m[1].endsWith("-") && !COLOURS.has(m[1]) && !NOT_A_COLOUR.test(m[1]) && !/^(?:sm|md|lg|xl|2xl|inner|none|card|card-sm|rail)$/.test(m[1]),
+  },
+  {
     id: "darkened-backdrop",
     scope: ALL,
     why: "a modal blurs what is behind it (backdrop-blur-sm); a black sheet costs the page the colours the reader opened the modal about",
@@ -241,6 +269,8 @@ for (const r of ROOTS.slice(1)) (function walk(dir) {
     }
   }
 })(SHARED_ROOT);
+for (const s of DEV_SHEETS)
+  files.push({ path: s, page: "components-dev", family: "Library", legacy: false, src: strip(readFileSync(s, "utf8")) });
 
 /* ── run ────────────────────────────────────────────────────────────────── */
 
@@ -259,6 +289,11 @@ for (const rule of RULES) {
     const lines = f.src.split("\n");
     lines.forEach((l, i) => {
       if (rule.lineSkip?.test(l)) return;
+      if (rule.keep) {
+        // A rule with a keep() judges each match (the unknown-colour check).
+        for (const m of l.matchAll(rule.re)) if (rule.keep(m)) hits.push({ f, line: i + 1, text: m[0].trim().slice(0, 60) });
+        return;
+      }
       const m = l.match(rule.re);
       if (m) hits.push({ f, line: i + 1, text: m[0].trim().slice(0, 60) });
     });

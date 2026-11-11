@@ -31,6 +31,8 @@
  *   selector-outside-hook  a dev page's component reads Redux with
  *                      useAppSelector rather than through the page's context
  *                      hook; the page's own top-level file may read it (§4)
+ *   catalogued-look    a dev-tree className spells out a whole cc-* class from
+ *                      src/styles/components-dev.css instead of using it (§11)
  */
 import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -44,6 +46,14 @@ const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 
 const LABELS = ["Hooks", "Redux", "API", "Utils", "Interfaces", "Components"];
 const MAX_LINES = 900;
+
+/** The dev tree's shared looks: each cc-* class and the classes it stands for. */
+const SHEET = "src/styles/components-dev.css";
+const LOOKS = existsSync(SHEET)
+  ? [...readFileSync(SHEET, "utf8").matchAll(/\.(cc-[a-z0-9-]+)\s*\{\s*@apply ([^;]+);/g)]
+      .map((m) => ({ cls: m[1], need: m[2].trim().split(/\s+/) }))
+  : [];
+const isDevTree = (f) => /^src\/pages\/[^/]+\/dev\//.test(f) || /^src\/components-dev\//.test(f);
 
 const inScope = (f) =>
   /^src\/.*\.(ts|tsx)$/.test(f) &&
@@ -175,6 +185,23 @@ function check(f) {
       hit("commented-code", i + 1, "markup in a comment; delete it");
     if (/\*\/\}/.test(l)) inJsxComment = false;
   });
+
+  /* a catalogued look spelled out: the always-on classes (a plain string, or a
+     template's fixed text) hold every class of a cc-* definition */
+  if (isDevTree(f) && f.endsWith(".tsx") && LOOKS.length) {
+    const walk = (n) => {
+      if (ts.isJsxAttribute(n) && n.name.getText(sf) === "className" && n.initializer) {
+        const e = ts.isJsxExpression(n.initializer) ? n.initializer.expression : n.initializer;
+        const fixed = !e ? [] : ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e) ? [e.text]
+          : ts.isTemplateExpression(e) ? [e.head.text, ...e.templateSpans.map((sp) => sp.literal.text)] : [];
+        const have = new Set(fixed.join(" ").split(/\s+/).filter(Boolean));
+        for (const l of LOOKS)
+          if (l.need.every((c) => have.has(c))) hit("catalogued-look", lineOf(n), `spells out ${l.cls}; use the class`);
+      }
+      ts.forEachChild(n, walk);
+    };
+    walk(sf);
+  }
 
   /* Redux through the page's context hook (the page's own top-level file may read it) */
   if (/^src\/pages\/[^/]+\/dev\/.+\//.test(f) && !/\/hooks\//.test(f))
