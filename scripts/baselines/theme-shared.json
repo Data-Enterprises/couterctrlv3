@@ -102,10 +102,6 @@
   "src/components/modals/ExportModal.tsx": {
     "text-opacity-floor": 1
   },
-  "src/components/navigation/components/AvatarDropdown.tsx": {
-    "hardcoded-severity-palette": 2,
-    "text-opacity-floor": 8
-  },
   "src/components/navigation/components/CategoryNavList.tsx": {
     "text-opacity-floor": 3
   },
