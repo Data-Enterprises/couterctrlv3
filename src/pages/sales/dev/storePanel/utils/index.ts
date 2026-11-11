@@ -1,4 +1,5 @@
 // Utils
+import { shiftIso } from "../../../../../utils/grading";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../../utils";
 import { computeDayMatchedTotals, describeLyWindow } from "../../utils/ledgerUtils";
 
@@ -33,7 +34,7 @@ const lwEnd = addDays(singleDate, -7).toISOString().split("T")[0];
 // scoped to its own genuine data, not gated by a different fetch's gaps.
 const twRealDates = Array.from(
   { length: 7 },
-  (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
+  (_, i) => shiftIso(twStart, i),
 );
 /**
  * What the LY comparison actually looks at, as opposed to what was fetched.
@@ -49,7 +50,7 @@ const lyWeekDates = [...lyWindow.dates].sort();
 const lyStart = lyWeekDates[0];
 const lyEnd = lyWeekDates[lyWeekDates.length - 1];
 const lwWeekDates = twRealDates.map(
-  (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+  (d) => shiftIso(d, -7),
 );
 
 const twYear = new Date(twEnd + "T12:00:00").getFullYear();
@@ -86,7 +87,7 @@ const twDateLabel = selectedDate
   : `${fmtDate(twStart)} – ${fmtDate(twEnd)}`;
 const lwDateLabel = selectedDate
   ? new Date(
-      addDays(new Date(selectedDate), -7).toISOString().split("T")[0] +
+      shiftIso(selectedDate, -7) +
         "T12:00:00",
     ).toLocaleDateString("en-US", {
       weekday: "short",

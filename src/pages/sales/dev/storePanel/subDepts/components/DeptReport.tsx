@@ -12,8 +12,9 @@ import { rememberCounterpart } from "../../../../../../features/dev/devSalesCach
 import { getSubs } from "../../../../../../api/sales";
 
 // Utils
+import { shiftIso } from "../../../../../../utils/grading";
 import { severityDotClass } from "../../../../../../utils/severity";
-import { addDays, sameWeekDayLastYear } from "../../../../../../utils";
+import { sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
 import {
   buildReport,
@@ -128,9 +129,7 @@ const DeptReport = ({
   const theirs = useMemo(() => {
     if (!cached) return undefined;
     if (selectedDate) {
-      const lwDay = addDays(new Date(selectedDate), -7)
-        .toISOString()
-        .split("T")[0];
+      const lwDay = shiftIso(selectedDate, -7);
       const lyDay = sameWeekDayLastYear(selectedDate).date;
       return {
         tw: cached.tw.filter((s) => day(s.sale_date) === selectedDate),

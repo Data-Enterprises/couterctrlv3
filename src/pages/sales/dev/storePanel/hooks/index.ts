@@ -21,7 +21,8 @@ import {
 import { getSubs, getHourly } from "../../../../../api/sales";
 
 // Utils
-import { addDays, sameWeekDayLastYear } from "../../../../../utils";
+import { shiftIso } from "../../../../../utils/grading";
+import { sameWeekDayLastYear } from "../../../../../utils";
 import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/ledgerUtils";
 import { buildDateLabels, buildWeekWindow } from "../utils";
 
@@ -270,9 +271,7 @@ export const useDayScopedSales = () => {
           rawSubs.filter((s) => s.sale_date.startsWith(selectedDate)),
         ),
       );
-      const lwDay = addDays(new Date(selectedDate), -7)
-        .toISOString()
-        .split("T")[0];
+      const lwDay = shiftIso(selectedDate, -7);
       const lyDay = sameWeekDayLastYear(selectedDate).date;
       dispatch(
         setPeriodSubSales({

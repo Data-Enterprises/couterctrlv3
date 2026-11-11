@@ -39,6 +39,23 @@ export default defineConfig([
       ],
     },
   },
+  // A "YYYY-MM-DD" is shifted with shiftIso (src/utils/grading), in UTC. Parsing
+  // one as a Date gives UTC midnight, addDays then counts local days, and across
+  // a clock change the day slips: the week after 1 Nov 2026 matched every day to
+  // the wrong last-week day.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/legacy/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.name='addDays'] > NewExpression.arguments[arguments.length>0]",
+          message: "Shift a date string with shiftIso(iso, days) from utils/grading; addDays(new Date(iso)) slips a day across a clock change.",
+        },
+      ],
+    },
+  },
   // Code under src imports by relative path; `@/` is for tests only (CLAUDE.md §6).
   {
     files: ["src/**/*.{ts,tsx}"],

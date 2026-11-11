@@ -1,6 +1,6 @@
 import { addDays, sameWeekDayLastYear } from "../../../../utils";
 import { rowsToCsv } from "../../../../utils/csvExport";
-import { matchDatedRows } from "../../../../utils/grading";
+import { matchDatedRows, shiftIso } from "../../../../utils/grading";
 // Universal now (Item Grading uses it too); re-exported for the ledger code.
 export { matchDatedRows };
 import { gradeSeverity } from "../../../../utils/severity";
@@ -519,9 +519,7 @@ export const buildLedgerRows = (
       .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
       .map((r) => {
         const twDate = r.sale_date.split("T")[0];
-        const lwDate = addDays(new Date(twDate), -7)
-          .toISOString()
-          .split("T")[0];
+        const lwDate = shiftIso(twDate, -7);
         const lyDate = sameWeekDayLastYear(twDate).date;
         const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
         const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
