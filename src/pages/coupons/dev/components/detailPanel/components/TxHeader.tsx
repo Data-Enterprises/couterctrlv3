@@ -21,7 +21,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                         <div className="flex items-center gap-2">
                           <button
                             onClick={onBack}
-                            className="flex items-center gap-1 text-content/95 hover:text-content transition-colors text-[11px]"
+                            className="flex items-center gap-1 cc-muted-link text-[11px]"
                           >
                             <ArrowLeftIcon className="w-3 h-3" />
                             Back to coupons
@@ -52,7 +52,7 @@ const TxHeader = ({ txMeta, txLines, onBack, onExport }: TxHeaderProps) => (
                             <button
                               onClick={onExport}
                               title="Export transaction CSV"
-                              className="text-content/95 hover:text-content transition-colors"
+                              className="cc-muted-link"
                             >
                               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                             </button>

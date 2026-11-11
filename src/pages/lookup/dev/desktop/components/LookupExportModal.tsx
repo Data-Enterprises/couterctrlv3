@@ -307,7 +307,7 @@ const LookupExportModal = ({
               <div className="flex items-center justify-between mt-3.5">
                 <button
                   onClick={onClose}
-                  className="text-[12px] text-content/95 hover:text-content transition-colors"
+                  className="text-[12px] cc-muted-link"
                 >
                   Cancel
                 </button>

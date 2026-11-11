@@ -507,7 +507,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
           }}
           title="Clear every pick — the loaded range stays"
           aria-label="Clear every pick, keeping the loaded range"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 cc-muted-link hover:border-brand_slate flex items-center justify-center"
         >
           <ArrowPathIcon className="w-3.5 h-3.5" />
         </button>
@@ -1050,7 +1050,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                   type="button"
                   onClick={() => ctx.dispatch(removeAggregate(i))}
                   aria-label={`Remove ${aliasFor(m.column, m.fn)}`}
-                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate transition-colors"
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 cc-muted-link hover:border-brand_slate"
                 >
                   ×
                 </button>
@@ -1093,7 +1093,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                   type="button"
                   onClick={() => ctx.dispatch(removeComputed(i))}
                   aria-label={`Remove ${m.alias}`}
-                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/95 hover:text-content hover:border-brand_slate transition-colors"
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 cc-muted-link hover:border-brand_slate"
                 >
                   ×
                 </button>

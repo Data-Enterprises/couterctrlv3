@@ -393,7 +393,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair mt-2">
             <button
               onClick={onClose}
-              className="text-[12px] text-content/95 hover:text-content transition-colors"
+              className="text-[12px] cc-muted-link"
             >
               Cancel
             </button>
@@ -559,7 +559,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
             <button
               onClick={onClose}
-              className="text-[12px] text-content/95 hover:text-content transition-colors"
+              className="text-[12px] cc-muted-link"
             >
               Cancel
             </button>

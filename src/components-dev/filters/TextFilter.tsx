@@ -47,7 +47,7 @@ const TextFilter = ({
       {value && (
         <button
           onClick={() => onChange("")}
-          className="flex-shrink-0 text-content/95 hover:text-content transition-colors"
+          className="flex-shrink-0 cc-muted-link"
         >
           <XMarkIcon className="w-3 h-3" />
         </button>

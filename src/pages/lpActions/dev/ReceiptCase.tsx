@@ -59,7 +59,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
         <button
           onClick={onClose}
           title="Back to the summary"
-          className="flex-shrink-0 p-1 rounded text-content/95 hover:text-content hover:bg-fill_muted transition-colors"
+          className="flex-shrink-0 p-1 rounded cc-muted-link hover:bg-fill_muted"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>

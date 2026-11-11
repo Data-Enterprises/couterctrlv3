@@ -280,7 +280,7 @@ const OrdersExportModal = ({
           </span>
           <button
             onClick={onClose}
-            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/95 transition-colors hover:border-content/35 hover:text-content"
+            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium cc-muted-link hover:border-content/35"
           >
             Cancel
           </button>

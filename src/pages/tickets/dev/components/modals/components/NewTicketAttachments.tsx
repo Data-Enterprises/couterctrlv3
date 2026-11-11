@@ -65,7 +65,7 @@ const NewTicketAttachments = ({
               setFiles((have) => have.filter((f) => f.name !== one.name))
             }
             aria-label={`Remove ${one.name}`}
-            className="text-content/95 hover:text-content transition-colors"
+            className="cc-muted-link"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>

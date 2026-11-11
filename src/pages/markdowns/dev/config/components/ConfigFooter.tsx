@@ -21,7 +21,7 @@ const ConfigFooter = ({ matched, total, active, onClear }: ConfigFooterProps) =>
       onClick={onClear}
       disabled={active === 0}
       title="Clear every filter"
-      className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium text-content/95 transition-colors hover:text-content hover:border-content/35 disabled:opacity-50"
+      className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium cc-muted-link hover:border-content/35 disabled:opacity-50"
     >
       <ArrowPathIcon className="w-3 h-3" />
       Clear{active > 0 ? ` (${active})` : ""}

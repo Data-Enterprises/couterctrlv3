@@ -111,7 +111,7 @@ const ExplorerSearch = ({
         {onBack && (
           <button
             onClick={onBack}
-            className="w-full py-2 text-[12px] font-medium text-content/95 hover:text-content transition-colors"
+            className="w-full py-2 text-[12px] font-medium cc-muted-link"
           >
             Back to results
           </button>

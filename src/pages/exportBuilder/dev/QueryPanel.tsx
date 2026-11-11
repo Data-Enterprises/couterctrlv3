@@ -268,7 +268,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
               onClick={() => ctx.dispatch(setCurrentQuery(null))}
               aria-label={`Close ${current.name}`}
               title="Close this query — the box and the configuration stay as they are"
-              className="w-[16px] h-[16px] rounded text-content/95 hover:text-content transition-colors"
+              className="w-[16px] h-[16px] rounded cc-muted-link"
             >
               ×
             </button>

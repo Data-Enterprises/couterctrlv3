@@ -162,7 +162,7 @@ const SignalDetail = ({
                 <button
                   key={label}
                   onClick={() => handleSort(col)}
-                  className={`flex items-center gap-0.5 uppercase tracking-wide text-content/95 hover:text-content transition-colors ${align}`}
+                  className={`flex items-center gap-0.5 uppercase tracking-wide cc-muted-link ${align}`}
                 >
                   {label}
                   {sort?.col === col &&

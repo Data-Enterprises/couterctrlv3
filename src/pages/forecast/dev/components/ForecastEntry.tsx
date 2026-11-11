@@ -148,7 +148,7 @@ const ForecastEntry = ({
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/95 hover:text-content hover:bg-brand_navy/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded cc-muted-link hover:bg-brand_navy/10"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>

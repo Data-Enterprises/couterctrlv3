@@ -90,7 +90,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/95 hover:text-content hover:bg-brand_navy/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded cc-muted-link hover:bg-brand_navy/10"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -146,13 +146,13 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
           <div data-help="upc-input" className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 cc-muted-link hover:border-content/35"
             >
               Add
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/95 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 cc-muted-link hover:border-content/35"
             >
               Upload CSV
             </button>
