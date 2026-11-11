@@ -63,14 +63,14 @@ const ExplorerSearch = ({
         )}
 
         {rangeTooWide && (
-          <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-[11.5px] text-severity_watch_text leading-snug">
+          <div className="cc-notice text-[11.5px] leading-snug">
             {rangeDays} days selected. Narrow to {maxRangeDays} or fewer — the
             same window Loss Prevention grades against.
           </div>
         )}
 
         {noExceptionsFound && !rangeTooWide && (
-          <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-[11.5px] text-severity_watch_text leading-snug">
+          <div className="cc-notice text-[11.5px] leading-snug">
             No exceptions recorded for this scope and date range.
           </div>
         )}

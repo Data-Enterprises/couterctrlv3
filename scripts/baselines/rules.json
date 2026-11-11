@@ -133,12 +133,6 @@
   "src/components-dev/ItemMarginsTable.tsx": {
     "catalogued-look": 2
   },
-  "src/components-dev/SearchCard.tsx": {
-    "catalogued-look": 2
-  },
-  "src/components-dev/SingleStoreSearchCard.tsx": {
-    "catalogued-look": 1
-  },
   "src/components-dev/eventPerf/components/EventDrillList.tsx": {
     "catalogued-look": 1
   },
@@ -635,9 +629,6 @@
   "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/cashiers/dev/components/ExplorerSearch.tsx": {
-    "catalogued-look": 2
-  },
   "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
     "catalogued-look": 1
   },
@@ -657,9 +648,6 @@
     "labels": 1
   },
   "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
     "catalogued-look": 1
   },
   "src/pages/exportBuilder/ExportBuilder.tsx": {
@@ -756,9 +744,6 @@
   },
   "src/pages/forecast/Forecasting.tsx": {
     "labels": 1
-  },
-  "src/pages/forecast/dev/components/ForecastEntry.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
@@ -963,9 +948,6 @@
   },
   "src/pages/itemReport/ItemReport.tsx": {
     "labels": 1
-  },
-  "src/pages/itemReport/dev/export/ItemReportExportModal.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/lookup/ItemLookup.tsx": {
     "labels": 1

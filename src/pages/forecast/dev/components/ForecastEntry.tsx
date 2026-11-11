@@ -161,7 +161,7 @@ const ForecastEntry = ({
             style={isLoading ? { visibility: "hidden" } : undefined}
           >
             {notice && (
-              <div className="px-2.5 py-2 rounded-lg bg-severity_watch_bg text-[11.5px] text-severity_watch_text leading-snug">
+              <div className="cc-notice text-[11.5px] leading-snug">
                 {notice}
               </div>
             )}
