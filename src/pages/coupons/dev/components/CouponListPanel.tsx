@@ -201,7 +201,7 @@ const CouponListPanel = ({
             No results
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-line_faint">
             {/* All stores row — group mode only */}
             {isGroup && (
               <button

@@ -42,7 +42,7 @@ const ActualPriceRow = ({
   return (
     <div>
       <div
-        className={`grid px-1 py-2 text-[13px] border-b border-gray-50 ${isBest ? "bg-blue-50" : "even:bg-row_stripe"}`}
+        className={`grid px-1 py-2 text-[13px] border-b border-line_faint ${isBest ? "bg-blue-50" : "even:bg-row_stripe"}`}
         style={{ gridTemplateColumns: ACT_COLS }}
       >
         <span

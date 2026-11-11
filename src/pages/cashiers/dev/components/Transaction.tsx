@@ -238,7 +238,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           return (
             <div
               key={i}
-              className="grid gap-2 py-1.5 border-b border-gray-50 items-center"
+              className="grid gap-2 py-1.5 border-b border-line_faint items-center"
               style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
             >
               <div className="text-[9px] text-content/95 truncate">

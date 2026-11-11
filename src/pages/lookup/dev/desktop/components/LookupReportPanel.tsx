@@ -272,7 +272,7 @@ const LookupReportPanel = ({
             return (
               <div
                 key={b.date}
-                className={`grid px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
+                className={`grid px-2 py-2 text-[12px] border-b border-line_faint ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
                 style={salesGrid}
               >
                 <span className={b.hasSale ? "text-content" : "text-content/95"}>

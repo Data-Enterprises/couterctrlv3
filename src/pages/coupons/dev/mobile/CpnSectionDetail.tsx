@@ -347,7 +347,7 @@ const CpnSectionDetail = ({
                   return (
                     <div
                       key={i}
-                      className="grid px-4 py-1.5 border-b border-gray-50 items-center"
+                      className="grid px-4 py-1.5 border-b border-line_faint items-center"
                       style={{
                         gridTemplateColumns: "18px 1fr 20px 56px 40px",
                         background: isCpn ? "rgba(234,179,8,0.06)" : undefined,

@@ -35,12 +35,12 @@ const AssociationLeftPanel = ({
         </div>
         <button
           onClick={onBackToSeed}
-          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-gray-50 text-[11px] text-content/95 hover:bg-gray-50"
+          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-line_faint text-[11px] text-content/95 hover:bg-gray-50"
         >
           <ArrowLeftIcon className="w-3 h-3 flex-shrink-0" />
           Back to Seed UPCs ({selectedUpcs.length})
         </button>
-        <div className="flex items-start gap-2 px-2.5 py-2 border-b border-gray-50">
+        <div className="flex items-start gap-2 px-2.5 py-2 border-b border-line_faint">
           <MagnifyingGlassIcon className="w-3 h-3 text-brand_navy flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
             <div className="text-[12px] font-medium text-content truncate">{rerootDescription}</div>
@@ -60,7 +60,7 @@ const AssociationLeftPanel = ({
         {selectedUpcs.map((code) => {
           const seedItem = seedItemsMap.get(code);
           return (
-            <div key={code} className="flex items-start gap-2 px-2.5 py-2 border-b border-gray-50">
+            <div key={code} className="flex items-start gap-2 px-2.5 py-2 border-b border-line_faint">
               <CheckIcon className="w-3 h-3 text-brand_navy flex-shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">

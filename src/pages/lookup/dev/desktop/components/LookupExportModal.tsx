@@ -279,7 +279,7 @@ const LookupExportModal = ({
                   </thead>
                   <tbody>
                     {custom.rows.slice(0, PREVIEW_ROWS).map((row, ri) => (
-                      <tr key={ri} className="border-b border-gray-50">
+                      <tr key={ri} className="border-b border-line_faint">
                         {row.map((cell, ci) => (
                           <td
                             key={custom.cols[ci].key}

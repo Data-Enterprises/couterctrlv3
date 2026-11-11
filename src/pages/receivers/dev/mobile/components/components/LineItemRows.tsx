@@ -16,7 +16,7 @@ const LineItemRows = ({ details }: LineItemRowsProps) => {
       {details.map((item, i) => (
         <div
           key={i}
-          className="grid px-3 py-1.5 border-b border-gray-50 items-center"
+          className="grid px-3 py-1.5 border-b border-line_faint items-center"
           style={{ gridTemplateColumns: LINE_GRID }}
         >
           <div className="min-w-0 pr-1">

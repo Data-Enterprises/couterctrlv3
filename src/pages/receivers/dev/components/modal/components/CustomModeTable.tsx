@@ -24,7 +24,7 @@ const CustomModeTable = ({
           {columns.map((c) => (
             <td
               key={c.key}
-              className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-gray-50"
+              className="px-3 py-1.5 text-content/95 whitespace-nowrap border-b border-line_faint"
             >
               {row[c.key] ?? "—"}
             </td>

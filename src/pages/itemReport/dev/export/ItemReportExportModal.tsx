@@ -569,7 +569,7 @@ const ItemReportExportModal = ({
                 </thead>
                 <tbody>
                   {rowsOut.slice(0, PREVIEW_ROWS).map((r, i) => (
-                    <tr key={i} className="border-b border-gray-50">
+                    <tr key={i} className="border-b border-line_faint">
                       {activeCols.map((c) => (
                         <td
                           key={c.key}

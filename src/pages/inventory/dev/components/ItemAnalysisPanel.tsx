@@ -354,7 +354,7 @@ const ItemAnalysisPanel = ({
               return (
                 <div
                   key={`${p.price}-${p.priceType}`}
-                  className="grid px-1 py-2 text-[13px] border-b border-gray-50 even:bg-row_stripe"
+                  className="grid px-1 py-2 text-[13px] border-b border-line_faint even:bg-row_stripe"
                   style={{ gridTemplateColumns: EST_COLS }}
                 >
                   <span className="tabular-nums text-content">

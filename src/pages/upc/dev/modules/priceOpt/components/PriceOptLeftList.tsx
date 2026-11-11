@@ -24,7 +24,7 @@ const PriceOptLeftList = ({ rows, selectedCode, onSelect }: PriceOptLeftListProp
           <button
             key={r.code}
             onClick={() => onSelect(r.code)}
-            className={`w-full text-left px-2.5 py-2 border-b border-gray-50 transition-colors ${
+            className={`w-full text-left px-2.5 py-2 border-b border-line_faint transition-colors ${
               isSelected ? "bg-custom-white" : "hover:bg-gray-50"
             }`}
             style={isSelected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}

@@ -68,7 +68,7 @@ const SaleTypeBreakdown = ({
                 ? "Back to the sales timeline"
                 : `Show the ${s.saleType.toLowerCase()} timeline`
             }
-            className={`${grid} ${px} w-full py-2 text-left text-[12px] tabular-nums border-b border-gray-50 border-l-2 transition-colors ${
+            className={`${grid} ${px} w-full py-2 text-left text-[12px] tabular-nums border-b border-line_faint border-l-2 transition-colors ${
               isSelected
                 ? "bg-row_selected border-l-brand_navy font-semibold text-content"
                 : "border-l-transparent text-content hover:bg-gray-50"
