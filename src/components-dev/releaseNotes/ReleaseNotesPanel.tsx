@@ -66,12 +66,22 @@ const ReleaseNotesPanel = ({
   };
   const closeRef = useRef(close);
   closeRef.current = close;
+  const panel = useRef<HTMLElement>(null);
+  // Escape or a click anywhere outside closes it. The click still reaches
+  // the page, so nothing has to be clicked twice.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeRef.current();
     };
+    const onDown = (e: PointerEvent) => {
+      if (!panel.current?.contains(e.target as Node)) closeRef.current();
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onDown);
+    };
   }, []);
 
   const [date, setDate] = useState(releases[0]?.date ?? "");
@@ -92,6 +102,7 @@ const ReleaseNotesPanel = ({
 
   return createPortal(
     <aside
+      ref={panel}
       aria-label="Release notes"
       className={`fixed inset-y-0 right-0 z-[70] flex w-[600px] max-w-full flex-col border-l border-brand_line bg-bkg shadow-[-24px_0_48px_-16px_rgb(var(--color-brand-navy)/0.28)] transition-transform duration-200 ease-out motion-reduce:transition-none ${
         shown ? "translate-x-0" : "translate-x-full"

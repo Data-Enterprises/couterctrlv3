@@ -116,4 +116,17 @@ describe("ReleaseNotesPanel", () => {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(onEscape).toHaveBeenCalled());
   });
+
+  it("closes on a click outside it, and stays open for a click inside", async () => {
+    const outside = document.createElement("button");
+    document.body.appendChild(outside);
+    const onClose = show("sales", "Sales");
+    await userEvent.click(section(/^Fixes/));
+    await userEvent.selectOptions(screen.getByRole("combobox"), "2026-10-20");
+    await new Promise((r) => setTimeout(r, 250));
+    expect(onClose).not.toHaveBeenCalled();
+    await userEvent.click(outside);
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    outside.remove();
+  });
 });
