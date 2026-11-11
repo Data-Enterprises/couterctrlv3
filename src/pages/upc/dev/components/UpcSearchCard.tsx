@@ -107,7 +107,7 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
               <button
                 key={tab.id}
                 onClick={() => dispatch(setDevActiveTab(tab.id))}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
+                className={`cc-chip-btn text-[11px] border ${
                   ctx.activeTab === tab.id
                     ? "bg-brand_navy border-brand_navy text-custom-white"
                     : "border-content/20 text-content/95 hover:text-content hover:border-content/35"

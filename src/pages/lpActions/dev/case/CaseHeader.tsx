@@ -39,7 +39,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     <button
       onClick={onOpenPlot}
       title="Every type and lane this cashier touched, as a link chart"
-      className="flex-shrink-0 flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded border border-custom-white/30 text-custom-white hover:bg-custom-white/10 transition-colors"
+      className="flex-shrink-0 flex items-center gap-1.5 text-[12px] cc-chip-btn border border-custom-white/30 text-custom-white hover:bg-custom-white/10"
     >
       <ChartPieIcon className="w-3.5 h-3.5" />
       Connection plot

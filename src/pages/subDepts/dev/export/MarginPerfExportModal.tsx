@@ -275,7 +275,7 @@ const MarginPerfExportModal = ({
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                className={`cc-chip-btn text-[11px] ${
                   mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
                 }`}
               >

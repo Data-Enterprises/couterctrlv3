@@ -244,7 +244,7 @@ const CouponsExportModal = ({
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
+                className={`cc-chip-btn text-[11px] ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
