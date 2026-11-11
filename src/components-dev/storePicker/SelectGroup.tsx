@@ -113,7 +113,7 @@ const SelectGroup = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
+    "basic-input focus:border bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
   const width = app.isDesktop ? "relative w-full w-full" : "relative w-full";
   return (
@@ -164,7 +164,7 @@ const SelectGroup = () => {
                 key={`group-${idx}`}
                 onClick={() => handleSelect(group)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
+                <div className="p-1 hover:bg-fill_soft transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>
               </div>

@@ -78,7 +78,7 @@ const DeleteGroup = () => {
             <div
               key={g.id}
               data-testid={`delete-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-fill_soft`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}

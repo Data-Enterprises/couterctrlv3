@@ -120,7 +120,7 @@ const GroupStoreAssignMobile = () => {
                     <div
                       key={store.storeid}
                       data-testid={`unassigned-store-${store.storeid}`}
-                      className="bg-slate-100 flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
+                      className="bg-slate-100 flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-fill_soft hover:shadow-inner transition-all duration-200 md:flex-row"
                       onClick={() =>
                         handleStoreClick(store.storeid, "unassigned")
                       }
@@ -149,7 +149,7 @@ const GroupStoreAssignMobile = () => {
                     <div
                       key={store.storeid}
                       data-testid={`assigned-store-${store.storeid}`}
-                      className="bg-slate-100 text-[9.5px] flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
+                      className="bg-slate-100 text-[9.5px] flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-fill_soft hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
                       onClick={() =>
                         handleStoreClick(store.storeid, "assigned")
                       }

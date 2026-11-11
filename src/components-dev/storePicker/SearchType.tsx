@@ -145,7 +145,7 @@ const SearchType = ({ singleStoreOnly = false }: SearchTypeProps) => {
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-[13px] py-1"
+              className="basic-input bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-[13px] py-1"
             />
           </div>
           <div
@@ -181,7 +181,7 @@ const SearchType = ({ singleStoreOnly = false }: SearchTypeProps) => {
                       data-testid={`st-option-${option.id}`}
                       onClick={() => handleSelect(option)}
                       key={`st-option-${option.id}`}
-                      className="px-2 py-2 hover:bg-blue-200 transition-all duration-500 cursor-pointer"
+                      className="px-2 py-2 hover:bg-fill_soft transition-all duration-500 cursor-pointer"
                     >
                       <span className="block truncate font-normal group-data-[selected]:font-semibold text-[13px]">
                         {option.name}

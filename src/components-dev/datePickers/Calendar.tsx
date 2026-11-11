@@ -160,7 +160,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
             data-testid={`${dateFlag}-calendar-day-${id}`}
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
-            className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(
+            className={`day hover:bg-fill_soft transition-all duration-200 ${isSelectedDate(
               day,
             )}`}
           >

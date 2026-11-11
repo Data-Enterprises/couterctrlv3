@@ -90,7 +90,7 @@ const SearchStore = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-[13px] py-1";
+    "basic-input focus:border bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-[13px] py-1";
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -161,7 +161,7 @@ const SearchStore = () => {
                 key={`store-${idx}`}
                 onClick={() => handleSelect(store)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-[13px]">
+                <div className="p-1 hover:bg-fill_soft transition-all duration-200 cursor-pointer text-[13px]">
                   {store.store_name}
                 </div>
               </div>
