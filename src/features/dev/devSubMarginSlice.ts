@@ -124,6 +124,9 @@ interface SubMarginState {
   loadingMargins: boolean;
   selectedWeek: MarginWeek;
   searchValue: number;
+  /** The search date (MM/DD/YYYY) the results were fetched for. The panels
+   *  build their week from this, not the live picker, which other pages move. */
+  searchedDate: string | null;
   selectedWeekDay: string;
   openExportModal: boolean;
   openCostExportModal: boolean;
@@ -205,6 +208,7 @@ const initialState: SubMarginState = {
   loadingMargins: false,
   selectedWeek: 0,
   searchValue: 0,
+  searchedDate: null,
   selectedWeekDay: "",
   filterTextInput: "",
   upcFilter: "",
@@ -393,6 +397,9 @@ const subMarginSlice = createSlice({
     setSearchValue: (state, action: PayloadAction<number>) => {
       state.searchValue = action.payload;
     },
+    setSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
+    },
     setItemFilterType: (state, action: PayloadAction<ItemFilterType>) => {
       state.itemFilterType = action.payload;
     },
@@ -478,6 +485,7 @@ const subMarginSlice = createSlice({
 });
 
 export const {
+  setSearchedDate,
   setSubDeptGrade,
   setGradingThreshold,
   setGradingMetric,

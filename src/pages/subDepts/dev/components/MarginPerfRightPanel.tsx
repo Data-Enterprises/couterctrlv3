@@ -99,29 +99,29 @@ const MarginPerfRightPanel = () => {
     !!ctx.selectedWeekDay ||
     isCompleteCoverage(selectedGrade.coverage.lyDayCount, selectedGrade.coverage.dayCount);
 
-  const periodEnd = ctx.singleDate
-    ? formatDate(setDates(new Date(ctx.singleDate), 0))
+  const periodEnd = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 0))
     : "";
-  const periodStart = ctx.singleDate
-    ? formatDate(setDates(new Date(ctx.singleDate), 6))
+  const periodStart = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 6))
     : "";
   const dateRange =
     periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
-  const lyPeriodEnd = ctx.singleDate
-    ? formatDate(getLYDate(ctx.singleDate))
+  const lyPeriodEnd = ctx.weekDate
+    ? formatDate(getLYDate(ctx.weekDate))
     : "";
-  const lyPeriodStart = ctx.singleDate
-    ? formatDate(getLYDate(setDates(new Date(ctx.singleDate), 6)))
+  const lyPeriodStart = ctx.weekDate
+    ? formatDate(getLYDate(setDates(new Date(ctx.weekDate), 6)))
     : "";
   const lyDateRange =
     lyPeriodStart && lyPeriodEnd ? `${lyPeriodStart} – ${lyPeriodEnd}` : "";
 
-  const lwPeriodEnd = ctx.singleDate
-    ? formatDate(setDates(new Date(ctx.singleDate), 7))
+  const lwPeriodEnd = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 7))
     : "";
-  const lwPeriodStart = ctx.singleDate
-    ? formatDate(setDates(new Date(ctx.singleDate), 13))
+  const lwPeriodStart = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 13))
     : "";
   const lwDateRange =
     lwPeriodStart && lwPeriodEnd ? `${lwPeriodStart} – ${lwPeriodEnd}` : "";
@@ -446,7 +446,7 @@ const MarginPerfRightPanel = () => {
                   openCriticalReport({
                     storeId: ctx.searchValue,
                     items: criticalItems,
-                    window: weekEnding(ctx.singleDate ?? ""),
+                    window: weekEnding(ctx.weekDate ?? ""),
                     // Grading already fetched all three periods for this
                     // department, so the report has nothing left to fetch.
                     rows: selectedGrade

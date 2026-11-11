@@ -61,7 +61,7 @@ const SubDeptMargins = () => {
   const actions = useSubMarginActions();
   const sm = useSubMarginState();
   const toast = useToast();
-  const params = useParams();
+  const paramsFor = useParams();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
@@ -243,6 +243,11 @@ const SubDeptMargins = () => {
     discoveredRef.current = false;
     // A search started after this one makes every answer below stale.
     const search = ++searchRef.current;
+    // A new search takes the picker's date and records it; a location refetch
+    // stays on the searched week.
+    const fresh = preferredNumber === undefined;
+    if (fresh) dispatch(actions.setSearchedDate(ctx.singleDate));
+    const params = paramsFor(fresh ? ctx.singleDate : ctx.weekDate);
     // Shift the whole selected window back 7 days. The old end-13 → end-7 form
     // ignored params.start, so any range that wasn't exactly 7 days fetched a
     // mismatched LW span.

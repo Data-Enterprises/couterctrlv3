@@ -100,13 +100,13 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
     // total with one store's number.
     : combinedStoreName(rawStoreName, availableStoreNumbers);
 
-  const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
-  const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
+  const periodEnd = ctx.weekDate ? formatDate(setDates(new Date(ctx.weekDate), 0)) : "";
+  const periodStart = ctx.weekDate ? formatDate(setDates(new Date(ctx.weekDate), 6)) : "";
   const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
   // Oldest → newest, so the sparkline reads left-to-right chronologically.
-  const weekDates = ctx.singleDate
-    ? Array.from({ length: 7 }, (_, i) => setDates(new Date(ctx.singleDate!), 6 - i))
+  const weekDates = ctx.weekDate
+    ? Array.from({ length: 7 }, (_, i) => setDates(new Date(ctx.weekDate!), 6 - i))
     : [];
 
   // Each grade already carries its own week's raw line items (tyWeekOneMargins)

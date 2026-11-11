@@ -46,6 +46,7 @@ export const useSubMarginCtx = () => {
     loadingSubDepts,
     selectedWeek,
     searchValue,
+    searchedDate,
     selectedWeekDay,
     subDeptGridView,
     subDeptCost,
@@ -84,6 +85,8 @@ export const useSubMarginCtx = () => {
     selectedWeek,
     selectedWeekDay,
     singleDate,
+    // The week on screen: the searched date, else the picker before a search.
+    weekDate: searchedDate ?? singleDate,
     subDeptCost,
     subDepts,
     subDeptFitlerText,
@@ -120,10 +123,15 @@ export const useSubMarginCtx = () => {
   };
 };
 
+/** The search's parameters for the week ending `date` (MM/DD/YYYY). */
 export const useParams = () => {
   const ctx = useSubMarginCtx();
-  const startDate = setDates(new Date(ctx.singleDate), 6);
-  const endDate = setDates(new Date(ctx.singleDate));
+  return (date: string) => paramsFor(date, ctx.searchValue);
+};
+
+const paramsFor = (date: string, searchValue: number) => {
+  const startDate = setDates(new Date(date), 6);
+  const endDate = setDates(new Date(date));
 
   // This will revert once we can accept groups for the endpoints safely
   return {
@@ -135,7 +143,7 @@ export const useParams = () => {
     // singleStore: ctx.type === "Store" ? 1 : 0,
     singleStore: 1,
     // searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
-    searchValue: ctx.searchValue, // aka the selected store from the current SingleSelect in SubMarginControls.tsx
+    searchValue, // aka the selected store from the current SingleSelect in SubMarginControls.tsx
   };
 };
 
