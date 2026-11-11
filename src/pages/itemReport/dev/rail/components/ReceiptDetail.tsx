@@ -33,7 +33,7 @@ const ReceiptDetail = ({ line }: ReceiptDetailProps) => {
   const dispatch = useAppDispatch();
 
   return (
-    <div className="bg-gray-50 border-l-2 border-brand_navy">
+    <div className="bg-fill_soft border-l-2 border-brand_navy">
       <div className="px-2.5 py-1.5 text-[12px] font-medium text-content truncate">
         {line.vendorName}
       </div>

@@ -19,7 +19,7 @@ const CustomModeTable = ({
       {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
         <tr
           key={i}
-          className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}
+          className={i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}
         >
           {columns.map((c) => (
             <td

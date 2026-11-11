@@ -52,7 +52,7 @@ const TransactionsPane = ({ selectedSection, transactions, scopedCoupons, txSort
     </div>
 
     <div
-      className="flex-shrink-0 grid border-b border-line_hair bg-gray-50"
+      className="flex-shrink-0 grid border-b border-line_hair bg-fill_soft"
       style={{ gridTemplateColumns: "1.4fr 1fr 0.6fr 0.7fr" }}
     >
       {(["Transaction", "Cashier"] as const).map((h) => (
@@ -89,7 +89,7 @@ const TransactionsPane = ({ selectedSection, transactions, scopedCoupons, txSort
           <button
             key={t.sale_id}
             onClick={() => onOpen(t)}
-            className="w-full grid items-center border-b border-line_hair text-left hover:bg-gray-50 transition-colors even:bg-row_stripe"
+            className="w-full grid items-center border-b border-line_hair text-left hover:bg-fill_soft transition-colors even:bg-row_stripe"
             style={{ gridTemplateColumns: "1.4fr 1fr 0.6fr 0.7fr" }}
           >
             {/* No grade dot here — a transaction is almost always a

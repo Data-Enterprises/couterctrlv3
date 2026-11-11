@@ -472,7 +472,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               selecting
                 ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
                 : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
-            } px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center`}
+            } px-3 py-2 bg-fill_soft text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center`}
           >
             {/* Select all lives in the bar, where it says so in words. */}
             {selecting && <div />}
@@ -540,8 +540,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                     picked
                       ? "bg-row_selected border-l-row_selected_border text-content"
                       : outranked
-                        ? "bg-gray-50 text-content/95 border-l-transparent"
-                        : "text-content even:bg-row_stripe hover:bg-gray-50 border-l-transparent"
+                        ? "bg-fill_soft text-content/95 border-l-transparent"
+                        : "text-content even:bg-row_stripe hover:bg-fill_soft border-l-transparent"
                   } ${pickable ? "cursor-pointer" : ""}`}
                 >
                   {selecting && (

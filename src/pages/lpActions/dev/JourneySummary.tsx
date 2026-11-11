@@ -55,7 +55,7 @@ export const SummaryCard = ({
   <div
     onClick={onClick}
     className={`px-3 py-2.5 border-b border-line_hair ${
-      onClick ? "cursor-pointer hover:bg-gray-50" : ""
+      onClick ? "cursor-pointer hover:bg-fill_soft" : ""
     } ${active ? "bg-row_selected" : ""}`}
   >
     <div className="flex items-baseline gap-2 mb-1.5">

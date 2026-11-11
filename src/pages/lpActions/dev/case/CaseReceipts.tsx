@@ -74,7 +74,7 @@ const CaseReceipts = ({ rows, lines, saleType, onOpen }: Props) => {
           key={r.sale_id}
           onClick={() => onOpen(r)}
           title="Open the whole receipt"
-          className={`w-full text-left transition-colors hover:bg-gray-50 ${GRID_ROW} ${
+          className={`w-full text-left transition-colors hover:bg-fill_soft ${GRID_ROW} ${
             index % 2 === 1 ? "bg-row_stripe" : ""
           }`}
           style={{ gridTemplateColumns: COLS }}

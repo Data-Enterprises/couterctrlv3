@@ -266,7 +266,7 @@ const LookupExportModal = ({
               <div className="border border-line_hair rounded-md overflow-hidden">
                 <table className="w-full text-[11px]">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-line_hair">
+                    <tr className="bg-fill_soft border-b border-line_hair">
                       {custom.cols.map((c) => (
                         <th
                           key={c.key}

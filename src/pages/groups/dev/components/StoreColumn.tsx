@@ -37,7 +37,7 @@ const StoreColumn = ({
           placeholder={placeHolder}
         />
       </div>
-      <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-gray-50">
+      <div className="px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content bg-fill_soft">
         {title} ({stores.length})
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-t-0 border-line_hair">
@@ -55,7 +55,7 @@ const StoreColumn = ({
                 disabled={pending.has(s.storeid)}
                 className={`w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold ${
                   adds ? "text-brand_navy" : "text-red-600"
-                } border border-line_field hover:bg-gray-50 disabled:cursor-not-allowed transition-colors`}
+                } border border-line_field hover:bg-fill_soft disabled:cursor-not-allowed transition-colors`}
               >
                 {adds ? "+" : "−"}
               </button>

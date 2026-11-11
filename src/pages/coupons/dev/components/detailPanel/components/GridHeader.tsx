@@ -35,7 +35,7 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
     uniqueSubDeptOptions,
   } = filters;
   return (
-    <tr className="sticky top-0 bg-gray-50 border-b border-line_hair z-10">
+    <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
       <th
         className="px-3 py-2 text-left w-32"
         style={{ overflow: "visible" }}

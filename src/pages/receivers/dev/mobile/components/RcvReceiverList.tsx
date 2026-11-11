@@ -119,7 +119,7 @@ const RcvReceiverList = ({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-gray-50">
+    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-fill_soft">
       <MobilePerfHeader
         pageName="Receivers"
         storeName={storeName}
@@ -187,7 +187,7 @@ const RcvReceiverList = ({
               <LineItemsHeader />
               <LineItemRows details={details} />
 
-              <div className="flex items-center justify-between px-3 py-2 border-t border-line_hair bg-gray-50">
+              <div className="flex items-center justify-between px-3 py-2 border-t border-line_hair bg-fill_soft">
                 <span className="text-[10px] text-content/95 tabular-nums">
                   {totals?.cases ?? details.reduce((s, d) => s + d.cases, 0)} cs
                   · {totals?.units ?? details.reduce((s, d) => s + d.units, 0)}{" "}

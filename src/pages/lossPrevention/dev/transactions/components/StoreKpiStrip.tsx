@@ -12,7 +12,7 @@ interface StoreKpiStripProps {
 /** The store's four figures against its baseline; always on screen. */
 const StoreKpiStrip = ({ kpiMetrics }: StoreKpiStripProps) => {
   return (
-    <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-line_hair border-b border-line_hair bg-gray-50">
+    <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-line_hair border-b border-line_hair bg-fill_soft">
       {kpiMetrics.map((m) => (
         <StripCell
           key={m.label}

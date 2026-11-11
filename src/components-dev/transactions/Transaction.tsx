@@ -299,7 +299,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
       </div>
 
       {/* Totals — single inline line */}
-      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-line_hair bg-gray-50">
+      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-line_hair bg-fill_soft">
         <span className="text-[11px] text-content/95">
           Net sales{" "}
           <span className="font-semibold text-content">

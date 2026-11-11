@@ -24,7 +24,7 @@ const GridKpiStrip = ({ rows }: GridKpiStripProps) => {
   return (
     <div
       data-help="kpis"
-      className="grid grid-cols-5 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0"
+      className="grid grid-cols-5 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-fill_soft flex-shrink-0"
     >
       <StoresKpi stores={t.stores} />
       <GridKpi label="Markdown $" value={formatCurrency2(t.dollars)} />

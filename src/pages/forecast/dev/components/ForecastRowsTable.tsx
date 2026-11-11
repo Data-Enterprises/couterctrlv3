@@ -235,7 +235,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {/* KPI strip */}
-        <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft flex-shrink-0">
           {[
             ["Items", String(rows.length)],
             ["Ad fcst units", totals.units.toLocaleString()],
@@ -298,7 +298,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {/* batch setter — writes to every ticked row, so the count is named */}
-        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-line_hair flex-shrink-0">
+        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-fill_soft border-b border-line_hair flex-shrink-0">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}
@@ -562,7 +562,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
                       }
                       className={`grid gap-2.5 items-center pl-1.5 pr-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 border-l-4 ${
                         entry ? TIER_STRIPE[entry.tier] : "border-l-transparent"
-                      } ${row.singlePrice ? "" : "even:bg-row_stripe hover:bg-gray-50"}`}
+                      } ${row.singlePrice ? "" : "even:bg-row_stripe hover:bg-fill_soft"}`}
                       style={{ gridTemplateColumns: COLS }}
                     >
                       <div className="min-w-0 flex items-baseline gap-2">

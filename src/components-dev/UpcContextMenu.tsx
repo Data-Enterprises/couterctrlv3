@@ -71,7 +71,7 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
             item.onClick();
             onClose();
           }}
-          className="w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-gray-50 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-fill_soft disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
         >
           <span>{item.label}</span>
           {item.count !== null && (

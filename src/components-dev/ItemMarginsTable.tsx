@@ -366,7 +366,7 @@ const ItemMarginsTable = ({
           className="flex flex-col border-r border-line_hair min-w-0"
           style={{ width: "47%", flexShrink: 0 }}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
             {sevChip("critical", "Crit")}
             {sevChip("watch", "Watch")}
             {sevChip("healthy", "OK")}
@@ -485,7 +485,7 @@ const ItemMarginsTable = ({
                     className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                       isSel
                         ? "bg-row_selected border-row_selected_border"
-                        : "border-transparent hover:bg-gray-50"
+                        : "border-transparent hover:bg-fill_soft"
                     }`}
                   >
                     <ItemSeverityBadge severity={sev} />
@@ -600,7 +600,7 @@ const ItemMarginsTable = ({
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-2 border-b border-line_hair bg-gray-50">
+                <div className="flex items-center gap-2 px-4 py-2 border-b border-line_hair bg-fill_soft">
                   <span className="text-[14px] font-medium text-content truncate">
                     {selectedItem.description}
                   </span>
@@ -615,7 +615,7 @@ const ItemMarginsTable = ({
               <div className="px-4 py-2.5 border-b border-line_hair">
                 <div className="grid grid-cols-[40%_1fr] gap-2">
                   {reportRows.length > 0 && (
-                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft p-2.5 text-center flex flex-col justify-center">
                       <div className="text-[11px] font-semibold text-content">
                         {reportRows[0].label}
                       </div>
@@ -658,7 +658,7 @@ const ItemMarginsTable = ({
                   {/* Supporting metrics share one set of column headers so they
                       stay comparable to each other; prior values live in the
                       title attribute. */}
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft px-2.5 py-1 flex flex-col justify-center">
                     <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
                       <span />
                       <span className="text-right">TY</span>

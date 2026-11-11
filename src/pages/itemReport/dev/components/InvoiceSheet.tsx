@@ -148,7 +148,7 @@ const InvoiceSheet = ({
                 heading. Sharing the scroll container is what makes them line
                 up; sticky is what keeps them visible. */}
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
               style={{ gridTemplateColumns: ROW_COLS }}
             >
               <span className="text-right">#</span>

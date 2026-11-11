@@ -23,7 +23,7 @@ const Line = ({ cells, zebra, onClick, template }: LineProps) => (
     onClick={onClick}
     className={`grid gap-2.5 pl-1 py-1.5 text-[12px] items-center ${
       zebra === undefined ? "even:bg-row_stripe" : zebra ? "bg-row_stripe" : ""
-    } ${onClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
+    } ${onClick ? "cursor-pointer hover:bg-fill_soft" : ""}`}
     style={{ gridTemplateColumns: template ?? TEMPLATE[cells.length] }}
   >
     {cells.map((c, i) => (

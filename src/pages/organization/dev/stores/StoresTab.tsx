@@ -126,7 +126,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                   isSel
                     ? "bg-brand_navy text-custom-white"
-                    : "hover:bg-gray-50 text-content"
+                    : "hover:bg-fill_soft text-content"
                 }`}
               >
                 <span className="text-[12px] font-semibold tabular-nums flex-shrink-0 w-[44px]">

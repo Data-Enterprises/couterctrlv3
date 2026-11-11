@@ -26,7 +26,7 @@ const SectionList = ({ groupedSections, selectedSection, onSelect }: SectionList
               onClick={() =>
                 onSelect(isSel ? null : section.key)
               }
-              className={`w-full px-3 py-2 border-b border-line_hair last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
+              className={`w-full px-3 py-2 border-b border-line_hair last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-fill_soft"}`}
               style={
                 isSel
                   ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }

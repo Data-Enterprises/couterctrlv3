@@ -93,7 +93,7 @@ const LookupReportPanel = ({
         </div>
 
         {/* 7-col KPI strip — margin first */}
-        <div className="grid grid-cols-7 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-7 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
               Margin
@@ -272,7 +272,7 @@ const LookupReportPanel = ({
             return (
               <div
                 key={b.date}
-                className={`grid px-2 py-2 text-[12px] border-b border-line_faint ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
+                className={`grid px-2 py-2 text-[12px] border-b border-line_faint ${b.hasSale ? "even:bg-row_stripe" : "bg-fill_soft/60"}`}
                 style={salesGrid}
               >
                 <span className={b.hasSale ? "text-content" : "text-content/95"}>

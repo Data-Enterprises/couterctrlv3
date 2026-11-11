@@ -300,7 +300,7 @@ const BaseGroups = () => {
             onClick={() => setShowNewGroupModal(true)}
             title="New base group"
             aria-label="New base group"
-            className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
+            className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-fill_soft"
           >
             <PlusIcon className="w-4 h-4" />
           </button>
@@ -380,7 +380,7 @@ const BaseGroups = () => {
                               : undefined
                           }
                           className={`w-full flex flex-col items-start pl-6 pr-3 py-2 text-left transition-colors ${
-                            isSel ? "bg-custom-white" : "hover:bg-gray-50"
+                            isSel ? "bg-custom-white" : "hover:bg-fill_soft"
                           }`}
                         >
                           <span className="text-[12px] font-medium text-content">

@@ -55,7 +55,7 @@ const FacetDetail = ({
 
   return (
     <div className="border-b border-line_hair">
-      <div className="flex items-stretch border-b border-line_hair bg-gray-50">
+      <div className="flex items-stretch border-b border-line_hair bg-fill_soft">
         <Stat value={String(branch.count)} label="occurrences" />
         <Stat value={String(branch.receipts)} label="receipts" />
         <Stat value={formatCurrency2(branch.value)} label="value" />

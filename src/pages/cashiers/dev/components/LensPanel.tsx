@@ -39,7 +39,7 @@ const LensPanel = ({
             className={`text-[11.5px] font-medium px-2.5 py-1 rounded-full transition-colors ${
               lens === l.key
                 ? "bg-brand_navy text-custom-white"
-                : "bg-gray-50 text-content hover:bg-gray-100"
+                : "bg-fill_soft text-content hover:bg-gray-100"
             }`}
           >
             {l.label}
@@ -55,7 +55,7 @@ const LensPanel = ({
         />
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] px-3 py-1.5 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+      <div className="grid grid-cols-[1fr_auto] px-3 py-1.5 bg-fill_soft text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
         <div>{LENS_COLUMN_LABEL[lens]}</div>
         <div>Lines · transactions</div>
       </div>
@@ -73,7 +73,7 @@ const LensPanel = ({
               key={s.key}
               onClick={() => onSelect(s.key)}
               className={`w-full text-left px-3 py-2 transition-colors ${
-                isSelected ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
+                isSelected ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={
                 isSelected

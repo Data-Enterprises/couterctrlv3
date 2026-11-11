@@ -104,7 +104,7 @@ const CashierList = ({
                   className={`w-full grid border-l-2 border-b border-b-brand_navy/15 transition-colors text-left ${
                     isSel
                       ? "bg-row_selected border-row_selected_border"
-                      : "border-transparent hover:bg-gray-50"
+                      : "border-transparent hover:bg-fill_soft"
                   }`}
                   style={{ gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr" }}
                 >

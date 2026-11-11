@@ -40,7 +40,7 @@ const CompDeptRow = ({
   return (
     <div>
       <div
-        className={`grid ${COLS} px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50`}
+        className={`grid ${COLS} px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-fill_soft`}
       >
         <Checkbox
           checked={state === "all"}

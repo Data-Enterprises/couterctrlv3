@@ -25,7 +25,7 @@ const CashierScoreStrip = ({ selectedGrade, scoreMetrics, isNoDollar }: CashierS
           </div>
         </div>
         <div
-          className={`flex-shrink-0 grid divide-x divide-line_hair border-b border-line_hair bg-gray-50 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
+          className={`flex-shrink-0 grid divide-x divide-line_hair border-b border-line_hair bg-fill_soft ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
         >
           {scoreMetrics.map((m) => (
             <StripCell

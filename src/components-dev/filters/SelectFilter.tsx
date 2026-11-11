@@ -181,7 +181,7 @@ const SelectFilter = ({
             {!query.trim() && !options.some((o) => o.value === "") && (
               <button
                 onClick={() => handleSelect("")}
-                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-fill_soft transition-colors"
                 style={{ color: value === "" ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.45)", fontWeight: value === "" ? 600 : 400 }}
               >
                 {placeholder}
@@ -191,7 +191,7 @@ const SelectFilter = ({
               <button
                 key={o.value}
                 onClick={() => handleSelect(o.value)}
-                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-fill_soft transition-colors"
                 style={{ color: "rgb(var(--color-brand-navy))", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgb(var(--color-brand-navy) / 0.04)" : undefined }}
               >
                 {o.label}

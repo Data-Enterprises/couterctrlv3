@@ -148,7 +148,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
             <button
               key={`${sel.storeid}__${sel.storenumber}-${sel.orderId}`}
               onClick={() => onSelectOrder(sel)}
-              className="w-full px-4 py-3 border-b border-line_hair text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              className="w-full px-4 py-3 border-b border-line_hair text-left hover:bg-fill_soft active:bg-gray-100 transition-colors"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-brand_navy">#{sel.orderId}</span>

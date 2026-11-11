@@ -331,7 +331,7 @@ const ItemReportSheet = ({
         )}
 
         <div
-          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-line_hair bg-gray-50 text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
           style={{ gridTemplateColumns: COLS }}
         >
           <span>Action</span>
@@ -418,7 +418,7 @@ const ItemReportSheet = ({
                 key={item.productCode}
                 onClick={() => onSelect({ item, verdict })}
                 className={`w-full text-left border-b border-line_hair border-l-2 transition-colors ${
-                  isSel ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
+                  isSel ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
                 } ${tone.rule}`}
               >
                 <div

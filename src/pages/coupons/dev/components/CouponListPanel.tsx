@@ -184,7 +184,7 @@ const CouponListPanel = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search stores…"
-            className="w-full text-[11px] text-content px-2.5 py-1.5 rounded-md bg-gray-50 border border-line_field placeholder:text-content/35"
+            className="w-full text-[11px] text-content px-2.5 py-1.5 rounded-md bg-fill_soft border border-line_field placeholder:text-content/35"
             style={{
               outline: "none",
               WebkitAppearance: "none",
@@ -207,7 +207,7 @@ const CouponListPanel = ({
               <button
                 onClick={() => onSelect("")}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-                  selectedKey === "" ? "bg-custom-white" : "hover:bg-gray-50"
+                  selectedKey === "" ? "bg-custom-white" : "hover:bg-fill_soft"
                 }`}
                 style={
                   selectedKey === ""
@@ -236,7 +236,7 @@ const CouponListPanel = ({
                   key={item.key}
                   onClick={() => onSelect(isSel && isGroup ? "" : item.key)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-                    isSel ? "bg-custom-white" : "hover:bg-gray-50"
+                    isSel ? "bg-custom-white" : "hover:bg-fill_soft"
                   }`}
                   style={
                     isSel

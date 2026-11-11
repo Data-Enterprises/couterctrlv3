@@ -197,7 +197,7 @@ const ItemFixPanel = ({
         <div className="rounded-lg border border-brand_line overflow-hidden">
           <table className="w-full border-collapse text-[12.5px]">
             <thead>
-              <tr className="bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content">
+              <tr className="bg-fill_soft text-[10px] font-semibold uppercase tracking-wide text-content">
                 <th className="w-8 px-2.5 py-2" />
                 <th className="px-2.5 py-2 text-left">Store · order</th>
                 <th className="px-2.5 py-2 text-right">Case</th>
@@ -274,7 +274,7 @@ const ItemFixPanel = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onSkip}
-            className="rounded-md border border-brand_line px-3.5 py-1.5 text-[12.5px] font-medium text-content hover:bg-gray-50"
+            className="rounded-md border border-brand_line px-3.5 py-1.5 text-[12.5px] font-medium text-content hover:bg-fill_soft"
           >
             Skip
           </button>

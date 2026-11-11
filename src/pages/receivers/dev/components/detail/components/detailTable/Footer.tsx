@@ -10,7 +10,7 @@ const Footer = () => {
 
   return (
     <tfoot>
-      <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+      <tr className="sticky bottom-0 bg-fill_soft border-t-2 border-content/70 font-bold text-[14px]">
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2 text-right text-content/95">Totals</td>

@@ -131,7 +131,7 @@ const InventoryTreePanel = ({
                 <button
                   onClick={() => onToggleGroup(g.id)}
                   className={`w-full flex items-center gap-1.5 px-3 py-2 text-left transition-colors ${
-                    isOpen ? "bg-gray-50" : "hover:bg-gray-50"
+                    isOpen ? "bg-fill_soft" : "hover:bg-fill_soft"
                   }`}
                 >
                   {isOpen ? (
@@ -175,7 +175,7 @@ const InventoryTreePanel = ({
                           className={`w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-left border-l-2 transition-colors ${
                             isSel
                               ? "border-blue-600 bg-blue-50"
-                              : "border-transparent hover:bg-gray-50"
+                              : "border-transparent hover:bg-fill_soft"
                           }`}
                         >
                           <span

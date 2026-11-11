@@ -63,10 +63,10 @@ export const ACTION_TONE: Record<
   /** Quiet on purpose. It is a state, not a finding, and colouring it would
    *  give a row that says nothing the same weight as one that does. */
   pending: {
-    chip: "bg-gray-50 text-content/95",
+    chip: "bg-fill_soft text-content/95",
     ring: "ring-content/20",
     rule: "border-transparent",
-    row: "bg-gray-50",
+    row: "bg-fill_soft",
     text: "text-content",
   },
 };

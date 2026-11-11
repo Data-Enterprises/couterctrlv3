@@ -96,7 +96,7 @@ const Companies = () => {
                 className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                   isSel
                     ? "bg-brand_navy text-custom-white"
-                    : "hover:bg-gray-50 text-content"
+                    : "hover:bg-fill_soft text-content"
                 }`}
               >
                 <span className="text-[12px] font-semibold truncate">

@@ -178,7 +178,7 @@ const OrderReportPanel = ({
         />
       ) : (
         <>
-          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
+          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-fill_soft flex-shrink-0">
             <GridKpi label="Lines" value={visible.length.toLocaleString()} />
             <GridKpi label="Orders" value={totals.orders.toLocaleString()} />
             <StoresKpi stores={totals.storeNames} />
@@ -190,7 +190,7 @@ const OrderReportPanel = ({
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
             <table data-help="lines" className="w-full border-collapse text-[12px]">
               <thead>
-                <tr className="sticky top-0 bg-gray-50 border-b border-line_hair z-10">
+                <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
                   {/* Narrow and unlabelled: a line can carry two flags at
                       once, and a tint across the row could only show one. */}
                   <th style={{ width: 22 }} aria-label="Cost problems" />
@@ -234,7 +234,7 @@ const OrderReportPanel = ({
                 {paged.map((o) => (
                   <tr
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
-                    className="even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                    className="even:bg-row_stripe hover:bg-fill_soft transition-colors"
                   >
                     <td className="pl-3 py-2">
                       <span className="flex gap-[3px]">

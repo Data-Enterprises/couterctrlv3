@@ -175,7 +175,7 @@ const StoreActivityComp = ({
 
             <div
               data-help="activity-grid"
-              className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0"
+              className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 bg-fill_soft text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0"
             >
               <div>ID</div>
               <div>Store name</div>

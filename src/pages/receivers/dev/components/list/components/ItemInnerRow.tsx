@@ -13,7 +13,7 @@ const ItemInnerRow = ({ item, getDetails, isSel }: ItemInnerRowProps) => {
     <button
       onClick={getDetails}
       className={`w-full grid grid-cols-[60px_70px_1fr] items-center gap-2 pl-6 pr-3 py-2 text-left transition-colors ${
-        isSel ? "bg-custom-white" : "hover:bg-gray-50"
+        isSel ? "bg-custom-white" : "hover:bg-fill_soft"
       }`}
       style={
         isSel

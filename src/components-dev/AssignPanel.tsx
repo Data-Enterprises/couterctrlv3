@@ -261,7 +261,7 @@ const AssignPanel = ({
               className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 staged.has(item.id)
                   ? "bg-brand_navy text-custom-white"
-                  : "hover:bg-gray-50 text-content"
+                  : "hover:bg-fill_soft text-content"
               }`}
             >
               <div className="truncate">{item.label}</div>
@@ -330,7 +330,7 @@ const AssignPanel = ({
               className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 unstaged.has(item.id)
                   ? "bg-red-600 text-custom-white"
-                  : "hover:bg-gray-50 text-content"
+                  : "hover:bg-fill_soft text-content"
               }`}
             >
               <div className="truncate">{item.label}</div>

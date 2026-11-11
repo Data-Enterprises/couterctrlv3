@@ -377,7 +377,7 @@ const SubDeptExclusions = () => {
           className={`text-[11.5px] font-medium px-3 py-1.5 rounded-md flex-shrink-0 border transition-colors ${
             hashOnly
               ? "bg-brand_navy border-brand_navy text-custom-white"
-              : "bg-custom-white border-line_field text-content hover:bg-gray-50"
+              : "bg-custom-white border-line_field text-content hover:bg-fill_soft"
           }`}
         >
           Likely hash{suggestedLeft > 0 ? ` (${suggestedLeft})` : ""}
@@ -398,7 +398,7 @@ const SubDeptExclusions = () => {
 
       <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div
-          className={`grid ${COLS} px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
+          className={`grid ${COLS} px-3 py-2 bg-fill_soft text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
         >
           <div />
           <div>Department</div>

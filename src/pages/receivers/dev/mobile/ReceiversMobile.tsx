@@ -131,7 +131,7 @@ const ReceiversMobile = () => {
   }
 
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-gray-50">
+    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-fill_soft">
       <div className="mx-4 pt-4 pb-2">
         <SingleStoreSearchCard
           title="Receivers"

@@ -25,7 +25,7 @@ const StoreRow = ({ s, setEditing, setDeactivating, changeStatus }: StoreRowProp
   return (
     <div
       key={`${s.storeid}__${s.store_number}`}
-      className={`grid grid-cols-[13%_33%_26%_14%_14%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50`}
+      className={`grid grid-cols-[13%_33%_26%_14%_14%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-fill_soft`}
     >
       <div className="truncate tabular-nums">{s.store_number}</div>
       <div className="truncate">{s.store_name}</div>

@@ -10,7 +10,7 @@ interface GridRowProps {
 
 /** One markdown, as Receivers draws a line item: every grid column. */
 const GridRow = ({ row }: GridRowProps) => (
-  <tr className="even:bg-row_stripe hover:bg-gray-50 transition-colors">
+  <tr className="even:bg-row_stripe hover:bg-fill_soft transition-colors">
     {GRID_COLUMNS.map((c) => (
       <td
         key={c.key}

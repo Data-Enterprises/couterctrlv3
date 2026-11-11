@@ -73,7 +73,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </div>
         </div>
 
-        <div className="flex-shrink-0 flex border-b border-line_hair bg-gray-50">
+        <div className="flex-shrink-0 flex border-b border-line_hair bg-fill_soft">
           {row.weeks.map((w, i) => {
             const last = i === row.weeks.length - 1;
             return (
@@ -138,7 +138,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
                     )
                   }
                   title="Open this cashier's case"
-                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-line_hair hover:bg-gray-50 transition-colors"
+                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-line_hair hover:bg-fill_soft transition-colors"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-medium text-content truncate">

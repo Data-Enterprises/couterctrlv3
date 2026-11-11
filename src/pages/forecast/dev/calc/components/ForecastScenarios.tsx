@@ -74,7 +74,7 @@ const ForecastScenarios = ({
 
   return (
     <div className="flex flex-col min-h-0 overflow-hidden border border-line_field rounded-lg">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
           Price scenarios
         </span>
@@ -127,7 +127,7 @@ const ForecastScenarios = ({
             <div
               key={row.price}
               className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 ${
-                isActive ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
+                isActive ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={{ gridTemplateColumns: COLS }}
             >

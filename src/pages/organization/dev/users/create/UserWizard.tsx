@@ -470,7 +470,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       <div className="flex items-center gap-2 mb-2 flex-shrink-0">
         <button
           onClick={leave}
-          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
+          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-fill_soft"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
           Back to users
@@ -667,7 +667,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-line_hair flex-shrink-0">
         <button
           onClick={leave}
-          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-gray-50"
+          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-fill_soft"
         >
           Cancel
         </button>
@@ -687,7 +687,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             <button
               onClick={back}
               disabled={saving}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-gray-50"
+              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-fill_soft"
             >
               Back
             </button>

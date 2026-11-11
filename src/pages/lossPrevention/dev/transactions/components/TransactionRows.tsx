@@ -29,7 +29,7 @@ const TransactionRows = ({
       filteredOverviews.map((o, i) => (
         <div
           key={o.transaction_id + i}
-          className="grid border-b border-b-brand_navy/15 hover:bg-gray-50 transition-colors"
+          className="grid border-b border-b-brand_navy/15 hover:bg-fill_soft transition-colors"
           style={{
             gridTemplateColumns: "1fr 0.7fr 0.45fr 0.6fr",
             background:

@@ -56,7 +56,7 @@ const GroupsList = ({
           : "No shared groups match";
 
   return (
-    <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col min-h-0 bg-gray-50">
+    <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col min-h-0 bg-fill_soft">
       <div className="p-2.5 border-b border-line_hair flex gap-1.5">
         <TextFilter
           value={search}
@@ -69,7 +69,7 @@ const GroupsList = ({
           onClick={onOpenCreate}
           title="New group"
           aria-label="New group"
-          className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
+          className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-fill_soft"
         >
           <PlusIcon className="w-4 h-4" />
         </button>
@@ -101,7 +101,7 @@ const GroupsList = ({
               className={`w-full flex items-center gap-1.5 text-left px-3 py-2.5 border-b border-line_hair text-[12px] font-medium transition-colors ${
                 isSel
                   ? "bg-custom-white text-content"
-                  : "hover:bg-gray-50 text-content"
+                  : "hover:bg-fill_soft text-content"
               }`}
             >
               <span className="flex-1 truncate">{g.group_name}</span>

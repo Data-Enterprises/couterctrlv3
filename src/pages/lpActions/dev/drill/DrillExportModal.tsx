@@ -233,7 +233,7 @@ const DrillExportModal = ({
                     className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
                       on
                         ? "border-brand_navy bg-brand_navy text-custom-white"
-                        : "border-line_field text-content hover:bg-gray-50"
+                        : "border-line_field text-content hover:bg-fill_soft"
                     }`}
                   >
                     {f.label}

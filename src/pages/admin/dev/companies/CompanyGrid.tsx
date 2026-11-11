@@ -171,7 +171,7 @@ const CompanyGrid = () => {
       </div>
 
       <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 bg-fill_soft text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
           {companyCols.map((title) => (
             <div key={title}>{title}</div>
           ))}
@@ -180,7 +180,7 @@ const CompanyGrid = () => {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50"
+              className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-fill_soft"
             >
               <div className="truncate">
                 {c.name}

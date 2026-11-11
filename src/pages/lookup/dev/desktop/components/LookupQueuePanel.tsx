@@ -104,7 +104,7 @@ const LookupQueuePanel = ({
                 key={item.upc}
                 onClick={() => onSelect(item.upc)}
                 className={`w-full text-left px-3 py-2.5 border-b border-line_hair transition-colors ${
-                  isSelected ? "bg-custom-white" : "hover:bg-gray-50"
+                  isSelected ? "bg-custom-white" : "hover:bg-fill_soft"
                 }`}
                 style={
                   isSelected

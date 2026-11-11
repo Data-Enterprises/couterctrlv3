@@ -423,7 +423,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
               ) : (
                 <div className="flex-1 overflow-auto thin-scrollbar">
                   <table className="min-w-full text-[11px] border-collapse">
-                    <thead className="sticky top-0 bg-gray-50 z-10">
+                    <thead className="sticky top-0 bg-fill_soft z-10">
                       <tr>
                         {previewColumns.map((c) => (
                           <th
@@ -437,7 +437,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                     </thead>
                     <tbody>
                       {previewRows.slice(0, PREVIEW_ROWS).map((r, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}>
                           {previewColumns.map((c) => (
                             <td
                               key={c.key}

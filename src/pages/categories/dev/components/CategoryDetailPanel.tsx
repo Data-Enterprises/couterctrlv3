@@ -329,7 +329,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}
-      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
         <Kpi
           title={isQty ? "TY Qty" : "TY Net Sales"}
           dateLabel={twLabel}
@@ -464,7 +464,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                   className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                     selectedKey === r.key
                       ? "bg-row_selected border-row_selected_border"
-                      : "border-transparent hover:bg-gray-50"
+                      : "border-transparent hover:bg-fill_soft"
                   }`}
                 >
                   <span className="text-[12px] font-medium text-content truncate flex-1">
@@ -499,7 +499,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto thin-scrollbar">
-              <div className="px-3 py-2 border-b border-line_hair bg-gray-50">
+              <div className="px-3 py-2 border-b border-line_hair bg-fill_soft">
                 <span className="text-[12px] font-bold text-content">{report.title}</span>
               </div>
               {report.stats.map(([label, value]) => (

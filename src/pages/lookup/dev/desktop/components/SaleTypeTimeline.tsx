@@ -35,7 +35,7 @@ const SaleTypeTimeline = ({ buckets, weighed, saleType }: SaleTypeTimelineProps)
         <div
           key={b.date}
           className={`grid px-2 py-2 text-[12px] tabular-nums border-b border-line_faint ${
-            b.hasSale ? "even:bg-row_stripe text-content" : "bg-gray-50/60 text-content/95"
+            b.hasSale ? "even:bg-row_stripe text-content" : "bg-fill_soft/60 text-content/95"
           }`}
           style={grid}
           aria-label={b.hasSale ? `${saleType} on ${b.label}` : undefined}

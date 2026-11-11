@@ -60,7 +60,7 @@ const CategoryRow = ({
       className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSelected
           ? "bg-row_selected border-row_selected_border"
-          : "border-transparent hover:bg-gray-50"
+          : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />

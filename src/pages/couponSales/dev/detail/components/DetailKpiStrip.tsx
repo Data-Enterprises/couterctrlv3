@@ -22,7 +22,7 @@ interface DetailKpiStripProps {
  *  (totals halved to a comparable week; the average is already per coupon). */
 const DetailKpiStrip = ({ totals, baselineTotals }: DetailKpiStripProps) => {
   return (
-    <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-line_hair border-b border-line_hair bg-gray-50">
+    <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-line_hair border-b border-line_hair bg-fill_soft">
       <Kpi
         label="Amount"
         value={formatCurrency2(totals.amount)}

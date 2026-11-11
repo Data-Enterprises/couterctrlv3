@@ -231,7 +231,7 @@ const MultiSelectFilter = ({
 
           <button
             onClick={() => onChange([])}
-            className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors border-b border-line_hair flex-shrink-0"
+            className="w-full text-left px-3 py-2 text-[12px] hover:bg-fill_soft transition-colors border-b border-line_hair flex-shrink-0"
             style={{
               color: isActive
                 ? "rgb(var(--color-brand-navy) / 0.85)"
@@ -248,7 +248,7 @@ const MultiSelectFilter = ({
           {showSearch && query.trim() !== "" && shown.length > 0 && (
             <button
               onClick={toggleShown}
-              className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-brand_navy hover:bg-gray-50 transition-colors border-b border-line_hair flex-shrink-0"
+              className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-brand_navy hover:bg-fill_soft transition-colors border-b border-line_hair flex-shrink-0"
             >
               {allShownOn ? "Clear" : "Select"} {shown.length} match
               {shown.length === 1 ? "" : "es"}
@@ -269,7 +269,7 @@ const MultiSelectFilter = ({
                   <button
                     key={o.value}
                     onClick={() => toggle(o.value)}
-                    className="w-full flex items-center gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-fill_soft transition-colors"
                   >
                     <span
                       className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center flex-shrink-0 ${

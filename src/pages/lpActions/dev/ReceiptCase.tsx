@@ -78,7 +78,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
       {!loading && !error && lines.length > 0 && (
         <>
-          <div className="flex-shrink-0 flex border-b border-line_hair bg-gray-50">
+          <div className="flex-shrink-0 flex border-b border-line_hair bg-fill_soft">
             <Metric
               label={exceptionType}
               value={String(summary.flagged.length)}

@@ -380,7 +380,7 @@ const AccessPanel = ({
                   className={`w-full flex items-center gap-2 pl-2.5 pr-3 transition-colors ${
                     isActive
                       ? "bg-brand_navy text-custom-white"
-                      : "hover:bg-gray-50 text-content"
+                      : "hover:bg-fill_soft text-content"
                   }`}
                 >
                   <Checkbox
@@ -439,7 +439,7 @@ const AccessPanel = ({
                 <div
                   key={group.id}
                   className={`w-full pl-2.5 pr-3 py-1.5 transition-colors ${
-                    isOpen ? "bg-brand_navy/5" : "hover:bg-gray-50"
+                    isOpen ? "bg-brand_navy/5" : "hover:bg-fill_soft"
                   }`}
                   style={
                     isOpen
@@ -542,7 +542,7 @@ const AccessPanel = ({
                 <div key={group.id} id={`assignments-group-${group.id}`}>
                   <button
                     onClick={() => toggleSectionCollapse(group.id)}
-                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-gray-50 border-b border-line_hair text-left hover:bg-gray-100 transition-colors"
+                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair text-left hover:bg-gray-100 transition-colors"
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span

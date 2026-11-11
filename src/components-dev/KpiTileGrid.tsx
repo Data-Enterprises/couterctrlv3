@@ -10,7 +10,7 @@ interface KpiTileGridProps {
 // One continuous divided KPI band for a single selected item's detail
 // panel — matches PopupSubDeptList.tsx's own "selected item" KPI strip
 // convention exactly (same one StoreDetailPopup's store-level strip uses
-// too): grid-cols-N divide-x border-b bg-gray-50, centered cells,
+// too): grid-cols-N divide-x border-b bg-fill_soft, centered cells,
 // font-bold labels/values, delta shown as a rounded pill badge rather than
 // inline colored text. Meant to render full-bleed (no side margin/padding
 // of its own) directly below a detail panel's title strip. Reusable by
@@ -18,7 +18,7 @@ interface KpiTileGridProps {
 const KpiTileGrid = ({ items }: KpiTileGridProps) => {
   return (
     <div
-      className="grid divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 leading-snug"
+      className="grid divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft leading-snug"
       style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}
     >
       {items.map((kpi) => (

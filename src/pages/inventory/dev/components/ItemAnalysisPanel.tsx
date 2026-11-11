@@ -142,7 +142,7 @@ const ItemAnalysisPanel = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-6 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-6 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           <div className="px-3 pt-2.5 pb-1.5 text-center">
             <div className="text-[11px] font-bold uppercase tracking-wide text-content">
               Sales
@@ -224,7 +224,7 @@ const ItemAnalysisPanel = ({
             pattern line because it's the answer; the pattern is the caveat. */}
         {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
-            <div className="rounded-lg border border-line_field bg-gray-50 px-3 py-2 flex gap-2 items-start">
+            <div className="rounded-lg border border-line_field bg-fill_soft px-3 py-2 flex gap-2 items-start">
               <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0 mt-px" />
               <p className="text-[13px] text-content leading-snug">{withheld}</p>
             </div>
@@ -306,7 +306,7 @@ const ItemAnalysisPanel = ({
           <div className="px-4 pt-3 flex-shrink-0">
             <div
               className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg ${
-                pattern.concerning ? "bg-severity_watch_bg" : "bg-gray-50"
+                pattern.concerning ? "bg-severity_watch_bg" : "bg-fill_soft"
               }`}
             >
               {pattern.concerning ? (

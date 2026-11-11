@@ -33,7 +33,7 @@ const RListItemRows = ({
       {/* Date row */}
       <button
         onClick={() => toggleDate(group.date)}
-        className="w-full grid grid-cols-[1fr_56px_10%_32px] items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
+        className="w-full grid grid-cols-[1fr_56px_10%_32px] items-center gap-2 px-3 py-2 text-left hover:bg-fill_soft transition-colors"
       >
         <span className="text-[12px] font-medium text-content text-left truncate">
           {formatDate(group.date)}
@@ -53,7 +53,7 @@ const RListItemRows = ({
       {/* Invoice rows */}
       {dateOpen && (
         <div>
-          <div className="grid grid-cols-[60px_70px_1fr] gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/95">
+          <div className="grid grid-cols-[60px_70px_1fr] gap-2 pl-6 pr-3 py-1.5 bg-fill_soft text-[9.5px] font-bold uppercase tracking-wide text-content/95">
             <div>Invoice #</div>
             <div>Item count</div>
             <div>Vendor</div>

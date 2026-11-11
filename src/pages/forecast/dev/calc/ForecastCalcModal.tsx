@@ -138,7 +138,7 @@ const ForecastCalcModal = () => {
       {/* Item facts the fit stands on: Reg retail is the baseline every
           Markdown figure is measured against; price points is how many prices
           the demand curve is fitted through. */}
-      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft flex-shrink-0">
         {(
           [
             ["Reg retail", formatCurrency2(result.regular_retail_price)],
@@ -252,7 +252,7 @@ const ForecastCalcModal = () => {
 
           {/* Note */}
           <div className={SECTION}>
-            <div className="flex items-stretch bg-gray-50 border-b border-line_hair">
+            <div className="flex items-stretch bg-fill_soft border-b border-line_hair">
               <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Note
               </div>

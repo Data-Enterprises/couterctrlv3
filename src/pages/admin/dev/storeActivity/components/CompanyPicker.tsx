@@ -52,7 +52,7 @@ const CompanyPicker = ({
                 disabled={mode === "reference"}
                 className={`w-full text-left px-3 py-2 border-b border-line_hair text-[12px] transition-colors ${
                   mode === "select"
-                    ? "cursor-pointer hover:bg-gray-50"
+                    ? "cursor-pointer hover:bg-fill_soft"
                     : "cursor-default"
                 } ${isCollision ? "bg-brand_danger_bg text-brand_danger" : "text-content"}`}
                 style={

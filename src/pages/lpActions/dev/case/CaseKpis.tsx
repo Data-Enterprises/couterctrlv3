@@ -44,7 +44,7 @@ const CaseKpis = ({ facts, profile, profileLoading, saleType }: Props) => {
   const peakHour = profile ? peakHourOf(profile, saleType) : null;
 
   return (
-    <div className="flex items-stretch border-b border-line_hair bg-gray-50">
+    <div className="flex items-stretch border-b border-line_hair bg-fill_soft">
       <Kpi value={String(facts.occurrences)} label="this week" />
       <Kpi value={String(facts.receipts)} label="receipts" />
       <Kpi value={formatCurrency2(facts.value)} label="value" />

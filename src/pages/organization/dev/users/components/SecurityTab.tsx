@@ -72,7 +72,7 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
 
   return (
     <div className="max-w-[440px]">
-      <div className="p-2.5 bg-gray-50 rounded-lg">
+      <div className="p-2.5 bg-fill_soft rounded-lg">
         <ul className="text-[11px] text-content/95 list-disc pl-4 space-y-0.5">
           <li>The temporary password must be confirmed before submitting</li>
           <li>

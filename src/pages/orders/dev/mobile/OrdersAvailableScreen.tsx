@@ -205,7 +205,7 @@ const OrdersAvailableScreen = ({
                           onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid, store.storenumber)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
-                            sel ? "bg-custom-white" : "hover:bg-gray-50"
+                            sel ? "bg-custom-white" : "hover:bg-fill_soft"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">

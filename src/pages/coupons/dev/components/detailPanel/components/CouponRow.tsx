@@ -21,7 +21,7 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
     <>
       <tr
         key={agg.product_code}
-        className={`cursor-pointer hover:bg-gray-50 transition-colors ${idx % 2 === 1 ? "bg-row_stripe" : ""}`}
+        className={`cursor-pointer hover:bg-fill_soft transition-colors ${idx % 2 === 1 ? "bg-row_stripe" : ""}`}
         onClick={() => toggleCoupon(agg.product_code)}
       >
         <td className="px-3 py-2 whitespace-nowrap tabular-nums">
@@ -78,7 +78,7 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
           {agg.uses.map((use) => (
             <tr
               key={use.sale_id}
-              className="bg-gray-50/85 cursor-pointer hover:bg-gray-100 transition-colors text-[11px]"
+              className="bg-fill_soft/85 cursor-pointer hover:bg-gray-100 transition-colors text-[11px]"
               onClick={(e) => {
                 e.stopPropagation();
                 handleRowClick(use.row);

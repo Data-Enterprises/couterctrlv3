@@ -62,5 +62,5 @@ export const HEAD =
 /** The calculator modal's bordered sections, their headings and field labels. */
 export const SECTION = "border border-line_field rounded-lg overflow-hidden";
 export const SECTION_HEAD =
-  "px-3 py-1.5 bg-gray-50 border-b border-line_hair text-[11px] font-semibold uppercase tracking-wide text-content/95";
+  "px-3 py-1.5 bg-fill_soft border-b border-line_hair text-[11px] font-semibold uppercase tracking-wide text-content/95";
 export const FIELD_LABEL = "text-[11px] font-medium text-content/95 ml-0.5";

@@ -252,7 +252,7 @@ const InvoiceCard = ({
             )}
             {row.checks.length > 0 && (
               <div className="overflow-hidden rounded border border-line_field">
-                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-line_field bg-gray-50 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
+                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-line_field bg-fill_soft px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                   <span>Check</span>
                   <span className="text-right">Derived</span>
                   <span className="text-right">Reported</span>

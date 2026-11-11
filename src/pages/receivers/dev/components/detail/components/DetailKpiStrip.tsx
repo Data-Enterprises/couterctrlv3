@@ -11,7 +11,7 @@ const DetailKpiStrip = () => {
   if (!totals) return null;
 
   return (
-    <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
+    <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-fill_soft flex-shrink-0">
       <div className="px-4 py-2 text-center">
         <div className="text-[10px] font-bold uppercase tracking-wide text-content">
           Cases
