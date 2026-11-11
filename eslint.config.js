@@ -53,6 +53,12 @@ export default defineConfig([
           selector: "CallExpression[callee.name='addDays'] > NewExpression.arguments[arguments.length>0]",
           message: "Shift a date string with shiftIso(iso, days) from utils/grading; addDays(new Date(iso)) slips a day across a clock change.",
         },
+        {
+          // addDays(isoString, n).toISOString() does the same; only the search's
+          // MM/DD/YYYY singleDate (read as local midnight) is safe in it.
+          selector: "MemberExpression[property.name='toISOString'] > CallExpression.object[callee.name='addDays']:not([arguments.0.name='singleDate']):not([arguments.0.property.name='singleDate'])",
+          message: "Shift a YYYY-MM-DD with shiftIso(iso, days) from utils/grading; addDays(iso, n).toISOString() slips a day across a clock change.",
+        },
       ],
     },
   },
