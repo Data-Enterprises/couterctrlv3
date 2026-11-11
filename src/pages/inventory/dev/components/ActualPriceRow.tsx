@@ -59,7 +59,7 @@ const ActualPriceRow = ({
             if (!open) onOpen();
             setOpen((v) => !v);
           }}
-          className="flex items-center justify-end gap-0.5 text-right tabular-nums text-blue-700 hover:text-blue-900 hover:underline transition-colors"
+          className="flex items-center justify-end gap-0.5 text-right tabular-nums text-brand_navy hover:text-brand_navy_hover hover:underline transition-colors"
           title={open ? "Hide transactions" : "Show transactions"}
           aria-expanded={open}
         >

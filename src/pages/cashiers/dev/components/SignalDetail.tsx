@@ -190,7 +190,7 @@ const SignalDetail = ({
                 <div className="truncate">
                   {t.saleDate} · {formatClock(t.startTime)}
                 </div>
-                <div className="truncate text-blue-700 font-medium">
+                <div className="truncate text-brand_navy font-medium">
                   {transactionLabel(t.saleId)}
                 </div>
                 <div className="truncate">

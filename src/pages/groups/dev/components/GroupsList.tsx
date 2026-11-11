@@ -69,7 +69,7 @@ const GroupsList = ({
           onClick={onOpenCreate}
           title="New group"
           aria-label="New group"
-          className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-fill_soft"
+          className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-brand_navy flex items-center justify-center hover:bg-fill_soft"
         >
           <PlusIcon className="w-4 h-4" />
         </button>
