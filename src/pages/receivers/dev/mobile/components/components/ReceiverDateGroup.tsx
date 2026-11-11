@@ -29,7 +29,7 @@ const ReceiverDateGroup = ({
     <div>
       <button
         onClick={() => toggleDate(group.date)}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-custom-white text-left active:bg-gray-50 gap-3"
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-custom-white text-left active:bg-fill_soft gap-3"
       >
         <span className="text-[12px] font-medium text-content">
           {fmtDate(group.date)}
@@ -55,7 +55,7 @@ const ReceiverDateGroup = ({
       </button>
 
       {isOpen && (
-        <div className="bg-gray-50 divide-y divide-brand_navy/15">
+        <div className="bg-fill_soft divide-y divide-brand_navy/15">
           {group.items.map((r) => (
             <button
               key={`${r.invoiceid}-${r.invoice_date}`}

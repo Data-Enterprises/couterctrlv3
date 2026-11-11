@@ -8,7 +8,7 @@
  *     suggested_weight = demand(cover window, by weekday) x shrink - on_hand
  */
 const Formula = () => (
-  <div className="rounded-lg border border-line_field bg-gray-50 overflow-hidden">
+  <div className="rounded-lg border border-line_field bg-fill_soft overflow-hidden">
     <div className="px-3.5 py-3 border-b border-line_field bg-custom-white">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px] tabular-nums">
         <span className="font-bold text-brand_navy">Suggested weight</span>

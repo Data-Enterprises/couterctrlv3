@@ -376,13 +376,13 @@ const UpcExportModal = ({ onClose }: Props) => {
           </div>
 
           {ctx.selectedUpcs.length > 0 && (
-            <div className="text-[10px] text-content/95 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/95 bg-fill_soft rounded px-3 py-2">
               {ctx.selectedUpcs.length} UPC{ctx.selectedUpcs.length !== 1 ? "s" : ""} selected — "Selected UPCs" presets will use this filter.
             </div>
           )}
 
           {waitReason && (
-            <div className="text-[10px] text-content/95 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/95 bg-fill_soft rounded px-3 py-2">
               {waitReason}
             </div>
           )}

@@ -60,7 +60,7 @@ const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
   const hovered = hover === null ? null : daily[hover];
 
   return (
-    <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-gray-50">
+    <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-fill_soft">
       <div className="flex items-baseline justify-between mb-1.5">
         <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
           Sold per day

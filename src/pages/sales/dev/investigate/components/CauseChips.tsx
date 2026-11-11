@@ -27,7 +27,7 @@ const CauseChips = ({ total, only, onOnly, allIn, byCause, suggested, fmt }: Cau
       className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
         only === null
           ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-card-sm"
-          : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
+          : "bg-custom-white border-brand_line text-content hover:bg-fill_soft"
       }`}
     >
       All {total} items

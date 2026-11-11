@@ -33,7 +33,7 @@ const TrendLeftList = ({ rows, selectedCode, onSelect, fixes, window }: TrendLef
             key={t.product_code}
             onClick={() => onSelect(t.product_code)}
             className={`w-full text-left px-2.5 py-2 border-b border-line_faint transition-colors ${
-              isSelected ? "bg-custom-white" : "hover:bg-gray-50"
+              isSelected ? "bg-custom-white" : "hover:bg-fill_soft"
             }`}
             style={isSelected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
           >

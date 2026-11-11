@@ -22,7 +22,7 @@ import { CTA_SEVERITY_CLASSES, type Severity } from "../../../../utils/severity"
 /** The insight bar's palette for an ungraded row: no verdict, no colour. */
 const NEUTRAL_CTA = {
   border: "border-line_field",
-  bg: "bg-gray-50",
+  bg: "bg-fill_soft",
   hoverBg: "hover:bg-gray-100",
   text: "text-content",
 };

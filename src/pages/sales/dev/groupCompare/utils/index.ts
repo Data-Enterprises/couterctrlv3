@@ -101,7 +101,7 @@ export const DETAIL_TONE: Record<
     pill: "bg-gray-200 text-content",
     text: "text-content",
     bar: "bg-brand_navy",
-    card: "bg-gray-50",
+    card: "bg-fill_soft",
   },
   rising: {
     pill: "bg-delta_positive_bg text-delta_positive_text",
@@ -122,7 +122,7 @@ export const CTA_TONE: Record<ShareStanding, CtaTone> = {
   },
   consistent: {
     border: "border-line_field",
-    bg: "bg-gray-50",
+    bg: "bg-fill_soft",
     hoverBg: "hover:bg-gray-100",
     text: "text-content",
   },

@@ -112,7 +112,7 @@ const InvestigationTabs = ({
             className={`text-left px-4 py-2 border-b-2 transition-colors min-w-0 ${
               on
                 ? "border-brand_navy bg-custom-white"
-                : "border-transparent hover:bg-gray-50"
+                : "border-transparent hover:bg-fill_soft"
             }`}
           >
             <span className="flex items-center gap-2">

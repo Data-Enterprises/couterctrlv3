@@ -121,7 +121,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
 
   return (
     <>
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-gray-50">
+      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-fill_soft">
         <div className="flex items-center gap-1.5 flex-wrap">
           {STATUSES.map((s) => {
             const on = ctx.notSellingStatus === s.key;
@@ -226,7 +226,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
                     e.preventDefault();
                     setCtxMenu({ x: e.clientX, y: e.clientY, upc: String(r.product_code) });
                   }}
-                  className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                  className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft transition-colors"
                 >
                   <td className="px-3 py-2 text-content font-medium">
                     {r.product_description ?? String(r.product_code)}
@@ -263,7 +263,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
               ))}
             </tbody>
             <tfoot>
-              <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+              <tr className="sticky bottom-0 bg-fill_soft border-t-2 border-content/70 font-bold text-[14px]">
                 <td className="px-3 py-2"></td>
                 <td className="px-3 py-2 text-right text-content/95" colSpan={2}>
                   Totals · {rows.length.toLocaleString()} items

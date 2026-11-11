@@ -30,12 +30,12 @@ const AssociationLeftPanel = ({
   if (rerootUpc) {
     return (
       <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
-        <div className="px-2.5 py-1.5 bg-gray-50 border-b border-line_hair">
+        <div className="px-2.5 py-1.5 bg-fill_soft border-b border-line_hair">
           <span className="text-[10px] font-bold uppercase tracking-wide text-content">Exploring</span>
         </div>
         <button
           onClick={onBackToSeed}
-          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-line_faint text-[11px] text-content/95 hover:bg-gray-50"
+          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-line_faint text-[11px] text-content/95 hover:bg-fill_soft"
         >
           <ArrowLeftIcon className="w-3 h-3 flex-shrink-0" />
           Back to Seed UPCs ({selectedUpcs.length})

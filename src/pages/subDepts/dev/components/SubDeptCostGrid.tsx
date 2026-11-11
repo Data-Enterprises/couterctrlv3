@@ -238,7 +238,7 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
         displayData.map((item, i) => (
           <div
             key={`${item.product_code}-${i}`}
-            className="grid border-b border-b-brand_navy/15 hover:bg-gray-50 transition-colors"
+            className="grid border-b border-b-brand_navy/15 hover:bg-fill_soft transition-colors"
             style={{
               gridTemplateColumns: COLS,
               background: i % 2 === 1 ? "rgb(var(--color-brand-navy) / 0.015)" : undefined,

@@ -200,7 +200,7 @@ const StoreTreePanel = ({ onSelectDepartment, onOpenStore, onOpenSearch }: Store
                       className={`w-full grid ${STORE_COLS} items-center gap-2 px-3 py-3 text-left transition-colors ${
                         ctx.activeStoreId === store.storeid && !ctx.sheetKey
                           ? "bg-custom-white"
-                          : "hover:bg-gray-50"
+                          : "hover:bg-fill_soft"
                       }`}
                       style={
                         ctx.activeStoreId === store.storeid && !ctx.sheetKey
@@ -227,7 +227,7 @@ const StoreTreePanel = ({ onSelectDepartment, onOpenStore, onOpenSearch }: Store
 
                     {open && (
                       <div>
-                        <div className={`grid ${DEPT_COLS} gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/95`}>
+                        <div className={`grid ${DEPT_COLS} gap-2 pl-6 pr-3 py-1.5 bg-fill_soft text-[9.5px] font-bold uppercase tracking-wide text-content/95`}>
                           <div>Department</div>
                           <div className="text-center">Items</div>
                           <div className="text-right">Order lb</div>
@@ -251,7 +251,7 @@ const StoreTreePanel = ({ onSelectDepartment, onOpenStore, onOpenSearch }: Store
                                   })
                                 }
                                 className={`w-full grid ${DEPT_COLS} items-center gap-2 pl-6 pr-3 py-2 text-left transition-colors ${
-                                  sel ? "bg-custom-white" : "hover:bg-gray-50"
+                                  sel ? "bg-custom-white" : "hover:bg-fill_soft"
                                 }`}
                                 style={
                                   sel

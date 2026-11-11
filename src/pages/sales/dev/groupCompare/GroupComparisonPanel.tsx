@@ -112,7 +112,7 @@ const GroupComparisonPanel = ({
 
       {/* KPI tiles — every one recomputes when a day is picked, which is why
           the header above says which window they cover. */}
-      <div className="grid grid-cols-5 divide-x divide-brand_navy/15 border-b border-line_hair bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-5 divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft flex-shrink-0">
         {tile(
           "Group total",
           fmt(group.groupTy),

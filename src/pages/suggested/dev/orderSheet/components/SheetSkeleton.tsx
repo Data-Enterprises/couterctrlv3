@@ -16,7 +16,7 @@ interface SheetSkeletonProps {
  */
 const SheetSkeleton = ({ rows = 12 }: SheetSkeletonProps) => (
   <div className="flex-1 overflow-hidden" role="status" aria-label="Loading the sheet">
-    <div className="grid grid-cols-5 border-b border-line_hair bg-gray-50">
+    <div className="grid grid-cols-5 border-b border-line_hair bg-fill_soft">
       {Array.from({ length: 5 }, (_, i) => (
         <div
           key={i}

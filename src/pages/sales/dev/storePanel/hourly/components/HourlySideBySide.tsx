@@ -224,7 +224,7 @@ const HourlySideBySide = ({
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-gray-50">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-fill_soft">
         <button
           onClick={onBack}
           className="text-[12px] font-semibold text-content hover:underline flex-shrink-0"
@@ -246,7 +246,7 @@ const HourlySideBySide = ({
               className={`text-[11.5px] font-semibold px-2.5 py-1 transition-colors ${
                 mode === m
                   ? "bg-brand_navy text-custom-white"
-                  : "bg-custom-white text-content hover:bg-gray-50"
+                  : "bg-custom-white text-content hover:bg-fill_soft"
               }`}
             >
               {m === "money" ? "Money" : "Mix"}
@@ -288,7 +288,7 @@ const HourlySideBySide = ({
                     className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b border-brand_navy/15 transition-colors ${
                       on
                         ? "bg-row_selected border-row_selected_border"
-                        : "hover:bg-gray-50"
+                        : "hover:bg-fill_soft"
                     }`}
                     style={{ gridTemplateColumns: COLS }}
                   >

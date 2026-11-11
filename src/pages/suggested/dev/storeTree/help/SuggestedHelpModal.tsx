@@ -88,7 +88,7 @@ const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
       {/* A tray, so the answer cards below have something to lift off. */}
       <div
         ref={scroller}
-        className="flex-1 overflow-y-auto thin-scrollbar bg-gray-50 px-5 py-5"
+        className="flex-1 overflow-y-auto thin-scrollbar bg-fill_soft px-5 py-5"
       >
         <nav className="rounded-lg border border-line_field bg-custom-white shadow-md px-4 py-3.5 mb-4">
           <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy mb-2.5">

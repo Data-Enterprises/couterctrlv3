@@ -66,7 +66,7 @@ const WeekCard = ({
       <button
         onClick={() => onToggle(week.index)}
         className={`w-full px-3.5 py-2.5 text-left transition-colors ${
-          expanded ? "bg-row_selected" : "hover:bg-gray-50"
+          expanded ? "bg-row_selected" : "hover:bg-fill_soft"
         }`}
       >
         <span
@@ -105,7 +105,7 @@ const WeekCard = ({
       {expanded && (
         <>
           {/* The day story sits inside the open card only. */}
-          <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-line_hair bg-gray-50">
+          <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-line_hair bg-fill_soft">
             {week.comparedDays === 0 ? (
               <span className="text-content">
                 No {basisWord(basis)} comparison
@@ -167,7 +167,7 @@ const WeekCard = ({
           </div>
 
           <div
-            className="grid gap-3 px-3.5 py-1.5 bg-gray-50 border-t border-line_hair"
+            className="grid gap-3 px-3.5 py-1.5 bg-fill_soft border-t border-line_hair"
             style={{ gridTemplateColumns: DAY_GRID }}
           >
             <span className={HEAD}>Day</span>
@@ -234,7 +234,7 @@ const WeekCard = ({
           {/* Footer, so the days visibly add up to the line on the card header
               rather than asking the reader to take it on trust. */}
           <div
-            className="grid items-center gap-3 px-3.5 py-2 border-t border-line_field bg-gray-50"
+            className="grid items-center gap-3 px-3.5 py-2 border-t border-line_field bg-fill_soft"
             style={{ gridTemplateColumns: DAY_GRID }}
           >
             <span className="text-[11px] font-semibold uppercase tracking-wide text-content">

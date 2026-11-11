@@ -476,7 +476,7 @@ const MarginPerfRightPanel = () => {
         </div>
 
         {/* ── 3-col KPI strip ── */}
-        <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           {/* TY metric */}
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">

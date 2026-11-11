@@ -27,7 +27,7 @@ const ItemMetricCards = ({ reportRows, thresholdAmt }: ItemMetricCardsProps) => 
           one number. */}
       <div className="grid grid-cols-[40%_1fr] gap-2">
         {reportRows.length > 0 && (
-          <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+          <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft p-2.5 text-center flex flex-col justify-center">
             <div className="text-[11px] font-semibold text-content">
               {reportRows[0].label}
             </div>
@@ -73,7 +73,7 @@ const ItemMetricCards = ({ reportRows, thresholdAmt }: ItemMetricCardsProps) => 
             the lead metric earns a self-contained card, these earn
             being comparable to each other. Prior values live in the
             title attribute; the lead card still shows them inline. */}
-        <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+        <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft px-2.5 py-1 flex flex-col justify-center">
           <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
             <span />
             <span className="text-right">TY</span>

@@ -65,7 +65,7 @@ const RecapItemsTable = ({
   return (
     <>
       <div
-        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-gray-50 border-b border-line_hair overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
+        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-fill_soft border-b border-line_hair overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
         style={{ gridTemplateColumns: cols }}
       >
         {head("code", "UPC")}
@@ -115,7 +115,7 @@ const RecapItemsTable = ({
       </div>
 
       <div
-        className="flex-none grid items-center gap-3 px-[18px] h-9 text-[13px] font-bold text-content bg-gray-50 border-t border-content overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
+        className="flex-none grid items-center gap-3 px-[18px] h-9 text-[13px] font-bold text-content bg-fill_soft border-t border-content overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
         style={{ gridTemplateColumns: cols }}
       >
         <span>Total</span>

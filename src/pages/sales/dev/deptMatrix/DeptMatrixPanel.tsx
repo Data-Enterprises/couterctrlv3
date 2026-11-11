@@ -265,7 +265,7 @@ const DeptMatrixPanel = ({
                             style={tone.background ? tone : undefined}
                             className={`w-full h-full px-2 py-1.5 font-mono text-[11px] tabular-nums transition-colors disabled:cursor-default ${
                               on ? "font-bold" : "font-medium text-content"
-                            } ${tone.background ? "" : "hover:bg-gray-50"}`}
+                            } ${tone.background ? "" : "hover:bg-fill_soft"}`}
                           >
                             {idx === null ? (
                               <span className="text-content/95">—</span>

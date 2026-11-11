@@ -44,7 +44,7 @@ const FinancialsStorePicker = ({
         {stores.map((st) => (
           <label
             key={st.storeid}
-            className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-gray-50"
+            className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-fill_soft"
           >
             <input
               type="checkbox"

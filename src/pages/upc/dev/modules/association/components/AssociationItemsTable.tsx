@@ -113,7 +113,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
           key={idx}
           onClick={() => onReroot(item.product_code)}
           onContextMenu={(e) => onContextMenu(e, item.product_code)}
-          className="grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 cursor-pointer even:bg-row_stripe hover:bg-gray-50"
+          className="grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 cursor-pointer even:bg-row_stripe hover:bg-fill_soft"
           style={{ gridTemplateColumns: COLS }}
         >
           <div className="min-w-0">

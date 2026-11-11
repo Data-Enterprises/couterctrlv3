@@ -350,7 +350,7 @@ const OrderSheetPanel = () => {
 
       {hasStore && !ctx.loadingItems && hasSheet && (
         <>
-          <div className="flex-shrink-0 flex gap-0.5 px-3 bg-gray-50 border-b border-line_hair">
+          <div className="flex-shrink-0 flex gap-0.5 px-3 bg-fill_soft border-b border-line_hair">
             {TABS.map((t) => {
               const on = tab === t.key;
               return (
@@ -409,7 +409,7 @@ const OrderSheetPanel = () => {
                 }
               />
 
-              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/95 bg-gray-50 leading-snug">
+              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/95 bg-fill_soft leading-snug">
                 Each card is what this department does on that{" "}
                 <span className="font-semibold text-content">weekday</span>,
                 averaged over the lookback — not a forecast for that date. The
@@ -434,7 +434,7 @@ const OrderSheetPanel = () => {
                   filtering the sheet. Piles a reader can see are piles they
                   work through; the same filter buried in a column popover was
                   something nobody would ever find. */}
-              <div className="flex-shrink-0 flex items-center gap-1.5 flex-wrap px-3 py-2 border-b border-line_hair bg-gray-50">
+              <div className="flex-shrink-0 flex items-center gap-1.5 flex-wrap px-3 py-2 border-b border-line_hair bg-fill_soft">
                 <button
                   onClick={() => ctx.dispatch(setActionFilter("all"))}
                   className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
@@ -596,7 +596,7 @@ const OrderSheetPanel = () => {
                               upc: String(r.product_code),
                             });
                           }}
-                          className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft transition-colors cursor-pointer"
                         >
                           <td className="px-3 py-2">
                             {(() => {
@@ -655,7 +655,7 @@ const OrderSheetPanel = () => {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+                      <tr className="sticky bottom-0 bg-fill_soft border-t-2 border-content/70 font-bold text-[14px]">
                         <td className="px-3 py-2"></td>
                         <td className="px-3 py-2"></td>
                         <td className="px-3 py-2 text-right text-content/95">

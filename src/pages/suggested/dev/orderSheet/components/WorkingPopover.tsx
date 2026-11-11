@@ -166,12 +166,12 @@ const WorkingPopover = ({
         )}
       </div>
 
-      <div className="border-t-2 border-content/70 bg-gray-50">
+      <div className="border-t-2 border-content/70 bg-fill_soft">
         <Row k="Order" v={`${fmtLb(item.suggested_weight)} lb`} strong />
       </div>
 
       {action && (
-        <div className="px-3 py-2.5 border-t border-line_field bg-gray-50">
+        <div className="px-3 py-2.5 border-t border-line_field bg-fill_soft">
           <div className="flex items-center gap-2 mb-1.5">
             <span
               className={`inline-block px-1.5 py-0.5 rounded text-[12px] font-semibold ${ACTION_TONE[action.tone].chip}`}

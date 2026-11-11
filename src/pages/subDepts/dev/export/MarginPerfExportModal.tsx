@@ -530,7 +530,7 @@ const MarginPerfExportModal = ({
                 ) : (
                   <div className="flex-1 overflow-auto thin-scrollbar">
                     <table className="min-w-full text-[11px] border-collapse">
-                      <thead className="sticky top-0 bg-gray-50 z-10">
+                      <thead className="sticky top-0 bg-fill_soft z-10">
                         <tr>
                           {columns.map((c) => (
                             <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap">
@@ -541,7 +541,7 @@ const MarginPerfExportModal = ({
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-line_faint">
                                 {row[c.key] ?? "—"}

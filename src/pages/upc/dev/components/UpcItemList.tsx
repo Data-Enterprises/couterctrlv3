@@ -47,7 +47,7 @@ const UpcItemList = () => {
           value={ctx.filterText}
           onChange={(e) => dispatch(setDevFilterText(e.target.value))}
           placeholder="Filter…"
-          className="flex-1 text-[10px] rounded px-2 py-1 border border-line_field bg-gray-50 min-w-0"
+          className="flex-1 text-[10px] rounded px-2 py-1 border border-line_field bg-fill_soft min-w-0"
           style={{
             outline: "none",
             WebkitAppearance: "none",
@@ -89,7 +89,7 @@ const UpcItemList = () => {
                 onClick={() =>
                   dispatch(toggleDevSelectedUpc(item.product_code))
                 }
-                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-line_hair hover:bg-gray-50/80 transition-colors ${
+                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-line_hair hover:bg-fill_soft/80 transition-colors ${
                   selected ? "bg-blue-50/60" : ""
                 }`}
               >

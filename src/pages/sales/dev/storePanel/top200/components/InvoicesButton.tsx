@@ -19,7 +19,7 @@ interface InvoicesButtonProps {
 const InvoicesButton = ({ detail, setInvoicesOpen }: InvoicesButtonProps) => (
   <button
     onClick={() => setInvoicesOpen(true)}
-    className="flex items-center gap-2 w-full mx-4 mb-3 px-3 py-2 rounded-md border border-brand_navy/15 bg-custom-white hover:bg-gray-50 transition-colors text-left"
+    className="flex items-center gap-2 w-full mx-4 mb-3 px-3 py-2 rounded-md border border-brand_navy/15 bg-custom-white hover:bg-fill_soft transition-colors text-left"
     style={{ width: "calc(100% - 2rem)" }}
   >
     <DocumentTextIcon className="w-4 h-4 flex-shrink-0 text-content/95" />

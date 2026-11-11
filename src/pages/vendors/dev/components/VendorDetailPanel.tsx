@@ -340,7 +340,7 @@ const VendorDetailPanel = () => {
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}
-      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
         <Kpi
           title={isMargin ? "TY Margin" : "TY Net Sales"}
           dateLabel={twLabel}

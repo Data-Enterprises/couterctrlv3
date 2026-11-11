@@ -64,7 +64,7 @@ const ItemListToolbar = ({
     return () => document.removeEventListener("mousedown", close);
   }, [threshOpen]);
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-line_hair flex-shrink-0">
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
       <button
         onClick={() =>
           setSevFilter((f) => (f === "critical" ? "all" : "critical"))

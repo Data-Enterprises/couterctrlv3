@@ -12,7 +12,7 @@ const Note = ({ warn, children }: NoteProps) => (
     className={`border-l-4 px-4 py-3 rounded-r text-[14px] leading-[1.65] ${
       warn
         ? "border-severity_watch_text bg-severity_watch_bg text-severity_watch_text"
-        : "border-brand_navy/30 bg-gray-50 text-content"
+        : "border-brand_navy/30 bg-fill_soft text-content"
     }`}
   >
     {children}

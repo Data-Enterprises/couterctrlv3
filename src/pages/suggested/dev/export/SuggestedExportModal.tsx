@@ -508,7 +508,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
               ) : (
                 <div className="flex-1 overflow-auto thin-scrollbar">
                   <table className="min-w-full text-[11px] border-collapse">
-                    <thead className="sticky top-0 bg-gray-50 z-10">
+                    <thead className="sticky top-0 bg-fill_soft z-10">
                       <tr>
                         {columns.map((c) => (
                           <th
@@ -525,7 +525,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                         <tr
                           key={i}
                           className={
-                            i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"
+                            i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"
                           }
                         >
                           {columns.map((c) => (

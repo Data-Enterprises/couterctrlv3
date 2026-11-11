@@ -236,7 +236,7 @@ const PopupComparisonList = ({
               }
             }}
             title={`Compare ${openStoreName} against ${nameOf(r)}, department by department`}
-            className={`grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 hover:bg-gray-50 cursor-pointer text-[13px] text-content ${
+            className={`grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 hover:bg-fill_soft cursor-pointer text-[13px] text-content ${
               counterpart?.storeid === r.storeid &&
               counterpart?.storeNumber === r.storeNumber
                 ? "bg-row_selected border-row_selected_border"

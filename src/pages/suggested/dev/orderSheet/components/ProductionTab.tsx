@@ -95,7 +95,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
       {series?.series.length ? (
         <SoldPerDayStrip daily={series.series} dailyAvg={series.avg} />
       ) : (
-        <div className="flex-shrink-0 px-3 py-3 border-b border-line_hair bg-gray-50 text-[12px] text-content/95">
+        <div className="flex-shrink-0 px-3 py-3 border-b border-line_hair bg-fill_soft text-[12px] text-content/95">
           No day-by-day history came back for this department.
         </div>
       )}
