@@ -321,7 +321,7 @@ const VendorDetailPanel = () => {
                   basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
                 })
               }
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40"
               title={`See item actions (${criticalItems.length})`}
             >
               <ClipboardDocumentListIcon className="h-4 w-4" />
@@ -331,7 +331,7 @@ const VendorDetailPanel = () => {
           <button
             onClick={() => setExportOpen(true)}
             disabled={vend.itemsLoading || !!vend.itemsError}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
             title={vend.itemsLoading ? "Export — items still loading" : "Export"}
           >
             <ArrowDownTrayIcon className="h-4 w-4" />

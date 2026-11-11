@@ -79,7 +79,7 @@ const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
         <button
           onClick={onClose}
           title="Close"
-          className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+          className="cc-navy-link flex-shrink-0"
         >
           <XMarkIcon className="w-5 h-5" />
         </button>

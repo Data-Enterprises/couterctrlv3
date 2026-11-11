@@ -165,7 +165,7 @@ const CashierJourney = () => {
           <button
             onClick={close}
             title="Close"
-            className="flex-shrink-0 p-1 -mr-1 rounded text-custom-white/95 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
+            className="flex-shrink-0 p-1 -mr-1 rounded cc-navy-link hover:bg-custom-white/10"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>

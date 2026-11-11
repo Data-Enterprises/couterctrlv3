@@ -283,7 +283,7 @@ const MarginPerfExportModal = ({
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-custom-white/95 hover:text-custom-white transition-colors justify-self-end">
+          <button onClick={onClose} className="cc-navy-link justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>

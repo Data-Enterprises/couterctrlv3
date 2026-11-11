@@ -321,7 +321,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
         </span>
         <button
           onClick={() => setExportOpen(true)}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40"
           title="Export"
         >
           <ArrowDownTrayIcon className="h-4 w-4" />

@@ -156,7 +156,7 @@ const InvoiceExportModal = ({
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/95 transition-colors hover:text-custom-white"
+          className="cc-navy-link"
         >
           <XMarkIcon className="h-4 w-4" />
         </button>

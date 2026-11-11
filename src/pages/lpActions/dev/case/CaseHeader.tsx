@@ -22,7 +22,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     <button
       onClick={onBack}
       title={`Back to ${backLabel}`}
-      className="flex-shrink-0 p-1 -ml-1 rounded text-custom-white/95 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
+      className="flex-shrink-0 p-1 -ml-1 rounded cc-navy-link hover:bg-custom-white/10"
     >
       <ArrowLeftIcon className="w-4 h-4" />
     </button>

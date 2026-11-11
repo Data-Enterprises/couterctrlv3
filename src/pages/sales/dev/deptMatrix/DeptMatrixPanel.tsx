@@ -136,7 +136,7 @@ const DeptMatrixPanel = ({
         ) : (
           <button
             onClick={() => dispatch(setGroupView("stores"))}
-            className="text-custom-white/95 text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10 hover:text-custom-white transition-colors"
+            className="cc-navy-link text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10"
           >
             By store
           </button>

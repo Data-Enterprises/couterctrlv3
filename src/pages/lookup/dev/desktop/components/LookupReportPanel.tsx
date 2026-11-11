@@ -85,7 +85,7 @@ const LookupReportPanel = ({
           </div>
           <button
             onClick={onExportOpen}
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+            className="cc-navy-link flex-shrink-0"
             title="Export"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />

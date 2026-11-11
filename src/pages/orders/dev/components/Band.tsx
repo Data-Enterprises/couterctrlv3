@@ -14,7 +14,7 @@ const Band = ({ children, onLeaveEdit }: BandProps) => (
     <div className="flex rounded-md bg-custom-white/10 p-0.5 gap-0.5 flex-shrink-0">
       <button
         onClick={onLeaveEdit}
-        className="rounded px-2.5 py-0.5 text-[11.5px] font-bold text-custom-white/95 transition-colors hover:text-custom-white"
+        className="rounded px-2.5 py-0.5 text-[11.5px] font-bold cc-navy-link"
       >
         Browse
       </button>

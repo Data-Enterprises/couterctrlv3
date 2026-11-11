@@ -317,7 +317,7 @@ const UpcExportModal = ({ onClose }: Props) => {
               {TAB_LABELS[ctx.activeTab]}
             </div>
           </div>
-          <button onClick={onClose} className="text-custom-white/95 hover:text-custom-white transition-colors">
+          <button onClick={onClose} className="cc-navy-link">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>

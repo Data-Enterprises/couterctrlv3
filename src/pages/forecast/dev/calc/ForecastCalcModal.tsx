@@ -128,7 +128,7 @@ const ForecastCalcModal = () => {
         </span>
         <button
           onClick={handleClose}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40"
           title="Close"
         >
           <XMarkIcon className="h-4 w-4" />

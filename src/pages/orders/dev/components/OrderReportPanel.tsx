@@ -146,7 +146,7 @@ const OrderReportPanel = ({
             <button
               onClick={onEnterEdit}
               title="Edit one order's lines"
-              className="rounded px-2.5 py-0.5 text-[11.5px] font-bold text-custom-white/95 transition-colors hover:text-custom-white"
+              className="rounded px-2.5 py-0.5 text-[11.5px] font-bold cc-navy-link"
             >
               Edit
             </button>
@@ -160,7 +160,7 @@ const OrderReportPanel = ({
           <button data-help="export"
             onClick={onExport}
             title="Export CSV"
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+            className="cc-navy-link flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
           </button>

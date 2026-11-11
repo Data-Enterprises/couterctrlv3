@@ -257,7 +257,7 @@ const TransactionSheet = ({
         {inBasket && (
           <button
             onClick={() => setOpenSale(null)}
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+            className="cc-navy-link flex-shrink-0"
             aria-label="Back to the list"
           >
             <ArrowLeftIcon className="w-4 h-4" />
@@ -280,7 +280,7 @@ const TransactionSheet = ({
         <div className="flex-1" />
         <button
           onClick={onClose}
-          className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+          className="cc-navy-link flex-shrink-0"
           aria-label="Close"
         >
           <XMarkIcon className="w-4 h-4" />

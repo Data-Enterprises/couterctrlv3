@@ -103,7 +103,7 @@ const InvoiceSheet = ({
           <div className="flex-1" />
           <button
             onClick={onClose}
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+            className="cc-navy-link flex-shrink-0"
             aria-label="Close"
           >
             <XMarkIcon className="w-4 h-4" />

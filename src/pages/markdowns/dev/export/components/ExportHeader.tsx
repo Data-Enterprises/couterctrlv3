@@ -24,7 +24,7 @@ const ExportHeader = ({ onClose }: ExportHeaderProps) => {
       <button
         onClick={onClose}
         aria-label="Close"
-        className="text-custom-white/95 hover:text-custom-white transition-colors"
+        className="cc-navy-link"
       >
         <XMarkIcon className="w-4 h-4" />
       </button>

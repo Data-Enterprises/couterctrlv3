@@ -28,7 +28,7 @@ const HeaderIconButton = ({ onClick, title, children, className }: HeaderIconBut
     onClick={onClick}
     title={title}
     aria-label={title}
-    className={`w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/95 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 ${className ?? ""}`}
+    className={`w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 flex-shrink-0 ${className ?? ""}`}
   >
     {children}
   </button>

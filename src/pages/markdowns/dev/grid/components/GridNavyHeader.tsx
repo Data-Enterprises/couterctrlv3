@@ -28,7 +28,7 @@ const GridNavyHeader = ({ onExport }: GridNavyHeaderProps) => {
           data-help="export"
           onClick={onExport}
           title="Export CSV"
-          className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
+          className="cc-navy-link flex-shrink-0"
         >
           <ArrowDownTrayIcon className="w-4 h-4" />
         </button>

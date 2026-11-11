@@ -142,7 +142,7 @@ const ReleaseNotesModal = ({
           type="button"
           onClick={onClose}
           aria-label="Close release notes"
-          className="rounded-md p-0.5 text-custom-white/95 transition-colors hover:bg-custom-white/15 hover:text-custom-white"
+          className="rounded-md p-0.5 cc-navy-link hover:bg-custom-white/15"
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
