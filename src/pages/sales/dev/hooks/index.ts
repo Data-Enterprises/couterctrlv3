@@ -83,6 +83,7 @@ export const useSalesCtx = () =>
       assignedStores: s.user.assignedStores,
       selectedGroupStores: s.user.selectedGroupStores,
       search: s.search,
+      searchedDate: s.dev.salesLedger.searchedDate,
       searchedGroup: s.dev.salesLedger.searchedGroup,
       groupName: s.dev.salesLedger.searchedGroup?.name,
     }),

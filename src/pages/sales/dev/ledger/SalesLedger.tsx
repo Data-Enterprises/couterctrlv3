@@ -37,7 +37,7 @@ import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 
 // Utils
 import { shiftIso } from "../../../../utils/grading";
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
+import { formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
 import { PCT_COL_W, type SevFilter } from "../utils/index";
@@ -83,6 +83,7 @@ const SalesLedger = () => {
     token,
     userid,
     search,
+    searchedDate,
     assignedStores,
   } = useSalesCtx();
 
@@ -164,11 +165,12 @@ const SalesLedger = () => {
     dispatch(setLedgerSelection(null));
   };
 
-  const getDateRanges = () => {
-    const twEnd = formatGoliathDate(search.singleDate);
-    const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-    const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-    const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
+  // The searched week by default; a new search passes the picker's date.
+  const getDateRanges = (date = searchedDate ?? search.singleDate) => {
+    const twEnd = formatGoliathDate(date);
+    const twStart = shiftIso(twEnd, -6);
+    const lwEnd = shiftIso(twEnd, -7);
+    const lwStart = shiftIso(twEnd, -13);
     // Shifting just the two week endpoints breaks when one of them lands on a
     // fixed-date holiday (e.g. July 4th) — that endpoint gets snapped to the
     // exact holiday date last year while the other gets a plain weekday-preserving
@@ -193,7 +195,7 @@ const SalesLedger = () => {
     const searchValue = isGroup ? search.lastGroup : search.lastStore;
     if (!searchValue) return;
 
-    const { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd } = getDateRanges();
+    const { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd } = getDateRanges(search.singleDate);
 
     dispatch(setLedgerLoading(true));
     dispatch(setHasSearched(true));
