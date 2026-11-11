@@ -37,7 +37,7 @@ const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps
       onClick={() => dispatch(setSelectedSubDeptId(isSel ? null : r.id))}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSel
-          ? "bg-row_selected border-row_selected_border"
+          ? "cc-row-selected"
           : "border-transparent hover:bg-fill_soft"
       }`}
     >

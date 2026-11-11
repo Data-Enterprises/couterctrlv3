@@ -41,7 +41,7 @@ const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
             aria-pressed={dept === d.name}
             className={`w-full grid items-center gap-2 px-3 py-2 text-left border-b border-b-line_hair border-l-2 transition-colors ${
               dept === d.name
-                ? "bg-row_selected border-row_selected_border"
+                ? "cc-row-selected"
                 : "border-transparent hover:bg-fill_soft"
             }`}
             style={{ gridTemplateColumns: LANDING_COLS }}

@@ -54,7 +54,7 @@ const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => 
         selected
           ? // Always the pair: the tint alone reads as a stripe rather than
             // a selection, which is why the audit asks for both.
-            "bg-row_selected border-row_selected_border"
+            "cc-row-selected"
           : row.only
             ? "border-brand_line_2 bg-brand_paper hover:bg-bkg"
             : "border-brand_line_2 hover:bg-bkg"

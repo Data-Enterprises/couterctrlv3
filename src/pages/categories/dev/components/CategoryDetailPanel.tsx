@@ -463,7 +463,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                   onClick={() => pick(r.key)}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                     selectedKey === r.key
-                      ? "bg-row_selected border-row_selected_border"
+                      ? "cc-row-selected"
                       : "border-transparent hover:bg-fill_soft"
                   }`}
                 >

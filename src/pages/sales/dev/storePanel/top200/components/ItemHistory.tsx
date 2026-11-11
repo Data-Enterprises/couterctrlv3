@@ -106,7 +106,7 @@ const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
         ).map(([label, at], i) => (
           <div
             key={label}
-            className={`rounded-md px-2.5 py-2 ${i === 2 ? "border bg-row_selected border-row_selected_border" : "bg-bkg"}`}
+            className={`rounded-md px-2.5 py-2 ${i === 2 ? "border cc-row-selected" : "bg-bkg"}`}
           >
             <div className="text-[11px] text-content/95">
               {label}

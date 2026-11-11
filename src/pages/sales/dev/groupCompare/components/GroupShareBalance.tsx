@@ -194,7 +194,7 @@ const GroupShareBalance = ({
                     onClick={() => setPickedKey(keyOf(r))}
                     className={`w-full grid items-center gap-2 px-1 py-2.5 border-l-2 border-b border-b-line_hair text-left transition-colors ${
                       sel
-                        ? "bg-row_selected border-row_selected_border"
+                        ? "cc-row-selected"
                         : "border-transparent hover:bg-fill_soft"
                     }`}
                     style={{ gridTemplateColumns: COLS }}

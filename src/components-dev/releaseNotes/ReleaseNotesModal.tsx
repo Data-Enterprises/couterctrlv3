@@ -180,7 +180,7 @@ const ReleaseNotesModal = ({
                     aria-label={r.dateText}
                     className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
                       on
-                        ? "border-row_selected_border bg-row_selected"
+                        ? "cc-row-selected"
                         : "border-brand_line hover:border-brand_line_2 hover:bg-bkg"
                     }`}
                   >

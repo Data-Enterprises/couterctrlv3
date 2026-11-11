@@ -497,7 +497,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                         onClick={() => answer(depth, o.label)}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left text-[13px] font-semibold ${
                           picked === o.label
-                            ? "border-row_selected_border bg-row_selected text-content"
+                            ? "cc-row-selected text-content"
                             : "border-brand_line text-content hover:bg-row_selected"
                         }`}
                       >

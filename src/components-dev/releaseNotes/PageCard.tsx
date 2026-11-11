@@ -16,7 +16,7 @@ const PageCard = ({ p, mine }: PageCardProps) => (
     data-this-page={mine}
     className={`rounded-xl border px-4 py-3 shadow-sm ${
       mine
-        ? "border-row_selected_border bg-row_selected"
+        ? "cc-row-selected"
         : "border-brand_line bg-custom-white"
     }`}
   >
