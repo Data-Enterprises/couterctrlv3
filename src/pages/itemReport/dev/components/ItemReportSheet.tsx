@@ -417,8 +417,8 @@ const ItemReportSheet = ({
               <button
                 key={item.productCode}
                 onClick={() => onSelect({ item, verdict })}
-                className={`w-full text-left border-b border-line_hair border-l-2 transition-colors ${
-                  isSel ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
+                className={`w-full text-left border-b border-l-2 transition-colors ${
+                  isSel ? "cc-row-selected" : "border-line_hair even:bg-row_stripe hover:bg-fill_soft"
                 } ${tone.rule}`}
               >
                 <div

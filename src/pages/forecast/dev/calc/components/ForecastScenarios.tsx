@@ -126,8 +126,8 @@ const ForecastScenarios = ({
           return (
             <div
               key={row.price}
-              className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 ${
-                isActive ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
+              className={`grid gap-1.5 items-center px-2 py-[7px] border-b last:border-b-0 ${
+                isActive ? "cc-row-selected" : "border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={{ gridTemplateColumns: COLS }}
             >

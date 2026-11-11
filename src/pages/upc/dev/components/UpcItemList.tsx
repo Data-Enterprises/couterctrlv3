@@ -89,8 +89,8 @@ const UpcItemList = () => {
                 onClick={() =>
                   dispatch(toggleDevSelectedUpc(item.product_code))
                 }
-                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-line_hair hover:bg-fill_soft/80 transition-colors ${
-                  selected ? "bg-blue-50/60" : ""
+                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b hover:bg-fill_soft/80 transition-colors ${
+                  selected ? "cc-row-selected" : "border-line_hair"
                 }`}
               >
                 <div

@@ -73,11 +73,11 @@ const LensPanel = ({
               key={s.key}
               onClick={() => onSelect(s.key)}
               className={`w-full text-left px-3 py-2 transition-colors ${
-                isSelected ? "bg-blue-50" : "even:bg-row_stripe hover:bg-fill_soft"
+                isSelected ? "cc-row-selected" : "even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={
                 isSelected
-                  ? { boxShadow: "inset 2px 0 0 #2563eb" }
+                  ? { boxShadow: "inset 2px 0 0 rgb(var(--color-row-selected-border))" }
                   : undefined
               }
             >

@@ -174,14 +174,14 @@ const InventoryTreePanel = ({
                           onClick={() => onSelectProduct(p)}
                           className={`w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-left border-l-2 transition-colors ${
                             isSel
-                              ? "border-blue-600 bg-blue-50"
+                              ? "cc-row-selected"
                               : "border-transparent hover:bg-fill_soft"
                           }`}
                         >
                           <span
                             className={`flex-1 min-w-0 truncate text-[12.5px] ${
                               isSel
-                                ? "text-blue-900 font-medium"
+                                ? "text-content font-medium"
                                 : "text-content"
                             }`}
                           >
@@ -189,7 +189,7 @@ const InventoryTreePanel = ({
                           </span>
                           <span
                             className={`text-[11px] tabular-nums flex-shrink-0 ${
-                              isSel ? "text-blue-900" : "text-content/95"
+                              isSel ? "text-content" : "text-content/95"
                             }`}
                           >
                             {treeMoney(p.sales)}
