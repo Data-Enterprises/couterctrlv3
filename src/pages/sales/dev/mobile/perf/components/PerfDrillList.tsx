@@ -161,13 +161,13 @@ const PerfDrillList = ({
         />
 
         {!shownDay && items.noTy && (
-          <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+          <p className="border-b border-brand_line bg-fill_muted px-3.5 py-2 text-[11.5px] font-semibold text-content">
             Nothing sold this week. Showing last year's items.
           </p>
         )}
 
         {!shownDay && items.partial && (
-          <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+          <p className="border-b border-brand_line bg-fill_muted px-3.5 py-2 text-[11.5px] font-semibold text-content">
             Last year: {items.note}
           </p>
         )}
@@ -240,7 +240,7 @@ const PerfDrillList = ({
       )}
 
       {listPartial && (
-        <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+        <p className="border-b border-brand_line bg-fill_muted px-3.5 py-2 text-[11.5px] font-semibold text-content">
           Last year: {listNote}
         </p>
       )}

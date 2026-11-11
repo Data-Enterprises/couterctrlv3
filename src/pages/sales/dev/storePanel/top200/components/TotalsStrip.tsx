@@ -88,7 +88,7 @@ const TotalsStrip = ({
                   ? "bg-delta_positive_bg text-delta_positive_text"
                   : gap < 0
                     ? "bg-delta_negative_bg text-delta_negative_text"
-                    : "bg-gray-100 text-content"
+                    : "bg-fill_muted text-content"
               }`}
             >
               {/* "pts", not "%": 43.3% of net sales against 30.2%

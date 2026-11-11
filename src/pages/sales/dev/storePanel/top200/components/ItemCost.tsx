@@ -108,7 +108,7 @@ const ItemCost = ({
         <div
           className={`rounded-md px-2.5 py-2 ${
             selected.ty.margin === null
-              ? "bg-gray-100"
+              ? "bg-fill_muted"
               : selected.ty.margin < 0
                 ? "bg-severity_critical_bg"
                 : "bg-severity_healthy_bg"
@@ -169,7 +169,7 @@ const ItemCost = ({
       <div
         className={`flex items-center justify-between gap-2 mt-2 px-3 py-2 rounded-md ${
           grossProfit(selected.ty) === null
-            ? "bg-gray-100"
+            ? "bg-fill_muted"
             : (grossProfit(selected.ty) as number) < 0
               ? "bg-severity_critical_bg"
               : "bg-severity_healthy_bg"

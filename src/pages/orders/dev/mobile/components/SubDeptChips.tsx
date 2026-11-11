@@ -12,7 +12,7 @@ const SubDeptChips = ({ subDepts }: SubDeptChipsProps) => {
   return (
     <div className="flex flex-wrap gap-1 items-center mt-1.5">
       {visible.map((sd) => (
-        <span key={sd} className="text-[10px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
+        <span key={sd} className="text-[10px] bg-fill_muted text-content rounded px-1.5 py-0.5">{sd}</span>
       ))}
       {overflow.length > 0 && (
         <span className="text-[10px] font-semibold bg-brand_navy/[0.07] text-content rounded px-1.5 py-0.5">

@@ -59,7 +59,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
         <button
           onClick={onClose}
           title="Back to the summary"
-          className="flex-shrink-0 p-1 rounded text-content/95 hover:text-content hover:bg-gray-100 transition-colors"
+          className="flex-shrink-0 p-1 rounded text-content/95 hover:text-content hover:bg-fill_muted transition-colors"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -99,7 +99,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                 .map((t) => (
                   <span
                     key={t}
-                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-content"
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-fill_muted text-content"
                   >
                     {t}
                   </span>

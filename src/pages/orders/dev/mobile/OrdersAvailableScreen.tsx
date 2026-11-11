@@ -212,7 +212,7 @@ const OrdersAvailableScreen = ({
                             <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
                             <span className="text-[10px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
-                          <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          <span className="text-[10px] text-content bg-fill_muted rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>

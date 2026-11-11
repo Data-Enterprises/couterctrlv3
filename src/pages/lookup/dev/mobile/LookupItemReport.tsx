@@ -250,7 +250,7 @@ const LookupItemReport = ({
           className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md"
         >
           {isNegative && (
-            <p className="border-b border-line_hair bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+            <p className="border-b border-line_hair bg-fill_muted px-3.5 py-2 text-[11.5px] font-semibold text-content">
               Selling below cost
             </p>
           )}

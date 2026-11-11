@@ -238,7 +238,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
 
       {/* Column headers */}
       <div
-        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-gray-100 border-b border-line_hair"
+        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-fill_muted border-b border-line_hair"
         style={{ gridTemplateColumns: COLS }}
       >
         {["UPC", compact ? "Desc" : "Description", "Qty", "Net", "Type"].map(

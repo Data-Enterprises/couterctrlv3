@@ -228,7 +228,7 @@ const GroupShareBalance = ({
                     </span>
 
                     <span className="flex justify-end">
-                      <span className="text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums bg-gray-100 text-content">
+                      <span className="text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums bg-fill_muted text-content">
                         {r.sharePct.toFixed(1)}%
                       </span>
                     </span>

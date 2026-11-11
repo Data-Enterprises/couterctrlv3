@@ -542,7 +542,7 @@ const AccessPanel = ({
                 <div key={group.id} id={`assignments-group-${group.id}`}>
                   <button
                     onClick={() => toggleSectionCollapse(group.id)}
-                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair text-left hover:bg-gray-100 transition-colors"
+                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair text-left hover:bg-fill_muted transition-colors"
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span

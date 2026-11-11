@@ -114,7 +114,7 @@ const SignalListMobile = ({
             {/* The receipt fetch is capped, so past it the figures run low;
                 said on its own line. */}
             {explorerTruncated > 0 && (
-              <p className="border-t border-brand_line bg-gray-100 px-4 py-2 text-[11.5px] font-semibold text-content">
+              <p className="border-t border-brand_line bg-fill_muted px-4 py-2 text-[11.5px] font-semibold text-content">
                 Capped: {explorerTruncated.toLocaleString()} more{" "}
                 {explorerTruncated === 1 ? "transaction" : "transactions"} not
                 loaded, so these totals run low.

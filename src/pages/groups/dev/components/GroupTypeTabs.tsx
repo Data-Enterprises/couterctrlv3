@@ -24,7 +24,7 @@ const GroupTypeTabs = ({ show, setShow, count }: GroupTypeTabsProps) => {
           className={`flex-1 text-[11px] font-semibold py-1 rounded-md capitalize transition-colors ${
             show === id
               ? "bg-brand_navy text-custom-white"
-              : "text-content hover:bg-gray-100"
+              : "text-content hover:bg-fill_muted"
           }`}
         >
           {id} <span className="tabular-nums opacity-70">{count[id]}</span>

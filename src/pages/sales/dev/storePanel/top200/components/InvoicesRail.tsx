@@ -26,7 +26,7 @@ const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: Invoi
     <button
       onClick={() => setInvoicesOpen(false)}
       tabIndex={invoicesOpen ? 0 : -1}
-      className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-fill_soft hover:bg-gray-100 transition-colors text-left"
+      className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-fill_soft hover:bg-fill_muted transition-colors text-left"
     >
       <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/95" />
       <span className="text-[12.5px] font-semibold text-content">

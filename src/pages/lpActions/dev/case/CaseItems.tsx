@@ -33,7 +33,7 @@ const COLS = "54px 1fr 34px 62px";
 const BADGE: Record<string, string> = {
   new: "bg-severity_critical_bg text-severity_critical_text",
   increased: "bg-severity_watch_bg text-severity_watch_text",
-  stopped: "bg-gray-100 text-content",
+  stopped: "bg-fill_muted text-content",
 };
 
 const Note = ({ text }: { text: string }) => (

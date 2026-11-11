@@ -352,7 +352,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             }}
             disabled={!isEdited}
             title="Put price and ad days back to what the search returned"
-            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Reset
           </button>
@@ -370,7 +370,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             }}
             disabled={!hasNotes}
             title="Remove the note from every selected row"
-            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Clear notes
           </button>

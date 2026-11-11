@@ -97,7 +97,7 @@ const MobilePerfDetail = <K extends string>({
                   className={`rounded-lg border py-2 text-[11.5px] font-bold transition-colors ${
                     on
                       ? "border-brand_navy bg-brand_navy text-custom-white"
-                      : "border-line_field bg-bkg text-content active:bg-gray-100"
+                      : "border-line_field bg-bkg text-content active:bg-fill_muted"
                   }`}
                 >
                   {t.label}

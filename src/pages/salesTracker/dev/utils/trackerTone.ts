@@ -14,10 +14,10 @@ export const changeTone = (v: number | null) => {
  * comparison gets the neutral fill, so the column keeps its shape.
  */
 export const changePill = (v: number | null) => {
-  if (v === null) return "bg-gray-100 text-content";
+  if (v === null) return "bg-fill_muted text-content";
   if (v > 0) return "bg-severity_healthy_bg text-severity_healthy_text";
   if (v < 0) return "bg-severity_critical_bg text-severity_critical_text";
-  return "bg-gray-100 text-content";
+  return "bg-fill_muted text-content";
 };
 
 /** Dollar changes carry an explicit sign; the formatter only supplies the

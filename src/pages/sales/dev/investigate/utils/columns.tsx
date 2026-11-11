@@ -93,7 +93,7 @@ const signedWith =
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-bold ${
           v === 0
-            ? "bg-gray-100 text-content/95"
+            ? "bg-fill_muted text-content/95"
             : v > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -304,7 +304,7 @@ export const COLUMNS: ColumnDef[] = [
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
           r.margins.diff === 0
-            ? "bg-gray-100 text-content/95"
+            ? "bg-fill_muted text-content/95"
             : r.margins.diff > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
@@ -329,7 +329,7 @@ export const COLUMNS: ColumnDef[] = [
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
           r.gap === 0
-            ? "bg-gray-100 text-content/95"
+            ? "bg-fill_muted text-content/95"
             : r.gap > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"

@@ -30,7 +30,7 @@ const TransactionsPane = ({ selectedSection, transactions, scopedCoupons, txSort
   const dispatch = useAppDispatch();
   return (
     <>
-    <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-line_hair bg-gray-100 flex items-center gap-2">
+    <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-line_hair bg-fill_muted flex items-center gap-2">
       <span className="text-[11px] font-semibold text-content truncate">
         {selectedSection ? selectedSection.label : "All transactions"}
       </span>

@@ -158,7 +158,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
         ) : (
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="sticky top-0 bg-gray-100 border-b border-line_hair z-10">
+              <tr className="sticky top-0 bg-fill_muted border-b border-line_hair z-10">
                 <th className={`${TH} text-left`} style={{ overflow: "visible" }}>
                   <ColFilter
                     label="Item"

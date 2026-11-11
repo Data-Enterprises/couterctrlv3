@@ -116,7 +116,7 @@ export const couponPillClass: Record<CouponTier, string> = {
   critical: "bg-severity_critical_bg text-severity_critical_text",
   watch: "bg-severity_watch_bg text-severity_watch_text",
   ok: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-brand_slate",
+  ungraded: "bg-fill_muted text-brand_slate",
 };
 
 /** One graded row, whatever it's grouped by. Stores, sub departments, dates

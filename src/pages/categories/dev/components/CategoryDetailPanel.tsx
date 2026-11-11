@@ -413,7 +413,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
           style={{ width: "36.5%" }}
         >
           {/* Filter chips + threshold */}
-          <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-fill_muted flex-shrink-0">
             {sevChip("critical", "Crit")}
             {sevChip("watch", "Watch")}
             {sevChip("healthy", "OK")}

@@ -29,7 +29,7 @@ const ItemDisplay = ({ display }: ItemDisplayProps) => (
                 ? "bg-severity_healthy_bg text-severity_healthy_text"
                 : c.state === "fail"
                   ? "bg-severity_critical_bg text-severity_critical_text"
-                  : "bg-gray-100 text-content/95"
+                  : "bg-fill_muted text-content/95"
             }`}
             aria-hidden="true"
           >

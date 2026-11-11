@@ -24,7 +24,7 @@ const IconButton = ({
       className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
         variant === "danger"
           ? "text-content/95 hover:text-brand_danger hover:bg-brand_danger_bg"
-          : "text-content/95 hover:text-content hover:bg-gray-100"
+          : "text-content/95 hover:text-content hover:bg-fill_muted"
       }`}
     >
       <Icon className="w-3.5 h-3.5" />

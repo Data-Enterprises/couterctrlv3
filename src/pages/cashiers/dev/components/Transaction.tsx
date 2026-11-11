@@ -256,7 +256,7 @@ const Transaction = ({ trans }: TransactionProps) => {
                 {formatCurrency2(item.net_sales)}
               </div>
               <div className="flex items-center justify-end">
-                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-gray-100 text-content/95">
+                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-fill_muted text-content/95">
                   {item.sale_type}
                 </span>
               </div>

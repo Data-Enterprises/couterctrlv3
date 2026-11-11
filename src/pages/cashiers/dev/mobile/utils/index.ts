@@ -13,8 +13,8 @@ export const NOTICES: Partial<Record<ExplorerOutcome, string>> = {
  * green. `unmapped` is navy, the page's emphasis.
  */
 export const SPREAD_CLASS: Record<string, string> = {
-  single: "bg-gray-100 text-content border-brand_line",
-  narrow: "bg-gray-100 text-content border-brand_line",
+  single: "bg-fill_muted text-content border-brand_line",
+  narrow: "bg-fill_muted text-content border-brand_line",
   wide: "bg-brand_navy/10 text-brand_navy border-brand_navy/20",
   unmapped: "bg-brand_navy/10 text-brand_navy border-brand_navy/20",
 };

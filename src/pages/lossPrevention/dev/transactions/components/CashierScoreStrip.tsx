@@ -16,7 +16,7 @@ interface CashierScoreStripProps {
 const CashierScoreStrip = ({ selectedGrade, scoreMetrics, isNoDollar }: CashierScoreStripProps) => {
   return (
     <>
-        <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-line_hair bg-gray-100">
+        <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-line_hair bg-fill_muted">
           <div className="text-[12px] font-semibold text-content">
             {selectedGrade.cashier_name}
           </div>

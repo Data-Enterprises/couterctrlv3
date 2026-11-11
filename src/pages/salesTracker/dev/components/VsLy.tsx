@@ -52,7 +52,7 @@ const VsLy = ({
   if (dollarChange === null && pctChange === null) {
     return isPill ? (
       <span
-        className={`inline-flex items-baseline gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 ml-auto ${NUM}`}
+        className={`inline-flex items-baseline gap-1.5 px-2 py-0.5 rounded-full bg-fill_muted ml-auto ${NUM}`}
       >
         <span className="text-[10px] font-bold uppercase tracking-wide text-content">
           {basis}

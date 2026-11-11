@@ -96,7 +96,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
             onClick={onAddWeek}
             disabled={addingWeek}
             title="Read one more week of history — the baseline widens with it"
-            className="flex-shrink-0 px-3 flex items-center gap-1 text-[11.5px] font-medium text-content hover:bg-gray-100 disabled:opacity-50 transition-colors"
+            className="flex-shrink-0 px-3 flex items-center gap-1 text-[11.5px] font-medium text-content hover:bg-fill_muted disabled:opacity-50 transition-colors"
           >
             <PlusIcon className="w-3.5 h-3.5" />
             {addingWeek ? "Reading…" : "week"}

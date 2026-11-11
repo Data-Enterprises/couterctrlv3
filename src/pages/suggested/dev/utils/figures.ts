@@ -460,7 +460,7 @@ export const ACTION_TONE: Record<
     chip: "bg-severity_watch_bg text-severity_watch_text",
     ring: "ring-severity_watch_text/40",
   },
-  neutral: { chip: "bg-gray-100 text-content/95", ring: "ring-content/30" },
+  neutral: { chip: "bg-fill_muted text-content/95", ring: "ring-content/30" },
 };
 
 /** The tone each action wears, so the chip row can colour itself without

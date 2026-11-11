@@ -39,7 +39,7 @@ const LensPanel = ({
             className={`text-[11.5px] font-medium px-2.5 py-1 rounded-full transition-colors ${
               lens === l.key
                 ? "bg-brand_navy text-custom-white"
-                : "bg-fill_soft text-content hover:bg-gray-100"
+                : "bg-fill_soft text-content hover:bg-fill_muted"
             }`}
           >
             {l.label}

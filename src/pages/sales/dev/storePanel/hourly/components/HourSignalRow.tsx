@@ -58,7 +58,7 @@ const HourSignalRow = ({ row: r, coverage, threshold }: HourSignalRowProps) => {
           className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
             r.hasLW
               ? comparisonPillClass(rowVsLWPct, lwComplete, threshold)
-              : "bg-gray-100 text-brand_slate"
+              : "bg-fill_muted text-brand_slate"
           }`}
           style={{ minWidth: PCT_COL_W }}
         >
@@ -68,7 +68,7 @@ const HourSignalRow = ({ row: r, coverage, threshold }: HourSignalRowProps) => {
           className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
             r.hasLY
               ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
-              : "bg-gray-100 text-brand_slate"
+              : "bg-fill_muted text-brand_slate"
           }`}
           style={{ minWidth: PCT_COL_W }}
         >

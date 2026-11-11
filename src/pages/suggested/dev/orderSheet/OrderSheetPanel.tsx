@@ -474,7 +474,7 @@ const OrderSheetPanel = () => {
                 ) : (
                   <table className="w-full border-collapse text-[13px]">
                     <thead>
-                      <tr className="sticky top-0 bg-gray-100 border-b border-line_hair z-10">
+                      <tr className="sticky top-0 bg-fill_muted border-b border-line_hair z-10">
                         {/* First, not appended to the product name. A reader
                             scanning for what to do should not have to read a
                             description to find out there is nothing. */}

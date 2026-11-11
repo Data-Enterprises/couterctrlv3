@@ -23,7 +23,7 @@ import { CTA_SEVERITY_CLASSES, type Severity } from "../../../../utils/severity"
 const NEUTRAL_CTA = {
   border: "border-line_field",
   bg: "bg-fill_soft",
-  hoverBg: "hover:bg-gray-100",
+  hoverBg: "hover:bg-fill_muted",
   text: "text-content",
 };
 

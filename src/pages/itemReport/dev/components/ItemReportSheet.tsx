@@ -285,7 +285,7 @@ const ItemReportSheet = ({
             falls back to last week without saying so, and "a seasonal dip is
             not mistaken for a problem" can't hold for this store (finding T). */}
         {noLastYear && (
-          <div className="flex-shrink-0 px-4 py-1.5 bg-gray-100 text-[11px] text-content">
+          <div className="flex-shrink-0 px-4 py-1.5 bg-fill_muted text-[11px] text-content">
             No last-year sales on file for this store, so trends compare against
             last week only. A seasonal dip can read as a problem.
           </div>

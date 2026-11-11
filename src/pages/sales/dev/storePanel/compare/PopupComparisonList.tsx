@@ -167,7 +167,7 @@ const PopupComparisonList = ({
       <span
         className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
           sign === null || sign === 0
-            ? "bg-gray-100 text-content/95"
+            ? "bg-fill_muted text-content/95"
             : sign > 0
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"

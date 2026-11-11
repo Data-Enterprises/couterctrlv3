@@ -114,7 +114,7 @@ const SignalDetail = ({
         <>
           {/* Back bar sits in the same slot as the list's column header so the
               panel doesn't shift height when toggling — same as LP. */}
-          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-line_hair">
+          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-fill_muted border-b border-line_hair">
             <button
               onClick={() => setOpenTransaction(null)}
               className="text-[12px] font-semibold text-brand_navy hover:text-brand_navy/70 transition-colors"

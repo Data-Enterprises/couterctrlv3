@@ -456,7 +456,7 @@ const ItemAnalysisPanel = ({
                 {act.averaged.length > 0 && (
                   <>
                     <div className="mt-3 mb-1">
-                      <span className="text-[11px] px-1.5 py-px rounded bg-gray-100 text-content">
+                      <span className="text-[11px] px-1.5 py-px rounded bg-fill_muted text-content">
                         Avg · {act.averagedCount} trans
                       </span>
                     </div>

@@ -80,7 +80,7 @@ const SubDeptSignalList = ({
       className="flex flex-col border-r border-line_hair min-w-[310px]"
       style={{ width: "39.5%" }}
     >
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-fill_muted">
         <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
         <ThresholdChip
           value={subDeptThreshold}

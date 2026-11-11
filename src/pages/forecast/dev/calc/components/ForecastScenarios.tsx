@@ -89,7 +89,7 @@ const ForecastScenarios = ({
           />
           <button
             onClick={handleSetAdDays}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
           >
             Set
           </button>
@@ -103,7 +103,7 @@ const ForecastScenarios = ({
           />
           <button
             onClick={handleAdd}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
           >
             Add
           </button>

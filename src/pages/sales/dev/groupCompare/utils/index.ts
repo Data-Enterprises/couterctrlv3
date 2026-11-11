@@ -123,7 +123,7 @@ export const CTA_TONE: Record<ShareStanding, CtaTone> = {
   consistent: {
     border: "border-line_field",
     bg: "bg-fill_soft",
-    hoverBg: "hover:bg-gray-100",
+    hoverBg: "hover:bg-fill_muted",
     text: "text-content",
   },
   rising: {

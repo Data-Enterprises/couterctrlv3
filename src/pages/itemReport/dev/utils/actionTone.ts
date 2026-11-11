@@ -54,10 +54,10 @@ export const ACTION_TONE: Record<
     text: "text-severity_healthy_text",
   },
   insufficient: {
-    chip: "bg-gray-100 text-content/95",
+    chip: "bg-fill_muted text-content/95",
     ring: "ring-content/30",
     rule: "border-line_strong",
-    row: "bg-gray-100",
+    row: "bg-fill_muted",
     text: "text-content",
   },
   /** Quiet on purpose. It is a state, not a finding, and colouring it would

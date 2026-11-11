@@ -323,7 +323,7 @@ const TransactionSheet = ({
                     isItem
                       ? action
                         ? ACTION_TONE[action].row
-                        : "bg-gray-100"
+                        : "bg-fill_muted"
                       : i % 2 === 1
                         ? "bg-row_stripe"
                         : ""

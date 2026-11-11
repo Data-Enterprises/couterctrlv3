@@ -244,7 +244,7 @@ const CpnSectionDetail = ({
               </button>
               {isExp && (
                 <div className="border-t border-brand_line">
-                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-gray-100 border-b border-brand_line">
+                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-fill_muted border-b border-brand_line">
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}

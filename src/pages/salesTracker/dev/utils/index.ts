@@ -164,10 +164,10 @@ export const WEEK_PRESETS = [4, 8, 12, 26];
 
 /** The pill's fill: green up, red down, grey when flat or missing. */
 export const PILL_FILL = (v: number | null) => {
-  if (v === null) return "bg-gray-100 text-content";
+  if (v === null) return "bg-fill_muted text-content";
   if (v > 0) return "bg-severity_healthy_bg text-severity_healthy_text";
   if (v < 0) return "bg-severity_critical_bg text-severity_critical_text";
-  return "bg-gray-100 text-content";
+  return "bg-fill_muted text-content";
 };
 
 /** A yyyy-mm-dd day as m/d. */

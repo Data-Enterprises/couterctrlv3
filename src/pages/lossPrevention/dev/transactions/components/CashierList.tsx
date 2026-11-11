@@ -48,7 +48,7 @@ const CashierList = ({
       ) : (
         <>
           {/* Severity filter chips */}
-          <div className="flex-shrink-0 flex items-center gap-1.5 p-2 border-b border-line_hair bg-gray-100">
+          <div className="flex-shrink-0 flex items-center gap-1.5 p-2 border-b border-line_hair bg-fill_muted">
             <button
               onClick={() => setCashierSevFilter((f) => (f === "critical" ? "all" : "critical"))}
               className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
@@ -78,7 +78,7 @@ const CashierList = ({
           {/* Column header + scrollable cashier rows + sticky avg footer */}
           <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
             <div
-              className="sticky top-0 z-10 grid border-b border-line_hair bg-gray-100"
+              className="sticky top-0 z-10 grid border-b border-line_hair bg-fill_muted"
               style={{
                 gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr",
               }}

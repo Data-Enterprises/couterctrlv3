@@ -115,7 +115,7 @@ export const NONE = "—";
 
 /** Each supply event's chip colour: grey ordered, green received. */
 export const EVENT_CLASS: Record<SupplyEvent["kind"], string> = {
-  ordered: "bg-gray-100 text-content",
+  ordered: "bg-fill_muted text-content",
   received: "bg-delta_positive_bg text-delta_positive_text",
 };
 

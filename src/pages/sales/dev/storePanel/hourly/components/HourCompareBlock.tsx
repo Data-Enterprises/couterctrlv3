@@ -15,7 +15,7 @@ interface HourCompareBlockProps {
  *  such as transactions or the average basket. A zero reference is a dash. */
 const HourCompareBlock = ({ label, ty, lw, ly, format, threshold }: HourCompareBlockProps) => (
   <div className="border-b border-line_hair leading-snug">
-    <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
+    <div className="px-4 py-1.5 bg-fill_muted text-[10px] font-medium uppercase tracking-wide text-content">
       {label}
     </div>
     <div className="grid grid-cols-3 divide-x divide-line_hair">

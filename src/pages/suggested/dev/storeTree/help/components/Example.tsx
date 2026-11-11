@@ -14,7 +14,7 @@ const Example = ({ head, rows }: ExampleProps) => (
       <div
         key={r.k}
         className={`grid grid-cols-[1fr_auto] gap-4 px-3.5 py-2.5 border-b border-line_hair last:border-b-0 text-[14px] ${
-          r.out ? "bg-gray-100" : ""
+          r.out ? "bg-fill_muted" : ""
         }`}
       >
         <span className={r.out ? "font-bold text-content" : "text-content"}>

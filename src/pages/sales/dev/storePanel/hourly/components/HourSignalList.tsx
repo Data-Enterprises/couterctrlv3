@@ -66,7 +66,7 @@ const HourSignalList = ({
 
   return (
     <div className="flex flex-col border-r border-line_hair" style={{ width: "36.5%" }}>
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-fill_muted">
         <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
         <ThresholdChip
           value={hourlyThreshold}

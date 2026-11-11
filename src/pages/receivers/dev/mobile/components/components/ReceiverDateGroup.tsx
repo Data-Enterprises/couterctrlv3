@@ -60,7 +60,7 @@ const ReceiverDateGroup = ({
             <button
               key={`${r.invoiceid}-${r.invoice_date}`}
               onClick={() => handleReceiverTap(r)}
-              className="w-full flex items-center pl-6 pr-3 py-2.5 text-left active:bg-gray-100 gap-3"
+              className="w-full flex items-center pl-6 pr-3 py-2.5 text-left active:bg-fill_muted gap-3"
             >
               <InvoiceRow r={r} />
             </button>

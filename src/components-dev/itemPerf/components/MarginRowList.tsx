@@ -133,7 +133,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
         Bars: {sizeLabel.toLowerCase()}, TY vs LY and LW
       </p>
       {listPartial && (
-        <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+        <p className="border-b border-brand_line bg-fill_muted px-3.5 py-2 text-[11.5px] font-semibold text-content">
           Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
         </p>
       )}
