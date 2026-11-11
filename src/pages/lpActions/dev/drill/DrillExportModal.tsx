@@ -158,7 +158,7 @@ const DrillExportModal = ({
       minWidth={460}
       minHeight={380}
     >
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
+      <div className="cc-phone-header">
         <div className="min-w-0">
           <p className="cc-navy-title text-[13px] truncate">
             Export {saleType}

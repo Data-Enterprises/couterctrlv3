@@ -168,7 +168,7 @@ const CashiersExportModal = ({
       defaultHeight={960}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
+        <div className="cc-phone-header">
           <div className="min-w-0">
             <p className="cc-navy-title text-[13px]">Export CSV</p>
             <p className="text-custom-white/95 text-[11px] mt-0.5 truncate">

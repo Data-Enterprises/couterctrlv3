@@ -214,7 +214,7 @@ const LPExportModal = ({
       defaultHeight={960}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
+        <div className="cc-phone-header">
           <div>
             <p className="cc-navy-title text-[13px]">Export CSV</p>
             <p className="text-custom-white/95 text-[10px] mt-0.5">{storeName} — {saleType}</p>

@@ -119,7 +119,7 @@ const ForecastCalcModal = () => {
       defaultHeight={720}
     >
       {/* Title bar */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 bg-brand_navy flex-shrink-0">
+      <div className="cc-phone-header gap-2 flex-shrink-0">
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start truncate">
           {row.description}
         </p>
