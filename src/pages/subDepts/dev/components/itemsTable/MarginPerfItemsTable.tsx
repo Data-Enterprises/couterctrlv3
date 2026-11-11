@@ -5,7 +5,6 @@ import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../../h
 
 // Utils
 import { getLYDate } from "../../../../../utils/dates";
-import { addDays } from "../../../../../utils";
 import {
   buildItemRows,
   buildItemDetail,
@@ -21,7 +20,7 @@ import { buildReportRows, byDate, getColSortValue, nextColSort } from "./utils";
 
 // Interfaces
 import type { SubDeptMargin, ThresholdValue } from "../../../../../interfaces";
-import type { Coverage } from "../../../../../utils/grading";
+import { shiftIso, type Coverage } from "../../../../../utils/grading";
 import type { ColSort, SevFilter } from "./interfaces";
 
 // Components
@@ -83,7 +82,7 @@ const MarginPerfItemsTable = ({
     if (!ctx.selectedWeekDay)
       return { ty: tyMargins, lw: lwMargins, ly: lyMargins };
     const tyDate = ctx.selectedWeekDay;
-    const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+    const lwDate = shiftIso(tyDate, -7);
     const lyDate = getLYDate(tyDate);
     return {
       ty: byDate(tyMargins, tyDate),
@@ -101,7 +100,7 @@ const MarginPerfItemsTable = ({
         // A single selected day is already one matched day.
         !ctx.selectedWeekDay && coverage
           ? {
-              lwOf: (d) => addDays(d, -7).toISOString().split("T")[0],
+              lwOf: (d) => shiftIso(d, -7),
               lyOf: (d) => getLYDate(d),
               coverage,
             }
