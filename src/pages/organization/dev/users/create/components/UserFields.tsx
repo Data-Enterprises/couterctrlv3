@@ -71,7 +71,7 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
                 }
               : {
                   availableUsernameText: "- Not available",
-                  usernameTextColor: "text-red-600",
+                  usernameTextColor: "text-brand_danger",
                 },
           ),
         );
@@ -106,7 +106,7 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
                 }
               : {
                   availableEmailText: "- Not available",
-                  emailTextColor: "text-red-600",
+                  emailTextColor: "text-brand_danger",
                 },
           ),
         );

@@ -455,7 +455,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white disabled:cursor-not-allowed disabled:opacity-40 ${
               showInactive
                 ? "bg-brand_navy hover:bg-brand_navy_hover"
-                : "bg-red-600 hover:bg-red-600/85"
+                : "bg-brand_danger hover:bg-brand_danger/85"
             }`}
           >
             {showInactive ? "Reactivate" : "Deactivate"} {selectedShown.length}

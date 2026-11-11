@@ -139,13 +139,13 @@ const LookupQueuePanel = ({
                 className="w-full px-3 py-2.5 border-b border-line_hair"
               >
                 <div className="flex items-center gap-1.5">
-                  <ExclamationTriangleIcon className="w-3 h-3 text-red-600 flex-shrink-0" />
+                  <ExclamationTriangleIcon className="w-3 h-3 text-brand_danger flex-shrink-0" />
                   <span className="text-[12px] font-medium text-content">
                     {item.upc}
                   </span>
                 </div>
                 <div className="pl-[18px] mt-0.5">
-                  <span className="text-[10.5px] text-red-600">
+                  <span className="text-[10.5px] text-brand_danger">
                     {item.errorMessage ?? "There was an issue finding this item"}
                   </span>
                 </div>

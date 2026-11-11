@@ -70,7 +70,7 @@ const CreateGroup = () => {
           {groupNames.some(
             (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
           ) ? (
-            <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-red-600 text-[12.5px]">
+            <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-brand_danger text-[12.5px]">
               User Group already exists. Please use another name
             </div>
           ) : null}

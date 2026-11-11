@@ -17,7 +17,7 @@ const StoreRows = () => {
           <div className="text-right">{s.total_days_in_range}</div>
           <div className="text-right">{s.active_days}</div>
           <div
-            className={`text-right ${s.inactive_or_missing_days > 0 ? "text-red-600 font-medium" : "text-content"}`}
+            className={`text-right ${s.inactive_or_missing_days > 0 ? "text-brand_danger font-medium" : "text-content"}`}
           >
             {s.inactive_or_missing_days}
           </div>

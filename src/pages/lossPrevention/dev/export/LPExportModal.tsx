@@ -277,7 +277,7 @@ const LPExportModal = ({
                   <div className="flex gap-1.5 flex-wrap">
                     {(
                       [
-                        { sev: "critical" as CashierSeverity, label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+                        { sev: "critical" as CashierSeverity, label: "Critical", activeClass: "bg-brand_danger border-brand_danger text-custom-white" },
                         { sev: "watch"    as CashierSeverity, label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
                         { sev: "ok"       as CashierSeverity, label: "OK",       activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
                         { sev: "ungraded" as CashierSeverity, label: "Ungraded", activeClass: "bg-gray-400 border-gray-400 text-custom-white" },

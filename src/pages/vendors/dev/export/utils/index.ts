@@ -373,7 +373,7 @@ export const fmtDate = (d: string) =>
   });
 
 export const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
-  { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+  { sev: "critical", label: "Critical", activeClass: "bg-brand_danger border-brand_danger text-custom-white" },
   { sev: "watch", label: "Watch", activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
   { sev: "healthy", label: "Healthy", activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
 ];

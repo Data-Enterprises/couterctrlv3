@@ -329,7 +329,7 @@ const AssignPanel = ({
               onClick={() => toggleUnstaged(item.id)}
               className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 unstaged.has(item.id)
-                  ? "bg-red-600 text-custom-white"
+                  ? "bg-brand_danger text-custom-white"
                   : "hover:bg-fill_soft text-content"
               }`}
             >
@@ -351,7 +351,7 @@ const AssignPanel = ({
           <button
             onClick={() => handleUnassign(Array.from(unstaged))}
             disabled={moving || unstaged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_danger hover:bg-brand_danger/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign}
           </button>
@@ -365,7 +365,7 @@ const AssignPanel = ({
               )
             }
             disabled={moving || rightItems.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_danger hover:bg-brand_danger/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign} all
           </button>

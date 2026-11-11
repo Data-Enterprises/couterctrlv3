@@ -106,7 +106,7 @@ export const couponDotClass: Record<CouponTier, string> = {
  *  LP and Sales both announce the selected row's grade in the panel header
  *  rather than leaving it flat navy. */
 export const couponHeaderBgClass: Record<CouponTier, string> = {
-  critical: "bg-red-600",
+  critical: "bg-brand_danger",
   watch: "bg-amber-500",
   ok: "bg-emerald-600",
   ungraded: "bg-brand_navy",

@@ -94,7 +94,7 @@ const DeleteGroup = () => {
           />
           <button
             data-testid="delete-usergroup-btn"
-            className={`bg-red-600 text-custom-white py-2 rounded-xl border-2 border-red-600 mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_danger text-custom-white py-2 rounded-xl border-2 border-brand_danger mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={() => setIsDeleting(true)}
           >
             Delete
@@ -125,7 +125,7 @@ const DeleteGroup = () => {
                 Yes
               </button>
               <button
-                className={`bg-red-600 text-custom-white py-1.5 rounded-xl border-2 border-red-600 w-full`}
+                className={`bg-brand_danger text-custom-white py-1.5 rounded-xl border-2 border-brand_danger w-full`}
                 data-testid="delete-cancel-btn"
                 onClick={cleanup}
               >

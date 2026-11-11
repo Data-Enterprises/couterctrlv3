@@ -354,7 +354,7 @@ export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = 
   {
     sev: "critical",
     label: "Critical",
-    activeClass: "bg-red-600 border-red-600 text-custom-white",
+    activeClass: "bg-brand_danger border-brand_danger text-custom-white",
   },
   {
     sev: "watch",

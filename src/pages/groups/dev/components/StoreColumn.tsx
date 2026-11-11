@@ -54,7 +54,7 @@ const StoreColumn = ({
                 onClick={() => handleToggle(s.storeid, kind)}
                 disabled={pending.has(s.storeid)}
                 className={`w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold ${
-                  adds ? "text-brand_navy" : "text-red-600"
+                  adds ? "text-brand_navy" : "text-brand_danger"
                 } border border-line_field hover:bg-fill_soft disabled:cursor-not-allowed transition-colors`}
               >
                 {adds ? "+" : "−"}

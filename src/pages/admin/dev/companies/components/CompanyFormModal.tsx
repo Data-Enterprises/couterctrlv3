@@ -69,7 +69,7 @@ const CompanyFormModal = ({
               className="py-1.5 text-[13px]"
             />
             {alreadyExists && (
-              <div className="text-[10px] text-red-600 mt-1">
+              <div className="text-[10px] text-brand_danger mt-1">
                 Company name already exists
               </div>
             )}
