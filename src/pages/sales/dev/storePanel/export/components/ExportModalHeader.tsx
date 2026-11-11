@@ -24,7 +24,7 @@ const ExportModalHeader = ({
       <p className="text-custom-white text-[10px] mt-0.5">{storeName}</p>
     </div>
     {/* Mode tabs */}
-    <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
+    <div className="cc-segment-navy">
       {(["presets", "custom"] as ModalMode[]).map((m) => (
         <button
           key={m}

@@ -270,7 +270,7 @@ const MarginPerfExportModal = ({
             <p className="cc-navy-title text-[13px]">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">{subDeptName} · {storeName}</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
+          <div className="cc-segment-navy">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
