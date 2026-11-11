@@ -163,7 +163,7 @@ const CompanyGrid = () => {
         />
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
+          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
           New company

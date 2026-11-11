@@ -59,7 +59,7 @@ const NewGroupModal = ({ companies, onCreate, onClose, busy = false }: NewGroupM
           <button
             onClick={() => onCreate(name, Number(companyId))}
             disabled={busy}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Creating…" : "Create"}
           </button>

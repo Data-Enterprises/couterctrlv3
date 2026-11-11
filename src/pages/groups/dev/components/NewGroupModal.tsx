@@ -36,7 +36,7 @@ const NewGroupModal = ({ onCreate, onClose }: NewGroupModalProps) => {
           </button>
           <button
             onClick={() => onCreate(name)}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover"
           >
             Create
           </button>

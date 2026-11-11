@@ -252,7 +252,7 @@ const CashiersExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 cc-btn-primary hover:bg-brand_navy/85 text-[12px]"
+                className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -402,7 +402,7 @@ const CashiersExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={columns.length === 0}
-                className="flex items-center gap-1.5 cc-btn-primary hover:bg-brand_navy/85 text-[12px]"
+                className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

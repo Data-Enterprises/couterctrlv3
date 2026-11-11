@@ -59,7 +59,7 @@ const NewSharedGroup = ({ onCreate, onCancel }: NewSharedGroupProps) => {
         <button
           onClick={submit}
           disabled={!!nameProblem(name) || creating}
-          className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-50"
+          className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-50"
         >
           Create
         </button>

@@ -109,13 +109,13 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
         <button
           onClick={resetPassword}
           disabled={!canResetPW}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canResetPW ? "bg-brand_navy hover:bg-brand_navy/85" : "bg-fill_track_strong cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canResetPW ? "bg-brand_navy hover:bg-brand_navy_hover" : "bg-fill_track_strong cursor-not-allowed"}`}
         >
           Reset password
         </button>
         <button
           onClick={() => setConfirmingSecurity(true)}
-          className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy/85 text-custom-white"
+          className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white"
         >
           Reset security
         </button>

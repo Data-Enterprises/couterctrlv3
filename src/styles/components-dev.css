@@ -48,10 +48,9 @@
 
   /* ── controls ─────────────────────────────────────────────────────────── */
 
-  /* The navy primary button. Its hover is still written inline (a decision
-     in the plan, step 5). */
+  /* The navy primary button. */
   .cc-btn-primary {
-    @apply bg-brand_navy text-custom-white font-medium rounded-md px-3 py-1.5 transition-colors disabled:opacity-40;
+    @apply bg-brand_navy hover:bg-brand_navy_hover text-custom-white font-medium rounded-md px-3 py-1.5 transition-colors disabled:opacity-40;
   }
   /* The outline button. */
   .cc-btn-outline {

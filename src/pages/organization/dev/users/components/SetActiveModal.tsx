@@ -177,7 +177,7 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
           {done ? (
             <button
               onClick={() => onClose(changedCount > 0)}
-              className="text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85"
+              className="text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover"
             >
               Done
             </button>
@@ -196,7 +196,7 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
                 className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white ${
                   active === 0
                     ? "bg-red-600 hover:bg-red-600/85"
-                    : "bg-brand_navy hover:bg-brand_navy/85"
+                    : "bg-brand_navy hover:bg-brand_navy_hover"
                 }`}
               >
                 {sending

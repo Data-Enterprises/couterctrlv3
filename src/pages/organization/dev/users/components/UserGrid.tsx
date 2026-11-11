@@ -408,7 +408,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             ctx.dispatch(clearDuplicateSource());
             onOpenCreate();
           }}
-          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
+          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
           {/* Named for what it opens -- the form is titled "Add user", and so
@@ -454,7 +454,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             disabled={selectedShown.length === 0}
             className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white disabled:cursor-not-allowed disabled:opacity-40 ${
               showInactive
-                ? "bg-brand_navy hover:bg-brand_navy/85"
+                ? "bg-brand_navy hover:bg-brand_navy_hover"
                 : "bg-red-600 hover:bg-red-600/85"
             }`}
           >
@@ -634,7 +634,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                     <span>{ctx.usersError}</span>
                     <button
                       onClick={() => ctx.dispatch(setRefresh(true))}
-                      className="text-[12px] font-medium px-3 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85"
+                      className="text-[12px] font-medium px-3 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover"
                     >
                       Retry
                     </button>

@@ -521,7 +521,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           <button
             onClick={handleRetry}
             disabled={saving}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover flex-shrink-0"
           >
             {saving ? "Retrying…" : "Retry access"}
           </button>
@@ -547,7 +547,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           </div>
           <button
             onClick={held.reload}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover flex-shrink-0"
           >
             Retry
           </button>
@@ -699,7 +699,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             disabled={!primaryEnabled}
             className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
               primaryEnabled
-                ? "bg-brand_navy hover:bg-brand_navy/85"
+                ? "bg-brand_navy hover:bg-brand_navy_hover"
                 : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >

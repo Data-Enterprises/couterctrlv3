@@ -64,7 +64,7 @@ export const CUSTOM_RADIO = "accent-brand_navy h-3.5 w-3.5";
 export const SECTION_LABEL =
   "text-[10px] font-semibold uppercase tracking-wide text-content mb-2";
 export const DOWNLOAD_BTN =
-  "flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors";
+  "flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors";
 
 /** One ranked row's text for one export column. */
 export const cell = (row: RankedRow, key: ColKey) => {

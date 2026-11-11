@@ -318,7 +318,7 @@ const BaseGroups = () => {
               <button
                 onClick={claimCreated}
                 disabled={claiming}
-                className="text-[11.5px] font-medium px-2.5 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 disabled:opacity-50"
+                className="text-[11.5px] font-medium px-2.5 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover disabled:opacity-50"
               >
                 {claiming ? "Assigning…" : "Assign it to me"}
               </button>

@@ -157,7 +157,7 @@ const CompanyFormModal = ({
             disabled={!ok}
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
               ok
-                ? "bg-brand_navy hover:bg-brand_navy/85"
+                ? "bg-brand_navy hover:bg-brand_navy_hover"
                 : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >

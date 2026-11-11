@@ -212,7 +212,7 @@ const InvoiceExportModal = ({
           <button
             onClick={run}
             disabled={!canGo}
-            className="flex flex-none items-center gap-1.5 cc-btn-primary text-[12px] hover:bg-brand_navy/85"
+            className="flex flex-none items-center gap-1.5 cc-btn-primary text-[12px]"
           >
             {choice === "send" ? (
               <>
