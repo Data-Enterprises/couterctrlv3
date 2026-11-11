@@ -247,15 +247,18 @@ in the rule's `skip`.
 triplet such as `--color-brand-navy: 30 42 74;`), named in `tailwind.config.js`, used as a class
 (`bg-brand_navy`, `text-brand_navy/85`). Where a class can't be used (an inline `style`, a computed
 width), write `rgb(var(--color-brand-navy) / 0.12)`. Never a raw hex, never `bg-white` /
-`text-white` (use `custom-white`), never a Tailwind grey for text.
+`text-white` (use `custom-white`), never a Tailwind grey for text, and in the dev tree never a
+Tailwind grey for a line or fill either (use the neutral tokens below).
 
 | Job | Tokens |
 |---|---|
-| The app's navy (headers, buttons, rails, focus) | `brand_navy`, `brand_navy_hover` (`portal_navy` is the public portal and login only) |
+| The app's navy (headers, buttons, rails, focus) | `brand_navy`, `brand_navy_hover` (the one hover for navy buttons; `portal_navy` is the public portal and login only) |
 | Page ground / card / lighter fill | `bkg` / `custom-white` / `brand_paper` |
-| Row selection (always the pair) | `bg-row_selected` + `border-row_selected_border` |
+| Row selection (always the pair) | `cc-row-selected` (= `bg-row_selected` + `border-row_selected_border`) |
 | "This filter is narrowing the list" | `filter_active` + `filter_active_border` |
 | Zebra stripes, hairlines | `row_stripe`; `brand_line`, `brand_line_2` |
+| Neutral lines | `line_hair` (dividers, row and bar rules), `line_field` (field, card and menu borders), `line_strong` (control edges), `line_faint` (table cell rules) |
+| Neutral fills | `fill_soft` (header strips, row hover), `fill_muted` (wells, chips), `fill_track` / `fill_track_strong` (bar tracks); `ungraded` for the dot or ring of something not graded |
 | Body text | `text-content` |
 | Small mono labels, timestamps, fact keys | `text-brand_slate` (`brand_slate_2` one step lighter) |
 | Placeholders | `placeholder:text-brand_placeholder` |
@@ -279,7 +282,8 @@ These screens are read standing in a shop. `disabled:`, `placeholder:`, `hover:`
 `active:` states may dim, and so may a lone separator glyph (`·`, `|`). Fills and borders may go as
 light as they like (`border-brand_navy/15`, `bg-brand_navy/[0.06]`).
 
-**Modals blur, they don't darken:** `fixed inset-0 backdrop-blur-sm`, never `bg-black/40`.
+**Modals blur, they don't darken:** `cc-modal-backdrop` (`fixed inset-0 backdrop-blur-sm`), never
+`bg-black/40`.
 
 **Tailwind classes are literal.** Tailwind reads the source, so a class built at runtime
 (`` `bg-severity_${sev}_bg` ``) is never emitted. Write each one out:
@@ -290,17 +294,41 @@ light as they like (`border-brand_navy/15`, `bg-brand_navy/[0.06]`).
   `PageInfoButton` in a page header;
 - severity helpers: `pillClass`, `severityDotClass`, `chipClass`, `formatPct` in `src/utils/severity.ts`;
 - tooltips: `src/components-dev/tooltip` (see §12);
-- an icon button in a navy header: `HeaderIconButton`.
+- an icon button in a navy header: `HeaderIconButton`;
+- a repeated look: its `cc-*` class (below).
 
-**Desktop panels.** A navy left-panel header is `bg-brand_navy rounded-t-xl` with `px-4 pt-1 pb-2.5`
-(list panels of two rows use `px-3 pt-1 pb-2.5`). A two-row navy header separates its rows with exactly
-`pt-1.5 mt-1 border-t border-custom-white/[0.08]`.
+**Shared looks: the `cc-*` classes.** `src/styles/components-dev.css` defines one class per look
+the dev tree repeats, so changing a look is one edit there. A class holds the look only (colour,
+weight, border, fill, radius, shadow, inner spacing); text size and position stay inline where it is
+used (`cc-caps text-[11px] mb-2`). Classes sit in the components layer, so a utility beside one
+wins. Use the class rather than spelling it out: `check:rules`' `catalogued-look` flags a dev-tree
+`className` that holds a whole definition. The catalogue:
+- type: `cc-caps`, `cc-caps-strong`, `cc-caps-mono`, `cc-row-title`, `cc-navy-title` (never on a
+  button or a filled element), `cc-navy-link`, `cc-muted-link`;
+- controls: `cc-btn-primary` (its hover built in), `cc-btn-outline`, `cc-chip-btn`,
+  `cc-segment-navy`, `cc-checkbox`, `cc-field-sm`, `cc-tag`, `cc-spinner`;
+- surfaces: `cc-panel`, `cc-card-phone`, `cc-navy-panel-header`, `cc-navy-header-row`,
+  `cc-phone-header`, `cc-bar-header`, `cc-bar-footer`, `cc-notice`, `cc-dropdown`,
+  `cc-modal-backdrop`, `cc-scroll`;
+- tables and rows: `cc-thead`, `cc-th`, `cc-td`, `cc-num`, `cc-row-selected`.
+A new repeated look gets a class there (tokens only), not another hand-spelled copy. `audit:theme`
+checks the stylesheet with the other colour rules, and its `unknown-colour` rule fails a colour
+class that names no colour (Tailwind drops it and the element renders uncoloured). Plan and
+history: `docs/tailwind-refactor-plan.md`.
+
+**To revisit (Steve, 11 Nov 2026):** the neutral tokens (`line_*`, `fill_*`, `ungraded`) start at
+exactly the Tailwind greys they replaced. Retuning one (for example `line_hair` toward the bluer
+`brand_line`) is a one-line change in `src/index.css`; held for now.
+
+**Desktop panels.** A navy left-panel header is `cc-navy-panel-header` (`bg-brand_navy rounded-t-xl`
+with `px-4 pt-1 pb-2.5`; list panels of two rows use `px-3 pt-1 pb-2.5`). A two-row navy header
+separates its rows with `cc-navy-header-row` (exactly `pt-1.5 mt-1 border-t border-custom-white/[0.08]`).
 
 **Phone screens** (the `mobile/` folders):
 - Font floor `text-[10px]`; `text-[9.5px]` only for mono uppercase captions. Never italic.
 - Mobile Performance pages show no severity chips, dots or pills.
-- Content sits in `<section>` cards: `rounded-2xl border border-gray-200 bg-custom-white shadow-md`,
-  stacked with `gap-3` inside `p-3`. A filter goes inside the card it filters; navigation goes in a bar
+- Content sits in `<section>` cards: `cc-card-phone` (`rounded-2xl border border-line_field
+  bg-custom-white shadow-md`), stacked with `gap-3` inside `p-3`. A filter goes inside the card it filters; navigation goes in a bar
   under the header.
 - **Back** (phone and desktop) comes in exactly three kinds; never a fourth, and never a magnifying
   glass as the way back (a client's IT lead: nobody reads the icon as "back"):
@@ -349,7 +377,8 @@ promotion, because clients see them; a new hit fails the audit.
 - [ ] State and effects moved into a child still reset and run when they did before (check unmounts,
       early returns and mount effects)
 - [ ] Colours are tokens for what they mean; text at `/95` or more; classes literal; shared parts
-      (InfoButton, BackButton, MobileBackLink, SearchBackButton, tooltip) rather than hand-rolled
+      (InfoButton, BackButton, MobileBackLink, SearchBackButton, tooltip, the `cc-*` looks) rather
+      than hand-rolled
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
 - [ ] The pre-commit hook passes; a baseline only went down, or moved with a move commit
