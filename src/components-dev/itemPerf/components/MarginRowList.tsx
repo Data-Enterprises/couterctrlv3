@@ -129,7 +129,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
         dir={activeSortDir}
         onChange={onSort}
       />
-      <p className="border-b border-brand_line px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/95">
+      <p className="border-b border-brand_line px-3.5 py-1.5 cc-caps-mono text-[10px]">
         Bars: {sizeLabel.toLowerCase()}, TY vs LY and LW
       </p>
       {listPartial && (

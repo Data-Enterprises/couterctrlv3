@@ -39,7 +39,7 @@ const MarginSummary = () => {
           than overlap again. */}
       <div className="grid grid-cols-3 items-end gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+          <span className="mb-1 cc-caps-mono text-[9.5px]">
             TY margin
           </span>
           <span className="truncate font-display text-[20px] font-extrabold leading-none tracking-tight text-content">
@@ -47,7 +47,7 @@ const MarginSummary = () => {
           </span>
         </div>
         <div className="flex min-w-0 flex-col pb-0.5">
-          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+          <span className="mb-1 cc-caps-mono text-[9.5px]">
             LY margin
           </span>
           {/* No record isn't a 0% margin. */}
@@ -63,7 +63,7 @@ const MarginSummary = () => {
             already the only one it could be. */}
         {totals.gpm !== null && totals.gpmLy !== null && (
           <div className="flex min-w-0 flex-col items-end pb-0.5">
-            <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+            <span className="mb-1 cc-caps-mono text-[9.5px]">
               +/-
             </span>
             <PerfDelta
@@ -78,7 +78,7 @@ const MarginSummary = () => {
       </div>
 
       <div className="mt-3">
-        <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/95">
+        <div className="mb-1.5 flex items-baseline justify-between cc-caps-mono text-[10px]">
           <span>{sizeLabel}</span>
           <span>
             {selectedItem
@@ -118,7 +118,7 @@ const MarginSummary = () => {
           { k: "LY cost", v: totals.cogsLy, ly: true },
         ].map(({ k, v, ly }) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+            <span className="cc-caps-mono text-[9.5px]">
               {k}
             </span>
             <span

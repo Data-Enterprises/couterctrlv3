@@ -60,7 +60,7 @@ const ItemWeekScreen = () => {
               {["Day", "Sales", "Qty", "GPM"].map((h, i) => (
                 <th
                   key={h}
-                  className={`border-b border-brand_line px-2 py-2 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-content/95 ${
+                  className={`border-b border-brand_line px-2 py-2 cc-caps-mono text-[9.5px] font-semibold ${
                     i === 0 ? "pl-3.5 text-left" : "text-right"
                   }`}
                 >

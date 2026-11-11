@@ -146,7 +146,7 @@ const ItemSearchScreen = () => {
               of every item in the store is not a useful thing to land on. */}
           {!query && recents.length > 0 && (
             <section className="overflow-hidden rounded-2xl border border-line_field bg-custom-white shadow-md">
-              <div className="px-3.5 pb-1 pt-3 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+              <div className="px-3.5 pb-1 pt-3 cc-caps-mono text-[9.5px]">
                 Recent items
               </div>
               {recents.slice(0, RECENTS_INLINE).map((r) => (
@@ -188,7 +188,7 @@ const ItemSearchScreen = () => {
 
       {perf.recentsOpen && (
         <BottomSheet onClose={() => dispatch(setRecentsOpen(false))}>
-          <div className="px-4 pb-1 pt-2 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+          <div className="px-4 pb-1 pt-2 cc-caps-mono text-[9.5px]">
             Recent items
           </div>
           {recents.map((r) => (

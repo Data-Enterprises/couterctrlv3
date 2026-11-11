@@ -286,7 +286,7 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
         {/** What came with you from the page. */}
         {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
-            <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+            <div className="cc-caps-mono text-[9.5px]">
               From {origin.area ? `${origin.area} · ` : ""}
               {origin.page ?? origin.href}
             </div>

@@ -156,7 +156,7 @@ const PerfStoreReport = ({
           ] as const
         ).map(([k, v, fromBundle]) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+            <span className="cc-caps-mono text-[9.5px]">
               {k}
             </span>
             {fromBundle && bundleLoading ? (

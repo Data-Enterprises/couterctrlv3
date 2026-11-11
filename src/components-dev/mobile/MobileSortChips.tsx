@@ -49,7 +49,7 @@ const MobileSortChips = <K extends string>({
     className="flex items-center gap-2 overflow-x-auto border-b border-brand_line py-2 pl-3.5"
   >
     {label && (
-      <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/95">
+      <span className="flex-shrink-0 cc-caps-mono text-[10px]">
         {label}
       </span>
     )}

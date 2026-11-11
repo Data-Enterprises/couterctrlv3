@@ -157,41 +157,20 @@
   "src/components-dev/eventPerf/components/EventDrillList.tsx": {
     "catalogued-look": 1
   },
-  "src/components-dev/eventPerf/components/EventStoreReport.tsx": {
-    "catalogued-look": 1
-  },
-  "src/components-dev/eventPerf/components/ScopeCard.tsx": {
-    "catalogued-look": 1
-  },
   "src/components-dev/eventPerf/components/StoreListControls.tsx": {
     "catalogued-look": 1
   },
   "src/components-dev/itemPerf/components/ItemSearchScreen.tsx": {
-    "catalogued-look": 5
-  },
-  "src/components-dev/itemPerf/components/ItemWeekScreen.tsx": {
-    "catalogued-look": 1
+    "catalogued-look": 3
   },
   "src/components-dev/itemPerf/components/MarginRowList.tsx": {
-    "catalogued-look": 2
-  },
-  "src/components-dev/itemPerf/components/MarginSummary.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 1
   },
   "src/components-dev/itemPerf/components/StoreGroupsScreen.tsx": {
     "catalogued-look": 2
   },
-  "src/components-dev/mobile/MobilePerfCard.tsx": {
-    "catalogued-look": 1
-  },
   "src/components-dev/mobile/MobilePerfDetail.tsx": {
     "catalogued-look": 1
-  },
-  "src/components-dev/mobile/MobileSortChips.tsx": {
-    "catalogued-look": 1
-  },
-  "src/components-dev/mobile/perf/PerfCardHeader.tsx": {
-    "catalogued-look": 2
   },
   "src/components-dev/modals/ExportModal.tsx": {
     "any-in-props": 1
@@ -702,10 +681,10 @@
     "catalogued-look": 2
   },
   "src/pages/cashiers/dev/mobile/SignalListMobile.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/cashiers/dev/mobile/SignalTransactionsMobile.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/categories/Categories.tsx": {
     "labels": 1
@@ -771,7 +750,7 @@
     "catalogued-look": 2
   },
   "src/pages/coupons/dev/mobile/CpnTotalsCard.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/exportBuilder/ExportBuilder.tsx": {
     "labels": 1
@@ -1435,9 +1414,6 @@
   "src/pages/sales/dev/mobile/perf/components/PerfDrillList.tsx": {
     "catalogued-look": 2
   },
-  "src/pages/sales/dev/mobile/perf/components/PerfStoreReport.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/dev/mobile/perf/components/StoreListControls.tsx": {
     "catalogued-look": 1
   },
@@ -1489,11 +1465,8 @@
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
   },
-  "src/pages/tickets/dev/components/Caption.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/tickets/dev/components/TicketSidebar.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/modals/CloseTicketModal.tsx": {
     "catalogued-look": 1
@@ -1502,7 +1475,7 @@
     "catalogued-look": 1
   },
   "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/tickets/dev/components/modals/techsModal/components/AddTech.tsx": {
     "catalogued-look": 1

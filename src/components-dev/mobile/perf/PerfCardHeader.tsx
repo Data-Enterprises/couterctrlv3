@@ -116,7 +116,7 @@ const PerfCardHeader = ({
         aria-expanded={open}
         className="flex w-full items-center gap-2 px-4 pt-2 text-left active:bg-bkg"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
+        <span className="min-w-0 flex-1 truncate cc-caps-mono text-[10px]">
           {[label, when].filter(Boolean).join(" · ")}
         </span>
         {open ? (
@@ -126,7 +126,7 @@ const PerfCardHeader = ({
         )}
       </button>
     ) : (
-      <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/95">
+      <div className="truncate px-4 pt-2 cc-caps-mono text-[10px]">
         {/* Either part can be empty — no store selected leaves only the dates —
             so join what's there rather than leading with a stray dot. */}
         {[label, when].filter(Boolean).join(" · ")}

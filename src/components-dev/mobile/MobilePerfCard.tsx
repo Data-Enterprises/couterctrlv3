@@ -94,7 +94,7 @@ const MobilePerfCard = ({
           {onSearch && (
             <BackButton onClick={onSearch} tone="light" />
           )}
-          <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
+          <span className="min-w-0 flex-1 truncate cc-caps-mono text-[10px]">
             {when}
           </span>
           {actions && <div className="flex-none">{actions}</div>}
