@@ -222,8 +222,8 @@ const RULES = [
   {
     id: "perf-row-selection",
     scope: (f) => f.family === "Performance" && DESKTOP(f) && /bg-row_selected/.test(f.src),
-    why: "graded rows pair bg-row_selected with border-row_selected_border",
-    absent: /bg-row_selected border-row_selected_border/,
+    why: "graded rows pair bg-row_selected with border-row_selected_border (cc-row-selected is the pair)",
+    absent: /bg-row_selected border-row_selected_border|\bcc-row-selected\b/,
   },
 ];
 

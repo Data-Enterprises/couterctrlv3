@@ -285,10 +285,10 @@ const HourlySideBySide = ({
                   <button
                     key={r.hour}
                     onClick={() => setPicked(r.hour)}
-                    className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b border-brand_navy/15 transition-colors ${
+                    className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b transition-colors ${
                       on
-                        ? "bg-row_selected border-row_selected_border"
-                        : "hover:bg-fill_soft"
+                        ? "cc-row-selected"
+                        : "border-brand_navy/15 hover:bg-fill_soft"
                     }`}
                     style={{ gridTemplateColumns: COLS }}
                   >

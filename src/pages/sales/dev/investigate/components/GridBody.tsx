@@ -53,10 +53,10 @@ const GridBody = ({ rows, selection, allIn, fmt }: GridBodyProps) => {
         — the fill wins over the tint while the row is
         picked out, and the tints come back when it is not. */}
           <td
-            className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
+            className={`sticky left-0 z-10 border-r border-b px-2 py-1.5 text-right ${
               isOn(r.productCode)
-                ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
-                : "bg-custom-white text-content/95"
+                ? "cc-row-selected border-l-2 font-bold text-content"
+                : "border-brand_line bg-custom-white text-content/95"
             }`}
           >
             {i + 1}
