@@ -2,7 +2,7 @@
 const Header = () => {
   return (
     <thead>
-      <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
+      <tr className="cc-thead">
         <th className="text-right px-3 py-2 text-[10px] cc-caps">
           #
         </th>

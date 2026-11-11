@@ -190,7 +190,7 @@ const OrderReportPanel = ({
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
             <table data-help="lines" className="w-full border-collapse text-[12px]">
               <thead>
-                <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
+                <tr className="cc-thead">
                   {/* Narrow and unlabelled: a line can carry two flags at
                       once, and a tint across the row could only show one. */}
                   <th style={{ width: 22 }} aria-label="Cost problems" />

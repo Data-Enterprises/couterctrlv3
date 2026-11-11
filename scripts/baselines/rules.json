@@ -662,20 +662,11 @@
   "src/pages/couponSales/dev/components/CpnSalesStorePanel.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/couponSales/dev/detail/components/ReceiptPane.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
     "catalogued-look": 1
   },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
-  },
-  "src/pages/coupons/dev/components/detailPanel/components/GridHeader.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/coupons/dev/components/detailPanel/components/TxLinesTable.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
     "catalogued-look": 1
@@ -985,17 +976,11 @@
   "src/pages/itemReport/ItemReport.tsx": {
     "labels": 1
   },
-  "src/pages/itemReport/dev/components/InvoiceSheet.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/itemReport/dev/components/ItemReportSheet.tsx": {
     "catalogued-look": 1
   },
   "src/pages/itemReport/dev/export/ItemReportExportModal.tsx": {
     "catalogued-look": 1
-  },
-  "src/pages/itemReport/dev/rail/components/TransactionSheet.tsx": {
-    "catalogued-look": 2
   },
   "src/pages/lookup/ItemLookup.tsx": {
     "labels": 1
@@ -1217,22 +1202,13 @@
   "src/pages/lpActions/dev/useReceiptCase.ts": {
     "labels": 1
   },
-  "src/pages/markdowns/dev/grid/components/GridHeader.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/orders/Orders.tsx": {
     "labels": 1
-  },
-  "src/pages/orders/dev/components/OrderReportPanel.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/organization/Organization.tsx": {
     "labels": 1
   },
   "src/pages/organization/dev/users/components/SetActiveModal.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/organization/dev/users/create/components/AccessPanel.tsx": {
     "catalogued-look": 1
   },
   "src/pages/quicksight/Dashboard.tsx": {
@@ -1244,9 +1220,6 @@
   },
   "src/pages/receivers/Receivers.tsx": {
     "labels": 1
-  },
-  "src/pages/receivers/dev/components/detail/components/detailTable/Header.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/receivers/dev/components/modal/components/CustomModeTable.tsx": {
     "catalogued-look": 1

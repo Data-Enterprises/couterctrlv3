@@ -14,7 +14,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
     <div className="flex-1 overflow-auto thin-scrollbar">
       <table className="w-full border-collapse text-[12px]">
         <thead>
-          <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
+          <tr className="cc-thead">
             <th className="px-2 py-2 text-[10px] cc-caps text-right w-7">
               #
             </th>

@@ -102,7 +102,7 @@ const ReceiptPane = ({ onBack, onExport }: ReceiptPaneProps) => {
         <div className="flex-1 overflow-auto thin-scrollbar">
           <table className="w-full border-collapse text-[12px]">
             <thead>
-              <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
+              <tr className="cc-thead">
                 {(
                   [
                     ["#", "text-right w-7"],

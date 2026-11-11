@@ -16,7 +16,7 @@ const GridHeader = () => {
   const { sort, dispatch } = useMarkdownsCtx();
   return (
     <thead>
-      <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
+      <tr className="cc-thead">
         {GRID_COLUMNS.map((c) => {
           const on = sort?.col === c.key;
           const Arrow =
