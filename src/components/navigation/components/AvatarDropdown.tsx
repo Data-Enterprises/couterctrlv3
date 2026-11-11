@@ -1,8 +1,9 @@
 // Hooks
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useNavigate } from "react-router";
 import { useNavCtx } from "../hooks";
+import { usePresence } from "./hooks";
 
 // Redux
 import { openReportIssue, resetAppSlice } from "../../../features/appSlice";
@@ -44,6 +45,17 @@ const AvatarDropdown = ({
     currentPage,
   } = useNavCtx();
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const { mounted, shown } = usePresence(avatarOpen);
+
+  // Escape closes it, as clicking anywhere else does.
+  useEffect(() => {
+    if (!avatarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAvatarOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [avatarOpen]);
   /** Who is really behind this session, when it is someone else's. */
   const realUser = impersonatedBy(context.token);
   const initials = `${(user.firstName?.[0] ?? "").toUpperCase()}${(user.lastName?.[0] ?? "").toUpperCase()}`;
@@ -97,16 +109,23 @@ const AvatarDropdown = ({
         />
       </button>
 
-      {avatarOpen && (
+      {mounted && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setAvatarOpen(false)}
-          />
+          {avatarOpen ? (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setAvatarOpen(false)}
+            />
+          ) : null}
+          {/* Grows from the avatar's corner; the duration matches MENU_ANIM_MS. */}
           <div
             role="menu"
             aria-label="Account"
-            className="absolute right-3 top-full mt-2 z-50 w-80 bg-custom-white border border-brand_line rounded-xl overflow-hidden"
+            className={`absolute right-3 top-full mt-2 z-50 w-80 bg-custom-white border border-brand_line rounded-xl overflow-hidden origin-top-right transition-[opacity,transform] duration-[160ms] ease-out motion-reduce:transition-none ${
+              shown
+                ? "opacity-100 scale-100 translate-y-0"
+                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+            }`}
             style={{ boxShadow: MENU_SHADOW }}
           >
             <div className="flex items-center gap-3 p-4">

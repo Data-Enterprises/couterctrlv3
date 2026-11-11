@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
@@ -62,10 +62,17 @@ describe("AvatarDropdown", () => {
     expect(screen.getByRole("menu", { name: "Account" })).toBeTruthy();
   });
 
-  it("opens Sign in as another user and closes the menu", () => {
+  it("opens Sign in as another user and closes the menu", async () => {
     const { setSignInAsOpen } = openMenu(9, "dev");
     fireEvent.click(screen.getByText("Sign in as another user"));
     expect(setSignInAsOpen).toHaveBeenCalledWith(true);
-    expect(screen.queryByRole("menu", { name: "Account" })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole("menu", { name: "Account" })).toBeNull());
+  });
+
+  it("closes on Escape, once its closing animation has run", async () => {
+    openMenu(5, "prod");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.getByRole("menu", { name: "Account" })).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole("menu", { name: "Account" })).toBeNull());
   });
 });

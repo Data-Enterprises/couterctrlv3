@@ -36,7 +36,7 @@ const EnvironmentPanel = ({ onSignInAs, first }: EnvironmentPanelProps) => {
     <div className={`px-2.5 pb-2.5 ${first ? "border-t border-brand_line pt-2.5" : ""}`}>
       <div className="rounded-[10px] border border-brand_line bg-brand_navy/[0.04] px-3 pt-2.5 pb-1.5">
         <div className="flex items-center justify-between pb-0.5">
-          <span className="text-[11px] font-semibold text-brand_slate">Environment</span>
+          <span className="text-[13px] font-semibold text-brand_slate">Environment</span>
           <span className="px-[7px] py-0.5 rounded-md bg-custom-white border border-brand_line text-[10px] font-semibold text-content">
             Level {user.userLevel}
           </span>
