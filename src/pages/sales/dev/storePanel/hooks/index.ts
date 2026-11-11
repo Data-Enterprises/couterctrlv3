@@ -38,9 +38,12 @@ import type { StoreSelection } from "../../../../../interfaces";
  */
 const inFlightStores = new Set<string>();
 
-/** The searched week and its comparison weeks, from the search's date. */
+/** The searched week and its comparison weeks: the week the ledger searched,
+ *  else the picker's date before Sales has searched. */
 export const useWeekWindow = () => {
-  const singleDate = useAppSelector((state) => state.search.singleDate);
+  const singleDate = useAppSelector(
+    (state) => state.dev.salesLedger.searchedDate ?? state.search.singleDate,
+  );
   return useMemo(() => buildWeekWindow(singleDate), [singleDate]);
 };
 

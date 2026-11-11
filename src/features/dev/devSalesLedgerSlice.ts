@@ -158,6 +158,9 @@ export interface PopupStoreData {
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
+  /** The search date (MM/DD/YYYY) the ledger was fetched for. The store panel
+   *  builds its week from this, not the live picker, which other pages move. */
+  searchedDate: string | null;
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
@@ -339,6 +342,7 @@ interface SalesLedgerState {
 
 const initialState: SalesLedgerState = {
   hasSearched: false,
+  searchedDate: null,
   selection: null,
   tab: "subdept",
   selectedDate: null,
@@ -410,6 +414,9 @@ const salesLedgerSlice = createSlice({
   reducers: {
     setHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
+    },
+    setSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
     },
     setLedgerSelection: (
       state,
@@ -774,6 +781,7 @@ const salesLedgerSlice = createSlice({
 export const {
   setGradingMetric,
   setHasSearched,
+  setSearchedDate,
   setLedgerSelection,
   setLedgerTab,
   setCounterpart,

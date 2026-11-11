@@ -17,6 +17,7 @@ import {
 } from "../../../../features/dev/devSalesSlice";
 import {
   setHasSearched,
+  setSearchedDate,
   setLedgerLoading,
   setFinancials,
   setFinancialsLoading,
@@ -197,6 +198,7 @@ const SalesLedger = () => {
     dispatch(setHasSearched(true));
     dispatch(reQuery());
     dispatch(reQueryLedger());
+    dispatch(setSearchedDate(search.singleDate));
     setSearchModalOpen(false);
     setFetchFailed(false);
 

@@ -12,11 +12,7 @@ import {
 
 // Utils
 import { shiftIso } from "../../../../../../utils/grading";
-import {
-  addDays,
-  formatGoliathDate,
-  sameWeekDayLastYear,
-} from "../../../../../../utils";
+import { formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../../../../utils/marginRows";
 import { aggregateByCode, matchItemRows } from "../../../../../../utils/itemGrading";
 import { scopeToStoreNumber, withProductCode } from "../../../utils/ledgerUtils";
@@ -44,7 +40,10 @@ export const useSubDeptItems = (
 ) => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const search = useAppSelector((state) => state.search);
+  // The ledger's searched week, not the live picker (other pages move it).
+  const weekDate = useAppSelector(
+    (state) => state.dev.salesLedger.searchedDate ?? state.search.singleDate,
+  );
   const {
     selectedDate,
     selectedSubDeptId: selectedId,
@@ -76,10 +75,10 @@ export const useSubDeptItems = (
     if (inFlightItems.has(itemsKey)) return;
     inFlightItems.add(itemsKey);
 
-    const twEnd = formatGoliathDate(search.singleDate);
-    const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-    const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-    const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
+    const twEnd = formatGoliathDate(weekDate);
+    const twStart = shiftIso(twEnd, -6);
+    const lwStart = shiftIso(twEnd, -13);
+    const lwEnd = shiftIso(twEnd, -7);
     const lyWeekDates = twRealDates
       .map((d) => sameWeekDayLastYear(d).date)
       .sort();
@@ -259,7 +258,7 @@ export const useSubDeptItems = (
   }, [
     selectedId,
     selectedDate,
-    search.singleDate,
+    weekDate,
     context.url,
     context.token,
     storeId,
