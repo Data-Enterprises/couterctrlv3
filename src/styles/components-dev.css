@@ -1,0 +1,151 @@
+/*
+ * The dev tree's shared looks: one definition per look, so a theme change is
+ * made here once instead of in every component that draws it.
+ *
+ * A class holds the look only: colour, weight, border, fill, radius, shadow and
+ * inner spacing. Text size and position (margins, flex-1, justify-self-*) stay
+ * inline where the class is used. Colours are tokens, never Tailwind greys.
+ *
+ * These sit in the components layer, so a utility written beside a class on an
+ * element still wins: `cc-caps text-[11px] mb-2` is the caps label at 11px with
+ * its own margin.
+ *
+ * Plan and counts: docs/tailwind-refactor-plan.md (dev only; prod picks these
+ * up when a page is promoted). check:rules flags any element that spells one of
+ * these out instead of using it.
+ */
+@layer components {
+  /* ── type ─────────────────────────────────────────────────────────────── */
+
+  /* Small uppercase caption: table and section headings. */
+  .cc-caps {
+    @apply uppercase tracking-wide font-semibold text-content/95;
+  }
+  /* The same caption, bold at full strength. */
+  .cc-caps-strong {
+    @apply uppercase tracking-wide font-bold text-content;
+  }
+  /* Mono caption on the phone screens. */
+  .cc-caps-mono {
+    @apply font-mono uppercase tracking-wider text-content/95;
+  }
+  /* A list row's name, turning navy as the row is hovered. */
+  .cc-row-title {
+    @apply font-medium text-content group-hover:text-brand_navy transition-colors;
+  }
+  /* A title in a navy header. */
+  .cc-navy-title {
+    @apply font-semibold text-custom-white;
+  }
+  /* A text button in a navy header. */
+  .cc-navy-link {
+    @apply text-custom-white/95 hover:text-custom-white transition-colors;
+  }
+  /* A text button on a light surface. */
+  .cc-muted-link {
+    @apply text-content/95 hover:text-content transition-colors;
+  }
+
+  /* ── controls ─────────────────────────────────────────────────────────── */
+
+  /* The navy primary button. Its hover is still written inline (a decision
+     in the plan, step 5). */
+  .cc-btn-primary {
+    @apply bg-brand_navy text-custom-white font-medium rounded-md px-3 py-1.5 transition-colors disabled:opacity-40;
+  }
+  /* The outline button. */
+  .cc-btn-outline {
+    @apply border border-brand_line_2 hover:border-brand_slate font-medium rounded-lg px-4 py-1.5 transition-colors;
+  }
+  /* A chip or segment button. */
+  .cc-chip-btn {
+    @apply font-medium px-2.5 py-1 rounded transition-colors;
+  }
+  /* The track a segmented toggle sits in, on navy. */
+  .cc-segment-navy {
+    @apply flex items-center gap-0.5 p-0.5 rounded-md bg-custom-white/10;
+  }
+  /* A checkbox. */
+  .cc-checkbox {
+    @apply h-3.5 w-3.5 rounded accent-brand_navy;
+  }
+  /* A small field or select in a filter row. */
+  .cc-field-sm {
+    @apply bg-custom-white border border-line_field rounded px-1 py-0.5 text-content outline-none;
+  }
+  /* A small tag. */
+  .cc-tag {
+    @apply font-bold px-1.5 py-0.5 rounded;
+  }
+  /* A small loading spinner. */
+  .cc-spinner {
+    @apply animate-spin rounded-full border-2 border-line_field h-3.5 w-3.5;
+  }
+
+  /* ── surfaces and structure ───────────────────────────────────────────── */
+
+  /* A phone section card (CLAUDE.md §11). */
+  .cc-card-phone {
+    @apply bg-custom-white border border-line_field rounded-2xl shadow-md overflow-hidden;
+  }
+  /* A desktop panel. Its shadow is written inline. */
+  .cc-panel {
+    @apply bg-custom-white rounded-xl overflow-hidden flex flex-col;
+  }
+  /* A left panel's navy header (CLAUDE.md §11). */
+  .cc-navy-panel-header {
+    @apply bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5;
+  }
+  /* The second row of a two-row navy header (CLAUDE.md §11). */
+  .cc-navy-header-row {
+    @apply border-t border-custom-white/[0.08] mt-1 pt-1.5;
+  }
+  /* A phone screen's navy header: back, title, action. */
+  .cc-phone-header {
+    @apply bg-brand_navy grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3;
+  }
+  /* A panel's footer bar. */
+  .cc-bar-footer {
+    @apply flex items-center justify-between px-4 py-3 border-t border-line_hair;
+  }
+  /* A panel's header bar on a light surface. */
+  .cc-bar-header {
+    @apply flex items-center justify-between px-4 py-2.5 border-b border-line_hair;
+  }
+  /* A notice box (CLAUDE.md §11). */
+  .cc-notice {
+    @apply bg-severity_watch_bg text-severity_watch_text rounded-lg px-2.5 py-2;
+  }
+  /* A table head that stays put while the body scrolls. */
+  .cc-thead {
+    @apply bg-fill_soft border-b border-line_hair sticky top-0 z-10;
+  }
+  /* A table head cell. */
+  .cc-th {
+    @apply border-b border-line_hair font-semibold px-3 py-2 text-left whitespace-nowrap;
+  }
+  /* A table body cell. */
+  .cc-td {
+    @apply border-b border-line_faint px-3 py-1.5 whitespace-nowrap;
+  }
+  /* A right-aligned figure in a table. */
+  .cc-num {
+    @apply px-3 py-2 text-right tabular-nums;
+  }
+  /* The scrolling body of a panel. */
+  .cc-scroll {
+    @apply flex-1 min-h-0 overflow-y-auto thin-scrollbar;
+  }
+  /* The blur behind a modal (CLAUDE.md §11: blur, never darken). */
+  .cc-modal-backdrop {
+    @apply fixed inset-0 flex items-center justify-center backdrop-blur-sm;
+  }
+  /* A dropdown menu under its trigger. */
+  .cc-dropdown {
+    @apply absolute top-full mt-1 bg-custom-white border border-line_field rounded-md shadow-lg;
+  }
+  /* A selected row: always the pair (CLAUDE.md §11). */
+  .cc-row-selected {
+    @apply bg-row_selected border-row_selected_border;
+  }
+}
