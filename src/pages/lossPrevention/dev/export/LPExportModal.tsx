@@ -303,7 +303,7 @@ const LPExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 cc-btn-primary hover:bg-brand_navy/85 text-[12px]"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -447,7 +447,7 @@ const LPExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 cc-btn-primary hover:bg-brand_navy/85 text-[12px]"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
