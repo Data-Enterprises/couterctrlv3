@@ -182,7 +182,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "rgb(var(--color-brand-navy))" }}>
         {/* Row 1: date | totals */}
         <div className="flex items-center gap-2 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">{dateLabel}</span>
+          <span className="text-[13px] cc-navy-title flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
           {activeDetails.length > 0 && (
             <>

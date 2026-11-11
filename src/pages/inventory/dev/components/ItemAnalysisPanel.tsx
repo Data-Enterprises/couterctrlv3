@@ -134,7 +134,7 @@ const ItemAnalysisPanel = ({
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-[10px] bg-brand_navy">
-          <div className="text-[14px] font-semibold text-custom-white leading-tight truncate">
+          <div className="text-[14px] cc-navy-title leading-tight truncate">
             {product.description}
           </div>
           <div className="text-[11px] mt-0.5 text-custom-white truncate">

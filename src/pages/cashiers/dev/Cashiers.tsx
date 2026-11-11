@@ -276,7 +276,7 @@ const Cashiers = () => {
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4">
       <div className="h-full flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white">
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             Cashiers
           </span>
           <span className="text-custom-white/95 text-[12px] truncate">

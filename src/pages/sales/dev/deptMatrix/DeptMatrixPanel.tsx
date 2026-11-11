@@ -154,7 +154,7 @@ const DeptMatrixPanel = ({
         <span className="ml-auto flex items-center gap-3 flex-shrink-0">
           {!loading && matrix && !soloStore && (
             <span className="text-custom-white/95 text-[12px]">
-              <span className="font-semibold text-custom-white">{flaggedCount}</span>{" "}
+              <span className="cc-navy-title">{flaggedCount}</span>{" "}
               of {cellCount} past ±{band}
             </span>
           )}

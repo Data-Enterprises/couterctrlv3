@@ -175,14 +175,14 @@ const ItemReportSheet = ({
         <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           {/* Row 1: store | what you are looking at | count + export */}
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-h-[26px]">
-            <span className="text-custom-white font-semibold text-[13px] truncate justify-self-start">
+            <span className="cc-navy-title text-[13px] truncate justify-self-start">
               {storeName}
             </span>
-            <span className="text-custom-white font-semibold text-[13px] justify-self-center truncate">
+            <span className="cc-navy-title text-[13px] justify-self-center truncate">
               {centreLabel}
             </span>
             <div data-help="export" className="flex items-center gap-2 justify-self-end">
-              <span className="text-[14px] font-semibold text-custom-white tabular-nums">
+              <span className="text-[14px] cc-navy-title tabular-nums">
                 {rows.length} items
               </span>
               <HeaderIconButton onClick={onExportOpen} title="Export CSV">

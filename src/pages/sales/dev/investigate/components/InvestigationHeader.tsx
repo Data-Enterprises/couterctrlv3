@@ -59,7 +59,7 @@ const InvestigationHeader = ({
         <span className="flex-shrink-0 text-[12.5px] text-custom-white/95">
           |
         </span>
-        <span className="text-[12.5px] font-semibold text-custom-white truncate">
+        <span className="text-[12.5px] cc-navy-title truncate">
           {target.subDeptName}
         </span>
         <span

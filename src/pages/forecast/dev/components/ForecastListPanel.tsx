@@ -53,7 +53,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
       {/* 2-row navy header — same metrics as LookupQueuePanel's */}
       <div className="bg-brand_navy rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
+          <span className="text-[13px] cc-navy-title flex-shrink-0">
             Forecast
           </span>
           {search.singleDate && (

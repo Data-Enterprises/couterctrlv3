@@ -94,11 +94,11 @@ const LedgerHeader = ({
           been TY, vs LW, vs LY. The pills were the only place in the app
           reading the two periods the other way round. */}
       <div className="flex items-center gap-2 min-h-[26px]">
-        <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+        <span className="cc-navy-title text-[13px] flex-shrink-0">
           {weekLabel}
         </span>
         <div className="flex-1" />
-        <span className="text-[14px] font-semibold text-custom-white">
+        <span className="text-[14px] cc-navy-title">
           {isQty ? formatBigNumber(twQty, 0) : formatCurrencyCompact(twTotal)}
         </span>
         {hasLW && (

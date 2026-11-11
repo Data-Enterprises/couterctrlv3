@@ -21,7 +21,7 @@ const DetailHeader = ({
       className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
       style={{ background: "rgb(var(--color-brand-navy))" }}
     >
-      <div className="text-[13px] font-semibold text-custom-white">
+      <div className="text-[13px] cc-navy-title">
         {headerTitle}
         <span className="ml-2 text-[11px] font-normal text-custom-white">
           {headerSuffix} · {dateRangeLabel}

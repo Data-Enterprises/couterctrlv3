@@ -287,13 +287,13 @@ const CategoryListPanel = ({
         {/* Row 1: date range | store total + vs LW/LY pills. Store name moved
             down to row 2 beside the search button, matching Sub Dept Margins. */}
         <div className="flex items-center gap-2 min-h-[26px]">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             {dateRange}
           </span>
           <div className="flex-1" />
           {graded.length > 0 && (
             <>
-              <span className="text-[14px] font-semibold text-custom-white">
+              <span className="text-[14px] cc-navy-title">
                 {fmtHeader(totals.tw)}
               </span>
               {totals.lwPct !== null && (

@@ -31,7 +31,7 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
     <div className="bg-custom-white rounded-xl shadow-sm w-full max-w-[560px] overflow-hidden">
       <div className="bg-brand_navy px-4 py-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-custom-white text-[13px] font-semibold">
+          <p className="cc-navy-title text-[13px]">
             AWG Invoices
           </p>
           <p className="text-custom-white/95 text-[12px]">

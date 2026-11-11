@@ -312,7 +312,7 @@ const UpcExportModal = ({ onClose }: Props) => {
         {/* header */}
         <div className="bg-brand_navy px-5 py-3 flex items-center justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-custom-white">Export CSV</div>
+            <div className="text-[13px] cc-navy-title">Export CSV</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
               {TAB_LABELS[ctx.activeTab]}
             </div>

@@ -44,7 +44,7 @@ const StoresExportModal = ({ onClose, allStores, filteredStores }: StoresExportM
     >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
-            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="cc-navy-title text-[13px]">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">Store directory</p>
           </div>
           <div />

@@ -156,7 +156,7 @@ const LookupExportModal = ({
       defaultHeight={960}
     >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
-          <p className="text-custom-white text-[13px] font-semibold">
+          <p className="cc-navy-title text-[13px]">
             Export CSV
           </p>
           <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">

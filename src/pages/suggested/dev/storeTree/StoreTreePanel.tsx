@@ -114,7 +114,7 @@ const StoreTreePanel = ({ onSelectDepartment, onOpenStore, onOpenSearch }: Store
       headerRight={
         rollups.length > 0 ? (
           <div className="flex items-baseline gap-1 flex-shrink-0">
-            <span className="text-custom-white text-[10px] font-semibold uppercase tracking-wide">
+            <span className="cc-navy-title text-[10px] uppercase tracking-wide">
               Total
             </span>
             <span className="text-[13px] font-medium text-custom-white tabular-nums">

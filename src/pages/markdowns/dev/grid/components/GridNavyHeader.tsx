@@ -17,7 +17,7 @@ const GridNavyHeader = ({ onExport }: GridNavyHeaderProps) => {
   const ctx = useMarkdownsCtx();
   return (
     <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between bg-brand_navy">
-      <div className="text-[13px] font-semibold text-custom-white min-w-0 truncate">
+      <div className="text-[13px] cc-navy-title min-w-0 truncate">
         Markdowns
         <span className="ml-2 text-[11px] font-normal text-custom-white">
           — {sortLabel(ctx.sort)}

@@ -160,7 +160,7 @@ const DrillExportModal = ({
     >
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
         <div className="min-w-0">
-          <p className="text-custom-white text-[13px] font-semibold truncate">
+          <p className="cc-navy-title text-[13px] truncate">
             Export {saleType}
           </p>
           <p className="text-custom-white text-[10px] mt-0.5 truncate">

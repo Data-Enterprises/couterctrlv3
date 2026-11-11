@@ -52,11 +52,11 @@ const TrackerHeader = ({
   return (
     <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
       <div className="flex items-center gap-2 min-h-[26px]">
-        <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+        <span className="cc-navy-title text-[13px] flex-shrink-0">
           {windowLabel}
         </span>
         <div className="flex-1" />
-        <span className="text-[14px] font-semibold text-custom-white">
+        <span className="text-[14px] cc-navy-title">
           {formatCurrencyCompact(salesTy)}
         </span>
         <div className="relative flex-shrink-0">

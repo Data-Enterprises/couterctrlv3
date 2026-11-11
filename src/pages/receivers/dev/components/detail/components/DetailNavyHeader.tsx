@@ -29,7 +29,7 @@ const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
       <div>
         {selectedReceiver ? (
           <>
-            <div className="text-[13px] font-semibold text-custom-white">
+            <div className="text-[13px] cc-navy-title">
               {selectedReceiver.vendor_name}
               <span className="ml-2 text-[11px] font-normal text-custom-white">
                 — {selectedReceiver.cashier_name} ·{" "}
@@ -38,7 +38,7 @@ const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
             </div>
           </>
         ) : (
-          <div className="text-[13px] font-semibold text-custom-white">
+          <div className="text-[13px] cc-navy-title">
             Receiver Detail
           </div>
         )}

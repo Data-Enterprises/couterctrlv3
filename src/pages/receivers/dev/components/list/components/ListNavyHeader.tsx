@@ -27,7 +27,7 @@ const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
     >
       {/* Row 1: title + date | record count */}
       <div className="flex items-end gap-3 min-h-[24px]">
-        <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
+        <span className="text-[13px] cc-navy-title flex-shrink-0">
           Receivers
         </span>
         <span className="text-custom-white text-[10px] flex-shrink-0">
@@ -36,7 +36,7 @@ const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
         <div className="flex-1" />
         {state.listGridData.length > 0 && (
           <div className="flex items-baseline gap-1 flex-shrink-0">
-            <span className="text-custom-white text-[10px] font-semibold uppercase tracking-wide">
+            <span className="cc-navy-title text-[10px] uppercase tracking-wide">
               Total
             </span>
             <span className="text-[13px] font-medium text-custom-white">

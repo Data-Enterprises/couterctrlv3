@@ -32,7 +32,7 @@ const UpcRightPanel = () => {
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-3 flex items-start justify-between bg-brand_navy">
           <div>
-            <div className="text-[13px] font-semibold text-custom-white leading-tight">
+            <div className="text-[13px] cc-navy-title leading-tight">
               {activeTabLabel}
             </div>
           </div>

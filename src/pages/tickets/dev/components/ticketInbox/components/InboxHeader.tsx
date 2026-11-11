@@ -18,7 +18,7 @@ interface InboxHeaderProps {
 const InboxHeader = ({ isTech, scope, onTechs, rows }: InboxHeaderProps) => {
   return (
     <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 py-2.5 flex items-end gap-3">
-      <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
+      <span className="flex-shrink-0 text-[13px] cc-navy-title">
         {isTech ? "Queue" : scope ? SCOPE_HEADING[scope] : "Your tickets"}
       </span>
       {/* Who is on the desk: a fact about the queue, so it sits up here. */}

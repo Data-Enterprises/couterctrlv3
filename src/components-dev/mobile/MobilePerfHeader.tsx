@@ -72,7 +72,7 @@ const MobilePerfHeader = ({
     >
       {/* Row 1 — the store, then the week it covers */}
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[12px] font-semibold text-custom-white truncate">
+        <span className="text-[12px] cc-navy-title truncate">
           {storeName}
         </span>
         <span className="text-[11px] text-custom-white/95 flex-shrink-0">
@@ -89,7 +89,7 @@ const MobilePerfHeader = ({
               because to the reader they are the same thing. */}
           {onBack && <BackButton onClick={onBack} title="Back" />}
           {onSearch && <BackButton onClick={onSearch} />}
-          <span className="text-[12px] font-semibold text-custom-white truncate">
+          <span className="text-[12px] cc-navy-title truncate">
             {pageName}
           </span>
         </div>

@@ -76,7 +76,7 @@ const LookupReportPanel = ({
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
           <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
+            <div className="text-[13px] cc-navy-title leading-tight truncate">
               {description}
             </div>
             <div className="text-[10px] mt-0.5 text-custom-white truncate">

@@ -28,7 +28,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     </button>
 
     <div className="min-w-0 flex-1">
-      <p className="text-custom-white text-[13px] font-semibold truncate">
+      <p className="cc-navy-title text-[13px] truncate">
         {core.cashierName}
       </p>
       <p className="text-custom-white/95 text-[12px] truncate">

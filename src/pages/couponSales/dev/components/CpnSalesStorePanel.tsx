@@ -103,28 +103,28 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0">
         {/* Row 1: range | labelled totals, matching LP's SALES/TRANS/QTY run */}
         <div className="flex items-center gap-2 min-h-[26px]">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             {rangeLabel}
           </span>
           <div className="flex-1" />
           <div className="flex items-center gap-3 text-custom-white">
             <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Amount{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatCurrencyCompact(totals.amount)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
             <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Coupons{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatBigNumber(totals.lines, 0)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
             <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Avg{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatCurrency2(totals.avgAmount)}
               </span>
             </span>

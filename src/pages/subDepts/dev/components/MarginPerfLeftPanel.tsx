@@ -260,11 +260,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
 
         {/* Row 1: date range | primary value + vs LW/LY pills */}
         <div className="flex items-center gap-2 min-h-[26px]">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">{dateRange}</span>
+          <span className="cc-navy-title text-[13px] flex-shrink-0">{dateRange}</span>
           <div className="flex-1" />
           {grades.length > 0 && (
             <>
-              <span className="text-[14px] font-semibold text-custom-white">
+              <span className="text-[14px] cc-navy-title">
                 {gradingMetric === "margin"
                   ? storeMarginPct !== null
                     ? `${storeMarginPct.toFixed(2)}%`

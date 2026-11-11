@@ -264,7 +264,7 @@ const TransactionSheet = ({
           </button>
         )}
         <div className="min-w-0">
-          <p className="text-custom-white text-[13px] font-semibold truncate">
+          <p className="cc-navy-title text-[13px] truncate">
             {inBasket
               ? `Transaction ${saleNumber(openSale.sale_id)}`
               : `${soldUnits} sold at ${formatCurrency2(price)} · ${sales.length} transaction${

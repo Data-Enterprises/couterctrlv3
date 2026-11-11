@@ -329,7 +329,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
       {/* Header */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
         <div>
-          <p className="text-custom-white text-[13px] font-semibold">
+          <p className="cc-navy-title text-[13px]">
             Export CSV
           </p>
           <p className="text-custom-white/95 text-[10px] mt-0.5">

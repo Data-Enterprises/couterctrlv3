@@ -34,7 +34,7 @@ const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[12px] font-semibold text-custom-white">
+            <div className="text-[12px] cc-navy-title">
               UPC Upload
             </div>
           </div>

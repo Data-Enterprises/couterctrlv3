@@ -142,7 +142,7 @@ const ExportBar = () => {
       <div className="flex-shrink-0 bg-brand_navy rounded-xl px-4 py-3 flex items-center gap-3">
         <div className="w-5 h-5 rounded-full border-2 border-custom-white/25 border-t-brand_green animate-spin flex-shrink-0" />
         <div className="flex-1">
-          <div className="text-[13px] font-semibold text-custom-white">
+          <div className="text-[13px] cc-navy-title">
             {ctx.slow ? "Still building" : "Building your file"}
           </div>
           <div className="text-[11.5px] text-custom-white/95 mt-0.5">
@@ -167,7 +167,7 @@ const ExportBar = () => {
           * columns themselves. Three restatements of one configuration, and
           * the one people read is the table.
           */}
-        <div className="text-[13px] font-semibold text-custom-white">
+        <div className="text-[13px] cc-navy-title">
           {ctx.selectedStoreIds.length} of {ctx.stores.length} store
           {ctx.stores.length === 1 ? "" : "s"} ·{" "}
           {ctx.aggregating

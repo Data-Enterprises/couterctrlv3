@@ -292,7 +292,7 @@ const OrderSheetPanel = () => {
         style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div>
-          <div className="text-[13px] font-semibold text-custom-white">
+          <div className="text-[13px] cc-navy-title">
             {headerTitle}
             {hasStore && (
               <span className="ml-2 text-[11px] font-normal text-custom-white">

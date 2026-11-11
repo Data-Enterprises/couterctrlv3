@@ -103,7 +103,7 @@ const GroupComparisonPanel = ({
           of one group and the share panel below is the reading that answers
           the question, so the tabs went -- the header did not. */}
       <div className="flex items-center justify-center px-4 py-3 flex-shrink-0 bg-brand_navy">
-        <span className="text-custom-white text-[13px] font-semibold truncate">
+        <span className="cc-navy-title text-[13px] truncate">
           {groupName
             ? `${groupName} share of group sales`
             : "Share of group sales"}

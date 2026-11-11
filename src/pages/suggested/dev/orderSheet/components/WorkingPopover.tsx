@@ -91,7 +91,7 @@ const WorkingPopover = ({
         style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="min-w-0">
-          <div className="text-[12px] font-semibold text-custom-white truncate">
+          <div className="text-[12px] cc-navy-title truncate">
             {item.product_description ?? String(item.product_code)}
           </div>
           <div className="text-[12px] text-custom-white/95">

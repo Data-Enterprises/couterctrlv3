@@ -33,7 +33,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
     <div className="flex h-full w-[248px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg 2xl:w-[288px]">
       <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 pt-1 pb-2.5">
         <div className="flex min-h-[24px] items-end gap-3">
-          <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
+          <span className="flex-shrink-0 text-[13px] cc-navy-title">
             Who sent it
           </span>
         </div>
@@ -42,7 +42,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
             {initialsOf(ticket.opened_by_name)}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-[12px] font-semibold text-custom-white">
+            <span className="block truncate text-[12px] cc-navy-title">
               {ticket.opened_by_name}
             </span>
             <span className="block truncate font-mono text-[10px] text-custom-white/95">

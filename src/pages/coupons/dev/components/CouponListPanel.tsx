@@ -114,7 +114,7 @@ const CouponListPanel = ({
         style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
+          <span className="text-[13px] cc-navy-title flex-shrink-0">
             Coupons
           </span>
           <span className="text-custom-white text-[10px] flex-shrink-0">

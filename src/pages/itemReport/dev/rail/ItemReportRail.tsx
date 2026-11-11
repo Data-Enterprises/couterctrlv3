@@ -191,7 +191,7 @@ const ItemReportRail = ({
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-3 bg-brand_navy rounded-t-xl flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-semibold text-custom-white leading-tight">
+            <div className="text-[13px] cc-navy-title leading-tight">
               {item.description}
             </div>
             <div className="text-[12px] mt-0.5 text-custom-white/95 truncate">

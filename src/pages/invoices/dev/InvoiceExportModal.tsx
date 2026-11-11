@@ -146,7 +146,7 @@ const InvoiceExportModal = ({
     >
       <div className="flex items-center gap-3 bg-brand_navy px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-custom-white">
+          <p className="text-[13px] cc-navy-title">
             Export or send
           </p>
           <p className="truncate text-[10px] text-custom-white/95">

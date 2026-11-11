@@ -49,7 +49,7 @@ const PanelFrame = ({
       style={{ background: "rgb(var(--color-brand-navy))" }}
     >
       <div className="flex items-end gap-3 min-h-[24px]">
-        <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
+        <span className="text-[13px] cc-navy-title flex-shrink-0">
           {title}
         </span>
         {subtitle && (

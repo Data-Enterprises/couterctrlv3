@@ -14,7 +14,7 @@ const ExportHeader = ({ onClose }: ExportHeaderProps) => {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-brand_navy flex-shrink-0">
       <div>
-        <p className="text-custom-white text-[13px] font-semibold">
+        <p className="cc-navy-title text-[13px]">
           Export CSV
         </p>
         <p className="text-custom-white/95 text-[10px] mt-0.5">

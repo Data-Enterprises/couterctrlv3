@@ -130,7 +130,7 @@ const ReleaseNotesModal = ({
     >
       <div className="flex flex-shrink-0 items-center gap-3 rounded-t-xl bg-brand_navy px-5 py-3.5">
         <SparklesIcon className="h-5 w-5 flex-none text-custom-white/95" />
-        <h2 className="m-0 flex-1 text-[16px] font-semibold text-custom-white">
+        <h2 className="m-0 flex-1 text-[16px] cc-navy-title">
           Release Notes
         </h2>
         {sample && (
