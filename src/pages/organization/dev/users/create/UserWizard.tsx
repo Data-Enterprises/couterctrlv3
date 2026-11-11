@@ -664,7 +664,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
       {/* Sticky, because the assignments step is taller than the panel and
           the way forward should not be below the fold of a scroll area. */}
-      <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-line_hair flex-shrink-0">
+      <div className="sticky bottom-0 cc-bar-footer flex-wrap gap-3 -mx-4 mt-3 bg-custom-white flex-shrink-0">
         <button
           onClick={leave}
           className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-fill_soft"

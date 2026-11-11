@@ -12,7 +12,7 @@ interface ExportFooterProps {
 /** Cancel and Download CSV. */
 const ExportFooter = ({ onCancel, onDownload, disabled, className = "" }: ExportFooterProps) => {
   return (
-    <div className={`flex items-center justify-between px-4 py-3 border-t border-line_hair ${className}`}>
+    <div className={`cc-bar-footer ${className}`}>
       <button onClick={onCancel} className="text-[12px] text-content transition-colors">
         Cancel
       </button>

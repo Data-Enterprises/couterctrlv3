@@ -20,7 +20,7 @@ const ExportFooter = ({
   spaced = false,
 }: ExportFooterProps) => (
   <div
-    className={`flex items-center justify-between px-4 py-3 border-t border-line_hair${
+    className={`cc-bar-footer${
       spaced ? " mt-2" : ""
     }`}
   >

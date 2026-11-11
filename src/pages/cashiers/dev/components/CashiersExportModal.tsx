@@ -242,7 +242,7 @@ const CashiersExportModal = ({
               ))}
             </div>
 
-            <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair mt-2">
+            <div className="cc-bar-footer mt-2">
               <button
                 onClick={onClose}
                 className="text-[12px] cc-muted-link"
@@ -392,7 +392,7 @@ const CashiersExportModal = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
+            <div className="cc-bar-footer">
               <button
                 onClick={onClose}
                 className="text-[12px] cc-muted-link"

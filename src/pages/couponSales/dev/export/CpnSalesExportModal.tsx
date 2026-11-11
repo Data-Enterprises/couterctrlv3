@@ -457,7 +457,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
+        <div className="cc-bar-footer">
           <button
             onClick={close}
             className="text-[12px] cc-muted-link"

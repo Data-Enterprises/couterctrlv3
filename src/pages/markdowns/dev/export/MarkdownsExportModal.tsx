@@ -72,7 +72,7 @@ const MarkdownsExportModal = ({ onClose }: MarkdownsExportModalProps) => {
         />
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair flex-shrink-0">
+      <div className="cc-bar-footer flex-shrink-0">
         <button onClick={onClose} className="text-[12px] cc-muted-link">
           Cancel
         </button>
