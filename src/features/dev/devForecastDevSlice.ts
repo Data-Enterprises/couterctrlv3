@@ -69,12 +69,10 @@ export type ForecastOutlierRow = {
  * list; none of that exists in dev, so none of it is carried here. Legacy still
  * owns its own slice untouched — the two run side by side.
  *
- * **The row-mutation reducers below are ported verbatim from the legacy slice.**
- * Every forecast number this page shows comes out of them, and the calculations
- * are frozen: the only edit made while porting was dropping the tail that
- * copied the result into whichever of the four sim arrays was active. Those
- * tails assigned a value that had already been written to `rowData`, so their
- * removal changes which arrays get updated and nothing else.
+ * **The row maths is frozen.** Every forecast number this page shows comes out
+ * of `withAdDays` and `atPrice`, which keep the legacy slice's arithmetic in its
+ * original order. tests/dev/features/devForecastDevSlice.test.ts pins today's
+ * figures exactly, so any change to the maths fails there first.
  *
  * `rowData` and `forecastResults` keep their legacy names for the same reason —
  * so the ported bodies transfer without a single edit to their arithmetic.
@@ -149,6 +147,77 @@ const initialState: ForecastDevState = {
   globalFcstPrice: "",
   globalAdDays: "",
 };
+
+/** Each price the item has sold at, with its units: what the demand curve fits. */
+const pricesWithQty = (result: PriceHistoryResult) =>
+  result.price_history.map((ph) => [parseFloat(ph.price), ph.qty]);
+
+/**
+ * A multi-price row forecast again at its current price over `adDays`: the
+ * figures an ad-days edit changes. Units at the price come from the demand
+ * curve (calcFcstQty) over the 90-day history.
+ */
+const withAdDays = (row: ForecastOutlierRow, result: PriceHistoryResult, adDays: number) => {
+  const upcPrices = pricesWithQty(result);
+  const fcstQty = calcFcstQty(upcPrices, row.fcstPrice);
+  const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+  const units = forecastUnits(
+    row.fcstPrice,
+    overallUnits,
+    fcstQty,
+    row.daysActive, // total selling days
+    90, // total days
+    row.daysAtPrice, // days at price
+    row.forecastWindow,
+    upcPrices,
+    adDays,
+  );
+  return {
+    adDays,
+    adFcst: units,
+    fcstTotal: row.fcstPrice * units,
+    markdownDollars: (result.regular_retail_price - row.fcstPrice) * units,
+  };
+};
+
+/**
+ * A multi-price row repriced: the figures a price edit changes. Days at the
+ * price come from the history when the item has sold at it, else are
+ * estimated from its neighbours; qty sold is the history's, or 0.
+ */
+const atPrice = (row: ForecastOutlierRow, result: PriceHistoryResult, price: number) => {
+  const upcPrices = pricesWithQty(result);
+  const fcstQty = calcFcstQty(upcPrices, price);
+  const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+  const priceHistory = result.price_history;
+  const daysActive =
+    priceHistory.find((ph) => parseFloat(ph.price) === price)?.days_active ||
+    estimateDaysActive(priceHistory, price);
+  const units = forecastUnits(
+    price,
+    overallUnits,
+    fcstQty,
+    row.daysActive, // total selling days
+    90, // total days
+    daysActive, // days at price
+    row.forecastWindow,
+    upcPrices,
+    row.adDays,
+  );
+  const existingPrice = priceHistory.find((ph) => parseFloat(ph.price) === price);
+  return {
+    fcstPrice: price,
+    adFcst: units,
+    qtySold: existingPrice ? existingPrice.qty : 0, // qty sold at that price historically
+    fcstTotal: price * units,
+    markdownDollars: (result.regular_retail_price - price) * units,
+    daysAtPrice: daysActive,
+  };
+};
+
+/** The item's history; every row on the grid has one. */
+const resultOf = (results: PriceHistoryResult[], upc: string) =>
+  results.find((item) => item.upc === upc)!;
 
 const forecastDevSlice = createSlice({
   // Distinct from the prod slice's "forecastDev": Redux matches actions on this
@@ -284,130 +353,42 @@ const forecastDevSlice = createSlice({
       state.selectedUpc = action.payload;
     },
 
-    /* ── Ported verbatim from forecastSlice — see the note above ─────────── */
+    /* ── The row maths: see withAdDays and atPrice above the slice ───────── */
     setNewRowAdDaysValue: (
       state,
       action: PayloadAction<{ upc: string; newAdDays: number }>
     ) => {
       const { upc, newAdDays } = action.payload;
       const row = state.rowData.find((r) => r.upc === upc);
+      const result = resultOf(state.forecastResults, upc);
+      const upcPrices = pricesWithQty(result);
+      if (!row) return;
 
-      const prices = state.forecastResults.find((item) => item.upc === upc);
-      const upcPrices = prices!.price_history.map((ph) => [
-        parseFloat(ph.price),
-        ph.qty,
-      ]);
-
-      if (row) {
-        const regRetail = state.forecastResults.find(
-          (item) => item.upc === upc
-        )!.regular_retail_price;
-
-        if (row.singlePrice) {
-          // Single-price: use the known data point directly — no demand curve needed
-          const ph = prices!.price_history[0];
-          const units = forecastUnits(
-            row.fcstPrice, ph.qty, ph.qty,
-            row.daysActive, 90, ph.days_active,
-            row.forecastWindow, upcPrices, newAdDays
-          );
-          row.adDays = newAdDays;
-          row.adFcst = units;
-          row.fcstTotal = row.fcstPrice * units;
-          row.markdownDollars = (regRetail - row.fcstPrice) * units;
-          return;
-        }
-
-        // Finding the qty over last 90 days at the current fcstPrice
-        // or just predicting if data point doesn't exist
-        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice); //90 days
-        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
-
+      if (row.singlePrice) {
+        // Single-price: use the known data point directly — no demand curve needed
+        const ph = result.price_history[0];
         const units = forecastUnits(
-          row.fcstPrice,
-          overallUnits,
-          fcstQty,
-          row.daysActive, // total selling days
-          90, // total days
-          row.daysAtPrice, // days at price
-          row.forecastWindow, // forecast window => 7 now but can be configurable
-          upcPrices, // all prices with qty recorded for the item
-          newAdDays // from user input => the sale date range
+          row.fcstPrice, ph.qty, ph.qty,
+          row.daysActive, 90, ph.days_active,
+          row.forecastWindow, upcPrices, newAdDays
         );
-
-        // The directly updated cell
         row.adDays = newAdDays;
-
-        // The two updated cells by calculation
         row.adFcst = units;
         row.fcstTotal = row.fcstPrice * units;
-        row.markdownDollars = (regRetail - row.fcstPrice) * units;
-
+        row.markdownDollars = (result.regular_retail_price - row.fcstPrice) * units;
+        return;
       }
+      Object.assign(row, withAdDays(row, result, newAdDays));
     },
     setNewRowPriceValue: (
       state,
       action: PayloadAction<{ upc: string; newPrice: number }>
     ) => {
-      // newPrice is the newly changed fcstPrice
       const { upc, newPrice } = action.payload;
       const row = state.rowData.find((r) => r.upc === upc);
-
-      const prices = state.forecastResults.find((item) => item.upc === upc);
-      const upcPrices = prices!.price_history.map((ph) => [
-        parseFloat(ph.price),
-        ph.qty,
-      ]);
-
-      // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
-      if (row) {
-        if (row.singlePrice) return; // price is fixed for single-price items
-
-        // Finding the qty over last 90 days at the current fcstPrice
-        // or just predicting if data point doesn't exist
-        const fcstQty = calcFcstQty(upcPrices, newPrice);
-        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
-
-        const priceHistory = state.forecastResults.find(
-          (item) => item.upc === row.upc
-        )?.price_history;
-
-        const daysActive =
-          priceHistory!.find((ph) => parseFloat(ph.price) === newPrice)
-            ?.days_active || estimateDaysActive(priceHistory!, newPrice);
-
-        const units = forecastUnits(
-          newPrice,
-          overallUnits,
-          fcstQty,
-          row.daysActive, // total selling days
-          90, // total days (90)
-          daysActive, // days at price
-          row.forecastWindow, // forecast window => 7 now but can be configurable
-          upcPrices, // all prices with qty recorded for the item
-          row.adDays // from user input => the sale date range
-        );
-
-        const regRetail = state.forecastResults.find(
-          (item) => item.upc === upc
-        )!.regular_retail_price;
-
-        // The directly updated cell
-        row.fcstPrice = newPrice;
-
-        // The two updated cells by calculation
-        row.adFcst = units; // units over ad days
-        row.fcstTotal = newPrice * units; // forecasted dollars
-
-        const existingPrice = prices!.price_history.find(
-          (ph) => parseFloat(ph.price) === newPrice
-        );
-        row.qtySold = existingPrice ? existingPrice.qty : 0; // qty sold at that price point historically
-
-        row.markdownDollars = (regRetail - newPrice) * units;
-        row.daysAtPrice = daysActive; // days at the new price point based on history
-
-      }
+      const result = resultOf(state.forecastResults, upc);
+      if (!row || row.singlePrice) return; // price is fixed for single-price items
+      Object.assign(row, atPrice(row, result, newPrice));
     },
     /** A note is an annotation, not a figure — so unlike the price and ad-day
      *  batch reducers this one does NOT skip single-price rows. Those rows
@@ -444,94 +425,22 @@ const forecastDevSlice = createSlice({
     ) => {
       const { upcs, adDays } = action.payload;
       if (isNaN(adDays) || adDays <= 0) return;
-
-      const updated = state.rowData.map((row) => {
-        if (row.singlePrice || !upcs.includes(row.upc)) return row;
-
-        const prices = state.forecastResults.find((item) => item.upc === row.upc);
-        const upcPrices = prices!.price_history.map((ph) => [
-          parseFloat(ph.price),
-          ph.qty,
-        ]);
-        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice);
-        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
-        const units = forecastUnits(
-          row.fcstPrice,
-          overallUnits,
-          fcstQty,
-          row.daysActive,
-          90,
-          row.daysAtPrice,
-          row.forecastWindow,
-          upcPrices,
-          adDays
-        );
-        const regRetail = state.forecastResults.find(
-          (item) => item.upc === row.upc
-        )!.regular_retail_price;
-
-        return {
-          ...row,
-          adDays,
-          adFcst: units,
-          fcstTotal: row.fcstPrice * units,
-          markdownDollars: (regRetail - row.fcstPrice) * units,
-        };
-      });
-
-      state.rowData = updated;
+      state.rowData = state.rowData.map((row) =>
+        row.singlePrice || !upcs.includes(row.upc)
+          ? row
+          : { ...row, ...withAdDays(row, resultOf(state.forecastResults, row.upc), adDays) },
+      );
     },
     setBatchPriceRows: (
       state,
       action: PayloadAction<{ upcs: string[]; price: number }>
     ) => {
       const { upcs, price } = action.payload;
-
-      const updated = state.rowData.map((row) => {
-        if (row.singlePrice || !upcs.includes(row.upc)) return row;
-
-        const upc = row.upc;
-        const prices = state.forecastResults.find((item) => item.upc === upc);
-        const upcPrices = prices!.price_history.map((ph) => [
-          parseFloat(ph.price),
-          ph.qty,
-        ]);
-        const priceHistory = prices?.price_history;
-        const daysActive =
-          priceHistory!.find((ph) => parseFloat(ph.price) === price)
-            ?.days_active || estimateDaysActive(priceHistory!, price);
-        const fcstQty = calcFcstQty(upcPrices, price);
-        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
-        const units = forecastUnits(
-          price,
-          overallUnits,
-          fcstQty,
-          row.daysActive,
-          90,
-          daysActive,
-          row.forecastWindow,
-          upcPrices,
-          row.adDays
-        );
-        const regRetail = state.forecastResults.find(
-          (item) => item.upc === upc
-        )!.regular_retail_price;
-        const existingPrice = prices!.price_history.find(
-          (ph) => parseFloat(ph.price) === price
-        );
-
-        return {
-          ...row,
-          fcstPrice: price,
-          adFcst: units,
-          qtySold: existingPrice ? existingPrice.qty : 0,
-          fcstTotal: price * units,
-          markdownDollars: (regRetail - price) * units,
-          daysAtPrice: daysActive,
-        };
-      });
-
-      state.rowData = updated;
+      state.rowData = state.rowData.map((row) =>
+        row.singlePrice || !upcs.includes(row.upc)
+          ? row
+          : { ...row, ...atPrice(row, resultOf(state.forecastResults, row.upc), price) },
+      );
     },
 
     /** New search — clear results and selection, keep the store scope so a
