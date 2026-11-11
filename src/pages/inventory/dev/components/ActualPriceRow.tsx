@@ -42,11 +42,11 @@ const ActualPriceRow = ({
   return (
     <div>
       <div
-        className={`grid px-1 py-2 text-[13px] border-b border-line_faint ${isBest ? "bg-blue-50" : "even:bg-row_stripe"}`}
+        className={`grid px-1 py-2 text-[13px] border-b border-line_faint ${isBest ? "bg-row_selected" : "even:bg-row_stripe"}`}
         style={{ gridTemplateColumns: ACT_COLS }}
       >
         <span
-          className={`tabular-nums ${isBest ? "text-blue-900 font-medium" : "text-content"}`}
+          className={`tabular-nums ${isBest ? "text-content font-medium" : "text-content"}`}
         >
           {formatCurrency2(point.price)}
         </span>
