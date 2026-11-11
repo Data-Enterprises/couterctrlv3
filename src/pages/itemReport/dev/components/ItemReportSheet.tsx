@@ -331,7 +331,7 @@ const ItemReportSheet = ({
         )}
 
         <div
-          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+          className="flex-shrink-0 grid gap-3 px-3 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] cc-caps"
           style={{ gridTemplateColumns: COLS }}
         >
           <span>Action</span>

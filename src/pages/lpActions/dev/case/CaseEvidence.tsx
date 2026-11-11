@@ -28,7 +28,7 @@ interface Props {
 }
 
 const Heading = ({ text }: { text: string }) => (
-  <div className="text-[11px] font-semibold uppercase tracking-wide text-content/95 mb-1">
+  <div className="text-[11px] cc-caps mb-1">
     {text}
   </div>
 );

@@ -297,7 +297,7 @@ const TransactionSheet = ({
         ) : inBasket ? (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] cc-caps"
               style={{ gridTemplateColumns: BASKET_COLS }}
             >
               <span>Item</span>
@@ -393,7 +393,7 @@ const TransactionSheet = ({
         ) : (
           <>
             <div
-              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] font-semibold uppercase tracking-wide text-content/95"
+              className="sticky top-0 z-10 grid gap-3 px-4 py-1.5 border-b border-line_hair bg-fill_soft text-[11.5px] cc-caps"
               style={{ gridTemplateColumns: LIST_COLS }}
             >
               <span>Transaction</span>

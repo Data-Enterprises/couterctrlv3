@@ -491,7 +491,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
     // broken rather than smooth.
     <div className="w-[340px] h-full flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
+        <span className="text-[11px] cc-caps flex-1">
           Configuration
         </span>
         <InfoButton
@@ -521,7 +521,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         */}
       <div className="px-2.5 pb-1.5 flex-shrink-0" data-help="source">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+          <span className="text-[11px] cc-caps">
             Data
           </span>
           <span className="text-[12px] font-semibold flex-1">{ctx.source.label}</span>
@@ -550,7 +550,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
         */}
       <div className="px-2.5 pb-2 flex-shrink-0">
         <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+          <span className="text-[11px] cc-caps">
             File
           </span>
           <span className="text-[12px] font-semibold flex-1">

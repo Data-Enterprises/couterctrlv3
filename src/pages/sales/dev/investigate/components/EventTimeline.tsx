@@ -15,7 +15,7 @@ interface EventTimelineProps {
 const EventTimeline = ({ events, ready, tint, label }: EventTimelineProps) => (
   <div className="min-w-0">
     <div
-      className={`text-[13px] font-semibold uppercase tracking-wide text-content/95 pb-1.5 border-b-2 leading-tight ${tint}`}
+      className={`text-[13px] cc-caps pb-1.5 border-b-2 leading-tight ${tint}`}
     >
       {label}
     </div>

@@ -257,7 +257,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
             }`}
           />
         </button>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+        <span className="text-[11px] cc-caps">
           The configuration, as a query
         </span>
         {current && (

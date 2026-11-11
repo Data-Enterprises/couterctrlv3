@@ -146,7 +146,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
   const StoreFilter = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Stores</div>
+        <div className="text-[10px] cc-caps">Stores</div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))}
@@ -223,7 +223,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-5 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
+            <div className="text-[10px] cc-caps mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -239,7 +239,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
             </div>
           </div>
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
+            <div className="text-[10px] cc-caps mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;

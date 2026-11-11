@@ -219,7 +219,7 @@ const LookupExportModal = ({
         ) : (
           <div className="grid" style={{ gridTemplateColumns: "200px 1fr" }}>
             <div className="p-3.5 border-r border-line_hair">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+              <p className="text-[10px] cc-caps mb-2">
                 Data source
               </p>
               {(Object.keys(sourceLabels) as Preset[]).map((src, i, all) => (
@@ -241,7 +241,7 @@ const LookupExportModal = ({
                 </label>
               ))}
 
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+              <p className="text-[10px] cc-caps mb-2">
                 Columns
               </p>
               {COLS[source].map((c) => (
@@ -260,7 +260,7 @@ const LookupExportModal = ({
             </div>
 
             <div className="p-3.5 flex flex-col">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+              <p className="text-[10px] cc-caps mb-2">
                 Preview
               </p>
               <div className="border border-line_hair rounded-md overflow-hidden">

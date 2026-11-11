@@ -75,7 +75,7 @@ const ForecastScenarios = ({
   return (
     <div className="flex flex-col min-h-0 overflow-hidden border border-line_field rounded-lg">
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+        <span className="text-[11px] cc-caps">
           Price scenarios
         </span>
         <div className="ml-auto flex items-center gap-1.5">

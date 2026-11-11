@@ -267,7 +267,7 @@ const HourlySideBySide = ({
         <div className="flex-1 min-h-0 flex overflow-hidden">
           <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
             <div
-              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/95"
+              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] cc-caps"
               style={{ gridTemplateColumns: COLS }}
             >
               <span>Hour</span>

@@ -68,7 +68,7 @@ const FacetDetail = ({
       </div>
 
       <div className="px-3 py-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-content/95 mb-1.5">
+        <div className="text-[11px] cc-caps mb-1.5">
           Also concentrated by
         </div>
         <div className="space-y-1">

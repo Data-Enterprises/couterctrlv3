@@ -55,7 +55,7 @@ const DrillPanel = ({
           <ArrowLeftIcon className="w-3.5 h-3.5" />
           All types
         </button>
-        <span className="flex-1 min-w-0 text-[11px] font-semibold uppercase tracking-wide text-content/95 truncate">
+        <span className="flex-1 min-w-0 text-[11px] cc-caps truncate">
           {saleType} by {spec.label.toLowerCase()}
         </span>
         <button

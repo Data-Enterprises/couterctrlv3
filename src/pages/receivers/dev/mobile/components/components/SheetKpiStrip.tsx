@@ -18,7 +18,7 @@ const SheetKpiStrip = ({ details, totals }: SheetKpiStripProps) => {
           key={label}
           className="px-2.5 py-1.5 border-r border-line_hair last:border-r-0"
         >
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
+          <div className="text-[10px] cc-caps">
             {label}
           </div>
           <div className="text-[11px] font-bold text-content mt-0.5 tabular-nums">

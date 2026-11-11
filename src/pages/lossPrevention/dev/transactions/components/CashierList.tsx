@@ -87,7 +87,7 @@ const CashierList = ({
                 (h, i) => (
                   <div
                     key={h}
-                    className={`px-2 py-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 ${i > 0 ? "text-right" : ""}`}
+                    className={`px-2 py-1.5 text-[11.5px] cc-caps ${i > 0 ? "text-right" : ""}`}
                   >
                     {h}
                   </div>

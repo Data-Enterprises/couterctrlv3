@@ -61,7 +61,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
   return (
     <div>
       <div
-        className="sticky top-0 z-10 bg-custom-white grid gap-1.5 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95"
+        className="sticky top-0 z-10 bg-custom-white grid gap-1.5 px-2 py-1.5 text-[11px] cc-caps"
         style={{ gridTemplateColumns: COLS }}
       >
         <ColFilter

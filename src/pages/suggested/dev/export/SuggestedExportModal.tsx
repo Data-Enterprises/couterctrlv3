@@ -415,7 +415,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
           <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+                <p className="text-[10px] cc-caps mb-2">
                   Group By
                 </p>
                 <div className="space-y-1.5">
@@ -437,7 +437,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
               </div>
 
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+                <p className="text-[10px] cc-caps mb-2">
                   Metrics
                 </p>
                 <div className="space-y-2">
@@ -487,7 +487,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
 
             <div className="flex flex-col min-w-0">
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
-                <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
+                <p className="text-[11px] cc-caps">
                   Preview
                 </p>
                 <span className="text-[10px] text-content/95">

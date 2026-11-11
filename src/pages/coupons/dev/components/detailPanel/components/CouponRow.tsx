@@ -59,19 +59,19 @@ const CouponRow = ({ agg, idx, isExp, toggleCoupon, handleRowClick }: CouponRowP
         <>
           <tr className="bg-fill_muted/70 text-[11px]">
             <td className="pl-8 pr-3 py-1" />
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
+            <td className="px-3 py-1 cc-caps">
               Cashier
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
+            <td className="px-3 py-1 cc-caps">
               Date
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95">
+            <td className="px-3 py-1 cc-caps">
               Trans ID
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95 text-right">
+            <td className="px-3 py-1 cc-caps text-right">
               Qty
             </td>
-            <td className="px-3 py-1 font-semibold uppercase tracking-wide text-content/95 text-right">
+            <td className="px-3 py-1 cc-caps text-right">
               Amount
             </td>
           </tr>

@@ -346,7 +346,7 @@ const OrdersExportSheet = ({
           {isMultiSubDept && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Sub Depts</div>
+                <div className="text-[10px] cc-caps">Sub Depts</div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
@@ -383,7 +383,7 @@ const OrdersExportSheet = ({
           )}
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
+            <div className="text-[10px] cc-caps mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -400,7 +400,7 @@ const OrdersExportSheet = ({
           </div>
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
+            <div className="text-[10px] cc-caps mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;

@@ -402,7 +402,7 @@ const ItemMarginsTable = ({
               is scrollable. */}
           <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-line_hair flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1 flex items-center gap-2 min-w-0">
+            <span className="text-[11.5px] cc-caps flex-1 flex items-center gap-2 min-w-0">
               Item
               <ColFilter
                 label="UPC"
@@ -444,7 +444,7 @@ const ItemMarginsTable = ({
                 <button
                   key={col}
                   onClick={() => handleColSortClick(col)}
-                  className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0"
+                  className="flex items-center justify-center gap-0.5 text-[11.5px] cc-caps hover:text-content flex-shrink-0"
                   style={{ width: col === "ty" ? 76 : 68 }}
                 >
                   {col.toUpperCase()}

@@ -223,7 +223,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
             <div
               key={h}
-              className="text-[9px] font-semibold uppercase tracking-wide text-content/95"
+              className="text-[9px] cc-caps"
               style={{ textAlign: i >= 2 ? "right" : "left" }}
             >
               {h}

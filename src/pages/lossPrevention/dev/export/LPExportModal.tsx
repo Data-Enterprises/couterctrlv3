@@ -322,7 +322,7 @@ const LPExportModal = ({
 
                 {/* Source */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Data Source</p>
+                  <p className="text-[10px] cc-caps mb-2">Data Source</p>
                   <div className="flex flex-col gap-1.5">
                     {(["transactions", "cashiers"] as CustomSource[]).map((s) => (
                       <label key={s} className="flex items-center gap-2 cursor-pointer">
@@ -340,7 +340,7 @@ const LPExportModal = ({
 
                 {/* Group by */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</p>
+                  <p className="text-[10px] cc-caps mb-2">Group By</p>
                   <div className="space-y-1.5">
                     {dims.map((d) => (
                       <label key={d.key} className="flex items-center gap-2 cursor-pointer">
@@ -358,7 +358,7 @@ const LPExportModal = ({
 
                 {/* Metrics */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</p>
+                  <p className="text-[10px] cc-caps mb-2">Metrics</p>
                   <div className="space-y-2">
                     {mDefs.map((m) => {
                       const sel = metrics.get(m.key)!;
@@ -392,7 +392,7 @@ const LPExportModal = ({
               {/* Right: preview */}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">Preview</p>
+                  <p className="text-[11px] cc-caps">Preview</p>
                   <span className="text-[10px] text-content/95">
                     {aggRows.length === 0
                       ? "No data — select at least one group or metric"

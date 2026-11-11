@@ -268,7 +268,7 @@ const CashiersExportModal = ({
               {/* Left: config */}
               <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+                  <p className="text-[10px] cc-caps mb-2">
                     Data Source
                   </p>
                   <p className="text-[12px] text-content">Exception Lines</p>
@@ -278,7 +278,7 @@ const CashiersExportModal = ({
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+                  <p className="text-[10px] cc-caps mb-2">
                     Group By
                   </p>
                   <div className="space-y-1.5">
@@ -297,7 +297,7 @@ const CashiersExportModal = ({
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+                  <p className="text-[10px] cc-caps mb-2">
                     Metrics
                   </p>
                   <div className="space-y-2">
@@ -339,7 +339,7 @@ const CashiersExportModal = ({
               {/* Right: preview */}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
+                  <p className="text-[11px] cc-caps">
                     Preview
                   </p>
                   <span className="text-[10px] text-content/95">

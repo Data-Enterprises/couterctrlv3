@@ -11,7 +11,7 @@ const LineItemsHeader = () => {
       {lineItemHeaders.map((h, i) => (
         <div
           key={h}
-          className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i > 0 ? "text-right" : ""}`}
+          className={`text-[10px] cc-caps ${i > 0 ? "text-right" : ""}`}
         >
           {h}
         </div>

@@ -103,7 +103,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </button>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-1.5 border-b border-line_hair text-[11.5px] font-semibold uppercase tracking-wide text-content/95">
+        <div className="flex-shrink-0 px-3 py-1.5 border-b border-line_hair text-[11.5px] cc-caps">
           Cashiers in the latest week
         </div>
 

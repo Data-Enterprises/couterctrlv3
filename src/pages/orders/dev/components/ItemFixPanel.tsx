@@ -156,7 +156,7 @@ const ItemFixPanel = ({
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="text-[11px] cc-caps">
               New unit cost
             </span>
             <ThresholdFilter

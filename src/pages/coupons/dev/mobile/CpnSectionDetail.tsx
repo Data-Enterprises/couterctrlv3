@@ -248,7 +248,7 @@ const CpnSectionDetail = ({
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}
-                        className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i === 3 ? "text-right" : ""}`}
+                        className={`text-[10px] cc-caps ${i === 3 ? "text-right" : ""}`}
                       >
                         {h}
                       </div>
@@ -329,7 +329,7 @@ const CpnSectionDetail = ({
                   {["#", "Description", "Qty", "Total", "Type"].map((h, i) => (
                     <div
                       key={h}
-                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${
+                      className={`text-[10px] cc-caps ${
                         i >= 2 && i <= 3
                           ? "text-right"
                           : i === 4

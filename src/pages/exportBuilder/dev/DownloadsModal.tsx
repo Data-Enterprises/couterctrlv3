@@ -114,7 +114,7 @@ const DownloadsModal = () => {
           {groups.map((group) => (
             <div key={group.id ?? "adhoc"} className="flex flex-col gap-1.5">
               <div className="flex items-baseline gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+                <span className="text-[11px] cc-caps">
                   {group.name}
                 </span>
                 <span className="text-[11px] text-content/95">

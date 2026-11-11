@@ -108,7 +108,7 @@ const TopToOrder = () => {
     <>
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-fill_soft">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-content/95">
+          <span className="text-[13px] cc-caps">
             Top to order · every department at this store
           </span>
           <span className="text-[13px] text-content/95 tabular-nums flex-shrink-0">

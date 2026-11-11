@@ -104,7 +104,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
       {rates && maxRate > 0 && (
         <div className="flex-shrink-0 px-3 pt-2 pb-3 border-b border-line_hair bg-custom-white">
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="text-[12px] cc-caps">
               Typical week · all seven days
             </span>
             <span className="text-[12px] text-content/95">
@@ -171,7 +171,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
           <div className="flex gap-1.5 mt-1.5">
             {SHORT.map((s, d) => (
               <div key={d} className="flex-1 text-center">
-                <div className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
+                <div className="text-[12px] cc-caps">
                   {s}
                 </div>
                 <div className="text-[13px] font-semibold text-content tabular-nums">
@@ -198,7 +198,7 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
       {bench.length > 1 && (
         <div className="flex-1 min-h-0 flex flex-col px-3 pt-2 pb-3">
           <div className="flex-shrink-0 flex items-baseline justify-between mb-2">
-            <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="text-[12px] cc-caps">
               {deptLabel(groupRow?.sub_department_description ?? null)} · lb per
               day per item carried · {bench.length} stores
             </span>

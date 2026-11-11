@@ -253,7 +253,7 @@ const ForecastCalcModal = () => {
           {/* Note */}
           <div className={SECTION}>
             <div className="flex items-stretch bg-fill_soft border-b border-line_hair">
-              <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-content/95 flex-1">
+              <div className="px-3 py-1.5 text-[11px] cc-caps flex-1">
                 Note
               </div>
               {noteText !== (row.notes ?? "") && (

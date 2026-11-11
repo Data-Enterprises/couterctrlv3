@@ -107,7 +107,7 @@ const WorkingPopover = ({
         </button>
       </div>
 
-      <div className="px-3 pt-2 pb-1 text-[12px] font-semibold uppercase tracking-wide text-content/95">
+      <div className="px-3 pt-2 pb-1 text-[12px] cc-caps">
         What this item does on the days covered
       </div>
       {days.length === 0 ? (

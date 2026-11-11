@@ -299,7 +299,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
 
         {/* batch setter — writes to every ticked row, so the count is named */}
         <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-fill_soft border-b border-line_hair flex-shrink-0">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+          <span className="text-[11px] cc-caps">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}
           </span>

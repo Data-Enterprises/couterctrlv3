@@ -152,7 +152,7 @@ const LookupItemReport = ({
               <div className="truncate font-display text-[15px] font-bold leading-tight text-content">
                 {description}
               </div>
-              <div className="mt-0.5 truncate text-[11px] font-semibold uppercase tracking-wide text-content/95">
+              <div className="mt-0.5 truncate text-[11px] cc-caps">
                 {productCode}
                 {categoryDescription ? ` \u00b7 ${categoryDescription}` : ""}
               </div>

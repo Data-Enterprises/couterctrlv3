@@ -173,7 +173,7 @@ const OrdersExportModal = ({
 
         <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
           <div>
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="mb-1 block text-[10px] cc-caps">
               File name
             </span>
             <div className="flex items-center rounded border border-brand_navy/75 bg-custom-white px-2">
@@ -190,7 +190,7 @@ const OrdersExportModal = ({
           </div>
 
           <div>
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="mb-1 block text-[10px] cc-caps">
               Columns
             </span>
             <MultiSelectFilter
@@ -207,7 +207,7 @@ const OrdersExportModal = ({
 
           <div>
             <div className="mb-2 flex items-baseline gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
+              <span className="text-[10px] cc-caps">
                 Filters
               </span>
               <span className="text-[11px] text-content/95">

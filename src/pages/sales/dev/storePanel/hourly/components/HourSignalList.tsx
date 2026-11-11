@@ -77,7 +77,7 @@ const HourSignalList = ({
 
       <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
-        <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
+        <span className="text-[11.5px] cc-caps flex-1">
           Hour
         </span>
         <div className="flex items-center gap-[14px]">

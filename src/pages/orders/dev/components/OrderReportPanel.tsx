@@ -116,14 +116,14 @@ const OrderReportPanel = ({
         label={label}
         sort={sort}
         onSort={onSort}
-        className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-content/95 hover:text-brand_navy"
+        className="ml-auto text-[10px] cc-caps hover:text-brand_navy"
       />
     </th>
   );
 
   const plainHead = (label: string, width: number) => (
     <th
-      className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
+      className="text-right px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
       style={{ width }}
     >
       {label}
@@ -197,25 +197,25 @@ const OrderReportPanel = ({
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
                   <th
-                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 100 }}
                   >
                     UPC
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 220 }}
                   >
                     Description
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 130 }}
                   >
                     Sub dept
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 70 }}
                   >
                     Store

@@ -20,7 +20,7 @@ const CashierScoreStrip = ({ selectedGrade, scoreMetrics, isNoDollar }: CashierS
           <div className="text-[12px] font-semibold text-content">
             {selectedGrade.cashier_name}
           </div>
-          <div className="text-[9px] font-semibold uppercase tracking-wide text-content/95">
+          <div className="text-[9px] cc-caps">
             Cashier breakdown
           </div>
         </div>

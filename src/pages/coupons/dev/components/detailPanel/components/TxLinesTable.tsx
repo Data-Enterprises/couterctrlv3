@@ -15,19 +15,19 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr className="sticky top-0 bg-fill_soft border-b border-line_hair z-10">
-            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right w-7">
+            <th className="px-2 py-2 text-[10px] cc-caps text-right w-7">
               #
             </th>
-            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-left">
+            <th className="px-2 py-2 text-[10px] cc-caps text-left">
               Description
             </th>
-            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right">
+            <th className="px-2 py-2 text-[10px] cc-caps text-right">
               Qty
             </th>
-            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right">
+            <th className="px-2 py-2 text-[10px] cc-caps text-right">
               Total
             </th>
-            <th className="px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-center w-14">
+            <th className="px-2 py-2 text-[10px] cc-caps text-center w-14">
               Type
             </th>
           </tr>

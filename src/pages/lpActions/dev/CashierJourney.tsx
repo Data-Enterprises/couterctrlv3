@@ -207,7 +207,7 @@ const CashierJourney = () => {
 
           <div className="flex-1 min-w-0 flex flex-col relative">
             <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-2">
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1 truncate">
+              <span className="text-[11.5px] cc-caps flex-1 truncate">
                 {focus
                   ? `${[focusValue, branch?.label].filter(Boolean).join(" · ")} · ${branchScoped.length} occurrences across ${receiptCount} ${receiptCount === 1 ? "receipt" : "receipts"}`
                   : "Summary by exception type"}

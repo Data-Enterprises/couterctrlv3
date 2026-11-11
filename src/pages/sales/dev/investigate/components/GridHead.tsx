@@ -130,7 +130,7 @@ const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => 
                 label={label(c, target)}
                 sort={sort}
                 onSort={onSort}
-                className="text-[11px] font-semibold uppercase tracking-wide text-content/95 hover:text-content"
+                className="text-[11px] cc-caps hover:text-content"
               />
             ) : (
               <span className="uppercase tracking-wide text-content/95">

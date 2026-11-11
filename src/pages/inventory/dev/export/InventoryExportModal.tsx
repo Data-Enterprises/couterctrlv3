@@ -255,7 +255,7 @@ const InventoryExportModal = ({
       ) : (
         <div className="grid" style={{ gridTemplateColumns: "220px 1fr" }}>
           <div className="p-3.5 border-r border-line_hair">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+            <p className="text-[10px] cc-caps mb-2">
               Data source
             </p>
             {PRESETS.map((p) => (
@@ -275,7 +275,7 @@ const InventoryExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mt-3.5 mb-2">
+            <p className="text-[10px] cc-caps mt-3.5 mb-2">
               Columns
             </p>
             {COLS[source].map((c) => (
@@ -296,7 +296,7 @@ const InventoryExportModal = ({
           </div>
 
           <div className="p-3.5 flex flex-col">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+            <p className="text-[10px] cc-caps mb-2">
               Preview
             </p>
             <div className="border border-line_hair rounded-md overflow-x-auto">

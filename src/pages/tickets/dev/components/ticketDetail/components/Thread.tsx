@@ -75,7 +75,7 @@ const Thread = ({
             className="flex w-full items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-bkg"
           >
             <PaperClipIcon className="h-3.5 w-3.5 flex-shrink-0 text-content/95" />
-            <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="flex-1 text-[10.5px] cc-caps">
               Files · {attachments.length}
             </span>
             <ChevronUpIcon

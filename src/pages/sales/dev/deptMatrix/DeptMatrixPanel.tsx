@@ -205,14 +205,14 @@ const DeptMatrixPanel = ({
               <thead>
                 <tr>
                   <th className="sticky top-0 left-0 z-30 bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left min-w-[190px]">
-                    <span className="uppercase tracking-wide text-content/95 font-semibold">
+                    <span className="cc-caps">
                       Store
                     </span>
                   </th>
                   {matrix.columns.map((c) => (
                     <th
                       key={c.subDept}
-                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center font-semibold uppercase tracking-wide text-content/95 w-[74px] max-w-[74px]"
+                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center cc-caps w-[74px] max-w-[74px]"
                       title={c.name}
                     >
                       {/* Twenty departments do not fit across a panel, and
@@ -228,7 +228,7 @@ const DeptMatrixPanel = ({
                       makes it read as sitting OVER the columns it covers
                       rather than cutting one in half. */}
                   <th
-                    className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l-2 border-l-brand_navy/25 px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/95 min-w-[76px]"
+                    className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l-2 border-l-brand_navy/25 px-2.5 py-1.5 text-center cc-caps min-w-[76px]"
                     style={{ boxShadow: "-6px 0 8px -6px rgb(var(--color-brand-navy) / 0.25)" }}
                     title="This store across every department it can be measured in"
                   >

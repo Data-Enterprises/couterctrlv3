@@ -126,12 +126,12 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
         </ColFilter>
       </th>
       <th
-        className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right whitespace-nowrap"
+        className="px-3 py-2 text-[10px] cc-caps text-right whitespace-nowrap"
         style={{ width: "8%" }}
       >
         Trans
       </th>
-      <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 text-right w-12">
+      <th className="px-3 py-2 text-[10px] cc-caps text-right w-12">
         Count
       </th>
       <th

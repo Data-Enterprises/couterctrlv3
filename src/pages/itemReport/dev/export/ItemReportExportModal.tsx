@@ -509,7 +509,7 @@ const ItemReportExportModal = ({
               modal, and the fix has to be here rather than on the whole column
               or the source radios scroll away with them. */}
           <div className="p-3.5 border-r border-line_hair flex flex-col min-h-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+            <p className="text-[10px] cc-caps mb-2">
               Data source
             </p>
             {SOURCE_LABEL.map(({ key, label }) => (
@@ -529,7 +529,7 @@ const ItemReportExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mt-3.5 mb-2 flex-shrink-0">
+            <p className="text-[10px] cc-caps mt-3.5 mb-2 flex-shrink-0">
               Columns
             </p>
             <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-1">
@@ -550,7 +550,7 @@ const ItemReportExportModal = ({
           </div>
 
           <div className="p-3.5 flex flex-col min-h-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2 flex-shrink-0">
+            <p className="text-[10px] cc-caps mb-2 flex-shrink-0">
               Preview
             </p>
             <div className="border border-line_hair rounded-md overflow-x-auto">

@@ -326,7 +326,7 @@ const UpcExportModal = ({ onClose }: Props) => {
           {/* shape — sales comp only: what the rows represent */}
           {ctx.activeTab === "salesComp" && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+              <div className="text-[10px] cc-caps mb-2">
                 Export shape
               </div>
               <div className="flex flex-col gap-1.5">
@@ -347,7 +347,7 @@ const UpcExportModal = ({ onClose }: Props) => {
 
           {/* presets — scope: which UPCs */}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
+            <div className="text-[10px] cc-caps mb-2">
               Export type
             </div>
             <div className="flex flex-col gap-1.5">

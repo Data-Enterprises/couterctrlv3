@@ -24,7 +24,7 @@ const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPrice
       <div className="text-[11px] font-semibold uppercase tracking-wide text-content bg-fill_track/75 px-2 py-1.5 mb-1">
         Price points tested
       </div>
-      <div className="grid gap-1 px-2 text-[10px] font-semibold uppercase tracking-wide text-content/95" style={{ gridTemplateColumns: cols }}>
+      <div className="grid gap-1 px-2 text-[10px] cc-caps" style={{ gridTemplateColumns: cols }}>
         <span>Price</span>
         {/* One item per table, so the header names its unit outright. */}
         <span className="text-right">{weighted ? "Lb" : "Qty"}</span>

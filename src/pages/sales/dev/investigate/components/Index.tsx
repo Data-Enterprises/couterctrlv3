@@ -32,7 +32,7 @@ const Index = ({ vitals, them, cash }: IndexProps) => {
         const over = (m.pct ?? 0) >= 100;
         return (
           <div key={m.label} className="flex items-center gap-2.5">
-            <span className="w-[52px] flex-shrink-0 text-[12px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="w-[52px] flex-shrink-0 text-[12px] cc-caps">
               {m.label}
             </span>
             <span className="relative flex-1 min-w-0 h-[10.5px] rounded-sm bg-bkg">

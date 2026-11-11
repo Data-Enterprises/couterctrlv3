@@ -28,7 +28,7 @@ const GridHeader = () => {
               aria-sort={
                 on ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
               }
-              className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/95 whitespace-nowrap ${
+              className={`px-3 py-2 text-[10px] cc-caps whitespace-nowrap ${
                 c.align === "right" ? "text-right" : "text-left"
               }`}
             >
