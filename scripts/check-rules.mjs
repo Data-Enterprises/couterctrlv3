@@ -53,6 +53,12 @@ const LOOKS = existsSync(SHEET)
   ? [...readFileSync(SHEET, "utf8").matchAll(/\.(cc-[a-z0-9-]+)\s*\{\s*@apply ([^;]+);/g)]
       .map((m) => ({ cls: m[1], need: m[2].trim().split(/\s+/) }))
   : [];
+/** Looks too short to tell apart by classes alone, and what they must not claim: a
+ *  button or a filled element that happens to share a navy title's two classes is
+ *  not a navy title. docs/tools/cc_swap.mjs skips the same elements. */
+const NOT_FOR = {
+  "cc-navy-title": (tag, have) => tag === "button" || [...have].some((c) => /^bg-/.test(c)),
+};
 const isDevTree = (f) => /^src\/pages\/[^/]+\/dev\//.test(f) || /^src\/components-dev\//.test(f);
 
 const inScope = (f) =>
@@ -195,8 +201,9 @@ function check(f) {
         const fixed = !e ? [] : ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e) ? [e.text]
           : ts.isTemplateExpression(e) ? [e.head.text, ...e.templateSpans.map((sp) => sp.literal.text)] : [];
         const have = new Set(fixed.join(" ").split(/\s+/).filter(Boolean));
+        const tag = n.parent.parent.tagName?.getText(sf) ?? "";
         for (const l of LOOKS)
-          if (l.need.every((c) => have.has(c))) hit("catalogued-look", lineOf(n), `spells out ${l.cls}; use the class`);
+          if (l.need.every((c) => have.has(c)) && !NOT_FOR[l.cls]?.(tag, have)) hit("catalogued-look", lineOf(n), `spells out ${l.cls}; use the class`);
       }
       ts.forEachChild(n, walk);
     };

@@ -137,7 +137,7 @@
     "catalogued-look": 1
   },
   "src/components-dev/ConfirmDelete.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/components-dev/ConfirmModal.tsx": {
     "catalogued-look": 1
@@ -161,16 +161,16 @@
     "catalogued-look": 1
   },
   "src/components-dev/SearchCard.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/components-dev/SearchPopup.tsx": {
     "catalogued-look": 1
   },
   "src/components-dev/SignInAsModal.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/components-dev/SingleStoreSearchCard.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/components-dev/eventPerf/components/EventDrillList.tsx": {
     "catalogued-look": 1
@@ -189,9 +189,6 @@
   },
   "src/components-dev/filters/TextFilter.tsx": {
     "catalogued-look": 1
-  },
-  "src/components-dev/help/HelpPanel.tsx": {
-    "catalogued-look": 2
   },
   "src/components-dev/itemPerf/components/ItemSearchScreen.tsx": {
     "catalogued-look": 5
@@ -232,11 +229,8 @@
   "src/components-dev/modals/ResizableModalShell.tsx": {
     "catalogued-look": 2
   },
-  "src/components-dev/releaseNotes/PageCard.tsx": {
-    "catalogued-look": 1
-  },
   "src/components-dev/releaseNotes/ReleaseNotesModal.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/components-dev/transactions/Transaction.tsx": {
     "catalogued-look": 4
@@ -762,7 +756,7 @@
     "catalogued-look": 19
   },
   "src/pages/cashiers/dev/components/ExplorerSearch.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/cashiers/dev/components/LensPanel.tsx": {
     "catalogued-look": 2
@@ -873,7 +867,7 @@
     "catalogued-look": 20
   },
   "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/coupons/dev/mobile/CpnExportSheet.tsx": {
     "catalogued-look": 7
@@ -908,12 +902,12 @@
     "labels": 1
   },
   "src/pages/exportBuilder/dev/DownloadsModal.tsx": {
-    "catalogued-look": 3,
+    "catalogued-look": 1,
     "labels": 1,
     "shape-extra-code": 2
   },
   "src/pages/exportBuilder/dev/ExportBar.tsx": {
-    "catalogued-look": 3,
+    "catalogued-look": 2,
     "labels": 1,
     "shape-extra-code": 2,
     "shape-named-export": 1
@@ -922,13 +916,13 @@
     "labels": 1
   },
   "src/pages/exportBuilder/dev/QueryPanel.tsx": {
-    "catalogued-look": 4,
+    "catalogued-look": 2,
     "doc-comment": 1,
     "labels": 1,
     "shape-props-name": 1
   },
   "src/pages/exportBuilder/dev/SavedExportsModal.tsx": {
-    "catalogued-look": 3,
+    "catalogued-look": 1,
     "labels": 1,
     "shape-extra-code": 1
   },
@@ -991,19 +985,19 @@
     "labels": 1
   },
   "src/pages/forecast/dev/calc/ForecastCalcModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/forecast/dev/calc/components/ForecastScenarios.tsx": {
     "catalogued-look": 1
   },
   "src/pages/forecast/dev/components/ForecastEntry.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/forecast/dev/components/ForecastListPanel.tsx": {
     "catalogued-look": 3
   },
   "src/pages/forecast/dev/components/ForecastRowsTable.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 4
   },
   "src/pages/forecast/dev/export/ForecastExportModal.tsx": {
     "catalogued-look": 10
@@ -1147,7 +1141,7 @@
     "labels": 1
   },
   "src/pages/invoices/dev/AwgInvoices.tsx": {
-    "catalogued-look": 2,
+    "catalogued-look": 1,
     "doc-comment": 1,
     "labels": 1,
     "one-line-per-source": 1,
@@ -1273,9 +1267,6 @@
     "labels": 1
   },
   "src/pages/lookup/dev/desktop/ItemLookupDesktop.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/lookup/dev/desktop/components/LookupDesktopEntry.tsx": {
     "catalogued-look": 1
   },
   "src/pages/lookup/dev/desktop/components/LookupExportModal.tsx": {
@@ -1573,7 +1564,7 @@
     "catalogued-look": 1
   },
   "src/pages/orders/dev/components/ItemFixPanel.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/orders/dev/components/OrderPickerPanel.tsx": {
     "catalogued-look": 2
@@ -1594,7 +1585,7 @@
     "catalogued-look": 1
   },
   "src/pages/orders/dev/export/OrdersExportModal.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 4
   },
   "src/pages/orders/dev/mobile/OrdersExportSheet.tsx": {
     "catalogued-look": 9
@@ -1709,15 +1700,12 @@
     "catalogued-look": 1
   },
   "src/pages/sales/dev/deptMatrix/DeptMatrixPanel.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 3
   },
   "src/pages/sales/dev/groupCompare/GroupComparisonPanel.tsx": {
     "catalogued-look": 2
   },
   "src/pages/sales/dev/groupCompare/components/GroupShareBalance.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/sales/dev/groupCompare/components/GroupShareStoreDetail.tsx": {
     "catalogued-look": 1
   },
   "src/pages/sales/dev/investigate/DeptInvestigation.tsx": {
@@ -1727,7 +1715,7 @@
     "catalogued-look": 1
   },
   "src/pages/sales/dev/investigate/components/InvestigationHeader.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/sales/dev/investigate/components/Ladder.tsx": {
     "catalogued-look": 2
@@ -1786,13 +1774,7 @@
   "src/pages/sales/dev/storePanel/summary/components/RecapItemsTable.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/sales/dev/storePanel/summary/components/RecapItemsView.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/dev/storePanel/summary/components/RecapSortHead.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/sales/dev/storePanel/summary/components/RecapViewItemsButton.tsx": {
     "catalogued-look": 1
   },
   "src/pages/sales/dev/storePanel/top200/PopupTopItems.tsx": {
@@ -1889,37 +1871,31 @@
     "catalogued-look": 7
   },
   "src/pages/tickets/dev/components/modals/CloseTicketModal.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/tickets/dev/components/modals/EditStoresModal.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/modals/NewTicketModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/tickets/dev/components/modals/components/NewTicketAttachments.tsx": {
     "catalogued-look": 1
   },
   "src/pages/tickets/dev/components/modals/techsModal/components/AddTech.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/modals/techsModal/components/RosterList.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/modals/techsModal/components/StandDown.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/ticketDetail/TicketDetail.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/tickets/dev/components/ticketDetail/components/Composer.tsx": {
-    "catalogued-look": 1
-  },
-  "src/pages/tickets/dev/components/ticketDetail/components/ManageBar.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/tickets/dev/components/ticketInbox/TicketInbox.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/tickets/dev/components/ticketInbox/components/InboxHeader.tsx": {
     "catalogued-look": 2
@@ -1928,7 +1904,7 @@
     "labels": 1
   },
   "src/pages/upc/dev/components/UpcExportModal.tsx": {
-    "catalogued-look": 3,
+    "catalogued-look": 2,
     "commented-code": 1,
     "labels": 1,
     "shape-extra-code": 5,
@@ -1949,7 +1925,7 @@
     "catalogued-look": 2
   },
   "src/pages/upc/dev/components/UpcSearchCard.tsx": {
-    "catalogued-look": 5
+    "catalogued-look": 4
   },
   "src/pages/upc/dev/modules/association/components/AssociationDetailPanel.tsx": {
     "catalogued-look": 1
