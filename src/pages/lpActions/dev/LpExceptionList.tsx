@@ -77,7 +77,7 @@ const WeekBars = ({
                   : row.severity === "watch"
                     ? "bg-severity_watch_text"
                     : "bg-severity_healthy_text"
-                : "bg-gray-300"
+                : "bg-fill_track_strong"
             }`}
           />
         );

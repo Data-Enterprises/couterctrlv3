@@ -193,7 +193,7 @@ const StoreFormModal = ({
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
               canSubmit
                 ? "bg-brand_navy hover:bg-brand_navy/85"
-                : "bg-gray-300 cursor-not-allowed"
+                : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >
             {saving

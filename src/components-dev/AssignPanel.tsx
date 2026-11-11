@@ -282,14 +282,14 @@ const AssignPanel = ({
           <button
             onClick={() => handleAssign(Array.from(staged))}
             disabled={moving || staged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.assign}
           </button>
           <button
             onClick={() => bulk("in", assignAllLeft.map((i) => i.id))}
             disabled={moving || assignAllLeft.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.assign} all
           </button>
@@ -351,7 +351,7 @@ const AssignPanel = ({
           <button
             onClick={() => handleUnassign(Array.from(unstaged))}
             disabled={moving || unstaged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign}
           </button>
@@ -365,7 +365,7 @@ const AssignPanel = ({
               )
             }
             disabled={moving || rightItems.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign} all
           </button>

@@ -283,7 +283,7 @@ const ItemFixPanel = ({
               valid && onStage(willChange.map((r) => r.doc.key), unit!)
             }
             disabled={!valid || willChange.length === 0}
-            className="rounded-md bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="rounded-md bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white hover:bg-brand_navy/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {!valid
               ? "Type a unit cost"

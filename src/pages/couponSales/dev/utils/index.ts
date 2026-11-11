@@ -99,7 +99,7 @@ export const couponDotClass: Record<CouponTier, string> = {
   critical: "bg-red-500",
   watch: "bg-amber-500",
   ok: "bg-emerald-500",
-  ungraded: "bg-gray-300",
+  ungraded: "bg-fill_track_strong",
 };
 
 /** Solid header tint for the detail panel, mirroring severityHeaderBgClass —

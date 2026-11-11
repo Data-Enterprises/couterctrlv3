@@ -97,7 +97,7 @@ const ItemDayTrend = ({ selectedDetail, thresholdAmt, gradingMetric }: ItemDayTr
                   >
                     <span
                       className={`w-2 h-2 rounded-full ${
-                        sev === null ? "bg-gray-300" : severityDotClass[sev]
+                        sev === null ? "bg-fill_track_strong" : severityDotClass[sev]
                       }`}
                     />
                     <span className="text-[12px] font-semibold text-content">

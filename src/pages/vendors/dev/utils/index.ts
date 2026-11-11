@@ -353,7 +353,7 @@ export const fmtDelta = (d: number | null, isMargin: boolean) =>
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
 export const dotFor = (tier: Tier) =>
-  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
+  tier === "ungraded" ? "bg-fill_track_strong" : severityDotClass[tier as Severity];
 
 /** Written out in full because Tailwind scans source text and never sees a
  *  class assembled at runtime. */

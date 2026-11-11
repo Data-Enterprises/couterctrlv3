@@ -773,7 +773,7 @@ const ItemMarginsTable = ({
                               <span
                                 className={`w-2 h-2 rounded-full ${
                                   sev === null
-                                    ? "bg-gray-300"
+                                    ? "bg-fill_track_strong"
                                     : severityDotClass[sev]
                                 }`}
                               />

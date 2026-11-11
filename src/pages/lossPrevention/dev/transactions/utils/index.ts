@@ -12,7 +12,7 @@ export const CASHIER_DOT_CLASS: Record<CashierSeverity, string> = {
   critical: "bg-red-500",
   watch: "bg-amber-400",
   ok: "bg-emerald-500",
-  ungraded: "bg-gray-300",
+  ungraded: "bg-fill_track_strong",
 };
 
 export const fmtDate = (iso: string) => {

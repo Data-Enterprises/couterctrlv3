@@ -374,7 +374,7 @@ export const TOGGLE_OPTS = [
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
 export const dotFor = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
+  tier === "ungraded" ? "bg-fill_track_strong" : severityDotClass[tier as Severity];
 
 /** Tier summary chips, in Sales' tinted-fill register rather than the solid
  *  `chipClass` fill the Data pages use. Written out in full because Tailwind
