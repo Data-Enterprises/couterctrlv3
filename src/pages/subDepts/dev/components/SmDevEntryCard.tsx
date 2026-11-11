@@ -26,7 +26,8 @@ const SmDevEntryCard = ({ onSearch, notice }: SmDevEntryCardProps) => {
         stores={ctx.assignedStores}
         selectedStoreId={ctx.searchValue}
         onStoreSelect={(id) => dispatch(actions.setSearchValue(id))}
-        onSearch={onSearch}
+        // Called bare: an argument (the click event) would read as a location refetch.
+        onSearch={() => onSearch()}
         loading={ctx.loadingSubDepts}
         loadingMessage="Finding sub dept margins..."
         datePicker={<SingleDatePicker />}
