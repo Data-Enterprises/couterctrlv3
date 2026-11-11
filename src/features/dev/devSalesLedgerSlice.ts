@@ -161,6 +161,8 @@ interface SalesLedgerState {
   /** The search date (MM/DD/YYYY) the ledger was fetched for. The store panel
    *  builds its week from this, not the live picker, which other pages move. */
   searchedDate: string | null;
+  /** The group the ledger searched; null on a single-store search. */
+  searchedGroup: { id: number; name: string } | null;
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
@@ -343,6 +345,7 @@ interface SalesLedgerState {
 const initialState: SalesLedgerState = {
   hasSearched: false,
   searchedDate: null,
+  searchedGroup: null,
   selection: null,
   tab: "subdept",
   selectedDate: null,
@@ -417,6 +420,12 @@ const salesLedgerSlice = createSlice({
     },
     setSearchedDate: (state, action: PayloadAction<string | null>) => {
       state.searchedDate = action.payload;
+    },
+    setSearchedGroup: (
+      state,
+      action: PayloadAction<{ id: number; name: string } | null>,
+    ) => {
+      state.searchedGroup = action.payload;
     },
     setLedgerSelection: (
       state,
@@ -782,6 +791,7 @@ export const {
   setGradingMetric,
   setHasSearched,
   setSearchedDate,
+  setSearchedGroup,
   setLedgerSelection,
   setLedgerTab,
   setCounterpart,

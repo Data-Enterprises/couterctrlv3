@@ -83,7 +83,8 @@ export const useSalesCtx = () =>
       assignedStores: s.user.assignedStores,
       selectedGroupStores: s.user.selectedGroupStores,
       search: s.search,
-      groupName: s.search.selectedGroup?.group_name,
+      searchedGroup: s.dev.salesLedger.searchedGroup,
+      groupName: s.dev.salesLedger.searchedGroup?.name,
     }),
     shallowEqual,
   );

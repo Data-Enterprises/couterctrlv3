@@ -18,6 +18,7 @@ import {
 import {
   setHasSearched,
   setSearchedDate,
+  setSearchedGroup,
   setLedgerLoading,
   setFinancials,
   setFinancialsLoading,
@@ -199,6 +200,13 @@ const SalesLedger = () => {
     dispatch(reQuery());
     dispatch(reQueryLedger());
     dispatch(setSearchedDate(search.singleDate));
+    dispatch(
+      setSearchedGroup(
+        isGroup && search.selectedGroup?.id
+          ? { id: search.selectedGroup.id, name: search.selectedGroup.group_name }
+          : null,
+      ),
+    );
     setSearchModalOpen(false);
     setFetchFailed(false);
 

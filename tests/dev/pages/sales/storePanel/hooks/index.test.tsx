@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import { setSingleDate } from "@/features/searchSlice";
-import { setSearchedDate } from "@/features/dev/devSalesLedgerSlice";
+import { setSearchedDate, setSearchedGroup } from "@/features/dev/devSalesLedgerSlice";
+import { useSalesCtx } from "@/pages/sales/dev/hooks";
 import { useWeekWindow } from "@/pages/sales/dev/storePanel/hooks";
 
 /*
@@ -38,5 +39,19 @@ describe("the store panel's week", () => {
     const store = setupStore();
     store.dispatch(setSingleDate("11/10/2026"));
     expect(weekFor(store).twEnd).toBe("2026-11-10");
+  });
+});
+
+describe("the searched group", () => {
+  it("names the group the ledger searched, not the picker's current one", () => {
+    const store = setupStore();
+    store.dispatch(setSearchedGroup({ id: 7, name: "HC North" }));
+    const ctx = renderHook(() => useSalesCtx(), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <Provider store={store}>{children}</Provider>
+      ),
+    }).result.current;
+    expect(ctx.groupName).toBe("HC North");
+    expect(ctx.searchedGroup).toEqual({ id: 7, name: "HC North" });
   });
 });

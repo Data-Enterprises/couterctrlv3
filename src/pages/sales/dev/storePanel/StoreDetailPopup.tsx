@@ -11,7 +11,6 @@ import {
 } from "./hooks";
 
 // Redux
-import { isGroupSearch } from "../../../../features/searchSlice";
 import { setCounterpart } from "../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
@@ -55,7 +54,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   const hasGroup = !!groupRows && groupRows.length > 1;
   const dispatch = useAppDispatch();
   const {
-    search,
+    searchedGroup,
     tab,
     selectedDate,
     gradingMetric,
@@ -108,14 +107,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           // Only when the ledger actually searched a group. Financials is the
           // one export that can answer wider than this popup, and the endpoint
           // needs a groupid to do it.
-          group={
-            isGroupSearch(search.type) && search.selectedGroup?.id
-              ? {
-                  id: search.selectedGroup.id,
-                  name: search.selectedGroup.group_name,
-                }
-              : null
-          }
+          group={searchedGroup}
           stores={groupRows}
         />
       )}
