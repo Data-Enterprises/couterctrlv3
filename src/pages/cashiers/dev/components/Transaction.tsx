@@ -251,7 +251,7 @@ const Transaction = ({ trans }: TransactionProps) => {
                 {item.qty ?? 0}
               </div>
               <div
-                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-red-500" : "text-content"}`}
+                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-delta_negative_text" : "text-content"}`}
               >
                 {formatCurrency2(item.net_sales)}
               </div>

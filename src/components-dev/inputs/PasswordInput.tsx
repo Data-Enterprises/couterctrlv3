@@ -99,13 +99,13 @@ const PasswordInput = ({
       case 0:
         return "text-content";
       case 1:
-        return "text-red-500";
+        return "text-severity_critical_text";
       case 2:
-        return "text-yellow-500";
+        return "text-severity_watch_text";
       case 3:
-        return "text-orange-500";
+        return "text-severity_watch_text";
       case 4:
-        return "text-emerald-500";
+        return "text-severity_healthy_text";
     }
   };
 

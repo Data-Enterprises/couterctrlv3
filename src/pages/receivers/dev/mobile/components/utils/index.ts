@@ -69,9 +69,9 @@ export const toApiDate = (dateStr: string) => {
 };
 
 export const gmColor = (gm: number) => {
-  if (gm >= 30) return "text-emerald-600";
-  if (gm >= 25) return "text-amber-600";
-  return "text-red-500";
+  if (gm >= 30) return "text-severity_healthy_text";
+  if (gm >= 25) return "text-severity_watch_text";
+  return "text-severity_critical_text";
 };
 
 export const handleExport = (
