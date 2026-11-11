@@ -26,6 +26,7 @@ import {
 import { getHourly, getSubs, getWeekly } from "../../../../../../api/sales";
 
 // Utils
+import { shiftIso } from "../../../../../../utils/grading";
 import {
   fetchSubDeptRowsOrEmpty,
   fetchSubDeptRowsSafe,
@@ -69,15 +70,15 @@ export const usePerfWeek = () => {
     const lyDates = Array.from(
       { length: 7 },
       (_, i) =>
-        sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
+        sameWeekDayLastYear(shiftIso(twStart, i)).date,
     ).sort();
     /** The same week, seven days back. Fetched beside last year on every call,
      *  and used only where last year came back empty — a store onboarded this
      *  year has no last year, and one bar is not a comparison. Asking for both
      *  up front rather than refetching on a miss keeps it to one round trip:
      *  the miss is only known once the answer is in. */
-    const lwStart = addDays(twStart, -7).toISOString().split("T")[0];
-    const lwEnd = addDays(twEnd, -7).toISOString().split("T")[0];
+    const lwStart = shiftIso(twStart, -7);
+    const lwEnd = shiftIso(twEnd, -7);
     return { twStart, twEnd, lyDates, lwStart, lwEnd };
   }, [singleDate]);
 };

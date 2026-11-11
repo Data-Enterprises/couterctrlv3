@@ -1,5 +1,6 @@
 // Utils
-import { addDays, sameWeekDayLastYear } from "../../../../../../utils";
+import { shiftIso } from "../../../../../../utils/grading";
+import { sameWeekDayLastYear } from "../../../../../../utils";
 import {
   gradeBasis,
   gradeOnBasis,
@@ -253,7 +254,7 @@ export const buildWeekHourDays = (
       .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
 
   return tyDates.map((tyDate) => {
-    const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+    const lwDate = shiftIso(tyDate, -7);
     const lyDate = sameWeekDayLastYear(tyDate).date;
     const label = new Date(tyDate + "T12:00:00").toLocaleDateString("en-US", {
       weekday: "short",

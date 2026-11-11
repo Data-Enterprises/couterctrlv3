@@ -34,6 +34,7 @@ import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
 import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 
 // Utils
+import { shiftIso } from "../../../../utils/grading";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "../utils/ledgerUtils";
 import { selectionFor } from "../utils/storeComparison";
@@ -173,7 +174,7 @@ const SalesLedger = () => {
     // Shifting every day in the week and taking the min/max keeps it correct.
     const twWeekDates = Array.from(
       { length: 7 },
-      (_, i) => addDays(twStart, i).toISOString().split("T")[0],
+      (_, i) => shiftIso(twStart, i),
     );
     const lyWeekDates = twWeekDates
       .map((d) => sameWeekDayLastYear(d).date)
