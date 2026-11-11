@@ -14,11 +14,11 @@ interface HourCompareBlockProps {
 /** A titled three-column strip (TY, LW, LY) for one measure of the open hour,
  *  such as transactions or the average basket. A zero reference is a dash. */
 const HourCompareBlock = ({ label, ty, lw, ly, format, threshold }: HourCompareBlockProps) => (
-  <div className="border-b border-gray-100 leading-snug">
+  <div className="border-b border-line_hair leading-snug">
     <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
       {label}
     </div>
-    <div className="grid grid-cols-3 divide-x divide-gray-100">
+    <div className="grid grid-cols-3 divide-x divide-line_hair">
       <div className="px-4 py-2.5">
         <div className="text-[13px] font-semibold text-content">{format(ty)}</div>
       </div>

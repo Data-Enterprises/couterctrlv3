@@ -77,10 +77,10 @@ const SubDeptSignalList = ({
 
   return (
     <div
-      className="flex flex-col border-r border-gray-100 min-w-[310px]"
+      className="flex flex-col border-r border-line_hair min-w-[310px]"
       style={{ width: "39.5%" }}
     >
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100">
         <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
         <ThresholdChip
           value={subDeptThreshold}
@@ -89,7 +89,7 @@ const SubDeptSignalList = ({
         />
       </div>
 
-      <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
         {/* A floor on the name, so a window too narrow for the row clips its
             right edge rather than hiding which department a number is for. */}

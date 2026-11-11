@@ -49,7 +49,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="px-4 pt-1 pb-3 border-b border-gray-100 flex-shrink-0">
+      <div className="px-4 pt-1 pb-3 border-b border-line_hair flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
             <div className="text-[13px] font-medium text-brand_navy">{storeName}</div>
@@ -86,7 +86,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
       </div>
 
       {/* Line items */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-gray-100">
+      <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-line_hair">
         {items.map((o) => (
           <div key={o.line_number} className="flex items-start justify-between px-4 py-3 gap-3">
             <div className="flex-1 min-w-0">

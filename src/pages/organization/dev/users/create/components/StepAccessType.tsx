@@ -107,7 +107,7 @@ const StepAccessType = ({
             </div>
 
             <dl
-              className={`grid grid-cols-[96px_minmax(0,1fr)] gap-y-2 gap-x-3 text-[12px] mt-4 pt-3.5 pl-[30px] border-t border-gray-100 ${
+              className={`grid grid-cols-[96px_minmax(0,1fr)] gap-y-2 gap-x-3 text-[12px] mt-4 pt-3.5 pl-[30px] border-t border-line_hair ${
                 disabled ? "opacity-50" : ""
               }`}
             >

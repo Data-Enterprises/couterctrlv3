@@ -31,7 +31,7 @@ const StorePopupTabs = ({ hasGroup }: StorePopupTabsProps) => {
   return (
     <div
       data-help="store-tabs"
-      className="flex items-center border-b border-gray-100 px-3 flex-shrink-0"
+      className="flex items-center border-b border-line_hair px-3 flex-shrink-0"
     >
       {tabs.map((t) => (
         <button

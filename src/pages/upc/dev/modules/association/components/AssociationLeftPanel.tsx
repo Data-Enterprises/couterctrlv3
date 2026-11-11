@@ -29,8 +29,8 @@ const AssociationLeftPanel = ({
 }: AssociationLeftPanelProps) => {
   if (rerootUpc) {
     return (
-      <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
-        <div className="px-2.5 py-1.5 bg-gray-50 border-b border-gray-100">
+      <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
+        <div className="px-2.5 py-1.5 bg-gray-50 border-b border-line_hair">
           <span className="text-[10px] font-bold uppercase tracking-wide text-content">Exploring</span>
         </div>
         <button
@@ -52,7 +52,7 @@ const AssociationLeftPanel = ({
   }
 
   return (
-    <div className="w-[340px] flex-shrink-0 border-r border-gray-100 flex flex-col min-h-0">
+    <div className="w-[340px] flex-shrink-0 border-r border-line_hair flex flex-col min-h-0">
       <div className="px-2.5 py-1.5 bg-gray-100 border-b border-brand_navy/15 flex-shrink-0">
         <span className="text-[10px] font-bold uppercase tracking-wide text-content">Seed UPCs</span>
       </div>

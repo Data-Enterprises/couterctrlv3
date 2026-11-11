@@ -54,7 +54,7 @@ const RecapStatCard = ({
         {rows.map((r) => (
           <div
             key={r.label}
-            className={`flex items-baseline justify-between gap-2.5 border-b border-gray-100 ${
+            className={`flex items-baseline justify-between gap-2.5 border-b border-line_hair ${
               short ? "py-1" : "py-[7px]"
             } text-[14px] text-content`}
           >

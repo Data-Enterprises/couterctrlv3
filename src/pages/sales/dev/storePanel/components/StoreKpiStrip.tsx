@@ -34,7 +34,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
   } = buildHeaderTotals(days, selectedDate, gradingMetric);
 
   return (
-    <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+    <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
       <div className="px-4 pt-2.5 text-center">
         <div className="text-[10px] font-bold uppercase tracking-wide text-content">
           {isQty ? "TY Qty" : "TY Net Sales"}

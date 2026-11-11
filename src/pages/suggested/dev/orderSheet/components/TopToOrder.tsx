@@ -106,7 +106,7 @@ const TopToOrder = () => {
 
   return (
     <>
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-gray-50">
+      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-gray-50">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-[13px] font-semibold uppercase tracking-wide text-content/95">
             Top to order · every department at this store
@@ -133,7 +133,7 @@ const TopToOrder = () => {
         ) : (
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+              <tr className="sticky top-0 bg-gray-100 border-b border-line_hair z-10">
                 <th className={`${TH} text-left`} style={{ overflow: "visible" }}>
                   <ColFilter
                     label="Item"

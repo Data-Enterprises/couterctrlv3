@@ -13,7 +13,7 @@ const Example = ({ head, rows }: ExampleProps) => (
     {rows.map((r) => (
       <div
         key={r.k}
-        className={`grid grid-cols-[1fr_auto] gap-4 px-3.5 py-2.5 border-b border-gray-100 last:border-b-0 text-[14px] ${
+        className={`grid grid-cols-[1fr_auto] gap-4 px-3.5 py-2.5 border-b border-line_hair last:border-b-0 text-[14px] ${
           r.out ? "bg-gray-100" : ""
         }`}
       >

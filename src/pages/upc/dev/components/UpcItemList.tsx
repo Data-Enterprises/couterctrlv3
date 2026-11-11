@@ -42,7 +42,7 @@ const UpcItemList = () => {
   return (
     <div className="flex flex-col min-h-0 flex-1">
       {/* toolbar */}
-      <div className="flex-shrink-0 px-2 py-1.5 border-b border-gray-100 flex items-center gap-1.5">
+      <div className="flex-shrink-0 px-2 py-1.5 border-b border-line_hair flex items-center gap-1.5">
         <input
           value={ctx.filterText}
           onChange={(e) => dispatch(setDevFilterText(e.target.value))}
@@ -89,7 +89,7 @@ const UpcItemList = () => {
                 onClick={() =>
                   dispatch(toggleDevSelectedUpc(item.product_code))
                 }
-                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-gray-100 hover:bg-gray-50/80 transition-colors ${
+                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-line_hair hover:bg-gray-50/80 transition-colors ${
                   selected ? "bg-blue-50/60" : ""
                 }`}
               >

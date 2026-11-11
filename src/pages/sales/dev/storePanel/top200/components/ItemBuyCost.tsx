@@ -19,7 +19,7 @@ interface ItemBuyCostProps {
 const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
   <div
     data-help="item-buy"
-    className="px-4 py-2.5 border-b border-gray-100"
+    className="px-4 py-2.5 border-b border-line_hair"
   >
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-[10px] font-bold uppercase tracking-wide text-content/95">

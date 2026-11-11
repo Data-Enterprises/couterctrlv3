@@ -86,14 +86,14 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
               return (
                 <tr key={store.storeid} className={`group ${idle ? "text-content/95" : ""}`}>
                   <td
-                    className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-gray-100 ${idle ? "" : "font-semibold"}`}
+                    className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-line_hair ${idle ? "" : "font-semibold"}`}
                   >
                     {store.store_name || `Store ${store.store_number}`}
                   </td>
                   {cells.map((v, i) => {
                     if (v === null || v === 0) {
                       return (
-                        <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
+                        <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-line_hair`}>
                           <div className={`${tile} text-content/95`}>–</div>
                         </td>
                       );
@@ -102,7 +102,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                     // place on a scale of how much moved, so it stays unshaded.
                     const heat = heatStyle(Math.max(v, 0), peak);
                     return (
-                      <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
+                      <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-line_hair`}>
                         <div
                           className={`${tile} font-semibold`}
                           style={v > 0 ? { background: heat.bg, color: heat.color } : undefined}

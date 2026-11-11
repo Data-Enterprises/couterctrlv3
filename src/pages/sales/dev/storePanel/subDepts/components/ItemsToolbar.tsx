@@ -38,7 +38,7 @@ const ItemsToolbar = ({
   const dispatch = useAppDispatch();
   const { itemThreshold, inactiveSubDeptItems } = useSalesCtx();
   return (
-    <div className="flex items-center justify-between gap-1 px-3 py-1 bg-gray-100 border-b border-gray-100 flex-shrink-0">
+    <div className="flex items-center justify-between gap-1 px-3 py-1 bg-gray-100 border-b border-line_hair flex-shrink-0">
       <div className="flex items-center gap-1">
         <SeverityChips value={sevFilter} onChange={onSevFilter} counts={counts} />
         <ThresholdChip

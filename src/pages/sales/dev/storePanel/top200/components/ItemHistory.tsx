@@ -91,7 +91,7 @@ const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
       ];
 
   return (
-    <div className="px-4 py-2.5 border-b border-gray-100">
+    <div className="px-4 py-2.5 border-b border-line_hair">
       <div className="text-[14px] font-bold text-content leading-snug">
         {history.says}
       </div>
@@ -127,7 +127,7 @@ const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
       {metricRows.map((m) => (
         <div
           key={m.label}
-          className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1.5 border-t border-gray-100 text-[13px]"
+          className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1.5 border-t border-line_hair text-[13px]"
         >
           <span className="text-content truncate">{m.label}</span>
           <span className="text-[13px] font-semibold text-content text-right tabular-nums">

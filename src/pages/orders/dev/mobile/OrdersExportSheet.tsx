@@ -225,7 +225,7 @@ const OrdersExportSheet = ({
 
   return (
     <BottomSheet onClose={onClose}>
-      <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 pb-3 border-b border-line_hair">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
           <div className="text-[10px] text-content/95 mt-0.5 truncate">
@@ -438,7 +438,7 @@ const OrdersExportSheet = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
         <button onClick={onClose} className="text-[12px] text-content/95">
           Cancel
         </button>

@@ -74,7 +74,7 @@ const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
       : "";
 
   return (
-    <div className="flex gap-1.5 p-1.5 border-b border-gray-100 bg-gray-50">
+    <div className="flex gap-1.5 p-1.5 border-b border-line_hair bg-gray-50">
       {/* All week card */}
       <button
         onClick={() => onSelect(null)}

@@ -251,7 +251,7 @@ const MarginPerfItemsTable = ({
       >
         {/* ── Left: item list ── */}
         <div
-          className="flex flex-col border-r border-gray-100 min-w-0"
+          className="flex flex-col border-r border-line_hair min-w-0"
           style={{ width: "47%", flexShrink: 0 }}
         >
           <ItemListToolbar

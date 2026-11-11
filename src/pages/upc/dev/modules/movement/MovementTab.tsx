@@ -249,7 +249,7 @@ const MovementTab = () => {
   }, [codes, ctx.movementSelected]);
 
   const controls = (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 flex-shrink-0 text-[13px] font-semibold text-content">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-line_hair flex-shrink-0 text-[13px] font-semibold text-content">
       <label className="flex items-center gap-2">
         Weeks
         <select
@@ -320,7 +320,7 @@ const MovementTab = () => {
     <div className="flex flex-col min-h-0 flex-1">
       {controls}
       <div className="flex-1 overflow-hidden flex min-h-0">
-        <div className="w-[300px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
+        <div className="w-[300px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
           {codes.map((code) => {
             const weighed = isWeighed(ctx.movementRows, code);
             const total = movementTotal(ctx.movementRows, code);

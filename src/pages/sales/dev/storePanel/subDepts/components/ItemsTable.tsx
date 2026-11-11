@@ -35,7 +35,7 @@ const ItemsTable = ({ items, sort, onSort, onItemMenu }: ItemsTableProps) => {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="flex items-center gap-2.5 px-3 py-1 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-3 py-1 border-b border-line_hair bg-gray-50 flex-shrink-0">
         <span className="w-[18px] flex-shrink-0" />
         <span className="text-[9px] font-semibold uppercase tracking-wide text-content flex-1">
           Items

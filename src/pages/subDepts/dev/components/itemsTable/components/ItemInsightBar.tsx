@@ -90,7 +90,7 @@ const ItemInsightBar = ({
         )}
       </div>
     ) : (
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-line_hair bg-gray-50">
         <span className="text-[14px] font-medium text-content truncate">
           {selectedItem.description}
         </span>

@@ -21,7 +21,7 @@ const ItemMetricCards = ({ reportRows, thresholdAmt }: ItemMetricCardsProps) => 
         it takes the tinted lead card and the rest support it. A flat
         2x2 gave qty the same weight as margin, which is wrong on a
         page about margin. */}
-    <div className="px-4 py-2.5 border-b border-gray-100">
+    <div className="px-4 py-2.5 border-b border-line_hair">
       {/* 40/60 rather than an even split — the supporting table has
           four columns to fit and the lead card only needs room for
           one number. */}

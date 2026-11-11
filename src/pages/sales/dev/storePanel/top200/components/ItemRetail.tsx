@@ -19,7 +19,7 @@ interface ItemRetailProps {
 const ItemRetail = ({ selected, mix, points, topPrice }: ItemRetailProps) => (
   <div
     data-help="item-retail"
-    className="px-4 py-2.5 border-b border-gray-100"
+    className="px-4 py-2.5 border-b border-line_hair"
   >
     <div className="text-[14px] font-bold text-content leading-snug">
       {retailSays(mix, points, moneyText)}

@@ -256,7 +256,7 @@ const AssociationTab = () => {
 
       <div className="flex-1 min-w-0 flex flex-col min-h-0">
         {rerootNote && !rerootUpc && (
-          <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] text-content/95">
+          <div className="flex items-center justify-between gap-3 px-4 py-1.5 border-b border-line_hair flex-shrink-0 text-[11px] text-content/95">
             <span>{rerootNote}</span>
             <button
               type="button"

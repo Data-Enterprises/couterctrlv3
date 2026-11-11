@@ -44,7 +44,7 @@ const ItemListHead = ({ sort, setSort }: ItemListHeadProps) => {
   );
 
   return (
-    <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+    <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
       <span className="w-2.5 flex-shrink-0" />
       <SortHead col="item" className="flex-1 min-w-0 justify-start">
         Item

@@ -112,7 +112,7 @@ const EffectiveStoresPanel = ({
     // A column inside the access card, and a card in its own right: it is the
     // answer the three columns add up to.
     <div className="h-full flex flex-col min-h-0 bg-custom-white">
-      <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
+      <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
         <div className="flex items-baseline justify-between gap-2 mb-1.5">
           <span className="text-[9px] font-bold uppercase tracking-wide text-content">
             Effective stores

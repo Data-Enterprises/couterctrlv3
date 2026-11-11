@@ -136,7 +136,7 @@ const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => 
                   <span
                     key={t}
                     aria-hidden="true"
-                    className="absolute inset-x-0 border-t border-gray-100"
+                    className="absolute inset-x-0 border-t border-line_hair"
                     style={{ bottom: at(t) }}
                   />
                 ))}

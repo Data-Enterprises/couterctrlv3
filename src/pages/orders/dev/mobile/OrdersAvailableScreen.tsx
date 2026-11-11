@@ -111,7 +111,7 @@ const OrdersAvailableScreen = ({
 
       {/* Type tabs */}
       {cards.length > 0 && (
-        <div className="flex border-b border-gray-100 flex-shrink-0 bg-custom-white">
+        <div className="flex border-b border-line_hair flex-shrink-0 bg-custom-white">
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
@@ -136,7 +136,7 @@ const OrdersAvailableScreen = ({
 
       {/* Filter bar */}
       {cards.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
           <TextFilter value={storeFilter} onChange={setStoreFilter} placeholder="Filter by store…" />
           <SelectFilter
             options={dateOptions}
@@ -149,7 +149,7 @@ const OrdersAvailableScreen = ({
       )}
 
       {allVisibleStoreIds.length > 1 && (
-        <div className="px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
+        <div className="px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
           <button
             onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
             className="w-full text-[11px] font-medium py-2 rounded-md border border-brand_navy/20 text-brand_navy transition-colors"
@@ -173,7 +173,7 @@ const OrdersAvailableScreen = ({
         {visibleCards.map((card) => {
           const typeOpen = activeType !== "all" || openTypes.has(card.order_type) || !!dateFilter || !!storeFilter;
           return (
-            <div key={card.order_type} className="border-b border-gray-100">
+            <div key={card.order_type} className="border-b border-line_hair">
               {/* Order type header — collapsible in All tab */}
               {activeType === "all" && (
                 <button
@@ -195,7 +195,7 @@ const OrdersAvailableScreen = ({
 
               {/* Stores — flat list with date shown inline */}
               {typeOpen && (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-line_hair">
                   {card.dates.flatMap((dateGroup) =>
                     dateGroup.stores.map((store) => {
                       const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);

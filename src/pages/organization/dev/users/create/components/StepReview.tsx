@@ -149,7 +149,7 @@ const StepReview = ({
         </div>
       )}
       <div className="bg-custom-white rounded-lg shadow-card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-5 px-5 py-4 border-b border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-5 px-5 py-4 border-b border-line_hair">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-12 h-12 rounded-full bg-brand_navy text-custom-white flex items-center justify-center text-[15px] font-bold flex-shrink-0">
               {initials}

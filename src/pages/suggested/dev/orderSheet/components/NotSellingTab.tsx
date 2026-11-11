@@ -121,7 +121,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
 
   return (
     <>
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-gray-50">
+      <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-line_hair bg-gray-50">
         <div className="flex items-center gap-1.5 flex-wrap">
           {STATUSES.map((s) => {
             const on = ctx.notSellingStatus === s.key;
@@ -158,7 +158,7 @@ const NotSellingTab = ({ subDepartment }: NotSellingTabProps) => {
         ) : (
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+              <tr className="sticky top-0 bg-gray-100 border-b border-line_hair z-10">
                 <th className={`${TH} text-left`} style={{ overflow: "visible" }}>
                   <ColFilter
                     label="Item"

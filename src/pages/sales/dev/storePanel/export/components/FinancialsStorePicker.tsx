@@ -40,7 +40,7 @@ const FinancialsStorePicker = ({
           Just this one
         </button>
       </div>
-      <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-gray-100 bg-custom-white">
+      <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-line_hair bg-custom-white">
         {stores.map((st) => (
           <label
             key={st.storeid}

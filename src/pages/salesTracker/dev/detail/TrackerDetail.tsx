@@ -68,7 +68,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
       </div>
 
       {/* KPI strip — the window totals for this department */}
-      <div className="grid grid-cols-5 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-5 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
         <div className="px-3 pt-2.5 pb-2 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             TY Sales
@@ -136,7 +136,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-3.5 py-2 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-line_hair flex-shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content">
           {row.weeks.length} weeks · oldest first
         </span>

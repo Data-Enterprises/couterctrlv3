@@ -335,7 +335,7 @@ const MarginPerfExportModal = ({
 
               {/* Scope for both store-wide datasets below. Sits above them
                   rather than inside either, because it governs the pair. */}
-              <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-2 pt-3 border-t border-line_hair">
                 <span className="text-[11px] text-content">Departments</span>
                 <MultiSelectFilter
                   options={subDepts.map((d) => ({
@@ -356,7 +356,7 @@ const MarginPerfExportModal = ({
               {/* The only presets that aren't scoped to the open department.
                   Cost nothing extra — grading already holds every department's
                   item rows. */}
-              <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
+              <div className="flex items-start gap-3 pt-3 border-t border-line_hair">
                 <input
                   type="checkbox"
                   checked={selected.has("all_depts")}
@@ -396,7 +396,7 @@ const MarginPerfExportModal = ({
                   a list to feed another page, not a report to read. Its own
                   severities, so it doesn't have to ride along with the full
                   export to be taken. */}
-              <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
+              <div className="flex items-start gap-3 pt-3 border-t border-line_hair">
                 <input
                   type="checkbox"
                   checked={selected.has("upc_list")}
@@ -424,7 +424,7 @@ const MarginPerfExportModal = ({
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair mt-2">
               <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
               <button
                 onClick={handlePresetDownload}
@@ -441,7 +441,7 @@ const MarginPerfExportModal = ({
         {/* ── CUSTOM MODE ── */}
         {mode === "custom" && (
           <>
-            <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
               {/* Left: config */}
               <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
                 <div>
@@ -512,7 +512,7 @@ const MarginPerfExportModal = ({
 
               {/* Right: preview */}
               <div className="flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
                   <p className="text-[11px] font-semibold text-content uppercase tracking-wide">Preview</p>
                   <span className="text-[10px] text-content">
                     {aggRows.length === 0
@@ -533,7 +533,7 @@ const MarginPerfExportModal = ({
                       <thead className="sticky top-0 bg-gray-50 z-10">
                         <tr>
                           {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap">
+                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-line_hair whitespace-nowrap">
                               {c.label}
                             </th>
                           ))}
@@ -564,7 +564,7 @@ const MarginPerfExportModal = ({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
               <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
               <button
                 onClick={handleCustomDownload}

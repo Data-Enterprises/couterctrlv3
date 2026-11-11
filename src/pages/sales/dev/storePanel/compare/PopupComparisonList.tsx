@@ -202,7 +202,7 @@ const PopupComparisonList = ({
   return (
     <div className="h-full overflow-auto thin-scrollbar">
       <div style={{ minWidth: GRID_MIN }}>
-        <p className="px-2 py-2 text-[12px] text-content/95 border-b border-gray-100">
+        <p className="px-2 py-2 text-[12px] text-content/95 border-b border-line_hair">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
           <span className="font-semibold text-content tabular-nums">
             {fmt(open.ty)}

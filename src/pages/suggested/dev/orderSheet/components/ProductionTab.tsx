@@ -95,14 +95,14 @@ const ProductionTab = ({ groupRow, subDepartment }: ProductionTabProps) => {
       {series?.series.length ? (
         <SoldPerDayStrip daily={series.series} dailyAvg={series.avg} />
       ) : (
-        <div className="flex-shrink-0 px-3 py-3 border-b border-gray-100 bg-gray-50 text-[12px] text-content/95">
+        <div className="flex-shrink-0 px-3 py-3 border-b border-line_hair bg-gray-50 text-[12px] text-content/95">
           No day-by-day history came back for this department.
         </div>
       )}
 
       {/* ── the typical week, all seven ── */}
       {rates && maxRate > 0 && (
-        <div className="flex-shrink-0 px-3 pt-2 pb-3 border-b border-gray-100 bg-custom-white">
+        <div className="flex-shrink-0 px-3 pt-2 pb-3 border-b border-line_hair bg-custom-white">
           <div className="flex items-baseline justify-between mb-2">
             <span className="text-[12px] font-semibold uppercase tracking-wide text-content/95">
               Typical week · all seven days

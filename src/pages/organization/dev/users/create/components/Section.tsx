@@ -14,7 +14,7 @@ interface SectionProps {
 const Section = ({ title, desc, last = false, children }: SectionProps) => (
   <div
     className={`flex flex-wrap gap-x-8 gap-y-3 px-5 py-3.5 ${
-      last ? "" : "border-b border-gray-100"
+      last ? "" : "border-b border-line_hair"
     }`}
   >
     <div className="flex-1 min-w-[150px] max-w-[200px]">

@@ -16,11 +16,11 @@ interface SheetSkeletonProps {
  */
 const SheetSkeleton = ({ rows = 12 }: SheetSkeletonProps) => (
   <div className="flex-1 overflow-hidden" role="status" aria-label="Loading the sheet">
-    <div className="grid grid-cols-5 border-b border-gray-100 bg-gray-50">
+    <div className="grid grid-cols-5 border-b border-line_hair bg-gray-50">
       {Array.from({ length: 5 }, (_, i) => (
         <div
           key={i}
-          className="px-6 py-3 border-r border-gray-100 last:border-r-0 flex flex-col items-center gap-1.5"
+          className="px-6 py-3 border-r border-line_hair last:border-r-0 flex flex-col items-center gap-1.5"
         >
           <Bar w="55%" />
           <Bar w="75%" />

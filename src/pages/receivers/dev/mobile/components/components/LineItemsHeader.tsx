@@ -5,7 +5,7 @@ import { lineItemHeaders, LINE_GRID } from "../utils";
 const LineItemsHeader = () => {
   return (
     <div
-      className="grid px-3 py-1.5 bg-gray-50 border-b border-gray-100"
+      className="grid px-3 py-1.5 bg-gray-50 border-b border-line_hair"
       style={{ gridTemplateColumns: LINE_GRID }}
     >
       {lineItemHeaders.map((h, i) => (

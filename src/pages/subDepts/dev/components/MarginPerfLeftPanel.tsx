@@ -358,7 +358,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       />
 
       {/* Tier filter chips + text filter */}
-      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">
+      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
@@ -394,7 +394,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       </div>
 
       {/* Unified sub dept list — sorted critical → watch → healthy */}
-      <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
+      <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-line_hair flex flex-col">
         {loadingGrades && grades.length === 0 ? (
           <div className="flex-1 flex items-center justify-center gap-2">
             <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
@@ -402,7 +402,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
               <span className="w-2.5 flex-shrink-0" />
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
                 Sub Dept

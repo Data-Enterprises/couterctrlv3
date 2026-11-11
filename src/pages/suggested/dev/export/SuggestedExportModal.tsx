@@ -390,7 +390,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
             ))}
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair mt-2">
             <button
               onClick={onClose}
               className="text-[12px] text-content/95 hover:text-content transition-colors"
@@ -412,7 +412,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
       {/* ── CUSTOM MODE ── */}
       {mode === "custom" && (
         <>
-          <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+          <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">
@@ -486,7 +486,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
             </div>
 
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
                 <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
                   Preview
                 </p>
@@ -513,7 +513,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
                         {columns.map((c) => (
                           <th
                             key={c.key}
-                            className="text-left px-3 py-2 text-content/95 font-semibold border-b border-gray-100 whitespace-nowrap"
+                            className="text-left px-3 py-2 text-content/95 font-semibold border-b border-line_hair whitespace-nowrap"
                           >
                             {c.label}
                           </th>
@@ -556,7 +556,7 @@ ${buildActionsCsv(items, notSelling, cycleDays)}`,
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
             <button
               onClick={onClose}
               className="text-[12px] text-content/95 hover:text-content transition-colors"

@@ -463,7 +463,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </div>
       )}
 
-      <div className="border border-gray-100 rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
+      <div className="border border-line_hair rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
         {/* min-w floors the columns (narrower scrolls). Header and rows are
             separate grids, so they share one scroller to stay aligned. */}
         <div className="min-w-[1000px] flex-1 min-h-0 flex flex-col">

@@ -394,7 +394,7 @@ const TopItemsReport = ({
       {/* Filters */}
       <div
         data-help="top200-compare-filters"
-        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-gray-100"
+        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-line_hair"
       >
         {/* The house search, not a hand-rolled one: SelectFilter is a fixed
             24px and this was a rounded-lg at py-1.5 with no border, so the
@@ -463,7 +463,7 @@ const TopItemsReport = ({
 
       {/* List and rail — the split this tab already has */}
       <div className="flex-1 min-h-0 flex">
-        <div className="w-[471px] flex-shrink-0 border-r border-gray-100 flex flex-col min-h-0">
+        <div className="w-[471px] flex-shrink-0 border-r border-line_hair flex flex-col min-h-0">
           {/* The ledger's own dots, so the two halves of the page grade in
               one language: ahead, behind, and behind past the threshold. */}
           <div className="flex-shrink-0 flex items-center gap-3 px-3.5 py-1.5 border-b border-brand_line_2 bg-brand_paper flex-wrap">

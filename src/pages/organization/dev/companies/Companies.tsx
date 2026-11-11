@@ -68,8 +68,8 @@ const Companies = () => {
 
   return (
     <div className="flex-1 flex min-h-0 w-full">
-      <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
-        <div className="p-2.5 border-b border-gray-100">
+      <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col">
+        <div className="p-2.5 border-b border-line_hair">
           <TextFilter
             value={search}
             onChange={setSearch}

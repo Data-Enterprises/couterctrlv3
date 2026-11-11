@@ -334,7 +334,7 @@ const OrderSheetPanel = () => {
       )}
 
       {hasStore && isHistorical && (
-        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-severity_watch_bg text-[11px] text-severity_watch_text leading-snug">
+        <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair bg-severity_watch_bg text-[11px] text-severity_watch_text leading-snug">
           <span className="font-semibold">Historical date.</span> This is a
           comparison, not an order — nobody buys for a date that has passed, and
           the waste rates behind an order figure are current rather than
@@ -350,7 +350,7 @@ const OrderSheetPanel = () => {
 
       {hasStore && !ctx.loadingItems && hasSheet && (
         <>
-          <div className="flex-shrink-0 flex gap-0.5 px-3 bg-gray-50 border-b border-gray-100">
+          <div className="flex-shrink-0 flex gap-0.5 px-3 bg-gray-50 border-b border-line_hair">
             {TABS.map((t) => {
               const on = tab === t.key;
               return (
@@ -434,7 +434,7 @@ const OrderSheetPanel = () => {
                   filtering the sheet. Piles a reader can see are piles they
                   work through; the same filter buried in a column popover was
                   something nobody would ever find. */}
-              <div className="flex-shrink-0 flex items-center gap-1.5 flex-wrap px-3 py-2 border-b border-gray-100 bg-gray-50">
+              <div className="flex-shrink-0 flex items-center gap-1.5 flex-wrap px-3 py-2 border-b border-line_hair bg-gray-50">
                 <button
                   onClick={() => ctx.dispatch(setActionFilter("all"))}
                   className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
@@ -474,7 +474,7 @@ const OrderSheetPanel = () => {
                 ) : (
                   <table className="w-full border-collapse text-[13px]">
                     <thead>
-                      <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+                      <tr className="sticky top-0 bg-gray-100 border-b border-line_hair z-10">
                         {/* First, not appended to the product name. A reader
                             scanning for what to do should not have to read a
                             description to find out there is nothing. */}

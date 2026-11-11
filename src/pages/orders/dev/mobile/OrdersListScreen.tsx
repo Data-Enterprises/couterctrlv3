@@ -98,7 +98,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
       />
 
       {/* Sub-header chips + sub dept filter */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0 gap-2">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0 gap-2">
         {allSubDepts.length > 0 && (
           <SelectFilter
             options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
@@ -148,7 +148,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
             <button
               key={`${sel.storeid}__${sel.storenumber}-${sel.orderId}`}
               onClick={() => onSelectOrder(sel)}
-              className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              className="w-full px-4 py-3 border-b border-line_hair text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-brand_navy">#{sel.orderId}</span>

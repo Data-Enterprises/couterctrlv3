@@ -47,7 +47,7 @@ const ModalCustomMode = ({
 }: ModalCustomModeProps) => {
   return (
     <>
-      <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+      <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
         {/* Left: config */}
         <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
           <div>
@@ -121,7 +121,7 @@ const ModalCustomMode = ({
 
         {/* Right: preview */}
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
             <p className="text-[11px] font-semibold text-content/95 uppercase tracking-wide">
               Preview
             </p>
@@ -161,7 +161,7 @@ const ModalCustomMode = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-line_hair">
         <button
           onClick={onClose}
           className="text-[12px] text-content/95 hover:text-content transition-colors"

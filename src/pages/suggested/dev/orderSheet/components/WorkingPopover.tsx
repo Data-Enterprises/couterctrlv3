@@ -189,7 +189,7 @@ const WorkingPopover = ({
         </div>
       )}
 
-      <div className="px-3 py-2 border-t border-gray-100 text-[12px] leading-snug text-content/95">
+      <div className="px-3 py-2 border-t border-line_hair text-[12px] leading-snug text-content/95">
         {onHand > 0
           ? "What this item should sell over those days, plus its waste rate, less what is still in the case."
           : "What this item should sell over those days, plus its waste rate. Nothing came off for stock on hand — more has sold than was recorded as ordered, so there is nothing to net."}

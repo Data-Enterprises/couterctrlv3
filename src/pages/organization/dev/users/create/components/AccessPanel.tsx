@@ -359,13 +359,13 @@ const AccessPanel = ({
 
   return (
     <div className="w-full h-full flex flex-col min-h-0">
-      <div className="flex-1 min-h-0 flex border border-gray-100 rounded-lg overflow-hidden">
+      <div className="flex-1 min-h-0 flex border border-line_hair rounded-lg overflow-hidden">
         {/* Companies */}
         <div
-          className="flex flex-col border-r border-gray-100 flex-shrink-0"
+          className="flex flex-col border-r border-line_hair flex-shrink-0"
           style={{ width: 220 }}
         >
-          <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
+          <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
             <span className="text-[9px] font-bold uppercase tracking-wide text-content">
               Companies
             </span>
@@ -413,10 +413,10 @@ const AccessPanel = ({
 
         {/* Base groups in the active company */}
         <div
-          className="flex flex-col border-r border-gray-100 flex-shrink-0"
+          className="flex flex-col border-r border-line_hair flex-shrink-0"
           style={{ width: 288 }}
         >
-          <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
+          <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
             <span className="text-[9px] font-bold uppercase tracking-wide text-content block mb-1.5">
               Base groups {activeCompany ? `in ${companyName(activeCompany)}` : ""}
             </span>
@@ -500,7 +500,7 @@ const AccessPanel = ({
 
         {/* Stores for every expanded group */}
         <div className="flex-1 min-w-0 flex flex-col">
-          <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0 flex items-center gap-2">
+          <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0 flex items-center gap-2">
             <TextFilter
               value={storeSearch}
               onChange={setStoreSearch}
@@ -542,7 +542,7 @@ const AccessPanel = ({
                 <div key={group.id} id={`assignments-group-${group.id}`}>
                   <button
                     onClick={() => toggleSectionCollapse(group.id)}
-                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-left hover:bg-gray-100 transition-colors"
+                    className="sticky top-0 z-10 w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-gray-50 border-b border-line_hair text-left hover:bg-gray-100 transition-colors"
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span
@@ -645,7 +645,7 @@ const AccessPanel = ({
         </div>
 
         {rightColumn && (
-          <div className="w-[300px] flex-shrink-0 border-l border-gray-100 hidden xl:flex flex-col min-h-0">
+          <div className="w-[300px] flex-shrink-0 border-l border-line_hair hidden xl:flex flex-col min-h-0">
             {rightColumn}
           </div>
         )}

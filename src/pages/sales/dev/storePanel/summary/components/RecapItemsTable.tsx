@@ -65,7 +65,7 @@ const RecapItemsTable = ({
   return (
     <>
       <div
-        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-gray-50 border-b border-gray-100 overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
+        className="flex-none grid items-end gap-3 px-[18px] py-1.5 bg-gray-50 border-b border-line_hair overflow-y-hidden thin-scrollbar [scrollbar-gutter:stable]"
         style={{ gridTemplateColumns: cols }}
       >
         {head("code", "UPC")}
@@ -88,7 +88,7 @@ const RecapItemsTable = ({
                 e.preventDefault();
                 setMenu({ x: e.clientX, y: e.clientY, upc: r.code });
               }}
-              className="grid items-center gap-3 px-[18px] h-[34px] text-[13px] text-content border-b border-gray-100 even:bg-row_stripe"
+              className="grid items-center gap-3 px-[18px] h-[34px] text-[13px] text-content border-b border-line_hair even:bg-row_stripe"
               style={{ gridTemplateColumns: cols }}
             >
               <span className="truncate tabular-nums">{r.code}</span>

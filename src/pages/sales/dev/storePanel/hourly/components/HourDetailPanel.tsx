@@ -105,7 +105,7 @@ const HourDetailPanel = ({
             threshold={threshold}
           />
 
-          <div className="border-b border-gray-100">
+          <div className="border-b border-line_hair">
             <button
               onClick={() => setChartOpen((v) => !v)}
               className="w-full flex items-center justify-between px-4 py-2"

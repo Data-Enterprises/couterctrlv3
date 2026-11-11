@@ -105,7 +105,7 @@ const WeekCard = ({
       {expanded && (
         <>
           {/* The day story sits inside the open card only. */}
-          <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-gray-100 bg-gray-50">
+          <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-line_hair bg-gray-50">
             {week.comparedDays === 0 ? (
               <span className="text-content">
                 No {basisWord(basis)} comparison
@@ -167,7 +167,7 @@ const WeekCard = ({
           </div>
 
           <div
-            className="grid gap-3 px-3.5 py-1.5 bg-gray-50 border-t border-gray-100"
+            className="grid gap-3 px-3.5 py-1.5 bg-gray-50 border-t border-line_hair"
             style={{ gridTemplateColumns: DAY_GRID }}
           >
             <span className={HEAD}>Day</span>
@@ -180,7 +180,7 @@ const WeekCard = ({
           {week.days.map((d) => (
             <div
               key={d.date}
-              className="grid items-center gap-3 px-3.5 py-1.5 border-t border-gray-100"
+              className="grid items-center gap-3 px-3.5 py-1.5 border-t border-line_hair"
               style={{ gridTemplateColumns: DAY_GRID }}
             >
               <span className="flex items-baseline gap-2 min-w-0">

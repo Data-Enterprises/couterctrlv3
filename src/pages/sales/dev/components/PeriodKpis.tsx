@@ -24,7 +24,7 @@ const PeriodKpis = ({
   lwDateLabel,
   lyDateLabel,
 }: PeriodKpisProps) => (
-  <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 leading-snug flex-shrink-0">
+  <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 leading-snug flex-shrink-0">
     <div className="px-4 py-3 text-center">
       <div className={LABEL}>TY Net Sales</div>
       <div className={DATE}>{twDateLabel}</div>

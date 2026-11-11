@@ -16,7 +16,7 @@ const SummaryStrip = ({ receivers }: SummaryStripProps) => {
   const uniqueOperators = new Set(receivers.map((r) => r.cashier_number)).size;
 
   return (
-    <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
+    <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-line_hair">
       {groupByOptions(
         receivers,
         totalItems,
@@ -25,7 +25,7 @@ const SummaryStrip = ({ receivers }: SummaryStripProps) => {
       ).map(({ label, value }) => (
         <div
           key={label}
-          className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
+          className="px-2.5 py-1.5 border-r border-line_hair last:border-r-0"
         >
           <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
             {label}

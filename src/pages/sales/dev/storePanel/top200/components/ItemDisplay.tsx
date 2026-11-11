@@ -21,7 +21,7 @@ const ItemDisplay = ({ display }: ItemDisplayProps) => (
       {display.checks.map((c) => (
         <div
           key={c.label}
-          className="flex items-center gap-2.5 py-1.5 border-b border-gray-100 last:border-b-0 text-[13.5px]"
+          className="flex items-center gap-2.5 py-1.5 border-b border-line_hair last:border-b-0 text-[13.5px]"
         >
           <span
             className={`w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold ${

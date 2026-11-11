@@ -65,8 +65,8 @@ const HourSignalList = ({
     ));
 
   return (
-    <div className="flex flex-col border-r border-gray-100" style={{ width: "36.5%" }}>
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
+    <div className="flex flex-col border-r border-line_hair" style={{ width: "36.5%" }}>
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-gray-100">
         <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
         <ThresholdChip
           value={hourlyThreshold}
@@ -75,7 +75,7 @@ const HourSignalList = ({
         />
       </div>
 
-      <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
         <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1">
           Hour

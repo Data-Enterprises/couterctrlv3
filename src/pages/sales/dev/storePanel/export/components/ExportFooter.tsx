@@ -20,7 +20,7 @@ const ExportFooter = ({
   spaced = false,
 }: ExportFooterProps) => (
   <div
-    className={`flex items-center justify-between px-4 py-3 border-t border-gray-100${
+    className={`flex items-center justify-between px-4 py-3 border-t border-line_hair${
       spaced ? " mt-2" : ""
     }`}
   >

@@ -161,7 +161,7 @@ const SubDeptDetailPanel = ({
           />
 
           <div
-            className="flex flex-col flex-1 overflow-hidden border-b border-gray-100 leading-snug"
+            className="flex flex-col flex-1 overflow-hidden border-b border-line_hair leading-snug"
             onContextMenu={(e) => {
               e.preventDefault();
               setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });

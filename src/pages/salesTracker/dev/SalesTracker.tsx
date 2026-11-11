@@ -407,7 +407,7 @@ const SalesTracker = () => {
             {/* The totals row at the foot of the list carries these figures. */}
             <div
               data-help="sub-filter"
-              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100"
+              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-line_hair"
             >
               <span className="text-[11px] font-medium text-content">
                 {sort === null
@@ -425,10 +425,10 @@ const SalesTracker = () => {
             {/* Header, rows and totals live inside the scroll container,
                 pinned top and bottom, so the figures line up with the header
                 despite the scrollbar. */}
-            <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100">
+            <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-line_hair">
               <div
                 data-help="columns"
-                className="grid items-center gap-3.5 px-4 py-2 border-b border-gray-100 sticky top-0 z-10 bg-custom-white"
+                className="grid items-center gap-3.5 px-4 py-2 border-b border-line_hair sticky top-0 z-10 bg-custom-white"
                 style={{ gridTemplateColumns: SUB_GRID }}
               >
                 {/* Sortable so department-number order stays reachable, since

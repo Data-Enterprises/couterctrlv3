@@ -37,7 +37,7 @@ const ItemListHeader = ({
   const [draftDesc, setDraftDesc] = useState("");
   const [draftUpc, setDraftUpc] = useState("");
   return (
-    <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-gray-100 flex-shrink-0">
+    <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-line_hair flex-shrink-0">
       <span className="w-2.5 flex-shrink-0" />
       <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-1 flex items-center gap-2 min-w-0">
         Item

@@ -14,7 +14,7 @@ interface DeptShareListProps {
 const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
   <>
     <div
-      className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/95"
+      className="grid items-end gap-2 px-3 py-1.5 border-b border-line_hair flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/95"
       style={{ gridTemplateColumns: LANDING_COLS }}
     >
       <span>Sub dept</span>
@@ -39,7 +39,7 @@ const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
                 : `Narrow the list to ${d.name}`
             }
             aria-pressed={dept === d.name}
-            className={`w-full grid items-center gap-2 px-3 py-2 text-left border-b border-b-gray-100 border-l-2 transition-colors ${
+            className={`w-full grid items-center gap-2 px-3 py-2 text-left border-b border-b-line_hair border-l-2 transition-colors ${
               dept === d.name
                 ? "bg-row_selected border-row_selected_border"
                 : "border-transparent hover:bg-gray-50"
@@ -88,7 +88,7 @@ const DeptShareList = ({ landing, dept, setDept }: DeptShareListProps) => (
       )}
     </div>
 
-    <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/95">
+    <p className="flex-shrink-0 px-3 py-1.5 border-t border-line_hair text-[12px] leading-snug text-content/95">
       Click a sub department to see its items.
     </p>
   </>

@@ -476,7 +476,7 @@ const MarginPerfRightPanel = () => {
         </div>
 
         {/* ── 3-col KPI strip ── */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-gray-50 flex-shrink-0">
           {/* TY metric */}
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
@@ -587,7 +587,7 @@ const MarginPerfRightPanel = () => {
         <MarginPerfDaySidebar coverage={selectedGrade?.coverage} />
 
         {/* ── Tabs ── */}
-        <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+        <div className="flex items-center border-b border-line_hair px-3 flex-shrink-0">
           <button
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "item"

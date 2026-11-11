@@ -47,7 +47,7 @@ const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => 
         e.stopPropagation();
         onContext(e.clientX, e.clientY);
       }}
-      // A heavier rule and more room: at border-gray-100 and py-2 the rows
+      // A heavier rule and more room: at border-line_hair and py-2 the rows
       // ran together into one grey block and the bars read as a texture
       // rather than as figures.
       className={`w-full text-left px-3.5 py-2.5 border-b transition-colors ${

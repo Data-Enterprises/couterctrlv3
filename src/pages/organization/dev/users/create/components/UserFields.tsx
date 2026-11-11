@@ -312,7 +312,7 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
           {nextUp(editing !== undefined).map((n) => (
             <div
               key={n.t}
-              className="text-[12px] py-1.5 border-t border-gray-100 first:border-t-0"
+              className="text-[12px] py-1.5 border-t border-line_hair first:border-t-0"
             >
               <span className="font-semibold text-content">{n.t}</span>
               <span className="text-content/95"> — {n.d}</span>

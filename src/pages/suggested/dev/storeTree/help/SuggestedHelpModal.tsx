@@ -131,7 +131,7 @@ const SuggestedHelpModal = ({ onClose }: SuggestedHelpModalProps) => {
                 however they were set. The numeral matches the contents list,
                 same twelve in the same order, so it is structure rather than
                 ornament. */}
-            <div className="flex items-baseline gap-3 px-5 pt-4 pb-3.5 border-b border-gray-100">
+            <div className="flex items-baseline gap-3 px-5 pt-4 pb-3.5 border-b border-line_hair">
               <span
                 className={`w-6 flex-shrink-0 text-[13px] font-bold tabular-nums text-custom-white rounded text-center py-0.5 transition-colors duration-700 ${
                   landed === sec.id ? "bg-brand_navy" : "bg-brand_navy/55"

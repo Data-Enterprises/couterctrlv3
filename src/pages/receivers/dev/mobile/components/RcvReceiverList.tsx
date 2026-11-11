@@ -153,7 +153,7 @@ const RcvReceiverList = ({
 
       {selectedReceiver && (
         <BottomSheet onClose={handleSheetClose}>
-          <div className="px-4 pb-3 border-b border-gray-100 flex items-start justify-between gap-2">
+          <div className="px-4 pb-3 border-b border-line_hair flex items-start justify-between gap-2">
             <div>
               <div className="text-[13px] font-bold text-content">
                 #{selectedReceiver.reference_number}
@@ -187,7 +187,7 @@ const RcvReceiverList = ({
               <LineItemsHeader />
               <LineItemRows details={details} />
 
-              <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 bg-gray-50">
+              <div className="flex items-center justify-between px-3 py-2 border-t border-line_hair bg-gray-50">
                 <span className="text-[10px] text-content/95 tabular-nums">
                   {totals?.cases ?? details.reduce((s, d) => s + d.cases, 0)} cs
                   · {totals?.units ?? details.reduce((s, d) => s + d.units, 0)}{" "}

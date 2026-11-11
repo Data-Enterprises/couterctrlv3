@@ -240,7 +240,7 @@ const BaseGroupDetail = ({
       </div>
       <div className="text-[11.5px] text-content/95 mb-2">{companyName}</div>
 
-      <div data-help="group-tabs" className="flex border-b border-gray-100 mb-4">
+      <div data-help="group-tabs" className="flex border-b border-line_hair mb-4">
         {(["stores", "users"] as const).map((t) => (
           <button
             key={t}

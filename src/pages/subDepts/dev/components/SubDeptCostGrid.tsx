@@ -144,7 +144,7 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
     >
       {/* Sticky column headers */}
       <div
-        className="sticky top-0 z-10 grid bg-gray-100 border-b border-gray-100"
+        className="sticky top-0 z-10 grid bg-gray-100 border-b border-line_hair"
         style={{ gridTemplateColumns: COLS }}
       >
         <div className={thStyle}>

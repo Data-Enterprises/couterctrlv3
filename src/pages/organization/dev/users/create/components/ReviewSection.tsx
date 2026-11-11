@@ -7,7 +7,7 @@ interface ReviewSectionProps {
 
 /** One titled block with its own way back to the step that set it. */
 const ReviewSection = ({ title, onEdit, empty, children }: ReviewSectionProps) => (
-  <div className="flex flex-wrap gap-x-8 gap-y-3 px-5 py-4 border-b border-gray-100">
+  <div className="flex flex-wrap gap-x-8 gap-y-3 px-5 py-4 border-b border-line_hair">
     <div className="flex-1 min-w-[160px] max-w-[200px]">
       <h3 className="text-[12.5px] font-bold text-content m-0">{title}</h3>
       <button

@@ -560,7 +560,7 @@ const SalesLedger = () => {
             />
 
             {/* Tier summary pills — click to filter the list below */}
-            <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
+            <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-line_hair">
               <div data-help="severity-chips" className="flex items-center gap-1.5">
                 <button
                   onClick={() =>
@@ -602,8 +602,8 @@ const SalesLedger = () => {
             </div>
 
             {/* Unified store list — sorted critical → watch → healthy */}
-            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
-              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-line_hair flex flex-col">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
                 <span className="w-2 flex-shrink-0" />
                 <span className="flex-1 min-w-0 flex items-center">
                   <StoreColFilter value={storeFilter} onApply={setStoreFilter} />

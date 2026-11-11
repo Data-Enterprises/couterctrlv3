@@ -440,7 +440,7 @@ const PopupTopItems = ({
 
       <div className="flex flex-1 min-h-0">
         {/* The ranked list */}
-        <div className="w-[471px] flex-shrink-0 flex flex-col border-r border-gray-100">
+        <div className="w-[471px] flex-shrink-0 flex flex-col border-r border-line_hair">
           <ItemListToolbar
             search={search}
             setSearch={setSearch}
