@@ -512,7 +512,7 @@ const SalesPerfMobile = () => {
             <section
               ref={groupOpen ? openCard : undefined}
               className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-                groupOpen ? "border-gray-300" : "border-line_field"
+                groupOpen ? "border-line_strong" : "border-line_field"
               }`}
             >
               <PerfCardHeader

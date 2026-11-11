@@ -222,14 +222,14 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           <button
             onClick={handleEmail}
             aria-label="Email transaction"
-            className="w-6 h-6 flex items-center justify-center rounded border border-line_field text-content/95 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-line_field text-content/95 hover:text-content hover:border-line_strong transition-colors"
           >
             <EnvelopeIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleExport}
             aria-label="Export transaction CSV"
-            className="w-6 h-6 flex items-center justify-center rounded border border-line_field text-content/95 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-line_field text-content/95 hover:text-content hover:border-line_strong transition-colors"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>

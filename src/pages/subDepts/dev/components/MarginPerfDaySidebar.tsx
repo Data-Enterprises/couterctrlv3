@@ -97,7 +97,7 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
         className={`flex flex-col rounded-md overflow-hidden flex-[1.3] border transition-colors ${
           allSelected
             ? "border-brand_navy ring-2 ring-brand_navy/30"
-            : "border-line_field hover:border-gray-300"
+            : "border-line_field hover:border-line_strong"
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
@@ -160,7 +160,7 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
             className={`relative flex flex-col rounded-md overflow-hidden flex-1 border transition-colors ${
               isSelected
                 ? "border-brand_navy ring-2 ring-brand_navy/30"
-                : "border-line_field hover:border-gray-300"
+                : "border-line_field hover:border-line_strong"
             }`}
           >
             {holidayName && (

@@ -183,7 +183,7 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
           {/* Each weekday summed down the weeks. The corner is the period
               total, so the table visibly reconciles with Total sales above. */}
           <div
-            className="grid gap-1 items-center py-1.5 border-t-2 border-gray-300"
+            className="grid gap-1 items-center py-1.5 border-t-2 border-line_strong"
             style={{ gridTemplateColumns: WEEK_GRID }}
           >
             <span className="text-[11px] font-semibold uppercase tracking-wide text-content">

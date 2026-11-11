@@ -213,7 +213,7 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setLeadDays(Math.max(0, Number(e.target.value) || 0)))
           }
-          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-line_strong bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>
@@ -228,7 +228,7 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setCoverDays(Math.max(1, Number(e.target.value) || 1)))
           }
-          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-line_strong bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>

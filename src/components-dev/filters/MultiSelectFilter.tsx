@@ -275,7 +275,7 @@ const MultiSelectFilter = ({
                       className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center flex-shrink-0 ${
                         on
                           ? "bg-brand_navy border-brand_navy"
-                          : "bg-custom-white border-gray-300"
+                          : "bg-custom-white border-line_strong"
                       }`}
                     >
                       {on && (

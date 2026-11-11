@@ -63,7 +63,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
           </div>
           <button
             onClick={onExport}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content hover:border-gray-300 transition-colors flex-shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content hover:border-line_strong transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             <span className="text-[10px] font-medium">Export</span>

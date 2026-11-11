@@ -299,7 +299,7 @@ const MarginPerfExportModal = ({
                     type="checkbox"
                     checked={selected.has(id)}
                     onChange={() => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
                   />
                   <div>
                     <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">{label}</p>
@@ -320,7 +320,7 @@ const MarginPerfExportModal = ({
                     if (checking && itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("items_vs_ly") : n.delete("items_vs_ly"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Items vs Last Year</p>
@@ -368,7 +368,7 @@ const MarginPerfExportModal = ({
                     if (checking && deptSevs.size === 0) setDeptSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("all_depts") : n.delete("all_depts"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Graded Items — All Departments</p>
@@ -408,7 +408,7 @@ const MarginPerfExportModal = ({
                     if (checking && upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("upc_list") : n.delete("upc_list"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">UPC List</p>

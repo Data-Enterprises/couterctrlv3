@@ -274,7 +274,7 @@ const CouponsExportModal = ({
                     type="checkbox"
                     checked
                     readOnly
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
                   />
                   <div>
                     <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">

@@ -82,7 +82,7 @@ const MobilePerfCard = ({
   return (
     <section
       className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-        open ? "border-gray-300" : "border-line_field"
+        open ? "border-line_strong" : "border-line_field"
       }`}
     >
       {/* When this card is the whole page, the page's controls live on it

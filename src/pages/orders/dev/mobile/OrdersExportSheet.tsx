@@ -254,7 +254,7 @@ const OrdersExportSheet = ({
               type="checkbox"
               checked={selected.has("all")}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">All Orders</div>
@@ -270,7 +270,7 @@ const OrdersExportSheet = ({
               checked={selected.has("selected")}
               disabled={!hasSelected}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">
@@ -296,7 +296,7 @@ const OrdersExportSheet = ({
                   }
                   setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
                 }}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+                className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">

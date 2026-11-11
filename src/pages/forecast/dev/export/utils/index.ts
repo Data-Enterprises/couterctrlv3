@@ -58,7 +58,7 @@ export const PREVIEW_ROWS = 8;
 
 /** The export modal's checkbox, radio, section label and download button classes. */
 export const CHECKBOX =
-  "mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0 disabled:cursor-not-allowed";
+  "mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0 disabled:cursor-not-allowed";
 export const CUSTOM_CHECKBOX = "accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0";
 export const CUSTOM_RADIO = "accent-brand_navy h-3.5 w-3.5";
 export const SECTION_LABEL =

@@ -56,7 +56,7 @@ export const ACTION_TONE: Record<
   insufficient: {
     chip: "bg-gray-100 text-content/95",
     ring: "ring-content/30",
-    rule: "border-gray-300",
+    rule: "border-line_strong",
     row: "bg-gray-100",
     text: "text-content",
   },

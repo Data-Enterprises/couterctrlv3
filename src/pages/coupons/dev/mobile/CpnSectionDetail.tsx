@@ -309,7 +309,7 @@ const CpnSectionDetail = ({
             {txLines.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content/95 hover:text-content hover:border-line_strong transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>

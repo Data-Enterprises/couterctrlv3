@@ -93,7 +93,7 @@ const SharedGroups = () => {
             onClick={() => setRight({ kind: "create" })}
             title="New shared group"
             aria-label="New shared group"
-            className="w-7 h-7 flex-shrink-0 rounded-md border border-gray-300 border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
+            className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
           >
             <PlusIcon className="w-4 h-4" />
           </button>

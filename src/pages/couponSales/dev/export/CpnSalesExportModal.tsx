@@ -270,7 +270,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                     className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
                       scope === sc.key
                         ? "border-brand_navy bg-row_selected text-content"
-                        : "border-line_field text-content hover:border-gray-300"
+                        : "border-line_field text-content hover:border-line_strong"
                     }`}
                   >
                     {sc.label}
@@ -288,7 +288,7 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
                   type="checkbox"
                   checked={presets.has(pr.key)}
                   onChange={() => togglePreset(pr.key)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
                   <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">

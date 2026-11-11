@@ -150,7 +150,7 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
                     className={`flex-shrink-0 mt-[1px] w-3.5 h-3.5 rounded border transition-colors ${
                       checked
                         ? "bg-brand_navy border-brand_navy"
-                        : "border-gray-300 bg-custom-white"
+                        : "border-line_strong bg-custom-white"
                     }`}
                   >
                     {checked && (

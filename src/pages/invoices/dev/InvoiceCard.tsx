@@ -120,7 +120,7 @@ const InvoiceCard = ({
   return (
     <section
       className={`overflow-hidden rounded-xl border bg-custom-white shadow-sm ${
-        open ? "border-gray-300" : "border-line_field"
+        open ? "border-line_strong" : "border-line_field"
       }`}
     >
       {/* The whole visible card opens it — header and figures — not just

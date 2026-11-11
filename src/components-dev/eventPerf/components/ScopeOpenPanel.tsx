@@ -15,7 +15,7 @@ const ScopeOpenPanel = () => {
   const dispatch = useAppDispatch();
   const { days, shownGroup, multiStore } = useEventPerfCtx();
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-300 bg-custom-white shadow-md">
+    <section className="overflow-hidden rounded-2xl border border-line_strong bg-custom-white shadow-md">
       <div className="px-3.5 pb-1 pt-3">
         <PerfDayChart
           days={days.map((d) => ({

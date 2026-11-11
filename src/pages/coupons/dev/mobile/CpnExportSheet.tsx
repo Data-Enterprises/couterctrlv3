@@ -208,7 +208,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div className="flex items-start gap-3">
-            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0" />
+            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy flex-shrink-0" />
             <div>
               <div className="text-[13px] font-medium text-content">Coupon Records</div>
               <div className="text-[11px] text-content/95 mt-0.5">

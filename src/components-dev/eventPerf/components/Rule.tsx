@@ -16,7 +16,7 @@ const Rule = ({ children }: RuleProps) =>
       <span className="h-px flex-1 bg-gray-200" />
     </div>
   ) : (
-    <div className="my-2 border-t border-dashed border-gray-300" />
+    <div className="my-2 border-t border-dashed border-line_strong" />
   );
 
 export default Rule;

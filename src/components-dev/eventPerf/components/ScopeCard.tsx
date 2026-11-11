@@ -49,7 +49,7 @@ const ScopeCard = ({ allLabel, measure }: ScopeCardProps) => {
     <div className="px-3 pt-3">
       <section
         className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-          scopeOpen ? "border-gray-300" : "border-line_field"
+          scopeOpen ? "border-line_strong" : "border-line_field"
         }`}
       >
         <PerfCardHeader
