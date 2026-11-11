@@ -9,7 +9,7 @@ interface CustomPreviewProps {
 /** The custom export's preview table: the first rows for the chosen columns, with a hint when nothing is selected. */
 const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
   <div className="flex flex-col min-w-0">
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
+    <div className="cc-bar-header flex-shrink-0">
       <p className="text-[11px] font-semibold text-content uppercase tracking-wide">
         Preview
       </p>

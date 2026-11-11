@@ -639,7 +639,7 @@
     "labels": 1
   },
   "src/pages/cashiers/dev/components/CashiersExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/cashiers/dev/components/ExplorerSearch.tsx": {
     "catalogued-look": 2
@@ -657,7 +657,7 @@
     "catalogued-look": 1
   },
   "src/pages/categories/dev/export/components/CustomPreview.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/categories/dev/export/components/MetricsPicker.tsx": {
     "catalogued-look": 1
@@ -672,7 +672,7 @@
     "catalogued-look": 1
   },
   "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
@@ -684,7 +684,7 @@
     "catalogued-look": 1
   },
   "src/pages/coupons/dev/export/CouponsExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/coupons/dev/mobile/CouponsMobile.tsx": {
     "catalogued-look": 1
@@ -788,7 +788,7 @@
     "catalogued-look": 1
   },
   "src/pages/forecast/dev/export/ForecastExportModal.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
@@ -1013,7 +1013,7 @@
     "labels": 1
   },
   "src/pages/lossPrevention/dev/export/LPExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/lpActions/LpActions.tsx": {
     "labels": 1
@@ -1264,7 +1264,7 @@
     "catalogued-look": 1
   },
   "src/pages/receivers/dev/components/modal/components/ModalCustomMode.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/sales/Sales.tsx": {
     "labels": 1
@@ -1279,7 +1279,7 @@
     "catalogued-look": 2
   },
   "src/pages/sales/dev/storePanel/export/components/CustomPreview.tsx": {
-    "catalogued-look": 3
+    "catalogued-look": 2
   },
   "src/pages/sales/dev/storePanel/export/components/MetricsPicker.tsx": {
     "catalogued-look": 1
@@ -1303,13 +1303,13 @@
     "catalogued-look": 1
   },
   "src/pages/subDepts/dev/export/MarginPerfExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/suggested/Suggested.tsx": {
     "labels": 1
   },
   "src/pages/suggested/dev/export/SuggestedExportModal.tsx": {
-    "catalogued-look": 4
+    "catalogued-look": 3
   },
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
@@ -1400,7 +1400,7 @@
     "catalogued-look": 1
   },
   "src/pages/vendors/dev/export/components/CustomPreview.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/vendors/dev/export/components/MetricsPicker.tsx": {
     "catalogued-look": 1

@@ -391,7 +391,7 @@ const CouponsExportModal = ({
 
               {/* Preview */}
               <div className="flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line_hair flex-shrink-0">
+                <div className="cc-bar-header flex-shrink-0">
                   <p className="text-[11px] cc-caps">
                     Preview
                   </p>
