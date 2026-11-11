@@ -101,7 +101,7 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[9px] cc-caps-strong">
             All Week
           </div>
           <div className="text-[12px] font-bold text-content leading-none">{weekRange}</div>
@@ -172,7 +172,7 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+              <div className="text-[9px] cc-caps-strong">
                 {dayName}
               </div>
               <div className="text-[12px] font-bold text-content leading-none">

@@ -55,7 +55,7 @@ const LensPanel = ({
         />
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] px-3 py-1.5 bg-fill_soft text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+      <div className="grid grid-cols-[1fr_auto] px-3 py-1.5 bg-fill_soft text-[9px] cc-caps-strong flex-shrink-0">
         <div>{LENS_COLUMN_LABEL[lens]}</div>
         <div>Lines · transactions</div>
       </div>

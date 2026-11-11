@@ -221,7 +221,7 @@ const AssignPanel = ({
         </ConfirmModal>
       )}
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
+        <div className="text-[9px] cc-caps-strong mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
         <div className="mb-1.5 flex items-center gap-1.5">
@@ -297,7 +297,7 @@ const AssignPanel = ({
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
+        <div className="text-[9px] cc-caps-strong mb-1.5">
           {rightTitle} ({countLabel(filteredRight.length, rightItems.length)})
         </div>
         <div className="mb-1.5">

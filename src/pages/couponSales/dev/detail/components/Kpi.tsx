@@ -12,7 +12,7 @@ interface KpiProps {
  *  trend badge beside it. */
 const Kpi = ({ label, value, baselineValue, trendPct }: KpiProps) => (
   <div className="px-4 pt-2.5 pb-2 text-center">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+    <div className="text-[10px] cc-caps-strong">
       {label}
     </div>
     {baselineValue !== undefined && (

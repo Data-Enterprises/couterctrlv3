@@ -29,7 +29,7 @@ const TotalsStrip = ({
 }: TotalsStripProps) => (
   <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
     <div className="px-4 pt-2.5 pb-2 text-center">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+      <div className="text-[10px] cc-caps-strong">
         Top 200 Sales
       </div>
       <div className="text-[10px] font-bold text-content mb-0.5">
@@ -65,7 +65,7 @@ const TotalsStrip = ({
       ] as const
     ).map(([label, from, to, value, pct, gap]) => (
       <div key={label} className="px-4 pt-2.5 pb-2 text-center">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+        <div className="text-[10px] cc-caps-strong">
           {label}
         </div>
         {/* A picked day is one date, as Top 200 Sales shows it,

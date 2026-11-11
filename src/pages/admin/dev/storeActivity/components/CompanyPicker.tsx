@@ -32,7 +32,7 @@ const CompanyPicker = ({
       style={{ width: "220px" }}
     >
       <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+        <span className="text-[9px] cc-caps-strong">
           {mode === "reference" ? "Existing companies" : "Companies"}
         </span>
       </div>

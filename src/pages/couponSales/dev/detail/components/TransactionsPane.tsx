@@ -58,7 +58,7 @@ const TransactionsPane = ({ selectedSection, transactions, scopedCoupons, txSort
       {(["Transaction", "Cashier"] as const).map((h) => (
         <div
           key={h}
-          className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wide text-content text-left"
+          className="px-3 py-1.5 text-[9px] cc-caps-strong text-left"
         >
           {h}
         </div>
@@ -68,14 +68,14 @@ const TransactionsPane = ({ selectedSection, transactions, scopedCoupons, txSort
         label="Count"
         sort={txSort.sort}
         onSort={txSort.handleSort}
-        className="px-3 py-1.5 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+        className="px-3 py-1.5 text-[9px] cc-caps-strong justify-end hover:underline"
       />
       <SortHeader
         col="amount"
         label="Amount"
         sort={txSort.sort}
         onSort={txSort.handleSort}
-        className="px-3 py-1.5 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+        className="px-3 py-1.5 text-[9px] cc-caps-strong justify-end hover:underline"
       />
     </div>
 

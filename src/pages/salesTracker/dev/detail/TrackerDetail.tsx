@@ -70,7 +70,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
       {/* KPI strip — the window totals for this department */}
       <div className="grid grid-cols-5 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             TY Sales
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">
@@ -82,7 +82,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             {basis} Sales
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">
@@ -94,7 +94,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             ATS Sales
           </div>
           {/* Always the transaction count, roll-up included (summed as
@@ -108,7 +108,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             $ vs {basis}
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">
@@ -122,7 +122,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             % vs {basis}
           </div>
           {/* How many weeks the comparison rests on: weeks with no last-year

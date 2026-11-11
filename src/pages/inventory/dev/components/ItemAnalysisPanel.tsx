@@ -144,7 +144,7 @@ const ItemAnalysisPanel = ({
 
         <div className="grid grid-cols-6 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               Sales
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
@@ -154,7 +154,7 @@ const ItemAnalysisPanel = ({
           {/* The floor under every price on this screen. Without it a reader
               can see that $6.50 moves fastest but not that it's below cost. */}
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               Cost / unit
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
@@ -173,7 +173,7 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               Units
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
@@ -181,7 +181,7 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               GM%
             </div>
             <div
@@ -199,7 +199,7 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               Prices
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
@@ -207,7 +207,7 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[11px] cc-caps-strong">
               Trans
             </div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">

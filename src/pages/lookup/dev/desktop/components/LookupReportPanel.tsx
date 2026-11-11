@@ -95,7 +95,7 @@ const LookupReportPanel = ({
         {/* 7-col KPI strip — margin first */}
         <div className="grid grid-cols-7 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               Margin
             </div>
             <div
@@ -113,7 +113,7 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               List price
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
@@ -121,7 +121,7 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               Avg sold at / {margin.weighed ? "lb" : "unit"}
             </div>
             <div
@@ -131,7 +131,7 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               Cost / {unit}
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
@@ -147,7 +147,7 @@ const LookupReportPanel = ({
           <div className="px-4 pt-2.5 text-center">
             {/* A scale item rings qty 0 and sells by weight, so its count is
                 always zero — show what it actually sold. */}
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               {margin.weighed ? "Total weight" : "Total units"}
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
@@ -155,7 +155,7 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               Days sold
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
@@ -166,7 +166,7 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               Longest gap
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">

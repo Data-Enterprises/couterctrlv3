@@ -23,7 +23,7 @@ const KpiTileGrid = ({ items }: KpiTileGridProps) => {
     >
       {items.map((kpi) => (
         <div key={kpi.label} className="px-4 py-3 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             {kpi.label}
           </div>
           <div className="flex items-baseline justify-center gap-1.5 mt-0.5">

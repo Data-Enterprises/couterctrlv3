@@ -243,7 +243,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             ["Markdown", formatCurrency2(totals.markdown)],
           ].map(([label, value]) => (
             <div key={label} className="px-4 pt-2.5 pb-2.5 text-center min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              <div className="text-[10px] cc-caps-strong">
                 {label}
               </div>
               <div className="text-[13px] font-bold text-content truncate">

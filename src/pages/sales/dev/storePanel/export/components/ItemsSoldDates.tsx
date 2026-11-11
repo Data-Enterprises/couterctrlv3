@@ -30,7 +30,7 @@ const ItemsSoldDates = ({
   >
     <div className="flex items-end gap-2 flex-wrap">
       <div className="flex flex-col gap-1">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+        <span className="text-[9px] cc-caps-strong">
           From
         </span>
         <input
@@ -44,7 +44,7 @@ const ItemsSoldDates = ({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+        <span className="text-[9px] cc-caps-strong">
           To
         </span>
         <input

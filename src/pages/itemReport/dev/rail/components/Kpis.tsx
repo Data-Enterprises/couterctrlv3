@@ -24,7 +24,7 @@ const Kpis = ({ cells }: KpisProps) => (
           c.onClick ? "cursor-pointer hover:bg-brand_navy/[0.06]" : ""
         }`}
       >
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+        <div className="text-[10px] cc-caps-strong">
           {c.label}
         </div>
         <div

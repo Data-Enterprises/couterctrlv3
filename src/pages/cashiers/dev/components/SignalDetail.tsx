@@ -146,7 +146,7 @@ const SignalDetail = ({
           </div>
 
           <div
-            className={`grid ${GRID_COLS} px-4 py-1.5 bg-fill_soft text-[10px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
+            className={`grid ${GRID_COLS} px-4 py-1.5 bg-fill_soft text-[10px] cc-caps-strong flex-shrink-0`}
           >
             {(
               [

@@ -36,7 +36,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
   return (
     <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
       <div className="px-4 pt-2.5 text-center">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+        <div className="text-[10px] cc-caps-strong">
           {isQty ? "TY Qty" : "TY Net Sales"}
         </div>
         <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
@@ -45,7 +45,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
         </div>
       </div>
       <div className="px-4 pt-2.5 text-center">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+        <div className="text-[10px] cc-caps-strong">
           vs Last Week
         </div>
         <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
@@ -76,7 +76,7 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
         )}
       </div>
       <div className="px-4 pt-2.5 text-center">
-        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+        <div className="text-[10px] cc-caps-strong">
           vs Last Year
         </div>
         <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>

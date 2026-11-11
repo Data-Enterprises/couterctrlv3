@@ -20,7 +20,7 @@ const StripCell = ({
   valueClassName = "text-[14px] font-bold text-content",
 }: StripCellProps) => (
   <div className={className}>
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+    <div className="text-[10px] cc-caps-strong">
       {label}
     </div>
     {baselineValue !== undefined && (

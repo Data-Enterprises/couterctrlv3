@@ -366,7 +366,7 @@ const AccessPanel = ({
           style={{ width: 220 }}
         >
           <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
-            <span className="text-[9px] font-bold uppercase tracking-wide text-content">
+            <span className="text-[9px] cc-caps-strong">
               Companies
             </span>
           </div>
@@ -417,7 +417,7 @@ const AccessPanel = ({
           style={{ width: 288 }}
         >
           <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
-            <span className="text-[9px] font-bold uppercase tracking-wide text-content block mb-1.5">
+            <span className="text-[9px] cc-caps-strong block mb-1.5">
               Base groups {activeCompany ? `in ${companyName(activeCompany)}` : ""}
             </span>
             <TextFilter

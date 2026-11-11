@@ -75,7 +75,7 @@ const DayCardStrip = ({
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[9px] cc-caps-strong">
             All Week
           </div>
           <div className="text-[12px] font-bold text-content leading-none">
@@ -108,7 +108,7 @@ const DayCardStrip = ({
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+              <div className="text-[9px] cc-caps-strong">
                 {label ?? date.toLocaleDateString("en-US", { weekday: "long" })}
               </div>
               <div className="text-[12px] font-bold text-content leading-none">

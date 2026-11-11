@@ -102,7 +102,7 @@ const SectionList = ({
           className="sticky top-0 z-10 grid border-b border-line_hair bg-fill_muted"
           style={{ gridTemplateColumns: "1fr 0.62fr 0.4fr 0.4fr 0.55fr" }}
         >
-          <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-content text-left">
+          <div className="px-2 py-1 text-[9px] cc-caps-strong text-left">
             {SECTION_COL_LABEL[breakdown]}
           </div>
           <SortHeader
@@ -110,28 +110,28 @@ const SectionList = ({
             label="Amount"
             sort={sectionSort.sort}
             onSort={sectionSort.handleSort}
-            className="px-2 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+            className="px-2 py-1 text-[9px] cc-caps-strong justify-end hover:underline"
           />
           <SortHeader
             col="trans"
             label="Trans"
             sort={sectionSort.sort}
             onSort={sectionSort.handleSort}
-            className="px-1.5 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+            className="px-1.5 py-1 text-[9px] cc-caps-strong justify-end hover:underline"
           />
           <SortHeader
             col="count"
             label="Count"
             sort={sectionSort.sort}
             onSort={sectionSort.handleSort}
-            className="px-1.5 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+            className="px-1.5 py-1 text-[9px] cc-caps-strong justify-end hover:underline"
           />
           <SortHeader
             col="avg"
             label="Avg"
             sort={sectionSort.sort}
             onSort={sectionSort.handleSort}
-            className="px-2 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
+            className="px-2 py-1 text-[9px] cc-caps-strong justify-end hover:underline"
           />
         </div>
 

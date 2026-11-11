@@ -479,7 +479,7 @@ const MarginPerfRightPanel = () => {
         <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           {/* TY metric */}
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               {gradingMetric === "margin" ? "TY Margin" : "TY Net Sales"}
             </div>
             <div className="text-[10px] font-bold text-content mb-0.5">
@@ -498,7 +498,7 @@ const MarginPerfRightPanel = () => {
 
           {/* vs LW */}
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               vs Last Week
             </div>
             <div className="text-[10px] font-bold text-content mb-0.5">
@@ -541,7 +541,7 @@ const MarginPerfRightPanel = () => {
 
           {/* vs LY */}
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               vs Last Year
             </div>
             <div className="text-[10px] font-bold text-content mb-0.5">

@@ -59,7 +59,7 @@ const SectionHeader = ({
           { label: "Products", value: String(secProducts) },
         ].map(({ label, value }) => (
           <div key={label} className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+            <div className="text-[10px] cc-caps-strong">
               {label}
             </div>
             <div className="text-[13px] font-bold text-content">

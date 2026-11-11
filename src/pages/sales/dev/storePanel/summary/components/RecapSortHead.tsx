@@ -25,7 +25,7 @@ const RecapSortHead = ({ col, sort, onSort, right, children }: RecapSortHeadProp
       type="button"
       onClick={() => onSort(col)}
       aria-sort={active ? (sort.direction === "desc" ? "descending" : "ascending") : undefined}
-      className={`min-w-0 flex items-center gap-0.5 text-[11px] font-bold uppercase tracking-wide text-content ${
+      className={`min-w-0 flex items-center gap-0.5 text-[11px] cc-caps-strong ${
         right ? "justify-end" : "justify-start"
       }`}
     >
