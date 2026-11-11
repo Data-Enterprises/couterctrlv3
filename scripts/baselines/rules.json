@@ -653,14 +653,8 @@
   "src/pages/categories/dev/components/CategoryDetailPanel.tsx": {
     "catalogued-look": 2
   },
-  "src/pages/categories/dev/components/CategoryListPanel.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
-  },
-  "src/pages/couponSales/dev/components/CpnSalesStorePanel.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/couponSales/dev/export/CpnSalesExportModal.tsx": {
     "catalogued-look": 1
@@ -976,9 +970,6 @@
   "src/pages/itemReport/ItemReport.tsx": {
     "labels": 1
   },
-  "src/pages/itemReport/dev/components/ItemReportSheet.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/itemReport/dev/export/ItemReportExportModal.tsx": {
     "catalogued-look": 1
   },
@@ -1033,7 +1024,6 @@
     "shape-props-name": 1
   },
   "src/pages/lpActions/dev/LpExceptionList.tsx": {
-    "catalogued-look": 1,
     "doc-comment": 1,
     "labels": 1,
     "one-line-per-source": 2,
@@ -1230,9 +1220,6 @@
   "src/pages/sales/dev/components/ThresholdChip.tsx": {
     "catalogued-look": 1
   },
-  "src/pages/sales/dev/ledger/components/LedgerHeader.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/sales/dev/mobile/perf/components/PerfDrillList.tsx": {
     "catalogued-look": 2
   },
@@ -1242,9 +1229,6 @@
   "src/pages/salesTracker/SalesTracker.tsx": {
     "labels": 1
   },
-  "src/pages/salesTracker/dev/components/TrackerHeader.tsx": {
-    "catalogued-look": 1
-  },
   "src/pages/settings/Settings.tsx": {
     "doc-comment": 1
   },
@@ -1252,7 +1236,7 @@
     "labels": 1
   },
   "src/pages/subDepts/dev/components/MarginPerfLeftPanel.tsx": {
-    "catalogued-look": 2
+    "catalogued-look": 1
   },
   "src/pages/subDepts/dev/components/itemsTable/components/ItemListToolbar.tsx": {
     "catalogued-look": 1
@@ -1268,9 +1252,6 @@
   },
   "src/pages/tickets/Tickets.tsx": {
     "doc-comment": 1
-  },
-  "src/pages/tickets/dev/components/TicketSidebar.tsx": {
-    "catalogued-look": 1
   },
   "src/pages/tickets/dev/components/modals/CloseTicketModal.tsx": {
     "catalogued-look": 1
@@ -1350,9 +1331,6 @@
   },
   "src/pages/vendors/Vendors.tsx": {
     "labels": 1
-  },
-  "src/pages/vendors/dev/components/VendorListPanel.tsx": {
-    "catalogued-look": 1
   },
   "src/store/devReducers.ts": {
     "labels": 1

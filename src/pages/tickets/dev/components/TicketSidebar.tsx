@@ -31,7 +31,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
 
   return (
     <div className="cc-panel h-full w-[248px] flex-none shadow-lg 2xl:w-[288px]">
-      <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 pt-1 pb-2.5">
+      <div className="flex-shrink-0 cc-navy-panel-header">
         <div className="flex min-h-[24px] items-end gap-3">
           <span className="flex-shrink-0 text-[13px] cc-navy-title">
             Who sent it

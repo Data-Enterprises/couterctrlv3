@@ -256,7 +256,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
-      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+      <div className="cc-navy-panel-header flex flex-col gap-0">
 
         {/* Row 1: date range | primary value + vs LW/LY pills */}
         <div className="flex items-center gap-2 min-h-[26px]">
