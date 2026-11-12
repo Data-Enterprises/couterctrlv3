@@ -119,7 +119,7 @@ const SupplyDocuments = ({
     if (supply.orders.length > 0) return null;
     return orders.inWindow === 0
       ? supply.deliveries.length > 0
-        ? "No order of any kind came back for either store over the window, and receipts arrived anyway, which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
+        ? "No order of any kind came back for either store over the window, and receivers came in anyway, which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
         : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
       : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department, by product code or by the department the order itself names. Nothing here can say an item was never ordered, so those items are listed as not carried instead.`;
   };
@@ -138,7 +138,7 @@ const SupplyDocuments = ({
           : !receipts.ok
             ? null
             : row.docs.length > 0
-              ? `No receipt at ${store} carries any of those codes.`
+              ? `No receiver at ${store} carries any of those codes.`
               : noReceiptsNote(store, window);
     return {
       label: supplyTab(row, us, them),
@@ -153,7 +153,7 @@ const SupplyDocuments = ({
           foot={
             row.isOrder
               ? `${plural(shown.length, "order")} | ${n(units)} units | newest first`
-              : `${plural(shown.length, "receipt")} | ${n(units)} units | ${cash(cost)} | newest first`
+              : `${plural(shown.length, "receiver")} | ${n(units)} units | ${cash(cost)} | newest first`
           }
           linesOf={(r) => (row.isOrder ? orderLines(r.id, r.mine) : invoiceLines(r.id, r.mine))}
           /* The receipt search asks for the matched lines only, so an
@@ -175,7 +175,7 @@ const SupplyDocuments = ({
           value={upcQuery}
           onChange={onUpcQuery}
           codes={wanted.size}
-          summary={`${plural(wanted.size, "code")} | ${shownOrders.length} of ${plural(supply.orders.length, "order")} and ${shownDeliveries.length} of ${plural(supply.deliveries.length, "receipt")} carry them.`}
+          summary={`${plural(wanted.size, "code")} | ${shownOrders.length} of ${plural(supply.orders.length, "order")} and ${shownDeliveries.length} of ${plural(supply.deliveries.length, "receiver")} carry them.`}
         />
       }
       slides={slides}

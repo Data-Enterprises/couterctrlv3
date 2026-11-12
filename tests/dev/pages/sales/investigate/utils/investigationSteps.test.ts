@@ -429,7 +429,7 @@ describe("supply · the proof behind the labels", () => {
       "003",
       false,
     );
-    expect(r.lead).toBe("Only 002 ordered. The receipts couldn't be read.");
+    expect(r.lead).toBe("Only 002 ordered. The receivers couldn't be read.");
   });
 
   it("says so when neither store ordered at all", () => {

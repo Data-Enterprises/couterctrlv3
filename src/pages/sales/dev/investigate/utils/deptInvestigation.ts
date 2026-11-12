@@ -198,7 +198,7 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   cost: "Costing more",
   "not-moving": "Selling fewer",
   unsold: "Received, none sold",
-  "no-receipts": "Receipts unavailable",
+  "no-receipts": "Receivers unavailable",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
   streamlined: "Streamlined",
@@ -213,7 +213,7 @@ export const CAUSE_OWNER: Record<Cause, string> = {
   cost: "buying terms",
   "not-moving": "merchandising",
   unsold: "merchandising",
-  "no-receipts": "the receipts could not be read",
+  "no-receipts": "the receivers could not be read",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
   streamlined: "nothing to chase",
@@ -380,7 +380,7 @@ export const evidenceSays = (
       return `Both stores sold it, at about the same price. ${us} sold ${count(item.mineUnits)}${lb} against ${count(item.theirsUnits)}${lb}. Nothing in this data says why.`;
     }
     case "no-receipts":
-      return `${us} did not ring it. We couldn't get the receipts information at this time, so nothing here says whether it was delivered. ${theirs}`;
+      return `${us} did not ring it. We couldn't get the receiver information at this time, so nothing here says whether it was delivered. ${theirs}`;
     case "unsold":
       return `${us} received it and none of it rang this week. ${theirs}`;
     case "ahead":

@@ -50,7 +50,7 @@ const SupplyRowChoice = ({ row, us, them, read, on, onPick }: SupplyRowChoicePro
         <span className="font-bold text-content">{label.store}</span>
       </span>
       <span className="text-right text-[12.5px] text-content/95 tabular-nums whitespace-nowrap">
-        {read ? `${n.toLocaleString("en-US")} ${row.isOrder ? "order" : "receipt"}${n === 1 ? "" : "s"}` : "not read"}
+        {read ? `${n.toLocaleString("en-US")} ${row.isOrder ? "order" : "receiver"}${n === 1 ? "" : "s"}` : "not read"}
       </span>
       <span className="text-right text-[13px] font-bold tabular-nums text-content whitespace-nowrap">
         {read ? `${Math.round(row.units).toLocaleString("en-US")} units` : "—"}

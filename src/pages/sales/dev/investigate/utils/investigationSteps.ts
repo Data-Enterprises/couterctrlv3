@@ -252,7 +252,7 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "not-moving": (n, m) =>
     `${n.toLocaleString("en-US")} items both stores sold, at about the same price, where this one sold fewer, worth ${m}. Nothing in this data says why.`,
   "no-receipts": (n, m) =>
-    `${n.toLocaleString("en-US")} items this store did not ring, worth ${m} at the other store. The receipts could not be read, so nothing here says whether they were delivered.`,
+    `${n.toLocaleString("en-US")} items this store did not ring, worth ${m} at the other store. The receivers could not be read, so nothing here says whether they were delivered.`,
   unsold: (n, m) =>
     `${n.toLocaleString("en-US")} items delivered here that did not ring this week, worth ${m} at the other store.`,
   streamlined: (n, m) =>
@@ -584,7 +584,7 @@ export const supplySays = (
           : "Neither store ordered this department.";
 
   const took = !receiptsOk
-    ? "The receipts couldn't be read."
+    ? "The receivers couldn't be read."
     : m.deliveries > 0 && t.deliveries > 0
       ? "Both received."
       : m.deliveries > 0

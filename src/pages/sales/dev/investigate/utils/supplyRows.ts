@@ -50,7 +50,7 @@ export const supplyLabel = (row: SupplyRow, us: string, them: string) => ({
 
 /** A row's tab on the documents card. */
 export const supplyTab = (row: SupplyRow, us: string, them: string) =>
-  `${row.mine ? us : them} ${row.isOrder ? "orders" : "receipts"}`;
+  `${row.mine ? us : them} ${row.isOrder ? "orders" : "receivers"}`;
 
 const many = (n: number, one: string) =>
   `${n.toLocaleString("en-US")} ${one}${n === 1 ? "" : "s"}`;
@@ -88,9 +88,9 @@ export const supplySlideSays = (
         : "";
     return `${many(n, "order")} at ${store}${all}${none}.${carries}`;
   }
-  if (!receiptsOk) return "We couldn't get the receipts information at this time.";
+  if (!receiptsOk) return "We couldn't get the receiver information at this time.";
   if (n === 0) return `No receiver on file at ${store} in the window.`;
-  return `${many(n, "receipt")} at ${store}: ${whole(row.units)} units, ${cash(row.cost)}.`;
+  return `${many(n, "receiver")} at ${store}: ${whole(row.units)} units, ${cash(row.cost)}.`;
 };
 
 /** What an empty receipts slide says beneath its headline. */

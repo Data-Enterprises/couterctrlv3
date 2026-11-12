@@ -49,7 +49,7 @@ describe("supplyRowsOf", () => {
 
   it("names its tab by store and kind", () => {
     expect(rows.map((r) => supplyTab(r, "018", "003"))).toEqual([
-      "018 orders", "003 orders", "018 receipts", "003 receipts",
+      "018 orders", "003 orders", "018 receivers", "003 receivers",
     ]);
   });
 });
@@ -72,10 +72,10 @@ describe("supplySlideSays", () => {
       "No receiver on file at 018 in the window.",
     );
     expect(supplySlideSays(rows[2], "018", 0, true, false, money)).toBe(
-      "We couldn't get the receipts information at this time.",
+      "We couldn't get the receiver information at this time.",
     );
     expect(supplySlideSays(rows[3], "003", 1, true, true, money)).toBe(
-      "1 receipt at 003: 520 units, $1402.10.",
+      "1 receiver at 003: 520 units, $1402.10.",
     );
   });
 

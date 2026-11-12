@@ -17,7 +17,7 @@ import type { HelpContent } from "../helpTypes";
 export const SALES_INVESTIGATE_HELP: HelpContent = {
   screen: "Sub department investigation",
   purpose:
-    "One department at two stores, item by item, with the orders and receipts behind it — so a gap in the sales can be handed to the person who can close it.",
+    "One department at two stores, item by item, with the orders and receivers behind it — so a gap in the sales can be handed to the person who can close it.",
 
   guides: [
     {
@@ -55,7 +55,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       issues: [
         {
           q: "Two tabs are greyed out",
-          a: "Summary needs sales alone and draws straight away. Items, Supply and Hand-off wait on the orders and receipts, which are separate reads. A tab that is not ready says what it is waiting for rather than showing a figure that will move.",
+          a: "Summary needs sales alone and draws straight away. Items, Supply and Hand-off wait on the orders and receivers, which are separate reads. A tab that is not ready says what it is waiting for rather than showing a figure that will move.",
         },
         {
           q: "The totals do not match the Sub depts tab",
@@ -86,7 +86,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         {
           title: "Open one item's evidence",
           pre: "Click a row. The rail opens on the right with everything the cause was built from.",
-          see: "What it sold for at each store, what each store paid for it, and every order and receipt that touched it in the window.",
+          see: "What it sold for at each store, what each store paid for it, and every order and receiver that touched it in the window.",
           anchor: "evidence",
         },
         {
@@ -101,7 +101,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       issues: [
         {
           q: "A cause looks wrong on an item",
-          a: "Open its evidence. The rail shows the orders, the receipts and both stores' prices — the three things every cause is decided from. If the documents disagree with the label, that is worth reporting.",
+          a: "Open its evidence. The rail shows the orders, the receivers and both stores' prices — the three things every cause is decided from. If the documents disagree with the label, that is worth reporting.",
         },
         {
           q: "The grid is empty",
@@ -120,19 +120,19 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           pre: "Choose the",
           chip: "Supply",
           post: "tab. Four rows sit under the figure: ordered at this store, ordered at the other, received at this store, received at the other. Click one.",
-          see: "The card beside it slides to that store's orders or receipts, newest first. Click a document to open its lines. The card's own tabs pick the row back.",
+          see: "The card beside it slides to that store's orders or receivers, newest first. Click a document to open its lines. The card's own tabs pick the row back.",
           anchor: "tabs",
         },
         {
           title: "Mind the window",
-          pre: "Orders and receipts are read over 42 days, not over the sales week — a delivery three weeks ago is what explains an empty shelf today.",
+          pre: "Orders and receivers are read over 42 days, not over the sales week — a delivery three weeks ago is what explains an empty shelf today.",
           see: "The header carries the sales week. The supply window is wider on purpose, which is why it can never explain the LW or LY columns.",
           anchor: "supply-window",
         },
         {
           title: "Trace specific items",
           pre: "Paste UPCs into the box at the top of the documents card to see only the documents carrying them. View in Supply, on a Summary item's right-click menu, fills it in.",
-          see: "Every list on the card narrows to the orders and receipts that touched those codes. A return is taken back off what arrived.",
+          see: "Every list on the card narrows to the orders and receivers that touched those codes. A return is taken back off what arrived.",
         },
       ],
       issues: [
@@ -244,12 +244,12 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
   terms: [
     {
       term: "Ordered and Received",
-      def: "The two halves of supply, and the two kinds of document behind them. A store orders — those are orders — and it receives — those are receipts. Both are read over a longer window than the sales week, because a delivery three weeks ago is what explains an empty shelf today.",
+      def: "The two halves of supply, and the two kinds of document behind them. A store orders — those are orders — and it receives — those are receivers. Both are read over a longer window than the sales week, because a delivery three weeks ago is what explains an empty shelf today.",
       anchor: "supply-window",
     },
     {
       term: "The 42-day window",
-      def: "How far back the orders and receipts are read. It does not line up with the sales week on purpose: supply explains this week, not last week or last year, so the LW and LY columns are never answered by a cause.",
+      def: "How far back the orders and receivers are read. It does not line up with the sales week on purpose: supply explains this week, not last week or last year, so the LW and LY columns are never answered by a cause.",
       anchor: "supply-window",
     },
     {
@@ -273,8 +273,8 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       anchor: "causes",
     },
     {
-      term: "Receipts unavailable",
-      def: "The receipts could not be read this time, so nothing here says whether an item this store did not ring was ever delivered. No supply cause is named until they load.",
+      term: "Receivers unavailable",
+      def: "The receivers could not be read this time, so nothing here says whether an item this store did not ring was ever delivered. No supply cause is named until they load.",
       anchor: "causes",
     },
     {
@@ -314,7 +314,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "The evidence rail",
-      def: "What one item's cause was built from: both stores' prices, both stores' costs, and every order and receipt that touched it. If a label looks wrong, this is where to check it.",
+      def: "What one item's cause was built from: both stores' prices, both stores' costs, and every order and receiver that touched it. If a label looks wrong, this is where to check it.",
       anchor: "evidence",
     },
     {
@@ -324,7 +324,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Dept lines",
-      def: "How many lines on that order or receipt belong to this department, not how many are on the whole document. An invoice carrying one of our items and ninety of somebody else's shows 1.",
+      def: "How many lines on that order or receiver belong to this department, not how many are on the whole document. An invoice carrying one of our items and ninety of somebody else's shows 1.",
     },
     {
       term: "Export",

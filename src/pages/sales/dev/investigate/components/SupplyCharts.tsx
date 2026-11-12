@@ -63,7 +63,7 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
     {
       // The document count, beside the units and the cost on them. Receipts
       // to the orders above it -- you order, you receive.
-      label: "Receipts",
+      label: "Receivers",
       m: supply.mine.deliveries,
       t: supply.theirs.deliveries,
       fmt: n,

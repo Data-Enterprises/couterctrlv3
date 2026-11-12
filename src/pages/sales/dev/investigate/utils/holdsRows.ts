@@ -215,7 +215,7 @@ export const rowSays = (
     const lead = row.breakdown[0];
     const cause = lead.cause;
     if (cause === "no-receipts")
-      return "The receipts couldn't be read, so these can't be explained yet.";
+      return "The receivers couldn't be read, so these can't be explained yet.";
     const phrase = (cause && CAUSE_PHRASE[cause]) ?? lead.label.toLowerCase();
     const most = Math.abs(lead.amount) >= Math.abs(row.total) / 2;
     const led = row.items.filter((i) => i.cause === cause).length;

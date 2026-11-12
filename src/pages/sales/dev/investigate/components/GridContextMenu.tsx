@@ -58,7 +58,7 @@ const GridContextMenu = ({ ctx, shown, chosen, onFind, onClose }: GridContextMen
                    is "was it ever on an order at all" — which is
                    two tabs away and, until now, a UPC retyped by
                    hand. */
-                label: `Find ${chosen.size} in orders and receipts`,
+                label: `Find ${chosen.size} in orders and receivers`,
                 onClick: () => {
                   onFind([...chosen].join(" "));
                 },

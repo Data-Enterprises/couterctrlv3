@@ -70,8 +70,8 @@ describe("Investigation Supply rows", () => {
     panel();
     fireEvent.click(row(/Received at003/));
     expect(row(/Received at003/)).toHaveAttribute("aria-pressed", "true");
-    expect(tab(/003 receipts/)).toHaveAttribute("aria-current", "true");
-    expect(screen.getByText("1 receipt at 003: 520 units, $1402.10.")).toBeInTheDocument();
+    expect(tab(/003 receivers/)).toHaveAttribute("aria-current", "true");
+    expect(screen.getByText("1 receiver at 003: 520 units, $1402.10.")).toBeInTheDocument();
   });
 
   it("opens an order to its lines under UPC, Item and Units, with no Cost", () => {
@@ -96,7 +96,7 @@ describe("Investigation Supply rows", () => {
 
   it("says the receipts could not be read rather than that nothing arrived", () => {
     panel(false);
-    expect(screen.getByText("Both stores ordered. The receipts couldn't be read.")).toBeInTheDocument();
+    expect(screen.getByText("Both stores ordered. The receivers couldn't be read.")).toBeInTheDocument();
     expect(row(/Received at018/)).toHaveTextContent("not read");
   });
 });
