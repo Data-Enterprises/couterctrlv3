@@ -132,7 +132,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       issues: [
         {
           q: "It says neither store ordered anything",
-          a: "That is a real answer, not a gap: some departments are delivered straight off the vendor's truck and never carry an order. When it happens, Never ordered is withheld and those items read as Not carried here instead — the shape without the claim.",
+          a: "That is a real answer, not a gap: some departments are delivered straight off the vendor's truck and never carry an order. When neither store has an order in this department, Never ordered is withheld and those items read as Not carried here instead — the shape without the claim.",
         },
       ],
     },
@@ -214,9 +214,9 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           tone: "ok",
           badge: "Working as intended",
           title: "No orders came back for either store",
-          why: "Not carried here is Never ordered without the claim. When the whole window holds no orders for either store — a department delivered off the truck, say — every item would otherwise read as a missed order, so the claim is withheld.",
+          why: "Not carried here is Never ordered without the claim. When neither store has an order in this department over the window — a department delivered off the truck, say — every item would otherwise read as a missed order, so the claim is withheld.",
           todo: [
-            "Open Supply and check whether either store has any order at all in the window.",
+            "Open Supply and check whether either store has an order in this department in the window.",
             "If both are empty, the label is doing its job.",
           ],
         },
@@ -253,12 +253,22 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Not carried here",
-      def: "The same shape as Never ordered, without the claim. Shown when no orders came back for either store over the whole window — a department delivered straight off the vendor's truck has none, so every item would otherwise read as a missed order. The other store sells it and nothing here says we ever had it.",
+      def: "The same shape as Never ordered, without the claim. Shown when neither store has an order in this department over the window — a department delivered straight off the vendor's truck has none, so every item would otherwise read as a missed order. The other store sells it and nothing here says we ever had it.",
       anchor: "causes",
     },
     {
-      term: "Didn't arrive",
-      def: "Ordered here and never received, with sales behind the other store. A vendor's item. It cannot appear at all where there are no orders, since there is nothing to have gone unfilled.",
+      term: "No receiver on file",
+      def: "Ordered here, and no receiver for it is on file since that order. Orders carry no expected date, so this says only what is on record, never that the order is late: the receiver may simply not be entered yet. The item's evidence shows the order date and the newest receiver on file for the department. An item that sold here only gets this when no receiver at all is on file in the window.",
+      anchor: "causes",
+    },
+    {
+      term: "Received, none sold",
+      def: "Delivered here, and none of it rang this week, while the other store sold it.",
+      anchor: "causes",
+    },
+    {
+      term: "Receipts unavailable",
+      def: "The receipts could not be read this time, so nothing here says whether an item this store did not ring was ever delivered. No supply cause is named until they load.",
       anchor: "causes",
     },
     {
@@ -267,13 +277,13 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       anchor: "causes",
     },
     {
-      term: "Not moving",
-      def: "It was here, it was priced like theirs, and it still sold less. Merchandising, or simply different customers — nothing in this data says which, and the label does not pretend otherwise.",
+      term: "Selling fewer",
+      def: "Both stores sold it, at about the same price, and this one sold fewer units. Merchandising, or simply different customers — nothing in this data says which, and the label does not pretend otherwise.",
       anchor: "causes",
     },
     {
       term: "Price / mix",
-      def: "It sold here and took less per unit than at the other store. The units did not go missing; the money per unit did.",
+      def: "It sold here and took less per unit than at the other store, by more than 8%, and the lower price is the bigger part of the difference. When fewer units carry more of it, the item reads as Selling fewer instead.",
       anchor: "causes",
     },
     {
