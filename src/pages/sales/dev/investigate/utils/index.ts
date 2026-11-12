@@ -19,6 +19,10 @@ import type { Stage, Cause, SupplyEvent, PricePoint } from "../interfaces";
  */
 export const PAGE_ROWS = 50;
 
+/** One spelling of an item code for sales, orders and receipts alike, so a
+ *  code padded on one endpoint still meets itself on the others. */
+export const codeOf = (c: unknown) => String(c ?? "").trim();
+
 /** mm/dd/yyyy. Noon, so a bare yyyy-mm-dd is not pulled back a day by the
  *  browser's timezone. */
 export const usDate = (d: string) =>

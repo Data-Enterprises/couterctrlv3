@@ -386,6 +386,20 @@ describe("buildFacts", () => {
     expect(a?.orderedQty).toBe(10);
   });
 
+  it("matches an order and a receipt to the item when a code comes padded", () => {
+    // A padded code on one endpoint read as "never ordered" before.
+    const out = buildFacts({
+      ...base,
+      mineTw: [row({ product_code: "A", total_sales: 100, qty: 40 })],
+      theirsTw: [row({ product_code: "A", total_sales: 400, qty: 160 })],
+      orders: [order(" A ", 10)],
+      receivers: [receiver([["A  ", 50]])],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].orderedQty).toBe(10);
+    expect(out[0].receivedUnits).toBe(50);
+  });
+
   it("ignores receipts for items outside the department's sales", () => {
     const out = buildFacts({
       ...base,

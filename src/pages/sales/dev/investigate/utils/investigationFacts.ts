@@ -2,6 +2,7 @@
 import { calculateCogs } from "../../../../../utils/cogs";
 import { isWeighted, pricedUnits } from "../../../../../utils/pricedUnits";
 import { judge } from "./deptInvestigation";
+import { codeOf } from ".";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -42,7 +43,7 @@ interface Tally {
 /** Item rows arrive one per DAY, so a week is several rows an item. */
 const tally = (rows: SubDeptMargin[], metric: GradingMetric) =>
   rows.reduce<Record<string, Tally>>((acc, r) => {
-    const key = r.product_code;
+    const key = codeOf(r.product_code);
     if (!acc[key]) {
       acc[key] = {
         money: 0,
@@ -77,7 +78,8 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
   const tLy = tally(input.theirsLy, input.metric);
 
   const orderedBy = input.orders.reduce<Record<string, number>>((acc, o) => {
-    acc[o.product_code] = (acc[o.product_code] ?? 0) + o.qty;
+    const c = codeOf(o.product_code);
+    acc[c] = (acc[c] ?? 0) + o.qty;
     return acc;
   }, {});
 
@@ -91,7 +93,8 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
       // different thing depending on how the vendor billed, and on a
       // case-billed invoice it comes back 0, which read here as a delivery
       // that never arrived.
-      acc[l.product_code] = (acc[l.product_code] ?? 0) + l.qty;
+      const c = codeOf(l.product_code);
+      acc[c] = (acc[c] ?? 0) + l.qty;
     });
     return acc;
   }, {});

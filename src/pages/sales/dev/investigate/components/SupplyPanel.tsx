@@ -2,6 +2,7 @@
 import { Fragment } from "react";
 
 // Utils
+import { codeOf } from "../utils";
 import {
   SUPPLY_LOOKBACK_DAYS,
   type OrdersWave,
@@ -78,7 +79,7 @@ const SupplyPanel = ({
 
   const asLines = (rows: AllOrder[]): DocLine[] =>
     rows.map((o) => ({
-      code: String(o.product_code),
+      code: codeOf(o.product_code),
       description: o.description,
       units: o.qty,
       cost: 0,
@@ -103,7 +104,7 @@ const SupplyPanel = ({
       .filter((r) => r.invoiceid === id)
       .flatMap((r) =>
         r.lines.map((l) => ({
-          code: String(l.product_code),
+          code: codeOf(l.product_code),
           description: l.product_description,
           // `qty` is the selling-unit count on a receiver line, the same
           // field the order side above reads. See the note in vitalsOf.

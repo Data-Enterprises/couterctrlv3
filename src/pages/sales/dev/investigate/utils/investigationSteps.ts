@@ -1,3 +1,6 @@
+// Utils
+import { codeOf } from ".";
+
 // Interfaces
 import type { Focus } from "../../utils/deptReport";
 import type { Cause, ItemVerdict } from "../interfaces";
@@ -429,14 +432,14 @@ const sideOf = (
 ): StoreSupply => {
   // Both payloads are department-wide; narrow to the items this comparison
   // is actually about, or a store's figures carry lines nobody is looking at.
-  const lines = orders.filter((o) => codes.has(String(o.product_code)));
+  const lines = orders.filter((o) => codes.has(codeOf(o.product_code)));
   const vendors = new Map<string, SupplyVendor>();
   let deliveries = 0;
   let receivedUnits = 0;
   let receivedCost = 0;
 
   for (const r of receipts) {
-    const mine = r.lines.filter((l) => codes.has(String(l.product_code)));
+    const mine = r.lines.filter((l) => codes.has(codeOf(l.product_code)));
     if (mine.length === 0) continue;
     deliveries += 1;
     const name = r.vendor_name || "Unknown vendor";
@@ -483,7 +486,7 @@ const orderRecords = (
 ): SupplyRecord[] => {
   const by = new Map<number, SupplyRecord>();
   for (const o of lines) {
-    if (!codes.has(String(o.product_code))) continue;
+    if (!codes.has(codeOf(o.product_code))) continue;
     const at =
       by.get(o.order_id) ??
       {
@@ -511,7 +514,7 @@ const deliveryRecords = (
 ): SupplyRecord[] =>
   receipts
     .map((r) => {
-      const lines = r.lines.filter((l) => codes.has(String(l.product_code)));
+      const lines = r.lines.filter((l) => codes.has(codeOf(l.product_code)));
       return {
         id: r.invoiceid,
         date: r.invoice_date,
