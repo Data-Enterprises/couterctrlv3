@@ -353,6 +353,17 @@ itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
 audited as a ratchet. Its known hits are in `scripts/baselines/theme-shared.json` and are fixed with a
 promotion, because clients see them; a new hit fails the audit.
 
+**A page may be pinned to a reference page.** `audit:theme` passes any class built from a token, so
+a page can be entirely legal and still not look like the one it was meant to copy: LP Actions ran a
+type scale of 8 / 9 / 9.5 / 13.5 / 17px and used `text-brand_slate` 27 times where Item Actions uses
+it never, with the audit clean throughout. `STYLE_REFERENCE` in `scripts/check-rules.mjs` pins a
+page's text colours and sizes to its reference's, and `check:rules`' `off-reference-look` fails a
+class the reference does not use. **An Actions page follows Item Actions** (`src/pages/itemReport/dev`):
+its scale is 10 / 10.5 / 11 / 11.5 / 12 / 13 / 14px, its captions are `cc-caps` and `cc-caps-strong`
+(`cc-caps-mono` is the phone screens'), its panel sections divide on `border-brand_navy/15`, and it
+reaches for `text-brand_slate` nowhere. A deliberate departure goes in that entry's `also` with the
+reason it is not drift.
+
 ### Tailwind, in short
 
 The rules above in one place, plus what they leave open. `audit:theme` and `check:rules` enforce

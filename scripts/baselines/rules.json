@@ -947,6 +947,7 @@
   "src/pages/lpActions/dev/JourneySummary.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 1,
     "one-line-per-source": 1,
     "shape-extra-component": 2,
     "shape-inline-props": 1
@@ -975,6 +976,7 @@
   "src/pages/lpActions/dev/LpExceptionList.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 2,
     "one-line-per-source": 2,
     "shape-extra-code": 3,
     "shape-extra-component": 3,
@@ -984,6 +986,7 @@
   "src/pages/lpActions/dev/ReceiptCase.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 2,
     "shape-extra-component": 1,
     "shape-props-name": 1
   },
@@ -1013,6 +1016,7 @@
   "src/pages/lpActions/dev/case/CaseKpis.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 1,
     "one-line-per-source": 1,
     "shape-extra-component": 1,
     "shape-props-name": 1
@@ -1026,6 +1030,7 @@
   "src/pages/lpActions/dev/case/CaseSummary.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 2,
     "shape-extra-code": 2,
     "shape-extra-type": 2,
     "shape-props-name": 1
@@ -1054,12 +1059,14 @@
   "src/pages/lpActions/dev/case/HourStackChart.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 3,
     "shape-extra-code": 6,
     "shape-props-name": 1
   },
   "src/pages/lpActions/dev/case/WeekLinesChart.tsx": {
     "doc-comment": 1,
     "labels": 1,
+    "off-reference-look": 4,
     "one-line-per-source": 1,
     "shape-extra-code": 7,
     "shape-props-name": 1

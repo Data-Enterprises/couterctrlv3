@@ -33,6 +33,8 @@
  *                      hook; the page's own top-level file may read it (§4)
  *   catalogued-look    a dev-tree className spells out a whole cc-* class from
  *                      src/styles/components-dev.css instead of using it (§11)
+ *   off-reference-look a page pinned to a reference page in STYLE_REFERENCE
+ *                      uses a text colour or size that page does not (§11)
  */
 import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -60,6 +62,66 @@ const NOT_FOR = {
   "cc-navy-title": (tag, have) => tag === "button" || [...have].some((c) => /^bg-/.test(c)),
 };
 const isDevTree = (f) => /^src\/pages\/[^/]+\/dev\//.test(f) || /^src\/components-dev\//.test(f);
+
+/**
+ * Pages that follow another page's look exactly, and the page they follow.
+ *
+ * `audit:theme` passes any class built from a token, so a page can be entirely
+ * legal and still not look like the one it was meant to copy. LP Actions ran a
+ * type scale of 8 / 9 / 9.5 / 13.5 / 17px and used `text-brand_slate` 27 times
+ * where Item Actions uses it never, and the audit was clean throughout. This
+ * pins a page's text colours and sizes to its reference's.
+ *
+ * `also` is the deliberate departures, each with the reason it is not drift.
+ */
+const STYLE_REFERENCE = {
+  lpActions: {
+    page: "itemReport",
+    also: {
+      "text-delta_negative_text":
+        "up is the bad way on this page, so a rise is a direction, not a grade (§11)",
+      "text-delta_positive_text": "the same, falling",
+      "text-rate_text": "Observe the lane points at a terminal, not at a person",
+      "text-volume_text": "Review procedure is a process finding, not a grade",
+    },
+  },
+};
+
+/** Words after `text-` that set alignment or wrapping, not colour or size. */
+const TEXT_KEYWORDS = new Set([
+  "left", "center", "right", "justify", "start", "end", "wrap", "nowrap",
+  "balance", "pretty", "ellipsis", "clip", "opacity", "current", "inherit",
+]);
+
+/** Comments blanked, line count kept, so a class named in prose is not a use. */
+const stripComments = (src) =>
+  src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => "\n".repeat((m.match(/\n/g) ?? []).length))
+    .replace(/\/\/[^\n]*/g, "");
+
+/** Every text colour and text size class in a piece of source. */
+const textClasses = (src) =>
+  [...src.matchAll(/\btext-(\[[^\]\s]+\]|[a-z][a-z0-9_]*)(\/(?:\[[^\]\s]+\]|[0-9.]+))?/g)]
+    .filter((m) => !TEXT_KEYWORDS.has(m[1]))
+    .map((m) => m[0]);
+
+const refCache = new Map();
+/** The set a reference page actually uses, across its whole dev tree. */
+const referenceText = (page) => {
+  if (!refCache.has(page)) {
+    const out = new Set();
+    const listed = execSync(
+      `git ls-files -co --exclude-standard src/pages/${page}/dev`,
+      { encoding: "utf8" },
+    ).trim().split("\n");
+    for (const rf of listed.filter(
+      (x) => /\.(ts|tsx)$/.test(x) && !/\.test\./.test(x) && existsSync(x),
+    ))
+      for (const c of textClasses(stripComments(readFileSync(rf, "utf8")))) out.add(c);
+    refCache.set(page, out);
+  }
+  return refCache.get(page);
+};
 
 const inScope = (f) =>
   /^src\/.*\.(ts|tsx)$/.test(f) &&
@@ -208,6 +270,21 @@ function check(f) {
       ts.forEachChild(n, walk);
     };
     walk(sf);
+  }
+
+  /* a page pinned to a reference page's text colours and type scale (§11) */
+  const pinned = STYLE_REFERENCE[pageOf(f) ?? ""];
+  if (pinned && isDevTree(f)) {
+    const allowed = referenceText(pinned.page);
+    stripComments(src).split("\n").forEach((l, i) => {
+      for (const c of textClasses(l))
+        if (!allowed.has(c) && !(c in pinned.also))
+          hit(
+            "off-reference-look",
+            i + 1,
+            `${c} is not used by ${pinned.page}; this page follows its text colours and type scale`,
+          );
+    });
   }
 
   /* Redux through the page's context hook (the page's own top-level file may read it) */
