@@ -117,8 +117,8 @@ const HoldsFinding = ({
         {/* Its own notice under the rows: the one case where sales and
             margin point opposite ways, which nothing else on the card says. */}
         {summary.gap >= 0 && marginGap <= -CENT && (
-          <p className="cc-notice text-[13px] leading-relaxed px-3 py-2">
-            <span className="font-bold">Ahead on sales, behind on margin.</span> This
+          <p className="cc-notice text-[14px] leading-relaxed px-3 py-2">
+            <span className="font-bold text-[13px]">Ahead on sales, behind on margin.</span> This
             department took {cash(summary.gap)} more and kept {cash(Math.abs(marginGap))} less,
             because it buys the same goods for more.
           </p>
