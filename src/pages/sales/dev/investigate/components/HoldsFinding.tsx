@@ -89,21 +89,13 @@ const HoldsFinding = ({
             </div>
           )}
 
-          {/* The margin caveats, a line each under the figure rather than
-              blocks of their own, so the card keeps to the page. Only when
-              there is something to say: a penalty under a cent is not. */}
+          {/* The cost caveat, a line under the figure. Only when there is
+              something to say: a penalty under a cent is not. */}
           {costPenalty <= -CENT && summary.gap < 0 && (
             <p className="text-[12.5px] leading-snug text-content/95">
               Buying the same goods for more took another{" "}
               <span className="font-semibold text-content">{cash(Math.abs(costPenalty))}</span>{" "}
               of margin on top of the sales gap.
-            </p>
-          )}
-          {summary.gap >= 0 && marginGap <= -CENT && (
-            <p className="text-[12.5px] leading-snug text-severity_watch_text">
-              <span className="font-bold">Ahead on sales, behind on margin.</span> It took{" "}
-              {cash(summary.gap)} more and kept {cash(Math.abs(marginGap))} less, because it buys
-              the same goods for more.
             </p>
           )}
         </div>
@@ -121,6 +113,16 @@ const HoldsFinding = ({
             />
           ))}
         </div>
+
+        {/* Its own notice under the rows: the one case where sales and
+            margin point opposite ways, which nothing else on the card says. */}
+        {summary.gap >= 0 && marginGap <= -CENT && (
+          <p className="cc-notice text-[13px] leading-relaxed px-3 py-2">
+            <span className="font-bold">Ahead on sales, behind on margin.</span> This
+            department took {cash(summary.gap)} more and kept {cash(Math.abs(marginGap))} less,
+            because it buys the same goods for more.
+          </p>
+        )}
 
       </div>
     </div>

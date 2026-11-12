@@ -108,7 +108,7 @@ const HoldsPanel = ({
 
             {/* The rest of the column, so its foot lines up with the items
                 card beside it. */}
-            <div className="flex-1 min-h-[240px] flex flex-col">
+            <div className="flex-1 min-h-[180px] flex flex-col">
               <HoldsCharts
                 spread={spread}
                 them={them}
