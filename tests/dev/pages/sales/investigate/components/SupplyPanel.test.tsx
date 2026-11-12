@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import SupplyPanel from "@/pages/sales/dev/investigate/components/SupplyPanel";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { supplyOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
@@ -72,6 +72,26 @@ describe("Investigation Supply rows", () => {
     expect(row(/Received at003/)).toHaveAttribute("aria-pressed", "true");
     expect(tab(/003 receipts/)).toHaveAttribute("aria-current", "true");
     expect(screen.getByText("1 receipt at 003: 520 units, $1402.10.")).toBeInTheDocument();
+  });
+
+  it("opens an order to its lines under UPC, Item and Units, with no Cost", () => {
+    panel();
+    const button = screen.getByText("#37189").closest("button")!;
+    fireEvent.click(button);
+    const doc = within(button.parentElement!);
+    expect(doc.getByText("UPC")).toBeInTheDocument();
+    expect(doc.getByText("Units")).toBeInTheDocument();
+    expect(doc.queryByText("Cost")).toBeNull();
+  });
+
+  it("opens a receipt to its lines with their Cost", () => {
+    panel();
+    fireEvent.click(row(/Received at003/));
+    const button = screen.getByText("#88214").closest("button")!;
+    fireEvent.click(button);
+    const doc = within(button.parentElement!);
+    expect(doc.getByText("Cost")).toBeInTheDocument();
+    expect(doc.getAllByText("$1402.10")).toHaveLength(2);
   });
 
   it("says the receipts could not be read rather than that nothing arrived", () => {

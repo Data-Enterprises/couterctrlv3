@@ -20,6 +20,12 @@ export const DOC_COLS = {
   oneStore: "grid-cols-[62px_minmax(0,1fr)_88px_minmax(0,110px)_62px_76px]",
 };
 
+/** An opened document's line columns: orders carry no cost, receipts do. */
+export const DOC_LINE_COLS = {
+  order: "grid-cols-[120px_minmax(0,1fr)_70px]",
+  receipt: "grid-cols-[120px_minmax(0,1fr)_70px_90px]",
+};
+
 /** Every row with its store's documents, newest first. */
 export const supplyRowsOf = (supply: Supply): SupplyRow[] =>
   SUPPLY_ORDER.map((kind) => {
