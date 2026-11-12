@@ -1,5 +1,5 @@
 // Interfaces
-import type { Cause, Bands, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
+import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
 
 /**
  * Why one store is behind another in one sub department.
@@ -40,6 +40,25 @@ export const marginsOf = (f: ItemFacts): Margins => {
       minePerUnit !== null && theirsPerUnit !== null
         ? (theirsPerUnit - minePerUnit) * f.mineUnits
         : null,
+  };
+};
+
+/**
+ * An item's dollar gap, split exactly into what selling more or fewer units
+ * did and what taking more or less a unit did.
+ *
+ * Each part is valued at the midpoint of the two stores (units at the average
+ * price, price at the average units), so neither store is the base and the
+ * two always add up to the gap. An item only one store sold is all units.
+ */
+export const splitGap = (f: ItemFacts): GapSplit => {
+  const gap = f.mineSales - f.theirsSales;
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
+  if (mine === null || theirs === null) return { units: gap, price: 0 };
+  return {
+    units: ((f.mineUnits - f.theirsUnits) * (mine + theirs)) / 2,
+    price: ((mine - theirs) * (f.mineUnits + f.theirsUnits)) / 2,
   };
 };
 
@@ -114,8 +133,14 @@ export const causeOf = (
 
   const mine = realised(f.mineSales, f.mineUnits);
   const theirs = realised(f.theirsSales, f.theirsUnits);
+  // Price is the cause only where it is the bigger part of the gap. Past the
+  // band alone it called an item that sold a tenth of the units "price".
+  // Bigger but inside the band, the units are level and the price gap is
+  // under what the page calls a difference, so nothing names it.
   if (mine !== null && theirs !== null && theirs > 0) {
-    if (Math.abs(mine / theirs - 1) > bands.price) return "price-mix";
+    const { units, price } = splitGap(f);
+    if (Math.abs(price) > Math.abs(units))
+      return Math.abs(mine / theirs - 1) > bands.price ? "price-mix" : "streamlined";
   }
 
   // It was here, it was priced like theirs, and it still did not sell.
@@ -314,7 +339,7 @@ export const evidenceSays = (
     case "not-carried":
       return `Nothing here says ${us} ever had it, and no orders came back for the window to say whether it was ever asked for. ${theirs}`;
     case "price-mix":
-      return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)} — less per unit, not fewer of them.`;
+      return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Taking less a unit is most of that difference, more than the units sold.`;
     case "not-moving":
       return `${us} has it and sold ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Nothing in this data says why.`;
     case "ahead":

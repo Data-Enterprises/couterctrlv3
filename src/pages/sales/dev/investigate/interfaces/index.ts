@@ -188,6 +188,14 @@ export interface Margins {
   costPenalty: number | null;
 }
 
+/** An item's dollar gap in two parts that add up to it exactly. */
+export interface GapSplit {
+  /** What selling more or fewer units was worth. */
+  units: number;
+  /** What taking more or less a unit was worth. */
+  price: number;
+}
+
 export interface Ratios {
   /** Ours over theirs. Null where theirs is zero — there is no ratio to a
    *  store that sold none, and 0/0 is not 1. */

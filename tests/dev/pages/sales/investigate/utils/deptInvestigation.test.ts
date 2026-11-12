@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildFacts, decompose, summarise, tilesAt } from "@/pages/sales/dev/investigate/utils/investigationFacts";
-import { causeOf, judge, ladderSays, marginsOf, ratiosOf, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { causeOf, judge, ladderSays, marginsOf, ratiosOf, splitGap, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/utils/supplyEvidence";
 import type { PriceLadder, ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 import type {
@@ -165,14 +165,35 @@ describe("causeOf", () => {
     expect(causeOf(f)).toBe("not-moving");
   });
 
-  it("names a dearer item 'price-mix'", () => {
-    // 1.49 against 1.058 — 41% dearer, well past the 8% band.
+  it("does not call it price when the units carry the gap", () => {
+    // 1.49 against 1.058 is 41% dearer, but 658 units against 1,550 is the
+    // story: the units part is -$1,136, the price part +$477.
     const f = facts({
       mineTy: 980.66, mineUnits: 658,
       theirsTy: 1640.12, theirsUnits: 1550,
       receivedUnits: 720,
     });
-    expect(causeOf(f)).toBe("price-mix");
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("never blames price on a dearer item that is behind", () => {
+    // Dearer means the price part is in its favour, so fewer units are the gap.
+    const f = facts({
+      mineTy: 360, mineUnits: 300,
+      theirsTy: 500, theirsUnits: 500,
+      receivedUnits: 400,
+    });
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("names it 'price-mix' when price is the bigger part", () => {
+    // Same units, 15% cheaper: price carries the whole gap.
+    const g = facts({
+      mineTy: 850, mineUnits: 1000,
+      theirsTy: 1000, theirsUnits: 1000,
+      receivedUnits: 1000,
+    });
+    expect(causeOf(g)).toBe("price-mix");
   });
 
   it("names a cheaper item 'price-mix' too — the band is two-sided", () => {
@@ -208,13 +229,35 @@ describe("causeOf", () => {
   });
 
   it("respects a widened price band", () => {
+    // 15% cheaper on the same units: price inside a 20% band is no cause.
     const f = facts({
-      mineTy: 550, mineUnits: 500,
-      theirsTy: 900, theirsUnits: 900,
-      receivedUnits: 600,
+      mineTy: 850, mineUnits: 1000,
+      theirsTy: 1000, theirsUnits: 1000,
+      receivedUnits: 1000,
     });
     expect(causeOf(f)).toBe("price-mix");
-    expect(causeOf(f, { ...DEFAULT_BANDS, price: 0.2 })).toBe("not-moving");
+    expect(causeOf(f, { ...DEFAULT_BANDS, price: 0.2 })).toBe("streamlined");
+  });
+});
+
+describe("splitGap", () => {
+  it("splits the gap into units and price that add up to it exactly", () => {
+    const f = facts({ mineTy: 980.66, mineUnits: 658, theirsTy: 1640.12, theirsUnits: 1550 });
+    const { units, price } = splitGap(f);
+    expect(units + price).toBeCloseTo(980.66 - 1640.12, 6);
+    expect(units).toBeLessThan(0);
+    expect(price).toBeGreaterThan(0);
+  });
+
+  it("gives the same split whichever store is the base", () => {
+    const a = facts({ mineTy: 300, mineUnits: 100, theirsTy: 800, theirsUnits: 200 });
+    const b = facts({ mineTy: 800, mineUnits: 200, theirsTy: 300, theirsUnits: 100 });
+    expect(splitGap(a).units).toBeCloseTo(-splitGap(b).units, 6);
+    expect(splitGap(a).price).toBeCloseTo(-splitGap(b).price, 6);
+  });
+
+  it("puts the whole gap in units when only one store sold it", () => {
+    expect(splitGap(facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40 }))).toEqual({ units: -400, price: 0 });
   });
 });
 
