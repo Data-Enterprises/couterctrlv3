@@ -123,6 +123,9 @@ export const splitStore = (name: string, number: string) => {
 };
 
 /** Money to the cent, and a count with separators. */
+/** Under half a cent, an amount prints as $0.00: too small to say anything about. */
+export const CENT = 0.005;
+
 export const money = (v: number) => formatCurrency2(v);
 export const count = (v: number) => formatBigNumber(v, 0);
 

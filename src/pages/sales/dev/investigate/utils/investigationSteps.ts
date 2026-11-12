@@ -1,6 +1,6 @@
 // Utils
 import { codeOf } from ".";
-import { rangAt } from "./deptInvestigation";
+import { rowOf } from "./holdsRows";
 
 // Interfaces
 import type { Focus } from "../../utils/deptReport";
@@ -40,6 +40,8 @@ export interface Holds {
   bothLess: Bucket;
   /** Rang at both, more here. */
   bothMore: Bucket;
+  /** Rang here and not at the counterpart. */
+  onlyMine: Bucket;
   /**
    * Whether the items tell the same story the department totals did.
    *
@@ -83,19 +85,23 @@ const add = (b: Bucket, gap: number): Bucket => ({
   dollars: b.dollars + gap,
 });
 
-export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
+export const holdsUp = (
+  items: ItemVerdict[],
+  focus: Focus,
+  us = "this store",
+  them = "the other store",
+): Holds => {
   let onlyTheirs: Bucket = { items: 0, dollars: 0 };
   let bothLess: Bucket = { items: 0, dollars: 0 };
   let bothMore: Bucket = { items: 0, dollars: 0 };
+  let onlyMine: Bucket = { items: 0, dollars: 0 };
 
   for (const i of items) {
-    const here = rangAt(i.mineUnits, i.mineSales);
-    const there = rangAt(i.theirsUnits, i.theirsSales);
-    if (!here && there) onlyTheirs = add(onlyTheirs, i.gap);
-    else if (here && there) {
-      if (i.gap < 0) bothLess = add(bothLess, i.gap);
-      else bothMore = add(bothMore, i.gap);
-    }
+    const row = rowOf(i);
+    if (row === "onlyTheirs") onlyTheirs = add(onlyTheirs, i.gap);
+    if (row === "bothLess") bothLess = add(bothLess, i.gap);
+    if (row === "bothMore") bothMore = add(bothMore, i.gap);
+    if (row === "onlyMine") onlyMine = add(onlyMine, i.gap);
   }
 
   const supplyLed =
@@ -105,13 +111,13 @@ export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
   const says =
     verdict === "holds"
       ? supplyLed
-        ? "Most of the gap is items the other store rang and this one did not."
-        : "Most of the gap is items both stores rang, where this one took less."
+        ? `Most of the gap is items ${them} rang and ${us} did not.`
+        : `Most of the gap is items both stores rang, where ${us} took less.`
       : supplyLed
-        ? "The report called it price, but most of the gap is items this store never rang at all."
-        : "The report called it volume, but the items were here — they took less.";
+        ? `The report called it price, but most of the gap is items ${us} never rang at all.`
+        : `The report called it volume, but the items rang at ${us} too; they took less.`;
 
-  return { onlyTheirs, bothLess, bothMore, verdict, says };
+  return { onlyTheirs, bothLess, bothMore, onlyMine, verdict, says };
 };
 
 /* ------------------------------------------------------------------ */

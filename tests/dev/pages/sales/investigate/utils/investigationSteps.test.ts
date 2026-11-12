@@ -96,6 +96,21 @@ describe("1 · does it hold", () => {
     expect(h.bothMore.dollars).toBeCloseTo(60, 6);
   });
 
+  it("counts the items only this store rang in a row of their own", () => {
+    const h = holdsUp(
+      [...absent(2, 100), item({ productCode: "m", mineTy: 70, mineUnits: 7 })],
+      "orders",
+    );
+    expect(h.onlyMine.items).toBe(1);
+    expect(h.onlyMine.dollars).toBeCloseTo(70, 6);
+    expect(h.bothMore.items).toBe(0);
+  });
+
+  it("names the two stores rather than here and there", () => {
+    const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders", "018", "003");
+    expect(h.says).toBe("Most of the gap is items 003 rang and 018 did not.");
+  });
+
   /** Units, not money: an item can ring for nothing and still have sold. */
   it("reads presence from units, not from sales", () => {
     const h = holdsUp(

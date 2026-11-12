@@ -1,11 +1,16 @@
 // Hooks
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Interfaces
 import type { Slide } from "../interfaces";
 
 interface CarouselProps {
   slides: Slide[];
+  /** The slide to show, when something outside the carousel picks it. Left
+   *  out, the carousel keeps its own place. */
+  at?: number;
+  /** Told whenever the carousel moves, by a tab, an arrow or a swipe. */
+  onAt?: (i: number) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -23,9 +28,11 @@ interface CarouselProps {
  * It is a scroll container, so a trackpad swipe works and the tabs stay
  * honest about where it ended up.
  */
-const Carousel = ({ slides }: CarouselProps) => {
+const Carousel = ({ slides, at: picked, onAt }: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
-  const [at, setAt] = useState(0);
+  const [own, setOwn] = useState(0);
+  const at = picked ?? own;
+  const setAt = (i: number) => (onAt ? onAt(i) : setOwn(i));
 
   /**
    * Where a click is taking it, while it is still on the way.
@@ -38,10 +45,9 @@ const Carousel = ({ slides }: CarouselProps) => {
   const bound = useRef<number | null>(null);
   const giveUp = useRef(0);
 
-  const go = (i: number) => {
+  const slideTo = (n: number, smooth: boolean) => {
     const el = track.current;
     if (!el) return;
-    const n = Math.max(0, Math.min(slides.length - 1, i));
     bound.current = n;
     /* And if it never lands exactly — a sub-pixel width, an interrupted
        animation — stop waiting, or a swipe would stop moving the tabs. */
@@ -49,9 +55,26 @@ const Carousel = ({ slides }: CarouselProps) => {
     giveUp.current = window.setTimeout(() => {
       bound.current = null;
     }, 600);
-    el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" });
+    el.scrollTo({ left: n * el.clientWidth, behavior: smooth ? "smooth" : "auto" });
+  };
+
+  const go = (i: number) => {
+    const n = Math.max(0, Math.min(slides.length - 1, i));
+    slideTo(n, true);
     setAt(n);
   };
+
+  /* Picked from outside: slide there, unless it is already there. The first
+     time lands without the animation, so the card opens on its slide. */
+  const first = useRef(true);
+  useEffect(() => {
+    const smooth = !first.current;
+    first.current = false;
+    const el = track.current;
+    if (picked === undefined || !el) return;
+    if (Math.round(el.scrollLeft / Math.max(1, el.clientWidth)) === picked) return;
+    slideTo(picked, smooth);
+  }, [picked]);
 
   return (
     <div className="rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0">

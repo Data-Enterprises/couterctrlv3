@@ -21,7 +21,8 @@ import {
   vitalsOf,
   type Desk,
 } from "./utils/investigationSteps";
-import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
+import { cash, PAGE_ROWS, shortStore, SUGGESTED } from "./utils";
+import { rowsOf } from "./utils/holdsRows";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
 
 // Interfaces
@@ -159,9 +160,16 @@ const DeptInvestigation = ({
   /* The three steps the grid does not answer. All three are arithmetic over
      items already in hand, so changing tab asks for nothing. */
   const holds = useMemo(
-    () => holdsUp(items, target?.focus ?? "unknown"),
-    [items, target?.focus],
+    () =>
+      holdsUp(
+        items,
+        target?.focus ?? "unknown",
+        shortStore(target?.storeName ?? "this store"),
+        shortStore(target?.compareStoreName ?? "the other store"),
+      ),
+    [items, target?.focus, target?.storeName, target?.compareStoreName],
   );
+  const rows = useMemo(() => rowsOf(items), [items]);
   const spread = useMemo(() => spreadOf(items), [items]);
   const vitals = useMemo(() => vitalsOf(items), [items]);
   const supply = useMemo(
@@ -345,10 +353,13 @@ const DeptInvestigation = ({
           {tab === "holds" && salesIn && (
             <HoldsPanel
               holds={holds}
+              rows={rows}
               spread={spread}
               summary={summary}
+              us={target.storeName}
               them={target.compareStoreName}
               vitals={vitals}
+              fmt={fmt}
               cash={cash}
               marginGap={marginGap}
               costPenalty={costPenalty}

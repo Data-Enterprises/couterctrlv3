@@ -57,6 +57,37 @@ export interface DocLine {
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
 
+/** The Summary's rows: which store rang an item, and which way it went. */
+export type RowKind = "onlyTheirs" | "bothLess" | "bothMore" | "onlyMine";
+
+/** Why an item both stores rang is apart: units, price, or both. */
+export type RowReason = "units" | "price" | "both";
+
+/** One line of a row's breakdown, above its items. */
+export interface BreakdownLine {
+  /** The cause the line stands for, on the rows grouped by cause. */
+  cause?: Cause;
+  label: string;
+  amount: number;
+  /** "52 items" or "81%", beside the amount. */
+  side: string;
+  /** Dollars whatever the page shows. A units/price split of a unit count
+   *  means nothing, so those lines are always money. */
+  money: boolean;
+}
+
+/** One Summary row and everything its slide shows. */
+export interface HoldsRow {
+  kind: RowKind;
+  /** Biggest difference first. */
+  items: ItemVerdict[];
+  /** In the page's metric, like the gap column. */
+  total: number;
+  breakdown: BreakdownLine[];
+  /** How many items it takes to reach half the row. */
+  toHalf: number;
+}
+
 export type Stage = "sales" | "orders" | "receipts" | "done" | "failed";
 
 export interface Investigation {
