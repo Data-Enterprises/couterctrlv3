@@ -89,6 +89,24 @@ const HoldsFinding = ({
               </span>
             </div>
           )}
+
+          {/* The margin caveats, a line each under the figure rather than
+              blocks of their own, so the card keeps to the page. Only when
+              there is something to say: a penalty under a cent is not. */}
+          {costPenalty <= -CENT && summary.gap < 0 && (
+            <p className="text-[12.5px] leading-snug text-content/95">
+              Buying the same goods for more took another{" "}
+              <span className="font-semibold text-content">{cash(Math.abs(costPenalty))}</span>{" "}
+              of margin on top of the sales gap.
+            </p>
+          )}
+          {summary.gap >= 0 && marginGap <= -CENT && (
+            <p className="text-[12.5px] leading-snug text-severity_watch_text">
+              <span className="font-bold">Ahead on sales, behind on margin.</span> It took{" "}
+              {cash(summary.gap)} more and kept {cash(Math.abs(marginGap))} less, because it buys
+              the same goods for more.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-0.5">
@@ -105,29 +123,6 @@ const HoldsFinding = ({
           ))}
         </div>
 
-        {/* Only when there is a cost penalty to report. The block is
-        the note, so with nothing to note there is no block, and a
-        penalty that rounds to $0.00 is nothing to note. */}
-        {costPenalty <= -CENT && summary.gap < 0 && (
-          <p className="text-[13.5px] text-content/95 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
-            Buying the same goods for more took another{" "}
-            <span className="font-semibold text-content">
-              {cash(Math.abs(costPenalty))}
-            </span>{" "}
-            of margin on top of the sales gap.
-          </p>
-        )}
-
-        {summary.gap >= 0 && marginGap <= -CENT && (
-          <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
-            <span className="font-bold">
-              Ahead on sales, behind on margin.
-            </span>{" "}
-            This department took {cash(summary.gap)} more and kept{" "}
-            {cash(Math.abs(marginGap))} less, because it buys the same
-            goods for more.
-          </p>
-        )}
       </div>
     </div>
   );

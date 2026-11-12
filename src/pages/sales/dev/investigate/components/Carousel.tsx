@@ -146,7 +146,7 @@ const Carousel = ({ slides, at: picked, onAt, fill = false, above }: CarouselPro
           <div
             key={sl.label}
             className={`flex-none w-full snap-start px-4 py-3.5 min-w-0 ${
-              fill ? "h-full min-h-0 flex flex-col" : ""
+              fill ? "h-full min-h-0 flex flex-col overflow-y-auto thin-scrollbar" : ""
             }`}
           >
             {sl.body}
