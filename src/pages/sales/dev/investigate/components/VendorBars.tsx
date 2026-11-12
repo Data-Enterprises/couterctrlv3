@@ -23,9 +23,9 @@ const VendorBars = ({ vendors, fmt, onVendor }: VendorBarsProps) => {
           <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
             {v.vendorName}
           </span>
-          <span className="flex-1 min-w-0 h-[15px] rounded-sm bg-bkg">
+          <span className="flex-1 min-w-0 h-3.5 rounded-sm bg-bkg">
             <span
-              className="block h-[15px] rounded-sm bg-red-500"
+              className="block h-3.5 rounded-sm bg-red-500"
               style={{ width: `${(Math.abs(v.dollars) / widest) * 100}%` }}
             />
           </span>
