@@ -540,7 +540,7 @@ const SupplyPanel = ({
                       ? supply.deliveries.length > 0
                         ? "No order of any kind came back for either store over the window, and the receipts below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
                         : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
-                      : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names.`}
+                      : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names. Nothing here can say an item was never ordered, so those items are listed as not carried instead.`}
               </p>
             )}
           </div>

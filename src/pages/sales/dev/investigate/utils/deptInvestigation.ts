@@ -351,7 +351,7 @@ export const evidenceSays = (
         : `Both stores sold it. ${us} buys it for ${cash(per)} more a unit, which cost ${cash(item.margins.costPenalty ?? 0)} on the units it sold.`;
     }
     case "not-carried":
-      return `Nothing here says ${us} ever had it, and no orders came back for the window to say whether it was ever asked for. ${theirs}`;
+      return `Nothing here says ${us} ever had it, and no order in this department came back for either store over the window to say whether it was ever asked for. ${theirs}`;
     case "price-mix":
       return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Taking less a unit is most of that difference, more than the units sold.`;
     case "not-moving": {

@@ -363,6 +363,18 @@ export const fetchOrders = async (
   }
 };
 
+/**
+ * Whether there is order history to call an item "never ordered" against.
+ *
+ * This department's, at either store, not the window's. A store that orders
+ * other departments but has its vendor deliver this one without purchase
+ * orders would otherwise call every item here never ordered. Either store's,
+ * not this store's alone: a department this store never ordered from while
+ * the other did is exactly the finding "never ordered" is for.
+ */
+export const ordersKnownFor = (orders: OrdersWave) =>
+  orders.ok && orders.mine.length + orders.theirs.length > 0;
+
 /* ------------------------------------------------------------------ */
 /* Wave 3 — receipts                                                   */
 /* ------------------------------------------------------------------ */

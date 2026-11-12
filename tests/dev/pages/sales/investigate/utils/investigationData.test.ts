@@ -22,6 +22,7 @@ const {
   fetchOrders,
   fetchReceipts,
   fetchSales,
+  ordersKnownFor,
   supplyWindow,
 } = await import("@/pages/sales/dev/investigate/utils/investigationData");
 
@@ -368,6 +369,28 @@ describe("fetchOrders", () => {
     expect(out.mine).toHaveLength(1);
     expect(out.theirs).toHaveLength(1);
     expect(out.theirs[0].sub_department).toBe(21);
+  });
+});
+
+describe("ordersKnownFor", () => {
+  const wave = (over = {}) => ({
+    ok: true, inWindow: 0, mine: [], theirs: [], allMine: [], allTheirs: [],
+    ...over,
+  });
+  const line = { product_code: "1", qty: 1 } as AllOrder;
+
+  it("trusts the order history when either store ordered in this department", () => {
+    expect(ordersKnownFor(wave({ inWindow: 40, theirs: [line] }))).toBe(true);
+    expect(ordersKnownFor(wave({ inWindow: 40, mine: [line] }))).toBe(true);
+  });
+
+  it("does not when the window's orders are all other departments'", () => {
+    // A vendor that delivers this department without purchase orders.
+    expect(ordersKnownFor(wave({ inWindow: 40 }))).toBe(false);
+  });
+
+  it("does not when the orders failed to load", () => {
+    expect(ordersKnownFor(wave({ ok: false, mine: [line] }))).toBe(false);
   });
 });
 

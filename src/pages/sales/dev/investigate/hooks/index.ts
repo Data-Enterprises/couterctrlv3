@@ -11,6 +11,7 @@ import {
   fetchOrders,
   fetchReceipts,
   fetchSales,
+  ordersKnownFor,
   scopeKey,
   type OrdersWave,
   type ReceiptsWave,
@@ -350,12 +351,7 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
             orders: orders.mine,
             receivers: receipts.mine,
             metric,
-            // Not `orders.mine.length`: a department this store genuinely
-            // never ordered is exactly the finding "never ordered" is for.
-            // What disqualifies the claim is the WINDOW coming back with no
-            // orders for either store, which is a department delivered
-            // straight off the vendor's truck.
-            ordersKnown: orders.ok && orders.inWindow > 0,
+            ordersKnown: ordersKnownFor(orders),
           })
         : [],
     [sales, orders, receipts, metric],

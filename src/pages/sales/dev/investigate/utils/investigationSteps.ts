@@ -234,7 +234,7 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "never-ordered": (n, m) =>
     `${n.toLocaleString("en-US")} items with no order here in the window, worth ${m} at the other store.`,
   "not-carried": (n, m) =>
-    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No orders came back for either store over the window, so nothing here says whether they were ever asked for.`,
+    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No order in this department came back for either store over the window, so nothing here says whether they were ever asked for.`,
   "not-received": (n, m) =>
     `${n.toLocaleString("en-US")} items ordered here that never arrived, worth ${m}.`,
   cost: (n, m) =>
