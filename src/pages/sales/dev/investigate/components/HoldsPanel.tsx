@@ -14,6 +14,7 @@ import type {
 } from "../utils/investigationSteps";
 
 // Components
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 import HoldsFinding from "./HoldsFinding";
 import HoldsCharts from "./HoldsCharts";
 import RowItems from "./RowItems";
@@ -37,6 +38,8 @@ interface HoldsPanelProps {
   onPickItem: (code: string) => void;
   onVendor: (vendor: string) => void;
   onSeeAll: () => void;
+  /** Narrow the Supply tab to this code and go there. */
+  onFindInSupply: (upc: string) => void;
 }
 
 /** The investigation's first tab: whether the report holds, led by the biggest row against
@@ -56,6 +59,7 @@ const HoldsPanel = ({
   onPickItem,
   onVendor,
   onSeeAll,
+  onFindInSupply,
 }: HoldsPanelProps) => {
   /** The row the items card shows. Until one is picked, the row with the
    *  most money in it, which is the one the finding leads with. */
@@ -63,6 +67,10 @@ const HoldsPanel = ({
   const selected = picked ?? leadRow(rows);
   const mine = shortStore(us);
   const theirs = shortStore(them);
+  /** The items card's right-click menu, while it is open. */
+  const [menu, setMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const slideUpcs =
+    rows.find((r) => r.kind === selected)?.items.map((i) => i.productCode) ?? [];
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5 flex flex-col">
@@ -116,9 +124,23 @@ const HoldsPanel = ({
             onSelect={setPicked}
             onPickItem={onPickItem}
             onSeeAll={onSeeAll}
+            onItemMenu={(x, y, upc) => setMenu({ x, y, upc })}
           />
         </div>
       </div>
+
+      {menu && (
+        <UpcContextMenu
+          x={menu.x}
+          y={menu.y}
+          upc={menu.upc}
+          allUpcs={slideUpcs}
+          extraActions={[
+            { label: "View in Supply", onClick: () => onFindInSupply(menu.upc) },
+          ]}
+          onClose={() => setMenu(null)}
+        />
+      )}
     </div>
   );
 };

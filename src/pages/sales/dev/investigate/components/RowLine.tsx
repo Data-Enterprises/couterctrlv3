@@ -14,11 +14,12 @@ interface RowLineProps {
   /** The row's biggest difference, which sets the bars' scale. */
   widest: number;
   onPick: (code: string) => void;
+  onMenu: (x: number, y: number, code: string) => void;
 }
 
 /** One item in a row's slide: why it is there, the two stores' figures
  *  behind that, and the difference. */
-const RowLine = ({ item, n, kind, fmt, widest, onPick }: RowLineProps) => {
+const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) => {
   const lb = item.weighted ? " lb" : "";
   const per = item.weighted ? "/lb" : "";
   const both = kind === "bothLess" || kind === "bothMore";
@@ -31,6 +32,10 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick }: RowLineProps) => {
     <button
       type="button"
       onClick={() => onPick(item.productCode)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onMenu(e.clientX, e.clientY, item.productCode);
+      }}
       className={`w-full grid ${ROW_COLS[kind]} gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-bkg rounded text-left`}
     >
       <span className="text-[12px] text-content/95 tabular-nums">{n}</span>

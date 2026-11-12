@@ -18,6 +18,7 @@ interface RowItemsProps {
   onSelect: (kind: RowKind) => void;
   onPickItem: (code: string) => void;
   onSeeAll: () => void;
+  onItemMenu: (x: number, y: number, code: string) => void;
 }
 
 /** The Summary's items card: one slide per row, on the row picked beside it.
@@ -32,6 +33,7 @@ const RowItems = ({
   onSelect,
   onPickItem,
   onSeeAll,
+  onItemMenu,
 }: RowItemsProps) => (
   <Carousel
     fill
@@ -49,6 +51,7 @@ const RowItems = ({
           cash={cash}
           onPickItem={onPickItem}
           onSeeAll={onSeeAll}
+          onItemMenu={onItemMenu}
         />
       ),
     }))}

@@ -34,7 +34,7 @@ const items = [
 
 const money = (v: number) => "$" + v.toFixed(2);
 
-const panel = () =>
+const panel = (onFindInSupply = vi.fn()) =>
   render(
     <HoldsPanel
       holds={holdsUp(items, "price", "018", "003")}
@@ -51,6 +51,7 @@ const panel = () =>
       onPickItem={vi.fn()}
       onVendor={vi.fn()}
       onSeeAll={vi.fn()}
+      onFindInSupply={onFindInSupply}
     />,
   );
 
@@ -84,6 +85,18 @@ describe("Investigation Summary rows", () => {
     panel();
     fireEvent.click(tab(/018 sold more/));
     expect(row(/sold more/)).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("right-clicks an item for its UPC, the slide's UPCs, or Supply", () => {
+    const onFind = vi.fn();
+    panel(onFind);
+    fireEvent.contextMenu(screen.getByText("GROUND BEEF"));
+    const menu = screen.getByTestId("upc-ctx-menu");
+    expect(menu).toHaveTextContent("Copy UPC");
+    expect(menu).toHaveTextContent("Copy all UPCs1");
+    fireEvent.click(screen.getByText("View in Supply"));
+    expect(onFind).toHaveBeenCalledWith("t1");
+    expect(screen.queryByTestId("upc-ctx-menu")).toBeNull();
   });
 
   it("shows no margin note for a penalty that rounds to $0.00", () => {

@@ -375,6 +375,10 @@ const DeptInvestigation = ({
                 setOnly(null);
                 setTab("items");
               }}
+              onFindInSupply={(upc) => {
+                setSupplyUpcs(upc);
+                setTab("supply");
+              }}
             />
           )}
 

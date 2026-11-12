@@ -16,6 +16,7 @@ interface RowSlideProps {
   cash: (v: number) => string;
   onPickItem: (code: string) => void;
   onSeeAll: () => void;
+  onItemMenu: (x: number, y: number, code: string) => void;
 }
 
 /** One row's items: what it is made of, then its ten biggest items, where
@@ -28,6 +29,7 @@ const RowSlide = ({
   cash,
   onPickItem,
   onSeeAll,
+  onItemMenu,
 }: RowSlideProps) => {
   const top = row.items.slice(0, 10);
   const widest = Math.abs(top[0]?.gap ?? 1);
@@ -68,6 +70,7 @@ const RowSlide = ({
                 fmt={fmt}
                 widest={widest}
                 onPick={onPickItem}
+                onMenu={onItemMenu}
               />
               {/* The conclusion drawn in the list it is about, rather
                 than only stated above it. */}
