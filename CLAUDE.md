@@ -353,6 +353,26 @@ itself. Legacy and `prod/` trees are not audited: prod changes by promotion.
 audited as a ratchet. Its known hits are in `scripts/baselines/theme-shared.json` and are fixed with a
 promotion, because clients see them; a new hit fails the audit.
 
+### Tailwind, in short
+
+The rules above in one place, plus what they leave open. `audit:theme` and `check:rules` enforce
+most of it.
+
+- **Classes, not `style`.** `style` is only for a value worked out at runtime (a bar's width, a
+  position), and a colour there is a token: `rgb(var(--color-brand-navy) / 0.12)`.
+- **Colours are tokens** named in `tailwind.config.js`: no raw hex (`bg-[#…]` is one), no
+  `bg-white` / `text-white`, no Tailwind grey. Saturated 400–600 dots and bars are the one exception.
+- **Every class is written out whole.** A class that varies is a ternary of whole class names, or a
+  `Record<Kind, string>` of whole class strings in `utils/` (Investigate's `ROW_COLS`).
+- **Arbitrary values are for exact sizes the scale lacks:** text sizes (`text-[13px]`), grid
+  templates (`grid-cols-[22px_minmax(0,1fr)_96px]`), one-off widths. Never for a colour. The same
+  arbitrary set in several places is a look: give it a `cc-*` class or a constant.
+- **CSS lives in two files.** `src/index.css` (tokens) and `src/styles/components-dev.css` (the
+  `cc-*` looks) are the only places for `@apply` or new CSS. No new stylesheets, no `<style>` tags.
+- **Opacity:** text never below `/95`; fills and borders as light as they like.
+- **Breakpoints** (`sm:`, `md:`) adjust a desktop layout. They never turn it into the phone
+  screen; that is the `mobile/` tree (§1).
+
 ## 12. Also
 
 - **Tooltips:** use `src/components-dev/tooltip` (`CursorTip`); a plain `title` works in dev code.
