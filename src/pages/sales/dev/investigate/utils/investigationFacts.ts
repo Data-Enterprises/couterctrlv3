@@ -2,7 +2,7 @@
 import { calculateCogs } from "../../../../../utils/cogs";
 import { isWeighted, pricedUnits } from "../../../../../utils/pricedUnits";
 import { judge } from "./deptInvestigation";
-import { codeOf } from ".";
+import { codeOf, dayOf } from ".";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -83,6 +83,16 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
     return acc;
   }, {});
 
+  // The newest order day per item, and what was ordered on it.
+  const lastOrder = input.orders.reduce<Record<string, { day: string; qty: number }>>((acc, o) => {
+    const c = codeOf(o.product_code);
+    const day = dayOf(o.order_date);
+    const at = acc[c];
+    if (!at || day > at.day) acc[c] = { day, qty: o.qty };
+    else if (day === at.day) at.qty += o.qty;
+    return acc;
+  }, {});
+
   // Receipts are nested one level down: the endpoint pages by RECEIVER, and
   // each carries the lines that matched.
   const receivedBy = input.receivers.reduce<Record<string, number>>((acc, r) => {
@@ -95,6 +105,17 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
       // that never arrived.
       const c = codeOf(l.product_code);
       acc[c] = (acc[c] ?? 0) + l.qty;
+    });
+    return acc;
+  }, {});
+
+  // Only receivers on or after the newest order can be for that order.
+  const sinceOrder = input.receivers.reduce<Record<string, number>>((acc, r) => {
+    const day = dayOf(r.invoice_date);
+    r.lines.forEach((l) => {
+      const c = codeOf(l.product_code);
+      const ordered = lastOrder[c];
+      if (ordered && day >= ordered.day) acc[c] = (acc[c] ?? 0) + l.qty;
     });
     return acc;
   }, {});
@@ -142,6 +163,9 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
           theirsSales: at(tTw, c, "dollars"),
           orderedQty: orderedBy[c] ?? 0,
           receivedUnits: receivedBy[c] ?? 0,
+          lastOrderDate: lastOrder[c]?.day ?? null,
+          lastOrderQty: lastOrder[c]?.qty ?? 0,
+          receivedSinceOrder: sinceOrder[c] ?? 0,
         },
         input.bands,
         input.ordersKnown ?? true,

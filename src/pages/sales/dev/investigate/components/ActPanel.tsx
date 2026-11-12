@@ -72,7 +72,7 @@ const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) 
                 </span>
               </span>
               <span className="text-[15px] font-bold text-content">
-                {"→"} {OWNER_LABEL[d.owner as "buyer" | "vendor" | "price"]}
+                {"→"} {OWNER_LABEL[d.owner as "buyer" | "receiving" | "price"]}
               </span>
               <p className="text-[13px] leading-relaxed text-content/95">
                 {d.says}

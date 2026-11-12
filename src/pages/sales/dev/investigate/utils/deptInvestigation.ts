@@ -1,5 +1,5 @@
 // Utils
-import { count } from ".";
+import { count, onDay } from ".";
 
 // Interfaces
 import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
@@ -14,7 +14,8 @@ import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, P
  *
  * The point is the CAUSE. A grid of differences tells you Grocery is $29K
  * behind; it does not tell you that $13K of it was never ordered, which is a
- * buyer's problem, and $6K was ordered and never arrived, which is a vendor's.
+ * buyer's problem, and $6K was ordered with no receiver on file, which is
+ * receiving's to check.
  * Those go to two different people, and the difference between them is three
  * facts this module already has.
  */
@@ -125,9 +126,12 @@ export const causeOf = (
   // it was priced at.
   if (!ordered && !received && !rangHere && rangThere)
     return ordersKnown ? "never-ordered" : "not-carried";
-  // Ordered-but-not-arrived needs an order to have been placed, so it cannot
-  // fire at all without order history.
-  if (ordered && !received && gap < 0) return "not-received";
+  // An order with no receiver on file. Orders carry no expected date, so this
+  // says only what is on record, never that it is late. An item that did not
+  // ring here asks about its newest order; one that rang was stocked from
+  // somewhere, so only no receiver at all in the window points at supply.
+  const noReceiver = rangHere ? !received : f.receivedSinceOrder === 0;
+  if (ordered && noReceiver && gap < 0) return "not-received";
   // Delivered, and none of it rang here while the other store sold it.
   if (received && !rangHere && rangThere) return "unsold";
 
@@ -184,7 +188,7 @@ export const ratiosOf = (f: ItemFacts): Ratios => {
 export const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
   "not-carried": "Not carried here",
-  "not-received": "Didn't arrive",
+  "not-received": "No receiver on file",
   cost: "Costing more",
   "not-moving": "Selling fewer",
   unsold: "Received, none sold",
@@ -198,7 +202,7 @@ export const CAUSE_LABEL: Record<Cause, string> = {
 export const CAUSE_OWNER: Record<Cause, string> = {
   "never-ordered": "buyer",
   "not-carried": "nothing on file either way",
-  "not-received": "vendor",
+  "not-received": "receiving: check the receiver was entered",
   cost: "buying terms",
   "not-moving": "merchandising",
   unsold: "merchandising",
@@ -329,6 +333,9 @@ export const evidenceSays = (
   item: ItemVerdict,
   us: string,
   them: string,
+  /** The newest receiver on file for the department, so a missing one can be
+   *  read against how far the receiving data goes. */
+  newestReceiver: string | null = null,
 ): string => {
   const cash = (v: number) =>
     "$" + Math.abs(v).toLocaleString("en-US", {
@@ -340,8 +347,13 @@ export const evidenceSays = (
   switch (item.cause) {
     case "never-ordered":
       return `${us} never ordered or rang it. ${theirs}`;
-    case "not-received":
-      return `${us} ordered it and it never arrived. ${theirs}`;
+    case "not-received": {
+      const when = item.lastOrderDate ? ` on ${onDay(item.lastOrderDate)}` : "";
+      const newest = newestReceiver
+        ? ` The newest receiver on file for this department is ${onDay(newestReceiver)}.`
+        : "";
+      return `${us} ordered ${count(item.lastOrderQty)}${when}. No receiver for it is on file since then.${newest} ${theirs}`;
+    }
     case "cost": {
       const per = item.margins.minePerUnit !== null && item.margins.theirsPerUnit !== null
         ? item.margins.minePerUnit - item.margins.theirsPerUnit

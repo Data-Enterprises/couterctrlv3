@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildFacts, decompose, summarise, tilesAt } from "@/pages/sales/dev/investigate/utils/investigationFacts";
-import { causeOf, judge, ladderSays, marginsOf, ratiosOf, splitGap, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { causeOf, evidenceSays, judge, ladderSays, marginsOf, ratiosOf, splitGap, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/utils/supplyEvidence";
 import type { PriceLadder, ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 import type {
@@ -32,6 +32,9 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsSales: over.theirsTy ?? 0,
   orderedQty: 0,
   receivedUnits: 0,
+  lastOrderDate: null,
+  lastOrderQty: 0,
+  receivedSinceOrder: 0,
   ...over,
 });
 
@@ -213,6 +216,38 @@ describe("causeOf", () => {
     });
     expect(ratiosOf(f).price).toBe(1);
     expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("only counts a receiver dated on or after the order", () => {
+    // Ordered Oct 28; the only receiver is from an earlier order on Oct 1.
+    const f = facts({
+      mineTy: 0, theirsTy: 400, theirsUnits: 40,
+      orderedQty: 12, receivedUnits: 24,
+      lastOrderDate: "2026-10-28", lastOrderQty: 12, receivedSinceOrder: 0,
+    });
+    expect(causeOf(f)).toBe("not-received");
+    expect(causeOf({ ...f, receivedSinceOrder: 12 })).toBe("unsold");
+  });
+
+  it("wants no receiver at all before it blames supply on an item that rang", () => {
+    // It sold, so it was stocked; a newer order not yet received is no cause.
+    const f = facts({
+      mineTy: 200, mineUnits: 200, theirsTy: 400, theirsUnits: 400,
+      orderedQty: 12, receivedUnits: 300, receivedSinceOrder: 0,
+      lastOrderDate: "2026-11-07",
+    });
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("states the order and the newest receiver, never that it is late", () => {
+    const item = judge(facts({
+      mineTy: 0, theirsTy: 400, theirsUnits: 40,
+      orderedQty: 12, lastOrderDate: "2026-10-28", lastOrderQty: 12,
+    }));
+    const says = evidenceSays(item, "018", "003", "2026-10-31");
+    expect(says).toContain("018 ordered 12 on Oct 28. No receiver for it is on file since then.");
+    expect(says).toContain("The newest receiver on file for this department is Oct 31.");
+    expect(says).not.toMatch(/late|expect|arriv/i);
   });
 
   it("names a delivered item that never rang 'unsold', not 'selling fewer'", () => {
@@ -468,6 +503,26 @@ describe("buildFacts", () => {
     expect(out).toHaveLength(1);
     expect(out[0].orderedQty).toBe(10);
     expect(out[0].receivedUnits).toBe(50);
+  });
+
+  it("keeps the newest order day and only the receipts on or after it", () => {
+    const out = buildFacts({
+      ...base,
+      mineTw: [],
+      theirsTw: [row({ product_code: "A", total_sales: 400, qty: 40 })],
+      orders: [
+        order("A", 6, { order_date: "2026-10-01T00:00:00" }),
+        order("A", 12, { order_date: "2026-10-28T00:00:00" }),
+      ],
+      receivers: [
+        receiver([["A", 6]], { invoice_date: "2026-10-03" }),
+        receiver([["A", 5]], { invoice_date: "2026-10-28" }),
+      ],
+    });
+    expect(out[0].lastOrderDate).toBe("2026-10-28");
+    expect(out[0].lastOrderQty).toBe(12);
+    expect(out[0].receivedSinceOrder).toBe(5);
+    expect(out[0].receivedUnits).toBe(11);
   });
 
   it("ignores receipts for items outside the department's sales", () => {

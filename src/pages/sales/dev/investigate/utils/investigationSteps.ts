@@ -186,11 +186,11 @@ export const spreadOf = (items: ItemVerdict[]): Spread => {
 /* 5 · Who fixes it?                                                   */
 /* ------------------------------------------------------------------ */
 
-export type Owner = "buyer" | "vendor" | "price" | null;
+export type Owner = "buyer" | "receiving" | "price" | null;
 
 export const OWNER_LABEL: Record<Exclude<Owner, null>, string> = {
   buyer: "Buyer",
-  vendor: "Vendor",
+  receiving: "Receiving",
   price: "Whoever sets price",
 };
 
@@ -211,7 +211,8 @@ const DESK: Record<Cause, Owner> = {
   // does not. What it does NOT claim is that somebody missed an order --
   // there is no order history in the window to miss.
   "not-carried": "buyer",
-  "not-received": "vendor",
+  // Receiving first: the question is whether the receiver was entered.
+  "not-received": "receiving",
   cost: "buyer",
   "price-mix": "price",
   "not-moving": null,
@@ -236,7 +237,7 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "not-carried": (n, m) =>
     `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No order in this department came back for either store over the window, so nothing here says whether they were ever asked for.`,
   "not-received": (n, m) =>
-    `${n.toLocaleString("en-US")} items ordered here that never arrived, worth ${m}.`,
+    `${n.toLocaleString("en-US")} items ordered here with no receiver on file since the order, worth ${m}.`,
   cost: (n, m) =>
     `${n.toLocaleString("en-US")} items bought for more here than there, costing ${m} of margin.`,
   "price-mix": (n, m) =>

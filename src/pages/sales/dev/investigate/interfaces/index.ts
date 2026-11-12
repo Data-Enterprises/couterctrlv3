@@ -168,6 +168,13 @@ export interface ItemFacts {
   theirsSales: number;
   orderedQty: number;
   receivedUnits: number;
+  /** The newest order day in the window (YYYY-MM-DD), and what was ordered
+   *  that day. Orders carry no expected date, so nothing says when it is due. */
+  lastOrderDate: string | null;
+  lastOrderQty: number;
+  /** Units on receivers dated on or after `lastOrderDate`. A receiver from
+   *  before the order belongs to an earlier one. */
+  receivedSinceOrder: number;
 }
 
 export interface Margins {

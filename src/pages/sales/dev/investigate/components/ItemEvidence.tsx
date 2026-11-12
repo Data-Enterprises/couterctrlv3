@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 // Utils
+import { newestReceiverDay } from "../utils";
 import { ladderFor, supplyTimeline } from "../utils/supplyEvidence";
 import {
   CAUSE_LABEL,
@@ -54,7 +55,7 @@ interface ItemEvidenceProps {
 /**
  * The evidence behind one item's cause.
  *
- * The grid says "Didn't arrive". Until somebody can see an order on the 22nd
+ * The grid says "No receiver on file". Until somebody can see an order on the 22nd
  * with nothing against it, that is a label they have to take on trust — so
  * this is not a decoration, it is the proof, and it is the only place on the
  * page where the two stores' supply sits side by side.
@@ -62,7 +63,7 @@ interface ItemEvidenceProps {
  * Two halves, because the causes split along the same line:
  *
  *   The timeline  — ordered, received, in date order, both stores. Answers
- *                   never-ordered and didn't-arrive.
+ *                   never-ordered and no-receiver-on-file.
  *   The ladder    — every price the item actually RANG at, with the units and
  *                   the baskets behind each. Answers price / mix, and does it
  *                   with figures an average destroys.
@@ -193,7 +194,12 @@ const ItemEvidence = ({
               {CAUSE_LABEL[item.cause]}
             </span>
             <p className="text-[13.5px] leading-snug mt-1">
-              {evidenceSays(item, openStoreName, compareStoreName)}
+              {evidenceSays(
+                item,
+                openStoreName,
+                compareStoreName,
+                newestReceiverDay(mineReceipts),
+              )}
             </p>
           </div>
         )}

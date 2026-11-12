@@ -22,6 +22,9 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsSales: over.theirsTy ?? 0,
   orderedQty: 0,
   receivedUnits: 0,
+  lastOrderDate: null,
+  lastOrderQty: 0,
+  receivedSinceOrder: 0,
   ...over,
 });
 
@@ -178,7 +181,7 @@ describe("5 · who fixes it", () => {
     expect(never?.owner).toBe("buyer");
     expect(never?.actionable).toBe(true);
     const late = desks.find((d) => d.cause === "not-received");
-    expect(late?.owner).toBe("vendor");
+    expect(late?.owner).toBe("receiving");
   });
 
   /**

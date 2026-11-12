@@ -190,8 +190,8 @@ export const useRowSelection = (
  * Each wave updates state as it lands rather than waiting for the slowest, so
  * the grid is readable after the sales calls and every item's cause sharpens
  * behind it. An item starts as a gap with no cause, gains never-ordered or
- * not-received when orders arrive, and only then can a vendor failure be told
- * from a merchandising one.
+ * no-receiver-on-file when orders arrive, and only then can a supply gap be
+ * told from a merchandising one.
  *
  * `stage` is what the screen shows about itself: it names the wave still
  * OUTSTANDING, so "receipts" means sales and orders are in hand and the

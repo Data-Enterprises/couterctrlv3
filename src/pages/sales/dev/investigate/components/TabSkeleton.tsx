@@ -31,7 +31,7 @@ const TabSkeleton = ({ tab }: TabSkeletonProps) => (
             <span className="font-bold text-content">
               Reading orders and receipts.
             </span>{" "}
-            Until they land a vendor&rsquo;s miss cannot be told from a
+            Until they land a supply gap cannot be told from a
             merchandising one, so this stays masked rather than changing under
             you.
           </>
