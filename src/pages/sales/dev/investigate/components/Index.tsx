@@ -35,9 +35,9 @@ const Index = ({ vitals, them, cash }: IndexProps) => {
             <span className="w-[52px] flex-shrink-0 text-[12px] cc-caps">
               {m.label}
             </span>
-            <span className="relative flex-1 min-w-0 h-[10.5px] rounded-sm bg-bkg">
+            <span className="relative flex-1 min-w-0 h-[18px] rounded-sm bg-bkg">
               <span
-                className={`absolute left-0 top-0 h-[10.5px] rounded-sm ${
+                className={`absolute left-0 top-0 h-[18px] rounded-sm ${
                   over ? "bg-emerald-500" : "bg-red-500"
                 }`}
                 style={{
@@ -45,7 +45,7 @@ const Index = ({ vitals, them, cash }: IndexProps) => {
                 }}
               />
               <span
-                className="absolute -top-1 w-px h-[18px] bg-brand_navy/40"
+                className="absolute -top-1 w-px h-[26px] bg-brand_navy/40"
                 style={{ left: `${RULE}%` }}
               />
             </span>

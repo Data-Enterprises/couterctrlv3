@@ -57,6 +57,13 @@ export interface DocLine {
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
 
+/** The week-by-week card's answer, in a lead and the rest of the sentence. */
+export interface WeeksVerdict {
+  tone: "worse" | "better" | "steady" | "ahead";
+  lead: string;
+  rest: string;
+}
+
 /** The Summary's rows: which store rang an item, and which way it went. */
 export type RowKind = "onlyTheirs" | "bothLess" | "bothMore" | "onlyMine";
 

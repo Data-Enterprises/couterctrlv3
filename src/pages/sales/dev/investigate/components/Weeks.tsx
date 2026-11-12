@@ -1,47 +1,72 @@
+// Utils
+import { weeksSay } from "../utils/weeks";
+
 // Interfaces
 import type { Vitals as VitalsShape } from "../utils/investigationSteps";
 
 interface WeeksProps {
   vitals: VitalsShape;
-  cash: (v: number) => string;
+  /** The page's metric: dollars, or units on Quantity. */
+  fmt: (v: number) => string;
 }
 
 /** The department against itself: a standing difference, or something that
- *  broke in the last seven days. Values above the bars, because the labels
- *  below already anchor them and a figure under a bar reads as its caption
- *  rather than as its height. */
-const Weeks = ({ vitals, cash }: WeeksProps) => {
-  const tallest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
+ *  broke in the last seven days. The answer is written above the three gaps,
+ *  which are drawn as the same bars as the rest of the tab. */
+const Weeks = ({ vitals, fmt }: WeeksProps) => {
+  const widest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
+  const says = weeksSay(vitals.weeks, fmt);
+  /** Newest first: this week, then last week, then last year. */
+  const rows = [...vitals.weeks].reverse();
   return (
-    <div className="grid grid-cols-3 gap-3">
-      {vitals.weeks.map((w) => (
-        <div key={w.label} className="flex flex-col">
+    <div className="flex flex-col gap-3.5">
+      <p className="text-[14px] font-semibold leading-snug text-content">
+        <span
+          className={
+            says.tone === "worse"
+              ? "text-delta_negative_text"
+              : says.tone === "steady"
+                ? "text-content"
+                : "text-delta_positive_text"
+          }
+        >
+          {says.lead}
+        </span>{" "}
+        {says.rest}
+      </p>
+
+      <div className="flex flex-col gap-2.5">
+        {rows.map((w, i) => (
           <div
-            className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${
-              w.gap >= 0
-                ? "text-delta_positive_text"
-                : "text-delta_negative_text"
-            }`}
+            key={w.label}
+            className="grid grid-cols-[92px_minmax(0,1fr)_112px] gap-3 items-center"
           >
-            {w.gap >= 0 ? "+" : "−"}
-            {cash(Math.abs(w.gap))}
-          </div>
-          <div className="h-[56px] flex items-end justify-center mt-1">
             <span
-              className={`block w-full rounded-t-sm ${
-                w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
+              className={`text-[12.5px] text-content ${
+                i === 0 ? "font-bold" : ""
               }`}
-              style={{
-                height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 56)}px`,
-              }}
-            />
+            >
+              {w.label}
+            </span>
+            <span className="h-[18px] rounded-sm bg-bkg">
+              <span
+                className={`block h-[18px] rounded-sm ${
+                  w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
+                }`}
+                style={{ width: `${(Math.abs(w.gap) / widest) * 100}%` }}
+              />
+            </span>
+            <span
+              className={`text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
+                w.gap >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+              }`}
+            >
+              {w.gap >= 0 ? "+" : "−"}
+              {fmt(Math.abs(w.gap))}
+            </span>
           </div>
-          <div className="h-px bg-brand_navy/15" />
-          <div className="text-[12px] cc-caps text-center whitespace-nowrap mt-1">
-            {w.label}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

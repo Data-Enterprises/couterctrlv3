@@ -11,11 +11,14 @@ import type {
 import Carousel from "./Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";
+import VendorBars from "./VendorBars";
 
 interface HoldsChartsProps {
   spread: Spread;
   them: string;
   vitals: VitalsShape;
+  /** The page's metric: dollars, or units on Quantity. */
+  fmt: (v: number) => string;
   cash: (v: number) => string;
   onVendor: (vendor: string) => void;
 }
@@ -26,29 +29,22 @@ const HoldsCharts = ({
   spread,
   them,
   vitals,
+  fmt,
   cash,
   onVendor,
 }: HoldsChartsProps) => {
-  const vendors = spread.byVendor.slice(0, 6);
-  const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
+  const vendors = spread.byVendor;
 
   /* Three ways of asking the same question, so they are peers and
      share one frame. Across a row they were three cards none of them
      was wide enough for; down a rail the third went unread. */
   return (
     <Carousel
+      fill
       slides={[
         {
           label: "Week by week",
-          body: (
-            <>
-              <p className="text-[12px] text-content/95 leading-snug mb-2.5">
-                Against itself: a standing difference, or something that
-                broke this week.
-              </p>
-              <Weeks vitals={vitals} cash={cash} />
-            </>
-          ),
+          body: <Weeks vitals={vitals} fmt={fmt} />,
         },
         {
           label: `Against ${shortStore(them)}`,
@@ -73,31 +69,7 @@ const HoldsCharts = ({
                       The shortfall by vendor. Pick one to narrow the
                       items.
                     </p>
-                    <div className="flex flex-col gap-1.5">
-                      {vendors.map((v) => (
-                        <button
-                          key={v.vendorName}
-                          onClick={() => onVendor(v.vendorName)}
-                          className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
-                        >
-                          <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
-                            {v.vendorName}
-                          </span>
-                          <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-bkg">
-                            <span
-                              className="block h-[8.4px] rounded-sm bg-red-500"
-                              style={{
-                                width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                              }}
-                            />
-                          </span>
-                          <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                            {"−"}
-                            {cash(Math.abs(v.dollars))}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                    <VendorBars vendors={vendors} fmt={fmt} onVendor={onVendor} />
                   </>
                 ),
               },

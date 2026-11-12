@@ -105,13 +105,18 @@ const HoldsPanel = ({
               onSelect={setPicked}
             />
 
-            <HoldsCharts
-              spread={spread}
-              them={them}
-              vitals={vitals}
-              cash={cash}
-              onVendor={onVendor}
-            />
+            {/* The rest of the column, so its foot lines up with the items
+                card beside it. */}
+            <div className="flex-1 min-h-[240px] flex flex-col">
+              <HoldsCharts
+                spread={spread}
+                them={them}
+                vitals={vitals}
+                fmt={fmt}
+                cash={cash}
+                onVendor={onVendor}
+              />
+            </div>
           </div>
 
           <RowItems
