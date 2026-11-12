@@ -65,8 +65,10 @@ const HoldsPanel = ({
   const theirs = shortStore(them);
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
-      <div className="flex flex-col gap-5">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5 flex flex-col">
+      {/* The page's height, so the items card fits it and scrolls its rows
+          inside. Below that floor the page scrolls as a whole instead. */}
+      <div className="flex-1 min-h-[560px] flex flex-col gap-5">
         {/* The finding first, across the width, then the evidence under it:
             the hero on the left and the three supporting cards beside it.
             The carousel sat above all of this for a while, which put three
@@ -76,10 +78,11 @@ const HoldsPanel = ({
             and the charts crowded each other and the list sat alone under
             both of them. */}
         <div
-          className="grid gap-5 items-start"
+          className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)] gap-5"
           style={{ gridTemplateColumns: "minmax(0,0.85fr) minmax(0,1fr)" }}
         >
-          <div className="flex flex-col gap-5 min-w-0">
+          {/* Its own scroll, with room for the cards' shadows. */}
+          <div className="flex flex-col gap-5 min-w-0 min-h-0 overflow-y-auto thin-scrollbar -m-1 p-1">
             <HoldsFinding
               holds={holds}
               rows={rows}

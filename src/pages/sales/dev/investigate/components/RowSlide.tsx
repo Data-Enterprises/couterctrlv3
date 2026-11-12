@@ -20,7 +20,15 @@ interface RowSlideProps {
 
 /** One row's items: what it is made of, then its ten biggest items, where
  *  half of it is reached, and the way to the rest. */
-const RowSlide = ({ row, us, them, fmt, cash, onPickItem, onSeeAll }: RowSlideProps) => {
+const RowSlide = ({
+  row,
+  us,
+  them,
+  fmt,
+  cash,
+  onPickItem,
+  onSeeAll,
+}: RowSlideProps) => {
   const top = row.items.slice(0, 10);
   const widest = Math.abs(top[0]?.gap ?? 1);
   const behind = row.total < 0;
@@ -28,7 +36,7 @@ const RowSlide = ({ row, us, them, fmt, cash, onPickItem, onSeeAll }: RowSlidePr
   const heads = rowHeads(row.kind, us, them);
 
   return (
-    <div className="flex flex-col gap-4 min-w-0">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 min-w-0">
       <p className="text-[17px] font-semibold leading-snug text-content">
         {rowSays(row, us, them, fmt, cash)}
       </p>
@@ -37,10 +45,12 @@ const RowSlide = ({ row, us, them, fmt, cash, onPickItem, onSeeAll }: RowSlidePr
         <RowBreakdown lines={row.breakdown} fmt={fmt} cash={cash} />
       )}
 
+      {/* The items scroll inside the slide: the breakdown above them can
+        run to any number of lines, so the card fits the page whatever it holds. */}
       {n > 0 && (
-        <div className="flex flex-col">
+        <div className="cc-scroll flex flex-col">
           <div
-            className={`grid ${ROW_COLS[row.kind]} gap-3 px-1.5 pb-1.5 border-b border-brand_navy/15 cc-caps text-[10.5px] text-brand_slate`}
+            className={`sticky top-0 z-10 bg-custom-white grid ${ROW_COLS[row.kind]} gap-3 px-1.5 pb-1.5 border-b border-brand_navy/15 cc-caps text-[10.5px] text-brand_slate`}
           >
             {heads.map((h, i) => (
               <span key={i} className={i === heads.length - 1 ? "text-right" : ""}>

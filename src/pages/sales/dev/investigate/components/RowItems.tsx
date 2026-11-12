@@ -34,6 +34,7 @@ const RowItems = ({
   onSeeAll,
 }: RowItemsProps) => (
   <Carousel
+    fill
     at={ROW_ORDER.indexOf(selected)}
     onAt={(i) => onSelect(ROW_ORDER[i])}
     slides={rows.map((row) => ({

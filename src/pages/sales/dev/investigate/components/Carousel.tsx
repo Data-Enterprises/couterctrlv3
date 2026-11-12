@@ -11,6 +11,9 @@ interface CarouselProps {
   at?: number;
   /** Told whenever the carousel moves, by a tab, an arrow or a swipe. */
   onAt?: (i: number) => void;
+  /** Fill the height it is given, so each slide can scroll inside itself
+   *  rather than the card growing past the page. */
+  fill?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -28,7 +31,7 @@ interface CarouselProps {
  * It is a scroll container, so a trackpad swipe works and the tabs stay
  * honest about where it ended up.
  */
-const Carousel = ({ slides, at: picked, onAt }: CarouselProps) => {
+const Carousel = ({ slides, at: picked, onAt, fill = false }: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [own, setOwn] = useState(0);
   const at = picked ?? own;
@@ -77,7 +80,11 @@ const Carousel = ({ slides, at: picked, onAt }: CarouselProps) => {
   }, [picked]);
 
   return (
-    <div className="rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0">
+    <div
+      className={`rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0 ${
+        fill ? "h-full min-h-0" : ""
+      }`}
+    >
       <div className="flex items-center gap-0.5 px-2 pt-1.5 border-b border-brand_navy/15">
         {slides.map((sl, i) => (
           <button
@@ -127,12 +134,16 @@ const Carousel = ({ slides, at: picked, onAt }: CarouselProps) => {
           }
           setAt(i);
         }}
-        className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory overscroll-x-contain"
+        className={`flex overflow-x-auto no-scrollbar snap-x snap-mandatory overscroll-x-contain ${
+          fill ? "flex-1 min-h-0" : ""
+        }`}
       >
         {slides.map((sl) => (
           <div
             key={sl.label}
-            className="flex-none w-full snap-start px-4 py-3.5 min-w-0"
+            className={`flex-none w-full snap-start px-4 py-3.5 min-w-0 ${
+              fill ? "h-full min-h-0 flex flex-col" : ""
+            }`}
           >
             {sl.body}
           </div>
