@@ -362,6 +362,78 @@ promotion, because clients see them; a new hit fails the audit.
   departments), never re-implemented inline.
 - **The backend** (`C:\backend\goliath-platform`) is read-only from this repo: review and report only.
 
+## 13. Promoting dev to prod
+
+Prod changes only by **promotion**: a script copies a signed-off dev tree over its prod twin.
+Nobody edits a prod tree by hand, before, during or after a move.
+
+**Why:** the dev tree is what was tested and signed off. A scripted copy, proven by `check:split`'s
+MIRROR check, is the only way to know prod behaves exactly like it.
+
+**What moves, and how:**
+
+| Forked (moves by promotion) | Dev → prod |
+|---|---|
+| Page trees | `src/pages/<page>/dev` → `prod` (`npm run promote:page`, or `greenlight:page` for a Coming Soon page) |
+| Component library | `src/components-dev` → `src/components` (`npm run promote:lib`) |
+| Redux slices | `src/features/dev/dev<X>Slice.ts` → `src/features/<x>Slice.ts` (written back by the promote) |
+| Tests | `tests/dev/pages/<page>` → `tests/prod/pages/<page>` (copied by the promote) |
+
+`src/utils`, `src/hooks`, `src/interfaces`, `src/api`, `src/content`, `src/index.css` and
+`src/styles` have one copy and are already live in prod: nothing to move. So does a `src/components`
+file with no dev twin (the title bar, the avatar menu): it is edited in place. Dev-only behaviour in
+shared code is a runtime gate (`apiEnv === "dev"`), switched by hand, one commit per gate.
+
+**A move, in order.** `scripts/release/manifest.json` names the pages, the library files kept on
+purpose and the gates to switch; it matches the Production Update Guide's scope.
+
+1. **Backend first.** Steve moves goliath-platform dev → prod. `npm run release:plan` must show no
+   endpoint missing on the prod branch before any frontend file moves.
+2. **Prep on master_publish, ahead of the day.** Each is a normal logic commit, invisible in prod:
+   create and register any missing prod slice (cleared on sign-out, with its tests); replace
+   `useDevApi` inside Coming Soon trees with `context.url` / `context.token`; drop the
+   `useCanSeeComingSoon` gates on links to pages that ship; move a library file only one page uses
+   into that page.
+3. **Its own publish.** Publish what is on master_publish first. Then branch
+   `prod_move_<date>` off it, and freeze the moving pages' dev trees until the move is published.
+4. **`npm run release:plan` ends `0 open item(s)`.** It is read-only and lists every missing slice,
+   leftover `useDevApi`, Coming Soon gate, one-page library file, cross-page import, flag that
+   differs between the trees, and non-moving prod page the library change reaches.
+5. **The library, whole, first: `npm run promote:lib`.** One commit. Every page stops on the same
+   changed library files, so they are decided once here, not page by page. Its blast radius is the
+   prod pages that don't move: they get the platform changes too, and the update guide says so.
+6. **Case A pages, smallest first** (`promote:page -- <page>`; the library already matches).
+   **Case B pages** with `greenlight:page`, then their nav entry and levels. `npx tsc -b` and
+   `check:split <page>` after each. One commit per page, script output only:
+   `Promote <page>: prod matches dev at <sha>`.
+7. **Gates and flags**, one commit each, as the manifest lists them. Per-tree flags
+   (`ADMIN_MIN_LEVEL`, Upc List's `fixes`) are product calls Steve makes, never inherited silently.
+   The release notes go in with their date (`docs/tools/release-notes.next.json` →
+   `src/content/releaseNotes.json`).
+8. **Verify the whole move:** the §10 suite, `check:split` for **every** page, `release:plan` clean,
+   then Steve's side-by-side click-through, dev against prod, watching that every request goes to
+   the prod API.
+9. **Merge into master_publish**; Steve publishes (master_rollback first, as for every publish).
+
+**Rules while promoting:**
+- A promote commit is a move commit. If the promoted page is wrong, fix the **dev** tree and promote
+  again. Never touch the prod copy.
+- A failing page is pulled from the move, not patched in prod.
+- No prod tree may call `useDevApi` or read `devToken` / `DEV_API_URL` (`check:split` PROD-API).
+- A promoted prod tree follows these rules, so it joins `check:rules` and `audit:theme`. A promote
+  commit carries its baseline entries (`--update-baseline`); the counts only go down.
+- Every step goes in `docs/since-last-publish.md`.
+
+**After a move.** The trees match. Dev drifts again; promote page by page as Steve signs work off,
+and promote the library with the first page that needs a changed library file. Never let the library
+drift for months again: by the first move it had 133 new and 54 changed files.
+
+**Before the first move (Nov 2026).** The tools above are partly to build: the manifest,
+`release:plan`, `promote:lib`, promote-page creating missing prod slices and copying tests, and
+check-split's PROD-API check. The measured numbers, page order, gate list and the decisions Steve
+still owes are in `docs/prod-move-plan-2026-11-11.md`. The background (what each case involves, the
+traps) is `Documents/doc-templates/dev-to-prod-release.md`.
+
 ## Before every commit
 
 - [ ] Each component file is imports, props interface, component, `export default`, and nothing
@@ -381,5 +453,7 @@ promotion, because clients see them; a new hit fails the audit.
       than hand-rolled
 - [ ] Comments are short; no commented-out code
 - [ ] Moves and logic changes are in separate commits; only intended paths are staged
+- [ ] No hand edit in a `prod/` tree, and none in a `src/components` file that has a
+      `src/components-dev` twin: those change by promotion (§13)
 - [ ] The pre-commit hook passes; a baseline only went down, or moved with a move commit
 - [ ] Verification is green
