@@ -95,6 +95,7 @@ export type Cause =
   | "cost"
   | "not-moving"
   | "unsold"
+  | "no-receipts"
   | "price-mix"
   | "ahead"
   | "streamlined";
@@ -242,6 +243,8 @@ export interface InvestigationInput {
    *  `causeOf`. Defaults to true, which is the state every caller with
    *  orders in hand is in. */
   ordersKnown?: boolean;
+  /** False when the receipts did not come back. Defaults to true. */
+  receiptsKnown?: boolean;
 }
 
 export interface CauseTotal {

@@ -30,6 +30,7 @@ import type { ItemVerdict, Col, InvestigationTab } from "./interfaces";
 // Components
 import TabSkeleton from "./components/TabSkeleton";
 import HoldsPanel from "./components/HoldsPanel";
+import ReceiptsNote from "./components/ReceiptsNote";
 import SupplyPanel from "./components/SupplyPanel";
 import ActPanel from "./components/ActPanel";
 import InvestigationHeader from "./components/InvestigationHeader";
@@ -319,6 +320,8 @@ const DeptInvestigation = ({
         supply={supply}
         desks={desks}
       />
+
+      {allIn && !receipts.ok && <ReceiptsNote />}
 
       {problem ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/95">

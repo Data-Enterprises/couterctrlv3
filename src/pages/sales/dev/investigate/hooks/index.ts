@@ -209,7 +209,7 @@ const NO_ORDERS: OrdersWave = {
   allMine: [],
   allTheirs: [],
 };
-const NO_RECEIPTS: ReceiptsWave = { mine: [], theirs: [] };
+const NO_RECEIPTS: ReceiptsWave = { ok: true, mine: [], theirs: [] };
 
 export const useDeptInvestigation = (args: InvestigationArgs): Investigation => {
   const dispatch = useAppDispatch();
@@ -328,7 +328,9 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
       setReceipts(receiptsWave);
       setStage("done");
 
-      // Only a complete set is kept — see the note on InvestigationWaves.
+      // Only a complete set is kept — see the note on InvestigationWaves. A
+      // wave that failed is not complete, so the next visit asks again.
+      if (!ordersWave.ok || !receiptsWave.ok) return;
       dispatch(
         rememberInvestigation({
           key,
@@ -352,6 +354,8 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
             receivers: receipts.mine,
             metric,
             ordersKnown: ordersKnownFor(orders),
+            // A set cached before `ok` existed was complete by definition.
+            receiptsKnown: receipts.ok !== false,
           })
         : [],
     [sales, orders, receipts, metric],

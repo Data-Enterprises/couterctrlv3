@@ -112,6 +112,8 @@ export const causeOf = (
    * had no order data for and calling it a missed order.
    */
   ordersKnown: boolean = true,
+  /** Whether the receipts came back. Every supply cause rests on them. */
+  receiptsKnown: boolean = true,
 ): Cause => {
   // Dollars whatever the page shows: an item's cause must not change with the
   // Sales/Quantity switch, and on quantity `mineTy` is a unit count.
@@ -120,6 +122,10 @@ export const causeOf = (
   const received = f.receivedUnits > 0;
   const rangHere = rangAt(f.mineUnits, f.mineSales);
   const rangThere = rangAt(f.theirsUnits, f.theirsSales);
+
+  // Without receipts nothing can say whether it was delivered, so an item
+  // that did not ring here gets no supply cause at all.
+  if (!receiptsKnown && !rangHere && rangThere) return "no-receipts";
 
   // The two supply failures come first wherever the sales landed: an item
   // that never reached the shelf cannot be explained by what it cost or what
@@ -131,7 +137,7 @@ export const causeOf = (
   // ring here asks about its newest order; one that rang was stocked from
   // somewhere, so only no receiver at all in the window points at supply.
   const noReceiver = rangHere ? !received : f.receivedSinceOrder === 0;
-  if (ordered && noReceiver && gap < 0) return "not-received";
+  if (receiptsKnown && ordered && noReceiver && gap < 0) return "not-received";
   // Delivered, and none of it rang here while the other store sold it.
   if (received && !rangHere && rangThere) return "unsold";
 
@@ -192,6 +198,7 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   cost: "Costing more",
   "not-moving": "Selling fewer",
   unsold: "Received, none sold",
+  "no-receipts": "Receipts unavailable",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
   streamlined: "Streamlined",
@@ -206,6 +213,7 @@ export const CAUSE_OWNER: Record<Cause, string> = {
   cost: "buying terms",
   "not-moving": "merchandising",
   unsold: "merchandising",
+  "no-receipts": "the receipts could not be read",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
   streamlined: "nothing to chase",
@@ -246,6 +254,7 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
   "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
   unsold: { chip: "bg-sky-50 text-sky-900", ring: "ring-sky-900/40" },
+  "no-receipts": { chip: "bg-fill_muted text-content/95", ring: "ring-content/30" },
   "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
   ahead: {
     chip: "bg-delta_positive_bg text-delta_positive_text",
@@ -370,6 +379,8 @@ export const evidenceSays = (
       const lb = item.weighted ? " lb" : "";
       return `Both stores sold it, at about the same price. ${us} sold ${count(item.mineUnits)}${lb} against ${count(item.theirsUnits)}${lb}. Nothing in this data says why.`;
     }
+    case "no-receipts":
+      return `${us} did not ring it. We couldn't get the receipts information at this time, so nothing here says whether it was delivered. ${theirs}`;
     case "unsold":
       return `${us} received it and none of it rang this week. ${theirs}`;
     case "ahead":
@@ -383,10 +394,11 @@ export const judge = (
   f: ItemFacts,
   bands: Bands = DEFAULT_BANDS,
   ordersKnown: boolean = true,
+  receiptsKnown: boolean = true,
 ): ItemVerdict => ({
   ...f,
   gap: f.mineTy - f.theirsTy,
-  cause: causeOf(f, bands, ordersKnown),
+  cause: causeOf(f, bands, ordersKnown, receiptsKnown),
   ratios: ratiosOf(f),
   margins: marginsOf(f),
 });

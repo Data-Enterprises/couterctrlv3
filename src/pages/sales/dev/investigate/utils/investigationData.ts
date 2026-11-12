@@ -380,6 +380,9 @@ export const ordersKnownFor = (orders: OrdersWave) =>
 /* ------------------------------------------------------------------ */
 
 export interface ReceiptsWave {
+  /** Whether both stores' receipts came back. Without them no item can be
+   *  called never ordered, unreceived or unsold, so the page says so instead. */
+  ok: boolean;
   mine: ReceiverItemSearchReceiver[];
   theirs: ReceiverItemSearchReceiver[];
 }
@@ -399,7 +402,7 @@ const fetchStoreReceipts = async (
   scope: Scope,
   store: Store,
   codes: string[],
-): Promise<ReceiverItemSearchReceiver[]> => {
+): Promise<ReceiverItemSearchReceiver[] | null> => {
   if (!codes.length) return [];
   const supply = supplyWindow(scope.tw);
 
@@ -416,7 +419,7 @@ const fetchStoreReceipts = async (
 
   try {
     const body: ReceiverItemSearchResponse = (await ask(1)).data;
-    if (body.error !== 0) return [];
+    if (body.error !== 0) return null;
 
     const all = await fetchAllPages(
       body,
@@ -431,7 +434,8 @@ const fetchStoreReceipts = async (
     );
     return scopeToStoreNumber(all, store.storeNumber);
   } catch {
-    return [];
+    // Null, not empty: an empty list reads as "nothing was delivered".
+    return null;
   }
 };
 
@@ -443,7 +447,11 @@ export const fetchReceipts = async (
     fetchStoreReceipts(scope, scope.mine, codes),
     fetchStoreReceipts(scope, scope.theirs, codes),
   ]);
-  return { mine, theirs };
+  return {
+    ok: mine !== null && theirs !== null,
+    mine: mine ?? [],
+    theirs: theirs ?? [],
+  };
 };
 
 /**

@@ -250,6 +250,18 @@ describe("causeOf", () => {
     expect(says).not.toMatch(/late|expect|arriv/i);
   });
 
+  it("names no supply cause when the receipts could not be read", () => {
+    const never = facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40 });
+    expect(causeOf(never)).toBe("never-ordered");
+    expect(causeOf(never, DEFAULT_BANDS, true, false)).toBe("no-receipts");
+    // An item that rang is judged on its sales, not on a delivery we can't see.
+    const sold = facts({
+      mineTy: 200, mineUnits: 200, theirsTy: 400, theirsUnits: 400, orderedQty: 6,
+    });
+    expect(causeOf(sold)).toBe("not-received");
+    expect(causeOf(sold, DEFAULT_BANDS, true, false)).toBe("not-moving");
+  });
+
   it("names a delivered item that never rang 'unsold', not 'selling fewer'", () => {
     const f = facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40, receivedUnits: 24 });
     expect(causeOf(f)).toBe("unsold");

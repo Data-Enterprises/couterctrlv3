@@ -169,6 +169,7 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
         },
         input.bands,
         input.ordersKnown ?? true,
+        input.receiptsKnown ?? true,
       ),
     )
     .sort((a, b) => a.gap - b.gap);
@@ -183,6 +184,7 @@ const CAUSE_ORDER: Cause[] = [
   "not-carried",
   "not-received",
   "unsold",
+  "no-receipts",
   "cost",
   "not-moving",
   "price-mix",

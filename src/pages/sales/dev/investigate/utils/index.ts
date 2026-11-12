@@ -75,6 +75,7 @@ export const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
   "unsold",
+  "no-receipts",
   "cost",
   "not-moving",
   "price-mix",

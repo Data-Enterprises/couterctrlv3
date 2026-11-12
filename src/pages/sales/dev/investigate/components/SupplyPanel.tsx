@@ -452,7 +452,7 @@ const SupplyPanel = ({
               {states.length === 1
                 ? `, all still ${states[0]!.toLowerCase()}`
                 : ""}
-              {supply.deliveries.length === 0
+              {supply.deliveries.length === 0 && receipts.ok
                 ? " — nothing received against them."
                 : "."}
             </p>
@@ -599,8 +599,9 @@ const SupplyPanel = ({
                 Received &middot; 0
               </div>
               <p className="text-[12.5px] text-content/95 leading-snug mt-0.5">
-                No invoice carried an item from this department, at either
-                store.
+                {receipts.ok
+                  ? "No invoice carried an item from this department, at either store."
+                  : "We couldn’t get the receipts information at this time."}
               </p>
             </div>
           )}

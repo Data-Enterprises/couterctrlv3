@@ -433,11 +433,17 @@ describe("fetchReceipts", () => {
     expect(out.mine.map((r) => r.invoiceid)).toEqual([1]);
   });
 
-  it("resolves empty on failure rather than taking the screen down", async () => {
+  it("resolves empty on failure, and says it failed, rather than taking the screen down", async () => {
     searchReceiversByItem.mockRejectedValue(new Error("network"));
     await expect(fetchReceipts(scope, ["A"])).resolves.toEqual({
+      ok: false,
       mine: [],
       theirs: [],
     });
+  });
+
+  it("says it failed when the API answers with an error", async () => {
+    searchReceiversByItem.mockResolvedValue({ data: { error: 1, msg: "no" } });
+    expect((await fetchReceipts(scope, ["A"])).ok).toBe(false);
   });
 });

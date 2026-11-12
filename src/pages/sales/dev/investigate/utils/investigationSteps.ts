@@ -217,6 +217,7 @@ const DESK: Record<Cause, Owner> = {
   "price-mix": "price",
   "not-moving": null,
   unsold: null,
+  "no-receipts": null,
   streamlined: null,
   ahead: null,
 };
@@ -244,6 +245,8 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
     `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
   "not-moving": (n, m) =>
     `${n.toLocaleString("en-US")} items both stores sold, at about the same price, where this one sold fewer, worth ${m}. Nothing in this data says why.`,
+  "no-receipts": (n, m) =>
+    `${n.toLocaleString("en-US")} items this store did not ring, worth ${m} at the other store. The receipts could not be read, so nothing here says whether they were delivered.`,
   unsold: (n, m) =>
     `${n.toLocaleString("en-US")} items delivered here that did not ring this week, worth ${m} at the other store.`,
   streamlined: (n, m) =>
