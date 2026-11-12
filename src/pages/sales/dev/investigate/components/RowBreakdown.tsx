@@ -26,11 +26,9 @@ const RowBreakdown = ({ lines, us, them, fmt, cash }: RowBreakdownProps) => {
         <div
           key={l.label}
           className="grid grid-cols-[150px_minmax(0,1fr)_64px_96px] gap-2.5 items-center"
+          title={l.cause ? CAUSE_TIP[l.cause](us, them) : partTip(l, total, cash)}
         >
-          <span
-            className="text-[12.5px] font-semibold text-content truncate"
-            title={l.cause ? CAUSE_TIP[l.cause](us, them) : partTip(l, total, cash)}
-          >
+          <span className="text-[12.5px] font-semibold text-content truncate">
             {l.label}
           </span>
           <span className="h-[8.4px] rounded-sm bg-custom-white">
