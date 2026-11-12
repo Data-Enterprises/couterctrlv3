@@ -10,7 +10,7 @@ interface UpcFilterProps {
  *  them. The grid's and the Summary's right-click menus fill this in, so
  *  nobody retypes a UPC to find out whether it was ever ordered. */
 const UpcFilter = ({ value, onChange, codes, summary }: UpcFilterProps) => (
-  <div className="flex flex-col gap-1.5">
+  <div data-help="supply-upcs" className="flex flex-col gap-1.5">
     <div className="flex items-center gap-2">
       <input
         value={value}

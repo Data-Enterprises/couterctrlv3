@@ -43,19 +43,19 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           title: "Pick a row to see its items",
           pre: "The four rows under the figure sort every item by which store rang it: rang at the other store only, rang at both with this store selling less, rang at both with this store selling more, and rang at this store only. Click one.",
           see: "The card beside it slides to that row's items, with what the row is made of above them. Every item is listed, biggest first, in sections by their share of the gap: the items making up the first half, those taking it to 80%, then the rest. Only the first starts open. Click a section's line to fold or open it. The card's own tabs pick the row back.",
-          anchor: "tabs",
+          anchor: "inv-rows",
         },
         {
           title: "Read the charts under it",
           pre: "The card under the rows has three slides. Week by week says whether the gap is a standing difference or something that broke this week. Against the other store puts sales, units and margin on one rule, the other store at 100. Who supplies it lists every vendor in the shortfall.",
           see: "Each slide answers in a line before its bars. Picking a vendor opens Items narrowed to that vendor.",
-          anchor: "tabs",
+          anchor: "inv-charts",
         },
         {
           title: "Follow an item into Items or Supply",
           pre: "Click an item on the card to open its evidence in Items. Right-click it to copy its UPC, copy every UPC on that slide, or view it in Supply. See every item opens the whole grid.",
           see: "Items opens on that item's evidence; View in Supply opens the Supply tab with its orders and receivers narrowed to that UPC.",
-          anchor: "tabs",
+          anchor: "inv-items",
         },
       ],
       issues: [
@@ -127,7 +127,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           chip: "Supply",
           post: "tab. Four rows sit under the figure: ordered at this store, ordered at the other, received at this store, received at the other. Click one.",
           see: "The card beside it slides to that store's orders or receivers, newest first. Click a document to open its lines. The card's own tabs pick the row back.",
-          anchor: "tabs",
+          anchor: "supply-rows",
         },
         {
           title: "Mind the window",
@@ -139,6 +139,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           title: "Trace specific items",
           pre: "Paste UPCs into the box at the top of the documents card to see only the documents carrying them. View in Supply, on a Summary item's right-click menu, fills it in.",
           see: "Every list on the card narrows to the orders and receivers that touched those codes. A return is taken back off what arrived.",
+          anchor: "supply-upcs",
         },
       ],
       issues: [
@@ -160,17 +161,17 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           chip: "Hand-off",
           post: "tab. The figure says how much of the shortfall has someone to hand it to. Under it is one row per person: the buyer, receiving, whoever sets price, and the items nobody can be handed. Click one.",
           see: "The card beside it slides to that person's whole list, biggest first. A list holding more than one cause names each item's cause in its own column.",
-          anchor: "tabs",
+          anchor: "handoff-rows",
         },
         {
           title: "Check a list before you send it",
           pre: "Show in grid takes you back to Items with that cause already filtered. It sits beside Export list when the list holds one cause, and beside each cause under the headline when it holds several. Click any item to open its evidence.",
-          anchor: "causes",
+          anchor: "handoff-list",
         },
         {
           title: "Send it",
           pre: "Export list downloads the person's whole list as one file, each line carrying its cause, so the buyer gets the buyer's items and nobody else's. Copy UPCs copies them all.",
-          anchor: "export",
+          anchor: "handoff-list",
         },
       ],
       issues: [
@@ -324,32 +325,32 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     {
       term: "Units and price",
       def: "How a row both stores rang is split. Each item's difference is split into what selling more or fewer units was worth and what taking more or less a unit was worth, each valued at the midpoint of the two stores, so neither store is the base and the two always add up to the difference. The row's figures are the items' own splits added up. Always in dollars, even on Quantity.",
-      anchor: "tabs",
+      anchor: "inv-items",
     },
     {
       term: "Fewer sold, Lower price, Both",
       def: "Why one item both stores rang is apart. A price counts only when the two average prices differ by more than 8%, the same band Price / mix uses. Inside it, the item reads Fewer sold or More sold. Past it, Lower or Higher price when price is the bigger part, and Both when units are bigger still.",
-      anchor: "tabs",
+      anchor: "inv-items",
     },
     {
       term: "Avg price",
       def: "Sales divided by units: what customers paid on average at each store, not the shelf price. On a scale item it is per pound.",
-      anchor: "tabs",
+      anchor: "inv-items",
     },
     {
       term: "Sections by share of the gap",
       def: "How the Summary lists a row's items: biggest first, cut where they make up half of the row's difference and where they reach 80%. Each section line gives its share, item count and total. Only the first starts open.",
-      anchor: "tabs",
+      anchor: "inv-items",
     },
     {
       term: "Week by week",
       def: "This week's gap to the other store against last week's and last year's. Within a tenth of last week reads as a standing difference; wider is getting worse, narrower getting better. All three follow the Sales/Quantity switch.",
-      anchor: "tabs",
+      anchor: "inv-charts",
     },
     {
       term: "Hand-off lists",
       def: "One list per person: the buyer, receiving, whoever sets price. Causes nobody can act on go on Not handed to anyone, with the reason. Export list downloads a person's whole list as one file with each item's cause.",
-      anchor: "tabs",
+      anchor: "handoff-rows",
     },
     {
       term: "The evidence rail",
@@ -364,6 +365,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     {
       term: "Dept lines",
       def: "How many lines on that order or receiver belong to this department, not how many are on the whole document. An invoice carrying one of our items and ninety of somebody else's shows 1.",
+      anchor: "supply-docs",
     },
     {
       term: "Export",

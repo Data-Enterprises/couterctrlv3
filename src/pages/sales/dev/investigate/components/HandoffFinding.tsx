@@ -35,7 +35,7 @@ const HandoffFinding = ({ lists, fmt, selected, onSelect }: HandoffFindingProps)
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
+      <div data-help="handoff-rows" className="flex flex-col gap-0.5">
         {lists.map((l) => (
           <HandoffRowChoice
             key={handoffKey(l.owner)}

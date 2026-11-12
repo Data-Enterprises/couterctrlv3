@@ -37,6 +37,7 @@ const RowItems = ({
 }: RowItemsProps) => (
   <Carousel
     fill
+    helpAnchor="inv-items"
     at={ROW_ORDER.indexOf(selected)}
     onAt={(i) => onSelect(ROW_ORDER[i])}
     slides={rows.map((row) => ({

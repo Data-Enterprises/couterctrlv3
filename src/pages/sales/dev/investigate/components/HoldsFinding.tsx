@@ -100,7 +100,7 @@ const HoldsFinding = ({
           )}
         </div>
 
-        <div className="flex flex-col gap-0.5">
+        <div data-help="inv-rows" className="flex flex-col gap-0.5">
           {rows.map((r) => (
             <RowChoice
               key={r.kind}

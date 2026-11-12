@@ -16,6 +16,8 @@ interface CarouselProps {
   fill?: boolean;
   /** Drawn under the tabs, above every slide: a control all the slides share. */
   above?: ReactNode;
+  /** The `data-help` the ? panel points at. */
+  helpAnchor?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -33,7 +35,14 @@ interface CarouselProps {
  * It is a scroll container, so a trackpad swipe works and the tabs stay
  * honest about where it ended up.
  */
-const Carousel = ({ slides, at: picked, onAt, fill = false, above }: CarouselProps) => {
+const Carousel = ({
+  slides,
+  at: picked,
+  onAt,
+  fill = false,
+  above,
+  helpAnchor,
+}: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [own, setOwn] = useState(0);
   const at = picked ?? own;
@@ -83,6 +92,7 @@ const Carousel = ({ slides, at: picked, onAt, fill = false, above }: CarouselPro
 
   return (
     <div
+      data-help={helpAnchor}
       className={`rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0 ${
         fill ? "h-full min-h-0" : ""
       }`}

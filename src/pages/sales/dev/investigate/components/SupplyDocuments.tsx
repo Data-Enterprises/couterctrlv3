@@ -168,6 +168,7 @@ const SupplyDocuments = ({
   return (
     <Carousel
       fill
+      helpAnchor="supply-docs"
       at={SUPPLY_ORDER.indexOf(selected)}
       onAt={(i) => onSelect(SUPPLY_ORDER[i])}
       above={

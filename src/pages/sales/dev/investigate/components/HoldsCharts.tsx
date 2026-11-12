@@ -41,6 +41,7 @@ const HoldsCharts = ({
   return (
     <Carousel
       fill
+      helpAnchor="inv-charts"
       slides={[
         {
           label: "Week by week",

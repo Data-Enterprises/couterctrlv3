@@ -61,6 +61,7 @@ const ActPanel = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: ActPan
 
         <Carousel
           fill
+          helpAnchor="handoff-list"
           at={owners.indexOf(selected)}
           onAt={(i) => setPicked(owners[i])}
           slides={lists.map((l) => ({

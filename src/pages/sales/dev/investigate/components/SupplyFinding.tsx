@@ -61,7 +61,7 @@ const SupplyFinding = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
+      <div data-help="supply-rows" className="flex flex-col gap-0.5">
         {rows.map((r) => (
           <SupplyRowChoice
             key={r.kind}
