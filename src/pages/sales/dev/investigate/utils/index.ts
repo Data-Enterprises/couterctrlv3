@@ -63,6 +63,7 @@ export const SUGGESTED: Record<string, Cause[]> = {
 export const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
+  "unsold",
   "cost",
   "not-moving",
   "price-mix",

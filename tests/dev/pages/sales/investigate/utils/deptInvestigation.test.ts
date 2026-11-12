@@ -215,6 +215,20 @@ describe("causeOf", () => {
     expect(causeOf(f)).toBe("not-moving");
   });
 
+  it("names a delivered item that never rang 'unsold', not 'selling fewer'", () => {
+    const f = facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40, receivedUnits: 24 });
+    expect(causeOf(f)).toBe("unsold");
+  });
+
+  it("only calls an item 'selling fewer' when this store sold some", () => {
+    const f = facts({
+      mineTy: 200, mineUnits: 200,
+      theirsTy: 260, theirsUnits: 260,
+    });
+    expect(causeOf(f)).toBe("not-moving");
+    expect(causeOf({ ...f, mineTy: 0, mineSales: 0, mineUnits: 0 })).toBe("never-ordered");
+  });
+
   it("gives the same cause whichever way the Sales/Quantity switch is set", () => {
     // On quantity the metric figures are units; the cause reads the dollars.
     const dollars = facts({

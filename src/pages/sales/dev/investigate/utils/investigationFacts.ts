@@ -158,6 +158,7 @@ const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-carried",
   "not-received",
+  "unsold",
   "cost",
   "not-moving",
   "price-mix",

@@ -1,3 +1,6 @@
+// Utils
+import { count } from ".";
+
 // Interfaces
 import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
 
@@ -42,6 +45,10 @@ export const marginsOf = (f: ItemFacts): Margins => {
         : null,
   };
 };
+
+/** Whether a store rang an item at all. Units or money: an item can ring for
+ *  nothing and still have sold. The Summary's rows count it the same way. */
+export const rangAt = (units: number, sales: number) => units > 0 || sales > 0;
 
 /**
  * An item's dollar gap, split exactly into what selling more or fewer units
@@ -110,15 +117,19 @@ export const causeOf = (
   const gap = f.mineSales - f.theirsSales;
   const ordered = f.orderedQty > 0;
   const received = f.receivedUnits > 0;
+  const rangHere = rangAt(f.mineUnits, f.mineSales);
+  const rangThere = rangAt(f.theirsUnits, f.theirsSales);
 
   // The two supply failures come first wherever the sales landed: an item
   // that never reached the shelf cannot be explained by what it cost or what
   // it was priced at.
-  if (!ordered && !received && f.mineSales === 0 && f.theirsSales > 0)
+  if (!ordered && !received && !rangHere && rangThere)
     return ordersKnown ? "never-ordered" : "not-carried";
   // Ordered-but-not-arrived needs an order to have been placed, so it cannot
   // fire at all without order history.
   if (ordered && !received && gap < 0) return "not-received";
+  // Delivered, and none of it rang here while the other store sold it.
+  if (received && !rangHere && rangThere) return "unsold";
 
   // Then buying terms — BEFORE "ahead", and that order is the point. An item
   // can sell more here and still make less, because it is bought for more.
@@ -143,8 +154,8 @@ export const causeOf = (
       return Math.abs(mine / theirs - 1) > bands.price ? "price-mix" : "streamlined";
   }
 
-  // It was here, it was priced like theirs, and it still did not sell.
-  if (received || f.mineUnits > 0) return "not-moving";
+  // Both sold it, at about the same price, and this store sold fewer.
+  if (rangHere) return "not-moving";
 
   return "streamlined";
 };
@@ -175,7 +186,8 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   "not-carried": "Not carried here",
   "not-received": "Didn't arrive",
   cost: "Costing more",
-  "not-moving": "Not moving",
+  "not-moving": "Selling fewer",
+  unsold: "Received, none sold",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
   streamlined: "Streamlined",
@@ -189,6 +201,7 @@ export const CAUSE_OWNER: Record<Cause, string> = {
   "not-received": "vendor",
   cost: "buying terms",
   "not-moving": "merchandising",
+  unsold: "merchandising",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
   streamlined: "nothing to chase",
@@ -228,6 +241,7 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   // vendor rather than on the shelf. Buying terms are exactly that.
   cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
   "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
+  unsold: { chip: "bg-sky-50 text-sky-900", ring: "ring-sky-900/40" },
   "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
   ahead: {
     chip: "bg-delta_positive_bg text-delta_positive_text",
@@ -340,8 +354,12 @@ export const evidenceSays = (
       return `Nothing here says ${us} ever had it, and no orders came back for the window to say whether it was ever asked for. ${theirs}`;
     case "price-mix":
       return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Taking less a unit is most of that difference, more than the units sold.`;
-    case "not-moving":
-      return `${us} has it and sold ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Nothing in this data says why.`;
+    case "not-moving": {
+      const lb = item.weighted ? " lb" : "";
+      return `Both stores sold it, at about the same price. ${us} sold ${count(item.mineUnits)}${lb} against ${count(item.theirsUnits)}${lb}. Nothing in this data says why.`;
+    }
+    case "unsold":
+      return `${us} received it and none of it rang this week. ${theirs}`;
     case "ahead":
       return `${us} sold ${cash(item.mineSales)} of it against ${cash(item.theirsSales)}, and is ${cash(item.mineSales - item.theirsSales)} ahead on it.`;
     default:

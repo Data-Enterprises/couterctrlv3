@@ -1,5 +1,6 @@
 // Utils
 import { codeOf } from ".";
+import { rangAt } from "./deptInvestigation";
 
 // Interfaces
 import type { Focus } from "../../utils/deptReport";
@@ -88,9 +89,8 @@ export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
   let bothMore: Bucket = { items: 0, dollars: 0 };
 
   for (const i of items) {
-    // Units, not money: an item can ring for nothing and still have sold.
-    const here = i.mineUnits > 0;
-    const there = i.theirsUnits > 0;
+    const here = rangAt(i.mineUnits, i.mineSales);
+    const there = rangAt(i.theirsUnits, i.theirsSales);
     if (!here && there) onlyTheirs = add(onlyTheirs, i.gap);
     else if (here && there) {
       if (i.gap < 0) bothLess = add(bothLess, i.gap);
@@ -215,6 +215,7 @@ const DESK: Record<Cause, Owner> = {
   cost: "buyer",
   "price-mix": "price",
   "not-moving": null,
+  unsold: null,
   streamlined: null,
   ahead: null,
 };
@@ -241,7 +242,9 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "price-mix": (n, m) =>
     `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
   "not-moving": (n, m) =>
-    `${n.toLocaleString("en-US")} items on the shelf here that sold less than there, worth ${m}. Nothing in this data says why.`,
+    `${n.toLocaleString("en-US")} items both stores sold, at about the same price, where this one sold fewer, worth ${m}. Nothing in this data says why.`,
+  unsold: (n, m) =>
+    `${n.toLocaleString("en-US")} items delivered here that did not ring this week, worth ${m} at the other store.`,
   streamlined: (n, m) =>
     `${n.toLocaleString("en-US")} items level with the other store, worth ${m}. Nothing to chase.`,
   ahead: (n, m) => `${n.toLocaleString("en-US")} items ahead, worth ${m}.`,

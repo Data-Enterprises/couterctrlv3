@@ -94,6 +94,7 @@ export type Cause =
   | "not-received"
   | "cost"
   | "not-moving"
+  | "unsold"
   | "price-mix"
   | "ahead"
   | "streamlined";
