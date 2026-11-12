@@ -49,7 +49,7 @@ const SupplyFinding = ({
           {says.lead}
         </p>
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-[32px] font-bold tabular-nums leading-none text-content">
+          <span className="text-[30px] font-bold tabular-nums leading-none text-content">
             {n(supply.mine.orderedUnits)}
           </span>
           <span className="text-[13.5px] text-content/95 min-w-0">

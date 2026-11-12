@@ -54,8 +54,8 @@ const HoldsFinding = ({
           the same block the caveats sit in at the foot of the card.
           Between them the card has its claim and its size; what
           follows is the working. */}
-        <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
-          <p className="text-[17px] font-semibold leading-snug text-content">
+        <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2">
+          <p className="text-[15px] font-semibold leading-snug text-content">
             <span
               className={
                 holds.verdict === "holds"
@@ -73,7 +73,7 @@ const HoldsFinding = ({
           {lead && (
             <div className="flex items-baseline gap-3 flex-wrap">
               <span
-                className={`text-[32px] font-bold tabular-nums leading-none ${
+                className={`text-[30px] font-bold tabular-nums leading-none ${
                   lead.total >= 0
                     ? "text-delta_positive_text"
                     : "text-delta_negative_text"

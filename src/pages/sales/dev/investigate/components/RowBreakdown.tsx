@@ -41,7 +41,7 @@ const RowBreakdown = ({ lines, us, them, fmt, cash }: RowBreakdownProps) => {
               style={{ width: `${(Math.abs(l.amount) / scale) * 100}%` }}
             />
           </span>
-          <span className="text-right text-[12px] text-content/95 tabular-nums whitespace-nowrap">
+          <span className="text-right text-[12.5px] text-content/95 tabular-nums font-semibold whitespace-nowrap">
             {l.side}
           </span>
           <span

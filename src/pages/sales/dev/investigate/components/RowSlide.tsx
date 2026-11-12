@@ -50,7 +50,13 @@ const RowSlide = ({
       </p>
 
       {row.breakdown.length > 0 && (
-        <RowBreakdown lines={row.breakdown} us={us} them={them} fmt={fmt} cash={cash} />
+        <RowBreakdown
+          lines={row.breakdown}
+          us={us}
+          them={them}
+          fmt={fmt}
+          cash={cash}
+        />
       )}
 
       {/* The items scroll inside the slide: the breakdown above them can
@@ -72,7 +78,9 @@ const RowSlide = ({
           </div>
 
           {row.sections.map((sec, si) => {
-            const first = row.sections.slice(0, si).reduce((t, x) => t + x.items.length, 0);
+            const first = row.sections
+              .slice(0, si)
+              .reduce((t, x) => t + x.items.length, 0);
             const open = !folded.has(si);
             return (
               <div key={si} className="flex flex-col">
@@ -116,8 +124,7 @@ const RowSlide = ({
         <div className="flex items-center gap-4 flex-wrap">
           <p className="text-[12.5px] text-content/95 leading-relaxed">
             {n.toLocaleString("en-US")} {n === 1 ? "item" : "items"} | biggest
-            difference first | click one for its evidence |{" "}
-            {behind ? "−" : "+"}
+            difference first | click one for its evidence | {behind ? "−" : "+"}
             {fmt(Math.abs(row.total))} in all
           </p>
           <button

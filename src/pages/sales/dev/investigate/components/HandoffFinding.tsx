@@ -25,7 +25,7 @@ const HandoffFinding = ({ lists, fmt, selected, onSelect }: HandoffFindingProps)
       <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
         <p className="text-[17px] font-semibold leading-snug text-content">{lead.says}</p>
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-[32px] font-bold tabular-nums leading-none text-delta_negative_text">
+          <span className="text-[30px] font-bold tabular-nums leading-none text-delta_negative_text">
             {signed(lead.ownedTotal)}
           </span>
           <span className="text-[13.5px] text-content/95 min-w-0">
