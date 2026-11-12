@@ -87,7 +87,8 @@ const HoldsPanel = ({
             both of them. */}
         <div
           className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)] gap-5"
-          style={{ gridTemplateColumns: "minmax(0,0.85fr) minmax(0,1fr)" }}
+          // The items card about 57% of the width, the finding and charts the rest.
+          style={{ gridTemplateColumns: "minmax(0,0.76fr) minmax(0,1fr)" }}
         >
           {/* Its own scroll, with room for the cards' shadows. */}
           <div className="flex flex-col gap-5 min-w-0 min-h-0 overflow-y-auto thin-scrollbar -m-1 p-1">
