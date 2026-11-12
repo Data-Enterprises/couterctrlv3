@@ -40,6 +40,12 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           anchor: "supply-window",
         },
         {
+          title: "Pick a row to see its items",
+          pre: "The four rows under the figure sort every item by which store rang it: rang at the other store only, rang at both with this store selling less, rang at both with this store selling more, and rang at this store only. Click one.",
+          see: "The card beside it slides to that row's items, with what the row is made of above them. Its own tabs pick the row back.",
+          anchor: "tabs",
+        },
+        {
           title: "Follow the summary into the items",
           pre: "The cards on Summary are clickable. Picking a vendor, an item or Show all moves you to the Items tab already filtered to it.",
           see: "The Items tab opens with the filter applied, rather than on the whole department.",
@@ -295,6 +301,16 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       term: "We're ahead",
       def: "This store sold more of it, by more than the $5 floor. An exact tie is not ahead — it is the same week rung twice, and it sits in Streamlined.",
       anchor: "causes",
+    },
+    {
+      term: "Units and price",
+      def: "How a row both stores rang is split. Each item's difference is split into what selling more or fewer units was worth and what taking more or less a unit was worth, each valued at the midpoint of the two stores, so neither store is the base and the two always add up to the difference. The row's figures are the items' own splits added up. Always in dollars, even on Quantity.",
+      anchor: "tabs",
+    },
+    {
+      term: "Fewer sold, Lower price, Both",
+      def: "Why one item both stores rang is apart. A price counts only when the two average prices differ by more than 8%, the same band Price / mix uses. Inside it, the item reads Fewer sold or More sold. Past it, Lower or Higher price when price is the bigger part, and Both when units are bigger still.",
+      anchor: "tabs",
     },
     {
       term: "The evidence rail",
