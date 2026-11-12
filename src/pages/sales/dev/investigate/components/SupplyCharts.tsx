@@ -84,6 +84,7 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
 
   return (
     <Carousel
+      fill
       slides={[
         {
           label: "Over the window",

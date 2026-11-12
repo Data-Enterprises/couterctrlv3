@@ -565,6 +565,9 @@ export const supplySays = (
   supply: Supply,
   us: string,
   them: string,
+  /** False when the receipts did not come back: then nothing is said about
+   *  what arrived, rather than "neither received anything". */
+  receiptsOk = true,
 ): { lead: string; tail: string } => {
   const m = supply.mine;
   const t = supply.theirs;
@@ -580,8 +583,9 @@ export const supplySays = (
           ? `Only ${them} ordered.`
           : "Neither store ordered this department.";
 
-  const took =
-    m.deliveries > 0 && t.deliveries > 0
+  const took = !receiptsOk
+    ? "The receipts couldn't be read."
+    : m.deliveries > 0 && t.deliveries > 0
       ? "Both received."
       : m.deliveries > 0
         ? `Only ${us} received.`

@@ -1,6 +1,14 @@
+// Hooks
+import { useState } from "react";
+
+// Utils
+import { shortStore } from "../utils";
+import { supplyRowsOf } from "../utils/supplyRows";
+
 // Interfaces
 import type { OrdersWave, ReceiptsWave } from "../utils/investigationData";
 import type { Supply } from "../utils/investigationSteps";
+import type { SupplyKind } from "../interfaces";
 
 // Components
 import SupplyFinding from "./SupplyFinding";
@@ -49,19 +57,33 @@ const SupplyPanel = ({
   upcQuery,
   onUpcQuery,
 }: SupplyPanelProps) => {
+  /** The row the documents card shows: this store's orders until another
+   *  is picked. */
+  const [selected, setSelected] = useState<SupplyKind>("ordersMine");
+  const rows = supplyRowsOf(supply);
+  const mine = shortStore(us);
+  const theirs = shortStore(them);
+
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5 flex flex-col">
+      {/* The page's height, so the documents card fits it and scrolls its
+          rows inside. Below that floor the page scrolls as a whole instead. */}
       <div
-        className="grid gap-5 items-start"
-        style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1.1fr)" }}
+        className="flex-1 min-h-[560px] grid grid-rows-[minmax(0,1fr)] gap-5"
+        style={{ gridTemplateColumns: "minmax(0,0.76fr) minmax(0,1fr)" }}
       >
-        <div className="flex flex-col gap-5 min-w-0">
+        {/* Its own scroll, with room for the cards' shadows. */}
+        <div className="flex flex-col gap-5 min-w-0 min-h-0 overflow-y-auto thin-scrollbar -m-1 p-1">
           <SupplyFinding
             supply={supply}
-            them={them}
-            us={us}
+            rows={rows}
+            us={mine}
+            them={theirs}
             window={window}
-            cash={cash}
+            ordersOk={orders.ok}
+            receiptsOk={receipts.ok}
+            selected={selected}
+            onSelect={setSelected}
           />
 
           {/* A supplier they buy from and we do not is a buying decision, not
@@ -72,8 +94,8 @@ const SupplyPanel = ({
               <p className="text-[14px] leading-relaxed text-severity_watch_text">
                 <span className="font-bold">
                   {supply.onlyTheirs.length === 1
-                    ? "One vendor delivers to them and not here"
-                    : `${supply.onlyTheirs.length} vendors deliver to them and not here`}
+                    ? `One vendor delivers to ${theirs} and not ${mine}`
+                    : `${supply.onlyTheirs.length} vendors deliver to ${theirs} and not ${mine}`}
                   :
                 </span>{" "}
                 {supply.onlyTheirs.join(", ")}.
@@ -81,23 +103,32 @@ const SupplyPanel = ({
             </div>
           )}
 
-          <SupplyCharts
-            supply={supply}
-            them={them}
-            us={us}
-            window={window}
-            cash={cash}
-          />
+          {/* The rest of the column, so its foot lines up with the documents
+              card beside it. */}
+          <div className="flex-1 min-h-[240px] flex flex-col">
+            <SupplyCharts
+              supply={supply}
+              them={them}
+              us={us}
+              window={window}
+              cash={cash}
+            />
+          </div>
         </div>
 
-        {/* The documents themselves, which is what the left column is about. */}
         <SupplyDocuments
           supply={supply}
+          rows={rows}
+          us={mine}
+          them={theirs}
+          window={window}
           cash={cash}
           orders={orders}
           receipts={receipts}
           upcQuery={upcQuery}
           onUpcQuery={onUpcQuery}
+          selected={selected}
+          onSelect={setSelected}
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 // Hooks
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // Interfaces
 import type { Slide } from "../interfaces";
@@ -14,6 +14,8 @@ interface CarouselProps {
   /** Fill the height it is given, so each slide can scroll inside itself
    *  rather than the card growing past the page. */
   fill?: boolean;
+  /** Drawn under the tabs, above every slide: a control all the slides share. */
+  above?: ReactNode;
 }
 
 /* ------------------------------------------------------------------ */
@@ -31,7 +33,7 @@ interface CarouselProps {
  * It is a scroll container, so a trackpad swipe works and the tabs stay
  * honest about where it ended up.
  */
-const Carousel = ({ slides, at: picked, onAt, fill = false }: CarouselProps) => {
+const Carousel = ({ slides, at: picked, onAt, fill = false, above }: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [own, setOwn] = useState(0);
   const at = picked ?? own;
@@ -121,6 +123,8 @@ const Carousel = ({ slides, at: picked, onAt, fill = false }: CarouselProps) => 
           ))}
         </span>
       </div>
+
+      {above ? <div className="flex-none px-4 pt-3">{above}</div> : null}
 
       <div
         ref={track}

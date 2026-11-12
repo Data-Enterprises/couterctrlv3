@@ -45,8 +45,9 @@ const Timeline = ({ orders, deliveries, window, us, them }: TimelineProps) => {
       day: "numeric",
     });
 
+  // Room on the right: the last day's dot and date are centred on the edge.
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 pr-6">
       {lanes.map((lane) => (
         <div key={lane.label} className="flex items-center gap-3">
           <span className="w-[108px] flex-shrink-0 truncate text-[11.5px] font-semibold text-content/95">

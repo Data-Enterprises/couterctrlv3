@@ -3,6 +3,7 @@ import { useState } from "react";
 
 // Utils
 import { onDay } from "../utils";
+import { DOC_COLS } from "../utils/supplyRows";
 
 // Interfaces
 import type { SupplyRecord } from "../utils/investigationSteps";
@@ -16,38 +17,40 @@ interface DocumentProps {
   whole: DocLine[] | null;
   cash: (v: number) => string;
   isOrder: boolean;
+  /** Draw the store's dot. Off in a list that holds one store only. */
+  showStore?: boolean;
 }
 
 /** One order or receipt row: date, vendor, number, status or cost, lines and units.
  *  Click to open its lines, with a switch between this department's lines and the whole document. */
-const Document = ({ rec, lines, whole, cash, isOrder }: DocumentProps) => {
+const Document = ({ rec, lines, whole, cash, isOrder, showStore = true }: DocumentProps) => {
   const [open, setOpen] = useState(false);
   const [everything, setEverything] = useState(false);
   const rows = everything && whole ? whole : lines;
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
 
   return (
-    <div className="border-b border-brand_navy/15 last:border-b-0">
+    <div className="border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="w-full grid gap-3 items-center px-1.5 py-2 text-left hover:bg-bkg rounded transition-colors"
-        style={{
-          gridTemplateColumns:
-            "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
-        }}
+        className={`w-full grid ${
+          showStore ? DOC_COLS.withStore : DOC_COLS.oneStore
+        } gap-3 items-center px-1.5 py-2 text-left hover:bg-fill_soft transition-colors`}
       >
         <span className="text-[12px] text-content/95 whitespace-nowrap">
           {onDay(rec.date)}
         </span>
-        <span
-          className={`block w-2 h-2 rounded-full ${
-            rec.mine ? "bg-store_open" : "bg-store_compare"
-          }`}
-        />
+        {showStore && (
+          <span
+            className={`block w-2 h-2 rounded-full ${
+              rec.mine ? "bg-store_open" : "bg-store_compare"
+            }`}
+          />
+        )}
         <span
           className={`min-w-0 truncate text-[12.5px] ${
-            rec.mine ? "font-semibold text-content" : "text-content/95"
+            rec.mine || !showStore ? "font-semibold text-content" : "text-content/95"
           }`}
         >
           {rec.vendor}

@@ -422,6 +422,16 @@ describe("supply · the proof behind the labels", () => {
     expect(r.lead).toBe("Only 003 ordered. Neither received anything in the window.");
   });
 
+  it("says the receipts couldn't be read rather than that nothing arrived", () => {
+    const r = supplySays(
+      supplyOf({ mine: [order(1, "a", 10)], theirs: [] }, { mine: [], theirs: [] }, [of("a")]),
+      "002",
+      "003",
+      false,
+    );
+    expect(r.lead).toBe("Only 002 ordered. The receipts couldn't be read.");
+  });
+
   it("says so when neither store ordered at all", () => {
     const r = says({ mine: [], theirs: [] }, { mine: [], theirs: [] });
     expect(r.lead).toBe(

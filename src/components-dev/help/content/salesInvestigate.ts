@@ -119,8 +119,8 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           title: "Open Supply",
           pre: "Choose the",
           chip: "Supply",
-          post: "tab. Ordered comes first, then Received, each with the lines on every document.",
-          see: "One line per order or receipt, with how many of its lines belong to this department.",
+          post: "tab. Four rows sit under the figure: ordered at this store, ordered at the other, received at this store, received at the other. Click one.",
+          see: "The card beside it slides to that store's orders or receipts, newest first. Click a document to open its lines. The card's own tabs pick the row back.",
           anchor: "tabs",
         },
         {
@@ -131,8 +131,8 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
         {
           title: "Trace specific items",
-          pre: "Paste UPCs into the box above the lists to see only the documents carrying them.",
-          see: "Both lists narrow to the orders and receipts that touched those codes.",
+          pre: "Paste UPCs into the box at the top of the documents card to see only the documents carrying them. View in Supply, on a Summary item's right-click menu, fills it in.",
+          see: "Every list on the card narrows to the orders and receipts that touched those codes. A return is taken back off what arrived.",
         },
       ],
       issues: [

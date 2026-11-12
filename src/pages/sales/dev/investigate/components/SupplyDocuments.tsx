@@ -1,34 +1,56 @@
 // Utils
 import { codeOf } from "../utils";
+import {
+  SUPPLY_ORDER,
+  noReceiptsNote,
+  supplySlideSays,
+  supplyTab,
+} from "../utils/supplyRows";
 
 // Interfaces
 import type { OrdersWave, ReceiptsWave } from "../utils/investigationData";
 import type { Supply, SupplyRecord } from "../utils/investigationSteps";
 import type { AllOrder } from "../../../../../interfaces";
-import type { DocLine } from "../interfaces";
+import type { DocLine, SupplyKind, SupplyRow } from "../interfaces";
 
 // Components
-import Document from "./Document";
+import Carousel from "./Carousel";
+import SupplySlide from "./SupplySlide";
+import UpcFilter from "./UpcFilter";
 
 interface SupplyDocumentsProps {
   supply: Supply;
+  rows: SupplyRow[];
+  /** The two stores' numbers, as the rows and tabs print them. */
+  us: string;
+  them: string;
+  window: { start: string; end: string };
   cash: (v: number) => string;
   orders: OrdersWave;
   receipts: ReceiptsWave;
   /** UPCs carried over from the grid, comma or space separated. */
   upcQuery: string;
   onUpcQuery: (v: string) => void;
+  selected: SupplyKind;
+  onSelect: (kind: SupplyKind) => void;
 }
 
-/** The Supply tab's documents: every order and receipt, narrowed by the
- *  pasted UPCs, each opening to its lines. */
+/** The Supply tab's documents card: one slide per row, on the row picked
+ *  beside it, every list narrowed by the pasted UPCs. Its own tabs pick the
+ *  row back, so the two cards always agree. */
 const SupplyDocuments = ({
   supply,
+  rows,
+  us,
+  them,
+  window,
   cash,
   orders,
   receipts,
   upcQuery,
   onUpcQuery,
+  selected,
+  onSelect,
 }: SupplyDocumentsProps) => {
   /* The codes the reader is asking about, if any. Commas, spaces or new
      lines, because all three are what a paste brings with it. */
@@ -85,173 +107,79 @@ const SupplyDocuments = ({
 
   const shownOrders = supply.orders.filter((r) => matches(r, true));
   const shownDeliveries = supply.deliveries.filter((r) => matches(r, false));
-  const states = [
-    ...new Set(supply.orders.map((o) => o.status).filter(Boolean)),
-  ];
+  const n = (v: number) => Math.round(v).toLocaleString("en-US");
+  const plural = (k: number, one: string) => `${n(k)} ${one}${k === 1 ? "" : "s"}`;
+
+  /** Why an orders list is empty, when it is. The window-wide cases are the
+   *  ones that say whether "never ordered" can be claimed at all. */
+  const ordersNote = (row: SupplyRow, store: string): string | null => {
+    if (!orders.ok)
+      return "The orders did not come back for this window, so this card cannot say whether either store ordered. What was received is read separately.";
+    if (row.docs.length > 0) return `No order at ${store} carries any of those codes.`;
+    if (supply.orders.length > 0) return null;
+    return orders.inWindow === 0
+      ? supply.deliveries.length > 0
+        ? "No order of any kind came back for either store over the window, and receipts arrived anyway, which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
+        : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
+      : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department, by product code or by the department the order itself names. Nothing here can say an item was never ordered, so those items are listed as not carried instead.`;
+  };
+
+  const slides = rows.map((row) => {
+    const store = row.mine ? us : them;
+    const shown = row.docs.filter((d) => matches(d, row.isOrder));
+    const received = (row.mine ? supply.mine : supply.theirs).deliveries;
+    const units = shown.reduce((t, d) => t + d.units, 0);
+    const cost = shown.reduce((t, d) => t + d.cost, 0);
+    const note =
+      shown.length > 0
+        ? null
+        : row.isOrder
+          ? ordersNote(row, store)
+          : !receipts.ok
+            ? null
+            : row.docs.length > 0
+              ? `No receipt at ${store} carries any of those codes.`
+              : noReceiptsNote(store, window);
+    return {
+      label: supplyTab(row, us, them),
+      count: row.docs.length,
+      body: (
+        <SupplySlide
+          row={row}
+          shown={shown}
+          says={supplySlideSays(row, store, received, orders.ok, receipts.ok, cash)}
+          note={note}
+          warn={row.isOrder && !orders.ok}
+          foot={
+            row.isOrder
+              ? `${plural(shown.length, "order")} | ${n(units)} units | newest first`
+              : `${plural(shown.length, "receipt")} | ${n(units)} units | ${cash(cost)} | newest first`
+          }
+          linesOf={(r) => (row.isOrder ? orderLines(r.id, r.mine) : invoiceLines(r.id, r.mine))}
+          /* The receipt search asks for the matched lines only, so an
+             invoice has no "whole document" to offer. */
+          wholeOf={(r) => (row.isOrder ? wholeOrder(r.id, r.mine) : null)}
+          cash={cash}
+        />
+      ),
+    };
+  });
 
   return (
-    <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
-      <div className="flex items-baseline gap-3 flex-wrap">
-        <p className="text-[18px] font-semibold leading-snug text-content min-w-0">
-          {supply.orders.length}{" "}
-          {supply.orders.length === 1 ? "order" : "orders"}
-          {states.length === 1
-            ? `, all still ${states[0]!.toLowerCase()}`
-            : ""}
-          {supply.deliveries.length === 0 && receipts.ok
-            ? " — nothing received against them."
-            : "."}
-        </p>
-      </div>
-
-      {/* Paste the codes from the grid and the lists narrow to the
-          documents that carry them. The grid's own right-click menu
-          fills this in, so nobody has to retype a UPC to find out
-          whether it was ever ordered. */}
-      <div className="flex items-center gap-2 mt-2.5">
-        <input
+    <Carousel
+      fill
+      at={SUPPLY_ORDER.indexOf(selected)}
+      onAt={(i) => onSelect(SUPPLY_ORDER[i])}
+      above={
+        <UpcFilter
           value={upcQuery}
-          onChange={(e) => onUpcQuery(e.target.value)}
-          placeholder="Paste UPCs to find the orders carrying them"
-          className="flex-1 min-w-0 text-[12.5px] px-2.5 py-1.5 rounded-md border border-brand_line bg-custom-white text-content placeholder:text-content/85 focus:outline-none focus:ring-2 focus:ring-brand_navy/25"
+          onChange={onUpcQuery}
+          codes={wanted.size}
+          summary={`${plural(wanted.size, "code")} | ${shownOrders.length} of ${plural(supply.orders.length, "order")} and ${shownDeliveries.length} of ${plural(supply.deliveries.length, "receipt")} carry them.`}
         />
-        {wanted.size > 0 && (
-          <button
-            onClick={() => onUpcQuery("")}
-            className="flex-shrink-0 text-[12px] font-semibold text-brand_navy_hover hover:underline"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      {wanted.size > 0 && (
-        <p className="text-[12px] text-content/95 mt-1.5">
-          {wanted.size} {wanted.size === 1 ? "code" : "codes"} ·{" "}
-          {shownOrders.length} of {supply.orders.length}{" "}
-          {supply.orders.length === 1 ? "order" : "orders"} and{" "}
-          {shownDeliveries.length} of {supply.deliveries.length} carry
-          {shownOrders.length + shownDeliveries.length === 1
-            ? "s"
-            : ""}{" "}
-          them.
-        </p>
-      )}
-
-      <div className="text-[11px] font-bold uppercase tracking-wide text-content/95 mt-4">
-        Ordered
-      </div>
-      <div
-        className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/95"
-        style={{
-          gridTemplateColumns:
-            "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
-        }}
-      >
-        <span>Date</span>
-        <span />
-        <span>Vendor</span>
-        <span>Order</span>
-        <span>Status</span>
-        <span
-          className="text-right"
-          title="Lines in this department, not on the whole order"
-        >
-          Dept lines
-        </span>
-        <span className="text-right">Units</span>
-      </div>
-
-      <div className="mt-0.5">
-        {shownOrders.map((r) => (
-          <Document
-            key={`o${r.mine ? "m" : "t"}-${r.id}`}
-            rec={r}
-            lines={orderLines(r.id, r.mine)}
-            whole={wholeOrder(r.id, r.mine)}
-            cash={cash}
-            isOrder
-          />
-        ))}
-        {shownOrders.length === 0 && (
-          <p
-            className={`text-[13px] leading-relaxed py-3 ${
-              orders.ok ? "text-content/95" : "text-severity_watch_text"
-            }`}
-          >
-            {!orders.ok
-              ? "The orders did not come back for this window, so this panel cannot say whether either store ordered. What was received below is unaffected — it is read separately."
-              : supply.orders.length > 0
-                ? "No order in the window carries any of those codes."
-                : orders.inWindow === 0
-                  ? supply.deliveries.length > 0
-                    ? "No order of any kind came back for either store over the window, and the receipts below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
-                    : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
-                  : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names. Nothing here can say an item was never ordered, so those items are listed as not carried instead.`}
-          </p>
-        )}
-      </div>
-
-      {supply.deliveries.length > 0 && (
-        <>
-          <div className="text-[11px] font-bold uppercase tracking-wide text-content/95 mt-4">
-            Received
-          </div>
-          {/* Its own headings. These rows carry an INVOICE and its COST,
-              and they were being read under the orders' Order and Status
-              columns above — which is a dollar amount sitting under the
-              word Status. */}
-          <div
-            className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/95"
-            style={{
-              gridTemplateColumns:
-                "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
-            }}
-          >
-            <span>Date</span>
-            <span />
-            <span>Vendor</span>
-            <span>Invoice</span>
-            <span>Cost</span>
-            <span
-              className="text-right"
-              title="Lines in this department, not on the whole invoice"
-            >
-              Dept lines
-            </span>
-            <span className="text-right">Units</span>
-          </div>
-          <div className="mt-0.5">
-            {shownDeliveries.map((r) => (
-              <Document
-                key={`d${r.mine ? "m" : "t"}-${r.id}`}
-                rec={r}
-                lines={invoiceLines(r.id, r.mine)}
-                /* The receipt search asks for the matched lines only —
-                   whole invoices would be several hundred documents'
-                   worth of lines nothing reads — so an invoice has no
-                   "whole document" to offer. */
-                whole={null}
-                cash={cash}
-                isOrder={false}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      {supply.deliveries.length === 0 && (
-        <div className="rounded-md border border-dashed border-brand_navy/25 px-3.5 py-2.5 mt-4">
-          <div className="text-[11px] font-bold uppercase tracking-wide text-content/95">
-            Received &middot; 0
-          </div>
-          <p className="text-[12.5px] text-content/95 leading-snug mt-0.5">
-            {receipts.ok
-              ? "No invoice carried an item from this department, at either store."
-              : "We couldn’t get the receipts information at this time."}
-          </p>
-        </div>
-      )}
-    </div>
+      }
+      slides={slides}
+    />
   );
 };
 

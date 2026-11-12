@@ -9,6 +9,7 @@ import type {
   Store,
   Window,
 } from "../utils/investigationData";
+import type { SupplyRecord } from "../utils/investigationSteps";
 
 export type Col =
   | "mine"
@@ -56,6 +57,20 @@ export interface DocLine {
 
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
+
+/** The Supply tab's rows: which store, and orders or receipts. */
+export type SupplyKind = "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
+
+/** One Supply row and the documents its slide lists. */
+export interface SupplyRow {
+  kind: SupplyKind;
+  mine: boolean;
+  isOrder: boolean;
+  /** That store's orders or receipts, newest first. */
+  docs: SupplyRecord[];
+  units: number;
+  cost: number;
+}
 
 /** The week-by-week card's answer, in a lead and the rest of the sentence. */
 export interface WeeksVerdict {
