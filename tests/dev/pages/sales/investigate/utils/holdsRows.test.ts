@@ -99,8 +99,16 @@ describe("rowsOf", () => {
     expect(rows[3].breakdown).toEqual([]);
   });
 
-  it("counts the items it takes to reach half the row", () => {
-    expect(rows[0].toHalf).toBe(1);
+  it("splits a row into sections at half and at 80%, by the total before each item", () => {
+    // 300 + 100 + 50: the 300 starts the row, the 100 starts past half, the 50 past 80%.
+    const secs = rows[0].sections;
+    expect(secs.map((x) => x.items.map((i) => i.productCode))).toEqual([["t1"], ["t2"], ["t3"]]);
+    expect(secs.map((x) => Math.round(x.share * 100))).toEqual([67, 22, 11]);
+    expect(secs[0].total).toBe(-300);
+  });
+
+  it("leaves out a section with nothing in it", () => {
+    expect(rowsOf([items[0]])[0].sections).toHaveLength(1);
   });
 
   it("keeps an empty row, so a zero is shown rather than lost", () => {

@@ -100,6 +100,42 @@ describe("Investigation Summary rows", () => {
     expect(screen.queryByTestId("upc-ctx-menu")).toBeNull();
   });
 
+  it("lists every item in folding sections, only the first open", () => {
+    const many = Array.from({ length: 12 }, (_, n) =>
+      item({ productCode: `x${n}`, description: `ITEM ${n + 1}`, theirsTy: n === 0 ? 900 : 100 - n, theirsUnits: 10 }),
+    );
+    render(
+      <HoldsPanel
+        holds={holdsUp(many, "price", "018", "003")}
+        rows={rowsOf(many)}
+        spread={spreadOf(many)}
+        summary={summarise(many)}
+        us="018"
+        them="003"
+        vitals={vitalsOf(many)}
+        fmt={money}
+        cash={money}
+        marginGap={0}
+        costPenalty={0}
+        onPickItem={vi.fn()}
+        onVendor={vi.fn()}
+        onSeeAll={vi.fn()}
+        onFindInSupply={vi.fn()}
+      />,
+    );
+    const lines = screen.getAllByRole("button").filter((b) => /of the gap/.test(b.textContent ?? ""));
+    expect(lines).toHaveLength(3);
+    expect(screen.getByText("ITEM 1")).toBeInTheDocument();
+    expect(screen.queryByText("ITEM 5")).toBeNull();
+    expect(screen.queryByText("ITEM 12")).toBeNull();
+    fireEvent.click(lines[1]);
+    expect(screen.getByText("ITEM 5")).toBeInTheDocument();
+    fireEvent.click(lines[2]);
+    expect(screen.getByText("ITEM 12")).toBeInTheDocument();
+    fireEvent.click(lines[0]);
+    expect(screen.queryByText("ITEM 1")).toBeNull();
+  });
+
   it("shows no margin note for a penalty that rounds to $0.00", () => {
     panel();
     expect(screen.queryByText(/Buying the same goods for more/)).toBeNull();

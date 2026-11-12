@@ -10,6 +10,7 @@ import type {
   ItemVerdict,
   RowKind,
   RowReason,
+  RowSection,
 } from "../interfaces";
 
 /** The Summary's rows, in the order they are listed. */
@@ -17,7 +18,7 @@ export const ROW_ORDER: RowKind[] = ["onlyTheirs", "bothLess", "bothMore", "only
 
 /** Each row's item columns. Literal, so Tailwind emits them. */
 export const ROW_COLS: Record<RowKind, string> = {
-  onlyTheirs: "grid-cols-[22px_minmax(0,1fr)_128px_96px_72px_92px]",
+  onlyTheirs: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
   bothLess: "grid-cols-[22px_minmax(0,1fr)_88px_112px_132px_56px_92px]",
   bothMore: "grid-cols-[22px_minmax(0,1fr)_88px_112px_132px_56px_92px]",
   onlyMine: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
@@ -50,7 +51,7 @@ export const rowTab = (kind: RowKind, us: string, them: string) =>
 /** The column headings over a row's items, one per column. */
 export const rowHeads = (kind: RowKind, us: string, them: string) =>
   kind === "onlyTheirs"
-    ? ["", "Item", "Cause", `${them} sold`, "", "Difference"]
+    ? ["", "Item", `${them} sold`, "", "Difference"]
     : kind === "onlyMine"
       ? ["", "Item", `${us} sold`, "", "Difference"]
       : ["", "Item", "Why", `Sold · ${us} vs ${them}`, `Avg price · ${us} vs ${them}`, "", "Difference"];
@@ -91,15 +92,34 @@ export const reasonOf = (i: ItemVerdict, bands: Bands = DEFAULT_BANDS): RowReaso
   return Math.abs(units) < Math.abs(price) ? "price" : "both";
 };
 
-/** How many items, biggest first, it takes to reach half the row. */
-const toHalfOf = (items: ItemVerdict[]) => {
-  const total = items.reduce((t, i) => t + Math.abs(i.gap), 0);
+/** Where a row's sections start, as running shares of it. */
+const SECTION_CUTS = [0.5, 0.8];
+
+/**
+ * A row's items, biggest first, in up to three sections: those that make up
+ * the first half of its difference, those that take it to 80%, and the rest.
+ * An item falls by the running total BEFORE it, so the item that crosses a
+ * cut stays in the section it starts in. Empty sections are left out.
+ */
+export const sectionsOf = (items: ItemVerdict[]): RowSection[] => {
+  const whole = items.reduce((t, i) => t + Math.abs(i.gap), 0);
+  const runs: ItemVerdict[][] = [[], [], []];
   let run = 0;
-  for (let n = 0; n < items.length; n++) {
-    run += Math.abs(items[n].gap);
-    if (run >= total / 2) return n + 1;
+  for (const i of items) {
+    const before = whole > 0 ? run / whole : 0;
+    runs[before < SECTION_CUTS[0] ? 0 : before < SECTION_CUTS[1] ? 1 : 2].push(i);
+    run += Math.abs(i.gap);
   }
-  return 0;
+  return runs
+    .filter((r) => r.length > 0)
+    .map((r) => {
+      const size = r.reduce((t, i) => t + Math.abs(i.gap), 0);
+      return {
+        items: r,
+        share: whole > 0 ? size / whole : 0,
+        total: r.reduce((t, i) => t + i.gap, 0),
+      };
+    });
 };
 
 /** The causes behind the items one store never rang, biggest first. */
@@ -158,7 +178,7 @@ export const rowsOf = (items: ItemVerdict[]): HoldsRow[] =>
             : kind === "onlyMine"
               ? []
               : byUnitsAndPrice(rows),
-      toHalf: toHalfOf(rows),
+      sections: sectionsOf(rows),
     };
   });
 

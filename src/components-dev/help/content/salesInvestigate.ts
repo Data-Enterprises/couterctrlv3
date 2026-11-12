@@ -42,7 +42,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         {
           title: "Pick a row to see its items",
           pre: "The four rows under the figure sort every item by which store rang it: rang at the other store only, rang at both with this store selling less, rang at both with this store selling more, and rang at this store only. Click one.",
-          see: "The card beside it slides to that row's items, with what the row is made of above them. Its own tabs pick the row back.",
+          see: "The card beside it slides to that row's items, with what the row is made of above them. Every item is listed, biggest first, in sections by their share of the gap: the items making up the first half, those taking it to 80%, then the rest. Only the first starts open. Click a section's line to fold or open it. The card's own tabs pick the row back.",
           anchor: "tabs",
         },
         {

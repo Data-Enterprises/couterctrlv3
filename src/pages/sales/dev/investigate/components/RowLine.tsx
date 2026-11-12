@@ -1,6 +1,5 @@
 // Utils
 import { count, money } from "../utils";
-import { CAUSE_LABEL, CAUSE_TONE } from "../utils/deptInvestigation";
 import { ROW_COLS, reasonLabel, reasonOf } from "../utils/holdsRows";
 
 // Interfaces
@@ -17,8 +16,8 @@ interface RowLineProps {
   onMenu: (x: number, y: number, code: string) => void;
 }
 
-/** One item in a row's slide: why it is there, the two stores' figures
- *  behind that, and the difference. */
+/** One item in a row's slide: the two stores' figures, why it is apart where
+ *  both rang it, and the difference. Its cause lives in the Items grid. */
 const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) => {
   const lb = item.weighted ? " lb" : "";
   const per = item.weighted ? "/lb" : "";
@@ -37,7 +36,7 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
         e.preventDefault();
         onMenu(e.clientX, e.clientY, item.productCode);
       }}
-      className={`w-full grid ${ROW_COLS[kind]} gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-bkg rounded text-left`}
+      className={`w-full grid ${ROW_COLS[kind]} gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft text-left`}
     >
       <span className="text-[12px] text-content/95 tabular-nums">{n}</span>
       <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
@@ -45,19 +44,10 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
       </span>
 
       {kind === "onlyTheirs" && (
-        <>
-          <span className="min-w-0">
-            <span
-              className={`cc-tag text-[11px] whitespace-nowrap ${CAUSE_TONE[item.cause].chip}`}
-            >
-              {CAUSE_LABEL[item.cause]}
-            </span>
-          </span>
-          <span className="text-[12px] text-content/95 tabular-nums whitespace-nowrap">
-            {count(item.theirsUnits)}
-            {lb}
-          </span>
-        </>
+        <span className="text-[12px] text-content/95 tabular-nums whitespace-nowrap">
+          {count(item.theirsUnits)}
+          {lb}
+        </span>
       )}
 
       {kind === "onlyMine" && (

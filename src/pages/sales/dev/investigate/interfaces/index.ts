@@ -91,8 +91,16 @@ export interface HoldsRow {
   /** In the page's metric, like the gap column. */
   total: number;
   breakdown: BreakdownLine[];
-  /** How many items it takes to reach half the row. */
-  toHalf: number;
+  /** The items in up to three sections by running share of the row. */
+  sections: RowSection[];
+}
+
+/** A run of a row's items, biggest first, and how much of the row it is. */
+export interface RowSection {
+  items: ItemVerdict[];
+  /** Of the row's whole difference, 0–1. */
+  share: number;
+  total: number;
 }
 
 export type Stage = "sales" | "orders" | "receipts" | "done" | "failed";
