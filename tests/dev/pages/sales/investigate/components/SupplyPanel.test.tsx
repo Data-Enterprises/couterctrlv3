@@ -94,6 +94,13 @@ describe("Investigation Supply rows", () => {
     expect(doc.getAllByText("$1402.10")).toHaveLength(2);
   });
 
+  it("sets the two stores side by side: an Ordered and a Received box each, level", () => {
+    panel();
+    expect(screen.getAllByText("Ordered", { selector: "span.cc-caps" })).toHaveLength(2);
+    expect(screen.getAllByText("Received", { selector: "span.cc-caps" })).toHaveLength(2);
+    expect(screen.getAllByText("receivers", { selector: "span" }).length).toBeGreaterThanOrEqual(2);
+  });
+
   it("says the receipts could not be read rather than that nothing arrived", () => {
     panel(false);
     expect(screen.getByText("Both stores ordered. The receivers couldn't be read.")).toBeInTheDocument();

@@ -7,6 +7,7 @@ import type { Supply } from "../utils/investigationSteps";
 // Components
 import Carousel from "./Carousel";
 import Timeline from "./Timeline";
+import SupplySideBySide from "./SupplySideBySide";
 
 interface SupplyChartsProps {
   supply: Supply;
@@ -41,47 +42,6 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
         ((x.theirs?.units ?? 0) + (x.mine?.units ?? 0)),
     );
 
-  const sides = [
-    {
-      label: "Orders placed",
-      m: supply.mine.orders,
-      t: supply.theirs.orders,
-      fmt: n,
-    },
-    {
-      label: "Lines on them",
-      m: supply.mine.orderLines,
-      t: supply.theirs.orderLines,
-      fmt: n,
-    },
-    {
-      label: "Units ordered",
-      m: supply.mine.orderedUnits,
-      t: supply.theirs.orderedUnits,
-      fmt: n,
-    },
-    {
-      // The document count, beside the units and the cost on them. Receipts
-      // to the orders above it -- you order, you receive.
-      label: "Receivers",
-      m: supply.mine.deliveries,
-      t: supply.theirs.deliveries,
-      fmt: n,
-    },
-    {
-      label: "Units received",
-      m: supply.mine.receivedUnits,
-      t: supply.theirs.receivedUnits,
-      fmt: n,
-    },
-    {
-      label: "Cost received",
-      m: supply.mine.receivedCost,
-      t: supply.theirs.receivedCost,
-      fmt: cash,
-    },
-  ];
-
   return (
     <Carousel
       fill
@@ -106,59 +66,7 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
         },
         {
           label: "Side by side",
-          body: (
-            <div
-              className="grid gap-x-3 text-[13px]"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 120px 120px" }}
-            >
-              <span className="pb-1.5 border-b border-brand_navy/15" />
-              {/* min-w-0 on the TEXT, not on the flex row around it:
-                  justify-end pushes the overflow off the left, so a
-                  truncate up here ate the front of the name instead of
-                  putting an ellipsis on the end of it. */}
-              <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/95">
-                <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
-                <span className="min-w-0 truncate normal-case" title={us}>
-                  {us}
-                </span>
-              </span>
-              <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/95">
-                <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
-                <span
-                  className="min-w-0 truncate normal-case"
-                  title={them}
-                >
-                  {them}
-                </span>
-              </span>
-
-              {sides.map((row) => (
-                <Fragment key={row.label}>
-                  <span className="py-1.5 border-b border-brand_navy/15 text-content/95 truncate">
-                    {row.label}
-                  </span>
-                  <span
-                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                      row.m === 0
-                        ? "text-content/95"
-                        : "font-bold text-content"
-                    }`}
-                  >
-                    {row.fmt(row.m)}
-                  </span>
-                  <span
-                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                      row.t === 0
-                        ? "text-content/95"
-                        : "font-semibold text-content"
-                    }`}
-                  >
-                    {row.fmt(row.t)}
-                  </span>
-                </Fragment>
-              ))}
-            </div>
-          ),
+          body: <SupplySideBySide supply={supply} us={us} them={them} cash={cash} />,
         },
         ...(vendorRows.length > 0
           ? [
