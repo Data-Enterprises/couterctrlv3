@@ -48,9 +48,9 @@ const Weeks = ({ vitals, fmt }: WeeksProps) => {
             >
               {w.label}
             </span>
-            <span className="h-[18px] rounded-sm bg-bkg">
+            <span className="h-[15px] rounded-sm bg-bkg">
               <span
-                className={`block h-[18px] rounded-sm ${
+                className={`block h-[15px] rounded-sm ${
                   w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
                 }`}
                 style={{ width: `${(Math.abs(w.gap) / widest) * 100}%` }}
