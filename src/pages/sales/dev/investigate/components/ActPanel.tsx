@@ -43,7 +43,7 @@ const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) 
               {"−"}
               {cash(Math.abs(d.dollars))}
             </span>
-            <span className="text-[13px] leading-snug text-content/95 min-w-0">
+            <span className="text-[14px] leading-snug text-content/95 min-w-0">
               {d.says} Nothing in it names anything to act on, so it goes on no
               list.
             </span>
@@ -74,7 +74,7 @@ const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) 
               <span className="text-[15px] font-bold text-content">
                 {"→"} {OWNER_LABEL[d.owner as "buyer" | "receiving" | "price"]}
               </span>
-              <p className="text-[13px] leading-relaxed text-content/95">
+              <p className="text-[14px] leading-relaxed text-content/95">
                 {d.says}
               </p>
 
@@ -83,18 +83,18 @@ const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) 
                   <li key={i.productCode} className="flex items-baseline gap-2">
                     <button
                       onClick={() => onPickItem(i.productCode)}
-                      className="min-w-0 truncate text-left text-[12px] font-mono text-brand_navy_hover hover:underline"
+                      className="min-w-0 truncate text-left text-[13px] font-mono text-brand_navy_hover hover:underline"
                     >
                       {i.description}
                     </button>
-                    <span className="ml-auto text-[12px] tabular-nums text-delta_negative_text whitespace-nowrap">
+                    <span className="ml-auto text-[13px] tabular-nums text-delta_negative_text whitespace-nowrap">
                       {"−"}
                       {formatCurrency2(Math.abs(i.gap))}
                     </span>
                   </li>
                 ))}
                 {d.items.length > 4 && (
-                  <li className="text-[12px] text-content/95">
+                  <li className="text-[13px] text-content/95">
                     + {(d.items.length - 4).toLocaleString("en-US")} more
                   </li>
                 )}
