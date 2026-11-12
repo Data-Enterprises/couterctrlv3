@@ -30,7 +30,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           pre: "You land on",
           chip: "Summary",
           post: ". The tab carries its own answer, Holds or Doesn't hold, so you can read it without opening anything.",
-          see: "The comparison report called the gap price, volume or supply from the department's totals. Holds means the items agree with it. Doesn't hold means the items put the gap somewhere else, for example the report called it price but most of it is items this store never rang. The card's sentence says which, with the biggest row's figure under it.",
+          see: "The comparison report called the gap price, volume or supply from the department's totals. Holds means the items agree with it. Doesn't hold means the items put the gap somewhere else, for example the report called it price but most of it is items this store never rang. The card's sentence says which. The figure under it is the row the sentence describes, and the card opens on that row.",
           anchor: "tabs",
         },
         {
