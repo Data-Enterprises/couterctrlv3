@@ -29,8 +29,8 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           title: "Read the verdict on the tab",
           pre: "You land on",
           chip: "Summary",
-          post: ". The tab carries its own answer — Holds or Doesn't hold — so you can read it without opening anything.",
-          see: "Holds means the department's shortfall is still there once the items are read. Doesn't hold means it is not, and that is a finding: there is nothing here to chase.",
+          post: ". The tab carries its own answer, Holds or Doesn't hold, so you can read it without opening anything.",
+          see: "The comparison report called the gap price, volume or supply from the department's totals. Holds means the items agree with it. Doesn't hold means the items put the gap somewhere else, for example the report called it price but most of it is items this store never rang. The card's sentence says which, with the biggest row's figure under it.",
           anchor: "tabs",
         },
         {
@@ -46,16 +46,22 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           anchor: "tabs",
         },
         {
-          title: "Follow the summary into the items",
-          pre: "The cards on Summary are clickable. Picking a vendor, an item or Show all moves you to the Items tab already filtered to it.",
-          see: "The Items tab opens with the filter applied, rather than on the whole department.",
+          title: "Read the charts under it",
+          pre: "The card under the rows has three slides. Week by week says whether the gap is a standing difference or something that broke this week. Against the other store puts sales, units and margin on one rule, the other store at 100. Who supplies it lists every vendor in the shortfall.",
+          see: "Each slide answers in a line before its bars. Picking a vendor opens Items narrowed to that vendor.",
+          anchor: "tabs",
+        },
+        {
+          title: "Follow an item into Items or Supply",
+          pre: "Click an item on the card to open its evidence in Items. Right-click it to copy its UPC, copy every UPC on that slide, or view it in Supply. See every item opens the whole grid.",
+          see: "Items opens on that item's evidence; View in Supply opens the Supply tab with its orders and receivers narrowed to that UPC.",
           anchor: "tabs",
         },
       ],
       issues: [
         {
           q: "Two tabs are greyed out",
-          a: "Summary needs sales alone and draws straight away. Items, Supply and Hand-off wait on the orders and receivers, which are separate reads. A tab that is not ready says what it is waiting for rather than showing a figure that will move.",
+          a: "Summary and Items need sales alone and draw straight away; the causes in Items sharpen as the orders and receivers land. Supply and Hand-off wait on those two reads. A tab that is not ready says what it is waiting for rather than showing a figure that will move.",
         },
         {
           q: "The totals do not match the Sub depts tab",
@@ -91,9 +97,9 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
         {
           title: "Take the list with you",
-          pre: "Press",
+          pre: "Press the download button in the header,",
           chip: "Export CSV",
-          post: "to take what the grid is showing.",
+          post: ", to take what the grid is showing.",
           see: "The filter and the sort travel with it — what you export is what you were looking at, not the whole department.",
           anchor: "export",
         },
@@ -153,12 +159,12 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           pre: "Choose the",
           chip: "Hand-off",
           post: "tab. The figure says how much of the shortfall has someone to hand it to. Under it is one row per person: the buyer, receiving, whoever sets price, and the items nobody can be handed. Click one.",
-          see: "The card beside it slides to that person's whole list, their causes as folding sections, biggest first.",
+          see: "The card beside it slides to that person's whole list, biggest first. A list holding more than one cause names each item's cause in its own column.",
           anchor: "tabs",
         },
         {
           title: "Check a list before you send it",
-          pre: "Show in grid, beside each section, takes you back to Items with that cause already filtered. Click any item to open its evidence.",
+          pre: "Show in grid takes you back to Items with that cause already filtered. It sits beside Export list when the list holds one cause, and beside each cause under the headline when it holds several. Click any item to open its evidence.",
           anchor: "causes",
         },
         {
@@ -170,7 +176,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       issues: [
         {
           q: "A list has no owner",
-          a: "It is still shown rather than dropped, on the Not handed to anyone list, and each of its sections says why it has no owner. A shortfall that quietly vanishes is one somebody finds again next week.",
+          a: "It is still shown rather than dropped, on the Not handed to anyone list, which says why each of its causes has no owner. A shortfall that quietly vanishes is one somebody finds again next week.",
         },
       ],
     },
@@ -189,6 +195,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
             { label: "Streamlined, and I expected a cause", result: "streamlined" },
             { label: "Not carried here, but we do carry it", result: "no-orders" },
             { label: "Never ordered, but it was ordered", result: "window" },
+            { label: "No receiver on file, but it was delivered", result: "receiver" },
           ],
         },
       ],
@@ -233,8 +240,20 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
           title: "The order may be outside the 42 days",
           why: "Orders are read over 42 days back from the end of the sales week. A slow category ordered monthly or less can have its last order fall outside that, and the item then reads as never ordered.",
           todo: [
-            "Open Supply and look for the item in the Ordered list.",
-            "If it is not there, the order is older than the window — worth saying so rather than treating it as a buyer's miss.",
+            "Open Supply, pick this store's orders, and paste the item's UPC into the box at the top of the card.",
+            "If no order carries it, the order is older than the window. Worth saying so rather than treating it as a buyer's miss.",
+          ],
+        },
+        {
+          id: "receiver",
+          tone: "warn",
+          badge: "Check the receiver",
+          title: "The receiver may not be entered, or may be dated before the order",
+          why: "An order counts as received only by a receiver dated on or after it, so a receiver from an earlier order does not count. Receivers are also sometimes keyed in later than the delivery, for example at month end.",
+          todo: [
+            "Open the item's evidence: it shows the order date and the newest receiver on file for the department.",
+            "If the newest receiver is older than the order, the receivers simply have not been entered yet.",
+            "If a receiver for it exists after the order date, report it: the item should not carry this cause.",
           ],
         },
       ],
@@ -254,32 +273,32 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Never ordered",
-      def: "No order for it here in the window, nothing received, nothing sold — and the other store sold it. A buyer's item. It only appears when there is order history to say so.",
+      def: "No order for it at this store in the window, nothing received, nothing sold, and the other store sold it. A buyer's item. It only appears when either store has orders in this department to say so.",
       anchor: "causes",
     },
     {
       term: "Not carried here",
-      def: "The same shape as Never ordered, without the claim. Shown when neither store has an order in this department over the window — a department delivered straight off the vendor's truck has none, so every item would otherwise read as a missed order. The other store sells it and nothing here says we ever had it.",
+      def: "The same shape as Never ordered, without the claim. Shown when neither store has an order in this department over the window — a department delivered straight off the vendor's truck has none, so every item would otherwise read as a missed order. The other store sells it and nothing on record says this store ever had it.",
       anchor: "causes",
     },
     {
       term: "No receiver on file",
-      def: "Ordered here, and no receiver for it is on file since that order. Orders carry no expected date, so this says only what is on record, never that the order is late: the receiver may simply not be entered yet. The item's evidence shows the order date and the newest receiver on file for the department. An item that sold here only gets this when no receiver at all is on file in the window.",
+      def: "Ordered at this store, and no receiver for it is on file since that order. Orders carry no expected date, so this says only what is on record, never that the order is late: the receiver may simply not be entered yet. The item's evidence shows the order date and the newest receiver on file for the department. An item this store sold only gets this when no receiver at all is on file in the window.",
       anchor: "causes",
     },
     {
       term: "Received, none sold",
-      def: "Delivered here, and none of it rang this week, while the other store sold it.",
+      def: "Delivered to this store, and none of it rang this week, while the other store sold it.",
       anchor: "causes",
     },
     {
       term: "Receivers unavailable",
-      def: "The receivers could not be read this time, so nothing here says whether an item this store did not ring was ever delivered. No supply cause is named until they load.",
+      def: "The receivers could not be read this time, so nothing says whether an item this store did not ring was ever delivered. No supply cause is named until they load.",
       anchor: "causes",
     },
     {
       term: "Costing more",
-      def: "Both stores sold it and this one buys it for more. Settled before the sales gap is looked at, because an item can sell more here and still make less — reading the sales gap first calls that a win.",
+      def: "Both stores sold it and this one buys it for more. Settled before the sales gap is looked at, because an item can sell more at this store and still make less — reading the sales gap first calls that a win.",
       anchor: "causes",
     },
     {
@@ -289,12 +308,12 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Price / mix",
-      def: "It sold here and took less per unit than at the other store, by more than 8%, and the lower price is the bigger part of the difference. When fewer units carry more of it, the item reads as Selling fewer instead.",
+      def: "It sold at this store and took less per unit than at the other store, by more than 8%, and the lower price is the bigger part of the difference. When fewer units carry more of it, the item reads as Selling fewer instead.",
       anchor: "causes",
     },
     {
       term: "Streamlined",
-      def: "The department's quiet majority: items the two stores are level on, within $5 either way, plus the tail nothing here separates. Nothing to chase.",
+      def: "The department's quiet majority: items the two stores are level on, within $5 either way, plus the tail nothing in this data separates. Nothing to chase.",
       anchor: "causes",
     },
     {
@@ -310,6 +329,26 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     {
       term: "Fewer sold, Lower price, Both",
       def: "Why one item both stores rang is apart. A price counts only when the two average prices differ by more than 8%, the same band Price / mix uses. Inside it, the item reads Fewer sold or More sold. Past it, Lower or Higher price when price is the bigger part, and Both when units are bigger still.",
+      anchor: "tabs",
+    },
+    {
+      term: "Avg price",
+      def: "Sales divided by units: what customers paid on average at each store, not the shelf price. On a scale item it is per pound.",
+      anchor: "tabs",
+    },
+    {
+      term: "Sections by share of the gap",
+      def: "How the Summary lists a row's items: biggest first, cut where they make up half of the row's difference and where they reach 80%. Each section line gives its share, item count and total. Only the first starts open.",
+      anchor: "tabs",
+    },
+    {
+      term: "Week by week",
+      def: "This week's gap to the other store against last week's and last year's. Within a tenth of last week reads as a standing difference; wider is getting worse, narrower getting better. All three follow the Sales/Quantity switch.",
+      anchor: "tabs",
+    },
+    {
+      term: "Hand-off lists",
+      def: "One list per person: the buyer, receiving, whoever sets price. Causes nobody can act on go on Not handed to anyone, with the reason. Export list downloads a person's whole list as one file with each item's cause.",
       anchor: "tabs",
     },
     {
