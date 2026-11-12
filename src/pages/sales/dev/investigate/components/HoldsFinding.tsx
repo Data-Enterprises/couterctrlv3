@@ -42,7 +42,6 @@ const HoldsFinding = ({
   selected,
   onSelect,
 }: HoldsFindingProps) => {
-  const moved = rows.reduce((t, r) => t + Math.abs(r.total), 0);
   /** The one row with money in it leads. Three rows where two are zero makes
    *  the reader find the finding; the figure IS the finding. */
   const lead = [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0];
@@ -91,18 +90,6 @@ const HoldsFinding = ({
             </div>
           )}
         </div>
-
-        {moved > 0 && (
-          <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
-            {rows.map((r) => (
-              <span
-                key={r.kind}
-                className={`block h-2 ${r.total < 0 ? "bg-red-500" : "bg-emerald-500"}`}
-                style={{ width: `${(Math.abs(r.total) / moved) * 100}%` }}
-              />
-            ))}
-          </span>
-        )}
 
         <div className="flex flex-col gap-0.5">
           {rows.map((r) => (

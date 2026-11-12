@@ -37,7 +37,6 @@ const SupplyFinding = ({
 }: SupplyFindingProps) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
   const says = supplySays(supply, us, them, receiptsOk);
-  const orderedTotal = supply.mine.orderedUnits + supply.theirs.orderedUnits;
   const states = [
     ...new Set(supply.orders.map((o) => o.status).filter(Boolean)),
   ];
@@ -61,19 +60,6 @@ const SupplyFinding = ({
           </span>
         </div>
       </div>
-
-      {orderedTotal > 0 && (
-        <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
-          <span
-            className="block bg-store_open"
-            style={{ width: `${(supply.mine.orderedUnits / orderedTotal) * 100}%` }}
-          />
-          <span
-            className="block bg-store_compare"
-            style={{ width: `${(supply.theirs.orderedUnits / orderedTotal) * 100}%` }}
-          />
-        </span>
-      )}
 
       <div className="flex flex-col gap-0.5">
         {rows.map((r) => (

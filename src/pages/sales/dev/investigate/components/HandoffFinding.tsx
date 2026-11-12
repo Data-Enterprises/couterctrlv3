@@ -19,7 +19,6 @@ interface HandoffFindingProps {
 const HandoffFinding = ({ lists, fmt, selected, onSelect }: HandoffFindingProps) => {
   const lead = handoffLead(lists);
   const signed = (v: number) => `${v < 0 ? "−" : ""}${fmt(Math.abs(v))}`;
-  const whole = Math.abs(lead.total) || 1;
   return (
     <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0 flex flex-col gap-3.5">
       <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
@@ -35,17 +34,6 @@ const HandoffFinding = ({ lists, fmt, selected, onSelect }: HandoffFindingProps)
           </span>
         </div>
       </div>
-
-      <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
-        <span
-          className="block bg-red-500"
-          style={{ width: `${(Math.abs(lead.ownedTotal) / whole) * 100}%` }}
-        />
-        <span
-          className="block bg-ungraded"
-          style={{ width: `${(Math.abs(lead.rest) / whole) * 100}%` }}
-        />
-      </span>
 
       <div className="flex flex-col gap-0.5">
         {lists.map((l) => (
