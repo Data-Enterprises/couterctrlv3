@@ -336,7 +336,9 @@ export const vitalsOf = (items: ItemVerdict[]): Vitals => {
     weeks: [
       { label: "Last year", gap: sum((i) => i.mineLy) - sum((i) => i.theirsLy) },
       { label: "Last week", gap: sum((i) => i.mineLw) - sum((i) => i.theirsLw) },
-      { label: "This week", gap: mineSales - theirsSales },
+      // The page's metric, like the two weeks above it: on Quantity a dollar
+      // figure here would sit beside two unit counts.
+      { label: "This week", gap: sum((i) => i.mineTy) - sum((i) => i.theirsTy) },
     ],
     index: [
       { label: "Sales", mine: mineSales, theirs: theirsSales, pct: share(mineSales, theirsSales) },

@@ -247,6 +247,14 @@ describe("the department's vitals", () => {
     expect(v.weeks.map((w) => w.gap)).toEqual([20, -120, -100]);
   });
 
+  it("keeps all three weeks in the page's metric on Quantity", () => {
+    // Units in the metric columns, dollars in the sales ones.
+    const v = vitalsOf([
+      item({ mineTy: 40, mineSales: 400, theirsTy: 50, theirsSales: 500, mineLw: 30, theirsLw: 50 }),
+    ]);
+    expect(v.weeks.map((w) => w.gap)).toEqual([0, -20, -10]);
+  });
+
   /** Sales down and units level is a department selling as much and taking
    *  less — the divergence a reader should not have to compute. */
   it("indexes each measure against the counterpart", () => {
