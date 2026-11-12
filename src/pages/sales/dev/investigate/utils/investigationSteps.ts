@@ -130,46 +130,16 @@ export interface VendorShare {
   dollars: number;
 }
 
+
 export interface Spread {
   /** Behind-items, worst first. */
   ranked: ItemVerdict[];
-  /** How many of them it takes to reach half the shortfall. */
-  toHalf: number;
-  /** What the ten biggest account for, 0–1. */
-  topTenShare: number;
-  /**
-   * Whether a short list carries it.
-   *
-   * The same cumulative rule the comparison report cuts on, rather than a
-   * second threshold: list items until they reach half, and if that takes
-   * more than a dozen the shortfall is spread — which is a finding, and the
-   * reason to group by vendor instead of printing a top ten nobody can act
-   * on.
-   */
-  concentrated: boolean;
+  /** The shortfall by vendor, worst first. */
   byVendor: VendorShare[];
-  says: string;
 }
-
-/** Past this many items to reach half, a list has stopped being a list. */
-const A_LIST = 12;
 
 export const spreadOf = (items: ItemVerdict[]): Spread => {
   const ranked = items.filter((i) => i.gap < 0).sort((a, b) => a.gap - b.gap);
-  const shortfall = ranked.reduce((t, i) => t - i.gap, 0);
-
-  let running = 0;
-  let toHalf = 0;
-  for (const i of ranked) {
-    if (running >= shortfall / 2) break;
-    running -= i.gap;
-    toHalf += 1;
-  }
-
-  const topTen = ranked.slice(0, 10).reduce((t, i) => t - i.gap, 0);
-  const topTenShare = shortfall > 0 ? topTen / shortfall : 0;
-  const concentrated = toHalf > 0 && toHalf <= A_LIST;
-
   const vendors = new Map<string, VendorShare>();
   for (const i of ranked) {
     const name = i.vendorName || "Unknown vendor";
@@ -180,12 +150,7 @@ export const spreadOf = (items: ItemVerdict[]): Spread => {
   }
   const byVendor = [...vendors.values()].sort((a, b) => a.dollars - b.dollars);
 
-  const pct = Math.round(topTenShare * 100);
-  const says = concentrated
-    ? `A short list carries it — ${toHalf} ${toHalf === 1 ? "item is" : "items are"} half the shortfall.`
-    : `No short list carries it. The ten biggest items are ${pct}% of the shortfall, and the rest is spread across ${ranked.length.toLocaleString("en-US")}.`;
-
-  return { ranked, toHalf, topTenShare, concentrated, byVendor, says };
+  return { ranked, byVendor };
 };
 
 /* ------------------------------------------------------------------ */
@@ -193,12 +158,6 @@ export const spreadOf = (items: ItemVerdict[]): Spread => {
 /* ------------------------------------------------------------------ */
 
 export type Owner = "buyer" | "receiving" | "price" | null;
-
-export const OWNER_LABEL: Record<Exclude<Owner, null>, string> = {
-  buyer: "Buyer",
-  receiving: "Receiving",
-  price: "Whoever sets price",
-};
 
 /**
  * A list is actionable when the evidence names a RECORD: an order that does
@@ -235,31 +194,7 @@ export interface Desk {
   actionable: boolean;
   items: ItemVerdict[];
   dollars: number;
-  says: string;
 }
-
-/** Each list's sentence, naming the two stores rather than "here" and "there". */
-const SAYS: Record<Cause, (n: string, m: string, us: string, them: string) => string> = {
-  "never-ordered": (n, m, us, them) =>
-    `${n} items with no order at ${us} in the window, worth ${m} at ${them}.`,
-  "not-carried": (n, m, us, them) =>
-    `${n} items ${them} sells and ${us} shows no sign of, worth ${m} at ${them}. No order in this department came back for either store over the window, so nothing on record says whether they were ever asked for.`,
-  "not-received": (n, m, us) =>
-    `${n} items ordered at ${us} with no receiver on file since the order, worth ${m}.`,
-  cost: (n, m, us, them) =>
-    `${n} items bought for more at ${us} than at ${them}, costing ${m} of margin.`,
-  "price-mix": (n, m, us, them) =>
-    `${n} items that sold at ${us} but took less per unit than at ${them}, worth ${m}.`,
-  "not-moving": (n, m, us) =>
-    `${n} items both stores sold, at about the same price, where ${us} sold fewer, worth ${m}. Nothing in this data says why.`,
-  "no-receipts": (n, m, us, them) =>
-    `${n} items ${us} did not ring, worth ${m} at ${them}. The receivers could not be read, so nothing on record says whether they were delivered.`,
-  unsold: (n, m, us, them) =>
-    `${n} items delivered to ${us} that did not ring this week, worth ${m} at ${them}.`,
-  streamlined: (n, m, _us, them) =>
-    `${n} items level with ${them}, worth ${m}. Nothing to chase.`,
-  ahead: (n, m) => `${n} items ahead, worth ${m}.`,
-};
 
 /**
  * The causes as lists, biggest first.
@@ -269,12 +204,7 @@ const SAYS: Record<Cause, (n: string, m: string, us: string, them: string) => st
  * quietly vanishes from the hand-off is a shortfall somebody will find again
  * later and not trust.
  */
-export const desksOf = (
-  items: ItemVerdict[],
-  money: (v: number) => string,
-  us = "this store",
-  them = "the other store",
-): Desk[] => {
+export const desksOf = (items: ItemVerdict[]): Desk[] => {
   const by = new Map<Cause, ItemVerdict[]>();
   for (const i of items) {
     if (i.cause === "ahead") continue;
@@ -293,7 +223,6 @@ export const desksOf = (
         actionable: owner !== null,
         items: rows.sort((a, b) => a.gap - b.gap),
         dollars,
-        says: SAYS[cause](rows.length.toLocaleString("en-US"), money(Math.abs(dollars)), us, them),
       };
     })
     .sort((a, b) => a.dollars - b.dollars);

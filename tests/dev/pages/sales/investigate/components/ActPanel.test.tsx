@@ -27,7 +27,6 @@ const desks = desksOf(
     item({ productCode: "r1", description: "PORK CHOPS", mineTy: 100, mineUnits: 100, theirsTy: 300, theirsUnits: 300, orderedQty: 6 }),
     item({ productCode: "s1", description: "HOT DOGS", mineTy: 200, mineUnits: 200, theirsTy: 260, theirsUnits: 260, receivedUnits: 50 }),
   ],
-  money,
 );
 
 const panel = (onExport = vi.fn(), onShow = vi.fn()) =>

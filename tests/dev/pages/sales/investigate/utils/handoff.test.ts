@@ -24,7 +24,7 @@ const items = [
   // Both sold at the same price, 018 fewer: nobody's.
   item({ productCode: "s1", mineTy: 200, mineUnits: 200, theirsTy: 260, theirsUnits: 260, receivedUnits: 50 }),
 ];
-const lists = handoffOf(desksOf(items, money));
+const lists = handoffOf(desksOf(items));
 
 describe("handoffOf", () => {
   it("makes one list per person, nobody's last", () => {

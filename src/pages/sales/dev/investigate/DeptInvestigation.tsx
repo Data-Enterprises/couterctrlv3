@@ -176,16 +176,7 @@ const DeptInvestigation = ({
     () => supplyOf(orders, receipts, items),
     [orders, receipts, items],
   );
-  const desks = useMemo(
-    () =>
-      desksOf(
-        items,
-        cash,
-        shortStore(target?.storeName ?? "this store"),
-        shortStore(target?.compareStoreName ?? "the other store"),
-      ),
-    [items, target?.storeName, target?.compareStoreName],
-  );
+  const desks = useMemo(() => desksOf(items), [items]);
 
   /**
    * The last item the rail showed, kept through the close.

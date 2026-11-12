@@ -59,8 +59,6 @@ const sitting = (n: number) =>
     }),
   );
 
-const money = (v: number) => "$" + v.toFixed(2);
-
 describe("1 · does it hold", () => {
   it("holds when a supply call lands on items we never rang", () => {
     const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders");
@@ -123,33 +121,6 @@ describe("1 · does it hold", () => {
 });
 
 describe("2 · where is it", () => {
-  it("calls it concentrated when a handful carry half", () => {
-    const s = spreadOf([
-      item({ theirsTy: 900, theirsUnits: 90 }),
-      item({ theirsTy: 100, theirsUnits: 10 }),
-      item({ theirsTy: 50, theirsUnits: 5 }),
-    ]);
-    expect(s.toHalf).toBe(1);
-    expect(s.concentrated).toBe(true);
-    expect(s.says).toContain("A short list carries it");
-  });
-
-  /**
-   * Fifty items each a fiftieth of the gap: a top ten is 20% of it, and
-   * printing one would let somebody believe it mattered.
-   */
-  it("calls it spread when no short list reaches half", () => {
-    const s = spreadOf(
-      Array.from({ length: 50 }, (_, i) =>
-        item({ productCode: `s${i}`, theirsTy: 100, theirsUnits: 10 }),
-      ),
-    );
-    expect(s.toHalf).toBe(25);
-    expect(s.concentrated).toBe(false);
-    expect(s.topTenShare).toBeCloseTo(0.2, 6);
-    expect(s.says).toContain("No short list carries it");
-  });
-
   it("leaves the items we are ahead on out of the shortfall", () => {
     const s = spreadOf([
       item({ theirsTy: 100, theirsUnits: 10 }),
@@ -170,12 +141,6 @@ describe("2 · where is it", () => {
     expect(s.byVendor.map((v) => v.vendorName)).toContain("Unknown vendor");
   });
 
-  it("says nothing is behind rather than dividing by zero", () => {
-    const s = spreadOf([item({ mineTy: 90, mineUnits: 9, theirsTy: 10, theirsUnits: 1 })]);
-    expect(s.toHalf).toBe(0);
-    expect(s.topTenShare).toBe(0);
-    expect(s.concentrated).toBe(false);
-  });
 });
 
 describe("5 · who fixes it", () => {
@@ -187,11 +152,11 @@ describe("5 · who fixes it", () => {
   ];
 
   it("leaves what we are ahead on off the hand-off", () => {
-    expect(desksOf(mixed(), money).map((d) => d.cause)).not.toContain("ahead");
+    expect(desksOf(mixed()).map((d) => d.cause)).not.toContain("ahead");
   });
 
   it("gives every actionable cause an owner", () => {
-    const desks = desksOf(mixed(), money);
+    const desks = desksOf(mixed());
     const never = desks.find((d) => d.cause === "never-ordered");
     expect(never?.owner).toBe("buyer");
     expect(never?.actionable).toBe(true);
@@ -206,7 +171,7 @@ describe("5 · who fixes it", () => {
    * is stated and handed to nobody.
    */
   it("hands nobody the causes that name no record", () => {
-    const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)], money);
+    const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)]);
     expect(desks.map((d) => d.cause)).toContain("not-moving");
     for (const d of desks) {
       if (d.cause === "not-moving" || d.cause === "streamlined") {
@@ -216,21 +181,14 @@ describe("5 · who fixes it", () => {
     }
   });
 
-  it("states what cannot be handed over rather than dropping it", () => {
-    const desks = desksOf(sitting(2), money);
-    const quiet = desks.filter((d) => !d.actionable);
+  it("keeps what cannot be handed over rather than dropping it", () => {
+    const quiet = desksOf(sitting(2)).filter((d) => !d.actionable);
     expect(quiet.length).toBeGreaterThan(0);
-    expect(quiet[0].says).toContain("items");
-  });
-
-  it("names the two stores rather than here and there", () => {
-    const says = desksOf(mixed(), money, "018", "003").map((d) => d.says).join(" ");
-    expect(says).toContain("at 018");
-    for (const old of [" here ", " here.", " here,", "the other store", "this one"]) expect(says).not.toContain(old);
+    expect(quiet[0].items.length).toBeGreaterThan(0);
   });
 
   it("ranks the desks by money, worst first", () => {
-    const desks = desksOf(mixed(), money);
+    const desks = desksOf(mixed());
     for (let i = 1; i < desks.length; i += 1) {
       expect(desks[i - 1].dollars).toBeLessThanOrEqual(desks[i].dollars);
     }
