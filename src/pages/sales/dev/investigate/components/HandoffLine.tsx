@@ -1,5 +1,5 @@
 // Utils
-import { CAUSE_LABEL, CAUSE_TONE } from "../utils/deptInvestigation";
+import { CAUSE_LABEL, CAUSE_TIP, CAUSE_TONE } from "../utils/deptInvestigation";
 import { HANDOFF_COLS } from "../utils/handoff";
 
 // Interfaces
@@ -10,6 +10,9 @@ interface HandoffLineProps {
   n: number;
   /** Name the item's cause: on a list that holds more than one. */
   showCause: boolean;
+  /** The two stores' numbers, for the cause tooltip. */
+  us: string;
+  them: string;
   fmt: (v: number) => string;
   onPick: (code: string) => void;
 }
@@ -17,7 +20,7 @@ interface HandoffLineProps {
 /** One item on a Hand-off list: its name, its cause where the list holds
  *  several, its UPC and the difference.
  *  Clicking it opens its evidence in Items. */
-const HandoffLine = ({ item, n, showCause, fmt, onPick }: HandoffLineProps) => (
+const HandoffLine = ({ item, n, showCause, us, them, fmt, onPick }: HandoffLineProps) => (
   <button
     type="button"
     onClick={() => onPick(item.productCode)}
@@ -32,7 +35,10 @@ const HandoffLine = ({ item, n, showCause, fmt, onPick }: HandoffLineProps) => (
     </span>
     {showCause && (
       <span className="min-w-0">
-        <span className={`cc-tag text-[11px] whitespace-nowrap ${CAUSE_TONE[item.cause].chip}`}>
+        <span
+          className={`cc-tag text-[11px] whitespace-nowrap ${CAUSE_TONE[item.cause].chip}`}
+          title={CAUSE_TIP[item.cause](us, them)}
+        >
           {CAUSE_LABEL[item.cause]}
         </span>
       </span>

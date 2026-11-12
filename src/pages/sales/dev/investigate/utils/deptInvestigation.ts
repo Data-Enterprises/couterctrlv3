@@ -204,6 +204,23 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   streamlined: "Streamlined",
 };
 
+/** What each cause means, in one line: the tooltip wherever a cause is a
+ *  label. Kept here so the Summary and the Hand-off say the same thing. */
+export const CAUSE_TIP: Record<Cause, (us: string, them: string) => string> = {
+  "never-ordered": (us, them) =>
+    `No order at ${us} in the window, nothing received, nothing sold. ${them} sold it.`,
+  "not-carried": () =>
+    "Like Never ordered, but neither store ordered in this department, so it can't say one was missed.",
+  "not-received": (us) => `Ordered at ${us}, and no receiver for it is on file since the order.`,
+  unsold: (us) => `Delivered to ${us}, and none of it rang this week.`,
+  "no-receipts": () => "The receivers couldn't be read, so nothing says whether it was delivered.",
+  cost: (us) => `Both sold it, and ${us} buys it for more.`,
+  "price-mix": (us, them) => `${us} took less a unit than ${them}, and price is most of the gap.`,
+  "not-moving": (us) => `Both sold it at about the same price, and ${us} sold fewer.`,
+  streamlined: (_us, them) => `Within $5 of ${them}.`,
+  ahead: (us) => `${us} sold more of it, by more than $5.`,
+};
+
 /** Who owns the fix. The whole reason the causes are named separately is that
  *  they go to three different people. */
 export const CAUSE_OWNER: Record<Cause, string> = {

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { judge, splitGap } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import {
   leadRow,
+  partTip,
   reasonOf,
   rowOf,
   rowSays,
@@ -159,5 +160,22 @@ describe("rowSays", () => {
 describe("leadRow", () => {
   it("opens on the row with the most money in it", () => {
     expect(leadRow(rowsOf(items))).toBe("onlyTheirs");
+  });
+});
+
+describe("partTip", () => {
+  const units = { label: "More sold", amount: 812.54, side: "89%", money: true };
+  const price = { label: "Lower price", amount: -103.63, side: "11%", money: true };
+
+  it("says what a units or price line is", () => {
+    expect(partTip(units, 708.91, money)).toBe(
+      "What the difference in units sold was worth, at the two stores' average price.",
+    );
+  });
+
+  it("says when a line works against its slide, and by how much", () => {
+    expect(partTip(price, 708.91, money)).toBe(
+      "What the difference in price was worth, on the two stores' average units. It works against this slide: taking less a unit gave back $103.63 of the lead.",
+    );
   });
 });

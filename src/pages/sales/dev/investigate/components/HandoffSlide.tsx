@@ -45,7 +45,11 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
               >
                 Copy UPCs
               </button>
-              <button onClick={onExport} className="cc-btn-outline text-[12px] text-content">
+              <button
+                onClick={onExport}
+                title="One file with every item on this list and its cause."
+                className="cc-btn-outline text-[12px] text-content"
+              >
                 Export list
               </button>
             </>
@@ -108,6 +112,8 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
             item={i}
             n={ix + 1}
             showCause={several}
+            us={us}
+            them={them}
             fmt={fmt}
             onPick={onPickItem}
           />

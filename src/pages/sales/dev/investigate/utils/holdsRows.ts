@@ -60,6 +60,35 @@ export const rowHeads = (kind: RowKind, us: string, them: string) =>
 export const leadRow = (rows: HoldsRow[]): RowKind =>
   [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0]?.kind ?? "onlyTheirs";
 
+/** Why a reason chip says what it says: the price band nothing else shows. */
+export const REASON_TIP: Record<RowReason, string> = {
+  units: "The two prices are within 8%, so units explain the gap.",
+  price: "The prices differ by more than 8%, and price is the bigger part of the gap.",
+  both: "The prices differ by more than 8%, but units are the bigger part of the gap.",
+};
+
+/** The Avg price column, which people will otherwise read as the shelf tag. */
+export const AVG_PRICE_TIP = "Sales ÷ units: what customers paid on average, not the shelf price.";
+
+/**
+ * What a units or price line in a breakdown is. A line pulling against its
+ * slide (fewer sold on a slide ahead, a higher price on one behind) says so,
+ * since a red line on a green slide is the first thing a reader asks about.
+ */
+export const partTip = (line: BreakdownLine, rowTotal: number, cash: (v: number) => string) => {
+  const units = line.label === "Fewer sold" || line.label === "More sold";
+  const base = units
+    ? "What the difference in units sold was worth, at the two stores' average price."
+    : "What the difference in price was worth, on the two stores' average units.";
+  if (line.amount === 0 || rowTotal === 0 || line.amount < 0 === rowTotal < 0) return base;
+  const what = units
+    ? line.amount < 0 ? "selling fewer" : "selling more"
+    : line.amount < 0 ? "taking less a unit" : "the higher price";
+  const did = line.amount < 0 ? "gave back" : "won back";
+  const of = rowTotal > 0 ? "the lead" : "the shortfall";
+  return `${base} It works against this slide: ${what} ${did} ${cash(Math.abs(line.amount))} of ${of}.`;
+};
+
 /** An item's reason, worded for the row it is in. */
 export const reasonLabel = (reason: RowReason, up: boolean) =>
   reason === "units"

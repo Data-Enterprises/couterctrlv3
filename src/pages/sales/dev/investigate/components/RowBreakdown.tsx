@@ -1,8 +1,15 @@
+// Utils
+import { CAUSE_TIP } from "../utils/deptInvestigation";
+import { partTip } from "../utils/holdsRows";
+
 // Interfaces
 import type { BreakdownLine } from "../interfaces";
 
 interface RowBreakdownProps {
   lines: BreakdownLine[];
+  /** The two stores' numbers, for the cause tooltips. */
+  us: string;
+  them: string;
   fmt: (v: number) => string;
   cash: (v: number) => string;
 }
@@ -10,8 +17,9 @@ interface RowBreakdownProps {
 /** What a row is made of: its causes, or units against price. Red put this
  *  store behind and green put it ahead, as on every bar in the tab, all on
  *  one scale so a part pulling the other way still reads. */
-const RowBreakdown = ({ lines, fmt, cash }: RowBreakdownProps) => {
+const RowBreakdown = ({ lines, us, them, fmt, cash }: RowBreakdownProps) => {
   const scale = Math.max(1, ...lines.map((l) => Math.abs(l.amount)));
+  const total = lines.reduce((t, l) => t + l.amount, 0);
   return (
     <div className="flex flex-col gap-1.5 rounded-md bg-bkg px-3 py-2.5">
       {lines.map((l) => (
@@ -19,7 +27,10 @@ const RowBreakdown = ({ lines, fmt, cash }: RowBreakdownProps) => {
           key={l.label}
           className="grid grid-cols-[150px_minmax(0,1fr)_64px_96px] gap-2.5 items-center"
         >
-          <span className="text-[12.5px] font-semibold text-content truncate">
+          <span
+            className="text-[12.5px] font-semibold text-content truncate"
+            title={l.cause ? CAUSE_TIP[l.cause](us, them) : partTip(l, total, cash)}
+          >
             {l.label}
           </span>
           <span className="h-[8.4px] rounded-sm bg-custom-white">

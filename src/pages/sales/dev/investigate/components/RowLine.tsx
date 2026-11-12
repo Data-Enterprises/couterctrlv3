@@ -1,6 +1,6 @@
 // Utils
 import { count, money } from "../utils";
-import { ROW_COLS, reasonLabel, reasonOf } from "../utils/holdsRows";
+import { REASON_TIP, ROW_COLS, reasonLabel, reasonOf } from "../utils/holdsRows";
 
 // Interfaces
 import type { ItemVerdict, RowKind } from "../interfaces";
@@ -60,7 +60,10 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
       {both && reason && (
         <>
           <span className="min-w-0">
-            <span className="cc-tag text-[11px] whitespace-nowrap bg-fill_muted text-content">
+            <span
+              className="cc-tag text-[11px] whitespace-nowrap bg-fill_muted text-content"
+              title={REASON_TIP[reason]}
+            >
               {reasonLabel(reason, kind === "bothMore")}
             </span>
           </span>

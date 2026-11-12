@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // Utils
-import { ROW_COLS, rowHeads, rowSays } from "../utils/holdsRows";
+import { AVG_PRICE_TIP, ROW_COLS, rowHeads, rowSays } from "../utils/holdsRows";
 
 // Interfaces
 import type { HoldsRow } from "../interfaces";
@@ -50,7 +50,7 @@ const RowSlide = ({
       </p>
 
       {row.breakdown.length > 0 && (
-        <RowBreakdown lines={row.breakdown} fmt={fmt} cash={cash} />
+        <RowBreakdown lines={row.breakdown} us={us} them={them} fmt={fmt} cash={cash} />
       )}
 
       {/* The items scroll inside the slide: the breakdown above them can
@@ -61,7 +61,11 @@ const RowSlide = ({
             className={`sticky top-0 z-10 bg-custom-white grid ${ROW_COLS[row.kind]} gap-3 px-1.5 pb-1.5 border-b border-brand_navy/15 cc-caps text-[10.5px] text-brand_slate`}
           >
             {heads.map((h, i) => (
-              <span key={i} className={i === heads.length - 1 ? "text-right" : ""}>
+              <span
+                key={i}
+                className={i === heads.length - 1 ? "text-right" : ""}
+                title={h.startsWith("Avg price") ? AVG_PRICE_TIP : undefined}
+              >
                 {h}
               </span>
             ))}

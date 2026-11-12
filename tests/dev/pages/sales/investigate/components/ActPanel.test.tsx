@@ -75,6 +75,14 @@ describe("Investigation Hand-off", () => {
     expect(screen.queryByText(/never ordered \|/i)).toBeNull();
   });
 
+  it("says what an export holds before it downloads", () => {
+    panel();
+    expect(screen.getAllByText("Export list")[0]).toHaveAttribute(
+      "title",
+      "One file with every item on this list and its cause.",
+    );
+  });
+
   it("lists every item and says why the list nobody is handed has no owner", () => {
     panel();
     fireEvent.click(row(/^Not handed/));
