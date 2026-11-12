@@ -86,14 +86,16 @@ export const causeOf = (
    */
   ordersKnown: boolean = true,
 ): Cause => {
-  const gap = f.mineTy - f.theirsTy;
+  // Dollars whatever the page shows: an item's cause must not change with the
+  // Sales/Quantity switch, and on quantity `mineTy` is a unit count.
+  const gap = f.mineSales - f.theirsSales;
   const ordered = f.orderedQty > 0;
   const received = f.receivedUnits > 0;
 
   // The two supply failures come first wherever the sales landed: an item
   // that never reached the shelf cannot be explained by what it cost or what
   // it was priced at.
-  if (!ordered && !received && f.mineTy === 0 && f.theirsTy > 0)
+  if (!ordered && !received && f.mineSales === 0 && f.theirsSales > 0)
     return ordersKnown ? "never-ordered" : "not-carried";
   // Ordered-but-not-arrived needs an order to have been placed, so it cannot
   // fire at all without order history.
@@ -110,8 +112,8 @@ export const causeOf = (
   if (Math.abs(gap) < bands.floor) return "streamlined";
   if (gap > 0) return "ahead";
 
-  const mine = realised(f.mineTy, f.mineUnits);
-  const theirs = realised(f.theirsTy, f.theirsUnits);
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
   if (mine !== null && theirs !== null && theirs > 0) {
     if (Math.abs(mine / theirs - 1) > bands.price) return "price-mix";
   }
@@ -122,12 +124,14 @@ export const causeOf = (
   return "streamlined";
 };
 
+/** Dollars, not the page's metric: on quantity the metric figure is units, and
+ *  units over units would make every price ratio 1. */
 export const ratiosOf = (f: ItemFacts): Ratios => {
-  const mine = realised(f.mineTy, f.mineUnits);
-  const theirs = realised(f.theirsTy, f.theirsUnits);
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
   return {
     units: ratio(f.mineUnits, f.theirsUnits),
-    dollars: ratio(f.mineTy, f.theirsTy),
+    dollars: ratio(f.mineSales, f.theirsSales),
     price: mine !== null && theirs !== null && theirs > 0 ? mine / theirs : null,
     sellThrough: f.receivedUnits > 0 ? f.mineUnits / f.receivedUnits : null,
   };

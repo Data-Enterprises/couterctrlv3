@@ -194,6 +194,19 @@ describe("causeOf", () => {
     expect(causeOf(f)).toBe("not-moving");
   });
 
+  it("gives the same cause whichever way the Sales/Quantity switch is set", () => {
+    // On quantity the metric figures are units; the cause reads the dollars.
+    const dollars = facts({
+      mineTy: 500, mineUnits: 1000,
+      theirsTy: 900, theirsUnits: 900,
+      receivedUnits: 1000,
+    });
+    const units = { ...dollars, mineTy: 1000, theirsTy: 900 };
+    expect(causeOf(dollars)).toBe("price-mix");
+    expect(causeOf(units)).toBe("price-mix");
+    expect(ratiosOf(units).price).toBeCloseTo(0.5);
+  });
+
   it("respects a widened price band", () => {
     const f = facts({
       mineTy: 550, mineUnits: 500,
