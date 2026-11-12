@@ -32,6 +32,7 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
     <button
       type="button"
       onClick={() => onPick(item.productCode)}
+      title="View in Items"
       onContextMenu={(e) => {
         e.preventDefault();
         onMenu(e.clientX, e.clientY, item.productCode);

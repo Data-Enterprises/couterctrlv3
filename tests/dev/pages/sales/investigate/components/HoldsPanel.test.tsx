@@ -90,6 +90,7 @@ describe("Investigation Summary rows", () => {
   it("right-clicks an item for its UPC, the slide's UPCs, or Supply", () => {
     const onFind = vi.fn();
     panel(onFind);
+    expect(screen.getByText("GROUND BEEF").closest("button")).toHaveAttribute("title", "View in Items");
     fireEvent.contextMenu(screen.getByText("GROUND BEEF"));
     const menu = screen.getByTestId("upc-ctx-menu");
     expect(menu).toHaveTextContent("Copy UPC");
