@@ -146,31 +146,31 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     {
       id: "hand-off",
       title: "Hand it to the person who can fix it",
-      desc: "The causes grouped by who owns them",
+      desc: "One list per person, and what nobody can be handed",
       steps: [
         {
           title: "Open Hand-off",
           pre: "Choose the",
           chip: "Hand-off",
-          post: "tab. The causes are grouped into the buyer's list, the vendor's list, and the ones nothing in this data can name.",
-          see: "Each list carries its item count and what it is worth, with a line you can send as it stands.",
+          post: "tab. The figure says how much of the shortfall has someone to hand it to. Under it is one row per person: the buyer, receiving, whoever sets price, and the items nobody can be handed. Click one.",
+          see: "The card beside it slides to that person's whole list, their causes as folding sections, biggest first.",
           anchor: "tabs",
         },
         {
           title: "Check a list before you send it",
-          pre: "Show in grid takes you back to Items with that cause already filtered, so you can read the evidence behind any line on it.",
+          pre: "Show in grid, beside each section, takes you back to Items with that cause already filtered. Click any item to open its evidence.",
           anchor: "causes",
         },
         {
           title: "Send it",
-          pre: "Each list exports on its own, so the buyer gets the buyer's items and nobody else's.",
+          pre: "Export list downloads the person's whole list as one file, each line carrying its cause, so the buyer gets the buyer's items and nobody else's. Copy UPCs copies them all.",
           anchor: "export",
         },
       ],
       issues: [
         {
           q: "A list has no owner",
-          a: "It is still shown rather than dropped. A shortfall that quietly vanishes is one somebody finds again next week.",
+          a: "It is still shown rather than dropped, on the Not handed to anyone list, and each of its sections says why it has no owner. A shortfall that quietly vanishes is one somebody finds again next week.",
         },
       ],
     },

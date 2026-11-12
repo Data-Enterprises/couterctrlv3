@@ -19,14 +19,14 @@ import {
   spreadOf,
   supplyOf,
   vitalsOf,
-  type Desk,
 } from "./utils/investigationSteps";
 import { cash, PAGE_ROWS, shortStore, SUGGESTED } from "./utils";
 import { rowsOf } from "./utils/holdsRows";
+import { HANDOFF_NAME, handoffKey } from "./utils/handoff";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
 
 // Interfaces
-import type { ItemVerdict, Col, InvestigationTab } from "./interfaces";
+import type { ItemVerdict, Col, HandoffList, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";
@@ -199,17 +199,18 @@ const DeptInvestigation = ({
   if (pickedItem) lastEvidence.current = pickedItem;
   const evidence = pickedItem ?? lastEvidence.current;
 
-  /** One desk's list, named for who it is going to. The whole-grid export
-   *  in the header is a different file and says so. */
-  const exportDesk = (d: Desk) => {
+  /** One person's list, every cause on it, named for who it is going to.
+   *  The rows carry their cause, so one file holds the whole list. The
+   *  whole-grid export in the header is a different file and says so. */
+  const exportList = (l: HandoffList) => {
     if (!target) return;
     const name = [
       target.storeNumber,
       target.subDeptName.replace(/[^A-Za-z0-9]+/g, "-"),
-      CAUSE_LABEL[d.cause].replace(/[^A-Za-z0-9]+/g, "-"),
+      HANDOFF_NAME[handoffKey(l.owner)].replace(/[^A-Za-z0-9]+/g, "-"),
       twEnd,
     ].join("_");
-    downloadCsv(rowsToCsv(CSV_HEADERS, d.items.map(csvRow)), `${name}.csv`);
+    downloadCsv(rowsToCsv(CSV_HEADERS, l.items.map(csvRow)), `${name}.csv`);
   };
 
   /** Everything the filters left, not the 300 that are drawn. */
@@ -408,12 +409,14 @@ const DeptInvestigation = ({
           {tab === "act" && allIn && (
             <ActPanel
               desks={desks}
-              cash={cash}
+              us={shortStore(target.storeName)}
+              them={shortStore(target.compareStoreName)}
+              fmt={fmt}
               onShow={(c) => {
                 setOnly(c);
                 setTab("items");
               }}
-              onExport={exportDesk}
+              onExport={exportList}
               onPickItem={(code) => {
                 show(code);
                 setTab("items");

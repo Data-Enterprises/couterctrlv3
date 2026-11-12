@@ -73,10 +73,10 @@ const RowSlide = ({
             return (
               <div key={si} className="flex flex-col">
                 <SectionLine
-                  share={sec.share}
+                  label={`${Math.round(sec.share * 100)}% of the gap`}
                   count={sec.items.length}
                   amount={`${sec.total < 0 ? "−" : "+"}${fmt(Math.abs(sec.total))}`}
-                  behind={behind}
+                  tone={behind ? "behind" : "ahead"}
                   open={open}
                   onToggle={() =>
                     setFolded((prev) => {

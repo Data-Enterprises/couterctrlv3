@@ -9,7 +9,7 @@ import type {
   Store,
   Window,
 } from "../utils/investigationData";
-import type { SupplyRecord } from "../utils/investigationSteps";
+import type { Desk, SupplyRecord } from "../utils/investigationSteps";
 
 export type Col =
   | "mine"
@@ -57,6 +57,18 @@ export interface DocLine {
 
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
+
+/** Who a Hand-off list goes to; null is the list nobody can be handed. */
+export type HandoffOwner = "buyer" | "receiving" | "price" | null;
+
+/** One person's list on the Hand-off tab: their causes, in order of size. */
+export interface HandoffList {
+  owner: HandoffOwner;
+  desks: Desk[];
+  /** Every item on the list, cause by cause. */
+  items: ItemVerdict[];
+  total: number;
+}
 
 /** The Supply tab's rows: which store, and orders or receipts. */
 export type SupplyKind = "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
