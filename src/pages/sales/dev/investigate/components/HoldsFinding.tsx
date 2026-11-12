@@ -1,6 +1,6 @@
 // Utils
 import { CENT } from "../utils";
-import { rowPhrase } from "../utils/holdsRows";
+import { findingRow, rowPhrase } from "../utils/holdsRows";
 
 // Interfaces
 import type { HoldsRow, RowKind, Summary } from "../interfaces";
@@ -42,9 +42,8 @@ const HoldsFinding = ({
   selected,
   onSelect,
 }: HoldsFindingProps) => {
-  /** The one row with money in it leads. Three rows where two are zero makes
-   *  the reader find the finding; the figure IS the finding. */
-  const lead = [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0];
+  /** The figure is the row the sentence is about, so the two never disagree. */
+  const lead = rows.find((r) => r.kind === findingRow(rows, holds.about));
 
   return (
     <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">

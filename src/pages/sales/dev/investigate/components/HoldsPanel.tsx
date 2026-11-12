@@ -3,7 +3,7 @@ import { useState } from "react";
 
 // Utils
 import { shortStore } from "../utils";
-import { leadRow } from "../utils/holdsRows";
+import { findingRow } from "../utils/holdsRows";
 
 // Interfaces
 import type { HoldsRow, RowKind, Summary } from "../interfaces";
@@ -64,7 +64,7 @@ const HoldsPanel = ({
   /** The row the items card shows. Until one is picked, the row with the
    *  most money in it, which is the one the finding leads with. */
   const [picked, setPicked] = useState<RowKind | null>(null);
-  const selected = picked ?? leadRow(rows);
+  const selected = picked ?? findingRow(rows, holds.about);
   const mine = shortStore(us);
   const theirs = shortStore(them);
   /** The items card's right-click menu, while it is open. */

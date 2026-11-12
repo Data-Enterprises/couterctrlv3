@@ -104,6 +104,11 @@ describe("1 · does it hold", () => {
     expect(h.bothMore.items).toBe(0);
   });
 
+  it("says which row its sentence is about", () => {
+    expect(holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders").about).toBe("onlyTheirs");
+    expect(holdsUp([...weaker(8, 40, 90), ...absent(1, 20)], "orders").about).toBe("bothLess");
+  });
+
   it("names the two stores rather than here and there", () => {
     const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders", "018", "003");
     expect(h.says).toBe("Most of the gap is items 003 rang and 018 did not.");

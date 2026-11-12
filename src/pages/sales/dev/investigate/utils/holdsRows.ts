@@ -56,9 +56,18 @@ export const rowHeads = (kind: RowKind, us: string, them: string) =>
       ? ["", "Item", `${us} sold`, "", "Difference"]
       : ["", "Item", "Why", `Sold · ${us} vs ${them}`, `Avg price · ${us} vs ${them}`, "Difference"];
 
-/** The row with the most money in it, which the Summary opens on. */
+/** The row with the most money in it. */
 export const leadRow = (rows: HoldsRow[]): RowKind =>
   [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0]?.kind ?? "onlyTheirs";
+
+/**
+ * The row the finding's figure shows and the Summary opens on: the one its
+ * sentence is about. Only when that row is empty (nothing is behind) does the
+ * row with the most money in it stand in, so the figure never contradicts the
+ * sentence above it.
+ */
+export const findingRow = (rows: HoldsRow[], about: RowKind): RowKind =>
+  rows.find((r) => r.kind === about && r.items.length > 0)?.kind ?? leadRow(rows);
 
 /** Why a reason chip says what it says: the price band nothing else shows. */
 export const REASON_TIP: Record<RowReason, string> = {

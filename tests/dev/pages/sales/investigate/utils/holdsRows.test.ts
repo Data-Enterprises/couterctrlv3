@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { judge, splitGap } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import {
+  findingRow,
   leadRow,
   partTip,
   reasonOf,
@@ -154,6 +155,21 @@ describe("rowSays", () => {
     expect(rowSays(rows[3], "018", "003", money, money)).toBe(
       "1 item rang at 018 and not at 003, worth $40.00.",
     );
+  });
+});
+
+describe("findingRow", () => {
+  it("shows the row the sentence is about, even when another holds more money", () => {
+    const ahead = [
+      item({ productCode: "t", theirsTy: 100, theirsUnits: 10 }),
+      item({ productCode: "o", mineTy: 3000, mineUnits: 300 }),
+    ];
+    expect(leadRow(rowsOf(ahead))).toBe("onlyMine");
+    expect(findingRow(rowsOf(ahead), "onlyTheirs")).toBe("onlyTheirs");
+  });
+
+  it("falls back to the biggest row when nothing is behind", () => {
+    expect(findingRow(rowsOf([item({ productCode: "o", mineTy: 50, mineUnits: 5 })]), "onlyTheirs")).toBe("onlyMine");
   });
 });
 

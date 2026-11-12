@@ -51,6 +51,9 @@ export interface Holds {
    * carried differently in the first place.
    */
   verdict: "holds" | "overturned";
+  /** The row the sentence is about: items the other store rang and this one
+   *  did not, or items both rang where this one took less. */
+  about: "onlyTheirs" | "bothLess";
   /** What the items say, in the verdict's own terms. */
   says: string;
 }
@@ -117,7 +120,9 @@ export const holdsUp = (
         ? `The report called it price, but most of the gap is items ${us} never rang at all.`
         : `The report called it volume, but the items rang at ${us} too; they took less.`;
 
-  return { onlyTheirs, bothLess, bothMore, onlyMine, verdict, says };
+  const about = supplyLed ? "onlyTheirs" : "bothLess";
+
+  return { onlyTheirs, bothLess, bothMore, onlyMine, verdict, about, says };
 };
 
 /* ------------------------------------------------------------------ */
