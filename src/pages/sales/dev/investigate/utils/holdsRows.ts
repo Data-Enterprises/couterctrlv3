@@ -19,8 +19,8 @@ export const ROW_ORDER: RowKind[] = ["onlyTheirs", "bothLess", "bothMore", "only
 /** Each row's item columns. Literal, so Tailwind emits them. */
 export const ROW_COLS: Record<RowKind, string> = {
   onlyTheirs: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
-  bothLess: "grid-cols-[22px_minmax(0,1fr)_88px_112px_132px_56px_92px]",
-  bothMore: "grid-cols-[22px_minmax(0,1fr)_88px_112px_132px_56px_92px]",
+  bothLess: "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
+  bothMore: "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
   onlyMine: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
 };
 
@@ -54,7 +54,7 @@ export const rowHeads = (kind: RowKind, us: string, them: string) =>
     ? ["", "Item", `${them} sold`, "", "Difference"]
     : kind === "onlyMine"
       ? ["", "Item", `${us} sold`, "", "Difference"]
-      : ["", "Item", "Why", `Sold · ${us} vs ${them}`, `Avg price · ${us} vs ${them}`, "", "Difference"];
+      : ["", "Item", "Why", `Sold · ${us} vs ${them}`, `Avg price · ${us} vs ${them}`, "Difference"];
 
 /** The row with the most money in it, which the Summary opens on. */
 export const leadRow = (rows: HoldsRow[]): RowKind =>

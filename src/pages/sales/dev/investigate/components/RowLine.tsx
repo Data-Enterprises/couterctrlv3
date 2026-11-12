@@ -83,12 +83,16 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
         </>
       )}
 
-      <span className="h-[8.4px] rounded-sm bg-bkg">
-        <span
-          className={`block h-[8.4px] rounded-sm ${behind ? "bg-red-500" : "bg-emerald-500"}`}
-          style={{ width: `${(Math.abs(item.gap) / Math.max(1e-9, widest)) * 100}%` }}
-        />
-      </span>
+      {/* The rows both stores rang carry two figure columns instead, which
+          need the room more than a bar does. */}
+      {!both && (
+        <span className="h-[8.4px] rounded-sm bg-bkg">
+          <span
+            className={`block h-[8.4px] rounded-sm ${behind ? "bg-red-500" : "bg-emerald-500"}`}
+            style={{ width: `${(Math.abs(item.gap) / Math.max(1e-9, widest)) * 100}%` }}
+          />
+        </span>
+      )}
       <span
         className={`text-right text-[12.5px] font-bold tabular-nums whitespace-nowrap ${
           behind ? "text-delta_negative_text" : "text-delta_positive_text"
