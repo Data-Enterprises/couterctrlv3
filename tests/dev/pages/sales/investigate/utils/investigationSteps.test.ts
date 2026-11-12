@@ -223,6 +223,12 @@ describe("5 · who fixes it", () => {
     expect(quiet[0].says).toContain("items");
   });
 
+  it("names the two stores rather than here and there", () => {
+    const says = desksOf(mixed(), money, "018", "003").map((d) => d.says).join(" ");
+    expect(says).toContain("at 018");
+    for (const old of [" here ", " here.", " here,", "the other store", "this one"]) expect(says).not.toContain(old);
+  });
+
   it("ranks the desks by money, worst first", () => {
     const desks = desksOf(mixed(), money);
     for (let i = 1; i < desks.length; i += 1) {

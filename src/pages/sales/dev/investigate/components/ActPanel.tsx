@@ -44,7 +44,7 @@ const ActPanel = ({ desks, cash, onShow, onExport, onPickItem }: ActPanelProps) 
               {cash(Math.abs(d.dollars))}
             </span>
             <span className="text-[13px] leading-snug text-content/95 min-w-0">
-              {d.says} Nothing here names anything to act on, so it goes on no
+              {d.says} Nothing in it names anything to act on, so it goes on no
               list.
             </span>
             <button

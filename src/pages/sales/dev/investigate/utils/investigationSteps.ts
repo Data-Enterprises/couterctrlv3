@@ -238,26 +238,27 @@ export interface Desk {
   says: string;
 }
 
-const SAYS: Record<Cause, (n: number, money: string) => string> = {
-  "never-ordered": (n, m) =>
-    `${n.toLocaleString("en-US")} items with no order here in the window, worth ${m} at the other store.`,
-  "not-carried": (n, m) =>
-    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No order in this department came back for either store over the window, so nothing here says whether they were ever asked for.`,
-  "not-received": (n, m) =>
-    `${n.toLocaleString("en-US")} items ordered here with no receiver on file since the order, worth ${m}.`,
-  cost: (n, m) =>
-    `${n.toLocaleString("en-US")} items bought for more here than there, costing ${m} of margin.`,
-  "price-mix": (n, m) =>
-    `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
-  "not-moving": (n, m) =>
-    `${n.toLocaleString("en-US")} items both stores sold, at about the same price, where this one sold fewer, worth ${m}. Nothing in this data says why.`,
-  "no-receipts": (n, m) =>
-    `${n.toLocaleString("en-US")} items this store did not ring, worth ${m} at the other store. The receivers could not be read, so nothing here says whether they were delivered.`,
-  unsold: (n, m) =>
-    `${n.toLocaleString("en-US")} items delivered here that did not ring this week, worth ${m} at the other store.`,
-  streamlined: (n, m) =>
-    `${n.toLocaleString("en-US")} items level with the other store, worth ${m}. Nothing to chase.`,
-  ahead: (n, m) => `${n.toLocaleString("en-US")} items ahead, worth ${m}.`,
+/** Each list's sentence, naming the two stores rather than "here" and "there". */
+const SAYS: Record<Cause, (n: string, m: string, us: string, them: string) => string> = {
+  "never-ordered": (n, m, us, them) =>
+    `${n} items with no order at ${us} in the window, worth ${m} at ${them}.`,
+  "not-carried": (n, m, us, them) =>
+    `${n} items ${them} sells and ${us} shows no sign of, worth ${m} at ${them}. No order in this department came back for either store over the window, so nothing on record says whether they were ever asked for.`,
+  "not-received": (n, m, us) =>
+    `${n} items ordered at ${us} with no receiver on file since the order, worth ${m}.`,
+  cost: (n, m, us, them) =>
+    `${n} items bought for more at ${us} than at ${them}, costing ${m} of margin.`,
+  "price-mix": (n, m, us, them) =>
+    `${n} items that sold at ${us} but took less per unit than at ${them}, worth ${m}.`,
+  "not-moving": (n, m, us) =>
+    `${n} items both stores sold, at about the same price, where ${us} sold fewer, worth ${m}. Nothing in this data says why.`,
+  "no-receipts": (n, m, us, them) =>
+    `${n} items ${us} did not ring, worth ${m} at ${them}. The receivers could not be read, so nothing on record says whether they were delivered.`,
+  unsold: (n, m, us, them) =>
+    `${n} items delivered to ${us} that did not ring this week, worth ${m} at ${them}.`,
+  streamlined: (n, m, _us, them) =>
+    `${n} items level with ${them}, worth ${m}. Nothing to chase.`,
+  ahead: (n, m) => `${n} items ahead, worth ${m}.`,
 };
 
 /**
@@ -271,6 +272,8 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
 export const desksOf = (
   items: ItemVerdict[],
   money: (v: number) => string,
+  us = "this store",
+  them = "the other store",
 ): Desk[] => {
   const by = new Map<Cause, ItemVerdict[]>();
   for (const i of items) {
@@ -290,7 +293,7 @@ export const desksOf = (
         actionable: owner !== null,
         items: rows.sort((a, b) => a.gap - b.gap),
         dollars,
-        says: SAYS[cause](rows.length, money(Math.abs(dollars))),
+        says: SAYS[cause](rows.length.toLocaleString("en-US"), money(Math.abs(dollars)), us, them),
       };
     })
     .sort((a, b) => a.dollars - b.dollars);
