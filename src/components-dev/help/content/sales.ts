@@ -73,6 +73,63 @@ export const SALES_HELP: HelpContent = {
       ],
     },
     {
+      id: "sub-dept-compare",
+      title: "Copy or compare a filtered item list",
+      desc: "Copy the UPCs a filter leaves, or put two lists side by side",
+      steps: [
+        {
+          title: "Narrow the items",
+          pre: "With a department open on the Sub dept tab, pick a grade, search, or choose Active or Inactive.",
+          see: "A row under the filters with Copy and Compare. It only shows while something is narrowing the list.",
+        },
+        {
+          title: "Copy the UPCs shown",
+          pre: "Click the copy button, which counts them, as in",
+          chip: "Copy 7 UPCs",
+          post: ". Or right-click the list and choose Copy shown UPCs.",
+          see: "The UPCs of the items listed, in their order, separated by commas.",
+          anchor: "copy-shown",
+        },
+        {
+          title: "Keep this list as A",
+          pre: "Click",
+          chip: "Compare",
+          post: ". The list stays under the filters as A; the × drops it.",
+          anchor: "compare",
+        },
+        {
+          title: "Make the second list",
+          pre: "Change the filters, for example search coke where A searched pepsi, then click",
+          chip: "Compare with A",
+          post: ".",
+          anchor: "compare-pinned",
+        },
+        {
+          title: "Read the comparison",
+          pre: "A panel slides over the right side. The line at the top says which list sold more this week and which led last week and last year. Each box is a week: both lists' figures, and how far each has moved to this week.",
+          see: "Both lists side by side under one sort, so a row reads across, with each list's total pinned under it. The × slides the panel back with your filters as they were.",
+        },
+        {
+          title: "Take it with you",
+          pre: "Copy either list's UPCs, or click",
+          chip: "Export CSV",
+          post: "for both lists and their totals in one file.",
+          see: "The changes in the file are on the grading measure, which its headings name.",
+          anchor: "compare-export",
+        },
+      ],
+      issues: [
+        {
+          q: "A changed when I moved the threshold",
+          a: "A keeps its filters, not a copy of its items, so it regrades with the threshold the same way the list does.",
+        },
+        {
+          q: "A disappeared",
+          a: "It goes with the department. Picking another department, or leaving the page, starts clean.",
+        },
+      ],
+    },
+    {
       id: "top-items",
       title: "See which items earned the week",
       desc: "The 200 biggest sellers, and what each one cost you",
