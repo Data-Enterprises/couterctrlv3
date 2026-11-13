@@ -156,3 +156,6 @@ export const normalizeUserStores = <T extends { store_number: string; store_name
     .filter((s) => s.store_number !== null && s.store_name !== null)
     .sort((a, b) => parseInt(a.store_number) - parseInt(b.store_number))
     .map((s) => ({ ...s, store_name: s.store_name.replace(/\s*\(\d+\)\s*$/, "") }));
+
+/** A store number padded to three digits. */
+export const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");

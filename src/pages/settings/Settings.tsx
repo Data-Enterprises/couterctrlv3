@@ -1,8 +1,9 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../hooks";
-import { navigation } from "../../components/navigation/utils";
+
+// Components
 import TextInput from "../../components/TextInput";
-import SingleSelect from "../../components/SingleSelect";
 
 const Settings = () => {
   const user = useAppSelector((state) => state.user);
@@ -11,10 +12,6 @@ const Settings = () => {
   const [email, setEmail] = useState<string>(user.email);
   const [firstName, setFirstName] = useState<string>(user.firstName);
   const [lastName, setLastName] = useState<string>(user.lastName);
-
-  const handleRoutePref = (route: string | number) => {
-    console.log("Set route pref to: ", route);
-  };
 
   return (
     <div data-testid="settings-page" className="w-full h-[calc(100vh-3rem)] p-4 select-none flex justify-center items-center">
@@ -30,14 +27,6 @@ const Settings = () => {
             name={"username"}
             isSimple={true}
             setText={(text) => setUsername(text)}
-          />
-          <SingleSelect
-            label="Default Page"
-            data={navigation}
-            valueKey="href"
-            displayKey="name"
-            onSelect={handleRoutePref}
-            id={1}
           />
           <TextInput
             title="Password"

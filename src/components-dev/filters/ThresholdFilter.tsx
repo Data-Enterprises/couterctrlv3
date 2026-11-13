@@ -1,9 +1,10 @@
+// Utils
+import { OP_LABELS } from "./utils";
+
+// Interfaces
 import type { ThresholdValue } from "../../interfaces";
 
-// Defined in src/interfaces so slices can hold it without importing UI.
-export type { ThresholdValue };
-
-interface Props {
+interface ThresholdFilterProps {
   value: ThresholdValue | null;
   onChange: (v: ThresholdValue | null) => void;
   prefix?: string;
@@ -24,8 +25,8 @@ interface Props {
   className?: string;
 }
 
-const OP_LABELS: Record<ThresholdValue["op"], string> = { gt: ">", lt: "<", eq: "=" };
-
+/** Number filter with an optional greater / less / equal operator, an amount
+ *  field with prefix or suffix, and a clear button. */
 const ThresholdFilter = ({
   value,
   onChange,
@@ -40,7 +41,7 @@ const ThresholdFilter = ({
   size = "sm",
   ariaLabel,
   className = "",
-}: Props) => {
+}: ThresholdFilterProps) => {
   const isDark = variant === "dark";
   const md = size === "md";
   const textSize = md ? 13 : 10;

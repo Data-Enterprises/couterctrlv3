@@ -36,7 +36,7 @@ const ChartTooltip = ({ xPct, title, rows, names, selected }: Props) => {
       className="absolute top-0 z-10 pointer-events-none"
       style={{ left: `${xPct}%`, transform: `translateX(${shift})` }}
     >
-      <div className="rounded border border-gray-200 bg-custom-white shadow-lg px-2 py-1.5 min-w-[104px]">
+      <div className="rounded border border-line_field bg-custom-white shadow-lg px-2 py-1.5 min-w-[104px]">
         <div className="text-[11px] font-semibold text-content mb-1 whitespace-nowrap">
           {title}
         </div>
@@ -52,12 +52,12 @@ const ChartTooltip = ({ xPct, title, rows, names, selected }: Props) => {
                 style={{ background: colourFor(names, r.saleType) }}
               />
               <span
-                className={`text-[11px] flex-1 ${on ? "text-content font-medium" : "text-content/85"}`}
+                className={`text-[11px] flex-1 ${on ? "text-content font-medium" : "text-content/95"}`}
               >
                 {r.saleType}
               </span>
               <span
-                className={`text-[11px] tabular-nums ${on ? "text-content font-semibold" : "text-content/85"}`}
+                className={`text-[11px] tabular-nums ${on ? "text-content font-semibold" : "text-content/95"}`}
               >
                 {r.value}
               </span>
@@ -65,7 +65,7 @@ const ChartTooltip = ({ xPct, title, rows, names, selected }: Props) => {
           );
         })}
         {rows.length === 0 && (
-          <div className="text-[11px] text-content/85 whitespace-nowrap">
+          <div className="text-[11px] text-content/95 whitespace-nowrap">
             Nothing this hour
           </div>
         )}

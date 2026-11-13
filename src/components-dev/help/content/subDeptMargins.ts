@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Sub Dept Margins — one store's week by sub department. */
@@ -22,7 +23,9 @@ export const SUB_DEPT_MARGINS_HELP: HelpContent = {
         },
         {
           title: "Change either later",
-          pre: "Click the magnifying glass next to the store name.",
+          pre: "Click",
+          chip: "Back",
+          post: "next to the store name.",
           anchor: "search",
         },
         {

@@ -1,273 +1,79 @@
-import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
-import { useToast } from "../toasts/hooks/useToast";
-import {
-  getSecurityQuestions,
-  resetPassword,
-  setSecurityQuestionAnswer,
-} from "../../api/security";
-import {
-  setResetPassword,
-  setSecurityQuestionId,
-} from "../../features/userSlice";
-import type { JsonError, Question } from "../../interfaces";
-import PasswordInput from "../inputs/PasswordInput";
-import SingleSelect from "../SingleSelect";
-import Input from "../inputs/Input";
-import { impersonatedBy } from "../../utils/session";
+// Hooks
+import { useAccountSetup } from "./hooks";
 
-type Step = "password" | "security";
+// Utils
+import { STEP_BLURB, STEP_TITLE } from "./utils";
 
-const STEP_TITLE: Record<Step, string> = {
-  password: "Set a new password",
-  security: "Set a security question",
-};
+// Components
+import SetupHeader from "./components/SetupHeader";
+import PasswordStep from "./components/PasswordStep";
+import SecurityStep from "./components/SecurityStep";
+import SignOutRow from "./components/SignOutRow";
 
-const STEP_BLURB: Record<Step, string> = {
-  password: "Your account requires a password change before you continue.",
-  security:
-    "Used to verify it's you if you ever need to reset your password.",
-};
-
-// Replaces the separate ResetPassword and SecurityQuestion modals that used to
-// both mount in App.tsx. They each self-gated, so a brand new user (password
-// change required AND no security question yet) got both stacked on top of
-// each other at the same z-index.
+/**
+ * After sign-in, what an account still has to set: a new password, a first
+ * security question, or both, as one modal of one or two steps. It can't be
+ * closed, so Sign out is the way out.
+ */
 const AccountSetupModal = () => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
-  // The environment the person is actually signed in to.
-  //
-  // This was pinned to the dev API, on the reasoning that the changes had to
-  // persist there whichever environment was being browsed. Both environments
-  // read and write one RDS, so that reasoning does not hold: the row lands in
-  // the same place either way, and the security questions endpoint is on prod
-  // now too.
-  //
-  // Un-pinning fixes more than tidiness. `useDevApi` is unconditional — it
-  // hands back DEV_API_URL and `devToken` to everybody — and this modal mounts
-  // in App.tsx for every signed-in user, so a prod user was being sent to the
-  // dev backend to set up their own account. It also ends a race: `devToken`
-  // is filled by a fire-and-forget second login that lands well after
-  // `state.app.token` has already opened this modal, so the first request went
-  // out as `Bearer ` with nothing after it and came back 401.
-  const { url, token } = useAppSelector((state) => state.app);
-  const user = useAppSelector((state) => state.user);
+  const setup = useAccountSetup();
+  if (!setup.open) return null;
 
-  const [stepIndex, setStepIndex] = useState(0);
-  const [finished, setFinished] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  const [pw, setPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [questionId, setQuestionId] = useState(0);
-  const [answer, setAnswer] = useState("");
-
-  // Frozen once, on the first render where the login response has actually
-  // landed. Deriving this live would shrink the list mid-flow — finishing the
-  // password step dispatches setResetPassword(0), which would renumber the
-  // header and drop the user out of the sequence before step 2 renders.
-  //
-  // Never while signed in as someone else: their password and their security
-  // answer are theirs to set, and an impersonated session that opened this
-  // would have support choosing both.
-  const planRef = useRef<Step[] | null>(null);
-  if (planRef.current === null && token && !impersonatedBy(token)) {
-    const plan: Step[] = [];
-    if (user.resetPassword === 1) plan.push("password");
-    if (user.securityQuestionId === 0) plan.push("security");
-    if (plan.length > 0) planRef.current = plan;
-  }
-  const plan = planRef.current;
-  const needsSecurity = plan?.includes("security") ?? false;
-
-  // The token guard is belt and braces now rather than the fix: the token
-  // this reads is the one that opened the modal, so it is already there. It
-  // stays because an empty string still makes a request worth not sending,
-  // and `url`/`token` belong in the deps of an effect that uses them.
-  useEffect(() => {
-    if (!needsSecurity || !token) return;
-    getSecurityQuestions(url, token)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) setQuestions(j.questions);
-        else toast.warn("No security questions available at this time.");
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error getting security questions: " + err.message),
-      );
-  }, [needsSecurity, token, url]);
-
-  if (!plan || finished) return null;
-
-  const step = plan[stepIndex];
-  const isLastStep = stepIndex === plan.length - 1;
-
-  const advance = () => {
-    if (isLastStep) setFinished(true);
-    else setStepIndex((i) => i + 1);
-  };
-
-  const canSubmitPassword =
-    pw.length > 0 && confirmPw.length > 0 && pw === confirmPw;
-  const canSubmitSecurity = questionId > 0 && answer.trim().length > 0;
-  const canSubmit = step === "password" ? canSubmitPassword : canSubmitSecurity;
-
-  const handlePasswordSubmit = () => {
-    setSubmitting(true);
-    resetPassword(url, token, user.username, pw)
-      .then((resp) => {
-        const j = resp.data;
-        if (j?.error !== undefined && j.error !== 0) {
-          toast.warn(j.msg || "Could not reset password");
-          return;
-        }
-        dispatch(setResetPassword(0));
-        toast.success("Password successfully reset");
-        advance();
-      })
-      // The original swallowed this into "[object Object]" by concatenating the
-      // error itself — surface the message so a failed dev call is diagnosable.
-      .catch((err: JsonError) =>
-        toast.error("Error resetting password: " + err.message),
-      )
-      .finally(() => setSubmitting(false));
-  };
-
-  const handleSecuritySubmit = () => {
-    setSubmitting(true);
-    setSecurityQuestionAnswer(url, token, user.userid, questionId, answer)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setSecurityQuestionId(questionId));
-          toast.success("Security question and answer set successfully.");
-          advance();
-        } else {
-          toast.warn("Failed to set security question and answer.");
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error(
-          "Error setting security question and answer: " + err.message,
-        ),
-      )
-      .finally(() => setSubmitting(false));
-  };
-
-  const buttonLabel = () => {
-    if (submitting) return "Saving…";
-    if (step === "password") return isLastStep ? "Set new password" : "Continue";
-    return "Save";
-  };
-
+  const several = setup.plan.length > 1;
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center backdrop-blur-sm"
-      style={{ zIndex: 5000 }}
-    >
-      <div className="bg-custom-white rounded-xl shadow-2xl w-[462px] max-w-[92vw] overflow-hidden">
-        <div className="bg-brand_navy px-4 py-2.5 flex items-center gap-2">
-          <span className="text-custom-white text-[13px] font-semibold">
-            {plan.length > 1 ? "Finish setting up your account" : STEP_TITLE[step]}
-          </span>
-          <div className="flex-1" />
-          {plan.length > 1 && (
-            <span className="text-custom-white/60 text-[11px] flex-shrink-0">
-              Step {stepIndex + 1} of {plan.length}
-            </span>
+    <div className="fixed inset-0 z-[5000] flex items-center justify-center px-4 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="account-setup-title"
+        className="bg-custom-white rounded-xl shadow-card w-[462px] max-w-full overflow-hidden"
+      >
+        <SetupHeader
+          title={several ? "Finish setting up your account" : STEP_TITLE[setup.step]}
+          stepIndex={setup.stepIndex}
+          total={setup.plan.length}
+        />
+        <form
+          noValidate
+          className="p-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setup.submit();
+          }}
+        >
+          {several && (
+            <div className="text-[14px] font-semibold text-content mb-1">{STEP_TITLE[setup.step]}</div>
           )}
-        </div>
+          <p className="text-[12.5px] text-content leading-relaxed mb-3">{STEP_BLURB[setup.step]}</p>
 
-        {/* Progress only earns its place when there's more than one step. */}
-        {plan.length > 1 && (
-          <div className="flex gap-1 px-4 pt-2.5">
-            {plan.map((s, i) => (
-              <span
-                key={s}
-                className={`flex-1 h-[3px] rounded-full ${
-                  i <= stepIndex ? "bg-brand_navy" : "bg-gray-200"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="p-4">
-          {plan.length > 1 && (
-            <div className="text-[13px] font-medium text-content mb-1">
-              {STEP_TITLE[step]}
-            </div>
-          )}
-          <p className="text-[11.5px] text-content/70 leading-relaxed mb-3">
-            {STEP_BLURB[step]}
-          </p>
-
-          {step === "password" ? (
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <PasswordInput
-                label="New password"
-                name="password"
-                text={pw}
-                setText={setPw}
-                leftCompare={pw}
-                rightCompare={confirmPw}
-                className="py-1.5"
-              />
-              <PasswordInput
-                label="Confirm password"
-                name="confirm_password"
-                text={confirmPw}
-                setText={setConfirmPw}
-                leftCompare={pw}
-                rightCompare={confirmPw}
-                className="py-1.5"
-              />
-            </div>
+          {setup.step === "password" ? (
+            <PasswordStep
+              pw={setup.pw}
+              confirmPw={setup.confirmPw}
+              onPw={setup.setPw}
+              onConfirmPw={setup.setConfirmPw}
+            />
           ) : (
-            <div className="space-y-2 mb-4">
-              <SingleSelect
-                label="Question"
-                data={questions}
-                valueKey="id"
-                displayKey="question"
-                onSelect={(id) => setQuestionId(id as number)}
-                defaultQuery={
-                  questionId > 0
-                    ? questions.find((q) => q.id === questionId)?.question
-                    : ""
-                }
-                canType={false}
-                innerClass="py-1.5"
-              />
-              <Input
-                label="Answer"
-                value={answer}
-                setValue={setAnswer}
-                className="py-1.5"
-              />
-            </div>
+            <SecurityStep
+              questions={setup.questions}
+              failed={setup.questionsFailed}
+              questionId={setup.questionId}
+              onQuestion={setup.setQuestionId}
+              answer={setup.answer}
+              onAnswer={setup.setAnswer}
+            />
           )}
 
           <button
-            data-testid={
-              step === "password" ? "reset-pw-btn" : "submit-security-answer"
-            }
-            onClick={
-              step === "password" ? handlePasswordSubmit : handleSecuritySubmit
-            }
-            disabled={!canSubmit || submitting}
-            className={`w-full text-[12px] font-medium py-2 rounded-md text-custom-white transition-colors ${
-              canSubmit && !submitting
-                ? "bg-brand_navy hover:bg-brand_navy/85"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
+            type="submit"
+            data-testid={setup.step === "password" ? "reset-pw-btn" : "submit-security-answer"}
+            disabled={!setup.canSubmit || setup.submitting}
+            className="w-full text-[12.5px] font-semibold py-2 rounded-md text-custom-white bg-brand_navy transition-colors hover:bg-brand_navy_hover disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {buttonLabel()}
+            {setup.buttonLabel}
           </button>
-        </div>
+          <SignOutRow username={setup.username} onSignOut={setup.signOut} />
+        </form>
       </div>
     </div>
   );

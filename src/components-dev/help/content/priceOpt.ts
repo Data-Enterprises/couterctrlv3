@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent, HelpGuide, HelpFix, HelpTerm } from "../helpTypes";
 
 /**

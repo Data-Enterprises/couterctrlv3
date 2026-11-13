@@ -1,6 +1,7 @@
+// Utils
 import "./loadingIndicator.css";
 
-interface Props {
+interface EntryCardLoadingProps {
   message?: string;
   /** Echoed back to the user — a long group fetch is far less unnerving when
    *  it names the search it is working on rather than spinning at nothing. */
@@ -13,7 +14,7 @@ interface Props {
  *  `visibility: hidden` underneath: the card keeps its exact height (no jump
  *  on swap) and the form is genuinely not painted, rather than showing
  *  through a translucent mask. */
-const EntryCardLoading = ({ message = "Loading...", context }: Props) => (
+const EntryCardLoading = ({ message = "Loading...", context }: EntryCardLoadingProps) => (
   <div data-testid="entry-card-loading" className="loading-inline">
     <div className="loading-pill">
       <span className="loading-pill-text">{message}</span>

@@ -1,6 +1,9 @@
+// Hooks
 import { useMemo } from "react";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import {
   toggleDevSelectedUpc,
   setDevAllSelectedUpcs,
@@ -8,6 +11,8 @@ import {
   setDevFilterText,
 } from "../../../../features/dev/devUpcDevSlice";
 
+/** The UPC List's left-panel list: a filter box, All/None buttons and one tick row per
+ *  searched UPC with its description. */
 const UpcItemList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -37,12 +42,12 @@ const UpcItemList = () => {
   return (
     <div className="flex flex-col min-h-0 flex-1">
       {/* toolbar */}
-      <div className="flex-shrink-0 px-2 py-1.5 border-b border-gray-100 flex items-center gap-1.5">
+      <div className="flex-shrink-0 px-2 py-1.5 border-b border-line_hair flex items-center gap-1.5">
         <input
           value={ctx.filterText}
           onChange={(e) => dispatch(setDevFilterText(e.target.value))}
           placeholder="Filter…"
-          className="flex-1 text-[10px] rounded px-2 py-1 border border-gray-200 bg-gray-50 min-w-0"
+          className="flex-1 text-[10px] rounded px-2 py-1 border border-line_field bg-fill_soft min-w-0"
           style={{
             outline: "none",
             WebkitAppearance: "none",
@@ -66,20 +71,17 @@ const UpcItemList = () => {
       </div>
 
       {/* list */}
-      <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+      <div data-help="item-list" className="cc-scroll">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-16 text-[10px] text-content/85">
+          <div className="flex items-center justify-center h-16 text-[10px] text-content/95">
             {ctx.filterText ? "No matches" : "No items"}
           </div>
         ) : (
           visible.map((item) => {
             const selected = ctx.selectedUpcs.includes(item.product_code);
-            // The roster is seeded from the searched UPC list, so a code sits
-            // here from the moment the search commits and gets its name only
-            // once some module returns a row for it. A blank stays blank for a
-            // UPC no module has data on, which is worth showing rather than
-            // hiding — the user typed it and deserves to see it came back
-            // empty.
+            // The roster comes from the searched UPCs, so a code shows from the
+            // start and gets its name once a module returns a row; one no module
+            // has data on stays blank, on purpose.
             const desc = item.description || "—";
             return (
               <button
@@ -87,15 +89,15 @@ const UpcItemList = () => {
                 onClick={() =>
                   dispatch(toggleDevSelectedUpc(item.product_code))
                 }
-                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b border-gray-100 hover:bg-gray-50/80 transition-colors ${
-                  selected ? "bg-blue-50/60" : ""
+                className={`w-full text-left flex items-center gap-2 px-3 py-[7px] border-b hover:bg-fill_soft/80 transition-colors ${
+                  selected ? "cc-row-selected" : "border-line_hair"
                 }`}
               >
                 <div
                   className={`flex-shrink-0 w-3.5 h-3.5 rounded border transition-colors ${
                     selected
                       ? "bg-brand_navy border-brand_navy"
-                      : "border-gray-300 bg-custom-white"
+                      : "border-line_strong bg-custom-white"
                   }`}
                 >
                   {selected && (

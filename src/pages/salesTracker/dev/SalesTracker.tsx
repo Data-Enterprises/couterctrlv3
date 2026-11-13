@@ -1,13 +1,11 @@
+// Hooks
 import { useState, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setStartDate } from "../../../features/searchSlice";
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import EmptyPrompt from "../../../components-dev/EmptyPrompt";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
+
+// Redux
+import { setStartDate, isGroupSearch } from "../../../features/searchSlice";
 import {
   setHasSearched,
   setLoading,
@@ -21,45 +19,45 @@ import {
   setSubFilter,
   reQueryTracker,
 } from "../../../features/dev/devSalesTrackerSlice";
-import TrackerEntryCard from "./TrackerEntryCard";
-import TrackerHeader from "./TrackerHeader";
-import SubDeptRow from "./SubDeptRow";
-import TrackerDetail from "./TrackerDetail";
+
+// Utils
+import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
 import {
   fetchLySubSales,
   fetchSubSales,
   fetchTrackerWindow,
-} from "./trackerData";
+} from "./utils/trackerData";
 import {
   basisWord,
   buildWindowPlan,
   isoToDisplay,
   shiftDays,
-  type TrackerBasis,
-} from "./trackerWeeks";
-import {
-  buildSubDeptTotals,
-  allDeptsTotal,
-  type SubDeptTotal,
-} from "./trackerTotals";
-import { orDash } from "./trackerTone";
-import VsLy from "./VsLy";
-import { SUB_GRID, NUM } from "./trackerColumns";
-import { isGroupSearch } from "../../../features/searchSlice";
+  shortLabel,
+} from "./utils";
+import { buildSubDeptTotals, allDeptsTotal } from "./utils/trackerTotals";
+import { orDash } from "./utils/trackerTone";
+import { SUB_GRID, NUM } from "./utils/trackerColumns";
+import { PERF_SORT_HEADER } from "../../../components-dev/utils";
 
-type SortColumn = "dept" | "ty" | "ly" | "ats" | "dollar";
+// Interfaces
+import type { SortColumn, SubDeptTotal, TrackerBasis } from "./interfaces";
 
-const shortLabel = (d: string) => {
-  const dt = new Date(d + "T12:00:00");
-  return `${dt.getMonth() + 1}/${dt.getDate()}`;
-};
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import SortHeader from "../../../components-dev/SortHeader";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import TrackerEntryCard from "./components/TrackerEntryCard";
+import TrackerHeader from "./components/TrackerHeader";
+import SubDeptRow from "./components/SubDeptRow";
+import TrackerDetail from "./detail/TrackerDetail";
+import VsLy from "./components/VsLy";
 
 /**
- * Sales Tracker — sub-department sales against the same weeks last year.
- *
- * A tracker, not a Performance page: it reports movement and does not grade it.
- * There is no threshold, no severity and no ranking, which is why the list sits
- * in plain alphabetical order and the columns are sortable instead.
+ * Sales Tracker: sub-department sales against the same weeks last year. A
+ * tracker, not a Performance page: it reports movement and grades nothing (no
+ * threshold, severity or ranking).
  */
 const SalesTracker = () => {
   const dispatch = useAppDispatch();
@@ -88,34 +86,19 @@ const SalesTracker = () => {
   const [progress, setProgress] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
 
-  /** The search scope, read by both the full search and the add-a-week fetch.
-   *  Derived here rather than inside the search so the two cannot disagree
-   *  about which store the extra week belongs to. */
+  /** The search scope, shared by the full search and the add-a-week fetch so
+   *  they agree on the store. */
   const isGroup = isGroupSearch(search.type);
   const useGroups = isGroup ? 1 : 0;
   const singleStore = isGroup ? 0 : 1;
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
 
   /**
-   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads.
-   *
-   * On for dev, because that is where the endpoint is. It is not on prod yet,
-   * and the API toggle is reachable by anyone at level 7, so gating on the
-   * selected backend — not on a hard `true` — is what keeps the branch
-   * publish-safe: a prod session takes the `fetchSubSales` path and never asks
-   * for a route that would 404.
-   *
-   * The two paths agree. Same `total_sales` and `net_sales` expressions, same
-   * sale_type allow-list, `void_flag`, ring filter, dept-transfer and
-   * untendered-modified rules, same company-4 weight scaling and coupon
-   * re-pointing; `transaction_count` is a per-basket `COUNT(*)` against
-   * `get_sub_sales`'s `COUNT(DISTINCT ...)` over the same dimensions. Of the
-   * six fields this page reads, none differs.
-   *
-   * What it buys: 5 stores over 12 weeks went from ~52s across two paged reads
-   * to ~7s across 12 pooled requests, on the same ~1.15MB — the cost was query
-   * time, never payload. Drop the flag and the `fetchSubSales` path once the
-   * endpoint is on prod too.
+   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads, gated on
+   * the selected backend (the endpoint is on dev only, and level 7 can switch
+   * APIs), so a prod session takes `fetchSubSales` and never hits a 404. The two
+   * paths return the same six fields this page reads; this one is ~7s against
+   * ~52s for 5 stores over 12 weeks. Drop the flag once the endpoint is on prod.
    */
   const useTrackerEndpoint = context.apiEnv === "dev";
   const scope = {
@@ -137,17 +120,10 @@ const SalesTracker = () => {
   );
 
   /**
-   * One more week, on the front of the window.
-   *
-   * The window is the search range, so this moves the start date back seven
-   * days and lets the plan rebuild — the same path a preset takes. What is new
-   * is that only the gap is fetched: `loadedFrom` says how far back the rows in
-   * hand already reach, so re-adding a week that was dropped costs nothing and
-   * a genuinely new one costs one week rather than the whole window.
-   *
-   * The date moves only once the rows are in. Moving it first would widen the
-   * plan while the fetch was still running, and every total would read low for
-   * the duration — a week of missing sales presented as a real figure.
+   * One more week, on the front of the window: the start date moves back seven
+   * days and only the gap is fetched (`loadedFrom` says how far back rows
+   * reach). The date moves only once the rows are in, so totals never read low
+   * mid-fetch.
    */
   const addWeek = async () => {
     if (plan.weeks.length >= MAX_WEEKS || addingWeek) return;
@@ -160,9 +136,8 @@ const SalesTracker = () => {
       return;
     }
 
-    // The gap alone, and its own LY range: the plan shifts every day and takes
-    // the extremes, so a week containing a holiday still asks for the days its
-    // pairing actually needs.
+    // The gap alone, with its own LY range from the plan (every day shifted,
+    // extremes taken), so a holiday week asks for the days it pairs with.
     const gap = buildWindowPlan(
       newStart,
       shiftDays(loadedFrom ?? plan.tyStart, -1),
@@ -219,10 +194,8 @@ const SalesTracker = () => {
 
   const rows = useMemo(() => buildSubDeptTotals(ty, ly, plan), [ty, ly, plan]);
 
-  // One roll-up, read by both panels. It fills the right panel until a
-  // department is picked — which is where the live page's rail cards went —
-  // and it is also what the header and the chip row report, so the two sides
-  // of the page cannot disagree about the same store.
+  // One roll-up, read by both panels: the right panel shows it until a
+  // department is picked, and the header reports from it, so they agree.
   const groupTotal = useMemo(
     () => allDeptsTotal(rows, plan, scopeLabel || "All sub departments"),
     [rows, plan, scopeLabel],
@@ -234,16 +207,9 @@ const SalesTracker = () => {
   );
 
   /**
-   * Default order: furthest from last year in dollars, either direction.
-   *
-   * `buildSubDeptTotals` returns department-number order, which is how the back
-   * office numbers them and how every other report prints them — but it does
-   * not answer the question people open this page with. Ranking by impact puts
-   * the answer in the first row; department order is one click away on the Sub
-   * Dept column, and stays there once chosen.
-   *
-   * Ranked on money, never percentage: a small department posts a four-figure
-   * percentage on pocket change and would otherwise lead the list.
+   * Default order: furthest from last year in dollars, either direction (never
+   * percent: small departments post huge percents on pocket change).
+   * Department order is one click away on the Sub Dept column.
    */
   const ranked = useMemo(
     () =>
@@ -292,10 +258,9 @@ const SalesTracker = () => {
         tyRows = res.ty;
         lyRows = res.ly;
       } else {
-        // Two reads, both paged: the window, and the day-matched window last
-        // year. The LY range comes from the plan, which shifts every day and
-        // takes the extremes — shifting only the endpoints breaks whenever one
-        // of them lands on a holiday.
+        // Two paged reads: the window, and the day-matched window last year.
+        // The LY range comes from the plan (every day shifted, extremes taken),
+        // so a holiday at either end doesn't break it.
         [tyRows, lyRows] = await Promise.all([
           fetchSubSales(
             context.url,
@@ -319,16 +284,9 @@ const SalesTracker = () => {
       }
 
       /*
-       * No last year, so read the window against last week instead.
-       *
-       * Asked for only when the first answer is empty, so a store with
-       * history pays nothing for the fallback. One basis for the whole
-       * window, never a mix: the column names what it holds, and a column
-       * headed LY carrying last week on some rows is a column that lies.
-       *
-       * If last week is empty too, the basis stays LY — there is nothing to
-       * compare against either way, and saying LW would promise a comparison
-       * that is not there.
+       * No last year, so read the window against last week, asked for only
+       * when the first answer is empty. One basis for the whole window, never a
+       * mix. If last week is empty too, the basis stays LY.
        */
       let used: TrackerBasis = "LY";
       if (tyRows.length > 0 && lyRows.length === 0) {
@@ -417,9 +375,8 @@ const SalesTracker = () => {
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
-          {/* The pooled fetch reports weeks as they land, so a long window
-              says how far along it is rather than sitting on one word for
-              half a minute. Empty on the prod path, which is two requests. */}
+          {/* The pooled fetch reports weeks as they land; empty on the prod
+              path (two requests). */}
           <LoadingIndicator
             message={
               progress ? `Building tracker · ${progress}` : "Building tracker"
@@ -447,13 +404,10 @@ const SalesTracker = () => {
               onOpenSearch={() => setSearchModalOpen(true)}
             />
 
-            {/* The chips that used to sit here carried the same five figures as
-                the totals row at the foot of this list and the KPI strip on the
-                right — three copies of one answer. The totals row is the one
-                that foots its own columns, so it is the one that survives. */}
+            {/* The totals row at the foot of the list carries these figures. */}
             <div
               data-help="sub-filter"
-              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100"
+              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-line_hair"
             >
               <span className="text-[11px] font-medium text-content">
                 {sort === null
@@ -468,14 +422,13 @@ const SalesTracker = () => {
               />
             </div>
 
-            {/* Header, rows and totals all live inside the scroll container,
-                pinned top and bottom. Outside it they span the full panel while
-                the rows are narrower by the scrollbar, which pushes every
-                right-aligned figure out of line with the header above it. */}
-            <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100">
+            {/* Header, rows and totals live inside the scroll container,
+                pinned top and bottom, so the figures line up with the header
+                despite the scrollbar. */}
+            <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-line_hair">
               <div
                 data-help="columns"
-                className="grid items-center gap-3.5 px-4 py-2 border-b border-gray-100 sticky top-0 z-10 bg-custom-white"
+                className="grid items-center gap-3.5 px-4 py-2 border-b border-line_hair sticky top-0 z-10 bg-custom-white"
                 style={{ gridTemplateColumns: SUB_GRID }}
               >
                 {/* Sortable so department-number order stays reachable, since
@@ -508,9 +461,7 @@ const SalesTracker = () => {
                   onSort={handleSort}
                   className={`${PERF_SORT_HEADER} justify-end`}
                 />
-                {/* One column now, carrying dollars and percent together.
-                    Sorting it sorts on dollars: a four-figure percentage on a
-                    ten-dollar department is not the biggest mover. */}
+                {/* One column with dollars and percent; it sorts on dollars. */}
                 <SortHeader
                   col="dollar"
                   label={`vs ${basis}`}
@@ -529,17 +480,14 @@ const SalesTracker = () => {
                 />
               ))}
 
-              {/* Totals foot the columns they sit under, the way a spreadsheet
-                  does. Reads from the same roll-up as the header and the right
-                  panel, so all three agree by construction. */}
+              {/* Totals foot their columns, from the same roll-up as the
+                  header and right panel. */}
               {groupTotal && (
                 <div
-                  className="grid items-center gap-3.5 px-4 py-2.5 border-t-2 border-gray-200 bg-gray-50 sticky bottom-0 z-10"
+                  className="grid items-center gap-3.5 px-4 py-2.5 border-t-2 border-line_field bg-fill_soft sticky bottom-0 z-10"
                   style={{ gridTemplateColumns: SUB_GRID }}
                 >
-                  {/* "All sub depts", matching the column header. It said "All
-                      departments" while the header said "Sub Dept", which read
-                      as two different things being totalled. */}
+                  {/* "All sub depts", matching the column header. */}
                   <span className="text-[12px] font-semibold uppercase tracking-wide text-content">
                     {visibleRows.length === rows.length
                       ? "All sub depts"
@@ -588,17 +536,9 @@ const SalesTracker = () => {
       )}
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TrackerEntryCard onSearch={fetchTracker} loading={loading} />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <TrackerEntryCard onSearch={fetchTracker} loading={loading} />
+        </SearchPopup>
       )}
     </div>
   );

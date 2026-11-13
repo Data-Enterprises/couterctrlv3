@@ -53,7 +53,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
   };
 
   return (
-    <div className="border-b border-gray-100 bg-brand_paper px-3 py-2.5">
+    <div className="border-b border-line_hair bg-brand_paper px-3 py-2.5">
       <div className="text-[14px] font-bold text-content">Fix this code</div>
       <input
         autoFocus
@@ -90,7 +90,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
           <button
             type="button"
             onClick={() => dispatch(retryRow(row.raw))}
-            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white"
+            className="h-12 flex-1 rounded-lg bg-brand_navy active:bg-brand_navy_hover text-[15px] font-bold text-custom-white"
           >
             Check again
           </button>
@@ -99,7 +99,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
             type="button"
             onClick={save}
             disabled={!isEnterableUpc(draft) || draft.trim() === row.raw}
-            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+            className="h-12 flex-1 rounded-lg bg-brand_navy active:bg-brand_navy_hover text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
           >
             Save
           </button>
@@ -114,7 +114,7 @@ const BatchList = () => {
   const { rows, editing } = useAppSelector((s) => s.dev.upcScanner);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+    <section className="cc-card-phone">
       <div>
         {rows.length === 0 ? (
           <div className="px-5 py-7 text-center">
@@ -130,7 +130,7 @@ const BatchList = () => {
             ) : (
               <div
                 key={row.raw}
-                className="flex items-center gap-2 border-b border-gray-100 px-3 py-2"
+                className="flex items-center gap-2 border-b border-line_hair px-3 py-2"
               >
                 {/* The item's name leads. It is what the clerk is checking
                     against the shelf in front of them; the digits are only

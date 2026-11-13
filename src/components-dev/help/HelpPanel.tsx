@@ -1,25 +1,22 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useHelpHighlight } from "./useHelpHighlight";
+
+// Utils
+import { matches, SLIDE_MS } from "./utils";
+
+// Interfaces
+import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
+import type { View } from "./interfaces";
+
+// Components
 import { createPortal } from "react-dom";
 import { XMarkIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useHelpHighlight } from "./useHelpHighlight";
-import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
 
 interface HelpPanelProps {
   content: HelpContent;
   onClose: () => void;
 }
-
-/** Kept in step with `duration-200` on the aside below. */
-const SLIDE_MS = 200;
-
-type View =
-  | { mode: "home" }
-  | { mode: "guide"; id: string; step: number }
-  | { mode: "fix"; id: string };
-
-const matches = (needle: string, ...hay: string[]) =>
-  needle.trim() === "" ||
-  hay.some((h) => h.toLowerCase().includes(needle.trim().toLowerCase()));
 
 /**
  * The "?" help, as a panel over the screen it describes.
@@ -175,7 +172,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
             <div className="flex-1 min-w-0">
               {view.mode === "home" ? (
                 <>
-                  <div className="text-[12px] text-content/85">
+                  <div className="text-[12px] text-content/95">
                     Help · {content.screen}
                   </div>
                   <h2 className="mt-0.5 text-[20px] font-bold text-content">
@@ -190,7 +187,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                   >
                     ← All help for this screen
                   </button>
-                  <div className="text-[12px] text-content/85 mt-1.5">
+                  <div className="text-[12px] text-content/95 mt-1.5">
                     {content.screen}
                   </div>
                   <h2 className="text-[19px] font-bold text-content leading-tight">
@@ -202,7 +199,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
             <button
               onClick={close}
               aria-label="Close help"
-              className="w-8 h-8 flex items-center justify-center text-content/85 flex-shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-content/95 flex-shrink-0"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -219,7 +216,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
           )}
 
           {view.mode === "guide" && guide && (
-            <div className="mt-3 flex items-center gap-2.5 text-[12px] text-content/85">
+            <div className="mt-3 flex items-center gap-2.5 text-[12px] text-content/95">
               <div className="flex-1 h-1.5 rounded-full bg-brand_line overflow-hidden">
                 <div
                   className="h-full bg-brand_navy"
@@ -242,7 +239,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
         <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-5 py-4">
           {view.mode === "home" && (
             <>
-              <p className="text-[13px] text-content/85 mb-4">{content.purpose}</p>
+              <p className="text-[13px] text-content/95 mb-4">{content.purpose}</p>
 
               {guides.length > 0 && (
                 <>
@@ -260,14 +257,14 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                           <span className="block text-[13.5px] font-semibold text-content">
                             {g.title}
                           </span>
-                          <span className="block text-[12.5px] text-content/85">
+                          <span className="block text-[12.5px] text-content/95">
                             {g.desc}
                           </span>
                         </span>
-                        <span className="text-[12px] text-content/85 flex-shrink-0">
+                        <span className="text-[12px] text-content/95 flex-shrink-0">
                           {g.steps.length} steps
                         </span>
-                        <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+                        <ChevronRightIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -290,10 +287,10 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                         <span className="flex-1 text-[13.5px] font-semibold text-content">
                           {f.title}
                         </span>
-                        <span className="text-[12px] text-content/85 flex-shrink-0">
+                        <span className="text-[12px] text-content/95 flex-shrink-0">
                           Guided fix
                         </span>
-                        <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+                        <ChevronRightIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -305,7 +302,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                   <h3 className="text-[15px] font-bold text-content">
                     What does this mean?
                   </h3>
-                  <p className="text-[12.5px] text-content/85 mb-2">
+                  <p className="text-[12.5px] text-content/95 mb-2">
                     Pick a term to see where it is on the screen.
                   </p>
                   <div className="bg-custom-white border border-brand_line rounded-xl overflow-hidden">
@@ -330,16 +327,16 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                               </span>
                             )}
                             {on ? (
-                              <ChevronDownIcon className="w-4 h-4 text-content/85" />
+                              <ChevronDownIcon className="w-4 h-4 text-content/95" />
                             ) : (
-                              <ChevronRightIcon className="w-4 h-4 text-content/85" />
+                              <ChevronRightIcon className="w-4 h-4 text-content/95" />
                             )}
                           </button>
                           {on && (
-                            <p className="px-3.5 pb-3 text-[13px] text-content/85">
+                            <p className="px-3.5 pb-3 text-[13px] text-content/95">
                               {t.def}
                               {t.anchor && pointingAtNothing && (
-                                <span className="block mt-1.5 text-[12px] text-content/85">
+                                <span className="block mt-1.5 text-[12px] text-content/95">
                                   Not on screen right now — it appears once a
                                   search has run.
                                 </span>
@@ -354,7 +351,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
               )}
 
               {guides.length === 0 && fixes.length === 0 && terms.length === 0 && (
-                <p className="text-[13px] text-content/85">
+                <p className="text-[13px] text-content/95">
                   Nothing here matches “{search}”.
                 </p>
               )}
@@ -399,7 +396,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                         </span>
                       </button>
                       <div className="pl-[52px] pr-3.5 pb-3.5">
-                          <p className="text-[13.5px] text-content/85">
+                          <p className="text-[13.5px] text-content/95">
                             {s.pre}
                             {s.chip && (
                               <span className="inline-block mx-1 px-2 rounded-md bg-brand_navy text-custom-white text-[12px] font-semibold leading-6">
@@ -437,7 +434,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                   }
                   disabled={view.step === 0}
                   className={`h-9 px-4 rounded-lg border border-brand_line_2 text-[12.5px] font-semibold ${
-                    view.step === 0 ? "text-content/85" : "text-content bg-custom-white"
+                    view.step === 0 ? "text-content/95" : "text-content bg-custom-white"
                   }`}
                 >
                   Previous
@@ -448,7 +445,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                       ? goHome()
                       : setView({ mode: "guide", id: guide.id, step: view.step + 1 })
                   }
-                  className="h-9 px-5 rounded-lg bg-brand_navy text-custom-white text-[12.5px] font-semibold"
+                  className="h-9 px-5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white text-[12.5px] font-semibold"
                 >
                   {view.step === guide.steps.length - 1 ? "Done" : "Next"}
                 </button>
@@ -465,7 +462,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                       className="py-2 border-t border-brand_line text-[13px]"
                     >
                       <strong className="block text-content">{i.q}</strong>
-                      <span className="text-content/85">{i.a}</span>
+                      <span className="text-content/95">{i.a}</span>
                     </div>
                   ))}
                 </div>
@@ -500,7 +497,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                         onClick={() => answer(depth, o.label)}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left text-[13px] font-semibold ${
                           picked === o.label
-                            ? "border-row_selected_border bg-row_selected text-content"
+                            ? "cc-row-selected text-content"
                             : "border-brand_line text-content hover:bg-row_selected"
                         }`}
                       >
@@ -531,13 +528,13 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                   <h3 className="mt-2 mb-1 text-[16px] font-bold text-content">
                     {fixTrail.result.title}
                   </h3>
-                  <p className="text-[13.5px] text-content/85">
+                  <p className="text-[13.5px] text-content/95">
                     {fixTrail.result.why}
                   </p>
                   <h4 className="mt-3 mb-1 text-[13.5px] font-bold text-content">
                     What to do
                   </h4>
-                  <ol className="pl-5 text-[13.5px] text-content/85 list-decimal">
+                  <ol className="pl-5 text-[13.5px] text-content/95 list-decimal">
                     {fixTrail.result.todo.map((t) => (
                       <li key={t} className="mb-1">
                         {t}
@@ -546,7 +543,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                   </ol>
                 </section>
               ) : (
-                <p className="px-3.5 py-3 border border-dashed border-brand_line_2 rounded-xl text-[13px] text-content/85">
+                <p className="px-3.5 py-3 border border-dashed border-brand_line_2 rounded-xl text-[13px] text-content/95">
                   Answer above to see what's going on and what to do.
                 </p>
               )}
@@ -555,7 +552,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
         </div>
 
         {/* ── footer ───────────────────────────────────────────────────── */}
-        <div className="px-5 py-3 border-t border-brand_line bg-custom-white flex-shrink-0 text-[13px] text-content/85">
+        <div className="px-5 py-3 border-t border-brand_line bg-custom-white flex-shrink-0 text-[13px] text-content/95">
           <p className="m-0">
             Still stuck? Send your CounterCtrl rep the store number, the dates
             and a screenshot

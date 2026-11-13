@@ -1,14 +1,21 @@
+// Hooks
+import { useRef } from "react";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+
+// Redux
+import { setSingleDate } from "../../features/searchSlice";
+
+// Components
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Calendar from "./Calendar";
-import { useRef } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setSingleDate } from "../../features/searchSlice";
 
 interface SingleDatePickerProps {
   className?: string;
 }
 
+/** The single-date dropdown: shows the chosen day as month/day plus weekday and
+ *  opens a calendar that sets it in the search state. */
 const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
@@ -51,12 +58,12 @@ const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
         <MenuButton
           data-testid="single-date-menu-button"
           ref={menuRef}
-          className={`inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 ${className}`}
+          className={`inline-flex w-full bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-line_strong ${className}`}
         >
           {formatDisplay()}
           <ChevronDownIcon
             aria-hidden="true"
-            className="-mr-1 size-5 text-gray-400"
+            className="-mr-1 size-5 text-brand_slate"
           />
         </MenuButton>
       </div>

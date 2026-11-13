@@ -1,11 +1,18 @@
+// Hooks
+import { useRef } from "react";
+import { useAppSelector } from "../../hooks";
+import { useDispatch } from "react-redux";
+
+// Redux
+import { setStartDate } from "../../features/searchSlice";
+
+// Components
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Calendar from "./Calendar";
-import { useRef } from "react";
-import { useAppSelector } from "../../hooks";
-import { setStartDate } from "../../features/searchSlice";
-import { useDispatch } from "react-redux";
 
+/** The Start Date dropdown: shows the chosen start date as month/day and opens
+ *  a calendar that sets it in the search state. */
 const StartDatePicker = () => {
   const dispatch = useDispatch();
 
@@ -36,7 +43,6 @@ const StartDatePicker = () => {
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
   const calendarStyle = "w-[150%] md:w-[215px]";
-  // const calendarStyle = "w-[98%] md:w-[165%]";
 
   return (
     <Menu data-testid="start-date-picker" as="div" className={styling}>
@@ -47,12 +53,12 @@ const StartDatePicker = () => {
         <MenuButton
           data-testid="start-date-menu-button"
           ref={menuRef}
-          className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-2 md:py-2 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
+          className="inline-flex w-full bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-2 md:py-2 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-line_strong "
         >
           {formatDisplay()}
           <ChevronDownIcon
             aria-hidden="true"
-            className="-mr-1 size-5 text-gray-400"
+            className="-mr-1 size-5 text-brand_slate"
           />
         </MenuButton>
       </div>

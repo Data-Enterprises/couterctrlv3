@@ -62,7 +62,7 @@ const CaseSummary = ({ type, headline, finding, lines, caution }: Props) => {
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex items-center gap-2 mb-1">
           <span
-            className={`text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded flex-shrink-0 ${verdict.tone}`}
+            className={`text-[10px] cc-tag uppercase tracking-wide flex-shrink-0 ${verdict.tone}`}
           >
             {verdict.text}
           </span>
@@ -79,7 +79,7 @@ const CaseSummary = ({ type, headline, finding, lines, caution }: Props) => {
               const Icon = ICON[l.icon];
               return (
                 <div key={l.text} className="flex items-baseline gap-2">
-                  <Icon className="w-4 h-4 flex-shrink-0 text-content/85 translate-y-0.5" />
+                  <Icon className="w-4 h-4 flex-shrink-0 text-content/95 translate-y-0.5" />
                   <span className="text-[13px] leading-relaxed text-content">
                     {l.text}
                   </span>

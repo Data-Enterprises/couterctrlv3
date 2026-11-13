@@ -6,8 +6,7 @@ import sampleRaw from "./releaseNotes.sample.json";
  *
  * Prod only. Dev's release notes are the weekly meeting doc, written for the
  * support team; these are the client set, and nothing that has not reached the
- * production screens belongs here. Coming Soon pages appear only once they
- * leave Coming Soon, under Now available.
+ * production screens belongs here.
  *
  * In the repo rather than in a bucket: a document fetched at read time can fail
  * at read time, and a release note that 403s in front of a customer is worse
@@ -17,52 +16,58 @@ import sampleRaw from "./releaseNotes.sample.json";
  * identity, so the array is never re-sorted at runtime: a note corrected in
  * December must not jump ahead of the December release.
  *
- * HOW A BULLET READS
- * Lead with the feature's name as the app calls it. A change to something
- * clients already know is just the name ("Hash sales"). A new control or choice
- * adds what it lets them do and where it takes effect ("Sub dept exclusions:
- * choose which sub departments to exclude. The Performance pages leave them
- * out."). Never the mechanism, never the old behaviour, never "fixed" or
- * "now", never steps. A behaviour with no feature name is one short sentence.
+ * Where they come from: the Production Update Guide's builder writes the next
+ * release's notes from the guide's cards, and at the move that set is copied in
+ * here with its date.
+ *
+ * HOW A NOTE READS
+ * One plain sentence a client understands at a glance: the main point of the
+ * change, never the mechanism and never steps. Owner-only and level 9 changes
+ * stay out. A page's smaller fixes are counted, not written out.
  */
 
-/** A page's bullets within one section of one release. */
-export interface ReleasePage {
-  /** The full menu path, as the client reads it: `Config → User Management`. */
+/** New to production, an improvement to something clients know, or a fix. */
+export type NoteKind = "new" | "improvement" | "fix";
+
+/** One release note: one sentence about one page. */
+export interface ReleaseNote {
+  kind: NoteKind;
+  /** The page as the menu names it, or "Every page". */
   page: string;
   /**
-   * The routes this heading is about, which is what the window matches the
-   * page you are on against. Never the heading text: that is worded for
-   * people and would break the first time it differed from the menu. A
-   * combined heading ("Vendors, Sub Dept Margins") lists every route.
+   * The routes the note is about, which is what the panel matches the page
+   * you are on against. Never the page text: that is worded for people. Empty
+   * for "Every page".
    */
   hrefs: string[];
-  bullets: string[];
+  /** The page itself is new to production. */
+  newPage: boolean;
+  text: string;
 }
 
-/** The three sections that hold pages. Platform Updates holds bullets alone,
- *  since its changes reach every page. */
-export type PageSection = "nowAvailable" | "updates" | "fixes";
+/** A page's smaller fixes, counted rather than written out. */
+export interface SmallerFixes {
+  page: string;
+  hrefs: string[];
+  count: number;
+}
 
 export interface Release {
-  /** `YYYY-MM-DD`. The identity of the release, and what the rail shows. */
+  /** `YYYY-MM-DD`. The identity of the release, and what the picker shows. */
   date: string;
   dateText: string;
-  platform: string[];
-  /** Pages that left Coming Soon for production. */
-  nowAvailable: ReleasePage[];
-  updates: ReleasePage[];
-  fixes: ReleasePage[];
+  items: ReleaseNote[];
+  smallerFixes: SmallerFixes[];
 }
 
-export const PAGE_SECTIONS: PageSection[] = ["nowAvailable", "updates", "fixes"];
+/** The kinds in the order the panel draws them. */
+export const NOTE_KINDS: NoteKind[] = ["new", "improvement", "fix"];
 
 /** The section titles, written for clients rather than for us. */
-export const SECTION_TITLE: Record<PageSection | "platform", string> = {
-  platform: "Platform Updates",
-  nowAvailable: "Now available",
-  updates: "Updates",
-  fixes: "Fixes",
+export const KIND_TITLE: Record<NoteKind, string> = {
+  new: "New",
+  improvement: "Improvements",
+  fix: "Fixes",
 };
 
 /**
@@ -83,35 +88,48 @@ export const dateText = (date: string): string => {
   return name ? `${name} ${Number(d)}, ${y}` : date;
 };
 
-/** Short form for the rail, where the full month name does not fit. */
-export const dateShort = (date: string): string => {
-  const [y, m, d] = date.split("-");
-  return y && m && d ? `${Number(m)}/${Number(d)}/${y}` : date;
-};
+const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 const strings = (v: unknown): string[] =>
   Array.isArray(v)
     ? v.filter((s): s is string => typeof s === "string" && s.trim() !== "")
     : [];
 
-const pages = (v: unknown): ReleasePage[] =>
+const isKind = (v: unknown): v is NoteKind =>
+  typeof v === "string" && (NOTE_KINDS as string[]).includes(v);
+
+const notes = (v: unknown): ReleaseNote[] =>
   (Array.isArray(v) ? v : [])
-    .map((p) => {
-      const o = (p ?? {}) as Partial<ReleasePage>;
+    .map((n) => {
+      const o = (n ?? {}) as Record<string, unknown>;
       return {
-        page: typeof o.page === "string" ? o.page : "",
+        kind: isKind(o.kind) ? o.kind : null,
+        page: text(o.page),
         hrefs: strings(o.hrefs),
-        bullets: strings(o.bullets),
+        newPage: o.newPage === true,
+        text: text(o.text),
       };
     })
-    .filter((p) => p.page !== "" && p.bullets.length > 0);
+    .filter((n): n is ReleaseNote => !!n.kind && n.page !== "" && n.text !== "");
+
+const smaller = (v: unknown): SmallerFixes[] =>
+  (Array.isArray(v) ? v : [])
+    .map((s) => {
+      const o = (s ?? {}) as Record<string, unknown>;
+      return {
+        page: text(o.page),
+        hrefs: strings(o.hrefs),
+        count: typeof o.count === "number" ? Math.floor(o.count) : 0,
+      };
+    })
+    .filter((s) => s.page !== "" && s.count > 0);
 
 /**
  * Releases from the JSON, checked rather than trusted.
  *
- * A heading with no bullets is dropped instead of rendering as an empty
- * heading, and a release left with nothing in it is dropped entirely rather
- * than appearing in the rail as a date with nothing behind it.
+ * A note with no kind, page or sentence is dropped instead of rendering as an
+ * empty row, and a release left with nothing in it is dropped entirely rather
+ * than appearing in the picker as a date with nothing behind it.
  */
 export const parseReleases = (input: unknown): Release[] =>
   (Array.isArray(input) ? input : [])
@@ -124,42 +142,36 @@ export const parseReleases = (input: unknown): Release[] =>
       return {
         date: r.date,
         dateText: dateText(r.date),
-        platform: strings(o.platform),
-        nowAvailable: pages(o.nowAvailable),
-        updates: pages(o.updates),
-        fixes: pages(o.fixes),
+        items: notes(o.items),
+        smallerFixes: smaller(o.smallerFixes),
       };
     })
-    .filter(
-      (r) =>
-        r.platform.length > 0 ||
-        PAGE_SECTIONS.some((s) => r[s].length > 0),
-    );
+    .filter((r) => r.items.length > 0 || r.smallerFixes.length > 0);
 
 /** The real ones. Empty until the first production release is written up. */
 export const RELEASES: Release[] = parseReleases(raw);
 
 /**
- * Made-up notes in the real format, for trying the window in dev before the
- * first real release. Never shown on prod, and the window says it is a sample.
+ * Notes in the real format, for trying the panel in dev before the first real
+ * release. Never shown on prod, and the panel says it is a sample.
  */
 export const SAMPLE_RELEASES: Release[] = parseReleases(sampleRaw);
 
-/** Where a route appears in a release: each section and heading that names
- *  it, in the order the window draws them. */
-export const pageHits = (
-  release: Release,
-  href: string,
-): { section: PageSection; index: number }[] =>
-  PAGE_SECTIONS.flatMap((section) =>
-    release[section]
-      .map((p, index) => (p.hrefs.includes(href) ? { section, index } : null))
-      .filter((hit): hit is { section: PageSection; index: number } => !!hit),
-  );
+/** A release's notes about one route, in the order written. */
+export const notesFor = (release: Release, href: string): ReleaseNote[] =>
+  release.items.filter((n) => n.hrefs.includes(href));
 
-/** The newest release that names a route at all, for "Last changed …". */
+/** How many smaller fixes a release made on one route. */
+export const smallerFor = (release: Release, href: string): number =>
+  release.smallerFixes
+    .filter((s) => s.hrefs.includes(href))
+    .reduce((n, s) => n + s.count, 0);
+
+/** The newest release that touched a route at all, for "Last changed …". */
 export const lastChangedRelease = (
   releases: Release[],
   href: string,
 ): Release | undefined =>
-  releases.find((r) => pageHits(r, href).length > 0);
+  releases.find(
+    (r) => notesFor(r, href).length > 0 || smallerFor(r, href) > 0,
+  );

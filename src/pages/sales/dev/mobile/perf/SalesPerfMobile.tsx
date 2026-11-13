@@ -1,68 +1,43 @@
+// Hooks
+import { useDeferredValue, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useAppDispatch } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 import {
-  useDeferredValue,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import SearchCard from "../../../../../components-dev/SearchCard";
-import { getHourly, getSubs, getWeekly } from "../../../../../api/sales";
-import {
-  fetchSubDeptRowsOrEmpty,
-  fetchSubDeptRowsSafe,
-} from "../../../../../utils/marginRows";
-import { withProductCode } from "../../shared/ledgerUtils";
-import InfoModal from "../../../../../components-dev/InfoModal";
-import MobileSortChips, {
-  type SortOption,
-} from "../../../../../components-dev/mobile/MobileSortChips";
-import type { DetailTab } from "../../../../../components-dev/mobile/MobilePerfDetail";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import {
-  addDays,
-  formatCurrency2,
-  formatDateSimple,
-  formatGoliathDate,
-  resolveStoreName,
-  sameWeekDayLastYear,
-} from "../../../../../utils";
+  usePerfFetch,
+  usePerfItems,
+  usePerfScope,
+  usePerfSearched,
+  usePerfStoreBundle,
+  usePerfWeek,
+  useSalesPerfState,
+} from "./hooks";
+
+// Redux
 import { isGroupSearch } from "../../../../../features/searchSlice";
-import type {
-  HourlySale,
-  JsonError,
-  SubDeptMargin,
-  SubSale,
-} from "../../../../../interfaces";
 import {
-  cachePerfItems,
-  cachePerfStoreData,
-  clearPerfStoreCache,
   emptyBundle,
-  failPerfItems,
-  failPerfStoreData,
   GROUP_KEY,
   openPerfDetail,
   openPerfSubDept,
   setPerfDrill,
-  setPerfGroupData,
   setPerfHasSearched,
   setPerfInfoOpen,
-  setPerfItemLoading,
   setPerfItemQuery,
   setPerfItemSort,
-  setPerfLoading,
+  setPerfMeasure,
   setPerfSort,
-  setPerfStoreSort,
-  setPerfStoreLoading,
-  setPerfWeek,
   togglePerfDay,
   togglePerfGroupDay,
   togglePerfStore,
   type PerfBundle,
 } from "../../../../../features/dev/devSalesPerfSlice";
+
+// Utils
+import {
+  formatCurrency2,
+  formatDateSimple,
+  resolveStoreName,
+} from "../../../../../utils";
 import {
   buildDays,
   buildHourPairs,
@@ -72,48 +47,37 @@ import {
   buildTotals,
   dirOf,
   filterItemPairs,
-  fmtChange,
   isPartialMatch,
   matchedNote,
   noLyHistory,
-  pairChangePct,
+  mergeLastWeek,
+  fmtChange,
+  gradedChangePct,
+  pickFor,
+  fmtUnits,
   scopeMatch,
   sortPairs,
   storeKeyOf,
-  type PairSort,
-  pickComparison,
-  resolveWeekComparison,
-  cmpLabels,
-  cmpShort,
   type CmpBasis,
-} from "./perfData";
+} from "./utils/perfData";
+import { DETAIL_TABS, storeNumberOf } from "./utils";
+
+// Interfaces
+import type { ItemScope } from "./interfaces";
+
+// Components
+import InfoModal from "../../../../../components-dev/InfoModal";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
+import MeasureSwitch from "../../../../../components-dev/mobile/perf/MeasureSwitch";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../../components-dev/mobile/MobilePerfDetail";
-import PerfStoreReport from "./PerfStoreReport";
-import PerfDrillList from "./PerfDrillList";
-
-/** Two breakdowns under a store. Items are not one of them — they live
- *  inside a sub department, and a tab for them showed the department list a
- *  second time under a name that promised item rows. */
-const DETAIL_TABS: DetailTab<"subs" | "hours">[] = [
-  { key: "subs", label: "Sub Depts" },
-  { key: "hours", label: "Hours" },
-];
-
-const storeSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
-  { key: "sales", label: "Sales" },
-  { key: "change", label: `Change vs ${cmpShort(basis)}` },
-  { key: "name", label: "Store #" },
-];
-
-/** Stores sort on their number, taken from the key — the label is whatever
- *  name the user knows the store by, which needn't start with it. */
-const storeNumberOf = (p: { key: string; label: string }) =>
-  p.key.split("__")[1] ?? p.label;
+import PerfStoreReport from "./components/PerfStoreReport";
+import PerfDrillList from "./components/PerfDrillList";
+import PerfSearchScreen from "./components/PerfSearchScreen";
+import StoreListControls from "./components/StoreListControls";
 
 /**
  * Weekly Sales on mobile.
@@ -133,17 +97,20 @@ const storeNumberOf = (p: { key: string; label: string }) =>
  * went — you picked a store on one tab to change what a different tab showed.
  * Now the drill is inside the card whose figures it explains.
  *
- * No severity, no thresholds, no last week. This year sits against last year
- * and the reader draws the conclusion — which is how the legacy mobile view
- * worked, and why it never read as technical.
+ * No severity and no thresholds. This year sits against last year and last
+ * week, a bar each (desktop shows both, and a client asked for it on the
+ * phone). The TY bar's colour and the change figure read against last year,
+ * and against last week only where last year has nothing on file.
+ *
+ * Every figure measures sales or units, per the switch at the top: the same
+ * choice desktop Sales offers. Transactions, basket, tax and coupons stay
+ * money whatever it is set to.
  */
 const SalesPerfMobile = () => {
   const dispatch = useAppDispatch();
-  const toast = useToast();
-  const context = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const perf = useAppSelector((s) => s.dev.salesPerf);
-  const { assignedStores, selectedGroupStores } = useAppSelector((s) => s.user);
+  const { assignedStores, selectedGroupStores } = useSalesCtx();
+  const searched = usePerfSearched();
+  const perf = useSalesPerfState();
 
   /** Narrows a long group list. Ephemeral by design — it describes what you
    *  are looking for right now, not what the search returned. */
@@ -161,143 +128,16 @@ const SalesPerfMobile = () => {
   const nameOf = (storeid: number, fallback?: string) =>
     resolveStoreName(assignedStores, selectedGroupStores, storeid, fallback);
 
-  const isStore = !isGroupSearch(search.type);
-  const useGroups = isStore ? 0 : 1;
-  const searchValue = isStore ? search.lastStore : search.lastGroup;
-  const singleStore = isStore ? 1 : 0;
+  const { isStore, searchValue } = usePerfScope();
+  const { twStart, twEnd } = usePerfWeek();
+  const { fetchBundle, fetchPerf } = usePerfFetch();
 
-  /** The seven days of the selected week, and their day-matched partners last
-   *  year. Shifting only the two endpoints breaks when one lands on a
-   *  fixed-date holiday: that end snaps to the holiday while the other keeps a
-   *  weekday shift, and the range stops lining up with the per-day lookups. */
-  // singleDate is m/d/yyyy off formatDate; Goliath wants yyyy-mm-dd. Passing
-  // the raw picker value returns an empty result rather than an error.
-  const twEnd = formatGoliathDate(search.singleDate);
-  const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-  const lyDates = Array.from(
-    { length: 7 },
-    (_, i) =>
-      sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
-  ).sort();
-  /** The same week, seven days back. Fetched beside last year on every call,
-   *  and used only where last year came back empty — a store onboarded this
-   *  year has no last year, and one bar is not a comparison. Asking for both
-   *  up front rather than refetching on a miss keeps it to one round trip:
-   *  the miss is only known once the answer is in. */
-  const lwStart = addDays(twStart, -7).toISOString().split("T")[0];
-  const lwEnd = addDays(twEnd, -7).toISOString().split("T")[0];
+  /** Sales or units, everywhere a figure is drawn. */
+  const pick = pickFor(perf.measure);
+  const fmt = perf.measure === "units" ? fmtUnits : formatCurrency2;
+  const sizeLabel = perf.measure === "units" ? "Units" : "Sales";
 
-  /** Sub-department and hourly rows for one scope, both periods. */
-  const fetchBundle = async (
-    grouped: number,
-    value: number,
-    single: number,
-  ): Promise<PerfBundle> => {
-    const args = [grouped, value, single] as const;
-    const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
-      getHourly(context.url, context.token, twStart, twEnd, ...args),
-      getHourly(context.url, context.token, lyDates[0], lyDates[6], ...args),
-      getHourly(context.url, context.token, lwStart, lwEnd, ...args),
-      getSubs(context.url, context.token, twStart, twEnd, ...args),
-      getSubs(context.url, context.token, lyDates[0], lyDates[6], ...args),
-      getSubs(context.url, context.token, lwStart, lwEnd, ...args),
-    ]);
-    // getHourly and getSubs both answer on `.subs`, not `.sales`.
-    const rows = (r: { data: { error: number; subs: unknown[] } }) =>
-      r.data.error === 0 ? r.data.subs : [];
-    // A bundle is one store, so subs and hours fall back together. Deciding
-    // them separately could show Subs against last year and Hours against
-    // last week on one card, which is two different questions side by side.
-    const hourly = pickComparison(
-      rows(hLy) as HourlySale[],
-      rows(hLw) as HourlySale[],
-    );
-    const subs = pickComparison(
-      rows(sLy) as SubSale[],
-      rows(sLw) as SubSale[],
-    );
-    return {
-      hourlyTy: rows(hTy) as HourlySale[],
-      hourlyLy: hourly.rows,
-      subsTy: rows(sTy) as SubSale[],
-      subsLy: subs.rows,
-      basis: subs.basis === "lw" && hourly.basis === "lw" ? "lw" : subs.basis,
-    };
-  };
-
-  const fetchPerf = async () => {
-    dispatch(setPerfLoading(true));
-    // Every cached store bundle belongs to the old date range.
-    dispatch(clearPerfStoreCache());
-    try {
-      const args = [useGroups, searchValue, singleStore] as const;
-      const [wTy, wLy, wLw, bundle] = await Promise.all([
-        getWeekly(context.url, context.token, twStart, twEnd, ...args),
-        getWeekly(context.url, context.token, lyDates[0], lyDates[6], ...args),
-        getWeekly(context.url, context.token, lwStart, lwEnd, ...args),
-        // A group search no longer loads a group-wide breakdown: there is
-        // nowhere on screen to show one now that Subs and Hours live inside a
-        // store card, and each card fetches its own on the way open. A single
-        // store still needs one up front, because its one card opens with the
-        // screen. That takes a group search from six calls to two.
-        isStore
-          ? fetchBundle(useGroups, searchValue, singleStore)
-          : Promise.resolve(emptyBundle()),
-      ]);
-
-      const ty = wTy.data.error === 0 ? wTy.data.sales : [];
-      const cmp = resolveWeekComparison(
-        ty,
-        wLy.data.error === 0 ? wLy.data.sales : [],
-        wLw.data.error === 0 ? wLw.data.sales : [],
-      );
-      dispatch(setPerfWeek({ ty, ly: cmp.rows, basis: cmp.basis }));
-      dispatch(setPerfGroupData(bundle));
-      dispatch(setPerfHasSearched(true));
-    } catch (err) {
-      toast.error("Error loading sales: " + (err as JsonError).message);
-    } finally {
-      dispatch(setPerfLoading(false));
-    }
-  };
-
-  /**
-   * Fetch a store's bundle the first time its card is expanded, and only then.
-   *
-   * A group response carries no store dimension, so a store's own Subs and
-   * Hours mean asking for that store specifically. Cached by key, so
-   * re-opening a card costs nothing — each store is one round of calls per
-   * search, however often it is tapped.
-   */
-  useEffect(() => {
-    const key = perf.selectedStore;
-    if (!key || perf.storeData[key] || perf.storeLoading === key) return;
-
-    // The group's own breakdown is fetched the same way and cached in the same
-    // map — it is just a different scope to ask the endpoints for.
-    const row =
-      key === GROUP_KEY
-        ? null
-        : perf.weekTy.find((r) => storeKeyOf(r) === key);
-    if (key !== GROUP_KEY && !row) return;
-
-    const gen = perf.storeCacheGen;
-    dispatch(setPerfStoreLoading(key));
-    // Always cached under its own key, even if the user has moved on: the rows
-    // are still that store's, and dropping them used to strand the loading
-    // flag — collapse a card before it landed and re-opening it never fetched
-    // again, so Transactions, Avg basket and Coupons sat at zero. The slice
-    // discards a result from an older search.
-    (key === GROUP_KEY
-      ? fetchBundle(useGroups, searchValue, singleStore)
-      : fetchBundle(0, row!.storeid, 1)
-    )
-      .then((bundle) => dispatch(cachePerfStoreData({ key, bundle, gen })))
-      .catch((err: JsonError) => {
-        dispatch(failPerfStoreData(key));
-        toast.error("Error loading store: " + err.message);
-      });
-  }, [perf.selectedStore]);
+  usePerfStoreBundle(fetchBundle);
 
   /**
    * The group's day scopes the whole list; a store card's scopes only itself.
@@ -315,11 +155,9 @@ const SalesPerfMobile = () => {
     // The list answers to the group card only. A day picked inside one store's
     // card used to rewrite every other store's figures, with nothing on their
     // collapsed rows to say why the numbers had moved.
-    const built = buildStorePairs(
-      perf.weekTy,
-      perf.weekLy,
-      shownGroupDay,
-      nameOf,
+    const built = mergeLastWeek(
+      buildStorePairs(perf.weekTy, perf.weekLy, shownGroupDay, nameOf, pick),
+      buildStorePairs(perf.weekTy, perf.weekLw, shownGroupDay, nameOf, pick),
     );
     // Unsorted is a real state, not a missing default — see `storeSort`.
     return perf.storeSort
@@ -328,8 +166,10 @@ const SalesPerfMobile = () => {
   }, [
     perf.weekTy,
     perf.weekLy,
+    perf.weekLw,
     shownGroupDay,
     perf.storeSort,
+    perf.measure,
     assignedStores,
     selectedGroupStores,
   ]);
@@ -372,11 +212,7 @@ const SalesPerfMobile = () => {
 
   /** Items belong to one store, so the endpoint is asked for that store and
    *  the rows are narrowed to its number when an id carries two. */
-  const itemScope: {
-    key: string;
-    storeid: number;
-    storeNumber: string | null;
-  } | null = isStore
+  const itemScope: ItemScope = isStore
     ? { key: `store:${searchValue}`, storeid: searchValue, storeNumber: null }
     : groupOpen
       ? null
@@ -402,91 +238,7 @@ const SalesPerfMobile = () => {
       ? `${itemScope.key}|${perf.openSubDept.id}`
       : null;
 
-  /**
-   * One sub department's items, fetched the first time it is opened for a
-   * store and kept for the search — the same contract as the store bundle.
-   *
-   * One department per request. Every way into items names the department, so
-   * asking `subs/subs` for all of them would fetch twenty to show one, and
-   * hold the other nineteen to save a tap most readers never make.
-   */
-  useEffect(() => {
-    if (!itemKey || !itemScope || !perf.openSubDept) return;
-    if (perf.itemData[itemKey] || perf.itemLoading === itemKey) return;
-
-    const key = itemKey;
-    const { storeid, storeNumber } = itemScope;
-    const subId = perf.openSubDept.id;
-    const gen = perf.storeCacheGen;
-    const scoped = (rows: SubDeptMargin[]) =>
-      withProductCode(rows).filter(
-        (r) =>
-          storeNumber === null ||
-          String(r.store_number).trim().replace(/^0+/, "") ===
-            storeNumber.trim().replace(/^0+/, ""),
-      );
-
-    dispatch(setPerfItemLoading(key));
-    Promise.all([
-      // "No records" is a real answer here, not a failure: a department can
-      // sell nothing this week and still be in the list, because the list is
-      // built from either year. Throwing on it put the drill on a toast and a
-      // spinner that never resolved. A rejection — network, auth, 5xx — still
-      // throws and still toasts.
-      fetchSubDeptRowsOrEmpty(
-        context.url,
-        context.token,
-        subId,
-        twStart,
-        twEnd,
-        0,
-        storeid,
-        1,
-      ),
-      // Last year resolves empty rather than throwing. A store with no history
-      // for this department answers the LY window with an error, and letting
-      // that reject the pair put the whole list on "Error loading items" while
-      // this year's rows were sitting right there.
-      fetchSubDeptRowsSafe(
-        context.url,
-        context.token,
-        subId,
-        lyDates[0],
-        lyDates[6],
-        0,
-        storeid,
-        1,
-      ),
-      // And last week, for the store that has no last year to answer with.
-      // Safe for the same reason as the line above.
-      fetchSubDeptRowsSafe(
-        context.url,
-        context.token,
-        subId,
-        lwStart,
-        lwEnd,
-        0,
-        storeid,
-        1,
-      ),
-    ])
-      .then(([ty, ly, lw]) => {
-        // Scoped to the store before the pick, so the choice is made on the
-        // rows this department actually has rather than the whole payload.
-        const cmp = pickComparison(scoped(ly), scoped(lw));
-        dispatch(
-          cachePerfItems({
-            key,
-            items: { ty: scoped(ty), ly: cmp.rows, basis: cmp.basis },
-            gen,
-          }),
-        );
-      })
-      .catch((err: JsonError) => {
-        dispatch(failPerfItems(key));
-        toast.error("Error loading items: " + err.message);
-      });
-  }, [itemKey]);
+  usePerfItems(itemKey, itemScope);
 
   const openItems = itemKey ? perf.itemData[itemKey] : undefined;
   const itemsLoading = itemKey !== null && !openItems;
@@ -522,10 +274,6 @@ const SalesPerfMobile = () => {
     if (el) el.scrollTop = listScroll.current;
   }, [perf.detailOpen]);
 
-  const days = useMemo(
-    () => buildDays(perf.weekTy, perf.weekLy, scopeKey),
-    [perf.weekTy, perf.weekLy, scopeKey],
-  );
 
   const totals = useMemo(
     () =>
@@ -536,8 +284,10 @@ const SalesPerfMobile = () => {
         active.subsTy,
         cardDay,
         scopeKey,
+        perf.weekLw,
+        pick,
       ),
-    [perf.weekTy, perf.weekLy, active, cardDay, scopeKey],
+    [perf.weekTy, perf.weekLy, perf.weekLw, active, cardDay, scopeKey, perf.measure],
   );
 
   /** The whole week's day matching for the open card's store. */
@@ -545,13 +295,19 @@ const SalesPerfMobile = () => {
     () => scopeMatch(perf.weekTy, perf.weekLy, scopeKey),
     [perf.weekTy, perf.weekLy, scopeKey],
   );
+  /** The same for last week, which the lists pair against beside last year. */
+  const weekMatchLw = useMemo(
+    () => scopeMatch(perf.weekTy, perf.weekLw, scopeKey),
+    [perf.weekTy, perf.weekLw, scopeKey],
+  );
 
   /** The group's own total, always the full week — a fixed reference the card
    *  figures can be read against, so scoping one card to a day doesn't move
    *  the number above it. */
   const groupTotals = useMemo(
-    () => buildTotals(perf.weekTy, perf.weekLy, [], [], null, null),
-    [perf.weekTy, perf.weekLy],
+    () =>
+      buildTotals(perf.weekTy, perf.weekLy, [], [], null, null, perf.weekLw, pick),
+    [perf.weekTy, perf.weekLy, perf.weekLw, perf.measure],
   );
   const groupMatch = useMemo(
     () => scopeMatch(perf.weekTy, perf.weekLy, null),
@@ -563,34 +319,56 @@ const SalesPerfMobile = () => {
   const drillPairs = useMemo(() => {
     const rows =
       perf.drill === "subs"
-        ? buildSubPairs(active.subsTy, active.subsLy, cardDay, weekMatch)
+        ? mergeLastWeek(
+            buildSubPairs(active.subsTy, active.subsLy, cardDay, weekMatch, pick),
+            buildSubPairs(active.subsTy, active.subsLw ?? [], cardDay, weekMatchLw, pick),
+          )
         : perf.drill === "hours"
-          ? buildHourPairs(active.hourlyTy, active.hourlyLy, cardDay, weekMatch)
+          ? mergeLastWeek(
+              buildHourPairs(active.hourlyTy, active.hourlyLy, cardDay, weekMatch, pick),
+              buildHourPairs(
+                active.hourlyTy,
+                active.hourlyLw ?? [],
+                cardDay,
+                weekMatchLw,
+                pick,
+              ),
+            ).sort((a, b) => Number(a.key) - Number(b.key))
           : [];
     // No chip pressed means the order the list was built in — size for sub
     // departments, time for hours.
     return drillSort
       ? sortPairs(rows, drillSort.key, undefined, drillSort.reversed)
       : rows;
-  }, [perf.drill, drillSort, cardDay, active, weekMatch]);
+  }, [perf.drill, drillSort, cardDay, active, weekMatch, weekMatchLw, perf.measure]);
 
   const itemMatch = useMemo(
     () => (itemScope ? scopeMatch(perf.weekTy, perf.weekLy, scopeKey) : undefined),
     [perf.weekTy, perf.weekLy, scopeKey, itemScope?.key],
   );
+  const itemMatchLw = useMemo(
+    () => (itemScope ? scopeMatch(perf.weekTy, perf.weekLw, scopeKey) : undefined),
+    [perf.weekTy, perf.weekLw, scopeKey, itemScope?.key],
+  );
 
   const allItemPairs = useMemo(() => {
     if (!openItems) return [];
-    const rows = buildItemPairs(openItems.ty, openItems.ly, cardDay, itemMatch);
+    const rows = mergeLastWeek(
+      buildItemPairs(openItems.ty, openItems.ly, cardDay, itemMatch, pick),
+      buildItemPairs(openItems.ty, openItems.lw ?? [], cardDay, itemMatchLw, pick),
+    );
     return perf.itemSort
       ? sortPairs(rows, perf.itemSort.key, undefined, perf.itemSort.reversed)
       : rows;
-  }, [openItems, cardDay, perf.itemSort, itemMatch]);
+  }, [openItems, cardDay, perf.itemSort, itemMatch, itemMatchLw, perf.measure]);
   const itemPairs = useMemo(
     () => filterItemPairs(allItemPairs, perf.itemQuery),
     [allItemPairs, perf.itemQuery],
   );
-  const listMax = storePairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+  const listMax = storePairs.reduce(
+    (m, p) => Math.max(m, p.ty, p.ly, p.lw ?? 0),
+    0,
+  );
 
   const totalsPartial = isPartialMatch({
     days: totals.days ?? undefined,
@@ -600,33 +378,22 @@ const SalesPerfMobile = () => {
   /** Nothing on file last year for the open card's scope — drawn as "no
    *  history", not a $0.00 bar. */
   const cardNoLy = noLyHistory(weekMatch, cardDay);
+  /** The day chart's second column: last year, or last week where last year
+   *  has nothing on file for this scope. The bars under it draw both. */
+  const chartBasis: CmpBasis = noLyHistory(weekMatch, null) ? "lw" : "ly";
+  const days = useMemo(
+    () =>
+      buildDays(
+        perf.weekTy,
+        chartBasis === "lw" ? perf.weekLw : perf.weekLy,
+        scopeKey,
+        pick,
+      ),
+    [perf.weekTy, perf.weekLy, perf.weekLw, scopeKey, chartBasis, perf.measure],
+  );
 
   /** storeid alone is not unique — some ids carry two store numbers — so the
    *  set keys on both or two real stores would count as one. */
-  /**
-   * What the GROUP card is comparing against.
-   *
-   * Only "last week" when every store fell back to it. A group with one new
-   * shop and nine old ones is still overwhelmingly a last-year comparison,
-   * and labelling the whole total "LW" to account for the newcomer would
-   * misdescribe the nine. The total itself is the sum of whatever each store
-   * had, which is the honest figure either way.
-   */
-  const groupBasis: CmpBasis = useMemo(() => {
-    const all = Object.values(perf.cmpBasis);
-    return all.length > 0 && all.every((b) => b === "lw") ? "lw" : "ly";
-  }, [perf.cmpBasis]);
-
-  /** The drill list follows the card it opened from: one store's rows compare
-   *  the way that store's card does, and the group's follow the group. */
-  const drillBasis: CmpBasis =
-    // The bundle's own answer first: subs and hours are fetched separately
-    // from the weekly rows, and a store can have a last year for one and not
-    // the other. Falling back to the card's basis covers a bundle that has
-    // not been fetched yet.
-    active.basis ??
-    (groupOpen ? groupBasis : (perf.cmpBasis[openKey ?? ""] ?? groupBasis));
-
   const storeCount = new Set(
     perf.weekTy.map((r) => `${r.storeid}__${r.store_number}`),
   ).size;
@@ -641,14 +408,20 @@ const SalesPerfMobile = () => {
   const whenLabel =
     dayLabel ?? `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`;
 
-  const scopeName = isGroupSearch(search.type)
-    ? search.selectedGroup.group_name
-    : nameOf(search.lastStore, perf.weekTy[0]?.store_name);
+  const scopeName = isGroupSearch(searched.type)
+    ? searched.groupName
+    : nameOf(searched.lastStore, perf.weekTy[0]?.store_name);
 
   /** What the open card is about, for the detail view's header. */
   const openStoreName = groupOpen
     ? scopeName
     : (storePairs.find((p) => p.key === openKey)?.label ?? "this store");
+
+  /** Sales or units, in the page's own card: the group card on a group
+   *  search, the store's card on a single-store one. */
+  const measureSwitch = (
+    <MeasureSwitch value={perf.measure} onChange={(m) => dispatch(setPerfMeasure(m))} />
+  );
 
   const drillList = perf.drill ? (
     <PerfDrillList
@@ -659,13 +432,14 @@ const SalesPerfMobile = () => {
       onSort={(key) => dispatch(setPerfSort({ dimension: drillDim, sort: key }))}
       listPartial={listPartial}
       listNote={matchedNote(weekMatch)}
-      basis={drillBasis}
       shownDay={cardDay}
       loading={bundleLoading}
       allowItems={itemScope !== null}
       storeName={openStoreName}
       openSubDept={perf.openSubDept}
       onOpenSubDept={(v) => dispatch(openPerfSubDept(v))}
+      fmt={fmt}
+      sizeLabel={sizeLabel}
       items={{
         pairs: itemPairs,
         total: allItemPairs.length,
@@ -679,9 +453,6 @@ const SalesPerfMobile = () => {
         onQuery: (q) => dispatch(setPerfItemQuery(q)),
         partial: itemMatch ? isPartialMatch(itemMatch) : false,
         note: itemMatch ? matchedNote(itemMatch) : "",
-        // The items' own fetch decides for itself — a department can have no
-        // last year in a store that otherwise does.
-        basis: openItems?.basis ?? drillBasis,
         // Nothing sold this week, but the department is in the list because
         // last year's rows put it there. The pairs still render — every one
         // at $0.00 against its last-year figure — so the list needs to say
@@ -696,35 +467,8 @@ const SalesPerfMobile = () => {
   // or a deliberate return via the range chip. The second clause covers a
   // search that came back empty.
   if (!perf.hasSearched || (!perf.loading && perf.weekTy.length === 0)) {
-    return (
-      <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden">
-        <SearchCard
-          top
-          title="Weekly Sales"
-          description="Select a store or group and end date."
-          buttonLabel="Load sales"
-          singleDate
-          onSearch={fetchPerf}
-          loading={perf.loading}
-          loadingMessage="Finding sales..."
-          onBack={
-            // Only offered when there is something to go back TO. Landing here
-            // for the first time has no results behind it.
-            perf.weekTy.length > 0
-              ? () => dispatch(setPerfHasSearched(true))
-              : undefined
-          }
-          backLabel="Back to sales"
-          notice={
-            perf.hasSearched
-              ? "No data found for that search — try a different store, group, or week."
-              : undefined
-          }
-        />
-      </div>
-    );
+    return <PerfSearchScreen onSearch={fetchPerf} />;
   }
-
 
   // A breakdown is its own screen. The card that sent us here stays open
   // behind it, so Back is a return rather than a re-search.
@@ -764,11 +508,11 @@ const SalesPerfMobile = () => {
               Skipped entirely on a single-store search — there is no group and
               no list, so that page's one card carries the search and ? itself
               rather than having the store's name printed above it twice. */}
-          {isGroupSearch(search.type) && (
+          {isGroupSearch(searched.type) && (
             <section
               ref={groupOpen ? openCard : undefined}
               className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-                groupOpen ? "border-gray-300" : "border-gray-200"
+                groupOpen ? "border-line_strong" : "border-line_field"
               }`}
             >
               <PerfCardHeader
@@ -782,6 +526,7 @@ const SalesPerfMobile = () => {
                 onInfo={() => dispatch(setPerfInfoOpen(true))}
                 onToggle={() => dispatch(togglePerfStore(GROUP_KEY))}
                 open={groupOpen}
+                actions={measureSwitch}
               />
 
               {/* Collapsed, it is the whole-group answer — and it stays on screen
@@ -794,23 +539,35 @@ const SalesPerfMobile = () => {
                 <div className="px-3.5 pb-3.5 pt-1.5">
                   <div className="flex flex-wrap items-baseline gap-x-2.5">
                     <span className="font-display text-[24px] font-extrabold leading-none tracking-tight text-content">
-                      {formatCurrency2(groupTotals.sales)}
+                      {fmt(groupTotals.value)}
                     </span>
                     <PerfDelta
-                      ty={groupTotals.sales}
-                      ly={groupTotals.salesLy}
-                      unavailable={noLyHistory(groupMatch, null)}
+                      ty={groupTotals.value}
+                      ly={
+                        noLyHistory(groupMatch, null)
+                          ? groupTotals.valueLw
+                          : groupTotals.valueLy
+                      }
+                      format={fmt}
+                      unavailable={noLyHistory(groupMatch, null) && groupTotals.noLw}
                       className="ml-auto"
                     />
                   </div>
                   <div className="mt-2.5">
                     <PairedBars
-                      ty={groupTotals.sales}
-                      ly={groupTotals.salesLy}
-                      max={Math.max(groupTotals.sales, groupTotals.salesLy)}
+                      ty={groupTotals.value}
+                      ly={groupTotals.valueLy}
+                      lw={groupTotals.valueLw}
+                      max={Math.max(
+                        groupTotals.value,
+                        groupTotals.valueLy,
+                        groupTotals.valueLw,
+                      )}
                       compact
-                      labels={cmpLabels(groupBasis)}
+                      labels={["TY", "LY", "LW"]}
+                      format={fmt}
                       lyUnavailable={noLyHistory(groupMatch, null)}
+                      lwUnavailable={groupTotals.noLw}
                     />
                   </div>
                 </div>
@@ -822,66 +579,30 @@ const SalesPerfMobile = () => {
                   selectedDay={shownGroupDay}
                   onToggleDay={(iso) => dispatch(togglePerfGroupDay(iso))}
                   noLy={cardNoLy}
-                  basis={groupBasis}
+                  basis={chartBasis}
                   totals={totals}
                   bundleLoading={bundleLoading}
                   totalsPartial={totalsPartial}
                   totalsNote={matchedNote(totals)}
                   onViewDetails={() => dispatch(openPerfDetail(true))}
+                  fmt={fmt}
                 />
               )}
             </section>
           )}
 
           {/* ── how the list is ordered and narrowed ─────────────── */}
-          {isGroupSearch(search.type) && (
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-              <MobileSortChips
-                options={storeSorts(groupBasis)}
-                value={perf.storeSort?.key ?? null}
-                dir={
-                  perf.storeSort
-                    ? dirOf(perf.storeSort.key, perf.storeSort.reversed)
-                    : null
-                }
-                onChange={(key) => dispatch(setPerfStoreSort(key))}
-              />
-              <div className="px-3.5 py-2">
-                <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
-                  <input
-                    id="perf-store-filter"
-                    value={storeFilter}
-                    onChange={(e) => setStoreFilter(e.target.value)}
-                    placeholder="Filter by store"
-                    inputMode="search"
-                    enterKeyHint="search"
-                    aria-label="Filter by store"
-                    className="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-[14px] text-content placeholder:text-content/85"
-                    style={{
-                      outline: "none",
-                      WebkitAppearance: "none",
-                      boxShadow: "none",
-                    }}
-                  />
-                  {storeFilter && (
-                    <button
-                      type="button"
-                      onClick={() => setStoreFilter("")}
-                      aria-label="Clear filter"
-                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
-                    >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </section>
+          {isGroupSearch(searched.type) && (
+            <StoreListControls
+              sizeLabel={sizeLabel}
+              storeFilter={storeFilter}
+              setStoreFilter={setStoreFilter}
+            />
           )}
 
           {/* ── the stores ──────────────────────────────────────── */}
           {visibleStores.length === 0 ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
+            <section className="rounded-2xl border border-line_field bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
               {storeFilter.trim()
                 ? `No store matches "${storeFilter.trim()}".`
                 : "Nothing recorded for this week."}
@@ -889,20 +610,25 @@ const SalesPerfMobile = () => {
           ) : (
             visibleStores.map((p) => {
               const isOpen = p.key === openKey;
-              const change = pairChangePct(p);
               return (
                 <div key={p.key} ref={isOpen ? openCard : undefined}>
                   <MobilePerfCard
                     label={p.label}
-                    change={<PerfChange pct={change} format={fmtChange} />}
+                    change={
+                      <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
+                    }
                     flagged={isPartialMatch(p)}
                     flagNote={matchedNote(p)}
                     bars={
                       <PairedBars
                         ty={p.ty}
                         ly={p.ly}
+                        lw={p.lw ?? 0}
                         max={listMax}
+                        labels={["TY", "LY", "LW"]}
+                        format={fmt}
                         lyUnavailable={p.noLy}
+                        lwUnavailable={p.noLw}
                       />
                     }
                     open={isOpen}
@@ -929,6 +655,7 @@ const SalesPerfMobile = () => {
                     onInfo={
                       isStore ? () => dispatch(setPerfInfoOpen(true)) : undefined
                     }
+                    actions={isStore ? measureSwitch : undefined}
                   >
                     {isOpen && (
                       <PerfStoreReport
@@ -936,12 +663,13 @@ const SalesPerfMobile = () => {
                         selectedDay={shownDay}
                         onToggleDay={(iso) => dispatch(togglePerfDay(iso))}
                         noLy={cardNoLy}
-                        basis={perf.cmpBasis[p.key] ?? "ly"}
+                        basis={chartBasis}
                         totals={totals}
                         bundleLoading={bundleLoading}
                         totalsPartial={totalsPartial}
                         totalsNote={matchedNote(totals)}
                         onViewDetails={() => dispatch(openPerfDetail(true))}
+                        fmt={fmt}
                       />
                     )}
                   </MobilePerfCard>

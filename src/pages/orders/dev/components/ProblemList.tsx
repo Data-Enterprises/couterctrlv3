@@ -1,16 +1,21 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { CheckIcon } from "@heroicons/react/16/solid";
+
+// Utils
+import { workingOrder } from "../utils/problemItems";
+import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./utils";
+import { ROWS } from "../utils";
+
+// Interfaces
+import type { ProblemItem } from "../interfaces";
 import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { CheckIcon } from "@heroicons/react/16/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import { workingOrder, type ProblemItem } from "../problemItems";
-import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./flagStyles";
 
-/** The order the list works in: the cause, its usual symptom, then the one
- *  that is often fine. */
-const ROWS: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];
-
-interface Props {
+interface ProblemListProps {
   /** Every item on the loaded orders, flagged or not. */
   items: ProblemItem[];
   skipped: Set<string>;
@@ -44,7 +49,7 @@ const ProblemList = ({
   onMarginOver,
   scopeOrders,
   scopeStores,
-}: Props) => {
+}: ProblemListProps) => {
   const [query, setQuery] = useState("");
   const [only, setOnly] = useState<Set<OrderFlag>>(new Set());
 
@@ -234,7 +239,7 @@ const ProblemList = ({
         )}
       </div>
 
-      <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
+      <div className="border-t border-line_hair px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
           Across every loaded order — {scopeOrders.toLocaleString()} order
           {scopeOrders === 1 ? "" : "s"}, {scopeStores.toLocaleString()} store

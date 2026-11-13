@@ -1,3 +1,6 @@
+/* The dev tree's shared looks (cc-*); must stay above the @tailwind lines. */
+@import "./styles/components-dev.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -241,6 +244,18 @@ body {
     --color-brand-line: 220 229 239;
     --color-brand-line-2: 200 213 228;
     --color-brand-paper: 250 252 254;
+    /* Neutral lines and fills, named for the job. Each was a Tailwind grey and
+       starts at exactly that value, so a line can be retuned here without
+       touching any fill. */
+    --color-line-hair: 243 244 246; /* was gray-100: dividers, row and bar rules */
+    --color-line-field: 229 231 235; /* was gray-200: field, card and menu borders */
+    --color-line-strong: 209 213 219; /* was gray-300: checkbox and control edges */
+    --color-line-faint: 249 250 251; /* was gray-50: table cell rules */
+    --color-fill-soft: 249 250 251; /* was gray-50: header strips, row hover */
+    --color-fill-muted: 243 244 246; /* was gray-100: muted chips and wells */
+    --color-fill-track: 229 231 235; /* was gray-200: bar tracks, skeletons */
+    --color-fill-track-strong: 209 213 219; /* was gray-300: a darker track */
+    --color-ungraded: 156 163 175; /* was gray-400: the dot or ring of something not graded */
     /* Error/validation. Distinct from severity-critical, which grades data —
        these dress form errors and the Critical marketing chip. */
     --color-brand-danger: 176 22 57;

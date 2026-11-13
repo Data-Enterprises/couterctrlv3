@@ -1,46 +1,35 @@
+// Hooks
 import React from "react";
-import PasswordField from "./PasswordField";
-import { SIGN_IN_COPY } from "./portalContent";
-import logo from "../../../assets/portal/logo.webp";
 
-interface Props {
+// Utils
+import { SIGN_IN_COPY } from "./portalContent";
+
+// Components
+import logo from "../../../assets/portal/logo.webp";
+import PasswordField from "../components/PasswordField";
+
+interface SignInRailProps {
   username: string;
   password: string;
   onUsernameChange: (v: string) => void;
   onPasswordChange: (v: string) => void;
-  /** Native form submit — Enter and the button both land here. */
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   loading: boolean;
   onForgot: () => void;
-  /** Shown in the alert region above the fields. */
   error: string | null;
-  /** Which field submit rejected, so it can be outlined. */
   invalidField: "username" | "password" | null;
   version: string;
-  /** Opens the Terms panel. Passes its own element up so focus returns
-   *  here on close, same contract as the stage buttons. */
   onTerms: (trigger: HTMLElement) => void;
   onPrivacy: (trigger: HTMLElement) => void;
-  /** "Remember me" — the username only, never the password. See
-   *  rememberedUser.ts for why. */
   remember: boolean;
   onRememberChange: (on: boolean) => void;
 }
 
 /** The `.gate` — fixed left rail of the portal.
- *
  *  Presentational only. Username and password still live in userSlice exactly
  *  as they did before the redesign, so this takes them as props and reports
  *  changes upward; none of the auth logic moved.
- *
- *  It is a real <form> as of the Aug 2026 handoff revision: Enter submits
- *  natively, the fields carry `name` attributes so password managers offer to
- *  save, and failures surface in a `role="alert"` region above the fields
- *  rather than as a toast that disappears.
- *
- *  The full-card LoadingIndicator is gone with it — the button now carries the
- *  busy state (spinner + aria-busy), which keeps the error region and the
- *  entered values visible while the request is in flight. */
+ */
 const SignInRail = ({
   username,
   password,
@@ -56,11 +45,15 @@ const SignInRail = ({
   version,
   onTerms,
   onPrivacy,
-}: Props) => (
+}: SignInRailProps) => (
   <section className="relative bg-custom-white flex flex-col overflow-hidden h-dvh border-r border-brand_line portal_stack:h-auto portal_stack:overflow-visible portal_stack:border-r-0 portal_stack:border-b">
     <div className="flex-1 min-h-0 flex flex-col justify-center px-[46px] py-8 w-full max-w-[430px] mx-auto portal_short:py-6 portal_stack:px-[26px] portal_stack:pt-[34px] portal_stack:pb-[26px]">
       <div className="mb-[34px] portal_short:mb-[26px] portal_shorter:mb-5">
-        <img src={logo} alt="CounterCtrl Cloud" className="block w-[242px] max-w-[84%] h-auto" />
+        <img
+          src={logo}
+          alt="CounterCtrl Cloud"
+          className="block w-[242px] max-w-[84%] h-auto"
+        />
       </div>
 
       <div>
@@ -83,7 +76,10 @@ const SignInRail = ({
         )}
 
         <div className="mb-[15px]">
-          <label htmlFor="username" className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy">
+          <label
+            htmlFor="username"
+            className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy"
+          >
             {SIGN_IN_COPY.usernameLabel}
           </label>
           <input
@@ -100,7 +96,9 @@ const SignInRail = ({
             disabled={loading}
             onChange={(e) => onUsernameChange(e.target.value)}
             className={`w-full px-3.5 py-3 font-body text-[15px] text-portal_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)] ${
-              invalidField === "username" ? "border-brand_danger" : "border-brand_line_2"
+              invalidField === "username"
+                ? "border-brand_danger"
+                : "border-brand_line_2"
             }`}
           />
         </div>

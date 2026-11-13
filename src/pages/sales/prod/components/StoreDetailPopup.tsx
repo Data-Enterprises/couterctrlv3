@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, memo } from "react";
+import { shiftIso } from "../../../../utils/grading";
 import {
   useAppSelector,
   useAppDispatch,
@@ -140,7 +141,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   // scoped to its own genuine data, not gated by a different fetch's gaps.
   const twRealDates = Array.from(
     { length: 7 },
-    (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
+    (_, i) => shiftIso(twStart, i),
   );
   /**
    * What the LY comparison actually looks at, as opposed to what was fetched.
@@ -156,7 +157,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
-    (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+    (d) => shiftIso(d, -7),
   );
 
   const twYear = new Date(twEnd + "T12:00:00").getFullYear();
@@ -177,7 +178,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     : `${fmtDate(twStart)} – ${fmtDate(twEnd)}`;
   const lwDateLabel = selectedDate
     ? new Date(
-        addDays(new Date(selectedDate), -7).toISOString().split("T")[0] +
+        shiftIso(selectedDate, -7) +
           "T12:00:00",
       ).toLocaleDateString("en-US", {
         weekday: "short",
@@ -499,9 +500,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           rawSubs.filter((s) => s.sale_date.startsWith(selectedDate)),
         ),
       );
-      const lwDay = addDays(new Date(selectedDate), -7)
-        .toISOString()
-        .split("T")[0];
+      const lwDay = shiftIso(selectedDate, -7);
       const lyDay = sameWeekDayLastYear(selectedDate).date;
       dispatch(
         setPeriodSubSales({

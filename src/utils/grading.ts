@@ -1,4 +1,4 @@
-import { addDays, sameWeekDayLastYear } from ".";
+import { sameWeekDayLastYear } from ".";
 
 /**
  * Grading primitives shared by the Performance pages.
@@ -245,7 +245,7 @@ export const matchDatedRows = <T extends { sale_date: string }>(
   for (const r of tw) {
     const d = day(r);
     twDays.add(d);
-    if (lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0])) {
+    if (lwDates.has(shiftIso(d, -7))) {
       twForLW.push(r);
       lwHit.add(d);
     }

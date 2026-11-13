@@ -1,7 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../utils";
-import { DOWN_COLOR, LY_COLOR, TY_COLOR, UP_COLOR } from "./perfColors";
+import { DOWN_COLOR, LW_COLOR, LY_COLOR, TY_COLOR, UP_COLOR } from "./perfColors";
 
-interface Props {
+interface PairedBarsProps {
   ty: number;
   ly: number;
   /** The largest figure anywhere in the list, so every row shares one scale.
@@ -13,7 +14,7 @@ interface Props {
   /** Row captions. Sales and Margins compare periods; Loss Prevention and
    *  Coupon Sales compare a week against its own baseline, which is the same
    *  picture with different words on it. */
-  labels?: [string, string];
+  labels?: [string, string] | [string, string, string];
   /** How the figures read. Counts are not money, and formatting an exception
    *  tally as $363.00 is the kind of wrong that survives review. */
   format?: (n: number) => string;
@@ -26,6 +27,13 @@ interface Props {
    * rise from nothing. Opt-in, so nothing that passes a genuine zero changes.
    */
   lyUnavailable?: boolean;
+  /**
+   * Last week, as a third bar under last year. Opt-in: absent, the pair draws
+   * exactly as before. The TY bar's colour still grades against last year,
+   * and against last week only when last year has nothing on file.
+   */
+  lw?: number;
+  lwUnavailable?: boolean;
 }
 
 /**
@@ -59,11 +67,27 @@ const PairedBars = ({
   labels = ["TY", "LY"],
   format = formatCurrency2,
   lyUnavailable = false,
-}: Props) => {
+  lw,
+  lwUnavailable = false,
+}: PairedBarsProps) => {
   const safeMax = max > 0 ? max : 1;
-  // No comparison on file is not a rise: with nothing to be above, the bar
-  // stays the neutral blue rather than claiming a gain from nothing.
-  const tyColour = lyUnavailable ? TY_COLOR : ty >= ly ? UP_COLOR : DOWN_COLOR;
+  // Graded against last year, falling back to last week when last year has
+  // nothing to compare: no history, or a zero. The zero case matters once a
+  // last-week bar is drawn: the change figure beside it already falls back
+  // (`gradedChangePct`), and a row that sold $1.69 last week and nothing this
+  // week read "-100%" in red over a green "not below last year's $0" bar.
+  // Without a last-week bar a zero last year is still a real reading (a rise
+  // from nothing), as it always was. No comparison at all is not a rise: with
+  // nothing to be above, the bar stays the neutral blue.
+  const lwUsable = lw !== undefined && !lwUnavailable;
+  const against =
+    !lyUnavailable && (ly > 0 || !lwUsable)
+      ? ly
+      : lwUsable
+        ? lw
+        : null;
+  const tyColour =
+    against === null ? TY_COLOR : ty >= against ? UP_COLOR : DOWN_COLOR;
 
   const bar = (label: string, value: number, colour: string) => (
     <div className="flex items-center gap-2">
@@ -98,21 +122,25 @@ const PairedBars = ({
     </div>
   );
 
+  const missing = (label: string) => (
+    <div className="flex items-center gap-2">
+      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
+        {label}
+      </span>
+      <span className="flex-1 text-[11px] text-content/95">
+        no history on file
+      </span>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-1.5">
       {bar(labels[0], ty, tyColour)}
-      {lyUnavailable ? (
-        <div className="flex items-center gap-2">
-          <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
-            {labels[1]}
-          </span>
-          <span className="flex-1 text-[11px] text-content/95">
-            no history on file
-          </span>
-        </div>
-      ) : (
-        bar(labels[1], ly, LY_COLOR)
-      )}
+      {lyUnavailable ? missing(labels[1]) : bar(labels[1], ly, LY_COLOR)}
+      {lw !== undefined &&
+        (lwUnavailable
+          ? missing(labels[2] ?? "LW")
+          : bar(labels[2] ?? "LW", lw, LW_COLOR))}
     </div>
   );
 };

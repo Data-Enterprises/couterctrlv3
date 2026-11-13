@@ -1,4 +1,7 @@
+// Interfaces
 import type { ReactNode } from "react";
+
+// Components
 import Modal from "./Modal";
 
 interface ConfirmDeleteProps {
@@ -34,7 +37,7 @@ const ConfirmDelete = ({
   >
     <div className="flex flex-col gap-3 p-4">
       <h2 className="text-[15px] font-semibold">Delete this {kind}?</h2>
-      <p className="text-[13px] text-content/85">
+      <p className="text-[13px] text-content/95">
         <span className="font-semibold text-content">{what}</span> will be
         gone. {detail}
       </p>
@@ -42,14 +45,14 @@ const ConfirmDelete = ({
         <button
           type="button"
           onClick={onCancel}
-          className="text-[12.5px] font-medium px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+          className="text-[12.5px] cc-btn-outline"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className="bg-[#9C3A2E] hover:bg-[#87322a] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"
+          className="bg-brand_danger hover:bg-brand_danger/90 text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"
         >
           Delete
         </button>

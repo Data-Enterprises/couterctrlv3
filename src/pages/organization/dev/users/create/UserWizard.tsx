@@ -1,11 +1,12 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import ConfirmModal from "../../../../../components-dev/ConfirmModal";
-import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
-import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { createUser, updateUser } from "../../../../../api/team";
-import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
+import { useOrganizationCtx } from "../../hooks";
+import { usePanelFit } from "../../utils/panelFit";
+import { useSeededPicks, useAccessSave, outcomeSentence, NOTHING_HELD, useAccessMode, failedReadsText, useHeldAccess, useExistingAccess } from "./hooks";
+
+// Redux
+import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
 import {
   clearDuplicateSource,
   markUserInfoSaved,
@@ -14,21 +15,14 @@ import {
   setUserCompanyIds,
   setUserInfo,
 } from "../../../../../features/dev/devUsersSlice";
-import type {
-  CompanyBaseGroup,
-  GrantMode,
-  JsonError,
-  Store,
-} from "../../../../../interfaces";
-import UserFields from "./UserFields";
-import AccessPanel from "../access/AccessPanel";
-import EffectiveStoresPanel from "../view/EffectiveStoresPanel";
-import Stepper from "./Stepper";
-import { STEP_ORDER, type WizardStep } from "./wizardSteps";
-import { usePanelFit, type PanelFit } from "../../panelFit";
-import StepAccessType from "./StepAccessType";
-import StepReview from "./StepReview";
-import { useSeededPicks } from "./useSeededPicks";
+
+// API
+import { createUser, updateUser } from "../../../../../api/team";
+import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
+
+// Utils
+import { accessSets, directStoreIds, emptySelectedGroupIds, groupCompanies, hasChanges, NO_PICKS } from "../utils";
+import { identityOf, isSingleStoreRole, STEP_FIT, STEP_ORDER } from "./utils";
 import {
   createBlockReason,
   duplicateCompanies,
@@ -38,36 +32,32 @@ import {
   readiness,
   singleStoreNote,
   trimToSingleStore,
-} from "./wizardRules";
-import {
-  accessSets,
-  directStoreIds,
-  emptySelectedGroupIds,
-  groupCompanies,
-  hasChanges,
-  NO_PICKS,
-  type AccessPicks,
-} from "../access/accessSets";
-import {
-  useAccessSave,
-  outcomeSentence,
-  NOTHING_HELD,
-  type AccessOutcome,
-} from "../access/useAccessSave";
-import { useAccessMode } from "../access/useAccessMode";
-import { failedReadsText, useHeldAccess } from "../access/useHeldAccess";
-import { useExistingAccess } from "../access/useExistingAccess";
+} from "./utils/wizardRules";
+
+// Interfaces
+import type { AccessPicks } from "../interfaces";
+import type { AccessOutcome, WizardStep } from "./interfaces";
+import type {
+  CompanyBaseGroup,
+  GrantMode,
+  JsonError,
+  Store,
+} from "../../../../../interfaces";
+
+// Components
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import ConfirmModal from "../../../../../components-dev/ConfirmModal";
+import UserFields from "./components/UserFields";
+import AccessPanel from "./components/AccessPanel";
+import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
+import Stepper from "./components/Stepper";
+import StepAccessType from "./components/StepAccessType";
+import StepReview from "./components/StepReview";
 
 interface UserWizardProps {
   /**
-   * The person being edited, or nothing for Add user.
-   *
-   * One component for both on purpose. Edit used to be two tabs — Basic info
-   * and Access — that looked nothing like the four steps a person was created
-   * through, so the same question ("by group or by store?") was asked one way
-   * on the way in and could not be asked at all afterwards. Now Edit is Add,
-   * filled in: same steps, same order, same review, every step reachable from
-   * the first click.
+   * The person being edited, or nothing for Add user. One component for both:
+   * Edit is Add, filled in, with every step reachable from the first click.
    */
   editUserId?: number;
   onComplete: () => void;
@@ -75,65 +65,13 @@ interface UserWizardProps {
 }
 
 /**
- * What the panel should be while each step is open.
+ * Add user and Edit user, in four steps. Access type gets its own step, before
+ * any store is picked: By group keeps receiving stores, By store never does,
+ * and the two look the same in a list of ticks.
  *
- * Every step gets a real height rather than hugging its content. `auto` reads
- * well on paper and clips in practice: the panel is capped at the viewport,
- * and with no definite height of its own the flex chain inside it never
- * establishes a scroll container — so a form taller than the cap lost its
- * bottom rather than scrolling, and a step scrolled part-way lost its top.
- * A number plus that cap gives both: the panel fits the step on a tall
- * screen, and the step scrolls inside it on a short one.
- *
- * The widths are what each step actually needs — step one is a form beside
- * its aside, assignments is four columns, the other two are reading.
- */
-const STEP_FIT: Record<WizardStep, PanelFit> = {
-  identity: { width: 1180, height: 680 },
-  // 680, like User info. At 560 the page header, the step bar and the footer
-  // left about 250px for two cards that need 300, so they scrolled inside a
-  // short box and read as cut off -- worst in Edit, whose sentence under the
-  // heading wraps to two lines.
-  type: { width: 1020, height: 680 },
-  assignments: { width: 1360, height: 700 },
-  review: { width: 1100, height: 700 },
-};
-
-/**
- * The single-store role, as the form holds it.
- *
- * `role` is the option value from `constants.roles` — `1` is Single Store —
- * stored as a number, and the server's `SINGLE_STORE_ROLE` is that same `1`.
- * This used to compare the role against the TEXT "singlestore", which a
- * number can never equal, so By group was never greyed out for anyone and
- * the server's refusal was the first anybody heard of it.
- */
-const isSingleStoreRole = (role: unknown) => Number(role) === 1;
-
-/** The identity fields `update_user` writes, for telling whether any moved. */
-const identityOf = (info: {
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: number | string;
-  user_level: number;
-}) =>
-  [info.first_name, info.last_name, info.email, String(info.role), info.user_level].join(
-    "\u0000",
-  );
-
-/**
- * Add user and Edit user, in four steps.
- *
- * **Why steps.** Access type is a real decision with consequences nobody can
- * see on the finished screen — a person held By group keeps receiving stores
- * for years, one held By store never does, and both look identical in a list
- * of ticks. Asking it on its own screen, before any store is picked, is the
- * point of the step rather than ceremony.
- *
- * **Nothing is sent until the last button.** Add: create the account, then
- * its access outermost first. Edit: the identity fields if any moved, then
- * only the access that changed.
+ * **Nothing is sent until the last button.** Add: create the account, then its
+ * access, outermost first. Edit: identity fields if any moved, then only the
+ * access that changed.
  */
 const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const toast = useToast();
@@ -169,14 +107,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const held = useHeldAccess(editing ? editUserId : 0);
 
   /**
-   * A person with no access type recorded — made through prod's wizard, or
-   * before access types existed. `access_mode` comes back null for them.
-   *
-   * Edit still opens on its best reading, but that reading is not on file,
-   * so Save treats the type as unset: it sends every group in the type
-   * chosen here, even if nothing else was touched. Without this, opening one
-   * of these people and pressing Save did nothing — the screen already
-   * matched itself.
+   * A person with no access type on file (`access_mode` null: made in prod's
+   * wizard, or before types existed). Save treats the type as unset and sends
+   * every group in the type chosen here, even if nothing else changed.
    */
   const typeUnset =
     editing && ctx.users.find((u) => u.id === editUserId)?.access_mode === null;
@@ -190,22 +123,15 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   );
 
   /**
-   * The identity as it was opened, for "did any of it change". From the
-   * slice, which records it when the person is opened from the grid: a copy
-   * taken when the wizard mounted was taken again after a tab switch, from
-   * the edited details, and the change stopped counting.
+   * The identity as it was opened, for "did any of it change", from the slice
+   * (a copy taken at mount was retaken after a tab switch).
    */
   const identityBefore = ctx.userInfoBefore ? identityOf(ctx.userInfoBefore) : null;
   const emailBefore = ctx.userInfoBefore?.email ?? "";
 
   /**
-   * Edit: every held group's stores, as soon as the groups are known.
-   *
-   * Effective stores counts the held groups' stores, and the access panel
-   * only fetches a group's stores when its company is opened, so the count
-   * sat at "counting…" until somebody clicked a company. A list that will not
-   * load counts as empty, as the mode switch treats it, rather than leaving
-   * the count waiting for ever.
+   * Edit: every held group's stores, fetched as soon as the groups are known,
+   * so Effective stores can count. A list that won't load counts as empty.
    */
   const rosterAsked = useRef(new Set<number>());
   useEffect(() => {
@@ -236,11 +162,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
   // ── Add: start clean, or from the person being duplicated ─────────────
   /**
-   * The Duplicate this Add was opened for, taken once. The slice copy is
-   * cleared as soon as it is read: it used to stay set until sign-out, so
-   * every later Add user, Cancel or not, opened as a copy of the same person.
-   * Held in state rather than read in the effect, because StrictMode runs the
-   * effect twice and the second run would find it already cleared.
+   * The Duplicate this Add was opened for, taken once and cleared from the
+   * slice. Held in state because StrictMode runs the effect twice.
    */
   const [source] = useState(() => (editing ? null : ctx.duplicateSource));
   useEffect(() => {
@@ -259,14 +182,10 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         return acc;
       }, {}),
     );
-    // The source's companies and groups are picked in their own right rather
-    // than re-derived from its stores: a group whose stores are all unticked
-    // still has to survive the copy. Companies are every company the source
-    // holds, not only those its groups imply: one held with no group in it
-    // used to be left behind.
-    //
-    // The access type copies too. It is one answer per person now, read back
-    // from what the source actually holds, so there is nothing to guess.
+    // The source's companies and groups are picked in their own right, not
+    // re-derived from its stores: a group with every store unticked still
+    // copies, and so does a company with no group in it. The access type
+    // copies too, read from what the source holds.
     setPicks({
       companies: duplicateCompanies(source),
       baseGroups: source.groups.map((g) => g.id),
@@ -277,15 +196,10 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   }, []);
 
   /**
-   * A role change after the fact has to drag the access with it, or the form
-   * holds a combination the server will refuse: Single Store is one store,
-   * By store.
-   *
-   * It used to trim silently, and changing the role back didn't put the
-   * picks back, so a By group person came out By store with nothing picked.
-   * Now the picks as they were are kept, the note says what changed, and the
-   * role back restores them. Only a change of role does this: a Single Store
-   * person opened in Edit is shown as they are.
+   * A role change drags the access with it, or the form holds what the server
+   * refuses (Single Store is one store, By store). The old picks are kept, the
+   * note says what changed, and changing the role back restores them. Only a
+   * role change does this; a Single Store person in Edit shows as they are.
    */
   const wasSingle = useRef(singleStoreOnly);
   const beforeSingle = useRef<AccessPicks | null>(null);
@@ -316,8 +230,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
   // ── What would be written ─────────────────────────────────────────────
   /** A held group contributes its company, so a By group grant creates the
-   *  company link the group reads require. Seeded from the groups the person
-   *  already holds, so it works before any company is opened in the panel. */
+   *  company link its reads require. Seeded from the groups already held. */
   const groupCompany = useMemo(() => {
     const fromPanel = groupCompanies(companyGroups);
     held.heldGroups.forEach((g) => {
@@ -351,9 +264,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     hasAccess,
     emptyGroups: emptyGroups.length,
   });
-  /** Add only: the step bar stops at the first step that isn't ready, so
-   *  Review can't be reached past one that was emptied after visiting it.
-   *  Edit keeps every step reachable; its Save checks them all. */
+  /** Add only: the step bar stops at the first step that isn't ready. Edit
+   *  keeps every step reachable; its Save checks them all. */
   const limit = editing ? STEP_ORDER.length - 1 : reachableLimit(stepReady);
 
   const at = STEP_ORDER.indexOf(step);
@@ -395,10 +307,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     ctx.userInfo.username;
 
   /**
-   * Unsaved work, and whose. Cancel, Back to users and the tab bar used to
-   * throw a half-filled form away without asking; they ask now, and only
-   * when something would be lost. Add counts anything filled in (a Duplicate
-   * included); Edit counts a change from what was opened.
+   * Unsaved work, and whose: Cancel, Back to users and the tab bar ask before
+   * losing it. Add counts anything filled in (a Duplicate too); Edit counts a
+   * change from what was opened.
    */
   const u = ctx.userInfo;
   const addDirty =
@@ -468,9 +379,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const handleRetry = async () => {
     if (!stranded) return;
     setSaving(true);
-    // The whole set again, including the calls that already landed: each
-    // replaces its own group, so writing the same grant twice writes the
-    // same grant.
+    // The whole set again, landed calls included: each replaces its own
+    // group, so re-sending a grant writes the same grant.
     const outcome = await saveAccess(stranded.userid, sets, NOTHING_HELD);
     setSaving(false);
     if (outcome.ok) {
@@ -488,10 +398,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
     if (identityDirty) {
       try {
-        // update_user writes `security` and `template` on every call, so
-        // the row's own values go back: sending 0 cleared both on each Edit
-        // (create sets template to 1). Both are required ints there, so a
-        // row holding null sends 0, as before.
+        // update_user writes `security` and `template` on every call, so the
+        // row's own values go back (0 would clear them); null sends 0.
         const row = ctx.users.find((x) => x.id === editUserId);
         const resp = await updateUser(
           ctx.url,
@@ -520,10 +428,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         setSaving(false);
         setFailure(outcome);
         ctx.dispatch(setRefresh(true));
-        // Re-read: a save that stopped part way has written some of it. The
-        // re-read moves the "before" side only; the picks stay as the admin
-        // left them, so what didn't save is still different and Save changes
-        // sends just that.
+        // Re-read after a part-way save: it moves only the "before" side, so
+        // what didn't save stays different and Save changes sends just that.
         keepPicks();
         held.reload();
         return;
@@ -564,7 +470,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       <div className="flex items-center gap-2 mb-2 flex-shrink-0">
         <button
           onClick={leave}
-          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
+          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-fill_soft"
         >
           <ArrowLeftIcon className="w-3.5 h-3.5" />
           Back to users
@@ -615,7 +521,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           <button
             onClick={handleRetry}
             disabled={saving}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover flex-shrink-0"
           >
             {saving ? "Retrying…" : "Retry access"}
           </button>
@@ -628,8 +534,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </div>
       )}
 
-      {/* A read that failed used to become an empty list, so the person
-          looked as though they held nothing. */}
+      {/* A failed read says so, rather than showing the person holding
+          nothing. */}
       {editing && held.failed.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
           <div className="flex-1 min-w-[260px] text-[11.5px] text-content leading-snug">
@@ -641,7 +547,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           </div>
           <button
             onClick={held.reload}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 flex-shrink-0"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover flex-shrink-0"
           >
             Retry
           </button>
@@ -758,10 +664,10 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
       {/* Sticky, because the assignments step is taller than the panel and
           the way forward should not be below the fold of a scroll area. */}
-      <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-gray-100 flex-shrink-0">
+      <div className="sticky bottom-0 cc-bar-footer flex-wrap gap-3 -mx-4 mt-3 bg-custom-white flex-shrink-0">
         <button
           onClick={leave}
-          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-gray-50"
+          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-fill_soft"
         >
           Cancel
         </button>
@@ -781,7 +687,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             <button
               onClick={back}
               disabled={saving}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-gray-50"
+              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-fill_soft"
             >
               Back
             </button>
@@ -793,8 +699,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             disabled={!primaryEnabled}
             className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
               primaryEnabled
-                ? "bg-brand_navy hover:bg-brand_navy/85"
-                : "bg-gray-300 cursor-not-allowed"
+                ? "bg-brand_navy hover:bg-brand_navy_hover"
+                : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >
             {isLast ? primaryLabel : "Continue"}

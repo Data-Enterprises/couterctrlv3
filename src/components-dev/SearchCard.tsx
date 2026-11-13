@@ -1,12 +1,21 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+// Hooks
+import { useAppSelector } from "../hooks";
+
+// Redux
+import { isGroupSearch } from "../features/searchSlice";
+
+// Utils
+import { getStoreName } from "../utils";
+
+// Interfaces
+import type { ReactNode } from "react";
+
+// Components
 import StorePicker from "./storePicker/StorePicker";
 import SingleDatePicker from "./datePickers/SingleDatePicker";
 import DatePickers from "./datePickers/DatePickers";
 import EntryCardLoading from "./loading/EntryCardLoading";
-import { useAppSelector } from "../hooks";
-import { getStoreName } from "../utils";
-import type { ReactNode } from "react";
-import { isGroupSearch } from "../features/searchSlice";
+import SearchBackButton from "./SearchBackButton";
 
 interface SearchCardProps {
   title: string;
@@ -47,6 +56,9 @@ interface SearchCardProps {
   leadingControls?: ReactNode;
 }
 
+/** The page's search card: store or group picker, date pickers and a Search
+ *  button that reads "Select Store" or "Select Group" until something is
+ *  picked. A spinner with the search label replaces the form while it loads. */
 const SearchCard = ({
   title,
   description,
@@ -117,7 +129,7 @@ const SearchCard = ({
       >
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
-          <p className="text-[12px] text-content/50 mt-1">{description}</p>
+          <p className="text-[12px] text-content/95 mt-1">{description}</p>
         </div>
 
         {/* A disabled button alone reads as a frozen form on slow group
@@ -130,7 +142,7 @@ const SearchCard = ({
             style={loading ? { visibility: "hidden" } : undefined}
           >
             {notice && (
-              <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+              <div className="cc-notice text-[11.5px] leading-snug">
                 {notice}
               </div>
             )}
@@ -145,7 +157,7 @@ const SearchCard = ({
             {extraControls}
 
             {blocked && (
-              <div className="px-2.5 py-2 rounded-lg bg-amber-50 border border-amber-200 text-[11.5px] text-amber-900 leading-snug">
+              <div className="cc-notice border border-severity_watch_text/20 text-[11.5px] leading-snug">
                 {blocked}
               </div>
             )}
@@ -166,18 +178,7 @@ const SearchCard = ({
                 : buttonLabel}
             </button>
 
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-                style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-              >
-                <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
-                <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
-                  {backLabel}
-                </span>
-              </button>
-            )}
+            {onBack && <SearchBackButton label={backLabel} onClick={onBack} />}
           </div>
 
           {loading && (

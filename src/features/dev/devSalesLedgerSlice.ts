@@ -3,16 +3,24 @@
  * by `pages/sales/dev`. Edit this one while changing dev Sales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  lruPut,
+  lruTouch,
+} from "../../pages/sales/dev/utils/storeCache";
+import {
+  RECAP_ITEMS_MAX,
+  RECAP_MIX_MAX,
+} from "../../pages/sales/dev/storePanel/summary/utils/recapKeys";
+
+// Interfaces
 import type { FinancialsRow } from "../../api/financials";
 import type {
   TopItemRow,
   TopItemPricePoint,
 } from "../../api/topItems";
-import {
-  lruPut,
-  lruTouch,
-} from "../../pages/sales/dev/shared/storeCache";
 import type {
   CatSale,
   HourlySale,
@@ -24,11 +32,7 @@ import type {
   RecapExceptions,
   RecapItem,
   RecapMix,
-} from "../../pages/sales/dev/components/dailyRecap/recapTypes";
-import {
-  RECAP_ITEMS_MAX,
-  RECAP_MIX_MAX,
-} from "../../pages/sales/dev/components/dailyRecap/recapKeys";
+} from "../../pages/sales/dev/storePanel/summary/interfaces/index";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -154,6 +158,11 @@ export interface PopupStoreData {
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
+  /** The search date (MM/DD/YYYY) the ledger was fetched for. The store panel
+   *  builds its week from this, not the live picker, which other pages move. */
+  searchedDate: string | null;
+  /** The group the ledger searched; null on a single-store search. */
+  searchedGroup: { id: number; name: string } | null;
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
@@ -335,6 +344,8 @@ interface SalesLedgerState {
 
 const initialState: SalesLedgerState = {
   hasSearched: false,
+  searchedDate: null,
+  searchedGroup: null,
   selection: null,
   tab: "subdept",
   selectedDate: null,
@@ -406,6 +417,15 @@ const salesLedgerSlice = createSlice({
   reducers: {
     setHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
+    },
+    setSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
+    },
+    setSearchedGroup: (
+      state,
+      action: PayloadAction<{ id: number; name: string } | null>,
+    ) => {
+      state.searchedGroup = action.payload;
     },
     setLedgerSelection: (
       state,
@@ -770,6 +790,8 @@ const salesLedgerSlice = createSlice({
 export const {
   setGradingMetric,
   setHasSearched,
+  setSearchedDate,
+  setSearchedGroup,
   setLedgerSelection,
   setLedgerTab,
   setCounterpart,

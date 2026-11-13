@@ -57,7 +57,7 @@ const SourcePicker = () => {
             onKeyDown={(e) => onKeyDown(e, i)}
             className={`group w-full flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand_navy/40 ${
               on
-                ? "bg-row_selected border-row_selected_border"
+                ? "cc-row-selected"
                 : "border-brand_line hover:border-brand_slate"
             }`}
           >
@@ -90,7 +90,7 @@ const SourcePicker = () => {
               <span className="text-[12.5px] font-semibold text-content flex-shrink-0">
                 {source.label}
               </span>
-              <span className="text-[11px] text-content/85 truncate" title={source.blurb}>
+              <span className="text-[11px] text-content/95 truncate" title={source.blurb}>
                 {source.blurb}
               </span>
             </span>

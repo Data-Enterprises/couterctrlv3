@@ -19,8 +19,8 @@ interface Props {
 }
 
 const Metric = ({ label, value }: { label: string; value: string }) => (
-  <div className="min-w-0 px-3 py-2 text-center border-r border-gray-100 last:border-r-0 flex-1">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+  <div className="min-w-0 px-3 py-2 text-center border-r border-line_hair last:border-r-0 flex-1">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
       {label}
     </div>
     <div className="text-[14px] font-bold text-content tabular-nums truncate">
@@ -45,12 +45,12 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
   return (
     <div className="absolute inset-0 z-10 bg-custom-white flex flex-col">
-      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-start gap-2">
+      <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[12.5px] font-semibold text-content truncate">
             {saleId}
           </p>
-          <p className="text-[11.5px] text-content/85 truncate">
+          <p className="text-[11.5px] text-content/95 truncate">
             {head
               ? `${formatDateSimple(head.sale_date.slice(0, 10))} · lane ${head.terminal || "—"} · ${head.cashier_name}`
               : "Opening receipt…"}
@@ -59,14 +59,14 @@ const ReceiptCase = ({ state, onClose }: Props) => {
         <button
           onClick={onClose}
           title="Back to the summary"
-          className="flex-shrink-0 p-1 rounded text-content/85 hover:text-content hover:bg-gray-100 transition-colors"
+          className="flex-shrink-0 p-1 rounded cc-muted-link hover:bg-fill_muted"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
 
       {loading && (
-        <div className="py-8 text-center text-[12px] text-content/85">
+        <div className="py-8 text-center text-[12px] text-content/95">
           Opening receipt…
         </div>
       )}
@@ -78,7 +78,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
 
       {!loading && !error && lines.length > 0 && (
         <>
-          <div className="flex-shrink-0 flex border-b border-gray-100 bg-gray-50">
+          <div className="flex-shrink-0 flex border-b border-line_hair bg-fill_soft">
             <Metric
               label={exceptionType}
               value={String(summary.flagged.length)}
@@ -90,8 +90,8 @@ const ReceiptCase = ({ state, onClose }: Props) => {
           </div>
 
           {summary.types.length > 1 && (
-            <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-content/85">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] text-content/95">
                 Also on this receipt:
               </span>
               {summary.types
@@ -99,7 +99,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                 .map((t) => (
                   <span
                     key={t}
-                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-content"
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-fill_muted text-content"
                   >
                     {t}
                   </span>
@@ -107,17 +107,17 @@ const ReceiptCase = ({ state, onClose }: Props) => {
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className="cc-scroll">
             {lines.map((l) => {
               const flagged = l.sale_type === exceptionType;
               return (
                 <div
                   key={`${l.line_number}-${l.product_code}-${l.sale_type}`}
-                  className={`flex items-baseline gap-2 px-3 py-1.5 border-b border-gray-100 ${
+                  className={`flex items-baseline gap-2 px-3 py-1.5 border-b border-line_hair ${
                     flagged ? "bg-severity_critical_bg" : ""
                   }`}
                 >
-                  <span className="text-[11px] tabular-nums text-content/85 w-6 flex-shrink-0 text-right">
+                  <span className="text-[11px] tabular-nums text-content/95 w-6 flex-shrink-0 text-right">
                     {l.line_number}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -130,7 +130,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                     >
                       {l.product_description || l.product_code}
                     </span>
-                    <span className="block text-[11px] text-content/85 truncate">
+                    <span className="block text-[11px] text-content/95 truncate">
                       {l.product_code}
                       {l.price_type ? ` · ${l.price_type}` : ""}
                       {flagged ? ` · ${l.sale_type}` : ""}
@@ -138,7 +138,7 @@ const ReceiptCase = ({ state, onClose }: Props) => {
                       {l.is_discounted ? " · discounted" : ""}
                     </span>
                   </span>
-                  <span className="text-[11.5px] tabular-nums text-content/85 w-8 text-right flex-shrink-0">
+                  <span className="text-[11.5px] tabular-nums text-content/95 w-8 text-right flex-shrink-0">
                     {l.qty ?? 1}
                   </span>
                   <span

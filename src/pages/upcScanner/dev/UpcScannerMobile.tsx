@@ -108,7 +108,7 @@ const UpcScannerMobile = () => {
       <div className="flex flex-col gap-3 p-3">
       {/* 1. The scope card, which is also the capture. Which store, and the
           field that scans for it — one card, because they are one thought. */}
-      <section className="rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3">
+      <section className="rounded-2xl border border-line_field bg-custom-white shadow-md p-3">
         <div className="flex items-start gap-2">
           <button
             type="button"
@@ -157,7 +157,7 @@ const UpcScannerMobile = () => {
       </section>
 
       {sent && (
-        <section className="shrink-0 rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3">
+        <section className="shrink-0 rounded-2xl border border-line_field bg-custom-white shadow-md p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="font-display text-[14px] font-bold text-content/95">
@@ -187,7 +187,7 @@ const UpcScannerMobile = () => {
         type="button"
         disabled={rows.length === 0}
         onClick={() => setSheetOpen(true)}
-        className="h-14 w-full rounded-xl bg-brand_navy font-display text-[17px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
+        className="h-14 w-full rounded-xl bg-brand_navy active:bg-brand_navy_hover font-display text-[17px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
       >
         {rows.length === 0
           ? "Send for tags"

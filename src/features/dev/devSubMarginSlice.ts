@@ -3,10 +3,13 @@
  * by `pages/subDepts/dev`. Edit this one while changing dev subDepts; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
-import type { Coverage, MarginDollars } from "../../utils/grading";
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin, SubDept, SubDeptCost } from "../../interfaces";
-import type { ItemRow, ItemRowMobile } from "../../interfaces";
+
+// Interfaces
+import type { Coverage, MarginDollars } from "../../utils/grading";
+import type { SubDeptMargin, SubDept, SubDeptCost, ItemRow, ItemRowMobile } from "../../interfaces";
 import type { ItemLookupHistory } from "../itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost" | "nocost";
@@ -121,6 +124,9 @@ interface SubMarginState {
   loadingMargins: boolean;
   selectedWeek: MarginWeek;
   searchValue: number;
+  /** The search date (MM/DD/YYYY) the results were fetched for. The panels
+   *  build their week from this, not the live picker, which other pages move. */
+  searchedDate: string | null;
   selectedWeekDay: string;
   openExportModal: boolean;
   openCostExportModal: boolean;
@@ -202,6 +208,7 @@ const initialState: SubMarginState = {
   loadingMargins: false,
   selectedWeek: 0,
   searchValue: 0,
+  searchedDate: null,
   selectedWeekDay: "",
   filterTextInput: "",
   upcFilter: "",
@@ -390,6 +397,9 @@ const subMarginSlice = createSlice({
     setSearchValue: (state, action: PayloadAction<number>) => {
       state.searchValue = action.payload;
     },
+    setSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
+    },
     setItemFilterType: (state, action: PayloadAction<ItemFilterType>) => {
       state.itemFilterType = action.payload;
     },
@@ -475,6 +485,7 @@ const subMarginSlice = createSlice({
 });
 
 export const {
+  setSearchedDate,
   setSubDeptGrade,
   setGradingThreshold,
   setGradingMetric,

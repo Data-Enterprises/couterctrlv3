@@ -1,0 +1,213 @@
+// Utils
+import { formatCurrency2 } from "../../../../../../utils";
+import { heatStyle } from "../../../utils/heatColor";
+import { DAYS, DAY_SHORT, fmtWeekRange } from "../salesCompStats";
+import { getStatusPhrase, getStatusInsight, WEEK_GRID } from "../utils";
+
+// Interfaces
+import type { UpcSalesCompStats } from "../interfaces";
+import type { KpiCell } from "../../../interfaces";
+
+// Components
+import KpiTileGrid from "../../../../../../components-dev/KpiTileGrid";
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
+
+interface SalesCompDetailPanelProps {
+  stats: UpcSalesCompStats;
+}
+
+/** The Sales Comp tab's right side for one item: an insight strip, KPI tiles (total, peak
+ *  day, daily avg, week over week), this year and last year by day of week, and the
+ *  week-by-week table. */
+const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
+  const kpis: KpiCell[] = [
+    {
+      label: "Total sales",
+      value: formatCurrency2(s.periodTotal),
+      sub:
+        s.vsLYPct === null
+          ? undefined
+          : `${s.vsLYPct >= 0 ? "▲" : "▼"}${Math.abs(s.vsLYPct).toFixed(0)}% vs LY`,
+      subVariant:
+        s.vsLYPct === null ? undefined : s.vsLYPct >= 0 ? "up" : "down",
+    },
+    {
+      label: "Peak day",
+      value: s.peakIdx >= 0 ? DAY_SHORT[s.peakIdx] : "—",
+      sub: !s.hasLY
+        ? undefined
+        : s.peakShifted
+        ? `was ${DAY_SHORT[s.lyPeakIdx]} LY`
+        : "same as LY",
+      subVariant: s.peakShifted ? "down" : "neutral",
+    },
+    { label: "Daily avg", value: formatCurrency2(s.avgDaily) },
+    {
+      label: "Week over week avg",
+      value:
+        s.wowPct === null
+          ? "—"
+          : `${s.wowPct >= 0 ? "▲" : "▼"}${Math.abs(s.wowPct).toFixed(1)}%`,
+      variant: s.wowPct === null ? undefined : s.wowPct >= 0 ? "up" : "down",
+    },
+  ];
+
+  const phrase = getStatusPhrase(s.vsLYPct, s.wowPct);
+  const insight = getStatusInsight(s.vsLYPct, s.wowPct);
+
+  return (
+    <div className="flex-1 min-w-0 overflow-y-auto thin-scrollbar">
+      <CtaInsightStrip title={s.desc} insight={insight} tone={phrase.tone} />
+      <KpiTileGrid items={kpis} />
+
+      <div className="px-4">
+        <div className="mb-5">
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
+            This year (avg by day of week)
+          </div>
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {s.dayAvgs.map((val, di) => {
+              const hs = heatStyle(val, s.rowMax);
+              return (
+                <div
+                  key={di}
+                  className="text-center rounded"
+                  style={{
+                    background: hs.bg,
+                    color: hs.color,
+                    padding: "5px 0",
+                  }}
+                >
+                  <div className="text-[13px]">{DAY_SHORT[di]}</div>
+                  <div className="text-[13px] font-medium tabular-nums">
+                    {val > 0 ? formatCurrency2(val) : "—"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-7 gap-1 mb-3.5">
+            {s.dayDeltaPcts.map((pct, di) => (
+              <div
+                key={di}
+                className={`text-center rounded text-[12px] font-semibold py-1 tabular-nums ${
+                  pct === null
+                    ? "text-content/95"
+                    : pct >= 0
+                      ? "bg-severity_healthy_bg text-severity_healthy_text"
+                      : "bg-severity_critical_bg text-severity_critical_text"
+                }`}
+              >
+                {pct === null
+                  ? "—"
+                  : `${pct >= 0 ? "▲" : "▼"}${Math.abs(pct).toFixed(0)}%`}
+              </div>
+            ))}
+          </div>
+
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
+            Last year, same weeks (avg by day of week)
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {s.hasLY ? (
+              s.lyDayAvgs.map((val, di) => {
+                const hs = heatStyle(val, s.rowMax);
+                return (
+                  <div
+                    key={di}
+                    className="text-center rounded"
+                    style={{
+                      background: hs.bg,
+                      color: hs.color,
+                      padding: "5px 0",
+                    }}
+                  >
+                    <div className="text-[13px]">{DAY_SHORT[di]}</div>
+                    <div className="text-[13px] font-medium tabular-nums">
+                      {val > 0 ? formatCurrency2(val) : "—"}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-7 text-[13px] text-content/95 italic py-2">
+                No LY data available for this item.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wide bg-fill_track/75 px-2 py-1.5 mb-1">
+            Week by week (actual)
+          </div>
+          <div
+            className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-content pb-1.5 mb-0.5"
+            style={{ gridTemplateColumns: WEEK_GRID }}
+          >
+            <span />
+            {DAY_SHORT.map((d) => (
+              <span key={d} className="text-center">
+                {d}
+              </span>
+            ))}
+            <span className="text-right pr-2">Total</span>
+          </div>
+          {s.weekRows.map(({ week, row }, wi) => (
+            <div
+              key={week}
+              className="grid gap-1 items-center py-1 border-t border-line_field"
+              style={{ gridTemplateColumns: WEEK_GRID }}
+            >
+              <span className="text-[13px] text-content/95 truncate">
+                {fmtWeekRange(week)}
+              </span>
+              {DAYS.map((d) => {
+                const val = row[d] ?? 0;
+                return (
+                  <span
+                    key={d}
+                    className="text-center text-[13px] text-content tabular-nums"
+                  >
+                    {val > 0 ? formatCurrency2(val) : "—"}
+                  </span>
+                );
+              })}
+              {/* weekTotals shares weekRows' order — both walk the same
+                  sorted weeks. */}
+              <span className="text-right pr-2 text-[13px] font-semibold text-content tabular-nums">
+                {formatCurrency2(s.weekTotals[wi])}
+              </span>
+            </div>
+          ))}
+          {/* Each weekday summed down the weeks. The corner is the period
+              total, so the table visibly reconciles with Total sales above. */}
+          <div
+            className="grid gap-1 items-center py-1.5 border-t-2 border-line_strong"
+            style={{ gridTemplateColumns: WEEK_GRID }}
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-content">
+              Total
+            </span>
+            {DAYS.map((d) => {
+              const sum = s.weekRows.reduce((acc, { row }) => acc + (row[d] ?? 0), 0);
+              return (
+                <span
+                  key={d}
+                  className="text-center text-[13px] font-semibold text-content tabular-nums"
+                >
+                  {sum > 0 ? formatCurrency2(sum) : "—"}
+                </span>
+              );
+            })}
+            <span className="text-right pr-2 text-[13px] font-bold text-content tabular-nums">
+              {formatCurrency2(s.periodTotal)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SalesCompDetailPanel;

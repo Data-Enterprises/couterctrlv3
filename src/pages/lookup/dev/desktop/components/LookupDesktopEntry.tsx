@@ -1,0 +1,97 @@
+// Hooks
+import { useState } from "react";
+import { useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
+
+// Redux
+import { setSelectedStore } from "../../../../../features/dev/devItemLookupSlice";
+
+// Utils
+import { parseUpcs } from "../utils";
+
+// Components
+import SingleSelect from "../../../../../components-dev/SingleSelect";
+
+interface LookupDesktopEntryProps {
+  onSearch: (upcs: string[]) => void;
+}
+
+/** The desktop Item lookup search card: a store picker and a box for one or more UPCs (comma or Shift+Enter between them).
+ *  Enter or the button runs the lookup once a store and a UPC are entered. */
+const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
+  const dispatch = useAppDispatch();
+  const { assignedStores, selectedStore } = useLookupCtx();
+  const storeName = useStoreName(selectedStore, "");
+  const [rawUpcs, setRawUpcs] = useState("");
+
+  const handleStoreSelect = (id: string | number) => {
+    dispatch(setSelectedStore(Number(id)));
+  };
+
+  const upcs = parseUpcs(rawUpcs);
+  const canSearch = selectedStore > 0 && upcs.length > 0;
+
+  const handleSubmit = () => {
+    if (!canSearch) return;
+    onSearch(upcs);
+  };
+
+  return (
+    <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
+      <div>
+        <h2 className="text-base font-semibold text-content">Item lookup</h2>
+        <p className="text-[12px] text-content/95 mt-1">
+          Search for an item by UPC, or paste several to look them up at once.
+        </p>
+      </div>
+
+      <SingleSelect
+        label="Store"
+        data={assignedStores}
+        displayKey="store_name"
+        valueKey="storeid"
+        onSelect={handleStoreSelect}
+        defaultQuery={storeName}
+        innerClass="text-sm py-1.5"
+        listClass="text-sm"
+      />
+
+      <div>
+        <div className="flex items-baseline justify-between gap-2">
+          <label className="text-[11px] font-medium text-content/95 ml-0.5">
+            UPCs
+          </label>
+          <span className="text-[10.5px] text-content/95">
+            Comma or Shift+Enter between UPCs
+          </span>
+        </div>
+        <textarea
+          value={rawUpcs}
+          onChange={(e) => setRawUpcs(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter looks up, so a scanner's digits-then-Enter gets a result;
+            // Shift+Enter adds a line for typing several by hand.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          placeholder="Paste one or more UPCs"
+          rows={4}
+          className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
+          style={{ outline: "none" }}
+        />
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!canSearch}
+        className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
+      >
+        {upcs.length > 1 ? `Look up ${upcs.length} items` : "Search"}
+      </button>
+    </div>
+  );
+};
+
+export default LookupDesktopEntry;

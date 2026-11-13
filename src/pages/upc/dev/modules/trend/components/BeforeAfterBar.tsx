@@ -1,0 +1,66 @@
+// Components
+import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
+
+interface BeforeAfterBarProps {
+  label: string;
+  descriptor?: string;
+  beforePct: number;
+  afterPct: number;
+  beforeDisplay: string;
+  afterDisplay: string;
+  flagged?: boolean;
+  note?: string;
+}
+
+/** A before/after pair of bars against a fixed 0-100 scale, so fill length is the literal
+ *  percentage, with an optional amber flag and note. Only for metrics bounded 0-100
+ *  (Confidence, Active rate); others use TrendBeforeAfterTile. */
+const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay, afterDisplay, flagged, note }: BeforeAfterBarProps) => {
+  return (
+    <div className="bg-fill_track/60 rounded px-2.5 py-2 mb-2 last:mb-0">
+      <div className="flex items-start justify-between mb-1.5">
+        <div>
+          <span className="flex items-center gap-1 text-[12px] font-semibold text-content/95">
+            {label}
+            {flagged && (
+              <ExclamationCircleIcon className="w-4 h-4 text-amber-600" />
+            )}
+          </span>
+          {descriptor && (
+            <div className="text-[11px] text-content/95">{descriptor}</div>
+          )}
+        </div>
+        <span className="text-[11px] text-content/95 font-medium">of 100%</span>
+      </div>
+      <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex-1 h-[20px] rounded bg-brand_navy/15">
+          <div
+            className="h-full rounded bg-brand_navy/60"
+            style={{ width: `${beforePct}%` }}
+          />
+        </div>
+        <span className="text-[11px] font-medium w-9 text-right tabular-nums">
+          {beforeDisplay}
+        </span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="flex-1 h-[20px] rounded bg-blue-600/15">
+          <div
+            className="h-full rounded bg-blue-600/60"
+            style={{ width: `${afterPct}%` }}
+          />
+        </div>
+        <span className="text-[11px] font-medium w-9 text-right tabular-nums">
+          {afterDisplay}
+        </span>
+      </div>
+      {flagged && note && (
+        <div className="text-[12px] font-medium text-amber-600 mt-1.5">
+          {note}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BeforeAfterBar;

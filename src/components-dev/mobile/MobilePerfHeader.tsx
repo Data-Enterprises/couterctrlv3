@@ -1,35 +1,12 @@
+// Interfaces
 import type { ReactNode } from "react";
-import {
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-} from "@heroicons/react/20/solid";
-import PageInfoButton from "../PageInfoButton";
-import HeaderIconButton from "../HeaderIconButton";
 import type { HelpPage } from "../../constants/helpPages";
 
-/**
- * The navy header shared by every mobile report — the Performance pages (Sub
- * Dept Margins, Vendors, Categories, Sales, Cashiers) and the Data pages
- * (Orders, Receivers, Coupons).
- *
- * Two rows:
- *   1. the store or scope on the left, the range it covers on the right
- *   2. back / re-search and the page name on the left, page controls,
- *      threshold and "?" on the right
- *
- * The page name is the point. The Performance pages are laid out identically —
- * same KPI strip, same day cards, same rows — so without a name in the chrome
- * there was nothing on screen telling you which one you were looking at. The
- * Data pages have the same problem one level down: their drill-downs are all
- * "a list of things under a heading", so each screen names what it is showing.
- *
- * The "?" opens the same help page desktop opens, for whichever page this
- * header is naming. It is what replaced the severity legend that used to sit
- * on row two: the legend explained the colours and nothing else, and the help
- * explains the whole page.
- */
+// Components
+import BackButton from "../BackButton";
+import PageInfoButton from "../PageInfoButton";
 
-interface Props {
+interface MobilePerfHeaderProps {
   /** e.g. "Vendors" — the left of row two. */
   pageName: string;
   /** e.g. "Aug 4 – Aug 10". */
@@ -56,6 +33,27 @@ interface Props {
   helpPage?: HelpPage;
 }
 
+/**
+ * The navy header shared by every mobile report — the Performance pages (Sub
+ * Dept Margins, Vendors, Categories, Sales, Cashiers) and the Data pages
+ * (Orders, Receivers, Coupons).
+ *
+ * Two rows:
+ *   1. the store or scope on the left, the range it covers on the right
+ *   2. back / re-search and the page name on the left, page controls,
+ *      threshold and "?" on the right
+ *
+ * The page name is the point. The Performance pages are laid out identically —
+ * same KPI strip, same day cards, same rows — so without a name in the chrome
+ * there was nothing on screen telling you which one you were looking at. The
+ * Data pages have the same problem one level down: their drill-downs are all
+ * "a list of things under a heading", so each screen names what it is showing.
+ *
+ * The "?" opens that page's phone help, for whichever page this header is
+ * naming. It is what replaced the severity legend that used to sit
+ * on row two: the legend explained the colours and nothing else, and the help
+ * explains the whole page.
+ */
 const MobilePerfHeader = ({
   pageName,
   dateRange,
@@ -65,7 +63,7 @@ const MobilePerfHeader = ({
   actions,
   threshold,
   helpPage,
-}: Props) => {
+}: MobilePerfHeaderProps) => {
 
   return (
     <div
@@ -74,7 +72,7 @@ const MobilePerfHeader = ({
     >
       {/* Row 1 — the store, then the week it covers */}
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[12px] font-semibold text-custom-white truncate">
+        <span className="text-[12px] cc-navy-title truncate">
           {storeName}
         </span>
         <span className="text-[11px] text-custom-white/95 flex-shrink-0">
@@ -86,17 +84,12 @@ const MobilePerfHeader = ({
           controls, threshold and "?" */}
       <div className="flex items-center justify-between gap-2 mt-2">
         <div className="flex items-center gap-2 min-w-0">
-          {onBack && (
-            <HeaderIconButton onClick={onBack} title="Back">
-              <ChevronLeftIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          )}
-          {onSearch && (
-            <HeaderIconButton onClick={onSearch} title="New search">
-              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          )}
-          <span className="text-[12px] font-semibold text-custom-white truncate">
+          {/* One or the other: a list's step back up the drill, or the way
+              back to the search from the top of it. They look the same
+              because to the reader they are the same thing. */}
+          {onBack && <BackButton onClick={onBack} title="Back" />}
+          {onSearch && <BackButton onClick={onSearch} />}
+          <span className="text-[12px] cc-navy-title truncate">
             {pageName}
           </span>
         </div>

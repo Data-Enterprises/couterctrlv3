@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Vendors — one store's week by supplier. */
@@ -22,7 +23,9 @@ export const VENDORS_HELP: HelpContent = {
         },
         {
           title: "Change either later",
-          pre: "Click the magnifying glass next to the store name.",
+          pre: "Click",
+          chip: "Back",
+          post: "next to the store name.",
           anchor: "search",
         },
         {

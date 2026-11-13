@@ -93,6 +93,31 @@ export interface HelpFix {
   results: HelpFixResult[];
 }
 
+/**
+ * A phone screen's help: the questions people ask on it and the words it
+ * uses.
+ *
+ * Its own shape rather than `HelpContent`, because the phone has nowhere to
+ * point. The desktop panel is a drawer beside the screen it annotates; on a
+ * phone the sheet covers the screen, so a guide that rings a control would be
+ * ringing something hidden behind it. What is left is what the phone help
+ * always was — questions, answered in place, and a glossary.
+ */
+export interface PhoneHelpTerm {
+  term: string;
+  def: string;
+  /** The parts of a term that comes in kinds — the four coupon types. */
+  parts?: { label: string; def: string }[];
+}
+
+export interface PhoneHelp {
+  screen: string;
+  purpose: string;
+  /** Each answer as its paragraphs, in order. */
+  questions: { q: string; a: string[] }[];
+  terms: PhoneHelpTerm[];
+}
+
 export interface HelpContent {
   /** The screen as the reader would name it — what the panel's kicker says. */
   screen: string;

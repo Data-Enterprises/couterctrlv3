@@ -1,34 +1,30 @@
-// import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+// Hooks
 import { useAppSelector } from "../../hooks";
-import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
-import { setUserPrefs } from "../../api/user";
-import type { JsonError } from "../../interfaces";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-interface Props {
+// Redux
+import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Utils
+import { options, sharedOption } from "./utils";
+
+// Interfaces
+import type { JsonError } from "../../interfaces";
+import type { iOption } from "./interfaces";
+
+interface SearchTypeProps {
   singleStoreOnly?: boolean;
 }
 
-interface iOption {
-  id: number;
-  name: string;
-  type: SEARCH_TYPE;
-}
-
-const options: iOption[] = [
-  // { id: 1, name: "Stores", type: "Stores" },
-  { id: 3, name: "Store", type: "Store" },
-  { id: 2, name: "Group", type: "Group" },
-];
-
-// Only offered when the user actually holds one. A shared group is a base
-// group a manager pushed to them, so most users have none and the option
-// would just be a dead choice that resolves to an empty list.
-const sharedOption: iOption = { id: 4, name: "Shared", type: "Shared" };
-
-const SearchType = ({ singleStoreOnly = false }: Props) => {
+/** The store picker's search-type dropdown (store, group, and shared when the user
+ *  has shared groups). Picking one
+ *  switches the search type and saves it to the user's preferences. */
+const SearchType = ({ singleStoreOnly = false }: SearchTypeProps) => {
   const toast = useToast();
   const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
@@ -149,7 +145,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-[13px] py-1"
+              className="basic-input bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-[13px] py-1"
             />
           </div>
           <div
@@ -185,7 +181,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
                       data-testid={`st-option-${option.id}`}
                       onClick={() => handleSelect(option)}
                       key={`st-option-${option.id}`}
-                      className="px-2 py-2 hover:bg-blue-200 transition-all duration-500 cursor-pointer"
+                      className="px-2 py-2 hover:bg-fill_soft transition-all duration-500 cursor-pointer"
                     >
                       <span className="block truncate font-normal group-data-[selected]:font-semibold text-[13px]">
                         {option.name}

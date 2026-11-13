@@ -1,7 +1,11 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   mergeDevSalesComp,
   mergeDevSalesCompLY,
@@ -9,32 +13,33 @@ import {
   setDevSalesCompLYLoading,
   setDevUpcItems,
 } from "../../../../../features/dev/devUpcDevSlice";
+
+// API
 import { getSalesComp } from "../../../../../api/upc";
+
+// Utils
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { answerOf } from "../../answer";
-import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+import { answerOf } from "../../utils";
 import {
   combineSalesCompRows,
   computeUpcSalesCompStats,
   salesCompCodes,
   salesCompRange,
 } from "./salesCompStats";
+import { isoToMdy } from "./utils";
+
+// Interfaces
 import type { UpcSalesComp } from "../../../../../interfaces";
-import SalesCompLeftList from "./SalesCompLeftList";
-import SalesCompDetailPanel from "./SalesCompDetailPanel";
 
-/** sameWeekDayLastYear returns ISO (YYYY-MM-DD); the API rejects that with a
- *  400 ("Please use mm/dd/yyyy") — reformat to match ctx.startDate/endDate's
- *  own m/d/yyyy format. Plain string split, not `new Date(iso)` +
- *  getMonth/getDate — that round-trip parses as UTC midnight and can roll back
- *  a day in any negative-UTC-offset timezone (all of the US). */
-const isoToMdy = (iso: string) => {
-  const [y, m, d] = iso.split("-");
-  return `${Number(m)}/${Number(d)}/${y}`;
-};
+// Components
+import SalesCompLeftList from "./components/SalesCompLeftList";
+import SalesCompDetailPanel from "./components/SalesCompDetailPanel";
 
+/** The UPC List's Sales Comp tab: fetches this year's and last year's sales for the
+ *  searched UPCs on its first visit, then shows the items in a left list and the picked
+ *  item's comparison on the right. */
 const SalesCompTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -42,22 +47,15 @@ const SalesCompTab = () => {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [retryTick, retry] = useAbandonedRetry();
 
-  // Both fetches ask only for the UPCs they're missing. Joined into a string so
-  // they can be effect dependencies: the effect then fires exactly when the
-  // gap changes — on a first visit, and again when a search adds a UPC — and
-  // not on any other render.
-  // searchedUpcs, not upcs: `upcs` is the search card's working list and
-  // changes live as the user edits chips in the re-search popup, which would
-  // start fetching the moment they typed rather than when they clicked Search.
-  // `searchedUpcs` only moves when a search is actually committed.
+  // Both fetches ask only for the UPCs they're missing, joined into a string so
+  // the effect fires exactly when the gap changes. searchedUpcs, not upcs (see
+  // PriceOptTab).
   const missingTy = missingFrom(ctx.searchedUpcs, ctx.salesCompCoverage);
   const missingLy = missingFrom(ctx.searchedUpcs, ctx.salesCompLYCoverage);
   const missingTyKey = missingTy.join(",");
   const missingLyKey = missingLy.join(",");
 
-  // This year. Used to be fetched by the page as part of the search, which made
-  // it the one call every search paid for regardless of which module the user
-  // opened. It's this tab's own data like anything else now.
+  // This year: this tab's own fetch, made on its first visit.
   useEffect(() => {
     if (ctx.activeTab !== "salesComp") return;
     if (ctx.salesCompLoading || !ctx.storeids || !missingTyKey) return;
@@ -78,12 +76,9 @@ const SalesCompTab = () => {
 
         const j = res.data;
         const answer = answerOf(j);
-        // A failure is a failure, not an empty answer. Taking the success path
-        // extended coverage below, which recorded these UPCs as
-        // fetched-and-empty and meant the tab never asked again — the catch
-        // deliberately leaves coverage alone for exactly this reason. "No data
-        // was returned." is a real answer, though, and covers them: see
-        // answerOf.
+        // A failure is a failure, not an empty answer, so coverage is left
+        // alone and the tab asks again. "No data was returned." is a real
+        // answer and covers them (see answerOf).
         if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Sales comparison failed for these UPCs");
           return;
@@ -92,9 +87,8 @@ const SalesCompTab = () => {
         // one row per UPC per week — see combineSalesCompRows.
         const rows: UpcSalesComp[] =
           answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
-        // Merged against the UPCs that were *asked for*, not the ones that
-        // answered: a UPC with no sales in the window returns nothing, and it
-        // still has to count as covered or it would be re-requested forever.
+        // Merged against the UPCs asked for, not those that answered: a UPC with
+        // no sales returns nothing and still counts as covered.
         dispatch(mergeDevSalesComp({ rows, codes: missingTy }));
         // Descriptions for the left panel roster, which was seeded with codes
         // only at search time.
@@ -114,13 +108,9 @@ const SalesCompTab = () => {
     load();
   }, [ctx.activeTab, missingTyKey, retryTick]);
 
-  // Last year is a second hit on upload_upcs_daily_sales — the heaviest
-  // endpoint the page has — so a user who opens to Trend or Price Opt never
-  // pays for it. Deliberately supplementary: a failed or empty response leaves
-  // the tab working off TY alone, and `hasLY` in SalesCompKpis leaves the vs-LY
-  // figures null rather than reporting a comparison against nothing. Coverage
-  // extends either way, so a genuinely empty last year isn't re-requested on
-  // every revisit.
+  // Last year is a second call to the heaviest endpoint, so only this tab pays
+  // for it. Supplementary: a failed or empty answer leaves the tab on TY alone
+  // (`hasLY` blanks the vs-LY figures), and coverage extends either way.
   useEffect(() => {
     if (ctx.activeTab !== "salesComp") return;
     if (ctx.salesCompLYLoading || !ctx.storeids || !missingLyKey) return;
@@ -147,10 +137,8 @@ const SalesCompTab = () => {
 
         const j = res.data;
         const answer = answerOf(j);
-        // Same guard as this year. Supplementary data, so no toast — a missing
-        // last year is already reported by `hasLY` leaving the vs-LY figures
-        // blank; all this does is let a failed call be retried. A new item with
-        // no last year answers empty, and that covers it.
+        // Same guard as this year, without a toast: `hasLY` already shows a
+        // missing last year. A new item's empty answer covers it.
         if (ctx.fixes && answer === "failed") return;
         const rows: UpcSalesComp[] =
           answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
@@ -189,9 +177,8 @@ const SalesCompTab = () => {
     [upcCodes, filtered, filteredLY, range],
   );
 
-  // Keep the detail panel pointed at a valid item — default to the first
-  // one on load, and re-pick whenever the current selection drops out of
-  // the filtered set (e.g. a re-search or UPC deselect).
+  // Keep the detail panel on a valid item: the first by default, re-picked if
+  // the selection drops out of the filtered set.
   useEffect(() => {
     if (!upcStats.length) {
       setSelectedCode(null);
@@ -204,7 +191,7 @@ const SalesCompTab = () => {
 
   if (!upcCodes.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}
       </div>
     );

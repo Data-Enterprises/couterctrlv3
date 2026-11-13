@@ -249,7 +249,7 @@ const MovementTab = () => {
   }, [codes, ctx.movementSelected]);
 
   const controls = (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 flex-shrink-0 text-[13px] font-semibold text-content">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-line_hair flex-shrink-0 text-[13px] font-semibold text-content">
       <label className="flex items-center gap-2">
         Weeks
         <select
@@ -264,11 +264,11 @@ const MovementTab = () => {
           ))}
         </select>
       </label>
-      <span className="text-content/85">
+      <span className="text-content/95">
         ending {weekdayOf(endIso)} {ctx.endDate}. Weeks end on the search's end date.
       </span>
       <span className="flex-1" />
-      <span className="text-content/85">Pounds for weighed items, units for the rest</span>
+      <span className="text-content/95">Pounds for weighed items, units for the rest</span>
     </div>
   );
 
@@ -276,7 +276,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+        <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
           {progress && progress.total > 1
             ? `Loading movement: week ending ${shortDate(progress.week)}, ${progress.done} of ${progress.total} done…`
             : "Loading movement…"}
@@ -289,7 +289,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[11px] text-content/85">
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[11px] text-content/95">
           <span>{failed.msg}</span>
           <button
             type="button"
@@ -307,7 +307,7 @@ const MovementTab = () => {
     return (
       <div className="flex flex-col h-full">
         {controls}
-        <div className="flex-1 flex items-center justify-center text-[11px] text-content/85">
+        <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
           No movement data
         </div>
       </div>
@@ -320,7 +320,7 @@ const MovementTab = () => {
     <div className="flex flex-col min-h-0 flex-1">
       {controls}
       <div className="flex-1 overflow-hidden flex min-h-0">
-        <div className="w-[300px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
+        <div className="w-[300px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
           {codes.map((code) => {
             const weighed = isWeighed(ctx.movementRows, code);
             const total = movementTotal(ctx.movementRows, code);
@@ -329,8 +329,8 @@ const MovementTab = () => {
               <button
                 key={code}
                 onClick={() => dispatch(setDevMovementSelected(code))}
-                className={`w-full text-left px-2.5 py-2 border-b border-gray-50 transition-colors ${
-                  isSelected ? "bg-custom-white" : "hover:bg-gray-50"
+                className={`w-full text-left px-2.5 py-2 border-b border-line_faint transition-colors ${
+                  isSelected ? "bg-custom-white" : "hover:bg-fill_soft"
                 }`}
                 style={isSelected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
               >
@@ -343,8 +343,8 @@ const MovementTab = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
-                  <span className="text-[11px] text-content/85 truncate">{code}</span>
-                  <span className="text-[11px] text-content/85 flex-shrink-0">
+                  <span className="text-[11px] text-content/95 truncate">{code}</span>
+                  <span className="text-[11px] text-content/95 flex-shrink-0">
                     {weighed ? "lbs" : "units"}
                   </span>
                 </div>

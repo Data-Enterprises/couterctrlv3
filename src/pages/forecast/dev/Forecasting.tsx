@@ -1,10 +1,10 @@
+// Hooks
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getHistoryFromList } from "../../../api/priceSim";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Redux
 import { setSelectedGroupStores } from "../../../features/userSlice";
-import { enrichForecastRows } from "./enrichRows";
 import {
   reQuery,
   setIsLoading,
@@ -19,17 +19,28 @@ import {
   appendBatchResults,
   setStoreids,
 } from "../../../features/dev/devForecastDevSlice";
-import ForecastEntry from "./ForecastEntry";
-import ForecastListPanel from "./ForecastListPanel";
-import ForecastRowsTable from "./ForecastRowsTable";
-import ForecastCalcModal from "./ForecastCalcModal";
-import ForecastExportModal from "./ForecastExportModal";
+
+// API
+import { getHistoryFromList } from "../../../api/priceSim";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { enrichForecastRows } from "./utils/enrichRows";
+import { BATCH_SIZE } from "./utils";
+
+// Interfaces
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 
-/** The API takes 500 UPCs at a time; a longer list is split so the first page
- *  of results is on screen while the rest is still in flight. */
-const BATCH_SIZE = 500;
+// Components
+import SearchPopup from "../../../components-dev/SearchPopup";
+import ForecastEntry from "./components/ForecastEntry";
+import ForecastListPanel from "./components/ForecastListPanel";
+import ForecastRowsTable from "./components/ForecastRowsTable";
+import ForecastCalcModal from "./calc/ForecastCalcModal";
+import ForecastExportModal from "./export/ForecastExportModal";
 
+/** The Forecasting page: a UPC and store search card, then the forecast list beside its rows table.
+ *  Search runs in two batches against the dev slice, and the calc and export modals sit over the results. */
 const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -49,9 +60,8 @@ const Forecasting = () => {
 
   /* Same request sequence the legacy page runs — two batches, the second
      appended rather than replacing the first — pointed at the dev slice. */
-  /** A group is a list of stores to this endpoint, so it has to be resolved
-   *  before the call rather than passed through as an id. Inactive stores are
-   *  dropped — their history has stopped being added to. */
+  /** The endpoint takes a list of stores, so a group is resolved first.
+   *  Inactive stores are dropped (their history has stopped). */
   const resolveStoreids = async (): Promise<string> => {
     if (type !== "Group") return String(lastStore);
     const resp = await getStoresAssignedToUserGroup(url, token, userid, lastGroup);
@@ -82,20 +92,16 @@ const Forecasting = () => {
     }
     dispatch(setStoreids(storeids));
 
-    // `singleDate` is already mm/dd/yyyy, which is what this endpoint wants.
-    // Don't run it through formatGoliathDate — the ISO form other pages send
-    // comes back as "400: Invalid date formats".
+    // `singleDate` is already mm/dd/yyyy, as this endpoint wants; the ISO form
+    // other pages send gets "400: Invalid date formats".
     const batch1 = upcs.slice(0, BATCH_SIZE);
     const batch2 = upcs.slice(BATCH_SIZE);
 
     getHistoryFromList(url, token, storeids, singleDate, batch1.join(","))
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
-        // A failed request is not the same as an item having no history. The
-        // card's notice claims the UPCs came back empty, which would be a lie
-        // here — the search never ran. Show the backend's own reason verbatim:
-        // "400: failed to write to s3 bucket" is something to go fix, and no
-        // rewording of ours carries that.
+        // A failed request is not "no history": the search never ran, so the
+        // backend's own reason is shown as written.
         if (j.error === 1) {
           toast.warn(j.msg || "Couldn't load price history.");
           return;
@@ -173,10 +179,8 @@ const Forecasting = () => {
       .finally(() => dispatch(setIsLoading(false)));
   };
 
-  // Desktop only. Tablet and phone used to fall through to the old
-  // Forecasting page and its tablet layout; both are gone. No tablet
-  // carry-over (a fresh start later), and no mobile version: Forecasting is
-  // not on the mobile nav.
+  // Desktop only: no tablet layout, and no mobile version (Forecasting is not
+  // on the mobile nav).
   const hasData = rowData.length > 0;
 
   return (
@@ -196,21 +200,13 @@ const Forecasting = () => {
           </div>
 
           {searchOpen && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-              onClick={() => setSearchOpen(false)}
-            >
-              {/* Wrapper only shrink-wraps the card — the backdrop does the
-                  centering, or its stopPropagation would eat every backdrop
-                  click. Matches UpcListDev. */}
-              <div className="mx-4" onClick={(e) => e.stopPropagation()}>
-                <ForecastEntry
-                  onSearch={handleSearch}
-                  isLoading={isLoading}
-                  onClose={() => setSearchOpen(false)}
-                />
-              </div>
-            </div>
+            <SearchPopup onClose={() => setSearchOpen(false)}>
+              <ForecastEntry
+                onSearch={handleSearch}
+                isLoading={isLoading}
+                onClose={() => setSearchOpen(false)}
+              />
+            </SearchPopup>
           )}
         </>
       ) : (

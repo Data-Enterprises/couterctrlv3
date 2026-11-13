@@ -1,0 +1,70 @@
+// Utils
+import { formatCurrency2 } from "../../../../../../utils";
+import { formatBestUnits } from "../priceOptStats";
+import { getPriceOptPhrase, getPriceOptInsight } from "../utils";
+
+// Interfaces
+import type { PriceOptRowSummary } from "../interfaces";
+import type { KpiCell } from "../../../interfaces";
+
+// Components
+import CtaInsightStrip from "../../../components/CtaInsightStrip";
+import KpiTileGrid from "../../../../../../components-dev/KpiTileGrid";
+import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
+
+interface PriceOptDetailPanelProps {
+  summary: PriceOptRowSummary;
+  fixes: boolean;
+}
+
+/** The Price Opt tab's right side for one item: an insight strip, KPI tiles (best price,
+ *  best revenue, elasticity, price points tested) and the price points table. */
+const PriceOptDetailPanel = ({ summary: r, fixes }: PriceOptDetailPanelProps) => {
+  const phrase = getPriceOptPhrase(r.points, r.elasticity);
+  const insight = getPriceOptInsight(r.points, r.elasticity);
+
+  const kpis: KpiCell[] = [
+    // "$3.99" on a scale item is a price per pound, and without the unit it
+    // reads as what one package costs.
+    {
+      label: "Best price",
+      value: `${formatCurrency2(r.bestPrice)}${r.weighted ? "/lb" : ""}`,
+    },
+    { label: "Best revenue", value: formatCurrency2(r.bestRevenue) },
+    // A new tile, so it exists only behind the flag — on prod the strip keeps
+    // the four it had.
+    ...(fixes
+      ? [
+          {
+            label: r.weighted ? "Volume at best" : "Qty at best",
+            value: formatBestUnits(r.bestUnits, r.weighted),
+          },
+        ]
+      : []),
+    { label: "Elasticity", value: r.elasticity !== null ? r.elasticity.toFixed(1) : "—" },
+    { label: "Price points tested", value: String(r.points.length) },
+  ];
+
+  return (
+    <div className="flex-1 min-w-0 overflow-y-auto thin-scrollbar">
+      <CtaInsightStrip title={r.desc} insight={insight} tone={phrase.tone} />
+      <KpiTileGrid items={kpis} />
+
+      <div className="px-4 py-3.5">
+        {r.points.length === 0 ? (
+          <div className="text-[13px] text-content/95 italic py-2">
+            No price history available for this item.
+          </div>
+        ) : (
+          <PriceOptPricePointsTable
+            points={r.points}
+            bestPrice={r.bestPrice}
+            weighted={r.weighted}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PriceOptDetailPanel;

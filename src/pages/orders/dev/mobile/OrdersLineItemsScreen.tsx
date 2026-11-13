@@ -1,10 +1,15 @@
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { AllOrder } from "../../../../interfaces";
-import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import type { Store } from "../../../../interfaces";
+// Utils
 import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import { chipStyle, fmtDate } from "./utils";
 
-interface Props {
+// Interfaces
+import type { AllOrder, Store } from "../../../../interfaces";
+import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+
+interface OrdersLineItemsScreenProps {
   orders: AllOrder[];
   selectedKey: SelectedOrderKey;
   /** The full identity — id alone doesn't identify an order across stores. */
@@ -14,17 +19,9 @@ interface Props {
   onExport: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: Props) => {
+/** The phone Orders sheet for one order: store, order number and date, item/retail/cost chips with an Export button,
+ *  and the order's line items. Only that order's store and location are counted. */
+const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: OrdersLineItemsScreenProps) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.
   const storeName = resolveStoreName(
@@ -52,7 +49,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="px-4 pt-1 pb-3 border-b border-gray-100 flex-shrink-0">
+      <div className="px-4 pt-1 pb-3 border-b border-line_hair flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
             <div className="text-[13px] font-medium text-brand_navy">{storeName}</div>
@@ -66,7 +63,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
           </div>
           <button
             onClick={onExport}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content hover:border-gray-300 transition-colors flex-shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded border border-line_field text-content hover:border-line_strong transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             <span className="text-[10px] font-medium">Export</span>
@@ -89,7 +86,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
       </div>
 
       {/* Line items */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-gray-100">
+      <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-line_hair">
         {items.map((o) => (
           <div key={o.line_number} className="flex items-start justify-between px-4 py-3 gap-3">
             <div className="flex-1 min-w-0">

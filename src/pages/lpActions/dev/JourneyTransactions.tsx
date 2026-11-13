@@ -66,7 +66,7 @@ const JourneyTransactions = ({ rows, lines, saleType, onOpen }: Props) => {
           key={r.sale_id}
           onClick={() => onOpen(r)}
           title="Open the whole receipt"
-          className={`w-full text-left transition-colors hover:bg-gray-50 ${GRID_ROW} ${
+          className={`w-full text-left transition-colors hover:bg-fill_soft ${GRID_ROW} ${
             i % 2 === 1 ? "bg-row_stripe" : ""
           }`}
           style={{ gridTemplateColumns: COLS }}
@@ -88,7 +88,7 @@ const JourneyTransactions = ({ rows, lines, saleType, onOpen }: Props) => {
           <span className={GRID_NUM}>
             {formatCurrency2(Math.abs(r.total_sales ?? 0))}
           </span>
-          <ChevronRightIcon className="w-4 h-4 text-content/85" />
+          <ChevronRightIcon className="w-4 h-4 text-content/95" />
         </button>
       ))}
 

@@ -1,12 +1,21 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
-import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
-interface Props {
+// Utils
+import { fmtDate } from "./utils";
+
+// Interfaces
+import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
+
+// Components
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
+
+interface OrdersAvailableScreenProps {
   cards: GroupedOrderCard[];
   selectedKey: SelectedOrderKey;
   loading: boolean;
@@ -17,11 +26,9 @@ interface Props {
   onOpenSearch: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
+/** The phone Orders first screen: orders found for the search, grouped by order type (tabs, collapsible in All)
+ *  with a store filter, a date filter and per-store order counts. Tapping a store, or "Select all N stores",
+ *  opens its orders. */
 const OrdersAvailableScreen = ({
   cards,
   selectedKey,
@@ -31,7 +38,7 @@ const OrdersAvailableScreen = ({
   onSelectStore,
   onSelectAllStores,
   onOpenSearch,
-}: Props) => {
+}: OrdersAvailableScreenProps) => {
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -104,7 +111,7 @@ const OrdersAvailableScreen = ({
 
       {/* Type tabs */}
       {cards.length > 0 && (
-        <div className="flex border-b border-gray-100 flex-shrink-0 bg-custom-white">
+        <div className="flex border-b border-line_hair flex-shrink-0 bg-custom-white">
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
@@ -129,7 +136,7 @@ const OrdersAvailableScreen = ({
 
       {/* Filter bar */}
       {cards.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
           <TextFilter value={storeFilter} onChange={setStoreFilter} placeholder="Filter by store…" />
           <SelectFilter
             options={dateOptions}
@@ -142,7 +149,7 @@ const OrdersAvailableScreen = ({
       )}
 
       {allVisibleStoreIds.length > 1 && (
-        <div className="px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
+        <div className="px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
           <button
             onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
             className="w-full text-[11px] font-medium py-2 rounded-md border border-brand_navy/20 text-brand_navy transition-colors"
@@ -166,7 +173,7 @@ const OrdersAvailableScreen = ({
         {visibleCards.map((card) => {
           const typeOpen = activeType !== "all" || openTypes.has(card.order_type) || !!dateFilter || !!storeFilter;
           return (
-            <div key={card.order_type} className="border-b border-gray-100">
+            <div key={card.order_type} className="border-b border-line_hair">
               {/* Order type header — collapsible in All tab */}
               {activeType === "all" && (
                 <button
@@ -188,7 +195,7 @@ const OrdersAvailableScreen = ({
 
               {/* Stores — flat list with date shown inline */}
               {typeOpen && (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-line_hair">
                   {card.dates.flatMap((dateGroup) =>
                     dateGroup.stores.map((store) => {
                       const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
@@ -198,14 +205,14 @@ const OrdersAvailableScreen = ({
                           onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid, store.storenumber)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
-                            sel ? "bg-custom-white" : "hover:bg-gray-50"
+                            sel ? "bg-custom-white" : "hover:bg-fill_soft"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
                             <span className="text-[10px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
-                          <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          <span className="text-[10px] text-content bg-fill_muted rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>

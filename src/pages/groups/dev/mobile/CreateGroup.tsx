@@ -1,13 +1,25 @@
-import { useGroupCtx } from "..";
+// Hooks
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { createGroup } from "../../../../api/groups";
+
+// Interfaces
 import type { JsonError } from "../../../../interfaces";
 
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-
-import { createGroup } from "../../../../api/groups";
+// Components
 import Input from "../../../../components-dev/inputs/Input";
 
+/** The phone's Create form: the existing group names as chips, a name field and Submit.
+ *  A name that already exists shows a warning and disables Submit. */
 const CreateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -48,7 +60,7 @@ const CreateGroup = () => {
           {groupNames.map((g, i) => (
             <div
               key={i}
-              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} text-center py-1 shadow-md rounded-full`}
+              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} text-center py-1 shadow-md rounded-full`}
             >
               {g}
             </div>
@@ -58,7 +70,7 @@ const CreateGroup = () => {
           {groupNames.some(
             (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
           ) ? (
-            <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-red-600 text-[12.5px]">
+            <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-brand_danger text-[12.5px]">
               User Group already exists. Please use another name
             </div>
           ) : null}
@@ -70,7 +82,7 @@ const CreateGroup = () => {
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_navy text-custom-white py-2 rounded-xl border-2 border-brand_navy mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleCreate}
           >
             Submit

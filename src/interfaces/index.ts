@@ -197,15 +197,6 @@ export interface Store {
   store_name: string;
   company: number;
   company_name: string;
-  /**
-   * When the store was closed, or null while it is open.
-   *
-   * Optional because only `stores/unassigned_stores` returns it — everywhere
-   * else a Store is built without it, and `undefined` has to stay
-   * distinguishable from `null`: the first means nobody asked, the second
-   * means asked and open. Admin's store grid reads exactly that difference
-   * and falls back to offering both actions when it cannot tell.
-   */
   deactivated_at?: string | null;
 }
 
@@ -2840,7 +2831,7 @@ export type ActionKey =
 // Forecast
 //////////////////////////////////////////////////////////////
 
-/** ABC tier on cumulative share of the forecast (see pages/forecast/dev/forecastRanking). */
+/** ABC tier on cumulative share of the forecast (see pages/forecast/dev/utils/forecastRanking). */
 export type ForecastTier = "A" | "B" | "C";
 
 //////////////////////////////////////////////////////////////

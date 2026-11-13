@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Coupons — where coupons are being used, and the receipts behind them. */
@@ -29,7 +30,9 @@ export const COUPONS_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass at the top of the store list to change the store, group or dates.",
+          pre: "Click",
+          chip: "Back",
+          post: "at the top of the store list to change the store, group or dates.",
           anchor: "search",
         },
       ],

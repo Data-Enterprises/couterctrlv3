@@ -1,14 +1,15 @@
-import type { Reducer } from "@reduxjs/toolkit";
-
+// Redux
 import appReducer from "../features/appSlice";
 import navReducer from "../features/navSlice";
 import userReducer from "../features/userSlice";
 import searchReducer from "../features/searchSlice";
 import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
-import forgotPasswordReducer from "../features/forgotPasswordSlice";
 import ctxMenuReducer from "../features/ctxMenuSlice";
 import itemScanReducer from "../features/itemScanSlice";
+
+// Interfaces
+import type { Reducer } from "@reduxjs/toolkit";
 
 /**
  * State that describes who you are and what you are asking about.
@@ -36,7 +37,6 @@ export const sessionReducers = {
   search: searchReducer,
   group: groupReducer,
   stores: storeReducer,
-  forgotPassword: forgotPasswordReducer,
   ctxMenu: ctxMenuReducer,
   itemScan: itemScanReducer,
 } satisfies Record<string, Reducer>;

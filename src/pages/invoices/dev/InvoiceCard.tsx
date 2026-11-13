@@ -120,7 +120,7 @@ const InvoiceCard = ({
   return (
     <section
       className={`overflow-hidden rounded-xl border bg-custom-white shadow-sm ${
-        open ? "border-gray-300" : "border-gray-200"
+        open ? "border-line_strong" : "border-line_field"
       }`}
     >
       {/* The whole visible card opens it — header and figures — not just
@@ -133,7 +133,7 @@ const InvoiceCard = ({
         className="block w-full text-left hover:bg-bkg"
       >
         <span className="flex items-center gap-3 px-3.5 py-2.5">
-          <Chevron className="h-4 w-4 flex-none text-content/85" />
+          <Chevron className="h-4 w-4 flex-none text-content/95" />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-display text-[13.5px] font-bold text-content">
               Invoice {row.invoiceNbr}
@@ -149,7 +149,7 @@ const InvoiceCard = ({
             <span
               className={`inline-block whitespace-nowrap rounded px-2 py-1 text-[11px] font-bold ${
                 row.status === "nothingBilled"
-                  ? "bg-bkg text-content/85"
+                  ? "bg-bkg text-content/95"
                   : row.reconciled
                     ? "bg-severity_healthy_bg text-severity_healthy_text"
                     : "bg-severity_critical_bg text-severity_critical_text"
@@ -173,7 +173,7 @@ const InvoiceCard = ({
           delivery, less pallet allowances — then the rest. An invoice that
           billed nothing has no figures to show. */}
         {row.status !== "nothingBilled" && (
-          <span className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-gray-100 px-3.5 py-2 sm:grid-cols-4 lg:grid-cols-8">
+          <span className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line_hair px-3.5 py-2 sm:grid-cols-4 lg:grid-cols-8">
             <Figure
               label="Total cost"
               value={row.totalCost}
@@ -216,7 +216,7 @@ const InvoiceCard = ({
       </button>
 
       {open && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-line_hair">
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3">
             <div className="min-w-0">
               <div className="mb-0.5 font-mono text-[11px] uppercase tracking-wider text-content">
@@ -233,7 +233,7 @@ const InvoiceCard = ({
           </div>
 
           {/* ── the checks ─────────────────────────────────────────── */}
-          <div className="border-t border-gray-100 px-3.5 py-3">
+          <div className="border-t border-line_hair px-3.5 py-3">
             <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
               Reconciliation
             </div>
@@ -251,8 +251,8 @@ const InvoiceCard = ({
               </p>
             )}
             {row.checks.length > 0 && (
-              <div className="overflow-hidden rounded border border-gray-200">
-                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
+              <div className="overflow-hidden rounded border border-line_field">
+                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-line_field bg-fill_soft px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                   <span>Check</span>
                   <span className="text-right">Derived</span>
                   <span className="text-right">Reported</span>
@@ -283,7 +283,7 @@ const InvoiceCard = ({
                     <span
                       className={`text-right ${
                         check.ok
-                          ? "text-content/85"
+                          ? "text-content/95"
                           : "font-semibold text-severity_critical_text"
                       }`}
                     >
@@ -305,23 +305,23 @@ const InvoiceCard = ({
 
           {/* ── what did not ship ───────────────────────────────────── */}
           {row.status === "nothingBilled" && row.exceptions.length > 0 && (
-            <div className="border-t border-gray-100 px-3.5 py-3">
+            <div className="border-t border-line_hair px-3.5 py-3">
               <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Exceptions
               </div>
-              <div className="overflow-hidden rounded border border-gray-200">
+              <div className="overflow-hidden rounded border border-line_field">
                 {row.exceptions.map((exception, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-gray-100 px-2 py-1.5 text-[12px] last:border-b-0"
+                    className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-line_hair px-2 py-1.5 text-[12px] last:border-b-0"
                   >
-                    <span className="font-mono text-content/85">
+                    <span className="font-mono text-content/95">
                       {exception.itemCode}
                     </span>
                     <span className="truncate text-content">
                       {exception.description}
                     </span>
-                    <span className="truncate text-content/85">
+                    <span className="truncate text-content/95">
                       {exception.reason}
                     </span>
                   </div>
@@ -332,12 +332,12 @@ const InvoiceCard = ({
 
           {/* ── the lines ──────────────────────────────────────────── */}
           {row.status !== "nothingBilled" && (
-            <div className="border-t border-gray-100 px-3.5 py-3">
+            <div className="border-t border-line_hair px-3.5 py-3">
               <div className="mb-1.5 flex items-baseline justify-between gap-2">
                 <span className="font-mono text-[11px] uppercase tracking-wider text-content">
                   Lines
                 </span>
-                <span className="text-[11px] text-content/85">
+                <span className="text-[11px] text-content/95">
                   Click a value to correct it
                 </span>
               </div>
@@ -345,7 +345,7 @@ const InvoiceCard = ({
               <div className="overflow-x-auto">
                 <div className="min-w-[788px]">
                   <div
-                    className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[11px] uppercase tracking-wider text-content"
+                    className="grid gap-2.5 border-b border-line_field pb-1.5 font-mono text-[11px] uppercase tracking-wider text-content"
                     style={{ gridTemplateColumns: LINE_COLS }}
                   >
                     <span>#</span>
@@ -391,10 +391,10 @@ const InvoiceCard = ({
                     return (
                       <div
                         key={line.lineNumber}
-                        className="grid items-center gap-2.5 border-b border-gray-100 py-0.5 odd:bg-row_stripe"
+                        className="grid items-center gap-2.5 border-b border-line_hair py-0.5 odd:bg-row_stripe"
                         style={{ gridTemplateColumns: LINE_COLS }}
                       >
-                        <span className="px-1 text-[11px] tabular-nums text-content/85">
+                        <span className="px-1 text-[11px] tabular-nums text-content/95">
                           {line.lineNumber}
                         </span>
                         {cell("item_desc", "item", line.description)}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SearchCard from "../../../components-dev/SearchCard";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import ConfigPanel from "./ConfigPanel";
 import CsvPreview from "./CsvPreview";
 import SummaryPreview from "./SummaryPreview";
@@ -103,14 +104,9 @@ const ExportBuilder = () => {
   return (
     <div className="h-[calc(100vh-3rem)] bg-bkg flex flex-col p-3 gap-3">
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            {searchCard}
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>
+          {searchCard}
+        </SearchPopup>
       )}
       <div className="flex gap-3 flex-1 min-h-0">
         {/*
@@ -150,13 +146,13 @@ const ExportBuilder = () => {
             * happened to open it again.
             */}
           {ctx.savedNotes.length > 0 && (
-            <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-3">
+            <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 flex items-start gap-3">
               <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-semibold text-amber-900">
+                <div className="text-[12px] font-semibold text-severity_watch_text">
                   Loaded, with notes
                 </div>
                 {ctx.savedNotes.map((note, i) => (
-                  <div key={i} className="text-[11.5px] text-amber-900/85 mt-0.5">
+                  <div key={i} className="text-[11.5px] text-severity_watch_text mt-0.5">
                     · {note}
                   </div>
                 ))}
@@ -164,7 +160,7 @@ const ExportBuilder = () => {
               <button
                 type="button"
                 onClick={() => ctx.dispatch(clearSavedNotes())}
-                className="flex-shrink-0 text-[11.5px] font-medium text-amber-900 underline underline-offset-2"
+                className="flex-shrink-0 text-[11.5px] font-medium text-severity_watch_text underline underline-offset-2"
               >
                 Dismiss
               </button>
@@ -176,11 +172,11 @@ const ExportBuilder = () => {
                 <div className="text-[13.5px] font-semibold">
                   Nothing to export
                 </div>
-                <div className="text-[12.5px] text-content/85 mt-2 leading-relaxed">
+                <div className="text-[12.5px] text-content/95 mt-2 leading-relaxed">
                   {ctx.message ??
                     "There are no lines in this range for these stores."}
                 </div>
-                <div className="text-[12px] text-content/85 mt-3">
+                <div className="text-[12px] text-content/95 mt-3">
                   The column list is still here, so changing the dates keeps
                   every pick you have made.
                 </div>

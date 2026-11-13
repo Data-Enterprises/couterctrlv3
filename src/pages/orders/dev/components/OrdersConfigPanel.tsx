@@ -1,19 +1,33 @@
+// Hooks
 import { useMemo } from "react";
-import { availableOptions, markAvailability } from "../orderFilters";
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import type { AllOrder } from "../../../../interfaces";
+
+// Redux
 import {
   ORDER_FLAGS,
   type OrderFlag,
   type OrdersFilters,
 } from "../../../../features/dev/devOrdersSlice";
-import { lineFlags } from "../ordersRows";
-import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 
-import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
-interface Props {
+// Utils
+import { availableOptions } from "../utils/orderFilters";
+import { markAvailability } from "../../../../utils/filterAvailability";
+import { lineFlags } from "../utils/ordersRows";
+import { FLAG_LABEL, FLAG_ON } from "./utils";
+import { fmtOrderDate } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
+
+// Interfaces
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
+import BackButton from "../../../../components-dev/BackButton";
+import { ArrowPathIcon } from "@heroicons/react/16/solid";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import Field from "../../../../components-dev/filters/Field";
+
+interface OrdersConfigPanelProps {
   /** Every line item in the search, before any filter. */
   lines: AllOrder[];
   filters: OrdersFilters;
@@ -28,15 +42,6 @@ interface Props {
   onOpenSearch: () => void;
   scopeLabel: string;
 }
-
-/** Same three-digit pad the report panel uses on store numbers. */
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-/** For order_date on a line, which is ISO. */
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
 
 /**
  * The left panel, as a configuration rather than a list of orders.
@@ -65,7 +70,7 @@ const OrdersConfigPanel = ({
   endDate,
   onOpenSearch,
   scopeLabel,
-}: Props) => {
+}: OrdersConfigPanelProps) => {
   /**
    * The options, read off the result.
    *
@@ -208,7 +213,7 @@ const OrdersConfigPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
+      className="cc-panel shadow-lg flex-shrink-0"
       style={{ width: 300 }}
     >
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">
@@ -216,20 +221,13 @@ const OrdersConfigPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             Configuration
           </span>
-          <button
-            data-help="search"
-            onClick={onOpenSearch}
-            title="New search"
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
         </div>
-        <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
-          <span className="text-custom-white/85 text-[12px] truncate">
+        <div className="cc-navy-header-row flex items-baseline gap-2">
+          <span className="text-custom-white/95 text-[12px] truncate">
             {scopeLabel}
           </span>
-          <span className="text-custom-white/85 text-[12px] flex-shrink-0 ml-auto">
+          <span className="text-custom-white/95 text-[12px] flex-shrink-0 ml-auto">
             {startDate} – {endDate}
           </span>
         </div>
@@ -241,7 +239,7 @@ const OrdersConfigPanel = ({
         </div>
       ) : lines.length === 0 ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center">
-          <span className="text-[12px] text-content/85">
+          <span className="text-[12px] text-content/95">
             Run a search to configure what you see.
           </span>
         </div>
@@ -317,7 +315,7 @@ const OrdersConfigPanel = ({
                       className={`rounded-full border px-2.5 py-[3px] text-[10.5px] font-semibold transition-colors disabled:opacity-50 ${
                         on
                           ? FLAG_ON[flag]
-                          : "border-gray-200 bg-custom-white text-content/85 hover:border-content/35"
+                          : "border-line_field bg-custom-white text-content/95 hover:border-content/35"
                       }`}
                     >
                       {FLAG_LABEL[flag]} {n.toLocaleString()}
@@ -353,8 +351,8 @@ const OrdersConfigPanel = ({
             </Field>
           </div>
 
-          <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 flex-shrink-0">
-            <span className="text-[11px] text-content/85 flex-1">
+          <div className="flex items-center gap-2 border-t border-line_hair px-3 py-2 flex-shrink-0">
+            <span className="text-[11px] text-content/95 flex-1">
               {matched.toLocaleString()} of {lines.length.toLocaleString()}{" "}
               lines
             </span>
@@ -362,7 +360,7 @@ const OrdersConfigPanel = ({
               onClick={onClear}
               disabled={active === 0}
               title="Clear every filter"
-              className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium text-content/85 transition-colors hover:text-content hover:border-content/35 disabled:opacity-50"
+              className="flex items-center gap-1 rounded border border-content/20 px-2 py-1 text-[11px] font-medium cc-muted-link hover:border-content/35 disabled:opacity-50"
             >
               <ArrowPathIcon className="w-3 h-3" />
               Clear{active > 0 ? ` (${active})` : ""}
@@ -373,20 +371,5 @@ const OrdersConfigPanel = ({
     </div>
   );
 };
-
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <div>
-    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-1">
-      {label}
-    </span>
-    {children}
-  </div>
-);
 
 export default OrdersConfigPanel;

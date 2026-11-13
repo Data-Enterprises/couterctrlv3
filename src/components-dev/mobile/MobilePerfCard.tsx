@@ -1,12 +1,15 @@
+// Interfaces
 import type { ReactNode } from "react";
+
+// Components
+import BackButton from "../BackButton";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoButton from "../InfoButton";
 
-interface Props {
+interface MobilePerfCardProps {
   /** What this row is — a store, a sub department, a vendor, a category. */
   label: string;
   /** The figure beside the name, already formatted and already coloured —
@@ -40,6 +43,9 @@ interface Props {
   onSearch?: () => void;
   /** Opens the page's "?" sheet. Same case again. */
   onInfo?: () => void;
+  /** Controls for the whole page, just left of the "?" — only drawn in the
+   *  single-result case, where this card is the page. */
+  actions?: ReactNode;
   /** The report body. Rendered only while open. */
   children?: ReactNode;
 }
@@ -68,14 +74,15 @@ const MobilePerfCard = ({
   when,
   onSearch,
   onInfo,
+  actions,
   children,
-}: Props) => {
+}: MobilePerfCardProps) => {
   const Header = onToggle ? "button" : "div";
 
   return (
     <section
       className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
-        open ? "border-gray-300" : "border-gray-200"
+        open ? "border-line_strong" : "border-line_field"
       }`}
     >
       {/* When this card is the whole page, the page's controls live on it
@@ -85,27 +92,19 @@ const MobilePerfCard = ({
       {(onSearch || onInfo) && (
         <div className="flex items-center gap-2 px-3.5 pb-1 pt-3">
           {onSearch && (
-            <button
-              type="button"
-              onClick={onSearch}
-              aria-label="New search"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-            >
-              <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-            </button>
+            <BackButton onClick={onSearch} tone="light" />
           )}
-          <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
+          <span className="min-w-0 flex-1 truncate cc-caps-mono text-[10px]">
             {when}
           </span>
+          {actions && <div className="flex-none">{actions}</div>}
           {onInfo && (
-            <button
-              type="button"
+            <InfoButton
+              variant="light"
               onClick={onInfo}
-              aria-label="What this page shows"
-              className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
-            >
-              <QuestionMarkCircleIcon className="h-5 w-5" />
-            </button>
+              title="What this page shows"
+              className="-mr-1 flex-none"
+            />
           )}
         </div>
       )}
@@ -129,7 +128,7 @@ const MobilePerfCard = ({
           <span
             className={`flex-none text-[12px] font-semibold ${
               flagged
-                ? "rounded bg-gray-200 px-1.5 text-content"
+                ? "rounded bg-fill_track px-1.5 text-content"
                 : "text-content/95"
             }`}
           >

@@ -54,12 +54,12 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
+      <div className="cc-panel shadow-sm h-full">
         <div className="flex-shrink-0 bg-brand_navy px-4 py-2.5">
-          <p className="text-custom-white text-[13px] font-semibold truncate">
+          <p className="cc-navy-title text-[13px] truncate">
             {row.saleType}
           </p>
-          <p className="text-custom-white/85 text-[12px] truncate">
+          <p className="text-custom-white/95 text-[12px] truncate">
             {row.storeName}
           </p>
         </div>
@@ -73,13 +73,13 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
           </div>
         </div>
 
-        <div className="flex-shrink-0 flex border-b border-gray-100 bg-gray-50">
+        <div className="flex-shrink-0 flex border-b border-line_hair bg-fill_soft">
           {row.weeks.map((w, i) => {
             const last = i === row.weeks.length - 1;
             return (
               <div
                 key={w.start}
-                className={`flex-1 min-w-0 px-2 py-2 text-center border-r border-gray-100 ${
+                className={`flex-1 min-w-0 px-2 py-2 text-center border-r border-line_hair ${
                   last && row.severity !== "steady" ? tone : ""
                 }`}
               >
@@ -96,20 +96,20 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
             onClick={onAddWeek}
             disabled={addingWeek}
             title="Read one more week of history — the baseline widens with it"
-            className="flex-shrink-0 px-3 flex items-center gap-1 text-[11.5px] font-medium text-content hover:bg-gray-100 disabled:opacity-50 transition-colors"
+            className="flex-shrink-0 px-3 flex items-center gap-1 text-[11.5px] font-medium text-content hover:bg-fill_muted disabled:opacity-50 transition-colors"
           >
             <PlusIcon className="w-3.5 h-3.5" />
             {addingWeek ? "Reading…" : "week"}
           </button>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
+        <div className="flex-shrink-0 px-3 py-1.5 border-b border-line_hair text-[11.5px] cc-caps">
           Cashiers in the latest week
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
+        <div className="cc-scroll rounded-b-xl">
           {row.cashiers.filter((c) => c.latest > 0).length === 0 && (
-            <div className="py-8 text-center text-[12px] text-content/85">
+            <div className="py-8 text-center text-[12px] text-content/95">
               Nothing rang against this exception in the latest week.
             </div>
           )}
@@ -138,17 +138,17 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
                     )
                   }
                   title="Open this cashier's case"
-                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-line_hair hover:bg-fill_soft transition-colors"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-medium text-content truncate">
                       {c.cashierName}
                     </span>
-                    <span className="block text-[12px] text-content/85">
+                    <span className="block text-[12px] text-content/95">
                       Cashier {c.cashierNumber}
                     </span>
                   </span>
-                  <span className="text-[12px] text-content/85 flex-shrink-0">
+                  <span className="text-[12px] text-content/95 flex-shrink-0">
                     was {c.baseline.toFixed(1)}/wk
                   </span>
                   <span

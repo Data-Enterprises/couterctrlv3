@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prepare": "git config core.hooksPath .githooks",
     "dev:mobile": "node scripts/dev-mobile.mjs",
     "test": "vitest --ui --api 9527",
     "lint": "eslint .",
@@ -18,6 +19,8 @@
     "audit:legacy": "node scripts/legacy-audit.mjs",
     "split:page": "node scripts/split-page.mjs",
     "check:split": "node scripts/check-split.mjs",
+    "check:tests": "node scripts/check-tests.mjs",
+    "check:rules": "node scripts/check-rules.mjs",
     "promote:page": "node scripts/promote-page.mjs",
     "fork:slice": "node scripts/fork-slice.mjs",
     "greenlight:page": "node scripts/greenlight-page.mjs"

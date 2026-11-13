@@ -14,13 +14,28 @@
  * Legacy trees are reported separately and never mixed into the totals: they
  * are being replaced, and folding them in buries the signal.
  *
+ * Scans src/pages (dev trees; prod snapshots are skipped) and src/components-dev.
+ *
+ * src/components, the shared library both modes render, is scanned as a
+ * ratchet: today's hits are recorded in scripts/baselines/theme-shared.json and
+ * only hits above that count fail. Its fixes land with a promotion, since they
+ * change what clients see; until then nothing new may be added.
+ *
  * Run: npm run audit:theme        (add --verbose for every hit, not just 3)
+ *      npm run audit:theme -- --update-baseline   (after fixing or moving a shared file)
+ * A clean run ends "TOTAL: 0 hit(s)"; any hit outside legacy exits 1.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join, sep } from "node:path";
 
-const ROOT = "src/pages";
+const ROOTS = ["src/pages", "src/components-dev"];
+/** The dev tree's shared looks (cc-*): their @apply lines follow the same colour rules. */
+const DEV_SHEETS = ["src/styles/components-dev.css"];
+const SHARED_ROOT = "src/components";
+const BASELINE = "scripts/baselines/theme-shared.json";
 const VERBOSE = process.argv.includes("--verbose");
+const UPDATE = process.argv.includes("--update-baseline");
 
 /* ── page families ──────────────────────────────────────────────────────── */
 
@@ -54,8 +69,8 @@ const strip = (src) =>
  *             not meant to edit. Everything under dev/ is audited normally —
  *             that is where changes land.
  *
- * The component libraries (src/components and src/components-dev) are outside
- * src/pages and have never been scanned by this audit.
+ * src/components-dev, the dev library, is scanned too (as "components-dev").
+ * src/components, the prod library, is not: it changes by promotion.
  */
 // `.*` rather than `[^/]+`: the shared pages keep their prod copy two levels
 // down (src/pages/shared/eventPerf/prod/), so a single segment missed them and
@@ -78,6 +93,23 @@ const NO_DEV_FORK = new Set(["forecast", "home", "priceSimulator",
 //  mobile-only floors being reported against desktop and vice versa.
 
 const ALL = () => true;
+
+/** Every colour name Tailwind knows here: the tokens in tailwind.config.js and its
+ *  default palette, flattened the way class names spell them (severity_watch_bg,
+ *  gray-100, accent-1). A colour class naming anything else renders nothing. */
+const require = createRequire(import.meta.url);
+const resolveConfig = require("tailwindcss/resolveConfig");
+const loadConfig = require("tailwindcss/loadConfig");
+const COLOURS = new Set();
+(function flatten(obj, prefix) {
+  for (const [k, v] of Object.entries(obj)) {
+    const name = k === "DEFAULT" ? prefix : prefix ? `${prefix}-${k}` : k;
+    if (v && typeof v === "object") flatten(v, name);
+    else COLOURS.add(name);
+  }
+})(resolveConfig(loadConfig(join(process.cwd(), "tailwind.config.js"))).theme.colors, "");
+/** Values the colour utilities take that are not colours (text-left, border-b, bg-cover…). */
+const NOT_A_COLOUR = /^(?:\d+%?|[trblxyse](?:-\d+)?|xs|sm|base|lg|[2-9]?xl|left|right|center|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip|solid|dashed|dotted|double|wavy|hidden|none|collapse|separate|spacing(?:-.+)?|inset|offset(?:-.+)?|cover|contain|top|bottom|repeat|no-repeat|repeat-[xy]|fixed|local|scroll|auto|from-font|clone|slice|reverse|[xy]-reverse|box|color|current|transparent|inherit|clip-.+|origin-.+|gradient-to-.+|blend-.+)$/;
 const MOBILE = (f) => isMobile(f.path) && !NO_DEV_FORK.has(f.page);
 const DESKTOP = (f) => !isMobile(f.path);
 // A panel header is the only place the navy-header rules mean anything.
@@ -101,11 +133,11 @@ const RULES = [
   },
   {
     id: "bespoke-info-button",
-    scope: DESKTOP,
-    why: "the header ? button is src/components/InfoButton.tsx; hand-rolled copies drift in variant and opacity",
+    scope: ALL,
+    why: "the header ? button is components-dev/InfoButton.tsx; hand-rolled copies drift in variant and opacity",
     re: /QuestionMarkCircleIcon/g,
-    // charts legitimately use the icon inline, not as a header button
-    skip: (f) => /charts|TopSub|MarginKpi/.test(f.path),
+    // charts and caution strips use the icon inline, not as a button; InfoButton is the component itself
+    skip: (f) => /charts|TopSub|MarginKpi|CaseSummary|components-dev\/InfoButton\.tsx$/.test(f.path),
   },
   {
     id: "mobile-italic",
@@ -120,13 +152,16 @@ const RULES = [
     re: /text-\[(?:[1-9])px\]/g,
   },
   {
-    id: "mobile-opacity-floor",
-    scope: MOBILE,
+    id: "text-opacity-floor",
+    scope: ALL,
     // A dimmed lone separator glyph is decoration, not unreadable text.
     lineSkip: /className="[^"]*">\s*[·•|/\-]\s*</,
-    why: "dev mobile text-colour opacity floor is /95",
-    // disabled:/placeholder: states are meant to read as dimmed — not drift.
-    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-8][0-9]|9[0-4])\b/g,
+    why: "text-colour opacity floor is /95, desktop and phone (9 Nov 2026)",
+    // The public portal and login shell (src/pages/home) are one copy shared
+    // with prod, with their own portal palette; they change on their own.
+    skip: (f) => /^src\/pages\/home\//.test(f.path),
+    // disabled:/placeholder:/hover:/focus:/active: states are meant to read as dimmed.
+    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover|active):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-8][0-9]|9[0-4])\b/g,
   },
   {
     id: "navy-header-padding",
@@ -143,16 +178,40 @@ const RULES = [
   {
     id: "hardcoded-severity-palette",
     scope: ALL,
-    why: "severity pills must use the severity_* tokens; Tailwind's red/amber/emerald-100 are brighter and don't follow a token change",
-    // The -100/-800 pair is the *pill* register. Plain bg-red-500 etc. are the
-    // list dots, which are deliberately saturated — not a violation.
-    re: /\b(?:bg|text)-(?:red|amber|emerald|yellow|green)-(?:100|800)\b/g,
+    why: "meaning colours are tokens: severity_* (grades), delta_* (direction), brand_danger* (errors), severity_watch_* (notices); Tailwind's palette is brighter and doesn't follow a token change",
+    // The pale fills and dark texts are the pill and notice register. Plain
+    // bg-red-500 etc. are the list dots, deliberately saturated — not a violation.
+    re: /\b(?:bg|text|border)-(?:red|amber|emerald|yellow|green|orange|rose)-(?:50|100|200|700|800|900)\b/g,
+  },
+  {
+    id: "grey-text",
+    scope: ALL,
+    why: "text is text-content (/95 at least), text-brand_slate for small mono labels, placeholder:text-brand_placeholder for placeholders; Tailwind greys measured below contrast",
+    re: /(?<!(?:disabled|placeholder):)\btext-(?:gray|slate)-(?:300|400|500)\b/g,
+  },
+  {
+    id: "raw-hex",
+    scope: ALL,
+    why: "colours come from the tokens in src/index.css (a class, or rgb(var(--color-…)) where a class won't do); a raw hex doesn't follow a token change",
+    // Exceptions: the public portal (its own palette, shared with prod), the
+    // Upc List heat ramp and chart series colours, which the chart library
+    // takes as plain colour strings and which no token stands for.
+    skip: (f) => /^src\/pages\/home\/|heatColor\.ts$|HourTrendChart\.tsx$/.test(f.path),
+    re: /\b(?:bg|text|border|from|to|via|ring|fill|stroke)-\[#[0-9a-fA-F]{3,8}\]|(?:color|background|backgroundColor|borderColor)\s*:\s*["'`]#[0-9a-fA-F]{3,8}/g,
   },
   {
     id: "local-shared-helper",
     scope: ALL,
     why: "re-implements a helper that already exists in src/utils/severity.ts — one shared fix beats N copies",
     re: /^\s*const (pillClass|severityDotClass|formatPct|chipClass|severityHeaderBgClass)\s*[=:]/gm,
+  },
+  {
+    id: "unknown-colour",
+    scope: ALL,
+    why: "the colour name isn't a token or a Tailwind colour, so Tailwind emits nothing and the element renders uncoloured (bg-cusom-white, bg-severity_ok_text)",
+    re: /(?<![\w\-.$])(?:[a-z0-9-]+:)*(?:bg|text|border(?:-[trblxyse])?|divide|ring(?:-offset)?|outline|accent|fill|stroke|from|via|to|decoration|caret|shadow)-([a-z][a-z0-9_-]*?)(?:\/(?:\d+|\[[\d.]+\]))?(?![\w\-\[])/g,
+    // A name ending in "-" is the front half of an interpolated class, judged by its own rule.
+    keep: (m) => !m[1].endsWith("-") && !COLOURS.has(m[1]) && !NOT_A_COLOUR.test(m[1]) && !/^(?:sm|md|lg|xl|2xl|inner|none|card|card-sm|rail)$/.test(m[1]),
   },
   {
     id: "darkened-backdrop",
@@ -163,8 +222,8 @@ const RULES = [
   {
     id: "perf-row-selection",
     scope: (f) => f.family === "Performance" && DESKTOP(f) && /bg-row_selected/.test(f.src),
-    why: "graded rows pair bg-row_selected with border-row_selected_border",
-    absent: /bg-row_selected border-row_selected_border/,
+    why: "graded rows pair bg-row_selected with border-row_selected_border (cc-row-selected is the pair)",
+    absent: /bg-row_selected border-row_selected_border|\bcc-row-selected\b/,
   },
 ];
 
@@ -179,16 +238,39 @@ let treeCopies = 0;
     else if (e.endsWith(".tsx") || e.endsWith(".ts")) {
       const rel = p.split(sep).join("/");
       if (isTreeCopy(rel)) { treeCopies++; continue; }
+      const page = rel.startsWith("src/components-dev/") ? "components-dev" : rel.split("/")[2];
       files.push({
         path: rel,
-        page: rel.split("/")[2],
-        family: FAMILY[rel.split("/")[2]] ?? "Other",
+        page,
+        family: FAMILY[page] ?? "Other",
         legacy: isLegacy(rel),
         src: strip(readFileSync(p, "utf8")),
       });
     }
   }
-})(ROOT);
+})(ROOTS[0]);
+for (const r of ROOTS.slice(1)) (function walk(dir) {
+  for (const e of readdirSync(dir)) {
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) walk(p);
+    else if ((e.endsWith(".tsx") || e.endsWith(".ts")) && !/\.test\./.test(e)) {
+      const rel = p.split(sep).join("/");
+      files.push({ path: rel, page: "components-dev", family: "Library", legacy: false, src: strip(readFileSync(p, "utf8")) });
+    }
+  }
+})(r);
+(function walk(dir) {
+  for (const e of readdirSync(dir)) {
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) walk(p);
+    else if ((e.endsWith(".tsx") || e.endsWith(".ts")) && !/\.test\./.test(e)) {
+      const rel = p.split(sep).join("/");
+      files.push({ path: rel, page: "components", family: "Shared library", legacy: isLegacy(rel), shared: true, src: strip(readFileSync(p, "utf8")) });
+    }
+  }
+})(SHARED_ROOT);
+for (const s of DEV_SHEETS)
+  files.push({ path: s, page: "components-dev", family: "Library", legacy: false, src: strip(readFileSync(s, "utf8")) });
 
 /* ── run ────────────────────────────────────────────────────────────────── */
 
@@ -207,6 +289,11 @@ for (const rule of RULES) {
     const lines = f.src.split("\n");
     lines.forEach((l, i) => {
       if (rule.lineSkip?.test(l)) return;
+      if (rule.keep) {
+        // A rule with a keep() judges each match (the unknown-colour check).
+        for (const m of l.matchAll(rule.re)) if (rule.keep(m)) hits.push({ f, line: i + 1, text: m[0].trim().slice(0, 60) });
+        return;
+      }
       const m = l.match(rule.re);
       if (m) hits.push({ f, line: i + 1, text: m[0].trim().slice(0, 60) });
     });
@@ -234,7 +321,7 @@ console.log("=".repeat(76));
 
 for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   const rules = RULES.filter((r) => {
-    const h = results.get(r.id).filter((x) => !x.f.legacy);
+    const h = results.get(r.id).filter((x) => !x.f.legacy && !x.f.shared);
     return h.length && bucket(h) === level;
   });
   if (!rules.length) continue;
@@ -243,7 +330,7 @@ for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   console.log("-".repeat(76));
 
   for (const r of rules) {
-    const hits = results.get(r.id).filter((h) => !h.f.legacy);
+    const hits = results.get(r.id).filter((h) => !h.f.legacy && !h.f.shared);
     const byPage = {};
     for (const h of hits) (byPage[h.f.page] ??= []).push(h);
 
@@ -259,7 +346,40 @@ for (const level of ["UNIVERSAL", "CATEGORY", "INDIVIDUAL"]) {
   }
 }
 
+/* ── shared library ratchet ─────────────────────────────────────────────── */
+
+const shared = {}; // path -> rule -> hits[]
+for (const r of RULES)
+  for (const h of results.get(r.id).filter((x) => x.f.shared && !x.f.legacy))
+    ((shared[h.f.path] ??= {})[r.id] ??= []).push(h);
+const counts = Object.fromEntries(Object.entries(shared).sort().map(([p, rs]) =>
+  [p, Object.fromEntries(Object.entries(rs).sort().map(([id, hs]) => [id, hs.length]))]));
+if (UPDATE) {
+  writeFileSync(BASELINE, JSON.stringify(counts, null, 2) + "\n");
+  console.log(`\nBaseline written: ${BASELINE}`);
+}
+let base = {};
+try { base = JSON.parse(readFileSync(BASELINE, "utf8")); } catch { /* no baseline yet: every hit is new */ }
+let over = 0, under = 0;
+const sharedTotal = Object.values(counts).reduce((a, rs) => a + Object.values(rs).reduce((b, n) => b + n, 0), 0);
+console.log(`\n\nSHARED LIBRARY (src/components): ${sharedTotal} known hit(s), held for the promotion`);
+for (const [p, rs] of Object.entries(shared)) for (const [id, hs] of Object.entries(rs)) {
+  const allowed = base[p]?.[id] ?? 0;
+  if (hs.length > allowed) {
+    over += hs.length - allowed;
+    console.log(`  NEW  [${id}] ${p}: ${hs.length} hit(s), baseline ${allowed}`);
+    for (const h of hs) console.log(`        ${p}:${h.line}  ${h.text}`);
+  }
+}
+for (const [p, rs] of Object.entries(base)) for (const [id, n] of Object.entries(rs))
+  if ((counts[p]?.[id] ?? 0) < n) under += n - (counts[p]?.[id] ?? 0);
+if (under && !UPDATE) console.log(`  ${under} fewer than the baseline: run with --update-baseline to lock that in.`);
+
 const legacyTotal = RULES.reduce(
   (a, r) => a + results.get(r.id).filter((h) => h.f.legacy).length, 0);
-console.log(`\n\nLEGACY (not counted above): ${legacyTotal} hit(s) — being replaced, ignore unless porting.`);
+console.log(`\nLEGACY (not counted above): ${legacyTotal} hit(s) — being replaced, ignore unless porting.`);
+const liveTotal = RULES.reduce(
+  (a, r) => a + results.get(r.id).filter((h) => !h.f.legacy && !h.f.shared).length, 0) + over;
+console.log(`TOTAL: ${liveTotal} hit(s)`);
 console.log("");
+if (liveTotal > 0) process.exitCode = 1;

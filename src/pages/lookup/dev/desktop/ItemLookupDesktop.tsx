@@ -1,11 +1,11 @@
+// Hooks
 import { useState } from "react";
+import { useStoreName } from "../../../../hooks";
+import { useLookupCtx } from "../hooks";
+import { useLookupQueue } from "./hooks";
+
+// Utils
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
-import { useAppSelector, useStoreName } from "../../../../hooks";
-import LookupDesktopEntry from "./LookupDesktopEntry";
-import LookupQueuePanel from "./LookupQueuePanel";
-import LookupReportPanel from "./LookupReportPanel";
-import LookupExportModal from "./LookupExportModal";
-import { useLookupQueue } from "./useLookupQueue";
 import {
   buildDayBuckets,
   buildSaleTypeBreakdown,
@@ -13,10 +13,19 @@ import {
   computeTrend,
   findGaps,
   rowsOfSaleType,
-} from "../lookupMetrics";
+} from "../utils";
 
+// Components
+import SearchPopup from "../../../../components-dev/SearchPopup";
+import LookupDesktopEntry from "./components/LookupDesktopEntry";
+import LookupQueuePanel from "./components/LookupQueuePanel";
+import LookupReportPanel from "./components/LookupReportPanel";
+import LookupExportModal from "./components/LookupExportModal";
+
+/** The desktop Item lookup page: the search card first, then the item queue beside the selected item's report,
+ *  with the search and export pop-ups. */
 const ItemLookupDesktop = () => {
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { selectedStore } = useLookupCtx();
   const resolvedStoreName = useStoreName(selectedStore);
   const {
     queue,
@@ -77,14 +86,9 @@ const ItemLookupDesktop = () => {
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <LookupDesktopEntry onSearch={handleSearch} />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <LookupDesktopEntry onSearch={handleSearch} />
+        </SearchPopup>
       )}
 
       <LookupQueuePanel
@@ -117,8 +121,8 @@ const ItemLookupDesktop = () => {
         />
       ) : (
         <div className="flex-1 min-w-0 shadow-lg">
-          <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">
-            <p className="text-[13px] text-content/60">Select an item from the queue</p>
+          <div className="cc-panel shadow-sm h-full items-center justify-center">
+            <p className="text-[13px] text-content/95">Select an item from the queue</p>
           </div>
         </div>
       )}

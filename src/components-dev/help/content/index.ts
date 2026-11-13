@@ -1,5 +1,4 @@
-import type { HelpPage } from "../../../constants/helpPages";
-import type { HelpContent } from "../helpTypes";
+// Utils
 import { ADMIN_HELP } from "./admin";
 import { CASHIERS_HELP } from "./cashiers";
 import { CATEGORIES_HELP } from "./categories";
@@ -11,6 +10,7 @@ import { HELP_DESK_HELP } from "./helpDesk";
 import { ITEM_ACTIONS_HELP } from "./itemActions";
 import { ITEM_LOOKUP_HELP } from "./itemLookup";
 import { LOSS_PREVENTION_HELP } from "./lossPrevention";
+import { MARKDOWNS_HELP } from "./markdowns";
 import { ORDERS_HELP } from "./orders";
 import {
   PRICE_OPT_SUB_DEPT_HELP,
@@ -25,6 +25,10 @@ import { SUB_DEPT_MARGINS_HELP } from "./subDeptMargins";
 import { UPC_LIST_HELP } from "./upcList";
 import { USER_MANAGEMENT_HELP } from "./userManagement";
 import { VENDORS_HELP } from "./vendors";
+
+// Interfaces
+import type { HelpPage } from "../../../constants/helpPages";
+import type { HelpContent } from "../helpTypes";
 
 /**
  * Every screen's help, by the name its "?" passes.
@@ -50,6 +54,7 @@ export const HELP_CONTENT: Record<HelpPage, HelpContent> = {
   "item-actions": ITEM_ACTIONS_HELP,
   "item-lookup": ITEM_LOOKUP_HELP,
   "loss-prevention": LOSS_PREVENTION_HELP,
+  markdowns: MARKDOWNS_HELP,
   orders: ORDERS_HELP,
   "price-opt-sub-dept": PRICE_OPT_SUB_DEPT_HELP,
   "price-opt-vendor": PRICE_OPT_VENDOR_HELP,

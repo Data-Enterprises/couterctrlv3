@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Item Lookup — a store's last 14 days for specific UPCs. */
@@ -31,7 +32,9 @@ export const ITEM_LOOKUP_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass above the item list.",
+          pre: "Click",
+          chip: "Back",
+          post: "above the item list.",
           anchor: "search",
         },
       ],

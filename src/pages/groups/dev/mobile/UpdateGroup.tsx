@@ -1,22 +1,37 @@
+// Hooks
 import { useAppDispatch } from "../../../../hooks";
+import { useGroupCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
-import { setCreateInput, setRefreshGroups } from "../../../../features/dev/devGroupsPageSlice";
-import Input from "../../../../components-dev/inputs/Input";
-import type { JsonError } from "../../../../interfaces";
-import { updateGroup } from "../../../../api/groups";
-import { useGroupCtx } from "..";
 
+// Redux
+import {
+  setSelectedGroup,
+  type Group,
+  emptyGroup,
+} from "../../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/dev/devGroupsPageSlice";
+
+// API
+import { updateGroup } from "../../../../api/groups";
+
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
+// Components
+import Input from "../../../../components-dev/inputs/Input";
+
+/** The phone's Update form: tap one of your own (not shared) groups, type a new name and Submit.
+ *  A name already in use disables Submit. */
 const UpdateGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, createInput } =
     useGroupCtx();
 
-  // Shared groups are built and maintained by whoever shared the base group
-  // they came from, so they are not offered as an edit target here. Unlike the
-  // desktop page, these pickers exist only to choose something to change —
-  // there is no view mode a disabled row would still be useful in.
+  // Shared groups are built and maintained by whoever shared the base group they came from, so they are not offered as an edit target here.
   const editableGroups = groups.filter((g) => !g.is_shared);
 
   const groupNames = groups.map((g) => g.group_name);
@@ -65,7 +80,7 @@ const UpdateGroup = () => {
             <div
               key={g.id}
               data-testid={`update-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200`}
+              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -81,7 +96,7 @@ const UpdateGroup = () => {
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_navy text-custom-white py-2 rounded-xl border-2 border-brand_navy mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleUpdate}
           >
             Submit

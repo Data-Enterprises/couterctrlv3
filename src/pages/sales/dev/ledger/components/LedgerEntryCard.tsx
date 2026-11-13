@@ -1,0 +1,26 @@
+// Components
+import SearchCard from "../../../../../components-dev/SearchCard";
+
+interface LedgerEntryCardProps {
+  onSearch: () => void;
+  loading: boolean;
+  notice?: string;
+}
+
+/** The Sales ledger's entry card: pick a store or group and a week ending date, then load the stores. */
+const LedgerEntryCard = ({ onSearch, loading, notice }: LedgerEntryCardProps) => {
+  return (
+    <SearchCard
+      title="Weekly Sales Performance"
+      description="Select a store/group and week ending date to load your ledger."
+      buttonLabel="Load Stores"
+      singleDate
+      onSearch={onSearch}
+      loading={loading}
+      loadingMessage="Finding sales..."
+      notice={notice}
+    />
+  );
+};
+
+export default LedgerEntryCard;

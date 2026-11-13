@@ -1,11 +1,25 @@
+// Hooks
 import { useState, useMemo } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import BottomSheet from "../../../../components-dev/BottomSheet";
+
+// Utils
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
+import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
+
+// Interfaces
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "../components/ordersExportShared";
+import type { ModalMode, ExportDataset, MetricSelection } from "./interfaces";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import BottomSheet from "../../../../components-dev/BottomSheet";
 
 interface OrdersExportSheetProps {
   onClose: () => void;
@@ -17,14 +31,8 @@ interface OrdersExportSheetProps {
   selectedOrder: SelectedOrder;
 }
 
-type ModalMode = "presets" | "custom";
-type ExportDataset = "all" | "selected" | "subDepts";
-
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
-}
-
+/** The phone Orders export sheet. Presets picks All Orders, the selected order, or chosen sub depts; Custom groups
+ *  by chosen fields with sum/avg metrics over the chosen sub depts. */
 const OrdersExportSheet = ({
   onClose,
   storeNames,
@@ -217,7 +225,7 @@ const OrdersExportSheet = ({
 
   return (
     <BottomSheet onClose={onClose}>
-      <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 pb-3 border-b border-line_hair">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
           <div className="text-[10px] text-content/95 mt-0.5 truncate">
@@ -229,7 +237,7 @@ const OrdersExportSheet = ({
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+              className={`cc-chip-btn text-[11px] ${
                 mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
               }`}
             >
@@ -246,7 +254,7 @@ const OrdersExportSheet = ({
               type="checkbox"
               checked={selected.has("all")}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+              className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">All Orders</div>
@@ -262,7 +270,7 @@ const OrdersExportSheet = ({
               checked={selected.has("selected")}
               disabled={!hasSelected}
               onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+              className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">
@@ -288,7 +296,7 @@ const OrdersExportSheet = ({
                   }
                   setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
                 }}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0"
+                className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -322,7 +330,7 @@ const OrdersExportSheet = ({
                       className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                         presetSubDepts.has(s.id)
                           ? "bg-brand_navy text-custom-white border-brand_navy"
-                          : "bg-custom-white text-content border-gray-200"
+                          : "bg-custom-white text-content border-line_field"
                       }`}
                     >
                       {s.id}
@@ -338,7 +346,7 @@ const OrdersExportSheet = ({
           {isMultiSubDept && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Sub Depts</div>
+                <div className="text-[10px] cc-caps">Sub Depts</div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
@@ -364,7 +372,7 @@ const OrdersExportSheet = ({
                       type="checkbox"
                       checked={customSubDepts.has(s.id)}
                       onChange={() => toggleCustomSubDept(s.id)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
                     <span className="text-[10px] text-content/95 flex-shrink-0">{s.count} ln</span>
@@ -375,7 +383,7 @@ const OrdersExportSheet = ({
           )}
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
+            <div className="text-[10px] cc-caps mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -383,7 +391,7 @@ const OrdersExportSheet = ({
                     type="checkbox"
                     checked={groupBy.has(d.key)}
                     onChange={() => toggleGroupBy(d.key)}
-                    className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                    className="cc-checkbox flex-shrink-0"
                   />
                   <span className="text-[12px] text-content">{d.label}</span>
                 </label>
@@ -392,7 +400,7 @@ const OrdersExportSheet = ({
           </div>
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
+            <div className="text-[10px] cc-caps mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;
@@ -402,14 +410,14 @@ const OrdersExportSheet = ({
                       type="checkbox"
                       checked={sel.enabled}
                       onChange={() => toggleMetric(m.key)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
                       onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                      className="text-[10px] border border-gray-200 rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
+                      className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>
@@ -430,14 +438,14 @@ const OrdersExportSheet = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <div className="cc-bar-footer">
         <button onClick={onClose} className="text-[12px] text-content/95">
           Cancel
         </button>
         <button
           onClick={mode === "presets" ? handlePresetDownload : handleCustomDownload}
           disabled={mode === "presets" ? selected.size === 0 : !canCustomDownload}
-          className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+          className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           Download CSV

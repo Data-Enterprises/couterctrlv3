@@ -1,0 +1,65 @@
+// Hooks
+import { useState } from "react";
+import { useReceiversState } from "../../hooks";
+
+// Components
+import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
+import ReceiversExportModal from "../modal/ReceiversExportModal";
+import DetailNavyHeader from "./components/DetailNavyHeader";
+import DetailTable from "./components/detailTable/DetailTable";
+import NoReceiver from "./components/NoReceiver";
+import DetailKpiStrip from "./components/DetailKpiStrip";
+
+/** The right-hand receiver detail panel: header, then an empty state, a loading indicator, or the totals strip and line-item table.
+ *  Also opens the CSV export modal for the selected receiver. */
+const ReceiverDetailPanel = () => {
+  const [exportOpen, setExportOpen] = useState(false);
+  const state = useReceiversState();
+
+  const selectedReceiver = state.selectedInvoice
+    ? (state.list.find(
+        (r) => r.invoiceid.toString() === state.selectedInvoice,
+      ) ?? null)
+    : null;
+
+  const totals = state.totals[0] ?? null;
+
+  return (
+    <div
+      className="cc-panel shadow-lg"
+      style={{ flex: 1, minWidth: 0 }}
+    >
+      {exportOpen && selectedReceiver && (
+        <ReceiversExportModal
+          onClose={() => setExportOpen(false)}
+          vendorName={selectedReceiver.vendor_name}
+          invoiceId={selectedReceiver.invoiceid}
+          referenceNumber={selectedReceiver.reference_number}
+          details={state.details}
+          totals={totals}
+        />
+      )}
+      <DetailNavyHeader setExportOpen={() => setExportOpen(true)} />
+
+      {/* Empty — no receiver selected */}
+      {!selectedReceiver ? <NoReceiver /> : null}
+
+      {/* Loading details */}
+      {selectedReceiver && state.isFetchingDetails && (
+        <div className="flex-1 relative">
+          <LoadingIndicator message="Loading details" />
+        </div>
+      )}
+
+      {/* Line items */}
+      {selectedReceiver && !state.isFetchingDetails && (
+        <>
+          <DetailKpiStrip />
+          <DetailTable />
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ReceiverDetailPanel;

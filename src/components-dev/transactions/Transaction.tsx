@@ -1,10 +1,20 @@
-import { EnvelopeIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { TransactionListItem } from "../../interfaces";
+// Hooks
+import { useAppSelector } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
+
+// API
+import { emailTransaction } from "../../api/lossPrevention";
+
+// Utils
 import { formatCurrency2 } from "../../utils";
 import { exportData } from "../../utils/export";
-import { useAppSelector } from "../../hooks";
-import { emailTransaction } from "../../api/lossPrevention";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { fmtTime, renderStamps, typeBadgeClass } from "./utils";
+
+// Interfaces
+import type { TransactionListItem } from "../../interfaces";
+
+// Components
+import { EnvelopeIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface TransactionProps {
   trans: TransactionListItem[];
@@ -25,26 +35,9 @@ interface TransactionProps {
   saleType?: string;
 }
 
-const fmtTime = (raw: string) => {
-  const s = raw.length === 5 ? "0" + raw : raw;
-  return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
-};
-
-const renderStamps = (item: TransactionListItem) => {
-  const stamps = [];
-  if (item.fs > 0) stamps.push("FS");
-  if (item.fsa > 0) stamps.push("FSA");
-  if (item.wic > 0) stamps.push("WIC");
-  return stamps.join(" · ") || null;
-};
-
-const typeBadgeClass = (isVoid: boolean, saleType: string) => {
-  if (isVoid) return "bg-gray-100 text-gray-500";
-  return saleType === "Tender"
-    ? "bg-blue-100 text-blue-800"
-    : "bg-amber-100 text-amber-800";
-};
-
+/** A receipt for one sale: header with email and CSV download buttons, the line
+ *  items (code, description, qty, net, type) and a totals line for net sales,
+ *  tax, voids and refunds. */
 const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   // Description is the one `1fr` track, so it only grows if the fixed columns
   // give something up — each is 95% of its desktop width here.
@@ -213,15 +206,15 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Sub-header — trans id + terminal, date/time subtext, action icons */}
-      <div className="flex-shrink-0 flex items-start justify-between gap-2 px-4 py-2.5 border-b border-gray-100">
+      <div className="flex-shrink-0 flex items-start justify-between gap-2 px-4 py-2.5 border-b border-line_hair">
         <div>
           <div className="text-[13px] font-bold text-content">
             Trans #{saleId}
-            <span className="ml-2 text-[10px] font-normal text-content/85">
+            <span className="ml-2 text-[10px] font-normal text-content/95">
               Terminal {first.terminal}
             </span>
           </div>
-          <div className="text-[10px] text-content/85 mt-0.5">
+          <div className="text-[10px] text-content/95 mt-0.5">
             {fmtDate} · {timeStr}
           </div>
         </div>
@@ -229,14 +222,14 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           <button
             onClick={handleEmail}
             aria-label="Email transaction"
-            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-line_field cc-muted-link hover:border-line_strong"
           >
             <EnvelopeIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleExport}
             aria-label="Export transaction CSV"
-            className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded border border-line_field cc-muted-link hover:border-line_strong"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
@@ -245,7 +238,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
 
       {/* Column headers */}
       <div
-        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-gray-100 border-b border-gray-100"
+        className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-fill_muted border-b border-line_hair"
         style={{ gridTemplateColumns: COLS }}
       >
         {["UPC", compact ? "Desc" : "Description", "Qty", "Net", "Type"].map(
@@ -262,11 +255,10 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
       </div>
 
       {/* Line items */}
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3">
+      <div className="cc-scroll px-4 pt-3">
         {trans.map((item, i) => {
           const isVoid = item.sale_type.toLowerCase().includes("void");
           const isCoupon = item.is_coupon === 1 || item.coupon_amount > 0;
-          // const displayNet = selectedSaleType === "Description" ? item.total_sales : item.net_sales;
           const displayNet = item.net_sales;
           const stamps = !context.isMobile ? renderStamps(item) : null;
           return (
@@ -290,13 +282,13 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
                 {item.qty ?? 0}
               </div>
               <div
-                className={`text-[10px] font-semibold text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-severity_critical_text" : "text-content"}`}
+                className={`text-[10px] font-semibold text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-severity_critical_text" : "text-content"}`}
               >
                 {formatCurrency2(displayNet)}
               </div>
               <div className="flex items-center justify-end">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 ${typeBadgeClass(isVoid, item.sale_type)}`}
+                  className={`text-[10px] cc-tag uppercase tracking-wide ${typeBadgeClass(isVoid, item.sale_type)}`}
                 >
                   {item.sale_type}
                 </span>
@@ -307,15 +299,15 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
       </div>
 
       {/* Totals — single inline line */}
-      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-gray-100 bg-gray-50">
-        <span className="text-[11px] text-content/65">
+      <div className="flex-shrink-0 flex items-baseline justify-end gap-4 px-4 py-2.5 border-t border-line_hair bg-fill_soft">
+        <span className="text-[11px] text-content/95">
           Net sales{" "}
           <span className="font-semibold text-content">
             {formatCurrency2(netSales)}
           </span>
         </span>
         {totalTax > 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Tax{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(totalTax)}
@@ -323,7 +315,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           </span>
         )}
         {voidAmount !== 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Voided{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(voidAmount)}
@@ -331,7 +323,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           </span>
         )}
         {refundAmount !== 0 && (
-          <span className="text-[11px] text-content/65">
+          <span className="text-[11px] text-content/95">
             Refunded{" "}
             <span className="font-semibold text-content">
               {formatCurrency2(refundAmount)}

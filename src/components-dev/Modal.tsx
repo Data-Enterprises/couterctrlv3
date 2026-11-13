@@ -1,5 +1,8 @@
+// Hooks
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "../hooks";
+
+// Redux
 import { setIsModalOpen } from "../features/navSlice";
 
 interface ModalProps {
@@ -9,11 +12,14 @@ interface ModalProps {
   children: React.ReactNode;
   modalClassName?: string;
   allowClickOutside?: boolean;
-  /** Off for content that owns its own edges — the help iframe fills the
-   *  modal, so the usual inset would frame it like a window in a window. */
+  /** Off for content that owns its own edges — the phone help sheet fills
+   *  the modal, so the usual inset would frame it like a window in a window. */
   padded?: boolean;
 }
 
+/** Centred modal over a blurred backdrop. Renders nothing while closed, closes
+ *  on an outside click unless that is turned off, and reports its open state
+ *  to the nav slice. */
 const Modal = ({
   isOpen,
   onClose,
@@ -55,7 +61,7 @@ const Modal = ({
   return (
     <div
       data-testid="modal"
-      className={`fixed ${className} inset-0 backdrop-blur-sm flex items-center justify-center `}
+      className={`cc-modal-backdrop ${className}  `}
       style={{ zIndex: 5000 }}
     >
       <div

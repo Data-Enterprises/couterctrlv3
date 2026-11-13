@@ -1,22 +1,35 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useAppDispatch } from "../../../../hooks";
+import { useCouponContext } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
+import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
+
+// API
+import { getCashierTransaction } from "../../../../api/lossPrevention";
+
+// Utils
+import { formatCurrency2, formatDate } from "../../../../utils";
+import { couponValueOf } from "../../../../utils/couponValue";
+import { buildSaleId } from "./utils";
+
+// Interfaces
+import type { AggRow, AggUse } from "./interfaces";
+import type { CouponItem, JsonError } from "../../../../interfaces";
+
+// Components
 import {
   ChevronRightIcon,
   ChevronDownIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
-import CpnTotalsCard from "./CpnTotalsCard";
-import { useAppSelector } from "../../../../hooks";
-import { useAppDispatch } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { formatCurrency2, formatDate } from "../../../../utils";
-import { getCashierTransaction } from "../../../../api/lossPrevention";
-import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
-import type { CouponItem, JsonError } from "../../../../interfaces";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import { couponValueOf } from "../../../../utils/couponValue";
+import CpnTotalsCard from "./CpnTotalsCard";
 
-interface Props {
+interface CpnSectionDetailProps {
   coupons: CouponItem[];
   sectionLabel: string;
   /** "Sub dept" | "Date" | "Cashier" — the tab this section came from. */
@@ -26,29 +39,8 @@ interface Props {
   onBack: () => void;
 }
 
-type AggUse = {
-  sale_id: number;
-  sale_date: string;
-  cashier_name: string;
-  terminal: string;
-  storeid: number;
-  amount: number;
-  row: CouponItem;
-};
-
-type AggRow = {
-  product_code: string;
-  product_description: string;
-  count: number;
-  total: number;
-  uses: AggUse[];
-};
-
-const buildSaleId = (row: CouponItem) => {
-  const [y, m, d] = row.sale_date.split("T")[0].split("-");
-  return `${row.storeid}-${row.sale_id}-${row.terminal}-${+m}-${+d}-${y}`;
-};
-
+/** The phone Coupons detail for one section: a totals card and its coupons grouped by product, each expanding to
+ *  its uses. Tapping a use opens that transaction's receipt in a bottom sheet, with a CSV export. */
 const CpnSectionDetail = ({
   coupons,
   sectionLabel,
@@ -56,11 +48,11 @@ const CpnSectionDetail = ({
   dateRangeLabel,
   sortMetric,
   onBack,
-}: Props) => {
+}: CpnSectionDetailProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const txLines: any[] = useAppSelector((s) => s.dev.coupons.receiptLines);
+  const { url, token, receiptLines } = useCouponContext();
+  const txLines: any[] = receiptLines;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedSaleId, setSelectedSaleId] = useState("");
@@ -69,9 +61,8 @@ const CpnSectionDetail = ({
   const aggRows = useMemo((): AggRow[] => {
     const map = new Map<string, AggRow>();
     coupons.forEach((c) => {
-      // `!= null`, not truthiness — matching CouponDetailPanel. A product_code
-      // of 0 is a real code; a falsy check silently regroups those rows under
-      // their description instead, splitting one UPC across two rows.
+      // `!= null`, not truthiness, as on desktop: a product_code of 0 is a
+      // real code, and a falsy check would split one UPC across two rows.
       const key =
         c.product_code != null
           ? String(Math.round(Number(c.product_code)))
@@ -201,11 +192,8 @@ const CpnSectionDetail = ({
   const txNet = txGross - txCoupons;
   const txTotal = txNet + txTax;
 
-  // The deepest level, and the same wrapper the two above it use. One tab:
-  // MobilePerfDetail renders no tab row for a single entry, which is right —
-  // there is one reading of a section and a lone tab would be a label
-  // pretending to be a control. The tab it came FROM names the level, and the
-  // section itself is the scope.
+  // The deepest level, in the same wrapper. One tab, so no tab row is drawn;
+  // the tab it came from names the level.
   return (
     <>
     <MobilePerfDetail
@@ -221,7 +209,7 @@ const CpnSectionDetail = ({
       <div className="flex flex-col gap-3">
         <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
 
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+        <section className="cc-card-phone">
       {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
           the scroll and already clears the fixed tab bar. */}
       <div>
@@ -256,11 +244,11 @@ const CpnSectionDetail = ({
               </button>
               {isExp && (
                 <div className="border-t border-brand_line">
-                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-gray-100 border-b border-brand_line">
+                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-fill_muted border-b border-brand_line">
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}
-                        className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i === 3 ? "text-right" : ""}`}
+                        className={`text-[10px] cc-caps ${i === 3 ? "text-right" : ""}`}
                       >
                         {h}
                       </div>
@@ -299,7 +287,7 @@ const CpnSectionDetail = ({
       {/* Transaction bottom sheet */}
       {selectedSaleId && (
         <BottomSheet onClose={handleSheetClose}>
-          <div className="px-4 pb-3 border-b border-gray-100 flex items-start justify-between gap-2">
+          <div className="px-4 pb-3 border-b border-line_hair flex items-start justify-between gap-2">
             <div>
               <div className="text-[13px] font-bold text-content">
                 {txMeta?.cashier_name ?? "Loading…"}
@@ -321,7 +309,7 @@ const CpnSectionDetail = ({
             {txLines.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-line_field cc-muted-link hover:border-line_strong flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>
@@ -335,13 +323,13 @@ const CpnSectionDetail = ({
             <>
               <div className="overflow-y-auto max-h-[420px]">
                 <div
-                  className="grid px-4 py-1.5 bg-gray-50 border-b border-gray-100"
+                  className="grid px-4 py-1.5 bg-fill_soft border-b border-line_hair"
                   style={{ gridTemplateColumns: "18px 1fr 20px 56px 40px" }}
                 >
                   {["#", "Description", "Qty", "Total", "Type"].map((h, i) => (
                     <div
                       key={h}
-                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${
+                      className={`text-[10px] cc-caps ${
                         i >= 2 && i <= 3
                           ? "text-right"
                           : i === 4
@@ -359,7 +347,7 @@ const CpnSectionDetail = ({
                   return (
                     <div
                       key={i}
-                      className="grid px-4 py-1.5 border-b border-gray-50 items-center"
+                      className="grid px-4 py-1.5 border-b border-line_faint items-center"
                       style={{
                         gridTemplateColumns: "18px 1fr 20px 56px 40px",
                         background: isCpn ? "rgba(234,179,8,0.06)" : undefined,
@@ -369,7 +357,7 @@ const CpnSectionDetail = ({
                         {item.line_number}
                       </span>
                       <span
-                        className={`text-[10px] truncate ${isCpn ? "text-amber-700" : "text-content"}`}
+                        className={`text-[10px] truncate ${isCpn ? "text-severity_watch_text" : "text-content"}`}
                       >
                         {item.product_description}
                       </span>
@@ -378,7 +366,7 @@ const CpnSectionDetail = ({
                       </span>
                       <span
                         className={`text-[10px] font-semibold text-right tabular-nums ${
-                          isCpn ? "text-amber-700" : "text-content"
+                          isCpn ? "text-severity_watch_text" : "text-content"
                         }`}
                       >
                         {formatCurrency2(
@@ -389,10 +377,10 @@ const CpnSectionDetail = ({
                         <span
                           className={`text-[10px] font-bold rounded px-1 py-0.5 ${
                             isCpn
-                              ? "bg-amber-100 text-amber-800"
+                              ? "bg-severity_watch_bg text-severity_watch_text"
                               : isTender
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
+                                ? "bg-filter_active text-brand_navy_hover"
+                                : "bg-severity_healthy_bg text-severity_healthy_text"
                           }`}
                         >
                           {isCpn ? "Cpn" : isTender ? "Tndr" : "Sale"}
@@ -402,9 +390,9 @@ const CpnSectionDetail = ({
                   );
                 })}
               </div>
-              <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-gray-100 bg-gray-50">
+              <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-line_hair bg-fill_soft">
                 {txCoupons > 0 && (
-                  <span className="text-[10px] text-amber-700">
+                  <span className="text-[10px] text-severity_watch_text">
                     Cpns{" "}
                     <span className="font-semibold">
                       -{formatCurrency2(txCoupons)}

@@ -1,25 +1,38 @@
+// Hooks
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { getCoupons } from "../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { setSelectedGroupStores } from "../../../features/userSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useCouponContext } from ".";
+import { useCouponContext } from "./hooks";
+
+// Redux
+import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setIsFetching,
   setNoCouponsFound,
   setCoupons,
 } from "../../../features/dev/devCouponSlice";
-import type { CouponsResponse, JsonError } from "../../../interfaces";
-import { formatGoliathDate } from "../../../utils";
-
-import SearchCard from "../../../components-dev/SearchCard";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import CouponsMobile from "./mobile/CouponsMobile";
-import CouponListPanel from "./CouponListPanel";
-import CouponDetailPanel from "./CouponDetailPanel";
 import { isGroupSearch } from "../../../features/searchSlice";
 
+// API
+import { getCoupons } from "../../../api/coupons";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { formatGoliathDate } from "../../../utils";
+
+// Interfaces
+import type { CouponsResponse, JsonError } from "../../../interfaces";
+
+// Components
+import SearchCard from "../../../components-dev/SearchCard";
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import CouponsMobile from "./mobile/CouponsMobile";
+import CouponListPanel from "./components/CouponListPanel";
+import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
+
+/** The Coupons page: a search card to load coupon activity for a store or group and date range, then a store list
+ *  beside the detail panel. Phones get the mobile screens instead. */
 const Coupons = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -107,21 +120,16 @@ const Coupons = () => {
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Coupons"
-              description="Select a store or group and date range to load coupon activity."
-              buttonLabel="Load Coupons"
-              onSearch={() => { setSearchModalOpen(false); getData(); }}
-              loading={context.isFetching}
-              loadingMessage="Finding coupons..."
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            title="Coupons"
+            description="Select a store or group and date range to load coupon activity."
+            buttonLabel="Load Coupons"
+            onSearch={() => { setSearchModalOpen(false); getData(); }}
+            loading={context.isFetching}
+            loadingMessage="Finding coupons..."
+          />
+        </SearchPopup>
       )}
       <CouponListPanel
         selectedKey={selectedKey}

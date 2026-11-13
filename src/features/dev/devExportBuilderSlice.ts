@@ -1,7 +1,12 @@
+// API
+import { queryProject, type SavedQuery } from "../../api/savedQueries";
+
+// Utils
 import { createSlice, current, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { SavedConfig } from "../../api/savedConfigs";
 import type { ExportBuild } from "../../api/exportBuilds";
-import { queryProject, type SavedQuery } from "../../api/savedQueries";
 import type {
   ExportAggregate,
   ExportComputed,

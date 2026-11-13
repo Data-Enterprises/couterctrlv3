@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Sales — the store ledger and the report behind one store. */
@@ -14,7 +15,7 @@ export const SALES_HELP: HelpContent = {
       steps: [
         {
           title: "Pick a store or a group",
-          pre: "Choose one in the search card. If results are already showing, the card is closed: click the magnifying glass in the dark header to open it. The button reads",
+          pre: "Choose one in the search card. If results are already showing, the card is closed: click Back in the dark header to open it. The button reads",
           chip: "Select Store",
           post: "or Select Group until you have picked one.",
           anchor: "search-card",
@@ -35,7 +36,9 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Change the search later",
-          pre: "Click the magnifying glass in the dark header to go back to it without losing your place.",
+          pre: "Click",
+          chip: "Back",
+          post: "in the dark header to go back to it without losing your place.",
           anchor: "search",
         },
       ],

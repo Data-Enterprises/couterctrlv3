@@ -1,0 +1,184 @@
+// Hooks
+import { useState } from "react";
+
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+import { buildScenarioRows, COLS, HEAD } from "../utils";
+
+// Interfaces
+import type { PriceHistory } from "../../../../../interfaces";
+import type { ForecastOutlierRow } from "../../../../../features/dev/devForecastDevSlice";
+
+interface ForecastScenariosProps {
+  pricesWithQty: number[][];
+  priceHistory: PriceHistory[];
+  regularRetail: number;
+  selectedRow: ForecastOutlierRow;
+  overallUnits: number;
+  liveAdDays: number;
+  liveFcstPrice: number;
+  customPrices: number[];
+  onApply: (price: number) => void;
+  onAddCustomPrice: (price: number) => void;
+  onSetAdDays: (days: number) => void;
+}
+
+/**
+ * Price scenarios for the open item: legacy `ScenarioTable`'s figures (both
+ * call `buildScenarioRows`), with the main grid's column names (Ad fcst,
+ * Total).
+ */
+const ForecastScenarios = ({
+  pricesWithQty,
+  priceHistory,
+  regularRetail,
+  selectedRow,
+  overallUnits,
+  liveAdDays,
+  liveFcstPrice,
+  customPrices,
+  onApply,
+  onAddCustomPrice,
+  onSetAdDays,
+}: ForecastScenariosProps) => {
+  const [customInput, setCustomInput] = useState("");
+  const [adDaysInput, setAdDaysInput] = useState(
+    liveAdDays > 0 ? liveAdDays.toString() : "",
+  );
+
+  const rows = buildScenarioRows({
+    pricesWithQty,
+    priceHistory,
+    regularRetail,
+    selectedRow,
+    overallUnits,
+    liveAdDays,
+    customPrices,
+  });
+
+  const handleAdd = () => {
+    const val = parseFloat(customInput);
+    if (isNaN(val) || val <= 0) return;
+    const exists = [...pricesWithQty.map((pq) => pq[0]), ...customPrices].some(
+      (p) => Math.abs(p - val) < 0.001,
+    );
+    if (!exists) onAddCustomPrice(val);
+    setCustomInput("");
+  };
+
+  const handleSetAdDays = () => {
+    const val = parseInt(adDaysInput);
+    if (isNaN(val) || val <= 0) return;
+    onSetAdDays(val);
+  };
+
+  return (
+    <div className="flex flex-col min-h-0 overflow-hidden border border-line_field rounded-lg">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
+        <span className="text-[11px] cc-caps">
+          Price scenarios
+        </span>
+        <div className="ml-auto flex items-center gap-1.5">
+          <input
+            value={adDaysInput}
+            onChange={(e) => setAdDaysInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSetAdDays()}
+            placeholder="Ad days"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
+            style={{ outline: "none", boxShadow: "none" }}
+          />
+          <button
+            onClick={handleSetAdDays}
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
+          >
+            Set
+          </button>
+          <input
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            placeholder="Add price"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
+            style={{ outline: "none", boxShadow: "none" }}
+          />
+          <button
+            onClick={handleAdd}
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
+        <span>Price</span>
+        <span className="text-right">Hist qty</span>
+        <span className="text-right">Days</span>
+        <span className="text-right">Ad fcst</span>
+        <span className="text-right">Total</span>
+        <span className="text-right">Markdown</span>
+        <span />
+      </div>
+
+      <div className="cc-scroll">
+        {rows.map((row) => {
+          const isActive = Math.abs(row.price - liveFcstPrice) < 0.001;
+          return (
+            <div
+              key={row.price}
+              className={`grid gap-1.5 items-center px-2 py-[7px] border-b last:border-b-0 ${
+                isActive ? "cc-row-selected" : "border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft"
+              }`}
+              style={{ gridTemplateColumns: COLS }}
+            >
+              <span
+                className={`text-[12.5px] tabular-nums text-content ${
+                  isActive ? "font-semibold" : "font-medium"
+                }`}
+              >
+                {formatCurrency2(row.price)}
+                {row.isCustom && (
+                  <span className="ml-1 text-[9px] bg-fill_track text-content rounded px-0.5 font-medium">
+                    new
+                  </span>
+                )}
+              </span>
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
+                {row.histQty ?? "—"}
+              </span>
+              {/* A typed price was never on the shelf, so no days at price:
+                  the forecast uses `estimateDaysActive`, an assumption, which
+                  doesn't belong in observed history. */}
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
+                {row.isCustom ? "—" : row.daysAtPrice}
+              </span>
+              <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                {row.adFcst.toLocaleString()}
+              </span>
+              <span className="text-right text-[13px] font-bold tabular-nums text-content">
+                {formatCurrency2(row.revenue)}
+              </span>
+              <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                {formatCurrency2(Math.max(0, row.markdown))}
+              </span>
+              {isActive ? (
+                <span className="text-right text-[11px] font-medium text-content/95">
+                  applied
+                </span>
+              ) : (
+                <button
+                  onClick={() => onApply(row.price)}
+                  className="text-right text-[11px] font-medium text-brand_navy hover:underline"
+                >
+                  apply
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default ForecastScenarios;

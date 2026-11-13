@@ -3,10 +3,13 @@
  * by `pages/vendors/dev`. Edit this one while changing dev vendors; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin } from "../../interfaces";
+
+// Interfaces
+import type { SubDeptMargin, VendorMetric, VendorRow, VendorTier } from "../../interfaces";
 import type { RollupRow } from "../../api/rollup";
-import type { VendorMetric, VendorRow, VendorTier } from "../../interfaces";
 
 /** Vendors (Performance).
  *

@@ -1,5 +1,16 @@
+// Hooks
 import { useState, useRef, useEffect } from "react";
+
+// Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+
+interface ColFilterProps {
+  label: string;
+  active: boolean;
+  onApply: () => void;
+  onClear?: () => void;
+  children: React.ReactNode;
+}
 
 /**
  * A column heading that filters its own column.
@@ -15,14 +26,6 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
  * has no use for, and folding the two together would mean changing behaviour on
  * a page nobody asked about.
  */
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
 export const ColFilter = ({
   label,
   active,
@@ -92,7 +95,7 @@ export const ColFilter = ({
                   onClear();
                   setOpen(false);
                 }}
-                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
+                className="px-2 rounded py-1 text-[10px] text-content border border-line_field hover:text-content transition-colors"
               >
                 Clear
               </button>

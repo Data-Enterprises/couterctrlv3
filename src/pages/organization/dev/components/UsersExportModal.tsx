@@ -1,0 +1,148 @@
+// Hooks
+import { useState } from "react";
+
+// Utils
+import { downloadCsv } from "../../../../utils/csvExport";
+import { buildUsersCsv } from "../utils";
+
+// Interfaces
+import type { ExportDataset } from "../interfaces";
+import type { User, UserLevel } from "../../../../interfaces";
+
+// Components
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+
+interface UsersExportModalProps {
+  onClose: () => void;
+  allUsers: User[];
+  filteredUsers: User[];
+  userLevels: UserLevel[];
+  scopeLabel: string;
+  /** Any of the grid's filters is narrowing the list (see filtersApplied). */
+  filtersActive: boolean;
+}
+
+/** The Export CSV pop-up for users: tick the datasets to include (all users or the filtered list), then
+ *  download. The header says whether it is the active or inactive list. */
+const UsersExportModal = ({
+  onClose,
+  allUsers,
+  filteredUsers,
+  userLevels,
+  scopeLabel,
+  filtersActive,
+}: UsersExportModalProps) => {
+  const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
+  const isFiltered = filtersActive;
+
+  const handleDownload = () => {
+    const sections: string[] = [];
+    if (selected.has("all"))
+      sections.push(buildUsersCsv(allUsers, userLevels, `All Users — ${scopeLabel}`));
+    if (selected.has("filtered"))
+      sections.push(
+        buildUsersCsv(filteredUsers, userLevels, `Filtered Results — ${scopeLabel}`),
+      );
+    if (!sections.length) return;
+    const safeName = scopeLabel.replace(/[^a-z0-9]/gi, "_");
+    downloadCsv(sections.join("\n\n"), `${safeName}_users.csv`);
+    onClose();
+  };
+
+  return (
+    <ResizableModalShell
+      onClose={onClose}
+      storageKey="export-modal:org-users"
+      defaultWidth={560}
+      defaultHeight={560}
+    >
+        <div className="cc-phone-header">
+          <div>
+            <p className="cc-navy-title text-[13px]">Export CSV</p>
+            <p className="text-custom-white text-[10px] mt-0.5">{scopeLabel}</p>
+          </div>
+          <div />
+          <button
+            onClick={onClose}
+            className="cc-navy-link justify-self-end"
+          >
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-4 pt-4 pb-2 space-y-3">
+          <p className="text-[11px] text-content uppercase tracking-wide font-medium">
+            Select data to include
+          </p>
+
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={selected.has("all")}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("all") ? n.delete("all") : n.add("all");
+                  return n;
+                })
+              }
+              className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
+            />
+            <div>
+              <p className="text-[13px] cc-row-title">
+                All users
+              </p>
+              <p className="text-[12px] text-content mt-0.5">
+                {allUsers.length} users — {scopeLabel}
+              </p>
+            </div>
+          </label>
+
+          <label
+            className={`flex items-start gap-3 ${isFiltered ? "cursor-pointer" : "opacity-40 cursor-not-allowed"} group`}
+          >
+            <input
+              type="checkbox"
+              checked={selected.has("filtered")}
+              disabled={!isFiltered}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("filtered") ? n.delete("filtered") : n.add("filtered");
+                  return n;
+                })
+              }
+              className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
+            />
+            <div>
+              <p className="text-[13px] cc-row-title">
+                Current filter results
+              </p>
+              <p className="text-[12px] text-content mt-0.5">
+                {isFiltered
+                  ? `${filteredUsers.length} users match the current filters`
+                  : "No filters currently applied"}
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <div className="cc-bar-footer mt-2">
+          <button onClick={onClose} className="text-[12px] text-content transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={selected.size === 0}
+            className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            Download CSV
+          </button>
+        </div>
+    </ResizableModalShell>
+  );
+};
+
+export default UsersExportModal;

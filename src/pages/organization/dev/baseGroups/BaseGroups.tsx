@@ -1,7 +1,30 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
+
+// API
+import { getAllUsers } from "../../../../api/user";
+import {
+  assignBaseGroupToUser,
+  getBaseGroupsAssignedToUser,
+} from "../../../../api/team";
+import {
+  getBaseGroups,
+  getAllStoresInBaseGroup,
+  createBaseGroup,
+} from "../../../../api/baseGroups";
+
+// Utils
+import {
+  companiesWithHeldGroups,
+  heldGroupIds,
+  visibleCompanyList,
+  visibleGroups,
+} from "../utils";
+
+// Interfaces
+import type { StoreSplit } from "./interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,
@@ -9,92 +32,12 @@ import type {
   Store,
   User,
 } from "../../../../interfaces";
-import { getAllUsers } from "../../../../api/user";
-import {
-  assignBaseGroupToUser,
-  getBaseGroupsAssignedToUser,
-} from "../../../../api/team";
-import {
-  companiesWithHeldGroups,
-  heldGroupIds,
-  visibleCompanyList,
-  visibleGroups,
-} from "../scoping";
-import {
-  getBaseGroups,
-  getAllStoresInBaseGroup,
-  createBaseGroup,
-} from "../../../../api/baseGroups";
+
+// Components
+import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import BaseGroupDetail from "./BaseGroupDetail";
-
-const NewGroupModal = ({
-  companies,
-  onCreate,
-  onClose,
-  busy = false,
-}: {
-  companies: { id: number; name: string }[];
-  onCreate: (name: string, companyId: number) => void;
-  onClose: () => void;
-  /** A create is running: Create waits, so a double-click makes one group. */
-  busy?: boolean;
-}) => {
-  const [name, setName] = useState("");
-  const [companyId, setCompanyId] = useState("");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-custom-white rounded-xl p-5 w-[300px] shadow-2xl">
-        <div className="text-[14px] font-medium text-content mb-3">
-          New base group
-        </div>
-        <div className="mb-2.5">
-          <label className="text-[11px] text-content/60 block mb-1">
-            Group name
-          </label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Northeast"
-            className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="text-[11px] text-content/60 block mb-1">
-            Company
-          </label>
-          <SelectFilter
-            options={companies.map((c) => ({
-              label: c.name,
-              value: String(c.id),
-            }))}
-            value={companyId}
-            onChange={setCompanyId}
-            placeholder="Choose a company"
-            className="w-full"
-          />
-        </div>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-gray-200 text-content"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onCreate(name, Number(companyId))}
-            disabled={busy}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {busy ? "Creating…" : "Create"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import BaseGroupDetail from "./components/BaseGroupDetail";
+import NewGroupModal from "./components/NewGroupModal";
 
 /**
  * User Management > Base Groups (owner level and up): create, rename and delete base groups, and assign
@@ -126,16 +69,8 @@ const BaseGroups = () => {
   const allCompanies = useBaseGroupCompanies();
 
   /**
-   * Holding a company is not enough to administer every group in it.
-   *
-   * An owner at Houchens who holds East and HC North administers those two;
-   * Conventional belongs to the same company and is not theirs to hand out.
-   * Letting them would be handing out access they do not have themselves,
-   * which is privilege escalation however little anyone meant it that way.
-   *
-   * Not fetched for someone who sees everything: the answer would not narrow
-   * anything, and asking for it would make the page wait on a call it is
-   * going to ignore.
+   * The groups the viewer holds: holding a company is not enough to administer
+   * every group in it. Not fetched for someone who sees everything.
    */
   const loadMyGroups = useCallback(() => {
     if (ctx.canSeeAllCompanies) return;
@@ -154,9 +89,8 @@ const BaseGroups = () => {
   /** A create is running: the modal's Create waits for it. */
   const [creating, setCreating] = useState(false);
   /**
-   * A group just created by someone who doesn't see everything. The list
-   * shows only groups you hold, so the new one vanished with nothing on
-   * screen to say why; this says so, and offers to hold it in one step.
+   * A group just created by someone who doesn't see everything: the list shows
+   * only held groups, so say where it went and offer to hold it.
    */
   const [created, setCreated] = useState<{
     id: number;
@@ -211,9 +145,8 @@ const BaseGroups = () => {
       );
   }, [ctx.url, ctx.token]);
 
-  // Guards against the search-triggered "expand every company" effect below
-  // firing a duplicate request for a company whose first request is still
-  // in flight (e.g. clearing and re-typing a search quickly).
+  // Stops the search's "expand every company" effect asking again for a
+  // company whose first request is still in flight.
   const fetchingGroups = useRef<Set<number>>(new Set());
 
   const fetchGroups = (companyId: number) => {
@@ -355,8 +288,8 @@ const BaseGroups = () => {
 
   return (
     <div className="flex-1 flex min-h-0 w-full">
-      <div data-help="base-groups" className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
-        <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
+      <div data-help="base-groups" className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col">
+        <div className="p-2.5 border-b border-line_hair flex gap-1.5">
           <TextFilter
             value={search}
             onChange={setSearch}
@@ -367,7 +300,7 @@ const BaseGroups = () => {
             onClick={() => setShowNewGroupModal(true)}
             title="New base group"
             aria-label="New base group"
-            className="w-7 h-7 flex-shrink-0 rounded-md border border-gray-300 border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
+            className="w-7 h-7 flex-shrink-0 rounded-md border border-line_strong border-dashed text-brand_navy flex items-center justify-center hover:bg-fill_soft"
           >
             <PlusIcon className="w-4 h-4" />
           </button>
@@ -385,7 +318,7 @@ const BaseGroups = () => {
               <button
                 onClick={claimCreated}
                 disabled={claiming}
-                className="text-[11.5px] font-medium px-2.5 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy/85 disabled:opacity-50"
+                className="text-[11.5px] font-medium px-2.5 py-1 rounded-md bg-brand_navy text-custom-white hover:bg-brand_navy_hover disabled:opacity-50"
               >
                 {claiming ? "Assigning…" : "Assign it to me"}
               </button>
@@ -399,7 +332,7 @@ const BaseGroups = () => {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 thin-scrollbar">
+        <div className="cc-scroll p-2 space-y-1.5">
           {visibleCompanies.length === 0 && (
             <div className="p-3 text-[11px] text-content">No companies</div>
           )}
@@ -416,25 +349,25 @@ const BaseGroups = () => {
             return (
               <div
                 key={c.id}
-                className="rounded-lg border border-gray-100 overflow-hidden"
+                className="rounded-lg border border-line_hair overflow-hidden"
               >
                 <button
                   onClick={() => toggleCompany(c.id)}
                   className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 pl-3 pr-3 py-2 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/95 flex-shrink-0 transition-transform"
                     style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
                   <span className="text-[12px] font-semibold text-brand_navy flex-1 text-left truncate">
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-brand_navy/55 flex-shrink-0">
+                  <span className="text-[11px] text-brand_navy/95 flex-shrink-0">
                     {total !== undefined ? `${total} groups` : ""}
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-line_hair">
                     {groups.map((g) => {
                       const isSel = selectedGroup?.id === g.id;
                       return (
@@ -447,7 +380,7 @@ const BaseGroups = () => {
                               : undefined
                           }
                           className={`w-full flex flex-col items-start pl-6 pr-3 py-2 text-left transition-colors ${
-                            isSel ? "bg-custom-white" : "hover:bg-gray-50"
+                            isSel ? "bg-custom-white" : "hover:bg-fill_soft"
                           }`}
                         >
                           <span className="text-[12px] font-medium text-content">
@@ -457,7 +390,7 @@ const BaseGroups = () => {
                       );
                     })}
                     {groups.length === 0 && (
-                      <div className="pl-6 py-1.5 text-[11px] text-content/60">
+                      <div className="pl-6 py-1.5 text-[11px] text-content/95">
                         No base groups
                       </div>
                     )}

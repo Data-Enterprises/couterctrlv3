@@ -1,32 +1,38 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
-import { useReceiversState } from "../hooks/useReceiversState";
-import { useReceiversActions } from "../hooks/useReceiversActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useAppDispatch, useStoreName } from "../../../../hooks";
+import { useReceiversActions, useReceiversCtx, useReceiversState } from "../hooks";
+
+// API
 import { getReceiversList } from "../../../../api/receivers";
+
+// Utils
+import {
+  applyStoreNumberToName,
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
+import { fmtSearchDate } from "./utils";
+
+// Interfaces
 import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
+import type { Screen } from "./interfaces";
+
+// Components
 import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
-import RcvReceiverList from "./RcvReceiverList";
+import RcvReceiverList from "./components/RcvReceiverList";
 
-type Screen = "entry" | "list";
-
-const fmtSearchDate = (mdy: string) => {
-  const [m, d, y] = mdy.split("/");
-  return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`)
-    .toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
+/** The phone Receivers page: a store and date search card that loads the receivers,
+ *  then the receiver list, with a way back to the search and a Back to results button. */
 const ReceiversMobile = () => {
   const dispatch = useAppDispatch();
   const rcv = useReceiversState();
   const actions = useReceiversActions();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { startDate, endDate } = useAppSelector((s) => s.search);
+  const { url, token, assignedStores, search } = useReceiversCtx();
+  const { startDate, endDate } = search;
 
   const [screen, setScreen] = useState<Screen>("entry");
 
@@ -92,9 +98,6 @@ const ReceiversMobile = () => {
       .finally(() => dispatch(actions.setIsFetchingList(false)));
   };
 
-  // Re-open the search card without clearing already-loaded data — the
-  // "already loaded" shortcut button lets the user jump straight back
-  // instead of forcing a re-fetch if this was tapped by accident.
   const handleOpenSearch = () => {
     setScreen("entry");
   };
@@ -128,7 +131,7 @@ const ReceiversMobile = () => {
   }
 
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-gray-50">
+    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-fill_soft">
       <div className="mx-4 pt-4 pb-2">
         <SingleStoreSearchCard
           title="Receivers"
@@ -140,26 +143,16 @@ const ReceiversMobile = () => {
           onSearch={handleSearch}
           loading={rcv.isFetchingList}
           loadingMessage="Finding receivers..."
-          datePicker={<DatePickers showBtn={false} handleQuery={handleSearch} />}
+          datePicker={
+            <DatePickers showBtn={false} handleQuery={handleSearch} />
+          }
           notice={
             rcv.noReceivers
               ? "No receivers came back for this search."
               : undefined
           }
-        >
-          {hasData && (
-            <button
-              onClick={handleBackToResults}
-              className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-            >
-              <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
-              <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
-                Back to results
-              </span>
-            </button>
-          )}
-        </SingleStoreSearchCard>
+          onBack={hasData ? handleBackToResults : undefined}
+        />
       </div>
     </div>
   );

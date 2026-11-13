@@ -1,0 +1,182 @@
+// Utils
+import { fmtRangeDate } from "../utils";
+
+// Interfaces
+import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
+
+// Components
+import BackButton from "../../../../../components-dev/BackButton";
+import {
+  ExclamationTriangleIcon,
+} from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
+import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
+
+interface LookupQueuePanelProps {
+  storeName: string;
+  queue: QueueItem[];
+  selectedUpc: string | null;
+  onSelect: (upc: string) => void;
+  onOpenSearch: () => void;
+  storeNumbers: string[];
+  selectedStoreNumber: string | null;
+  onStoreNumberChange: (storeNumber: string | null) => void;
+}
+
+/** The Item lookup's left panel: a navy header with the 14-day range and loaded count, the store-location tabs,
+ *  and the list of looked-up items showing margin, an error, or a queued/loading state. */
+const LookupQueuePanel = ({
+  storeName,
+  queue,
+  selectedUpc,
+  onSelect,
+  onOpenSearch,
+  storeNumbers,
+  selectedStoreNumber,
+  onStoreNumberChange,
+}: LookupQueuePanelProps) => {
+  const loadedCount = queue.filter(
+    (q) => q.status === "loaded" || q.status === "error",
+  ).length;
+
+  // The lookup's 14-day window ends yesterday (today isn't final) and takes no
+  // date, so the label mirrors that offset.
+  const end = new Date();
+  end.setDate(end.getDate() - 1);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 13);
+  const dateRangeLabel = `${fmtRangeDate(start)} – ${fmtRangeDate(end)}`;
+
+  return (
+    <div
+      className="cc-panel shadow-lg flex-shrink-0"
+      style={{ width: "25%" }}
+    >
+      <div
+        className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
+        style={{ background: "rgb(var(--color-brand-navy))" }}
+      >
+        <div className="flex items-end gap-3 min-h-[24px]">
+          <span className="text-[13px] cc-navy-title flex-shrink-0">
+            Item lookup
+          </span>
+          <span className="text-custom-white text-[10px] flex-shrink-0">
+            {dateRangeLabel}
+          </span>
+          <div className="flex-1" />
+          <div className="flex items-baseline gap-1 flex-shrink-0">
+            <span className="text-custom-white text-[10px] uppercase tracking-wide">
+              Loaded
+            </span>
+            <span className="text-[13px] font-medium text-custom-white">
+              {loadedCount} / {queue.length}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 cc-navy-header-row">
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
+          <span className="text-[11px] font-medium text-custom-white truncate">
+            {storeName}
+          </span>
+          <div className="flex-1" />
+          <div className="relative flex-shrink-0">
+            <PageInfoButton page="item-lookup" />
+          </div>
+        </div>
+      </div>
+
+      <LocationTabs
+        numbers={storeNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+      />
+
+      <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar">
+        {queue.map((item) => {
+          if (item.status === "loaded") {
+            const isSelected = item.upc === selectedUpc;
+            const isNegative =
+              item.marginPct !== null &&
+              item.marginPct !== undefined &&
+              item.marginPct < 0;
+            return (
+              <button
+                key={item.upc}
+                onClick={() => onSelect(item.upc)}
+                className={`w-full text-left px-3 py-2.5 border-b border-line_hair transition-colors ${
+                  isSelected ? "bg-custom-white" : "hover:bg-fill_soft"
+                }`}
+                style={
+                  isSelected
+                    ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
+                    : undefined
+                }
+              >
+                <span
+                  className={`block text-[12px] truncate text-content ${isSelected ? "font-semibold" : "font-medium"}`}
+                >
+                  {item.description}
+                </span>
+                <div className="flex items-center justify-between mt-0.5">
+                  <span className="text-[11px] text-content">{item.upc}</span>
+                  <span
+                    className="text-[11px] font-semibold tabular-nums"
+                    style={{ color: isNegative ? "#991b1b" : "#059669" }}
+                  >
+                    {item.marginPct !== null && item.marginPct !== undefined
+                      ? `${item.marginPct.toFixed(2)}%`
+                      : "-"}
+                  </span>
+                </div>
+              </button>
+            );
+          }
+
+          if (item.status === "error") {
+            return (
+              <div
+                key={item.upc}
+                className="w-full px-3 py-2.5 border-b border-line_hair"
+              >
+                <div className="flex items-center gap-1.5">
+                  <ExclamationTriangleIcon className="w-3 h-3 text-brand_danger flex-shrink-0" />
+                  <span className="text-[12px] font-medium text-content">
+                    {item.upc}
+                  </span>
+                </div>
+                <div className="pl-[18px] mt-0.5">
+                  <span className="text-[10.5px] text-brand_danger">
+                    {item.errorMessage ?? "There was an issue finding this item"}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={item.upc}
+              className="w-full flex items-center gap-2 px-3 py-2.5 border-b border-line_hair"
+            >
+              <div
+                className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
+                  item.status === "loading"
+                    ? "border-line_field border-t-brand_navy animate-spin"
+                    : "border-line_hair"
+                }`}
+              />
+              <div>
+                <div className="text-[11.5px] text-content">{item.upc}</div>
+                <div className="text-[9.5px] text-brand_slate">
+                  {item.status === "loading" ? "Loading…" : "Queued"}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default LookupQueuePanel;

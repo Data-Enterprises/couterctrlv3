@@ -18,23 +18,23 @@ import { describe, expect, it } from "vitest";
 const ALLOWED: Record<string, string> = {
   "components-dev/scanner/useScanGun.ts:modelLookup":
     "the device's model name, not anybody's data",
-  "pages/inventory/dev/ItemAnalysisPanel.tsx:NO_ROWS":
+  "pages/inventory/dev/utils/index.ts:NO_ROWS":
     "a shared empty array, never written to",
-  "pages/sales/dev/components/PopupSubDeptList.tsx:inFlightItems":
+  "pages/sales/dev/storePanel/subDepts/hooks/index.ts:inFlightItems":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/PopupTopItems.tsx:inFlight":
+  "pages/sales/dev/storePanel/top200/utils/index.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/StoreDetailPopup.tsx:inFlightStores":
+  "pages/sales/dev/storePanel/hooks/index.ts:inFlightStores":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/dailyRecap/useDayMix.ts:inFlight":
+  "pages/sales/dev/storePanel/summary/hooks/useDayMix.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
-  "pages/sales/dev/components/dailyRecap/useWeekExceptions.ts:inFlight":
+  "pages/sales/dev/storePanel/summary/hooks/useWeekExceptions.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
   "pages/upcScanner/dev/useScanResolve.ts:inFlight":
     "keys of requests still on the wire, emptied as each one lands",
   "features/ticketsMockData.ts:MOCK_ATTACHMENTS":
     "an empty mock list in a file nothing imports",
-  "pages/vendors/dev/useVendorSearch.ts:searchSeq":
+  "pages/vendors/dev/hooks/index.ts:searchSeq":
     "a counter that drops a search's late answers; it holds no data",
   "utils/pageCalls.ts:armed":
     "whether the call recorder is installed, once per tab",

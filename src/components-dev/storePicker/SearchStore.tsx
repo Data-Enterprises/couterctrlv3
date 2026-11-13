@@ -1,12 +1,23 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../hooks";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
-import type { Store } from "../../interfaces";
-import { setLastStore, setSelectedStore } from "../../features/searchSlice";
-import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from "./";
 
-const SelectStore = () => {
+// Redux
+import { setLastStore, setSelectedStore } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Interfaces
+import type { Store } from "../../interfaces";
+
+// Components
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+/** The store picker's store dropdown: type to narrow the stores, pick one, and
+ *  it becomes the selected and last-used store. */
+const SearchStore = () => {
   const dispatch = useAppDispatch();
   const context = useStorePickerContext();
   const componentRef = useRef<HTMLDivElement>(null);
@@ -79,7 +90,7 @@ const SelectStore = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-[13px] py-1";
+    "basic-input focus:border bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-[13px] py-1";
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -150,7 +161,7 @@ const SelectStore = () => {
                 key={`store-${idx}`}
                 onClick={() => handleSelect(store)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-[13px]">
+                <div className="p-1 hover:bg-fill_soft transition-all duration-200 cursor-pointer text-[13px]">
                   {store.store_name}
                 </div>
               </div>
@@ -162,4 +173,4 @@ const SelectStore = () => {
   );
 };
 
-export default SelectStore;
+export default SearchStore;

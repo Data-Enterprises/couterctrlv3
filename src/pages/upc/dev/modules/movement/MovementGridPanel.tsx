@@ -63,19 +63,19 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
         <table className="min-w-full text-[13.5px] text-content border-separate border-spacing-0">
           <thead className="sticky top-0 z-20">
             <tr>
-              <th className="sticky left-0 z-10 bg-bkg px-4 py-2 text-left text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-r border-gray-200">
+              <th className="sticky left-0 z-10 bg-bkg px-4 py-2 text-left text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-r border-line_field">
                 Store
               </th>
               {weekEndings.map((w) => (
                 <th
                   key={w}
-                  className="bg-bkg px-2 py-2 text-center text-[12px] font-bold whitespace-nowrap border-b-2 border-gray-200"
+                  className="bg-bkg px-2 py-2 text-center text-[12px] font-bold whitespace-nowrap border-b-2 border-line_field"
                   title={`Week ending ${w}`}
                 >
                   {shortDate(w)}
                 </th>
               ))}
-              <th className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-l border-gray-200">
+              <th className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right text-[12px] font-bold uppercase tracking-wide whitespace-nowrap border-b-2 border-l border-line_field">
                 Total
               </th>
             </tr>
@@ -84,17 +84,17 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
             {grid.rows.map(({ store, cells, total }) => {
               const idle = cells.every((v) => v === null || v === 0);
               return (
-                <tr key={store.storeid} className={`group ${idle ? "text-content/85" : ""}`}>
+                <tr key={store.storeid} className={`group ${idle ? "text-content/95" : ""}`}>
                   <td
-                    className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-gray-100 ${idle ? "" : "font-semibold"}`}
+                    className={`sticky left-0 z-[1] bg-custom-white group-hover:bg-row_selected px-4 py-1.5 whitespace-nowrap border-b border-r border-line_hair ${idle ? "" : "font-semibold"}`}
                   >
                     {store.store_name || `Store ${store.store_number}`}
                   </td>
                   {cells.map((v, i) => {
                     if (v === null || v === 0) {
                       return (
-                        <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
-                          <div className={`${tile} text-content/85`}>–</div>
+                        <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-line_hair`}>
+                          <div className={`${tile} text-content/95`}>–</div>
                         </td>
                       );
                     }
@@ -102,7 +102,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                     // place on a scale of how much moved, so it stays unshaded.
                     const heat = heatStyle(Math.max(v, 0), peak);
                     return (
-                      <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-gray-100`}>
+                      <td key={weekEndings[i]} className={`${tileCell} group-hover:bg-row_selected border-b border-line_hair`}>
                         <div
                           className={`${tile} font-semibold`}
                           style={v > 0 ? { background: heat.bg, color: heat.color } : undefined}
@@ -112,7 +112,7 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
                       </td>
                     );
                   })}
-                  <td className="sticky right-0 z-[1] bg-bkg px-4 py-1.5 text-right tabular-nums whitespace-nowrap font-bold border-b border-l border-gray-200">
+                  <td className="sticky right-0 z-[1] bg-bkg px-4 py-1.5 text-right tabular-nums whitespace-nowrap font-bold border-b border-l border-line_field">
                     {idle ? <span className="font-normal">0</span> : fmt(total)}
                   </td>
                 </tr>
@@ -123,18 +123,18 @@ const MovementGridPanel = ({ code, rows, stores, weekEndings }: Props) => {
               rather than as a separate bar laid over it. */}
           <tfoot className="sticky bottom-0 z-20">
             <tr className="font-bold">
-              <td className="sticky left-0 z-10 bg-bkg px-4 py-2 whitespace-nowrap border-t-2 border-r border-gray-200">
+              <td className="sticky left-0 z-10 bg-bkg px-4 py-2 whitespace-nowrap border-t-2 border-r border-line_field">
                 Total movement <span className="font-semibold">({unit})</span>
               </td>
               {grid.weekTotals.map((v, i) => (
                 <td
                   key={weekEndings[i]}
-                  className="bg-bkg px-2 py-2 text-center tabular-nums whitespace-nowrap border-t-2 border-gray-200"
+                  className="bg-bkg px-2 py-2 text-center tabular-nums whitespace-nowrap border-t-2 border-line_field"
                 >
                   {fmt(v)}
                 </td>
               ))}
-              <td className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right tabular-nums whitespace-nowrap border-t-2 border-l border-gray-200">
+              <td className="sticky right-0 z-10 bg-bkg px-4 py-2 text-right tabular-nums whitespace-nowrap border-t-2 border-l border-line_field">
                 {fmt(grid.total)}
               </td>
             </tr>

@@ -1,29 +1,37 @@
-import type { DayDot } from "./LedgerRow";
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesCtx } from "../hooks";
+
+// Redux
+import { setLedgerSelectedDate } from "../../../../features/dev/devSalesLedgerSlice";
+
+// Utils
 import { getHolidayName } from "../../../../utils/holidays";
 import {
   formatCurrency2,
   formatBigNumber,
   sameWeekDayLastYear,
 } from "../../../../utils";
-import { computeDayMatchedTotals } from "../shared/ledgerUtils";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import { computeDayMatchedTotals } from "../utils/ledgerUtils";
+import { fmtPct } from "../utils";
+
+// Interfaces
+import type { DayDot } from "../../../../interfaces";
+
+// Components
 import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
   days: DayDot[];
-  selectedDate: string | null;
-  gradingMetric: GradingMetric;
-  onSelect: (date: string | null) => void;
 }
 
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-
-const PopupDaySidebar = ({
-  days,
-  selectedDate,
-  gradingMetric,
-  onSelect,
-}: PopupDaySidebarProps) => {
+/** The day strip across the store popup: an All Week card and one card per day with its sales or quantity
+ *  and change against last year or last week (starred for holidays). Clicking a card selects that day. */
+const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
+  const dispatch = useAppDispatch();
+  const { selectedDate, gradingMetric } = useSalesCtx();
+  const onSelect = (date: string | null) =>
+    dispatch(setLedgerSelectedDate(date));
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? formatBigNumber(qty, 0) : formatCurrency2(dollars);
@@ -66,18 +74,18 @@ const PopupDaySidebar = ({
       : "";
 
   return (
-    <div className="flex gap-1.5 p-1.5 border-b border-gray-100 bg-gray-50">
+    <div className="flex gap-1.5 p-1.5 border-b border-line_hair bg-fill_soft">
       {/* All week card */}
       <button
         onClick={() => onSelect(null)}
         className={`flex flex-col rounded-md overflow-hidden flex-[1.3] border transition-colors ${
           selectedDate === null
             ? "border-brand_navy ring-2 ring-brand_navy/30"
-            : "border-gray-200 hover:border-gray-300"
+            : "border-line_field hover:border-line_strong"
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[9px] cc-caps-strong">
             All Week
           </div>
           <div className="text-[12px] font-bold text-content">
@@ -143,7 +151,7 @@ const PopupDaySidebar = ({
             className={`relative flex flex-col rounded-md overflow-hidden flex-1 border transition-colors ${
               isSelected
                 ? "border-brand_navy ring-2 ring-brand_navy/30"
-                : "border-gray-200 hover:border-gray-300"
+                : "border-line_field hover:border-line_strong"
             }`}
           >
             {holidayName && (
@@ -160,7 +168,7 @@ const PopupDaySidebar = ({
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+              <div className="text-[9px] cc-caps-strong">
                 {dayName}
               </div>
               <div className="text-[12px] font-bold text-content leading-none">

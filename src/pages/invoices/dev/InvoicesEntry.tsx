@@ -31,10 +31,10 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
     <div className="bg-custom-white rounded-xl shadow-sm w-full max-w-[560px] overflow-hidden">
       <div className="bg-brand_navy px-4 py-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-custom-white text-[13px] font-semibold">
+          <p className="cc-navy-title text-[13px]">
             AWG Invoices
           </p>
-          <p className="text-custom-white/85 text-[12px]">
+          <p className="text-custom-white/95 text-[12px]">
             Drop an AWG electronic invoice file to read it. Every line is
             checked against the invoice&rsquo;s own printed totals before
             anything is shown.
@@ -62,14 +62,14 @@ const InvoicesEntry = ({ onFile, error }: Props) => {
           className={`w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-10 transition-colors ${
             dragging
               ? "border-brand_navy bg-filter_active"
-              : "border-gray-200 hover:border-brand_navy/40 hover:bg-gray-50"
+              : "border-line_field hover:border-brand_navy/40 hover:bg-fill_soft"
           }`}
         >
           <DocumentArrowUpIcon className="w-6 h-6 text-brand_navy" />
           <span className="text-[13px] font-medium text-content">
             Drop a file here, or click to choose one
           </span>
-          <span className="text-[11.5px] text-content/85">
+          <span className="text-[11.5px] text-content/95">
             Nothing is uploaded — the file is read in this browser.
           </span>
         </button>

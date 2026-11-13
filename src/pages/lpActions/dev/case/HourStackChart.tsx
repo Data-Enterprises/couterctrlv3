@@ -56,7 +56,7 @@ const HourStackChart = ({ profile, types, selected }: Props) => {
           x2={X1}
           y2={Y0}
           stroke="currentColor"
-          className="text-gray-200"
+          className="text-line_field"
         />
         <line
           x1={X0}
@@ -64,7 +64,7 @@ const HourStackChart = ({ profile, types, selected }: Props) => {
           x2={X1}
           y2={(Y0 + Y1) / 2}
           stroke="currentColor"
-          className="text-gray-200"
+          className="text-line_field"
         />
         <line
           x1={X0}
@@ -72,7 +72,7 @@ const HourStackChart = ({ profile, types, selected }: Props) => {
           x2={X1}
           y2={Y1}
           stroke="currentColor"
-          className="text-gray-300"
+          className="text-brand_line_2"
         />
 
         <text
@@ -111,7 +111,7 @@ const HourStackChart = ({ profile, types, selected }: Props) => {
                   width={barW}
                   height={4}
                   rx={2}
-                  className="fill-gray-300"
+                  className="fill-fill_track_strong"
                 />
               )}
               {ordered.map((t) => {

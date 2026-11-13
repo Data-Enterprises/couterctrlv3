@@ -146,7 +146,7 @@ const InvoiceExportModal = ({
     >
       <div className="flex items-center gap-3 bg-brand_navy px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-custom-white">
+          <p className="text-[13px] cc-navy-title">
             Export or send
           </p>
           <p className="truncate text-[10px] text-custom-white/95">
@@ -156,7 +156,7 @@ const InvoiceExportModal = ({
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/95 transition-colors hover:text-custom-white"
+          className="cc-navy-link"
         >
           <XMarkIcon className="h-4 w-4" />
         </button>
@@ -173,7 +173,7 @@ const InvoiceExportModal = ({
           {OPTIONS.map((option) => (
             <div
               key={option.id}
-              className="border-b border-gray-100 py-2.5 last:border-b-0"
+              className="border-b border-line_hair py-2.5 last:border-b-0"
             >
               {/* The box pairs with the title, so it lines up with the thing
                   it names rather than floating against the middle of a
@@ -212,7 +212,7 @@ const InvoiceExportModal = ({
           <button
             onClick={run}
             disabled={!canGo}
-            className="flex flex-none items-center gap-1.5 rounded-md bg-brand_navy px-3 py-1.5 text-[12px] font-medium text-custom-white transition-colors hover:bg-brand_navy/85 disabled:opacity-40"
+            className="flex flex-none items-center gap-1.5 cc-btn-primary text-[12px]"
           >
             {choice === "send" ? (
               <>

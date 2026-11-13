@@ -16,7 +16,6 @@ import { resetGroupState } from "../../features/groupSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../../features/searchSlice";
-import { resetForgotPasswordSlice } from "../../../features/forgotPasswordSlice";
 import { resetCashierSlice } from "../../features/lossPreventionSlice";
 import { resetLookupSlice } from "../../features/itemLookupSlice";
 import { resetQsSlice } from "../../features/qsSlice";
@@ -102,7 +101,6 @@ const SideBarLegacy = () => {
     dispatch(resetQsSlice());
     dispatch(resetLookupSlice());
     dispatch(resetCashierSlice());
-    dispatch(resetForgotPasswordSlice());
     dispatch(resetOrdersState());
   };
 

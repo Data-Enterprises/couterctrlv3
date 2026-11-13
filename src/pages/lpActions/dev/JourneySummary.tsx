@@ -20,10 +20,10 @@ const DayStrip = ({ perDay }: { perDay: number[] }) => {
             title={`${DOW[i]} — ${n}`}
             style={{ height: Math.max(2, Math.round((n / peak) * 18)) }}
             className={`w-3.5 rounded-sm ${
-              n === peak && n > 0 ? "bg-brand_navy" : "bg-gray-300"
+              n === peak && n > 0 ? "bg-brand_navy" : "bg-fill_track_strong"
             }`}
           />
-          <span className="text-[8.5px] text-content/85 leading-none">
+          <span className="text-[8.5px] text-content/95 leading-none">
             {DOW[i][0]}
           </span>
         </div>
@@ -34,7 +34,7 @@ const DayStrip = ({ perDay }: { perDay: number[] }) => {
 
 const Metric = ({ label, value }: { label: string; value: string }) => (
   <div className="min-w-0">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content/95">
       {label}
     </div>
     <div className="text-[14px] font-bold text-content tabular-nums truncate">
@@ -54,8 +54,8 @@ export const SummaryCard = ({
 }) => (
   <div
     onClick={onClick}
-    className={`px-3 py-2.5 border-b border-gray-100 ${
-      onClick ? "cursor-pointer hover:bg-gray-50" : ""
+    className={`px-3 py-2.5 border-b border-line_hair ${
+      onClick ? "cursor-pointer hover:bg-fill_soft" : ""
     } ${active ? "bg-row_selected" : ""}`}
   >
     <div className="flex items-baseline gap-2 mb-1.5">
@@ -64,12 +64,12 @@ export const SummaryCard = ({
       </span>
       {s.receipts !== s.occurrences && (
         // Only said when the two differ — "47 across 47 receipts" is noise.
-        <span className="text-[11px] text-content/85 flex-shrink-0">
+        <span className="text-[11px] text-content/95 flex-shrink-0">
           across {s.receipts} {s.receipts === 1 ? "receipt" : "receipts"}
         </span>
       )}
       {s.peakDay && (
-        <span className="text-[11px] text-content/85 flex-shrink-0">
+        <span className="text-[11px] text-content/95 flex-shrink-0">
           peaks {s.peakDay}
         </span>
       )}

@@ -3,7 +3,11 @@
  * by `pages/upc/dev`. Edit this one while changing dev upc; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   UpcItem,
   UpcSalesComp,
@@ -13,10 +17,10 @@ import type {
   ForecastMetrics,
   UpcPriceOpt,
   UpcTrend,
+  Store,
 } from "../../interfaces";
 import type { SEARCH_TYPE } from "../searchSlice";
 import type { Group } from "../groupSlice";
-import type { Store } from "../../interfaces";
 
 export type UpcDevTab =
   | "salesComp"

@@ -57,17 +57,17 @@ const CsvPreview = () => {
   return (
     <div className="flex-1 min-w-0 bg-card_bg border border-brand_line rounded-xl flex flex-col min-h-0 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-2.5 bg-custom-white border-b border-brand_line flex-shrink-0">
-        <DocumentTextIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+        <DocumentTextIcon className="w-4 h-4 text-content/95 flex-shrink-0" />
         <span className="font-mono text-[12.5px] font-semibold truncate">
           {name}
         </span>
-        <span className="text-[11.5px] text-content/85 flex-shrink-0">
+        <span className="text-[11.5px] text-content/95 flex-shrink-0">
           {cols.length} column{cols.length === 1 ? "" : "s"} ·{" "}
           {ctx.selectedStoreIds.length} store
           {ctx.selectedStoreIds.length === 1 ? "" : "s"}
         </span>
         <div className="flex-1" />
-        <span className="text-[11.5px] text-content/85 flex-shrink-0">
+        <span className="text-[11.5px] text-content/95 flex-shrink-0">
           {drag.name
             ? `Moving ${drag.name}`
             : ctx.visibleRows.length === ctx.rows.length
@@ -80,7 +80,7 @@ const CsvPreview = () => {
         <div className="flex-1 flex items-center justify-center text-center px-6">
           <div className="max-w-[34ch]">
             <div className="text-[13px] font-semibold">No columns selected</div>
-            <div className="text-[12.5px] text-content/85 mt-1.5">
+            <div className="text-[12.5px] text-content/95 mt-1.5">
               Tick a column on the left and it appears here, in the order the
               file will be written.
             </div>
@@ -123,7 +123,7 @@ const CsvPreview = () => {
                       drag.isDragging(i)
                         ? "shadow-lg bg-filter_active text-content"
                         : isPii(c.name)
-                          ? "bg-amber-50 text-amber-900"
+                          ? "bg-severity_watch_bg text-severity_watch_text"
                           : "bg-row_selected text-content"
                     }`}
                   >
@@ -135,7 +135,7 @@ const CsvPreview = () => {
             <tbody>
               {ctx.visibleRows.map((row, r) => (
                 <tr key={r}>
-                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
+                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/95">
                     {r + 1}
                   </td>
                   {cols.map((c, i) => {
@@ -168,7 +168,7 @@ const CsvPreview = () => {
       )}
 
       {ctx.visibleRows.length === 0 && cols.length > 0 && (
-        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/85 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/95 flex-shrink-0">
           None of the sample lines match what you have kept. The file can still
           hold plenty: the sample is two hundred lines taken where the scan
           landed, often a handful of stores and a couple of{" "}
@@ -177,7 +177,7 @@ const CsvPreview = () => {
       )}
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
-        <span className="text-[11.5px] text-content/85">
+        <span className="text-[11.5px] text-content/95">
           Personal columns are shaded. Their values are shown here and written
           to the file.
         </span>

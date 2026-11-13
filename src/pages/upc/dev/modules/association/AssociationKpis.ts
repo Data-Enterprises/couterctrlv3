@@ -1,6 +1,5 @@
+// Utils
 import { formatCurrency2 } from "../../../../../utils";
-import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
-import type { KpiCell } from "../../types";
 import {
   getDisplayItems,
   getQueryDepartments,
@@ -12,13 +11,12 @@ import {
   getCrossDeptCount,
 } from "./associationStats";
 
-// 5 tiles, ordered by impact: dollar scale first, then the specific dollar
-// opportunity to act on, then volume, then the two department-flavored
-// tiles grouped together at the end (how many are cross-department, which
-// department shows up most) since they're both categorical context rather
-// than a headline finding. "Viewing" and "Seed UPCs" were both cut once
-// something else already displayed the same fact — the left column's own
-// header already names what's being viewed and lists every seed UPC.
+// Interfaces
+import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
+import type { KpiCell } from "../../interfaces";
+
+// 5 tiles, by impact: dollar scale, the dollar opportunity, volume, then the
+// two department tiles together.
 export function getAssociationKpis(
   seedData: AssociationResult | null,
   rerootUpc: string | null,

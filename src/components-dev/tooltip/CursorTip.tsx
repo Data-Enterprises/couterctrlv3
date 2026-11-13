@@ -1,4 +1,11 @@
+// Components
 import CursorTipBox from "./CursorTipBox";
+
+interface CursorTipProps {
+  lines: string[];
+  x: number;
+  y: number;
+}
 
 /**
  * The app's tooltip for words: a line or a few, following the mouse.
@@ -13,15 +20,7 @@ import CursorTipBox from "./CursorTipBox";
  *
  * For a readout with its own layout, use `CursorTipBox`.
  */
-const CursorTip = ({
-  lines,
-  x,
-  y,
-}: {
-  lines: string[];
-  x: number;
-  y: number;
-}) => (
+const CursorTip = ({ lines, x, y }: CursorTipProps) => (
   <CursorTipBox x={x} y={y}>
     {lines.map((l, i) => (
       <div

@@ -144,19 +144,19 @@ const CashierJourney = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
+      className="cc-modal-backdrop z-[5000] p-4"
       onMouseDown={close}
     >
       <div
-        className="bg-custom-white rounded-xl shadow-xl w-full max-w-[1120px] max-h-[92vh] flex flex-col overflow-hidden"
+        className="cc-panel shadow-xl w-full max-w-[1120px] max-h-[92vh]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex-shrink-0 bg-brand_navy px-4 py-2.5 flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-custom-white text-[13px] font-semibold truncate">
+            <p className="cc-navy-title text-[13px] truncate">
               {journey.cashierName}
             </p>
-            <p className="text-custom-white/85 text-[12px] truncate">
+            <p className="text-custom-white/95 text-[12px] truncate">
               Cashier {journey.cashierNumber} &middot; {journey.storeName}{" "}
               &middot; {journey.total} exceptions across {journey.types.length}{" "}
               {journey.types.length === 1 ? "type" : "types"}
@@ -165,14 +165,14 @@ const CashierJourney = () => {
           <button
             onClick={close}
             title="Close"
-            className="flex-shrink-0 p-1 -mr-1 rounded text-custom-white/85 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
+            className="flex-shrink-0 p-1 -mr-1 rounded cc-navy-link hover:bg-custom-white/10"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex-1 min-h-0 flex overflow-hidden">
-          <div className="w-[58%] flex-shrink-0 border-r border-gray-100 p-3 overflow-y-auto thin-scrollbar">
+          <div className="w-[58%] flex-shrink-0 border-r border-line_hair p-3 overflow-y-auto thin-scrollbar">
             {drilled ? (
               <DrillPanel
                 saleType={drilled}
@@ -194,7 +194,7 @@ const CashierJourney = () => {
                   selected={focus}
                   onSelect={pickNode}
                 />
-                <p className="text-[11.5px] text-content/85 leading-snug mt-1 px-1">
+                <p className="text-[11.5px] text-content/95 leading-snug mt-1 px-1">
                   Inner ring is exception types, coloured on this
                   cashier&rsquo;s own movement. Outer ring is lanes. A heavier
                   outline means other cashiers reach that node too —{" "}
@@ -206,8 +206,8 @@ const CashierJourney = () => {
           </div>
 
           <div className="flex-1 min-w-0 flex flex-col relative">
-            <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-2">
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 flex-1 truncate">
+            <div className="flex-shrink-0 px-3 py-2 border-b border-line_hair flex items-center gap-2">
+              <span className="text-[11.5px] cc-caps flex-1 truncate">
                 {focus
                   ? `${[focusValue, branch?.label].filter(Boolean).join(" · ")} · ${branchScoped.length} occurrences across ${receiptCount} ${receiptCount === 1 ? "receipt" : "receipts"}`
                   : "Summary by exception type"}
@@ -222,7 +222,7 @@ const CashierJourney = () => {
               )}
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+            <div className="cc-scroll">
               {drilled && branch && (
                 <FacetDetail
                   branch={branch}
@@ -236,7 +236,7 @@ const CashierJourney = () => {
               )}
 
               {summaries.length === 0 && (
-                <div className="py-8 text-center text-[12px] text-content/85">
+                <div className="py-8 text-center text-[12px] text-content/95">
                   Nothing under that node.
                 </div>
               )}

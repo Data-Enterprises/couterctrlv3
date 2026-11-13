@@ -1,22 +1,34 @@
-import { useGroupCtx } from "..";
+// Hooks
+import { useAppDispatch } from "../../../../hooks";
+import { useGroupCtx, useGroupsData } from "../hooks";
+
+// Redux
+import { setSelectedForm } from "../../../../features/dev/devGroupsPageSlice";
+
+// Interfaces
+import type { GroupFormType } from "../../../../interfaces";
+
+// Components
+import CreateGroup from "./CreateGroup";
+import UpdateGroup from "./UpdateGroup";
+import DeleteGroup from "./DeleteGroup";
+import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
 import {
   ArrowPathIcon,
   PlusCircleIcon,
   BuildingStorefrontIcon,
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
-import type { GroupFormType } from "../../../../interfaces";
-import CreateGroup from "./CreateGroup";
-import UpdateGroup from "./UpdateGroup";
-import DeleteGroup from "./DeleteGroup";
-import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
 
-interface GroupsMobileProps {
-  handleFormSelect: (formType: GroupFormType) => void;
-}
-
-const GroupsMobile = ({ handleFormSelect }: GroupsMobileProps) => {
+/** The phone Groups page: a Create / Update / Delete / Assign tab row over the selected form. */
+const GroupsMobile = () => {
   const ctx = useGroupCtx();
+  const dispatch = useAppDispatch();
+  useGroupsData();
+
+  const handleFormSelect = (formType: GroupFormType) => {
+    dispatch(setSelectedForm(formType));
+  };
 
   const renderForm = () => {
     switch (ctx.selectedForm) {

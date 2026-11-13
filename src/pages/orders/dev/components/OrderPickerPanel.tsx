@@ -1,8 +1,19 @@
+// Hooks
 import { useMemo, type ReactNode } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { matchesPick, type OrderDoc } from "../orderEdit";
 
-interface Props {
+// Utils
+import { matchesPick } from "../utils/orderEdit";
+import { fmtOrderDate } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
+
+// Interfaces
+import type { OrderDoc } from "../interfaces";
+
+// Components
+import BackButton from "../../../../components-dev/BackButton";
+import PickerField from "./PickerField";
+
+interface OrderPickerPanelProps {
   /** Every order in the range, newest first. */
   docs: OrderDoc[];
   /** The one being edited, if any. */
@@ -41,14 +52,6 @@ interface Props {
   problems: ReactNode;
 }
 
-/** The same three-digit pad the report panel uses. */
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
-
 /**
  * The left panel while an order is being edited.
  *
@@ -84,7 +87,7 @@ const OrderPickerPanel = ({
   onTab,
   problemsToDo,
   problems,
-}: Props) => {
+}: OrderPickerPanelProps) => {
   /**
    * What each filter offers, narrowed by the other two.
    *
@@ -130,7 +133,7 @@ const OrderPickerPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
+      className="cc-panel shadow-lg flex-shrink-0"
       style={{ width: 300 }}
     >
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">
@@ -138,15 +141,9 @@ const OrderPickerPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             {tab === "problems" ? "Cost problems" : "Order to edit"}
           </span>
-          <button
-            onClick={onOpenSearch}
-            title="New search"
-            className="text-custom-white/95 hover:text-custom-white transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
+          <BackButton onClick={onOpenSearch} />
         </div>
-        <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
+        <div className="cc-navy-header-row flex items-baseline gap-2">
           <span className="text-custom-white/95 text-[12px] truncate">
             {scopeLabel}
           </span>
@@ -185,7 +182,7 @@ const OrderPickerPanel = ({
       ) : (
       <>
       <div className="flex-shrink-0 px-3 pt-3 pb-2 flex flex-col gap-2">
-        <Field label="Store">
+        <PickerField label="Store">
           <select
             value={storeNumber}
             onChange={(e) => onStore(e.target.value)}
@@ -203,9 +200,9 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
 
-        <Field label="Order date">
+        <PickerField label="Order date">
           <select
             value={orderDate}
             onChange={(e) => onDate(e.target.value)}
@@ -223,9 +220,9 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
 
-        <Field label="Order type">
+        <PickerField label="Order type">
           <select
             value={orderType}
             onChange={(e) => onType(e.target.value)}
@@ -243,7 +240,7 @@ const OrderPickerPanel = ({
               </option>
             ))}
           </select>
-        </Field>
+        </PickerField>
       </div>
 
       <div className="flex items-center gap-2 px-3 pb-2 flex-shrink-0">
@@ -326,7 +323,7 @@ const OrderPickerPanel = ({
         </div>
       )}
 
-      <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
+      <div className="border-t border-line_hair px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
           One order is one editable document. Orders marked with a dot have
           changes waiting, and Submit sends every one of them.
@@ -337,14 +334,5 @@ const OrderPickerPanel = ({
     </div>
   );
 };
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-1">
-      {label}
-    </span>
-    {children}
-  </div>
-);
 
 export default OrderPickerPanel;

@@ -1,6 +1,26 @@
+// Hooks
 import { useEffect, useRef, type ReactNode } from "react";
 import { useResizableBox } from "../../hooks/useResizableBox";
+
+// Components
 import ResizeHandle from "../ResizeHandle";
+
+interface ResizableModalShellProps {
+  onClose: () => void;
+  /** localStorage key — unique per modal so sizes don't bleed across pages. */
+  storageKey: string;
+  defaultWidth: number;
+  defaultHeight: number;
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+  /** False for modals that intentionally don't close on backdrop click. */
+  closeOnBackdrop?: boolean;
+  /** Extra classes for the panel. */
+  className?: string;
+  children: ReactNode;
+}
 
 /**
  * Backdrop + drag-to-resize panel for the dev export modals — the same
@@ -23,23 +43,6 @@ import ResizeHandle from "../ResizeHandle";
  * so capping the height lets a drag shrink them without a fixed height
  * squashing headers and footers that were never laid out for it.
  */
-interface ResizableModalShellProps {
-  onClose: () => void;
-  /** localStorage key — unique per modal so sizes don't bleed across pages. */
-  storageKey: string;
-  defaultWidth: number;
-  defaultHeight: number;
-  minWidth?: number;
-  maxWidth?: number;
-  minHeight?: number;
-  maxHeight?: number;
-  /** False for modals that intentionally don't close on backdrop click. */
-  closeOnBackdrop?: boolean;
-  /** Extra classes for the panel. */
-  className?: string;
-  children: ReactNode;
-}
-
 const ResizableModalShell = ({
   onClose,
   storageKey,
@@ -89,7 +92,7 @@ const ResizableModalShell = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4"
+      className="cc-modal-backdrop z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div
@@ -97,7 +100,7 @@ const ResizableModalShell = ({
         // Never taller than the viewport it sits in — the backdrop's p-4 is
         // the 2rem. Only ever reduces the chosen height, never raises it.
         style={{ width, maxHeight: `min(${height}px, calc(100vh - 2rem))` }}
-        className={`relative bg-custom-white rounded-xl shadow-xl overflow-hidden flex flex-col ${className}`}
+        className={`relative cc-panel shadow-xl ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

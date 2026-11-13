@@ -1,14 +1,26 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useOrdersCtx } from "../hooks";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { lineFlags, storeNamesIn } from "../utils/ordersRows";
+import { FLAG_DOT, FLAG_TITLE } from "./utils";
+
+// Interfaces
+import type { GridSort, SortKey } from "../interfaces";
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder } from "../../../../interfaces";
-import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
-import { FLAG_DOT, FLAG_TITLE } from "./flagStyles";
+import PagerButton from "../../../../components-dev/PagerButton";
+import GridKpi from "../../../../components-dev/kpi/GridKpi";
+import StoresKpi from "../../../../components-dev/kpi/StoresKpi";
 
-interface Props {
+interface OrderReportPanelProps {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
   sort: GridSort;
@@ -49,7 +61,8 @@ const OrderReportPanel = ({
   onExport,
   onEnterEdit,
   canEdit,
-}: Props) => {
+}: OrderReportPanelProps) => {
+  const { assignedStores, selectedGroupStores } = useOrdersCtx();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
@@ -78,17 +91,21 @@ const OrderReportPanel = ({
     let eRet = 0;
     let cogs = 0;
     let weight = 0;
-    const stores = new Set<string>();
     const orders = new Set<string>();
     for (const o of visible) {
       eRet += o.e_ret ?? 0;
       cogs += o.cogs ?? 0;
       weight += o.weight ?? 0;
-      stores.add(o.storenumber);
       orders.add(`${o.storenumber}:${o.order_id}`);
     }
-    return { eRet, cogs, weight, stores: stores.size, orders: orders.size };
-  }, [visible]);
+    return {
+      eRet,
+      cogs,
+      weight,
+      storeNames: storeNamesIn(visible, assignedStores, selectedGroupStores),
+      orders: orders.size,
+    };
+  }, [visible, assignedStores, selectedGroupStores]);
 
 
   /** Right-aligned and sortable, on the shared tri-state header. */
@@ -99,14 +116,14 @@ const OrderReportPanel = ({
         label={label}
         sort={sort}
         onSort={onSort}
-        className="ml-auto text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy"
+        className="ml-auto text-[10px] cc-caps hover:text-brand_navy"
       />
     </th>
   );
 
   const plainHead = (label: string, width: number) => (
     <th
-      className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+      className="text-right px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
       style={{ width }}
     >
       {label}
@@ -115,7 +132,7 @@ const OrderReportPanel = ({
 
   return (
     <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
+      className="cc-panel shadow-lg"
       style={{ flex: 1, minWidth: 0 }}
     >
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0 flex items-center gap-3">
@@ -129,7 +146,7 @@ const OrderReportPanel = ({
             <button
               onClick={onEnterEdit}
               title="Edit one order's lines"
-              className="rounded px-2.5 py-0.5 text-[11.5px] font-bold text-custom-white/95 transition-colors hover:text-custom-white"
+              className="rounded px-2.5 py-0.5 text-[11.5px] font-bold cc-navy-link"
             >
               Edit
             </button>
@@ -143,7 +160,7 @@ const OrderReportPanel = ({
           <button data-help="export"
             onClick={onExport}
             title="Export CSV"
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+            className="cc-navy-link flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
           </button>
@@ -161,44 +178,44 @@ const OrderReportPanel = ({
         />
       ) : (
         <>
-          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
-            <Kpi label="Lines" value={visible.length.toLocaleString()} />
-            <Kpi label="Orders" value={totals.orders.toLocaleString()} />
-            <Kpi label="Stores" value={totals.stores.toLocaleString()} />
-            <Kpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
-            <Kpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
-            <Kpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
+          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-fill_soft flex-shrink-0">
+            <GridKpi label="Lines" value={visible.length.toLocaleString()} />
+            <GridKpi label="Orders" value={totals.orders.toLocaleString()} />
+            <StoresKpi stores={totals.storeNames} />
+            <GridKpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+            <GridKpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
+            <GridKpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
           </div>
 
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
-            <table data-help="lines" className="w-full text-[11px] border-collapse">
-              <thead className="sticky top-0 z-10 bg-custom-white">
-                <tr className="border-b border-b-brand_navy/15">
+            <table data-help="lines" className="w-full border-collapse text-[12px]">
+              <thead>
+                <tr className="cc-thead">
                   {/* Narrow and unlabelled: a line can carry two flags at
                       once, and a tint across the row could only show one. */}
                   <th style={{ width: 22 }} aria-label="Cost problems" />
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 100 }}
                   >
                     UPC
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 220 }}
                   >
                     Description
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 130 }}
                   >
                     Sub dept
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    className="text-left px-3 py-2 text-[10px] cc-caps whitespace-nowrap"
                     style={{ width: 70 }}
                   >
                     Store
@@ -213,11 +230,11 @@ const OrderReportPanel = ({
                   {plainHead("Weight", 70)}
                 </tr>
               </thead>
-              <tbody className="bg-custom-white">
+              <tbody className="divide-y divide-brand_navy/15 text-[13px]">
                 {paged.map((o) => (
                   <tr
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
-                    className="border-b border-b-brand_navy/15 even:bg-row_stripe"
+                    className="even:bg-row_stripe hover:bg-fill_soft transition-colors"
                   >
                     <td className="pl-3 py-2">
                       <span className="flex gap-[3px]">
@@ -230,48 +247,48 @@ const OrderReportPanel = ({
                         ))}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="cc-num font-semibold text-content/95">
                       {o.order_id}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {o.line_number}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.product_code}
                     </td>
-                    <td className="px-3 py-2 font-medium text-content max-w-0 truncate">
+                    <td className="px-3 py-2 font-medium text-content/95 max-w-0 truncate">
                       {o.description}
                     </td>
-                    <td className="px-3 py-2 text-content whitespace-nowrap">
+                    <td className="px-3 py-2 text-content/95 whitespace-nowrap">
                       {o.sub_department_description}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.storenumber}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {o.qty}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {formatCurrency2(o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {formatCurrency2(o.active_retail_price)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="cc-num font-semibold text-content/95">
                       {formatCurrency2(o.e_ret)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="cc-num font-semibold text-content/95">
                       {formatCurrency2(o.e_ret - o.cogs)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {o.e_ret > 0
                         ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="cc-num text-content/95">
                       {o.weight ?? "—"}
                     </td>
                   </tr>
@@ -280,8 +297,8 @@ const OrderReportPanel = ({
             </table>
           </div>
 
-          <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
-            <span className="text-[11px] text-content/85">
+          <div className="flex items-center gap-3 border-t border-line_hair px-3 py-1.5 flex-shrink-0">
+            <span className="text-[11px] text-content/95">
               {visible.length === 0
                 ? "No rows"
                 : `${(safePage * pageSize + 1).toLocaleString()}–${Math.min(
@@ -290,7 +307,7 @@ const OrderReportPanel = ({
                   ).toLocaleString()} of ${visible.length.toLocaleString()}`}
             </span>
 
-            <label className="flex items-center gap-1.5 text-[11px] text-content/85">
+            <label className="flex items-center gap-1.5 text-[11px] text-content/95">
               Rows
               <select
                 value={pageSize}
@@ -339,32 +356,5 @@ const OrderReportPanel = ({
     </div>
   );
 };
-
-const PagerButton = ({
-  label,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
-  >
-    {label}
-  </button>
-);
-
-const Kpi = ({ label, value }: { label: string; value: string }) => (
-  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </div>
-    <div className="text-[13px] font-bold text-content truncate">{value}</div>
-  </div>
-);
 
 export default OrderReportPanel;

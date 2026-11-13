@@ -28,11 +28,11 @@ interface Props {
 }
 
 const Stat = ({ value, label }: { value: string; label: string }) => (
-  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-gray-100 last:border-r-0">
+  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-line_hair last:border-r-0">
     <div className="text-[14px] font-semibold tabular-nums text-content leading-tight truncate">
       {value}
     </div>
-    <div className="text-[10px] uppercase tracking-wide text-content/85 truncate">
+    <div className="text-[10px] uppercase tracking-wide text-content/95 truncate">
       {label}
     </div>
   </div>
@@ -54,8 +54,8 @@ const FacetDetail = ({
   const others = FACETS.filter((f) => f.key !== facet);
 
   return (
-    <div className="border-b border-gray-100">
-      <div className="flex items-stretch border-b border-gray-100 bg-gray-50">
+    <div className="border-b border-line_hair">
+      <div className="flex items-stretch border-b border-line_hair bg-fill_soft">
         <Stat value={String(branch.count)} label="occurrences" />
         <Stat value={String(branch.receipts)} label="receipts" />
         <Stat value={formatCurrency2(branch.value)} label="value" />
@@ -68,7 +68,7 @@ const FacetDetail = ({
       </div>
 
       <div className="px-3 py-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
+        <div className="text-[11px] cc-caps mb-1.5">
           Also concentrated by
         </div>
         <div className="space-y-1">
@@ -88,12 +88,12 @@ const FacetDetail = ({
 
             return (
               <div key={f.key} className="flex items-baseline gap-2">
-                <span className="text-[11.5px] text-content/85 w-[86px] flex-shrink-0">
+                <span className="text-[11.5px] text-content/95 w-[86px] flex-shrink-0">
                   {f.label}
                 </span>
                 <span className="text-[12px] text-content min-w-0 flex-1">
                   {top.length === 0 ? (
-                    <span className="text-content/85">
+                    <span className="text-content/95">
                       {f.needsLines && linesLoading
                         ? "reading the receipts…"
                         : `no ${f.noun} data`}

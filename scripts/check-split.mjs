@@ -39,11 +39,13 @@ const DEV = `${PAGE}dev/`;
 for (const d of [PROD, DEV])
   if (!existsSync(d)) { console.error(`missing ${d} — has ${page} been split?`); process.exit(2); }
 
-const files = execSync("git ls-files -co --exclude-standard src", { encoding: "utf8" })
+const files = execSync("git ls-files -co --exclude-standard src tests", { encoding: "utf8" })
   .trim().split("\n").filter((f) => existsSync(f) && statSync(f).isFile());
 const has = new Set(files);
 const resolve = (from, spec) => {
-  const base = P.normalize(P.join(P.dirname(from), spec)).replace(/\/$/, "");
+  // `@/x` is `src/x` (vite.config.ts alias); everything else is relative.
+  const joined = spec.startsWith("@/") ? `src/${spec.slice(2)}` : P.join(P.dirname(from), spec);
+  const base = P.normalize(joined).replace(/\/$/, "");
   for (const s of ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]) if (has.has(base + s)) return base + s;
   return null;
 };
@@ -56,7 +58,7 @@ for (const f of files) {
   if (!/\.(ts|tsx)$/.test(f)) { edges.set(f, []); allEdges.set(f, []); continue; }
   const src = stripComments(readFileSync(f, "utf8"));
   const rt = [], every = [];
-  const re = /(import|export)(\s+type)?\s*([^'";]*?)\s*from\s*["'](\.[^"']*)["']|import\s*\(\s*["'](\.[^"']*)["']\s*\)|import\s+["'](\.[^"']*)["']/g;
+  const re = /(import|export)(\s+type)?\s*([^'";]*?)\s*from\s*["']((?:\.|@\/)[^"']*)["']|import\s*\(\s*["']((?:\.|@\/)[^"']*)["']\s*\)|import\s+["']((?:\.|@\/)[^"']*)["']/g;
   for (const m of src.matchAll(re)) {
     const spec = m[4] || m[5] || m[6];
     // `./thing.html?raw`, `?url`, `?inline` — Vite hands back the file's

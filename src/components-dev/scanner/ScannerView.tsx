@@ -1,52 +1,17 @@
-import Quagga from "@ericblade/quagga2";
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useMediaDevices } from "react-media-devices";
+
+// Utils
 import { normalizeUpc } from ".";
 import { createReadConfirmer, createRepeatGuard } from "./confirmRead";
 import "./scannerView.css";
+import { AREA, cameraMessage, CONSTRAINTS, FRAME_HEIGHT } from "./utils";
 
-const CONSTRAINTS = {
-  video: { facingMode: "environment", width: 1280, height: 720 },
-};
+// Components
+import Quagga from "@ericblade/quagga2";
 
-/**
- * The band Quagga decodes, as percentages inset from each edge.
- *
- * Reading only the middle keeps a neighbouring barcode on a shelf tag out of
- * the decode. These same numbers draw the on-screen guide below, so the box
- * cannot come to promise a region the decoder is not actually reading — the
- * two were written separately once and the guide ended up about eight percent
- * narrower than the truth.
- */
-const AREA = { top: 30, bottom: 30, left: 10, right: 10 };
-
-/**
- * Viewfinder height.
- *
- * It buys more than screen presence: the decode band is the middle 40% of the
- * frame, so this is the one number that sets how tall a barcode can be and
- * still be read. At 175 that band was 70px, which is a tight target held at
- * arm's length over a shelf.
- */
-const FRAME_HEIGHT = 220;
-
-/**
- * Why the camera would not start, in the user's terms.
- *
- * The three cases have different fixes — grant a permission, use another
- * device, serve over https — and "could not start the camera" sends someone
- * looking in the wrong place for all three.
- */
-const cameraMessage = (err: unknown) => {
-  const name = (err as { name?: string } | null)?.name ?? "";
-  if (name === "NotAllowedError" || name === "SecurityError")
-    return "Camera access is blocked. Allow it for this site, or type the UPC.";
-  if (name === "NotFoundError" || name === "DevicesNotFoundError")
-    return "No camera found on this device. Type the UPC instead.";
-  return "Could not start the camera. Type the UPC instead.";
-};
-
-interface Props {
+interface ScannerViewProps {
   /**
    * Fires once per confirmed read.
    *
@@ -87,7 +52,7 @@ interface Props {
  * The component it replaced carried its own, and two screens using it would
  * have shared one `upcCode` between them.
  */
-const ScannerView = ({ onDetected, stopOnRead = false, retryKey = 0, onError }: Props) => {
+const ScannerView = ({ onDetected, stopOnRead = false, retryKey = 0, onError }: ScannerViewProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
 

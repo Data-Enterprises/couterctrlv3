@@ -28,7 +28,6 @@ export type LegacyRootState = RootState["legacy"] &
     | "user"
     | "search"
     | "stores"
-    | "forgotPassword"
     | "ctxMenu"
     | "itemScan"
   > & { app: RootState["app"] & { devMode: boolean } };
@@ -141,7 +140,6 @@ const build = (state: RootState): LegacyRootState =>
     nav: state.nav,
     user: state.user,
     stores: state.stores,
-    forgotPassword: state.forgotPassword,
     ctxMenu: state.ctxMenu,
     itemScan: state.itemScan,
     app: legacyApp(state.app),

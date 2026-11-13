@@ -1,11 +1,12 @@
+// Components
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoButton from "../../InfoButton";
+import BackButton from "../../BackButton";
 
-interface Props {
+interface PerfCardHeaderProps {
   /** What the card is about — the store, the group, the item, the lens. */
   title: string;
   /** A short qualifier beside the title, e.g. "5 stores". */
@@ -35,6 +36,9 @@ interface Props {
    * doing both would be guessing which was meant.
    */
   onTitleTap?: () => void;
+  /** Controls that belong to the whole card, drawn just left of the "?":
+   *  Sales puts its Sales / Units switch here. */
+  actions?: React.ReactNode;
 }
 
 /**
@@ -62,7 +66,8 @@ const PerfCardHeader = ({
   onToggle,
   open = false,
   onTitleTap,
-}: Props) => (
+  actions,
+}: PerfCardHeaderProps) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
         baseline alignment hung it off the bottom of the title's text box. */}
@@ -70,14 +75,7 @@ const PerfCardHeader = ({
       {/* The same bordered 7x7 the desktop panels use for New search — the box
           is what makes it read as a button rather than as decoration beside
           the title. */}
-      <button
-        type="button"
-        onClick={onSearch}
-        aria-label="New search"
-        className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
-      >
-        <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-      </button>
+      <BackButton onClick={onSearch} tone="light" />
       {onTitleTap ? (
         <button
           type="button"
@@ -97,16 +95,15 @@ const PerfCardHeader = ({
       {note && (
         <span className="flex-none text-[12px] text-content/95">{note}</span>
       )}
+      {actions && <div className="ml-auto flex-none">{actions}</div>}
       {onInfo && (
         // Same solid 20px mark as the desktop headers' "?".
-        <button
-          type="button"
+        <InfoButton
+          variant="light"
           onClick={onInfo}
-          aria-label="What this page shows"
-          className="-mr-1 ml-auto flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
-        >
-          <QuestionMarkCircleIcon className="h-5 w-5" />
-        </button>
+          title="What this page shows"
+          className={`-mr-1 flex-none${actions ? "" : " ml-auto"}`}
+        />
       )}
     </div>
     {/* The date line doubles as the expand control when the card is one. The
@@ -119,7 +116,7 @@ const PerfCardHeader = ({
         aria-expanded={open}
         className="flex w-full items-center gap-2 px-4 pt-2 text-left active:bg-bkg"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
+        <span className="min-w-0 flex-1 truncate cc-caps-mono text-[10px]">
           {[label, when].filter(Boolean).join(" · ")}
         </span>
         {open ? (
@@ -129,7 +126,7 @@ const PerfCardHeader = ({
         )}
       </button>
     ) : (
-      <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/95">
+      <div className="truncate px-4 pt-2 cc-caps-mono text-[10px]">
         {/* Either part can be empty — no store selected leaves only the dates —
             so join what's there rather than leading with a stray dot. */}
         {[label, when].filter(Boolean).join(" · ")}

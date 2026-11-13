@@ -1,6 +1,9 @@
+// Hooks
 import { useAppSelector } from "../../../hooks";
+
+// Components
 import SalesPerfMobile from "./mobile/perf/SalesPerfMobile";
-import SalesLedger from "./SalesLedger";
+import SalesLedger from "./ledger/SalesLedger";
 
 /**
  * Sales, dev tree. Rendered by `pages/sales/Sales.tsx` when the session is on

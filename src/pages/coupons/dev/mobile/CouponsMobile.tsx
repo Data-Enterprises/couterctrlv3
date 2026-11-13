@@ -1,49 +1,47 @@
+// Hooks
 import { useEffect, useState, useMemo } from "react";
-import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
-import { useCouponContext } from "..";
-import { useCouponActions } from "../hooks/useCouponActions";
+import { useAppDispatch, useSearchPick } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useCouponContext, useCouponActions } from "../hooks";
+
+// Redux
+import { setSelectedGroupStores } from "../../../../features/userSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
 import { getCoupons } from "../../../../api/coupons";
 import { getStoresAssignedToUserGroup } from "../../../../api/groups";
-import { setSelectedGroupStores } from "../../../../features/userSlice";
+
+// Utils
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { fmtSearchDate } from "./utils";
+
+// Interfaces
+import type { GroupTab } from "../interfaces";
+import type { Screen } from "./interfaces";
 import type {
   CouponsResponse,
   CouponItem,
   JsonError,
 } from "../../../../interfaces";
+
+// Components
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
-import { isGroupSearch } from "../../../../features/searchSlice";
 
-export type GroupTab = "subdept" | "date" | "cashier";
-
-type Screen = "entry" | "stores" | "overview" | "detail";
-
-const fmtSearchDate = (mdy: string) => {
-  const [m, d, y] = mdy.split("/");
-  return new Date(
-    `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`,
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
-
+/** The phone Coupons page. It holds the search card, then moves through the store list (group searches only),
+ *  the overview with its Sub dept/Date/Cashier tabs, and a section's product detail. */
 const CouponsMobile = () => {
   const ctx = useCouponContext();
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
   const toast = useToast();
-  const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
-  const userid = useAppSelector((s) => s.user.userid);
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
+  const { selectedGroup, userid, assignedStores, selectedGroupStores: groupStores } = ctx;
 
   const [screen, setScreen] = useState<Screen>("entry");
   // null in group mode means "All stores" — the whole group, unscoped.
@@ -77,9 +75,8 @@ const CouponsMobile = () => {
     dispatch(actions.setCoupons([]));
     dispatch(actions.setIsFetching(true));
     dispatch(actions.setNoCouponsFound(false));
-    // A group search can return stores this user isn't personally assigned to.
-    // Desktop loads them here so store names resolve for those rows; without
-    // it mobile fell back to the coupon payload's own store_name.
+    // A group search can return stores this user isn't assigned to; loading
+    // them here lets those rows' store names resolve.
     if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
         .then((resp) => {
@@ -161,13 +158,11 @@ const CouponsMobile = () => {
     return filteredCoupons;
   }, [filteredCoupons, selectedSection, selectedTab]);
 
-  // Names come from assignedStores/groupStores, never the coupon payload, then
-  // get the on-screen location's number written back in — co-located stores
-  // share one storeid and therefore one assignedStores record.
+  // Names come from assignedStores/groupStores, never the coupon payload, with
+  // the location's number written in: co-located stores share one storeid.
   const storeName = useMemo(() => {
-    // Group mode with nothing picked is the "All stores" view, so the group is
-    // the subject. A single-store search has no store list to pick from, so the
-    // scope is whatever was searched.
+    // Group mode with nothing picked is "All stores", so the group is the
+    // subject; a single-store search's scope is what was searched.
     const storeid = selectedStoreId ?? (isGroup ? null : Number(ctx.lastStore));
     if (storeid === null) return (selectedGroup as any)?.group_name ?? "Group";
 
@@ -272,7 +267,7 @@ const CouponsMobile = () => {
             </div>
           </div>
           {ctx.noCouponsFound && (
-            <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+            <div className="cc-notice text-[11.5px] leading-snug">
               No coupons came back for this search.
             </div>
           )}

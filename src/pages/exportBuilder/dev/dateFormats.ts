@@ -1,4 +1,4 @@
-import type { SelectFilterOption } from "../../../components-dev/filters/SelectFilter";
+import type { SelectFilterOption } from "../../../components-dev/filters/interfaces";
 
 /**
  * PARKED, 2026-09-24. The endpoint does not take a date format.

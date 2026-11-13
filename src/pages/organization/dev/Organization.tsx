@@ -1,42 +1,9 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
-
-/**
- * Owner. Companies, base groups and stores each decide who may see what,
- * which is an administrator's job rather than a manager's. Levels run
- * 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
- */
-const OWNER_LEVEL = 7;
-
-/**
- * What each tab is worth before its content says otherwise.
- *
- * The three access tabs are a list beside a panel and want the width; the
- * users grid is a table and wants a little less. Heights are explicit because
- * every one of these scrolls internally — their columns and grids have no
- * natural height to hug, so `auto` would collapse them to nothing. A view
- * that knows better overrides this with `usePanelFit`, which is how the Add
- * user wizard gets its own size per step.
- */
-const TAB_FIT: Record<Tab, PanelFit> = {
-  users: { width: 1200, height: 660 },
-  companies: { width: 1320, height: 660 },
-  baseGroups: { width: 1320, height: 660 },
-  stores: { width: 1320, height: 660 },
-};
-import { PanelFitContext, type PanelFit } from "./panelFit";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type {
-  CompanyJsonResp,
-  JsonError,
-  User,
-  UserLevelJsonResp,
-} from "../../../interfaces";
-import { getAllUsers } from "../../../api/user";
-import { getUserLevels } from "../../../api/team";
-import { getCompanies } from "../../../api/company";
+
+// Redux
 import {
   setAllCompanies,
   setInactiveUsers,
@@ -49,43 +16,43 @@ import {
   setUnsavedWizard,
   setUsersExportOpen,
 } from "../../../features/dev/devOrganizationSlice";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import UsersExportModal from "./users/UsersExportModal";
+
+// API
+import { getAllUsers } from "../../../api/user";
+import { getUserLevels } from "../../../api/team";
+import { getCompanies } from "../../../api/company";
+
+// Utils
+import { PanelFitContext } from "./utils/panelFit";
 import {
   filterUsers,
   filtersApplied,
   showsInactive,
-} from "./users/userFilters";
+} from "./utils/userFilters";
+import { OWNER_LEVEL, TAB_FIT, TABS } from "./utils";
+
+// Interfaces
+import type { Tab, PanelFit } from "./interfaces";
+import type {
+  CompanyJsonResp,
+  JsonError,
+  User,
+  UserLevelJsonResp,
+} from "../../../interfaces";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
+import ConfirmModal from "../../../components-dev/ConfirmModal";
+import UsersExportModal from "./components/UsersExportModal";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
 import StoresTab from "./stores/StoresTab";
 
-type Tab = "users" | "companies" | "baseGroups" | "stores";
-
-/**
- * The tabs, in order, and the lowest level that sees each. `null` is everyone.
- *
- * - Users: managers and up.
- * - Companies, Base Groups and Stores: owners and up.
- *
- * Below level 5 there is no tab at all, and the page says so (the nav hides
- * it, but `/team` and a typed address still reach it).
- */
-const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
-  { id: "users", label: "Users", minLevel: 5 },
-  // Owner and up for all three. Each decides who may see what — the company
-  // boundary, the groups inside it, and the stores themselves — which is an
-  // administrator's job and not a manager's.
-  //
-  // Companies sits first because it is the outer boundary: a group only
-  // reaches somebody who holds the company it belongs to.
-  { id: "companies", label: "Companies", minLevel: OWNER_LEVEL },
-  { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
-  { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
-];
-
-
+/** The User Management page: a resizable box with tabs for Users, Companies, Base Groups and Stores, the
+ *  Export CSV button, and a discard prompt when switching tabs with unsaved changes. Accounts with no
+ *  tab to show see a "no access" notice. */
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
@@ -100,29 +67,18 @@ const Organization = () => {
     else setTab(next);
   };
   /**
-   * The size the open view asks for.
-   *
-   * The panel used to be a dragged rectangle whose size was remembered, which
-   * meant every view inherited whatever shape the last one was left in — the
-   * Add user wizard opened as a column of fields against an acre of empty
-   * card at the remembered 1600px. Nothing here is a canvas somebody needs
-   * more room on; each view has a size that fits it, so each view says what
-   * that is and the panel takes it.
+   * The size the open view asks for; each view has one that fits it.
    */
   const [fit, setFit] = useState<PanelFit | null>(null);
   const canSeeUsers = tabs.some((t) => t.id === "users");
 
-  // usersSlice is shared with the legacy Team page (no forked slice), so
-  // switching Live -> Preview mounts this component with whatever
-  // refresh/users state legacy last left behind — often refresh:false,
-  // which would skip the fetch below entirely and show stale/legacy-shaped
-  // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
+  // usersSlice is shared with the legacy Team page, which can leave
+  // refresh:false behind and skip the fetch; so fetch fresh on every mount.
   useEffect(() => {
     if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
     // An export window left open on a previous visit stays shut until asked.
     ctx.dispatch(setUsersExportOpen(false));
   }, []);
-
 
   // The users list only loads for people who get the Users tab.
   useEffect(() => {
@@ -154,7 +110,6 @@ const Organization = () => {
           (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
         );
         // in place to double check the api is working so we don't mess with live users
-        // const realInactiveUsers = j.inactive_users;
         ctx.dispatch(
           setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
         );
@@ -176,10 +131,8 @@ const Organization = () => {
         if (j.error === 0) ctx.dispatch(setUserLevels(j.levels));
       })
       .catch((err: JsonError) => toast.error(err.message));
-    // Programmers assign companies they do not themselves hold — setting up a
-    // new client is exactly that case. Everybody else keeps being offered the
-    // companies on their own account, which is all they have any business
-    // handing out, so this call is not made for them at all.
+    // Only programmers fetch every company: they assign ones they don't hold.
+    // Everyone else is offered the companies on their own account.
     if (ctx.isProgrammer) {
       getCompanies(ctx.url, ctx.token)
         .then((resp) => {
@@ -193,16 +146,13 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
-  // Desktop only: no tablet or phone layout (a tablet or phone that reaches
-  // the page by address gets this one). The mobile layout for User Management
-  // and groups is being reworked, so dev has none for now.
+  // Desktop only: dev has no tablet or phone layout for User Management yet.
 
   const exportable = tab === "users" || tab === "stores";
 
   /**
-   * The users export, from here rather than inside the grid: the grid isn't
-   * mounted while Add or Edit is open, so the header's Export did nothing
-   * then. Same list and filters the grid shows, from the slice.
+   * The users export lives here, not in the grid: the grid isn't mounted while
+   * Add or Edit is open. Same list and filters as the grid, from the slice.
    */
   const exportInactive = showsInactive(ctx.usersGridFilters);
   const exportSource = exportInactive ? ctx.inactiveUsers : ctx.users;
@@ -210,8 +160,7 @@ const Organization = () => {
   /** What the open view asked for, else what the tab is worth. */
   const size = fit ?? TAB_FIT[tab];
 
-  // No tab to show. This fell back to a "userGroups" tab that no longer
-  // exists and then read a size it doesn't have.
+  // No tab to show for this level.
   if (tabs.length === 0) {
     return (
       <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 flex justify-center">
@@ -225,7 +174,7 @@ const Organization = () => {
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] cc-panel shadow-lg self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
         style={{
           width: size.width,
           // Auto lets the card end where the form ends. max-h still caps it,
@@ -234,7 +183,7 @@ const Organization = () => {
         }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             User Management
           </span>
           <div className="flex-1" />
@@ -247,7 +196,7 @@ const Organization = () => {
               }
               title="Export CSV"
               data-help="export"
-              className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+              className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             </button>
@@ -255,7 +204,7 @@ const Organization = () => {
           <PageInfoButton page="user-management" title="About this page" />
         </div>
 
-        <div data-help="tabs" className="flex border-b border-gray-100 flex-shrink-0">
+        <div data-help="tabs" className="flex border-b border-line_hair flex-shrink-0">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -270,7 +219,6 @@ const Organization = () => {
             </button>
           ))}
         </div>
-
 
         {pendingTab && ctx.unsavedWizard && (
           <ConfirmModal

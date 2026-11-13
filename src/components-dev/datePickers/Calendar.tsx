@@ -1,17 +1,24 @@
+// Hooks
 import { useState } from "react";
-import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
-import { formatDate } from "../../utils";
 import { useAppSelector } from "../../hooks";
-// import { setStartDate, setEndDate } from "../../features/searchSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-interface Props {
+// Utils
+import { formatDate } from "../../utils";
+
+// Components
+import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
+
+interface CalendarProps {
   handleCancel: () => void;
   handleDate?: (x: string) => void;
   dateFlag?: string;
 }
 
-const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
+/** Month calendar with previous/next arrows and a day grid. Picking a day
+ *  passes it to `handleDate`; a start date after the end date (or the reverse)
+ *  is refused with a warning toast. */
+const Calendar = ({ handleCancel, handleDate, dateFlag }: CalendarProps) => {
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const monthsOfYear = [
     "Jan",
@@ -112,7 +119,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
           <div className="buttons flex gap-2 px-2">
             <i
               data-testid="prev-month-button"
-              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
+              className="bg-emerald-500 rounded-full text-custom-white cursor-pointer"
               onClick={prevMonth}
             >
               <ChevronLeftIcon
@@ -123,7 +130,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
             </i>
             <i
               data-testid="next-month-button"
-              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
+              className="bg-emerald-500 rounded-full text-custom-white cursor-pointer"
               onClick={nextMonth}
             >
               <ChevronRightIcon
@@ -153,7 +160,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
             data-testid={`${dateFlag}-calendar-day-${id}`}
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
-            className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(
+            className={`day hover:bg-fill_soft transition-all duration-200 ${isSelectedDate(
               day,
             )}`}
           >

@@ -1,8 +1,9 @@
+// Hooks
 import { useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSuggestedGroup, getSuggestedItems } from "../../../api/suggested";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Redux
 import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setGroupRows,
@@ -24,8 +25,16 @@ import {
   type SheetKey,
 } from "../../../features/dev/devSuggestedSlice";
 import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getSuggestedGroup, getSuggestedItems } from "../../../api/suggested";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
 import { getStoreName } from "../../../utils";
-import { deptLabel, sheetRows } from ".";
+import { deptLabel, sheetRows } from "./utils/figures";
+
+// Interfaces
 import type {
   JsonError,
   Store,
@@ -33,10 +42,12 @@ import type {
   SuggestedItemsResp,
 } from "../../../interfaces";
 
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
-import SuggestedExportModal from "./SuggestedExportModal";
-import StoreTreePanel from "./StoreTreePanel";
-import OrderSheetPanel from "./OrderSheetPanel";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import SuggestedExportModal from "./export/SuggestedExportModal";
+import StoreTreePanel from "./storeTree/StoreTreePanel";
+import OrderSheetPanel from "./orderSheet/OrderSheetPanel";
 
 /**
  * Suggested Weight — pounds to buy for each scale item.
@@ -192,7 +203,7 @@ const Suggested = () => {
     <div className="flex flex-col gap-2">
       <div className="flex items-start gap-3">
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[12px] cc-caps">
           Days until delivery
         </span>
         <input
@@ -202,12 +213,12 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setLeadDays(Math.max(0, Number(e.target.value) || 0)))
           }
-          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-line_strong bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[12px] cc-caps">
           Cover days
         </span>
         <input
@@ -217,7 +228,7 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setCoverDays(Math.max(1, Number(e.target.value) || 1)))
           }
-          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-line_strong bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>
@@ -225,7 +236,7 @@ const Suggested = () => {
       {/* States what the two are, not what they should be. Every version of
           this that used an example ended up prescribing an ordering rhythm --
           Friday and Monday trucks are one store's week, not everyone's. */}
-      <p className="text-[12px] text-content/85 leading-snug">
+      <p className="text-[12px] text-content/95 leading-snug">
         Days until delivery runs from placing the order to the truck arriving.
         Cover days runs from that truck to the next one.
       </p>
@@ -292,14 +303,9 @@ const Suggested = () => {
       <OrderSheetPanel />
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            {searchCard(() => setSearchModalOpen(false))}
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          {searchCard(() => setSearchModalOpen(false))}
+        </SearchPopup>
       )}
     </div>
   );

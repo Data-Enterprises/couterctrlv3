@@ -1,4 +1,7 @@
+// Hooks
 import { useEffect, useState } from "react";
+
+// Interfaces
 import type { HelpAnchor } from "./helpTypes";
 
 export interface HighlightBox {

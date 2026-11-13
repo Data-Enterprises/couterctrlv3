@@ -1,3 +1,4 @@
+// Hooks
 import { useLayoutEffect, useRef, useState } from "react";
 
 /** How far a tip sits from the cursor, and from the screen's edges. */

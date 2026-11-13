@@ -1,22 +1,7 @@
-/**
- * The sort row above a mobile Performance list.
- *
- * Neutral on purpose: sorting says nothing about good or bad, so it takes the
- * navy "All" treatment from SevChips rather than any severity colour. Shared so
- * every mobile Performance page sorts with the same control.
- *
- * The active chip can carry a direction arrow. It is optional so the pages that
- * sort one way only are unchanged, and it shows the direction the list is
- * actually in rather than a fixed glyph — "biggest first" and "worst first" are
- * both a column's natural opening, and they point opposite ways.
- */
+// Interfaces
+import type { SortOption } from "./interfaces";
 
-export interface SortOption<K extends string> {
-  key: K;
-  label: string;
-}
-
-interface Props<K extends string> {
+interface MobileSortChipsProps<K extends string> {
   options: SortOption<K>[];
   /** null when no sort is applied and the list is in its natural order. */
   value: K | null;
@@ -36,13 +21,25 @@ interface Props<K extends string> {
   label?: string;
 }
 
+/**
+ * The sort row above a mobile Performance list.
+ *
+ * Neutral on purpose: sorting says nothing about good or bad, so it takes the
+ * navy "All" treatment from SevChips rather than any severity colour. Shared so
+ * every mobile Performance page sorts with the same control.
+ *
+ * The active chip can carry a direction arrow. It is optional so the pages that
+ * sort one way only are unchanged, and it shows the direction the list is
+ * actually in rather than a fixed glyph — "biggest first" and "worst first" are
+ * both a column's natural opening, and they point opposite ways.
+ */
 const MobileSortChips = <K extends string>({
   options,
   value,
   dir,
   onChange,
   label,
-}: Props<K>) => (
+}: MobileSortChipsProps<K>) => (
   // `pl-3.5` plus a trailing spacer, not `px-3.5`: a flex scroll container
   // drops its right padding at the end of its scroll range — see SevChips.
   <div
@@ -52,7 +49,7 @@ const MobileSortChips = <K extends string>({
     className="flex items-center gap-2 overflow-x-auto border-b border-brand_line py-2 pl-3.5"
   >
     {label && (
-      <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/95">
+      <span className="flex-shrink-0 cc-caps-mono text-[10px]">
         {label}
       </span>
     )}
@@ -66,7 +63,7 @@ const MobileSortChips = <K extends string>({
         className={`flex-shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition-colors ${
           value === o.key
             ? "border-brand_navy bg-brand_navy text-custom-white"
-            : "border-gray-200 bg-custom-white text-content/95"
+            : "border-line_field bg-custom-white text-content/95"
         }`}
       >
         {o.label}

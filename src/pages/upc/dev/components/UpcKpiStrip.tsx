@@ -10,6 +10,8 @@ import { getMovementKpis } from "../modules/movement/MovementKpis";
 import { movementGrid, movementStores } from "../modules/movement/movementStats";
 import { useMovementWindow } from "../modules/movement/useMovementWindow";
 
+/** The row of KPI figures above the UPC List tabs, computed for the active tab from the
+ *  selected UPCs. Hidden when no UPC is selected. */
 const UpcKpiStrip = () => {
   const ctx = useUpcDevCtx();
   const movementWindow = useMovementWindow();
@@ -65,12 +67,12 @@ const UpcKpiStrip = () => {
 
   return (
     <div
-      className="grid divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0"
+      className="grid divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft flex-shrink-0"
       style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}
     >
       {kpis.map((kpi, i) => (
         <div key={i} className="px-4 pt-2.5 pb-2.5 text-center min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[10px] cc-caps-strong">
             {kpi.label}
           </div>
           {kpi.sub && (

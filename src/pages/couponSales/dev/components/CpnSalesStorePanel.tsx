@@ -1,8 +1,10 @@
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
+// Hooks
 import { useMemo, useRef } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import { useAppDispatch } from "../../../../hooks";
+import { useCouponSalesCtx } from "../hooks";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
+
+// Redux
 import {
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -13,35 +15,50 @@ import {
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
   type CouponTierFilter,
-  type CouponMetric,
 } from "../../../../features/dev/devCouponSalesSlice";
+
+// Utils
+import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import {
+  couponDotClass,
+  couponPillClass,
+  type CouponRow,
+  type CouponTotals,
+  METRIC_OPTS,
+} from "../utils";
+
+// Interfaces
+import type { StoreSortCol } from "../interfaces";
+
+// Components
+import BackButton from "../../../../components-dev/BackButton";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
 import SortHeader from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
-const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
-  { key: "trend", label: "Trend" },
-  { key: "avg", label: "Avg $" },
-];
-
-type StoreSortCol = "amount" | "trans" | "count";
-
-interface Props {
+interface CpnSalesStorePanelProps {
   rows: CouponRow[];
   totals: CouponTotals;
   rangeLabel: string;
   onOpenSearch: () => void;
 }
 
-const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
+/** Coupon Sales' left panel: the week's totals, a Trend / Avg $ switch with its threshold,
+ *  tier chips, a store filter and the graded store list (sortable by amount, trans and
+ *  count). Clicking a store selects it. */
+const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSalesStorePanelProps) => {
   const dispatch = useAppDispatch();
-  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
+  const {
+    threshold: rawThreshold,
+    trendThreshold: rawTrendThreshold,
+    metric,
+    tierFilter,
+    storeFilter,
+    selectedStoreKey,
+  } = useCouponSalesCtx();
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
-  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.dev.couponSales.metric);
   const isTrend = metric === "trend";
   const activeRaw = isTrend ? rawTrendThreshold : rawThreshold;
 
@@ -51,9 +68,6 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
     rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
   );
   if (rawTrendThreshold !== null) lastValidTrendRef.current = rawTrendThreshold;
-  const tierFilter = useAppSelector((s) => s.dev.couponSales.tierFilter);
-  const storeFilter = useAppSelector((s) => s.dev.couponSales.storeFilter);
-  const selectedStoreKey = useAppSelector((s) => s.dev.couponSales.selectedStoreKey);
 
   // Clearing the numeric input dispatches null; grading deliberately holds the
   // last valid amount so rows don't reshuffle mid-edit. The slider has to sit
@@ -86,31 +100,31 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
   return (
     <div className="flex flex-col min-w-0 h-full shadow-lg">
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0">
+      <div className="cc-navy-panel-header flex flex-col gap-0 flex-shrink-0">
         {/* Row 1: range | labelled totals, matching LP's SALES/TRANS/QTY run */}
         <div className="flex items-center gap-2 min-h-[26px]">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             {rangeLabel}
           </span>
           <div className="flex-1" />
           <div className="flex items-center gap-3 text-custom-white">
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Amount{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatCurrencyCompact(totals.amount)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Coupons{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatBigNumber(totals.lines, 0)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
               Avg{" "}
-              <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
+              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
                 {formatCurrency2(totals.avgAmount)}
               </span>
             </span>
@@ -118,14 +132,8 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
         </div>
 
         {/* Row 2: search | threshold */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button data-help="search"
-            onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            aria-label="New search"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex items-center gap-2 cc-navy-header-row">
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
 
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
@@ -219,7 +227,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       </div>
 
       {/* ── Tier chips + text filter ───────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100 flex-shrink-0">
+      <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair flex-shrink-0">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => toggleTier("critical")}
@@ -266,9 +274,9 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       </div>
 
       {/* ── Column headers ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
-        <span className="flex-1 text-[10px] font-bold uppercase tracking-wide text-content">
+        <span className="flex-1 text-[10px] cc-caps-strong">
           Store
         </span>
         <div data-help="sort" className="flex items-center gap-[14px]">
@@ -277,28 +285,28 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
             label="Amount"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[64px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
+            className="text-[10px] cc-caps-strong justify-end w-[64px] flex-shrink-0 hover:underline"
           />
           <SortHeader
             col="trans"
             label="Trans"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
+            className="text-[10px] cc-caps-strong justify-end w-[46px] flex-shrink-0 hover:underline"
           />
           <SortHeader
             col="count"
             label="Count"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
+            className="text-[10px] cc-caps-strong justify-end w-[46px] flex-shrink-0 hover:underline"
           />
-          <span className="text-[10px] font-bold uppercase tracking-wide text-content text-center" style={{ width: 58 }}>
+          <span className="text-[10px] cc-caps-strong text-center" style={{ width: 58 }}>
             Avg
           </span>
           {isTrend && (
             <span
-              className="text-[10px] font-bold uppercase tracking-wide text-content text-center"
+              className="text-[10px] cc-caps-strong text-center"
               style={{ width: 62 }}
               title="Change in average coupon versus this store's own prior two weeks"
             >
@@ -309,9 +317,9 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       </div>
 
       {/* ── Rows ───────────────────────────────────────────────────────── */}
-      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
+      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-line_hair rounded-b-xl">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-[12px] text-content/60">
+          <div className="flex items-center justify-center h-24 text-[12px] text-content/95">
             No stores match
           </div>
         ) : (
@@ -323,8 +331,8 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
                 onClick={() => dispatch(setSelectedCouponStore(row.key))}
                 className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                   isSel
-                    ? "bg-row_selected border-row_selected_border"
-                    : "border-transparent hover:bg-gray-50"
+                    ? "cc-row-selected"
+                    : "border-transparent hover:bg-fill_soft"
                 }`}
               >
                 <span
@@ -377,7 +385,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
                   <span
                     className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
                       row.trendPct === null
-                        ? "text-content/40"
+                        ? "text-content/95"
                         : row.trendPct > 0
                           ? "text-severity_critical_text"
                           : "text-severity_healthy_text"

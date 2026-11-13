@@ -1,0 +1,117 @@
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { LENS_COLUMN_LABEL, LENSES, SPREAD_STYLES } from "../utils";
+
+// Interfaces
+import type { Signal } from "../interfaces";
+import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
+
+// Components
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+
+interface LensPanelProps {
+  lens: ExplorerLens;
+  onLensChange: (lens: ExplorerLens) => void;
+  signals: Signal[];
+  selectedKey: string;
+  onSelect: (key: string) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+}
+
+/** The explorer's left list: lens buttons, a search box and the signal rows for the chosen lens, with the picked row highlighted. */
+const LensPanel = ({
+  lens,
+  onLensChange,
+  signals,
+  selectedKey,
+  onSelect,
+  search,
+  onSearchChange,
+}: LensPanelProps) => {
+  return (
+    <div className="w-[42%] flex-shrink-0 flex flex-col min-h-0 border-r border-line_hair">
+      <div data-help="grouping" className="flex gap-1 p-2 border-b border-line_hair flex-shrink-0">
+        {LENSES.map((l) => (
+          <button
+            key={l.key}
+            onClick={() => onLensChange(l.key)}
+            className={`text-[11.5px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+              lens === l.key
+                ? "bg-brand_navy text-custom-white"
+                : "bg-fill_soft text-content hover:bg-fill_muted"
+            }`}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="p-2 border-b border-line_hair flex-shrink-0">
+        <TextFilter
+          value={search}
+          onChange={onSearchChange}
+          placeholder={`Search ${signals.length} ${LENS_COLUMN_LABEL[lens].toLowerCase()} groups…`}
+        />
+      </div>
+
+      <div className="grid grid-cols-[1fr_auto] px-3 py-1.5 bg-fill_soft text-[9px] cc-caps-strong flex-shrink-0">
+        <div>{LENS_COLUMN_LABEL[lens]}</div>
+        <div>Lines · transactions</div>
+      </div>
+
+      <div className="cc-scroll divide-y divide-brand_navy/15">
+        {signals.length === 0 && (
+          <div className="flex items-center justify-center py-8 text-[12px] text-content">
+            No matches
+          </div>
+        )}
+        {signals.map((s) => {
+          const isSelected = s.key === selectedKey;
+          return (
+            <button
+              key={s.key}
+              onClick={() => onSelect(s.key)}
+              className={`w-full text-left px-3 py-2 transition-colors ${
+                isSelected ? "cc-row-selected" : "even:bg-row_stripe hover:bg-fill_soft"
+              }`}
+              style={
+                isSelected
+                  ? { boxShadow: "inset 2px 0 0 rgb(var(--color-row-selected-border))" }
+                  : undefined
+              }
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[12.5px] font-medium text-content truncate">
+                  {s.label}
+                </span>
+                {/* Two numbers: one transaction with 15 voids is not 15
+                    transactions with one void each. */}
+                <span
+                  className="text-[12.5px] font-medium text-content flex-shrink-0"
+                  title={`${s.count} exception lines across ${s.transactions} transactions`}
+                >
+                  {s.count}
+                  <span className="text-content/95"> · {s.transactions}</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-0.5">
+                <span className="text-[10.5px] text-content/95 truncate">
+                  {s.sublabel ? `${s.sublabel} · ` : ""}
+                  {formatCurrency2(s.amount)}
+                </span>
+                <span
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${SPREAD_STYLES[s.spread]}`}
+                >
+                  {s.spreadLabel}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default LensPanel;

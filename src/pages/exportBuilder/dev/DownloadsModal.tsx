@@ -82,7 +82,7 @@ const DownloadsModal = () => {
       <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Previous builds</h2>
-          <span className="text-[11.5px] text-content/85">
+          <span className="text-[11.5px] text-content/95">
             yours, newest first · links last {ctx.buildsExpireMinutes} min from
             this listing
           </span>
@@ -105,19 +105,19 @@ const DownloadsModal = () => {
         </div>
 
         {ctx.buildsError && (
-          <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12px] text-amber-900">
+          <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 text-[12px] text-severity_watch_text">
             {ctx.buildsError}
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-3">
+        <div className="cc-scroll flex flex-col gap-3">
           {groups.map((group) => (
             <div key={group.id ?? "adhoc"} className="flex flex-col gap-1.5">
               <div className="flex items-baseline gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+                <span className="text-[11px] cc-caps">
                   {group.name}
                 </span>
-                <span className="text-[11px] text-content/85">
+                <span className="text-[11px] text-content/95">
                   {group.builds.length} build
                   {group.builds.length === 1 ? "" : "s"}
                 </span>
@@ -139,7 +139,7 @@ const DownloadsModal = () => {
                   >
                     <ArrowDownTrayIcon
                       className={`w-4 h-4 ${
-                        build.expired ? "text-content/85" : "text-brand_green"
+                        build.expired ? "text-content/95" : "text-brand_green"
                       }`}
                     />
                   </div>
@@ -153,13 +153,13 @@ const DownloadsModal = () => {
                     <div className="font-mono text-[12.5px] font-semibold truncate">
                       {build.files[0]?.key.split("/").pop() ?? "no file"}
                       {build.files.length > 1 && (
-                        <span className="font-sans font-normal text-content/85">
+                        <span className="font-sans font-normal text-content/95">
                           {" "}
                           + {build.files.length - 1} more
                         </span>
                       )}
                     </div>
-                    <div className="text-[11.5px] text-content/85 mt-0.5">
+                    <div className="text-[11.5px] text-content/95 mt-0.5">
                       {build.startDate} to {build.endDate} ·{" "}
                       {build.storeCount} store
                       {build.storeCount === 1 ? "" : "s"} ·{" "}
@@ -167,7 +167,7 @@ const DownloadsModal = () => {
                       {mb(build.bytesUploaded)} ·{" "}
                       {build.fileFormat.toUpperCase()}
                     </div>
-                    <div className="text-[11px] text-content/85 mt-0.5">
+                    <div className="text-[11px] text-content/95 mt-0.5">
                       ran {ranAt(build.createdAt)} · built in{" "}
                       {build.elapsedSeconds.toFixed(1)}s
                       {" · "}
@@ -243,7 +243,7 @@ const DownloadsModal = () => {
                     * a list you open, and each one is named.
                     */}
                   {build.expired ? (
-                    <span className="text-[11.5px] text-content/85 text-right max-w-[14ch] flex-shrink-0">
+                    <span className="text-[11.5px] text-content/95 text-right max-w-[14ch] flex-shrink-0">
                       File is gone — build it again
                     </span>
                   ) : build.files.length === 1 ? (
@@ -317,7 +317,7 @@ const DownloadsModal = () => {
               <div className="text-[13px] font-semibold">
                 {ctx.buildsLoading ? "Reading your builds..." : "No builds yet"}
               </div>
-              <div className="text-[12.5px] text-content/85 mt-1.5 max-w-[48ch] mx-auto">
+              <div className="text-[12.5px] text-content/95 mt-1.5 max-w-[48ch] mx-auto">
                 Every file you build lands here with the settings that made it,
                 so a month from now you can download it again or put those
                 settings back on the page.

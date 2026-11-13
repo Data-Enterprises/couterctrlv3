@@ -1,4 +1,8 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
+import { useTicketsCtx } from "./hooks";
+
+// Redux
 import {
   clearFilters,
   openNew,
@@ -6,51 +10,26 @@ import {
   setSearch,
   setTab,
 } from "../../../features/dev/devTicketsSlice";
-import { useTicketsCtx } from "./hooks";
-import { priorityCounts, statusCounts } from "./ticketsUtils";
-import { storesOnTickets } from "./ticketStores";
-import TicketInbox from "./TicketInbox";
-import TicketDetail from "./TicketDetail";
-import TicketSidebar from "./TicketSidebar";
-import NewTicketModal from "./NewTicketModal";
-import CloseTicketModal from "./CloseTicketModal";
-import TechsModal from "./TechsModal";
+
+// Utils
+import { priorityCounts, statusCounts } from "./utils/ticketsUtils";
+import { storesOnTickets } from "./utils";
+
+// Components
+import TicketInbox from "./components/ticketInbox/TicketInbox";
+import TicketDetail from "./components/ticketDetail/TicketDetail";
+import TicketSidebar from "./components/TicketSidebar";
+import NewTicketModal from "./components/modals/NewTicketModal";
+import CloseTicketModal from "./components/modals/CloseTicketModal";
+import TechsModal from "./components/modals/techsModal/TechsModal";
 
 /**
- * The Client Help Desk — one page, two views.
- *
- * Which view someone gets is decided by the server and arrives with the data:
- * `canViewAll` brings the queue, every company's tickets and the internal
- * notes; without it the page is the tickets the client may see, which `scope`
- * names: their own, also their stores', or also their companies'. Nothing here
- * derives that from a user level, because the rule lives server-side and the
- * two would drift the first time a level moved.
- *
- * One route rather than two nav entries. The flags come back on every list and
- * detail response, so the page always knows which of itself to be, and there
- * is one screen to keep in step rather than two.
- *
- * LAYOUT
- * Three columns, in the order you use them: the inbox picks a ticket, the
- * thread is the ticket, and the sidebar is who sent it. Nothing stacks above
- * them — the page title and the tab strip that used to sit there were spending
- * two rows on what the inbox header now says in one, and the thread is the
- * thing that wanted the height.
- *
- * The queue, its two narrowing pickers and the search box all live in the
- * inbox header. They were briefly a rail of their own, which cost a whole
- * column to say five short words and left the thread narrower than the list
- * beside it.
- *
- * Three panels on the page's own ground, the way every other list-and-detail
- * screen in the app is built — rounded, shadowed, each under its own navy
- * header. The sidebar is the least load-bearing column, so it is the one that
- * goes below `xl`.
+ * The Client Help Desk: one page, two views, and the server picks which
+ * (`canViewAll` or `scope`). Never derive it from a user level.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
-  // Local, not in the slice: it is a sheet somebody opened, not a fact about
-  // the queue, and nothing else on the page needs to know it is up.
+  // Local because nothing else on the page needs to know it is up.
   const [techsOpen, setTechsOpen] = useState(false);
 
   useEffect(() => {
@@ -67,7 +46,7 @@ const Tickets = () => {
 
   const refresh = () => {
     // A poll has already fetched the newer queue, so applying it is instant
-    // and costs no call. With nothing held, this is a real fetch as before.
+    // and costs no call. With nothing held, it fetches.
     if (ctx.pending) ctx.applyPending();
     else ctx.load();
   };
@@ -96,28 +75,20 @@ const Tickets = () => {
         pending={Boolean(ctx.pending)}
         onRefresh={refresh}
         /*
-         * Filing is the client's action.
-         *
-         * A ticket takes its company from whoever opens it, so a tech filing
-         * one on a client's behalf would file it under ours — the endpoint
-         * refuses any other company outright. The button would be a way to
-         * misfile rather than a way to help, so a tech does not get one.
+         * Filing is the client's action: a ticket takes the filer's company,
+         * so a tech filing for a client would misfile it. Techs get no button.
          */
         onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
         /*
-         * The roster is the desk's own business.
-         *
-         * A client has no use for it and no right to it — the endpoint
-         * refuses them anyway, so a button would only be a 403 with a label.
-         * Changing it still needs the programmer level; the sheet reads
-         * `canManageTechs` and wears the right face.
+         * The roster is the desk's own business; the endpoint refuses clients.
+         * Changing it needs the programmer level (`canManageTechs`).
          */
         onTechs={ctx.isTech ? () => setTechsOpen(true) : undefined}
         error={ctx.error}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <TicketDetail ctx={ctx} />
+        <TicketDetail />
       </div>
 
       {ctx.detail && (
@@ -139,8 +110,8 @@ const Tickets = () => {
           onChanged={ctx.loadAssignees}
         />
       )}
-      {ctx.newOpen && <NewTicketModal ctx={ctx} />}
-      {ctx.closingOpen && <CloseTicketModal ctx={ctx} />}
+      {ctx.newOpen && <NewTicketModal />}
+      {ctx.closingOpen && <CloseTicketModal />}
     </div>
   );
 };

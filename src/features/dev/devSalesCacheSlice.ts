@@ -1,11 +1,16 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+// Redux
 import { setHasSearched } from "./devSalesLedgerSlice";
+
+// Utils
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { SubSale } from "../../interfaces";
 import type {
   OrdersWave,
   ReceiptsWave,
   SalesWave,
-} from "../../pages/sales/dev/shared/investigationData";
+} from "../../pages/sales/dev/investigate/utils/investigationData";
 
 /**
  * What the Sales comparison has already asked for.

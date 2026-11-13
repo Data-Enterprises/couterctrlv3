@@ -1,10 +1,17 @@
-import type { ColDef } from "ag-grid-community";
-import Modal from "../Modal";
-import ResizableModalShell from "./ResizableModalShell";
+// Hooks
 import { useState } from "react";
+import { useToast } from "../../components/toasts/hooks/useToast";
+
+// Utils
 import { formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
-import { useToast } from "../../components/toasts/hooks/useToast";
+
+// Interfaces
+import type { ColDef } from "ag-grid-community";
+
+// Components
+import Modal from "../Modal";
+import ResizableModalShell from "./ResizableModalShell";
 
 interface ExportModalProps<T extends Record<string, any>> {
   isOpen: boolean;
@@ -17,6 +24,9 @@ interface ExportModalProps<T extends Record<string, any>> {
   resizable?: boolean;
 }
 
+/** Modal that asks for a file name and downloads the rows as a CSV, with a
+ *  dated name and columns taken from the grid's headers. Can be a resizable
+ *  shell when the caller opts in. */
 const ExportModal = <T extends Record<string, any>>({
   isOpen,
   onClose,
@@ -83,7 +93,7 @@ const ExportModal = <T extends Record<string, any>>({
           Cancel
         </button>
       </div>
-      <div className="text-content/60 text-center text-sm translate-y-2">
+      <div className="text-content/95 text-center text-sm translate-y-2">
         *file extension will be added automatically on submit
       </div>
     </>

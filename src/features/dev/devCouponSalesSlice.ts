@@ -3,7 +3,11 @@
  * by `pages/couponSales/dev`. Edit this one while changing dev couponSales; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { CouponItem, TransactionListItem } from "../../interfaces";
 
 /** Coupon Sales grades on a dollar amount, not a percentage change, and there
@@ -49,6 +53,9 @@ interface CouponSalesState {
   baselineCoupons: CouponItem[];
   isFetching: boolean;
   hasSearched: boolean;
+  /** The search date (MM/DD/YYYY) the coupons were fetched for; the range
+   *  label reads it, not the live picker, which other pages move. */
+  searchedDate: string | null;
   noCouponsFound: boolean;
 
   /** null while the numeric input is being cleared; the page keeps grading
@@ -90,6 +97,7 @@ const initialState: CouponSalesState = {
   baselineCoupons: [],
   isFetching: false,
   hasSearched: false,
+  searchedDate: null,
   noCouponsFound: false,
   threshold: COUPON_THRESHOLD_DEFAULT,
   trendThreshold: COUPON_TREND_THRESHOLD_DEFAULT,
@@ -119,6 +127,9 @@ const couponSalesSlice = createSlice({
     },
     setCouponSalesFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
+    },
+    setCouponSalesSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
     },
     setCouponSalesHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
@@ -191,6 +202,7 @@ export const {
   setCouponBaseline,
   setCouponSalesFetching,
   setCouponSalesHasSearched,
+  setCouponSalesSearchedDate,
   setNoCouponSalesFound,
   setCouponThreshold,
   setCouponTrendThreshold,

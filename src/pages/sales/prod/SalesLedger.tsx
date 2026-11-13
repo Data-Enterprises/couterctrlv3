@@ -1,3 +1,4 @@
+import { shiftIso } from "../../../utils/grading";
 import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -105,7 +106,7 @@ const SalesLedger = () => {
     // Shifting every day in the week and taking the min/max keeps it correct.
     const twWeekDates = Array.from(
       { length: 7 },
-      (_, i) => addDays(twStart, i).toISOString().split("T")[0],
+      (_, i) => shiftIso(twStart, i),
     );
     const lyWeekDates = twWeekDates
       .map((d) => sameWeekDayLastYear(d).date)

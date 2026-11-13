@@ -1,21 +1,26 @@
+// Hooks
 import { useMemo, useState } from "react";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { commonUnit, itemStoreRows } from "../utils/problemItems";
+import { FLAG_LABEL, FLAG_ON } from "./utils";
+import { fmtOrderDate, pct } from "../utils";
+import { padStoreNumber } from "../../../../utils/storeIdentity";
+
+// Interfaces
+import type { ProblemItem, OrderDraft } from "../interfaces";
+import type { AllOrder } from "../../../../interfaces";
+
+// Components
 import { InformationCircleIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import Checkbox from "../../../../components-dev/Checkbox";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder } from "../../../../interfaces";
-import type { OrderDraft } from "../orderEdit";
-import {
-  commonUnit,
-  itemStoreRows,
-  type Figures,
-  type ProblemItem,
-} from "../problemItems";
-import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
-import { Band } from "./OrderEditPanel";
+import Band from "./Band";
+import Change from "./Change";
 
-interface Props {
+interface ItemFixPanelProps {
   /** The item open on the left, or null for the "pick one" state. */
   item: ProblemItem | null;
   /** Where it sits in the still-to-do list, for "3 of 57". */
@@ -32,15 +37,6 @@ interface Props {
   stagedCount: number;
   submitting: boolean;
 }
-
-const fmtOrderDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${+m}/${+d}/${y}`;
-};
-
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-const pct = (m: number | null) => (m === null ? "—" : `${m.toFixed(1)}%`);
 
 /**
  * One item, across every store that ordered it.
@@ -69,7 +65,7 @@ const ItemFixPanel = ({
   onSubmit,
   stagedCount,
   submitting,
-}: Props) => {
+}: ItemFixPanelProps) => {
   const [unit, setUnit] = useState<number | null>(null);
   /** Orders left out of the fix. Everything starts ticked: the usual case is
    *  that every store should pay the same, and the exception is unticked. */
@@ -116,7 +112,7 @@ const ItemFixPanel = ({
 
   if (!item) {
     return (
-      <div className="flex flex-col flex-1 min-w-0 rounded-xl shadow-lg overflow-hidden bg-custom-white">
+      <div className="cc-panel flex-1 min-w-0 shadow-lg">
         {header}
         <div className="flex-1 flex items-center justify-center p-6">
           <EmptyPrompt
@@ -137,10 +133,10 @@ const ItemFixPanel = ({
     });
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 rounded-xl shadow-lg overflow-hidden bg-custom-white">
+    <div className="cc-panel flex-1 min-w-0 shadow-lg">
       {header}
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3">
+      <div className="cc-scroll px-4 py-3 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {item.flags.map((f) => (
             <span
@@ -160,7 +156,7 @@ const ItemFixPanel = ({
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-content/95">
+            <span className="text-[11px] cc-caps">
               New unit cost
             </span>
             <ThresholdFilter
@@ -201,7 +197,7 @@ const ItemFixPanel = ({
         <div className="rounded-lg border border-brand_line overflow-hidden">
           <table className="w-full border-collapse text-[12.5px]">
             <thead>
-              <tr className="bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content">
+              <tr className="bg-fill_soft text-[10px] font-semibold uppercase tracking-wide text-content">
                 <th className="w-8 px-2.5 py-2" />
                 <th className="px-2.5 py-2 text-left">Store · order</th>
                 <th className="px-2.5 py-2 text-right">Case</th>
@@ -271,14 +267,14 @@ const ItemFixPanel = ({
         </div>
       </div>
 
-      <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-2.5">
+      <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-3 border-t border-line_hair px-4 py-2.5">
         <span className="text-[12px] text-content/95">
           Staged into each order — sent when you Submit.
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={onSkip}
-            className="rounded-md border border-brand_line px-3.5 py-1.5 text-[12.5px] font-medium text-content hover:bg-gray-50"
+            className="rounded-md border border-brand_line px-3.5 py-1.5 text-[12.5px] font-medium text-content hover:bg-fill_soft"
           >
             Skip
           </button>
@@ -287,7 +283,7 @@ const ItemFixPanel = ({
               valid && onStage(willChange.map((r) => r.doc.key), unit!)
             }
             disabled={!valid || willChange.length === 0}
-            className="rounded-md bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="rounded-md bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white hover:bg-brand_navy_hover disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {!valid
               ? "Type a unit cost"
@@ -300,41 +296,5 @@ const ItemFixPanel = ({
     </div>
   );
 };
-
-/**
- * One figure, now and after.
- *
- * "Now → after" only on a row the fix will change; a row already at the typed
- * cost says so, rather than showing the same number twice and leaving the
- * reader to spot that nothing moved.
- */
-const Change = ({
-  now,
-  after,
-  pick,
-  unchanged = false,
-}: {
-  now: Figures;
-  after: Figures | null;
-  pick: (f: Figures) => string;
-  unchanged?: boolean;
-}) => (
-  <td className="px-2.5 py-2 text-right tabular-nums text-content whitespace-nowrap">
-    {after ? (
-      <>
-        <span className="text-content/95">{pick(now)}</span>
-        <span className="text-content/95"> → </span>
-        <span className="font-bold text-severity_watch_text">{pick(after)}</span>
-      </>
-    ) : (
-      <>
-        {pick(now)}
-        {unchanged && (
-          <span className="block text-[10.5px] text-content/95">no change</span>
-        )}
-      </>
-    )}
-  </td>
-);
 
 export default ItemFixPanel;

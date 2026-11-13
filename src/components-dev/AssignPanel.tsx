@@ -1,12 +1,13 @@
+// Hooks
 import { useEffect, useRef, useState, type ReactNode } from "react";
+
+// Interfaces
+import type { AssignPanelItem } from "./interfaces";
+
+// Components
 import TextFilter from "./filters/TextFilter";
 import ConfirmModal from "./ConfirmModal";
-
-interface AssignPanelItem {
-  id: number;
-  label: string;
-  sublabel?: string;
-}
+import SelectShown from "./SelectShown";
 
 interface AssignPanelProps {
   leftTitle: string;
@@ -68,50 +69,9 @@ interface AssignPanelProps {
   ) => { message: string; confirmLabel: string } | null;
 }
 
-/**
- * Stage or clear every row the column is currently showing.
- *
- * The complaint these filters came from was the clicking, and narrowing 405
- * users down to 12 is no help if all twelve still have to be clicked one at a
- * time. This acts on what is SHOWN and never on the hidden rest -- `Assign
- * all` is the button that ignores the search, and it does so deliberately.
- *
- * Selecting ADDS to what is already staged rather than replacing it, so a
- * selection can be built across several searches: narrow to one company, take
- * all of them, narrow to the next, take those too, then assign once. The
- * running count is there because that only makes sense if you can see it.
- */
-const SelectShown = ({
-  shown,
-  selected,
-  onSelectAll,
-  onClear,
-}: {
-  shown: number;
-  selected: number;
-  onSelectAll: () => void;
-  onClear: () => void;
-}) => (
-  <div className="flex items-center gap-2 mb-1 text-[10px] text-content/85">
-    <button
-      onClick={onSelectAll}
-      disabled={shown === 0}
-      className="font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
-    >
-      Select all {shown} shown
-    </button>
-    {selected > 0 && (
-      <>
-        <span aria-hidden="true">·</span>
-        <span className="font-semibold text-content">{selected} selected</span>
-        <button onClick={onClear} className="hover:underline">
-          Clear
-        </button>
-      </>
-    )}
-  </div>
-);
-
+/** Two searchable columns with Assign / Unassign buttons between them: pick rows
+ *  in one column and move them to the other, or move all of them after a
+ *  confirm. */
 // Shared staged dual-column assign/unassign control — used by the create-user
 // wizard's Assignments step, the user profile's Companies/Base groups/Stores
 // tabs, and a base group's Assign stores panel.
@@ -247,13 +207,13 @@ const AssignPanel = ({
               whether the search had narrowed it the way you meant. */}
           <ul
             aria-label={pending.direction === "in" ? "Being assigned" : "Being unassigned"}
-            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-gray-100 rounded-md divide-y divide-gray-100 m-0 p-0 list-none"
+            className="max-h-[40vh] overflow-y-auto thin-scrollbar border border-line_hair rounded-md divide-y divide-line_hair m-0 p-0 list-none"
           >
             {pending.rows.map((r) => (
               <li key={r.id} className="px-2.5 py-1.5 text-[12px] text-content">
                 <div className="truncate">{r.label}</div>
                 {r.sublabel && (
-                  <div className="text-[10.5px] text-content/85 truncate">{r.sublabel}</div>
+                  <div className="text-[10.5px] text-content/95 truncate">{r.sublabel}</div>
                 )}
               </li>
             ))}
@@ -261,7 +221,7 @@ const AssignPanel = ({
         </ConfirmModal>
       )}
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
+        <div className="text-[9px] cc-caps-strong mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
         <div className="mb-1.5 flex items-center gap-1.5">
@@ -278,7 +238,7 @@ const AssignPanel = ({
           {leftFilters && <div className="flex-shrink-0">{leftFilters}</div>}
         </div>
         {searchHint && (
-          <p className="text-[10px] text-content/85 leading-snug mb-1">
+          <p className="text-[10px] text-content/95 leading-snug mb-1">
             {searchHint}
           </p>
         )}
@@ -293,15 +253,15 @@ const AssignPanel = ({
           }
           onClear={() => setStaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
           {filteredLeft.map((item) => (
             <div
               key={item.id}
               onClick={() => toggleStaged(item.id)}
-              className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 staged.has(item.id)
                   ? "bg-brand_navy text-custom-white"
-                  : "hover:bg-gray-50 text-content"
+                  : "hover:bg-fill_soft text-content"
               }`}
             >
               <div className="truncate">{item.label}</div>
@@ -322,14 +282,14 @@ const AssignPanel = ({
           <button
             onClick={() => handleAssign(Array.from(staged))}
             disabled={moving || staged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.assign}
           </button>
           <button
             onClick={() => bulk("in", assignAllLeft.map((i) => i.id))}
             disabled={moving || assignAllLeft.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.assign} all
           </button>
@@ -337,7 +297,7 @@ const AssignPanel = ({
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
+        <div className="text-[9px] cc-caps-strong mb-1.5">
           {rightTitle} ({countLabel(filteredRight.length, rightItems.length)})
         </div>
         <div className="mb-1.5">
@@ -362,15 +322,15 @@ const AssignPanel = ({
           }
           onClear={() => setUnstaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
           {filteredRight.map((item) => (
             <div
               key={item.id}
               onClick={() => toggleUnstaged(item.id)}
-              className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`px-2.5 py-1.5 text-[12px] border-b border-line_hair cursor-pointer transition-colors ${
                 unstaged.has(item.id)
-                  ? "bg-red-600 text-custom-white"
-                  : "hover:bg-gray-50 text-content"
+                  ? "bg-brand_danger text-custom-white"
+                  : "hover:bg-fill_soft text-content"
               }`}
             >
               <div className="truncate">{item.label}</div>
@@ -391,7 +351,7 @@ const AssignPanel = ({
           <button
             onClick={() => handleUnassign(Array.from(unstaged))}
             disabled={moving || unstaged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_danger hover:bg-brand_danger/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign}
           </button>
@@ -405,7 +365,7 @@ const AssignPanel = ({
               )
             }
             disabled={moving || rightItems.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_danger hover:bg-brand_danger/85 disabled:bg-fill_track_strong disabled:cursor-not-allowed"
           >
             {verbs.unassign} all
           </button>

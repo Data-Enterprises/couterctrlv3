@@ -1,11 +1,12 @@
+// Hooks
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatDateSimple } from "../../../utils";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { useActualPricePoints, type ActualFetchState } from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
-import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import { useReceivingWalk, useItemReportCtx } from "./hooks";
+
+// Redux
 import {
   setItemReportStoreId,
   setItemReportLoading,
@@ -20,17 +21,14 @@ import {
   openItemReportInvoice,
   setItemReportInvoiceLines,
   setItemReportInvoiceError,
+  type ItemReportHandoff,
 } from "../../../features/dev/devItemReportSlice";
-import ItemReportEntry from "./ItemReportEntry";
-import InvoiceSheet from "./InvoiceSheet";
-import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
-import type { ItemReportHandoff } from "../../../features/dev/devItemReportSlice";
+
+// Utils
+import { formatDateSimple } from "../../../utils";
 import { collectCriticalItems } from "../../../utils/itemGrading";
 import { scopeToStoreNumber } from "../../../utils/storeIdentity";
-import ItemReportSheet, { type SheetRow } from "./ItemReportSheet";
-import ItemReportRail from "./ItemReportRail";
-import ItemReportExportModal from "./ItemReportExportModal";
-import { useReceivingWalk } from "./useReceivingWalk";
+import { normalizeProductCode } from "../../../utils/productCode";
 import {
   fetchAllItemRows,
   fetchItemRowsForCodes,
@@ -40,15 +38,24 @@ import {
   weekEnding,
   fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
-  type ReportScope,
-} from "./itemReportData";
-import { normalizeProductCode } from "../../../utils/productCode";
-import {
-  buildPriceEras,
-  buildReport,
-  buildRollup,
-  verdictFor,
-} from "./itemReportMetrics";
+  dayCount,
+} from "./utils";
+import { buildPriceEras } from "./utils/priceEras";
+import { buildReport, buildRollup } from "./utils/report";
+import { verdictFor } from "./utils/verdict";
+
+// Interfaces
+import type { ReportScope, SheetRow } from "./interfaces";
+import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
+
+// Components
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import ItemReportEntry from "./components/ItemReportEntry";
+import InvoiceSheet from "./components/InvoiceSheet";
+import ItemReportSheet from "./components/ItemReportSheet";
+import ItemReportRail from "./rail/ItemReportRail";
+import ItemReportExportModal from "./export/ItemReportExportModal";
 
 /**
  * Item Actions — a critical list, diagnosed and handed over.
@@ -72,17 +79,6 @@ import {
  * three windows plus an invoice walk — so nothing here may be the kind of state
  * that dies when someone clicks away and comes back.
  */
-
-const dayCount = (start: string, end: string) =>
-  Math.max(
-    1,
-    Math.round(
-      (new Date(`${end}T12:00:00`).getTime() -
-        new Date(`${start}T12:00:00`).getTime()) /
-        86400000,
-    ) + 1,
-  );
-
 const ItemReport = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -103,7 +99,7 @@ const ItemReport = () => {
   const useSubsPricePoints = true;
   const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
-  const state = useAppSelector((s) => s.dev.itemReport);
+  const state = useItemReportCtx();
 
   const { startWalk, cancelWalk } = useReceivingWalk();
   const { actual, loadActual, resetActual } = useActualPricePoints();
@@ -620,12 +616,7 @@ const ItemReport = () => {
           load this expensive to change one field is what that pattern
           prevents. */}
       {state.searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => dispatch(setItemReportSearchOpen(false))}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>{entry}</SearchPopup>
       )}
 
       {openInvoice && (

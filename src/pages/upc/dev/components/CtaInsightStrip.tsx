@@ -1,4 +1,13 @@
+// Hooks
 import { useState } from "react";
+
+// Utils
+import { TONE_CLASSES } from "../utils";
+
+// Interfaces
+import type { CtaTone } from "../interfaces";
+
+// Components
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -7,48 +16,15 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/16/solid";
 
-export type CtaTone = "up" | "down" | "flat" | "muted";
-
-interface Props {
+interface CtaInsightStripProps {
   title: string;
   insight: React.ReactNode;
   tone: CtaTone;
 }
 
-const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: string; border: string }> = {
-  up: {
-    bg: "bg-severity_healthy_bg",
-    hoverBg: "hover:bg-severity_healthy_text/10",
-    text: "text-severity_healthy_text",
-    border: "border-severity_healthy_text/25",
-  },
-  down: {
-    bg: "bg-severity_critical_bg",
-    hoverBg: "hover:bg-severity_critical_text/10",
-    text: "text-severity_critical_text",
-    border: "border-severity_critical_text/25",
-  },
-  flat: {
-    bg: "bg-gray-100",
-    hoverBg: "hover:bg-gray-200",
-    text: "text-content",
-    border: "border-gray-300",
-  },
-  muted: {
-    bg: "bg-gray-100",
-    hoverBg: "hover:bg-gray-200",
-    text: "text-content",
-    border: "border-gray-300",
-  },
-};
-
-// Clickable, tone-colored insight strip that replaces a plain title with an
-// expandable plain-language explanation. Mirrors Sales' CTA_SEVERITY_CLASSES
-// / getCta pattern (PopupSubDeptList.tsx), remapped to a tone (up/down/flat)
-// instead of a 3-tier critical/watch/healthy grade — diagnostic modules
-// don't grade, they flag direction. Shared so any UPC module's future
-// detail panel can reuse it with its own title/insight/tone.
-const CtaInsightStrip = ({ title, insight, tone }: Props) => {
+/** A clickable, tone-coloured insight strip that expands into a plain-language
+ *  explanation; it flags direction (up/down/flat), it doesn't grade. */
+const CtaInsightStrip = ({ title, insight, tone }: CtaInsightStripProps) => {
   const [open, setOpen] = useState(false);
   const c = TONE_CLASSES[tone];
 

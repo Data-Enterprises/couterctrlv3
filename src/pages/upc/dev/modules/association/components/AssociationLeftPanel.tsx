@@ -1,0 +1,89 @@
+// Utils
+import { formatCurrency2 } from "../../../../../../utils";
+
+// Interfaces
+import type { AssociationItem } from "../../../../../../features/dev/devUpcDevSlice";
+
+// Components
+import { ArrowLeftIcon, CheckIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+
+interface AssociationLeftPanelProps {
+  selectedUpcs: string[];
+  upcItemsMap: Map<string, string>;
+  seedItemsMap: Map<string, AssociationItem>;
+  rerootUpc: string | null;
+  rerootDescription: string;
+  onBackToSeed: () => void;
+}
+
+/** The Association tab's left panel, in two states: re-rooted, a back-link plus the
+ *  current target; at seed level, a read-only list of the seed UPCs with revenue and sub
+ *  dept, mirroring what's checked in the page's UPC panel (which owns the selection). */
+const AssociationLeftPanel = ({
+  selectedUpcs,
+  upcItemsMap,
+  seedItemsMap,
+  rerootUpc,
+  rerootDescription,
+  onBackToSeed,
+}: AssociationLeftPanelProps) => {
+  if (rerootUpc) {
+    return (
+      <div className="w-[340px] flex-shrink-0 border-r border-line_hair overflow-y-auto thin-scrollbar">
+        <div className="px-2.5 py-1.5 bg-fill_soft border-b border-line_hair">
+          <span className="text-[10px] cc-caps-strong">Exploring</span>
+        </div>
+        <button
+          onClick={onBackToSeed}
+          className="w-full flex items-center gap-1.5 px-2.5 py-2 border-b border-line_faint text-[11px] text-content/95 hover:bg-fill_soft"
+        >
+          <ArrowLeftIcon className="w-3 h-3 flex-shrink-0" />
+          Back to Seed UPCs ({selectedUpcs.length})
+        </button>
+        <div className="flex items-start gap-2 px-2.5 py-2 border-b border-line_faint">
+          <MagnifyingGlassIcon className="w-3 h-3 text-brand_navy flex-shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <div className="text-[12px] font-medium text-content truncate">{rerootDescription}</div>
+            <div className="text-[11px] text-content/95 font-medium">{rerootUpc}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-[340px] flex-shrink-0 border-r border-line_hair flex flex-col min-h-0">
+      <div className="px-2.5 py-1.5 bg-fill_muted border-b border-brand_navy/15 flex-shrink-0">
+        <span className="text-[10px] cc-caps-strong">Seed UPCs</span>
+      </div>
+      <div className="cc-scroll">
+        {selectedUpcs.map((code) => {
+          const seedItem = seedItemsMap.get(code);
+          return (
+            <div key={code} className="flex items-start gap-2 px-2.5 py-2 border-b border-line_faint">
+              <CheckIcon className="w-3 h-3 text-brand_navy flex-shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[12px] font-medium text-content truncate">
+                    {upcItemsMap.get(code) ?? code}
+                  </span>
+                  <span className="text-[12px] font-semibold text-content tabular-nums flex-shrink-0">
+                    {seedItem ? formatCurrency2(seedItem.revenue) : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
+                  <span className="text-[11px] text-content/95 truncate">{code}</span>
+                  <span className="text-[11px] text-content/95 flex-shrink-0 truncate">
+                    {seedItem?.sub_department_description ?? ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default AssociationLeftPanel;

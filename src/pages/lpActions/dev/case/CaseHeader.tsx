@@ -22,16 +22,16 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     <button
       onClick={onBack}
       title={`Back to ${backLabel}`}
-      className="flex-shrink-0 p-1 -ml-1 rounded text-custom-white/85 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
+      className="flex-shrink-0 p-1 -ml-1 rounded cc-navy-link hover:bg-custom-white/10"
     >
       <ArrowLeftIcon className="w-4 h-4" />
     </button>
 
     <div className="min-w-0 flex-1">
-      <p className="text-custom-white text-[13px] font-semibold truncate">
+      <p className="cc-navy-title text-[13px] truncate">
         {core.cashierName}
       </p>
-      <p className="text-custom-white/85 text-[12px] truncate">
+      <p className="text-custom-white/95 text-[12px] truncate">
         Cashier {core.cashierNumber} &middot; {core.storeName}
       </p>
     </div>
@@ -39,7 +39,7 @@ const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
     <button
       onClick={onOpenPlot}
       title="Every type and lane this cashier touched, as a link chart"
-      className="flex-shrink-0 flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded border border-custom-white/30 text-custom-white hover:bg-custom-white/10 transition-colors"
+      className="flex-shrink-0 flex items-center gap-1.5 text-[12px] cc-chip-btn border border-custom-white/30 text-custom-white hover:bg-custom-white/10"
     >
       <ChartPieIcon className="w-3.5 h-3.5" />
       Connection plot

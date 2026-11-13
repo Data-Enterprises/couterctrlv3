@@ -12,7 +12,7 @@ import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 // Neither tree: the title bar raises the flag from prod and the form lives in
 // dev, and App is the one place that may hold both.
-import ReportIssueModal from "./pages/tickets/dev/ReportIssueModal";
+import ReportIssueModal from "./pages/tickets/dev/components/modals/ReportIssueModal";
 import TitleTips from "./components-dev/tooltip/TitleTips";
 import { clearPageCalls } from "./utils/pageCalls";
 import { getUserStores } from "./api/user";

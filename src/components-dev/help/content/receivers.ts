@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for Receivers — a store's receiving history, invoice by invoice. */
@@ -34,7 +35,9 @@ export const RECEIVERS_HELP: HelpContent = {
         },
         {
           title: "Search again",
-          pre: "Click the magnifying glass at the top of the list. If nothing was found you get a notice with a Search again button.",
+          pre: "Click",
+          chip: "Back",
+          post: "at the top of the list. If nothing was found you get a notice with a Search again button.",
           anchor: "search",
         },
       ],

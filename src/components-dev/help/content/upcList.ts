@@ -1,3 +1,4 @@
+// Interfaces
 import type { HelpContent } from "../helpTypes";
 
 /** Help for UPC List — a list of items studied five ways. */
@@ -78,7 +79,7 @@ export const UPC_LIST_HELP: HelpContent = {
         },
         {
           q: "I need to change the search",
-          a: "The magnifying glass at the top of the left panel — add or remove UPCs, or change the store, group or dates, then Search again.",
+          a: "Back, at the top of the left panel — add or remove UPCs, or change the store, group or dates, then Search again.",
         },
       ],
     },

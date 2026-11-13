@@ -14,7 +14,6 @@ import devCategoriesReducer from "../features/dev/devCategoriesSlice";
 import devVendorsReducer from "../features/dev/devVendorsSlice";
 import devCashiersReducer from "../features/dev/devCashiersSlice";
 import devUpcDevReducer from "../features/dev/devUpcDevSlice";
-import devForecastReducer from "../features/dev/devForecastSlice";
 import devForecastDevReducer from "../features/dev/devForecastDevSlice";
 import devItemLookupReducer from "../features/dev/devItemLookupSlice";
 import devOrdersReducer from "../features/dev/devOrdersSlice";
@@ -35,6 +34,8 @@ import devTicketsReducer from "../features/dev/devTicketsSlice";
 import devExportBuilderReducer from "../features/dev/devExportBuilderSlice";
 import devUpcScannerReducer from "../features/dev/devUpcScannerSlice";
 import devPriceOptReducer from "../features/dev/devPriceOptSlice";
+import devMarkdownsReducer from "../features/dev/devMarkdownsSlice";
+
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -68,7 +69,6 @@ export const devReducers = {
   vendors: devVendorsReducer,
   cashier: devCashiersReducer,
   upcDev: devUpcDevReducer,
-  forecast: devForecastReducer,
   forecastDev: devForecastDevReducer,
   item: devItemLookupReducer,
   orders: devOrdersReducer,
@@ -89,6 +89,7 @@ export const devReducers = {
   exportBuilder: devExportBuilderReducer,
   upcScanner: devUpcScannerReducer,
   priceOpt: devPriceOptReducer,
+  markdowns: devMarkdownsReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };

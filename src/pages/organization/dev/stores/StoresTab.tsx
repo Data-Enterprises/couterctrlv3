@@ -1,35 +1,32 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupsCtx } from "../baseGroups/hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { getAllUsers, getUserStores } from "../../../../api/user";
-import type { JsonError, Store, User } from "../../../../interfaces";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
-import StoresExportModal from "./StoresExportModal";
-import StoreUsersPanel from "./StoreUsersPanel";
+import { useBaseGroupsCtx } from "../hooks";
 
-interface Props {
+// API
+import { getAllUsers, getUserStores } from "../../../../api/user";
+
+// Interfaces
+import type { JsonError, Store, User } from "../../../../interfaces";
+
+// Components
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import StoresExportModal from "./components/StoresExportModal";
+import StoreUsersPanel from "./components/StoreUsersPanel";
+
+interface StoresTabProps {
   exportOpen: boolean;
   onCloseExport: () => void;
 }
 
 /**
- * User Management → Stores: who holds each store.
+ * User Management → Stores: who holds each store, with the same panel as
+ * Companies and Base Groups.
  *
- * Was a read-only directory of the stores the signed-in person could reach.
- * It is the same list, now with the panel the Companies and Base Groups tabs
- * have, because "who can see this store" is the same question those two ask
- * one level up and there was nowhere to ask it directly.
- *
- * ### What the list contains
- *
- * Programmers and DCR support get every store; everyone else gets the ones
- * they hold. That is the rule the other two tabs follow — you cannot hand out
- * access you do not have yourself — and the directory already worked that way
- * for a different reason: it was open to every level, so it deliberately
- * listed nothing beyond the viewer's own reach. Now that the tab is owner and
- * up, the people who are meant to see everything can.
+ * Programmers and DCR support get every store; everyone else the ones they
+ * hold, since you can't hand out access you don't have.
  */
-const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
+const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
 
@@ -63,14 +60,9 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
   useEffect(loadStores, [loadStores]);
 
   /**
-   * Every user, for the level guard inside the panel.
-   *
-   * Deliberately unscoped, unlike the grid's own list. This is not what gets
-   * displayed — the columns come from `store_users`, which the server scopes
-   * to the store's company — it is only the source of truth for *levels*.
-   * Scoping it would mean a userid the store has and this list does not, and
-   * the guard fails closed, so a legitimate person would silently vanish from
-   * the panel. More levels known is strictly safer here.
+   * Every user, unscoped, as the level guard's source of truth only (the
+   * columns come from `store_users`). The guard fails closed, so a scoped list
+   * would hide legitimate people.
    */
   useEffect(() => {
     getAllUsers(ctx.url, ctx.token)
@@ -106,8 +98,8 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
 
   return (
     <div className="flex-1 flex min-h-0 w-full">
-      <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
-        <div className="p-2.5 border-b border-gray-100">
+      <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col">
+        <div className="p-2.5 border-b border-line_hair">
           <TextFilter
             value={search}
             onChange={setSearch}
@@ -115,7 +107,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
           />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 thin-scrollbar">
+        <div className="cc-scroll p-2 space-y-1">
           {stores === null && (
             <div className="p-3 text-[11px] text-content">Loading stores…</div>
           )}
@@ -134,7 +126,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                   isSel
                     ? "bg-brand_navy text-custom-white"
-                    : "hover:bg-gray-50 text-content"
+                    : "hover:bg-fill_soft text-content"
                 }`}
               >
                 <span className="text-[12px] font-semibold tabular-nums flex-shrink-0 w-[44px]">
@@ -142,7 +134,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
                 </span>
                 <span
                   className={`text-[12px] truncate ${
-                    isSel ? "text-custom-white/85" : "text-content/85"
+                    isSel ? "text-custom-white/95" : "text-content/95"
                   }`}
                 >
                   {s.store_name}

@@ -1,59 +1,40 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
-import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setAdminForm, setCompanies } from "../../../features/dev/devAdminPageSlice";
-import type { AdminForm } from "../../../features/dev/devAdminPageSlice";
+
+// Redux
+import {
+  setAdminForm,
+  setCompanies,
+} from "../../../features/dev/devAdminPageSlice";
+
+// API
 import { getCompanies } from "../../../api/company";
+
+// Utils
+import { adminPanel, adminTabs } from "./utils";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
+
+// Interfaces
+import PageInfoButton from "../../../components-dev/PageInfoButton";
+import ResizeHandle from "../../../components-dev/ResizeHandle";
+import CompanyGrid from "./companies/CompanyGrid";
+import StoreActivityComp from "./storeActivity/StoreActivityComp";
+import SubDeptExclusions from "./subExclusions/SubDeptExclusions";
+import StoreRecords from "./stores/StoreRecords";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import CompanyGrid from "./CompanyGrid";
-import StoreActivityComp from "./StoreActivityComp";
-import StoreRecords from "./StoreRecords";
-import SubDeptExclusions from "./SubDeptExclusions";
 
-/** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
- *  and deleting companies is a change to the whole tenancy, not to one
- *  operator's data, so it stays with level 9. */
-const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
-  { id: "companies", label: "Companies", programmerOnly: true },
-  { id: "store_activity", label: "Store activity" },
-  { id: "store_records", label: "Stores" },
-  // Not programmerOnly. It changes what a customer reads as their net sales,
-  // which is exactly the question support fields during onboarding — and the
-  // alternative they have today is pgAdmin.
-  { id: "sub_exclusions", label: "Sub dept exclusions" },
-];
-
-/**
- * What size each tab wants, and where that tab remembers being dragged to.
- *
- * A grid of companies and a two-field form do not want the same panel, and
- * before this they shared one: whichever you resized last decided the other.
- * Each tab carries its own key, so a drag is remembered per tab rather than
- * across all of them.
- *
- * Companies and Store activity keep the original key and defaults, so nobody
- * loses the size they had already set.
- */
-const PANEL: Record<AdminForm, { key: string; width: number; height: number }> = {
-  companies: { key: "admin-panel-size", width: 820, height: 640 },
-  store_activity: { key: "admin-panel-size", width: 820, height: 640 },
-  store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
-  // Wider: a department row carries a name, a number, a sentence about where
-  // it stands across the chain, and a date.
-  sub_exclusions: { key: "admin-panel-size-subexcl", width: 1040, height: 660 },
-};
-
+/** The dev Admin page: a resizable box with tabs for Companies, Store Activity, Store Records and Sub Dept
+ *  Exclusions. The Store Activity header shows the store and missing counts and an Export CSV button.
+ *  Accounts below the access level see a "not available" notice instead. */
 const Admin = () => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
+  const { dispatch } = context;
   const [exportOpen, setExportOpen] = useState(false);
-  const panel = PANEL[context.adminForm] ?? PANEL.companies;
+  const panel = adminPanel[context.adminForm] ?? adminPanel.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: panel.key,
     defaultWidth: panel.width,
@@ -64,14 +45,10 @@ const Admin = () => {
     maxHeight: 950,
   });
 
-  const tabs = TABS.filter((t) => context.isProgrammer || !t.programmerOnly);
+  const tabs = adminTabs.filter(
+    (t) => context.isProgrammer || !t.programmerOnly,
+  );
 
-  // `adminForm` persists in the slice, so a level-5 user arriving after a
-  // programmer used the same session would otherwise land on a tab that is no
-  // longer in their strip — visible content under an invisible tab.
-  //
-  // The same goes for a tab that no longer exists at all (Base groups moved
-  // to User Management, Shared groups to the Groups page).
   useEffect(() => {
     if (!tabs.some((t) => t.id === context.adminForm)) {
       dispatch(setAdminForm("store_activity"));
@@ -94,8 +71,6 @@ const Admin = () => {
   const renderActiveTab = () => {
     switch (context.adminForm) {
       case "companies":
-        // Belt and braces: the tab is gone and the effect above redirects, but
-        // a render can happen between the two.
         return context.isProgrammer ? <CompanyGrid /> : null;
       case "store_activity":
         return (
@@ -115,9 +90,7 @@ const Admin = () => {
     (s) => s.inactive_or_missing_days > 0,
   ).length;
 
-  // The nav lists Admin from level 5 (prod still opens there), but the dev
-  // Admin opens at 7 — see ADMIN_MIN_LEVEL. Nav visibility is not access control —
-  // the route is reachable by typing it. This is the actual gate.
+  // The nav lists Admin from level 5 (prod still opens there), but the dev Admin opens at 7
   if (!context.canOpenAdmin) {
     return (
       <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -125,7 +98,7 @@ const Admin = () => {
           <p className="text-[13px] font-semibold text-content">
             Admin access isn’t available on this account
           </p>
-          <p className="text-[12px] text-content/85 mt-1.5 leading-snug">
+          <p className="text-[12px] text-content/95 mt-1.5 leading-snug">
             It needs a higher access level. Speak to whoever manages your users
             if this looks wrong.
           </p>
@@ -138,11 +111,11 @@ const Admin = () => {
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
         ref={boxRef}
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] cc-panel shadow-lg self-start"
         style={{ width, height }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
             Admin
           </span>
           {context.adminForm === "store_activity" && (
@@ -166,7 +139,7 @@ const Admin = () => {
                 onClick={() => setExportOpen(true)}
                 disabled={context.companyStoresActivity.length === 0}
                 title="Export CSV"
-                className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
+                className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>
@@ -176,7 +149,7 @@ const Admin = () => {
           <PageInfoButton page="admin" title="About Admin" />
         </div>
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
+        <div className="flex border-b border-line_hair flex-shrink-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}

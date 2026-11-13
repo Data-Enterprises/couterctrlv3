@@ -228,11 +228,11 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
       className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden"
     >
       {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
-        <div className="bg-amber-100 border-b border-amber-300 px-3 py-2">
-          <span className="text-[12.5px] font-semibold text-amber-900">
+        <div className="bg-severity_watch_bg border-b border-severity_watch_text/20 px-3 py-2">
+          <span className="text-[12.5px] font-semibold text-severity_watch_text">
             This summary has no key to group by.
           </span>{" "}
-          <span className="text-[12.5px] text-amber-900/85">
+          <span className="text-[12.5px] text-severity_watch_text">
             Measures need rows to sit in, so the export refuses a summary
             without at least one. Pick one under <strong>Group By</strong> on
             the left — storeid for one row per store, product_code for one per
@@ -249,7 +249,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
           onClick={onToggleConfig}
           aria-expanded={configOpen}
           title={configOpen ? "Hide the configuration" : "Show the configuration"}
-          className="flex-shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-brand_line_2 text-content/85 hover:border-brand_slate transition-colors"
+          className="flex-shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-brand_line_2 text-content/95 hover:border-brand_slate transition-colors"
         >
           <ChevronLeftIcon
             className={`w-3.5 h-3.5 transition-transform duration-300 motion-reduce:transition-none ${
@@ -257,7 +257,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
             }`}
           />
         </button>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[11px] cc-caps">
           The configuration, as a query
         </span>
         {current && (
@@ -268,14 +268,14 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
               onClick={() => ctx.dispatch(setCurrentQuery(null))}
               aria-label={`Close ${current.name}`}
               title="Close this query — the box and the configuration stay as they are"
-              className="w-[16px] h-[16px] rounded text-content/85 hover:text-content transition-colors"
+              className="w-[16px] h-[16px] rounded cc-muted-link"
             >
               ×
             </button>
           </span>
         )}
         {edited ? (
-          <span className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+          <span className="text-[11px] text-severity_watch_text bg-severity_watch_bg border border-severity_watch_text/20 rounded px-1.5 py-0.5">
             Edited — the file below is still the configuration's
           </span>
         ) : null}
@@ -401,25 +401,25 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
         )}
         <span
           className={`text-[13.5px] font-semibold ${
-            edited ? "text-content/85" : "text-content/85"
+            edited ? "text-content/95" : "text-content/95"
           }`}
         >
           {edited ? "Ctrl+Enter applies it" : ""}
         </span>
         {ctx.queriesError && (
-          <span className="text-[11.5px] text-amber-900">
+          <span className="text-[11.5px] text-severity_watch_text">
             {ctx.queriesError}
           </span>
         )}
       </div>
 
       {error && (
-        <div className="bg-amber-50 border-t border-amber-200 px-3 py-2">
-          <div className="text-[12.5px] font-semibold text-amber-900">
+        <div className="bg-severity_watch_bg border-t border-severity_watch_text/20 px-3 py-2">
+          <div className="text-[12.5px] font-semibold text-severity_watch_text">
             {error.message}
           </div>
           {error.hint && (
-            <div className="text-[11.5px] text-amber-900/85 mt-1">
+            <div className="text-[11.5px] text-severity_watch_text mt-1">
               {error.hint}
             </div>
           )}
@@ -429,11 +429,11 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
       {plan && (
         plan.leftBehind.length > 0 && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2">
-          <div className="text-[11.5px] font-semibold text-amber-900">
+          <div className="text-[11.5px] font-semibold text-severity_watch_text">
             Not carried over
           </div>
           {plan.leftBehind.map((line, i) => (
-            <div key={i} className="text-[11.5px] text-amber-900/85">
+            <div key={i} className="text-[11.5px] text-severity_watch_text">
               · {line}
             </div>
           ))}
@@ -505,7 +505,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
           <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
             <div className="flex items-baseline gap-3 flex-shrink-0">
               <h2 className="text-[15px] font-semibold">Saved queries</h2>
-              <span className="text-[11.5px] text-content/85">
+              <span className="text-[11.5px] text-content/95">
                 yours, newest first
               </span>
               <div className="flex-1" />
@@ -518,7 +518,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-1.5">
+            <div className="cc-scroll flex flex-col gap-1.5">
               {current && (
                 <button
                   type="button"
@@ -531,7 +531,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
                   <span className="block text-[13px] font-semibold">
                     Close "{current.name}"
                   </span>
-                  <span className="block text-[11.5px] text-content/85 mt-0.5">
+                  <span className="block text-[11.5px] text-content/95 mt-0.5">
                     Work without a saved query open. The box and the
                     configuration stay as they are.
                   </span>
@@ -555,18 +555,18 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
                     {query.name}
                   </span>
                   {query.description && (
-                    <span className="block text-[11.5px] text-content/85 mt-0.5">
+                    <span className="block text-[11.5px] text-content/95 mt-0.5">
                       {query.description}
                     </span>
                   )}
-                  <span className="block text-[11px] text-content/85 mt-0.5">
+                  <span className="block text-[11px] text-content/95 mt-0.5">
                     saved {when(query.updated_at || query.created_at)}
                   </span>
                 </button>
               ))}
 
               {ctx.queries.length === 0 && (
-                <p className="text-[12.5px] text-content/85 py-6 text-center">
+                <p className="text-[12.5px] text-content/95 py-6 text-center">
                   Nothing saved yet. Build a configuration on the left, then
                   Save as new to keep it.
                 </p>
@@ -598,7 +598,7 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
 
       {ctx.deletedQuery && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2 flex items-center gap-3">
-          <span className="text-[11.5px] text-content/85 flex-1">
+          <span className="text-[11.5px] text-content/95 flex-1">
             Deleted "{ctx.deletedQuery.name}".
           </span>
           <button

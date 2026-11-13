@@ -1,3 +1,4 @@
+// Hooks
 import { useEffect, useRef } from "react";
 
 interface BottomSheetProps {
@@ -6,6 +7,9 @@ interface BottomSheetProps {
   closeRef?: React.MutableRefObject<(() => void) | null>;
 }
 
+/** Phone bottom sheet that slides up over a blurred backdrop. Closes on a
+ *  backdrop tap or a downward swipe on its drag handle; the parent can trigger
+ *  the slide-down through `closeRef`. */
 const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startY: number; currentY: number } | null>(null);
@@ -80,7 +84,7 @@ const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div className="w-9 h-1 bg-gray-200 rounded-full" />
+          <div className="w-9 h-1 bg-fill_track rounded-full" />
         </div>
         {children}
       </div>

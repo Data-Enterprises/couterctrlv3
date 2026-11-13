@@ -77,7 +77,7 @@ const SendSheet = ({ onClose }: { onClose: () => void }) => {
             // sheet exactly where they were, so the retry is one tap.
             if (await send()) onClose();
           }}
-          className="mt-3 h-12 w-full rounded-xl bg-brand_navy font-display text-[15px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
+          className="mt-3 h-12 w-full rounded-xl bg-brand_navy active:bg-brand_navy_hover font-display text-[15px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
         >
           {sending ? "Sending…" : "Send for tags"}
         </button>

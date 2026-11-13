@@ -40,7 +40,7 @@ export const getCompaniesAssignedToUser = async (
  * field, so its saves must leave a parent alone rather than clear it. `null`
  * is "stands alone" and a number is the parent's id; only the dev form sends
  * either. Families are one level deep, the rule `familyOf` in
- * pages/organization/dev/scoping reads.
+ * pages/organization/dev/utils reads.
  */
 type ParentChoice = number | null | undefined;
 

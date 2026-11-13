@@ -1,10 +1,24 @@
+// Hooks
 import { useState, useMemo } from "react";
+
+// Utils
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
+import { DIMS, METRICS, AGG_OPTIONS, buildPresetCsv } from "../utils";
+
+// Interfaces
+import type { MetricSelection, ModalMode } from "../interfaces";
+import type { CouponItem } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import type { CouponItem } from "../../../../interfaces";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { DIMS, METRICS, AGG_OPTIONS, buildPresetCsv } from "../couponsExportShared";
 
 interface CpnExportSheetProps {
   onClose: () => void;
@@ -13,13 +27,8 @@ interface CpnExportSheetProps {
   rows: CouponItem[];
 }
 
-type ModalMode = "presets" | "custom";
-
-interface MetricSelection {
-  fn: AggFn;
-  enabled: boolean;
-}
-
+/** The phone Coupons export sheet: Presets downloads the coupon records, Custom groups by chosen fields with
+ *  sum/count metrics. Multi-store data adds a store checklist. */
 const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
@@ -137,7 +146,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
   const StoreFilter = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Stores</div>
+        <div className="text-[10px] cc-caps">Stores</div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))}
@@ -163,7 +172,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               type="checkbox"
               checked={selectedStores.has(s.number)}
               onChange={() => toggleStore(s.number)}
-              className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+              className="cc-checkbox flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate flex-1">{s.name}</span>
             <span className="text-[10px] text-content/95 flex-shrink-0">#{s.number}</span>
@@ -175,7 +184,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
 
   return (
     <BottomSheet onClose={onClose}>
-      <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 pb-3 border-b border-line_hair">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
           <div className="text-[10px] text-content/95 mt-0.5 truncate">{subtitle}</div>
@@ -185,7 +194,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+              className={`cc-chip-btn text-[11px] ${
                 mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
               }`}
             >
@@ -199,7 +208,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div className="flex items-start gap-3">
-            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0" />
+            <input type="checkbox" checked readOnly className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0" />
             <div>
               <div className="text-[13px] font-medium text-content">Coupon Records</div>
               <div className="text-[11px] text-content/95 mt-0.5">
@@ -214,7 +223,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-5 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
+            <div className="text-[10px] cc-caps mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -222,7 +231,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                     type="checkbox"
                     checked={groupBy.has(d.key)}
                     onChange={() => toggleGroupBy(d.key)}
-                    className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                    className="cc-checkbox flex-shrink-0"
                   />
                   <span className="text-[12px] text-content">{d.label}</span>
                 </label>
@@ -230,7 +239,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
             </div>
           </div>
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
+            <div className="text-[10px] cc-caps mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;
@@ -240,14 +249,14 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       type="checkbox"
                       checked={sel.enabled}
                       onChange={() => toggleMetric(m.key)}
-                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="cc-checkbox flex-shrink-0"
                     />
                     <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
                       onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                      className="text-[10px] border border-gray-200 rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
+                      className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>
@@ -268,14 +277,14 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <div className="cc-bar-footer">
         <button onClick={onClose} className="text-[12px] text-content/95">
           Cancel
         </button>
         <button
           onClick={mode === "presets" ? handlePresetDownload : handleCustomDownload}
           disabled={mode === "presets" ? filteredRows.length === 0 : !columns.length || !aggRows.length}
-          className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+          className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           Download CSV

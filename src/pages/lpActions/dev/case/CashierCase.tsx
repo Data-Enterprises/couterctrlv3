@@ -156,7 +156,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden relative">
+      <div className="cc-panel shadow-sm h-full relative">
         <CaseHeader
           core={core}
           onBack={onBack}
@@ -178,7 +178,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
           saleType={selected}
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div className="cc-scroll">
           <CaseSummary
             type={type}
             headline={headlineLine(type, core.types.length)}
@@ -209,7 +209,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
           />
 
           {detail.truncated > 0 && (
-            <div className="px-4 py-2 border-t border-gray-100 text-[12px] text-content/85">
+            <div className="px-4 py-2 border-t border-line_hair text-[12px] text-content/95">
               {detail.truncated} receipts beyond the cap were not read
             </div>
           )}

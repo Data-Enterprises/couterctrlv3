@@ -1,11 +1,22 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
-import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from "./";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+// Redux
+import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Interfaces
 import type { Group } from "../../features/groupSlice";
 
+// Components
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+/** The store picker's group dropdown: type to narrow the groups, pick one, and
+ *  it becomes the selected and last-used group. */
 const SelectGroup = () => {
   const context = useStorePickerContext();
   const app = useAppSelector((state) => state.app);
@@ -102,7 +113,7 @@ const SelectGroup = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
+    "basic-input focus:border bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
   const width = app.isDesktop ? "relative w-full w-full" : "relative w-full";
   return (
@@ -153,7 +164,7 @@ const SelectGroup = () => {
                 key={`group-${idx}`}
                 onClick={() => handleSelect(group)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
+                <div className="p-1 hover:bg-fill_soft transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>
               </div>

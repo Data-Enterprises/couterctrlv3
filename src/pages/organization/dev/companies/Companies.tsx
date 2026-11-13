@@ -1,22 +1,22 @@
+// Hooks
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useBaseGroupCompanies, useBaseGroupsCtx } from "../baseGroups/hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useBaseGroupCompanies, useBaseGroupsCtx } from "../hooks";
+
+// API
 import { getAllUsers } from "../../../../api/user";
+
+// Interfaces
 import type { JsonError, User } from "../../../../interfaces";
+
+// Components
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import CompanyUsersPanel from "./CompanyUsersPanel";
+import CompanyUsersPanel from "./components/CompanyUsersPanel";
 
 /**
- * User Management → Companies: who holds each company.
- *
- * Deliberately *only* that. The Admin page already creates, renames and
- * deletes companies, and which stores a company owns is a column on `stores`
- * that nothing here is safe to move — changing it orphans the store's base
- * group memberships in its old company and leaves that company's users still
- * seeing it. That wants its own endpoint and its own screen.
- *
- * So this is the one job the existing endpoints already do cleanly: the
- * user ↔ company link, in the same shape as the base group users tab.
+ * User Management → Companies: who holds each company, and only that. Admin
+ * creates and renames companies; moving a store between companies would orphan
+ * its base group memberships, so it is not done here.
  */
 const Companies = () => {
   const ctx = useBaseGroupsCtx();
@@ -68,8 +68,8 @@ const Companies = () => {
 
   return (
     <div className="flex-1 flex min-h-0 w-full">
-      <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
-        <div className="p-2.5 border-b border-gray-100">
+      <div className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col">
+        <div className="p-2.5 border-b border-line_hair">
           <TextFilter
             value={search}
             onChange={setSearch}
@@ -77,7 +77,7 @@ const Companies = () => {
           />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 thin-scrollbar">
+        <div className="cc-scroll p-2 space-y-1">
           {companies.length === 0 && (
             <div className="p-3 text-[11px] text-content">No companies</div>
           )}
@@ -96,7 +96,7 @@ const Companies = () => {
                 className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                   isSel
                     ? "bg-brand_navy text-custom-white"
-                    : "hover:bg-gray-50 text-content"
+                    : "hover:bg-fill_soft text-content"
                 }`}
               >
                 <span className="text-[12px] font-semibold truncate">
@@ -104,7 +104,7 @@ const Companies = () => {
                 </span>
                 <span
                   className={`text-[10.5px] font-semibold tabular-nums flex-shrink-0 ${
-                    isSel ? "text-custom-white/85" : "text-content/85"
+                    isSel ? "text-custom-white/95" : "text-content/95"
                   }`}
                 >
                   {count}

@@ -1,20 +1,23 @@
+// Hooks
 import { useState, useMemo } from "react";
+
+// Utils
+import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import { chipStyle, fmtDate } from "./utils";
+
+// Interfaces
+import type { AllOrder, Store } from "../../../../interfaces";
+import type { SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { OrderSelection } from "./interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
-import type { AllOrder } from "../../../../interfaces";
-import type { SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
-import type { Store } from "../../../../interfaces";
-import { formatCurrency2, resolveStoreName } from "../../../../utils";
+import SubDeptChips from "./components/SubDeptChips";
 
-export type OrderSelection = {
-  storeid: number;
-  storenumber: string;
-  orderId: number;
-};
-
-interface Props {
+interface OrdersListScreenProps {
   orders: AllOrder[];
   loading: boolean;
   selectedKey: SelectedOrderKey;
@@ -25,36 +28,9 @@ interface Props {
   onExport: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-const MAX_CHIPS = 3;
-
-const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
-  const visible = subDepts.slice(0, MAX_CHIPS);
-  const overflow = subDepts.slice(MAX_CHIPS);
-  return (
-    <div className="flex flex-wrap gap-1 items-center mt-1.5">
-      {visible.map((sd) => (
-        <span key={sd} className="text-[10px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
-      ))}
-      {overflow.length > 0 && (
-        <span className="text-[10px] font-semibold bg-brand_navy/[0.07] text-content rounded px-1.5 py-0.5">
-          +{overflow.length} more
-        </span>
-      )}
-    </div>
-  );
-};
-
-const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupStores, onBack, onSelectOrder, onExport }: Props) => {
+/** The phone Orders list for the chosen type and date: order, item and retail chips, a sub dept filter, an export
+ *  button, and a card per order with status, store (multi-store only), retail, cost and sub dept chips. */
+const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupStores, onBack, onSelectOrder, onExport }: OrdersListScreenProps) => {
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
   // "Select all stores" spans the whole selection, so naming only storeids[0]
@@ -122,7 +98,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
       />
 
       {/* Sub-header chips + sub dept filter */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0 gap-2">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0 gap-2">
         {allSubDepts.length > 0 && (
           <SelectFilter
             options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
@@ -172,7 +148,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
             <button
               key={`${sel.storeid}__${sel.storenumber}-${sel.orderId}`}
               onClick={() => onSelectOrder(sel)}
-              className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              className="w-full px-4 py-3 border-b border-line_hair text-left hover:bg-fill_soft active:bg-fill_muted transition-colors"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-brand_navy">#{sel.orderId}</span>

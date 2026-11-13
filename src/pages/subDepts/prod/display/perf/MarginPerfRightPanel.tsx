@@ -7,7 +7,7 @@ import {
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { formatDate } from "../widgets";
-import { formatCurrency2, addDays } from "../../../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { gpm } from "../../../../../functions";
 import { calculateCogs, hasNoUsableCost } from "../../../../../utils/cogs";
@@ -29,7 +29,7 @@ import {
   severityHeaderBgClass,
   comparisonPillClass,
 } from "../../../../../utils/severity";
-import { isCompleteCoverage } from "../../../../../utils/grading";
+import { isCompleteCoverage, shiftIso } from "../../../../../utils/grading";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
@@ -129,7 +129,7 @@ const MarginPerfRightPanel = () => {
     });
 
   const selectedLwDate = ctx.selectedWeekDay
-    ? addDays(ctx.selectedWeekDay, -7).toISOString().split("T")[0]
+    ? shiftIso(ctx.selectedWeekDay, -7)
     : null;
   const selectedLyDate = ctx.selectedWeekDay
     ? getLYDate(ctx.selectedWeekDay)

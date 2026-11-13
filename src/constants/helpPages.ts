@@ -1,15 +1,14 @@
 /**
- * The help pages that exist in S3, and which of them have a phone version.
+ * Every screen with a "?", by the name its help is filed under.
  *
- * A key that isn't there answers **403, not 404** — the bucket grants
- * `s3:GetObject` but not listing, so S3 won't say whether a name exists — and a
- * cross-origin `<iframe>` can't read the status either way. It would simply
- * render S3's error XML inside the modal. So the app never probes: the "?" is
- * only offered for a name in this list, and `HelpPage` makes a wrong one a
- * compile error rather than something a user finds.
+ * The help itself is data in `components-dev/help` — `content` for desktop,
+ * `phone` for the screens that have a phone version. `HELP_CONTENT` is a
+ * `Record` over this list, so a name added here without desktop help is a
+ * compile error, and `HelpPage` makes a "?" for a name that isn't here one
+ * too.
  *
- * Hand-written for now. It becomes generated output once the page source and
- * its build move into `tools/help/` — see the help-pages plan.
+ * These were once file names in an S3 bucket, which is why they are
+ * kebab-case.
  */
 export const HELP_PAGES = [
   "admin",
@@ -23,6 +22,7 @@ export const HELP_PAGES = [
   "item-actions",
   "item-lookup",
   "loss-prevention",
+  "markdowns",
   "orders",
   "price-opt-sub-dept",
   "price-opt-vendor",
@@ -38,28 +38,3 @@ export const HELP_PAGES = [
 ] as const;
 
 export type HelpPage = (typeof HELP_PAGES)[number];
-
-/**
- * Pages with a `<name>-mobile.html` beside the desktop one.
- *
- * The four that don't — Admin, Forecast, UPC List and User Management — have no
- * phone version of the page itself, so on a phone they'd never be reached; the
- * desktop file is the fallback rather than a request for a key that 403s.
- */
-export const HAS_MOBILE: ReadonlySet<HelpPage> = new Set<HelpPage>([
-  "cashiers",
-  "categories",
-  "coupon-sales",
-  "coupons",
-  "item-actions",
-  "item-lookup",
-  "loss-prevention",
-  "orders",
-  "price-opt-sub-dept",
-  "price-opt-vendor",
-  "receivers",
-  "sales",
-  "store-groups",
-  "sub-dept-margins",
-  "vendors",
-]);

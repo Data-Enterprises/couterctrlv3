@@ -67,7 +67,7 @@ import type { InvoiceEdit } from "./vendors/awg/applyEdit";
 /**
  * The filter row's pills, in the house filter dress.
  *
- * They wore `border-gray-200`, which reads as no border at all beside the
+ * They wore `border-line_field`, which reads as no border at all beside the
  * controls in `components-dev/filters` -- those carry a navy hairline idle
  * and the `filter_active` tint with a ring when they are narrowing something.
  * Same tokens here, so the row looks like every other filter row.
@@ -373,7 +373,7 @@ const AwgInvoices = () => {
     >
       <div className="mx-auto flex h-full max-w-[1180px] flex-col gap-3">
         {/* ── the file, and what to do with it ───────────────────── */}
-        <section className="flex-none overflow-hidden rounded-xl border border-gray-200 bg-custom-white shadow-sm">
+        <section className="flex-none overflow-hidden rounded-xl border border-line_field bg-custom-white shadow-sm">
           <div className="flex items-center gap-2 px-3.5 pt-3">
             {/* A document, not a magnifier: this loads a file, it does not
                 search for one. */}
@@ -382,7 +382,7 @@ const AwgInvoices = () => {
               onClick={() => fileInputRef.current?.click()}
               aria-label="Read another file"
               title="Read another file — or drop one anywhere on this page"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/85 hover:bg-bkg"
+              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-line_field text-content/95 hover:bg-bkg"
             >
               <DocumentArrowUpIcon className="h-3.5 w-3.5" />
             </button>
@@ -420,12 +420,12 @@ const AwgInvoices = () => {
               : ""}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 px-3.5 py-2.5">
+          <div className="flex flex-wrap items-center gap-2 border-t border-line_hair px-3.5 py-2.5">
             {/* Fixed, not flex-1. Growing to fill the row took width the
                 store chooser needed more -- a store name is longer than
                 anything typed in here. 280 fits its own placeholder. */}
             <div className="flex w-[280px] flex-none items-center gap-2 rounded-lg bg-bkg px-3">
-              <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+              <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
               <input
                 id="awg-invoice-filter"
                 value={textFilter}
@@ -476,7 +476,7 @@ const AwgInvoices = () => {
                 className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
                   nothingBilledOnly
                     ? "border-brand_navy bg-brand_navy text-custom-white"
-                    : "border-gray-200 bg-custom-white text-content/85"
+                    : "border-line_field bg-custom-white text-content/95"
                 }`}
               >
                 Nothing billed ({nothingBilledCount})
@@ -541,7 +541,7 @@ const AwgInvoices = () => {
           {/* A file cut off between two invoices still reconciles invoice by
               invoice, so the trailer counts are the only sign it is short. */}
           {trailerProblem && (
-            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+            <p className="border-t border-line_hair bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
               {trailerProblem}
             </p>
           )}
@@ -549,7 +549,7 @@ const AwgInvoices = () => {
               exists to prevent, so the reason sits under the control rather
               than only in its tooltip. */}
           {!allReconciled && (
-            <p className="border-t border-gray-100 bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
+            <p className="border-t border-line_hair bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
               {failedCount} {failedCount === 1 ? "invoice does" : "invoices do"}{" "}
               not reconcile here. The server decodes the file again and reaches
               its own verdict, so this does not stop a send &mdash; but the two
@@ -560,7 +560,7 @@ const AwgInvoices = () => {
             allReconciled &&
             serverWarnings.length === 0 &&
             serverDiscarded.length === 0 && (
-            <p className="border-t border-gray-100 bg-severity_healthy_bg px-3.5 py-2 text-[12px] text-severity_healthy_text">
+            <p className="border-t border-line_hair bg-severity_healthy_bg px-3.5 py-2 text-[12px] text-severity_healthy_text">
               Sent. Any correction made from here replaces what was sent.
             </p>
           )}
@@ -568,7 +568,7 @@ const AwgInvoices = () => {
               with the server's reason, because each is an invoice that is
               missing from the import until it is corrected and sent again. */}
           {sentAt && serverDiscarded.length > 0 && (
-            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+            <p className="border-t border-line_hair bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
               Sent, but {serverDiscarded.length}{" "}
               {serverDiscarded.length === 1 ? "invoice was" : "invoices were"}{" "}
               not saved: {discardedText(serverDiscarded)}.
@@ -578,7 +578,7 @@ const AwgInvoices = () => {
               among them. Money it saw and did not understand, so a run that
               carries these must not read as a clean one. */}
           {sentAt && serverWarnings.length > 0 && (
-            <p className="border-t border-gray-100 bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
+            <p className="border-t border-line_hair bg-severity_watch_bg px-3.5 py-2 text-[12px] text-severity_watch_text">
               Sent, with {serverWarnings.length}{" "}
               {serverWarnings.length === 1 ? "record type" : "record types"} the
               decoder has no layout for: {serverWarnings.join(", ")}. Nothing
@@ -588,7 +588,7 @@ const AwgInvoices = () => {
         </section>
 
         {/* ── the invoices ───────────────────────────────────────── */}
-        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pr-0.5">
+        <div className="cc-scroll pr-0.5">
           <div className="flex flex-col gap-3 pb-1">
             {visible.map((row) => (
               <InvoiceCard
@@ -613,7 +613,7 @@ const AwgInvoices = () => {
             ))}
 
             {visible.length === 0 && (
-              <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/85">
+              <p className="rounded-xl border border-line_field bg-custom-white px-4 py-8 text-center text-[13px] text-content/95">
                 {nothingBilledOnly && (failedOnly || overTenCentsOnly)
                   ? "Invoices that billed nothing have nothing to check."
                   : overTenCentsOnly

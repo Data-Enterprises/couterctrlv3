@@ -34,7 +34,7 @@ export const hasNoUsableCost = (m: {
  *
  * Callers pass per-CASE costs with the real `caseSize`. `/itemlookup` returns
  * only per-unit costs, so it derives its own unit cost first and passes
- * `caseSize = 0` — see `rowUnitCost` in pages/lookup/dev/lookupMetrics.ts.
+ * `caseSize = 0` — see `rowUnitCost` in pages/lookup/dev/utils.
  */
 export const calculateCogs = (
   netCost: number,

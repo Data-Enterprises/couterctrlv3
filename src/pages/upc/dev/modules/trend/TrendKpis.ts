@@ -1,7 +1,10 @@
+// Utils
+import { getTrendStatus, impactUnits, isDecline } from "./trendStats";
+
+// Interfaces
 import type { UpcTrend } from "../../../../../interfaces";
 import type { UpcTrendWindow } from "../../../../../features/dev/devUpcDevSlice";
-import type { KpiCell } from "../../types";
-import { getTrendStatus, impactUnits, isDecline } from "./trendStats";
+import type { KpiCell } from "../../interfaces";
 
 export function getTrendKpis(
   upcTrends: UpcTrend[],

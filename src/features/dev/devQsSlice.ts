@@ -3,7 +3,11 @@
  * by `pages/quicksight/dev`. Edit this one while changing dev quicksight; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { Store } from "../../interfaces";
 
 export interface QuickSightState {

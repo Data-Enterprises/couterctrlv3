@@ -1,11 +1,13 @@
+// Utils
+import { type Severity, BADGE_BG, BADGE_COLOR } from "../utils/severity";
+
+// Components
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
   MinusCircleIcon,
 } from "@heroicons/react/20/solid";
-import type { Severity } from "../utils/severity";
-import { BADGE_BG, BADGE_COLOR } from "../utils/severity";
 
 interface SeverityBadgeProps {
   /** Null renders a grey "not graded" mark — nothing to compare against, so no
@@ -14,6 +16,8 @@ interface SeverityBadgeProps {
   showBackground?: boolean;
 }
 
+/** Small status icon for a severity: critical (triangle), watch (circle),
+ *  healthy (check), or a grey dash when not graded. */
 const SeverityBadge = ({ severity, showBackground = true }: SeverityBadgeProps) => (
   <div
     className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
@@ -22,7 +26,7 @@ const SeverityBadge = ({ severity, showBackground = true }: SeverityBadgeProps) 
     }
     title={severity ? undefined : "Not graded"}
   >
-    {severity === null && <MinusCircleIcon className="w-3 h-3 text-gray-400" />}
+    {severity === null && <MinusCircleIcon className="w-3 h-3 text-brand_slate" />}
     {severity === "critical" && (
       <ExclamationTriangleIcon
         className="w-3 h-3"

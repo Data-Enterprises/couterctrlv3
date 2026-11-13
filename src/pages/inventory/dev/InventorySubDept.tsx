@@ -1,42 +1,45 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
   useStoreName,
 } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { usePricePoints } from "../../../hooks/usePricePoints";
+import { useInvoiceCost } from "./hooks";
+
+// Redux
 import {
   patchSubDeptView,
   cacheSubDeptProducts,
 } from "../../../features/dev/devPriceOptSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+
+// Utils
 import { formatGoliathDate, formatDate } from "../../../utils";
+import { fetchSubDepts, fetchProducts } from "./utils";
+
+// Interfaces
+import type {
+  TreeGroup,
+  InventoryScope,
+  ProductSummary,
+  SubDeptSummary,
+} from "./interfaces";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
-import InventoryExportModal from "./InventoryExportModal";
-import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { usePricePoints } from "../../../hooks/usePricePoints";
-import { useInvoiceCost } from "./useInvoiceCost";
-import {
-  fetchSubDepts,
-  fetchProducts,
-  type InventoryScope,
-  type ProductSummary,
-  type SubDeptSummary,
-} from "./inventoryData";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
+import InventoryExportModal from "./export/InventoryExportModal";
+import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
 /**
- * Price Opt — Sub Department.
- *
- * Estimated against actual price points for one item at a time, reached by
- * opening a department and picking a UPC out of it.
- *
- * The fetch lives here rather than in a panel, per the page pattern — panels
- * render what the container loaded and never reach for data themselves. The
- * exception is the register fetch, which is owned by its own hook because it
- * carries a staleness guard that has to survive the user clicking a second item
- * before the first resolves.
+ * Price Opt: Sub Department. Estimated against actual price points for one
+ * item, reached by opening a department and picking a UPC. The fetch lives
+ * here, except the register fetch, whose hook carries a staleness guard.
  */
 const InventorySubDept = () => {
   const toast = useToast();
@@ -46,10 +49,8 @@ const InventorySubDept = () => {
 
   const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  // Kept in the slice so a return visit lands on the last result instead of an
-  // empty form (dev board review, finding K). The slice holds the store and
-  // dates; the token comes from the session each render, so a re-login can't
-  // leave a stale one behind.
+  // Kept in the slice so a return visit lands on the last result. The token
+  // comes from the session each render, never from the slice.
   const view = useAppSelector((s) => s.dev.priceOpt.subDept);
   const scope = useMemo<InventoryScope | null>(
     () => (view.window ? { url, token, ...view.window } : null),
@@ -90,15 +91,12 @@ const InventorySubDept = () => {
   const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
-  /** The department whose items are wanted on screen. A response that no longer
-   *  matches lost a race and is discarded — clicking a big department and then
-   *  a small one would otherwise leave the small one's name above the big one's
-   *  items, since the small request resolves first. */
+  /** The department whose items are wanted on screen; a response that no
+   *  longer matches lost a race and is discarded. */
   const wantedSubDept = useRef<number | null>(null);
 
-  // A department left open with no items means its fetch was still in flight
-  // when the page was left, and that answer is gone with the old page. Close
-  // it rather than show an open department that reads as empty.
+  // An open department with no items had its fetch cut off when the page was
+  // left, so it is closed rather than shown empty.
   useEffect(() => {
     // Nothing cached for it means the fetch was still in flight, not that the
     // department is empty -- a cached empty department keeps its entry.
@@ -154,19 +152,16 @@ const InventorySubDept = () => {
       setOpenSubDept(null);
       return;
     }
-    // A different one opening takes the item panel with it: the item belongs
-    // to the list it was picked from, and leaving it up read as the new
-    // list's item (dev board review, finding H). Collapsing the open one
-    // keeps it.
+    // Opening a different one closes the item panel (the item belongs to the
+    // old list); collapsing the open one keeps it.
     setSelected(null);
     resetPrices();
     resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
 
-    // Already read in this window. The items of a department cannot change
-    // inside a fixed store and date range, so reopening one is a render, not
-    // a request -- no spinner either, because there is nothing to wait for.
+    // Already read in this window: a department's items can't change inside
+    // a fixed store and range, so reopening is a render, not a request.
     if (id in view.productsBySubDept) return;
 
     setProductsLoading(true);
@@ -179,9 +174,7 @@ const InventorySubDept = () => {
       // Left out of the cache deliberately, so reopening it tries again.
       toast.error(e instanceof Error ? e.message : "Could not load items");
     } finally {
-      // Only the winner clears the spinner; a loser doing so would uncover an
-      // empty list while the department the user actually wants is still in
-      // flight.
+      // Only the winning request clears the spinner.
       if (wantedSubDept.current === id) setProductsLoading(false);
     }
   };
@@ -238,17 +231,11 @@ const InventorySubDept = () => {
       {/* Re-search is an overlay, never a return to the entry screen — losing
           the loaded window to change one field is what that pattern prevents. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
-      {/* Built here rather than held in state — the item roll-up only has to
-          exist while the modal is open, and the vendor page's equivalent is
-          expensive enough that computing it every render would be felt. */}
+      {/* Built here, not held in state: the roll-up only needs to exist
+          while the modal is open. */}
       {exportOpen && (
         <InventoryExportModal
           onClose={() => setExportOpen(false)}
@@ -310,8 +297,8 @@ const InventorySubDept = () => {
           />
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
-            <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">
-              <p className="text-[14px] text-content/85">
+            <div className="cc-panel shadow-sm h-full items-center justify-center">
+              <p className="text-[14px] text-content/95">
                 Open a department and pick an item
               </p>
             </div>

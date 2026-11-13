@@ -1,0 +1,172 @@
+// Hooks
+import { useMemo } from "react";
+import { useAppDispatch } from "../../../../hooks";
+import { useSalesTrackerCtx } from "../hooks";
+
+// Redux
+import { toggleWeek, setAllWeeksOpen } from "../../../../features/dev/devSalesTrackerSlice";
+
+// Utils
+import { formatCurrency2 } from "../../../../utils";
+import { changeTone, signed, signedPct, orDash } from "../utils/trackerTone";
+import { exportTracker } from "./utils";
+
+// Interfaces
+import type { SubDeptTotal, WindowPlan } from "../interfaces";
+
+// Components
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import WeekCard from "./components/WeekCard";
+
+interface TrackerDetailProps {
+  row: SubDeptTotal;
+  plan: WindowPlan;
+  scopeLabel: string;
+}
+
+/**
+ * The selected sub department, week by week, in the Performance panel theme
+ * with a navy header (nothing here is graded).
+ */
+const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
+  // The plan knows which period it paired against; nothing else needs to.
+  const basis = plan.basis;
+  const dispatch = useAppDispatch();
+  const { expandedWeeks } = useSalesTrackerCtx();
+
+  // The panel header formats its dates; the strip underneath was printing them
+  // raw, so the same window appeared twice in two different notations.
+  const md = (d: string) => {
+    const dt = new Date(d + "T12:00:00");
+    return `${dt.getMonth() + 1}/${dt.getDate()}`;
+  };
+  const shortYear = (d: string) =>
+    `${md(d)}/${String(new Date(d + "T12:00:00").getFullYear()).slice(2)}`;
+
+  const collisions = useMemo(() => new Set(plan.collisions), [plan.collisions]);
+  const allOpen = expandedWeeks.length === row.weeks.length;
+  const comparableWeeks = row.weeks.filter((w) => w.salesLy !== null).length;
+
+  return (
+    <div className="cc-panel shadow-sm h-full">
+      <div className="cc-phone-header gap-2 flex-shrink-0">
+        <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start truncate">
+          {row.desc}
+        </p>
+        <span className="text-custom-white text-[13px] font-bold justify-self-center">
+          By week · oldest first
+        </span>
+        <div data-help="export" className="flex items-center gap-3 justify-self-end">
+          <button
+            onClick={() => exportTracker({ row, scopeLabel, plan })}
+            title="Export CSV"
+            className="text-custom-white transition-colors"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* KPI strip — the window totals for this department */}
+      <div className="grid grid-cols-5 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
+        <div className="px-3 pt-2.5 pb-2 text-center">
+          <div className="text-[10px] cc-caps-strong">
+            TY Sales
+          </div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {md(plan.tyStart)} – {md(plan.tyEnd)}
+          </div>
+          <div className="text-[14px] font-bold text-content">
+            {formatCurrency2(row.salesTy)}
+          </div>
+        </div>
+
+        <div className="px-3 pt-2.5 pb-2 text-center">
+          <div className="text-[10px] cc-caps-strong">
+            {basis} Sales
+          </div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {md(plan.lyStart)} – {shortYear(plan.lyEnd)}
+          </div>
+          <div className="text-[14px] font-bold text-content">
+            {row.salesLy === null ? "—" : formatCurrency2(row.salesLy)}
+          </div>
+        </div>
+
+        <div className="px-3 pt-2.5 pb-2 text-center">
+          <div className="text-[10px] cc-caps-strong">
+            ATS Sales
+          </div>
+          {/* Always the transaction count, roll-up included (summed as
+              legacy does). */}
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {row.trans.toLocaleString()} trans
+          </div>
+          <div className="text-[14px] font-bold text-content">
+            {orDash(row.ats, formatCurrency2)}
+          </div>
+        </div>
+
+        <div className="px-3 pt-2.5 pb-2 text-center">
+          <div className="text-[10px] cc-caps-strong">
+            $ vs {basis}
+          </div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {plan.weeks.length} weeks
+          </div>
+          <div
+            className={`text-[14px] font-bold ${changeTone(row.dollarChange)}`}
+          >
+            {signed(row.dollarChange, formatCurrency2)}
+          </div>
+        </div>
+
+        <div className="px-3 pt-2.5 pb-2 text-center">
+          <div className="text-[10px] cc-caps-strong">
+            % vs {basis}
+          </div>
+          {/* How many weeks the comparison rests on: weeks with no last-year
+              partner sit out of both sides. */}
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {comparableWeeks} of {row.weeks.length} compared
+          </div>
+          <div className={`text-[14px] font-bold ${changeTone(row.pctChange)}`}>
+            {signedPct(row.pctChange)}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-line_hair flex-shrink-0">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content">
+          {row.weeks.length} weeks · oldest first
+        </span>
+        <button
+          onClick={() =>
+            dispatch(
+              setAllWeeksOpen(allOpen ? [] : row.weeks.map((w) => w.index)),
+            )
+          }
+          className="text-[11.5px] font-semibold text-brand_navy hover:underline"
+        >
+          {allOpen ? "Collapse all" : "Expand all"}
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto thin-scrollbar p-2.5 flex flex-col gap-2.5">
+        {row.weeks.map((w) => (
+          <WeekCard
+            key={w.index}
+            week={w}
+            label={w.index + 1}
+            expanded={expandedWeeks.includes(w.index)}
+            onToggle={(i) => dispatch(toggleWeek(i))}
+            collisions={collisions}
+            basis={basis}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TrackerDetail;

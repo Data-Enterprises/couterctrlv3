@@ -73,7 +73,7 @@ const LpActions = () => {
       </div>
 
       {rows.length === 0 && !loading && (
-        <p className="mt-3 text-[12px] text-content/85">
+        <p className="mt-3 text-[12px] text-content/95">
           No exceptions were flagged for this store over the {weeks} weeks
           ending on the searched date.
         </p>
@@ -83,7 +83,7 @@ const LpActions = () => {
 
       {searchOpen && (
         <div
-          className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
+          className="cc-modal-backdrop z-[5000] p-4"
           onMouseDown={() => setSearchOpen(false)}
         >
           <div

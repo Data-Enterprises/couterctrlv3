@@ -1,10 +1,11 @@
+// Hooks
 import { useState, useRef, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
-export interface SelectFilterOption {
-  label: string;
-  value: string;
-}
+// Interfaces
+import type { SelectFilterOption } from "./interfaces";
+
+// Components
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 interface SelectFilterProps {
   options: SelectFilterOption[];
@@ -32,6 +33,9 @@ interface SelectFilterProps {
   searchPlaceholder?: string;
 }
 
+/** Dropdown filter that lists options, optionally with a box to narrow them. It
+ *  opens upward when there is more room above, and highlights while a value is
+ *  set. */
 const SelectFilter = ({
   options,
   value,
@@ -124,13 +128,13 @@ const SelectFilter = ({
         }}
       >
         <span
-          className={isActive ? "text-content font-medium" : "text-content/85"}
+          className={isActive ? "text-content font-medium" : "text-content/95"}
           style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
         >
           {label}
         </span>
         <ChevronDownIcon
-          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/60"}`}
+          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/95"}`}
         />
       </button>
 
@@ -169,7 +173,7 @@ const SelectFilter = ({
             </div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className="cc-scroll">
             {/* Only when the caller has not supplied one of its own. Both
                 rows clear the selection, so two of them is two ways to do one
                 thing — and the pair read as different answers when the
@@ -177,7 +181,7 @@ const SelectFilter = ({
             {!query.trim() && !options.some((o) => o.value === "") && (
               <button
                 onClick={() => handleSelect("")}
-                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-fill_soft transition-colors"
                 style={{ color: value === "" ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.45)", fontWeight: value === "" ? 600 : 400 }}
               >
                 {placeholder}
@@ -187,14 +191,14 @@ const SelectFilter = ({
               <button
                 key={o.value}
                 onClick={() => handleSelect(o.value)}
-                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-fill_soft transition-colors"
                 style={{ color: "rgb(var(--color-brand-navy))", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgb(var(--color-brand-navy) / 0.04)" : undefined }}
               >
                 {o.label}
               </button>
             ))}
             {narrowed.length === 0 && (
-              <div className="px-3 py-2 text-[12px] text-content/55">
+              <div className="px-3 py-2 text-[12px] text-content/95">
                 Nothing matches that.
               </div>
             )}

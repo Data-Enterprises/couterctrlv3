@@ -3,8 +3,22 @@
  * by `pages/coupons/dev`. Edit this one while changing dev coupons; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CouponItem, TransactionListItem } from "../../interfaces";
+
+// Interfaces
+import type { CouponItem, ThresholdValue, TransactionListItem } from "../../interfaces";
+
+/** The detail grid's applied column filters. */
+export interface CouponGridFilters {
+  upc: string;
+  product: string;
+  subDept: string;
+  amount: ThresholdValue | null;
+}
+
+const noGridFilters: CouponGridFilters = { upc: "", product: "", subDept: "", amount: null };
 
 export type FilterType =
   | "Store"
@@ -45,6 +59,8 @@ interface CouponState {
    *  empty when none is. Was parked in LP's slice (transactionDrillDown) —
    *  Coupons keeps its own, as Coupon Sales does. */
   receiptLines: TransactionListItem[];
+  /** Kept when the page is left; a new search clears them. */
+  gridFilters: CouponGridFilters;
 }
 
 const initialState: CouponState = {
@@ -69,6 +85,7 @@ const initialState: CouponState = {
   subDeptMobileFilter: [],
   showSubsMobileFilter: false,
   receiptLines: [],
+  gridFilters: noGridFilters,
 };
 
 const couponSlice = createSlice({
@@ -195,7 +212,14 @@ const couponSlice = createSlice({
 
       if (action.payload === true) {
         state.noCouponsFound = false;
+        state.gridFilters = noGridFilters;
       }
+    },
+    setCouponGridFilter: (
+      state,
+      action: PayloadAction<Partial<CouponGridFilters>>,
+    ) => {
+      state.gridFilters = { ...state.gridFilters, ...action.payload };
     },
     setThresh: (state, action: PayloadAction<"less" | "greater" | "equal">) => {
       state.amtLessThan = action.payload === "less";
@@ -263,6 +287,7 @@ export const {
   applyFilters,
   resetFilters,
   setIsFetching,
+  setCouponGridFilter,
   setFilterModalOpen,
   setFilterType,
   setThresh,

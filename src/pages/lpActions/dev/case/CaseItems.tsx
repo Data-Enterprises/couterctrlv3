@@ -33,7 +33,7 @@ const COLS = "54px 1fr 34px 62px";
 const BADGE: Record<string, string> = {
   new: "bg-severity_critical_bg text-severity_critical_text",
   increased: "bg-severity_watch_bg text-severity_watch_text",
-  stopped: "bg-gray-100 text-content",
+  stopped: "bg-fill_muted text-content",
 };
 
 const Note = ({ text }: { text: string }) => (
@@ -100,15 +100,15 @@ const CaseItems = ({ items, loading, error, showAll, onToggleAll }: Props) => {
       )}
 
       {(steady > 0 || movers.length > shown.length) && (
-        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[38px] border-b border-gray-100">
-          <span className="text-[11.5px] text-content/85 flex-1">
+        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[38px] border-b border-line_hair">
+          <span className="text-[11.5px] text-content/95 flex-1">
             {showAll
               ? `${items.length} items`
               : `${items.length - shown.length} more, ${steady === items.length - shown.length ? "all steady" : "including steady"}`}
           </span>
           <button
             onClick={onToggleAll}
-            className="text-[11.5px] font-medium px-2 py-0.5 rounded border border-gray-200 text-content hover:bg-gray-50 transition-colors"
+            className="text-[11.5px] font-medium px-2 py-0.5 rounded border border-line_field text-content hover:bg-fill_soft transition-colors"
           >
             {showAll ? "Movers only" : `All ${items.length} items`}
           </button>

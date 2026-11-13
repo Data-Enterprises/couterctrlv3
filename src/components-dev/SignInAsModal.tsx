@@ -1,16 +1,29 @@
+// Hooks
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { impersonate } from "../api/login";
+
+// Redux
 import {
   resetAppSlice,
   setApiEnv,
   setFetchingCredentials,
 } from "../features/appSlice";
 import { setUsername } from "../features/userSlice";
+
+// API
+import { impersonate } from "../api/login";
+
+// Utils
 import { applySession, impersonateFailureText } from "../utils/session";
+
+// Components
 import Modal from "./Modal";
 import TextField from "./inputs/TextField";
+
+interface SignInAsModalProps {
+  onClose: () => void;
+}
 
 /**
  * Sign in as someone else. Level 9, dev only.
@@ -31,7 +44,7 @@ import TextField from "./inputs/TextField";
  * token: switching Mode while signed in as someone has nothing to switch to.
  * It lasts 60 minutes; Sign out ends it sooner.
  */
-const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
+const SignInAsModal = ({ onClose }: SignInAsModalProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const context = useAppSelector((state) => state.app);
@@ -70,7 +83,7 @@ const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
       <form onSubmit={go} className="flex flex-col gap-3 p-4">
         <div>
           <h2 className="text-[17px] font-semibold">Sign in as</h2>
-          <p className="text-[12.5px] text-content/85 mt-1">
+          <p className="text-[12.5px] text-content/95 mt-1">
             You will see the app as they do, on dev, for up to an hour. Sign
             out to come back as yourself.
           </p>
@@ -85,7 +98,7 @@ const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
           placeholder="tjsmith"
         />
         {problem && (
-          <p role="alert" className="text-[12px] text-red-700 m-0">
+          <p role="alert" className="text-[12px] text-brand_danger m-0">
             {problem}
           </p>
         )}
@@ -93,7 +106,7 @@ const SignInAsModal = ({ onClose }: { onClose: () => void }) => {
           <button
             type="button"
             onClick={onClose}
-            className="text-[12.5px] font-medium px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+            className="text-[12.5px] cc-btn-outline"
           >
             Cancel
           </button>

@@ -1,10 +1,10 @@
+// Hooks
 import { useMemo, useState } from "react";
-import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getAllOrders, updateOrderFile } from "../../../api/orders";
-import { getItemLookupSingleStore } from "../../../api/itemLookup";
-import { getSubDeptCatalog } from "../../../api/subDeptExclusions";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { useOrderDraftActions, useOrdersCtx } from "./hooks";
+
+// Redux
 import {
   setAllOrders,
   setLoadingAllOrders,
@@ -13,65 +13,66 @@ import {
   clearOrdersFilters,
   setOrdersMarginOver,
   setUniqueSubs,
+  patchOrdersEdit,
+  dropSentDraft,
+  addStoreSubDepts,
+  EMPTY_EDIT_SEARCH,
+  type OrdersEdit,
   type OrdersFilters,
   type UniqueSub,
 } from "../../../features/dev/devOrdersSlice";
 import { setSelectedGroupStores } from "../../../features/userSlice";
+import { isGroupSearch } from "../../../features/searchSlice";
+
+// API
+import { getAllOrders, updateOrderFile } from "../../../api/orders";
+import { getItemLookupSingleStore } from "../../../api/itemLookup";
+import { getSubDeptCatalog } from "../../../api/subDeptExclusions";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
+import { formatGoliathDate } from "../../../utils";
+import { getCogs, getERet } from "./utils";
+import { buildRows } from "./utils/ordersRows";
+import {
+  addedLines,
+  appendLine,
+  stageUnitCost,
+  blankLine,
+  buildDocs,
+  buildPayload,
+  unsentDrafts,
+  editedLines,
+  patchLine,
+  recompute,
+  startDraft,
+  canEditOrders,
+  applySent,
+  docKey,
+} from "./utils/orderEdit";
+import { itemsInScope, workingOrder } from "./utils/problemItems";
+
+// Interfaces
 import type {
   AllOrderResp,
   JsonError,
   Store,
   UpdateFileResp,
 } from "../../../interfaces";
-import { getCogs, getERet } from ".";
-import { buildRows } from "./ordersRows";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
-import type { SortKey } from "./ordersRows";
-import { formatGoliathDate } from "../../../utils";
+import type { EditSearch, DraftLine, EditableField, LinePatch, OrderDoc, OrderDraft, SortKey } from "./interfaces";
 
-import {
-  addedLines,
-  appendLine,
-  applyField,
-  applyUnitCost,
-  stageUnitCost,
-  blankLine,
-  buildDocs,
-  buildPayload,
-  changedLines,
-  dropLine,
-  editedLines,
-  nextSeq,
-  patchLine,
-  recompute,
-  revertAll,
-  revertLine,
-  startDraft,
-  type DraftLine,
-  canEditOrders,
-  type EditableField,
-  type LinePatch,
-  type OrderDoc,
-  type OrderDraft,
-  applySent,
-  docKey,
-} from "./orderEdit";
-
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
+import SearchPopup from "../../../components-dev/SearchPopup";
 import OrderPickerPanel from "./components/OrderPickerPanel";
-import OrderEditPanel, {
-  type EditSearch,
-  type SubDeptOption,
-} from "./components/OrderEditPanel";
+import OrderEditPanel from "./components/editPanel/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
-import OrdersExportModal from "./components/OrdersExportModal";
+import OrdersExportModal from "./export/OrdersExportModal";
 import ProblemList from "./components/ProblemList";
 import ItemFixPanel from "./components/ItemFixPanel";
-import { itemsInScope, workingOrder } from "./problemItems";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
-import { isGroupSearch } from "../../../features/searchSlice";
 
 /**
  * Orders, as one fetch and a configuration.
@@ -104,31 +105,21 @@ const Orders = () => {
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   /**
-   * Edit mode, and the one order it is editing.
-   *
-   * The draft lives here rather than in the slice for the same reason the
-   * filtering does: it is one page's working copy of rows the slice already
-   * holds, and a reducer per keystroke buys nothing. It is dropped when the
-   * search reloads, because the lines it was built from are gone.
+   * Edit mode's working state lives in the slice (`edit`), so unsent edits,
+   * the open order, the pickers and the Problems tab are still there after
+   * leaving the page. A draft per order: Fix cost changes every order the
+   * filters hit, and switching orders must not throw away the last one's
+   * changes. A new search drops the drafts, whose lines are gone.
    */
-  const [editing, setEditing] = useState(false);
-  /**
-   * A draft per order, and which one is open.
-   *
-   * It used to be one draft, because a save carries one order. Fix cost
-   * changes every order the filters hit, so those changes have to live
-   * somewhere until they are submitted — and switching to another order must
-   * not throw away the one you just changed. Each order keeps its own draft
-   * here; the edit panel shows whichever is open.
-   */
-  const [drafts, setDrafts] = useState<Record<string, OrderDraft>>({});
-  /** What the last Submit sent, for the receipt — it can be many orders. */
-  const [submittedCounts, setSubmittedCounts] = useState({
-    orders: 0,
-    edited: 0,
-    added: 0,
-  });
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  const edit = ctx.edit;
+  const patchEdit = (p: Partial<OrdersEdit>) => ctx.dispatch(patchOrdersEdit(p));
+  const draftActions = useOrderDraftActions();
+  const { editing, drafts, openKey, submittedCounts, receipt } = edit;
+  const setEditing = (editing: boolean) => patchEdit({ editing });
+  const setOpenKey = (openKey: string | null) => patchEdit({ openKey });
+  const setReceipt = (receipt: UpdateFileResp | null) => patchEdit({ receipt });
+  const setSubmittedCounts = (submittedCounts: OrdersEdit["submittedCounts"]) =>
+    patchEdit({ submittedCounts });
   const draft = openKey ? (drafts[openKey] ?? null) : null;
 
   /**
@@ -136,7 +127,8 @@ const Orders = () => {
    * so every handler that edits a line is unchanged.
    *
    * A value opens that order (adding it if it is new); a function edits the
-   * open one; null drops them all, which is what a reloaded search needs.
+   * one open when the handler was made; null drops them all, which is what a
+   * reloaded search needs.
    */
   const setDraft = (
     next:
@@ -144,43 +136,32 @@ const Orders = () => {
       | null
       | ((d: OrderDraft | null) => OrderDraft | null),
   ) => {
-    if (next === null) {
-      setDrafts({});
-      setOpenKey(null);
-      return;
-    }
-    if (typeof next === "function") {
-      setDrafts((ds) => {
-        if (!openKey) return ds;
-        const updated = next(ds[openKey] ?? null);
-        return updated ? { ...ds, [openKey]: updated } : ds;
-      });
-      return;
-    }
-    setDrafts((ds) => ({ ...ds, [next.doc.key]: next }));
-    setOpenKey(next.doc.key);
+    if (next === null) draftActions.clearDrafts();
+    else if (typeof next === "function") draftActions.editDraft(openKey, next);
+    else draftActions.openDraft(next);
   };
 
   /** Every order with something to send, open or not. */
-  const changedDrafts = Object.values(drafts).filter(
-    (d) => changedLines(d).length > 0,
-  );
+  const changedDrafts = unsentDrafts(drafts, openKey, receipt !== null);
   const changedKeys = new Set(changedDrafts.map((d) => d.doc.key));
-  const [pickStore, setPickStore] = useState("");
-  const [pickDate, setPickDate] = useState("");
-  const [pickType, setPickType] = useState("");
+  const { pickStore, pickDate, pickType } = edit;
+  const setPickStore = (pickStore: string) => patchEdit({ pickStore });
+  const setPickDate = (pickDate: string) => patchEdit({ pickDate });
+  const setPickType = (pickType: string) => patchEdit({ pickType });
 
   /**
    * The Problems tab.
    *
    * `problemCode` is the item open on the right while the tab is showing.
-   * `skipped` is session-only and never saved: a high margin is sometimes
+   * `skipped` is session-only and never sent: a high margin is sometimes
    * the real price, and Skip is how somebody says "looked, it's fine" without
    * that becoming a rule anyone has to undo later.
    */
-  const [leftTab, setLeftTab] = useState<"orders" | "problems">("orders");
-  const [problemCode, setProblemCode] = useState<string | null>(null);
-  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const { leftTab, problemCode } = edit;
+  const setLeftTab = (leftTab: OrdersEdit["leftTab"]) => patchEdit({ leftTab });
+  const setProblemCode = (problemCode: string | null) => patchEdit({ problemCode });
+  const skipped = useMemo(() => new Set(edit.skipped), [edit.skipped]);
+  const setSkipped = (next: Set<string>) => patchEdit({ skipped: [...next] });
 
   /**
    * What the Problems tab works across: every loaded order.
@@ -241,7 +222,7 @@ const Orders = () => {
     const rows = problemScope.filter(
       (o) => String(o.product_code) === problemCode && keySet.has(docKey(o)),
     );
-    setDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
+    draftActions.editDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
 
@@ -251,11 +232,7 @@ const Orders = () => {
     setSkipped(nextSkipped);
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
-  const [editSearch, setEditSearch] = useState<EditSearch>({
-    code: "",
-    desc: "",
-    onlyChanged: false,
-  });
+  const setEditSearch = (search: EditSearch) => patchEdit({ search });
   /**
    * The line being filled in, which is not on the order yet.
    *
@@ -272,17 +249,14 @@ const Orders = () => {
   const [pendingNonce, setPendingNonce] = useState(0);
   const [lookingUp, setLookingUp] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<UpdateFileResp | null>(null);
   /**
-   * The sub departments each store has, by storeid.
+   * The sub departments each store has, by storeid (in the slice).
    *
    * Asked for once per store and kept, because the answer does not change
    * while somebody edits an order and the catalog is a grouped scan of
    * `sales_partitioned` — not a thing to re-ask on every added line.
    */
-  const [subDeptsByStore, setSubDeptsByStore] = useState<
-    Record<number, SubDeptOption[]>
-  >({});
+  const subDeptsByStore = edit.subDeptsByStore;
   const [loadingSubDepts, setLoadingSubDepts] = useState(false);
   /**
    * The grid's sort lives here rather than in the panel.
@@ -387,28 +361,6 @@ const Orders = () => {
   const docs = useMemo(() => buildDocs(ctx.allOrders), [ctx.allOrders]);
 
 
-  /**
-   * The vendors already on this store's orders.
-   *
-   * `items/itemlookup` does not return a `vendor_id` and the column is
-   * `NOT NULL`, so an added line asks for one — out of the vendors the store
-   * really orders from, because an id the POS does not know is worse than no
-   * line.
-   */
-  const vendors = useMemo(() => {
-    if (!draft) return [];
-    const seen = new Map<string, string>();
-    for (const o of ctx.allOrders) {
-      if (o.storeid !== draft.doc.storeid || !o.vendor_id) continue;
-      if (!seen.has(o.vendor_id)) seen.set(o.vendor_id, o.vendor_name ?? o.vendor_id);
-    }
-    // By name, which is what the column and the picker show — an id is how
-    // the row stores a vendor, not how anybody looks one up.
-    return [...seen.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [ctx.allOrders, draft]);
-
   const dirty =
     (changedDrafts.length > 0 || pending !== null) && receipt === null;
 
@@ -427,24 +379,14 @@ const Orders = () => {
     if (doc.key === openKey) return;
     // An order that already has changes — from an earlier visit or from Fix
     // cost — opens with them rather than being started over.
-    setDrafts((ds) =>
+    draftActions.editDrafts((ds) =>
       ds[doc.key] ? ds : { ...ds, [doc.key]: startDraft(doc, ctx.allOrders) },
     );
     setOpenKey(doc.key);
     setPending(null);
     setReceipt(null);
-    setEditSearch({ code: "", desc: "", onlyChanged: false });
+    setEditSearch(EMPTY_EDIT_SEARCH);
   };
-
-  const handleField = (
-    lineNumber: number,
-    field: EditableField,
-    value: number,
-  ) => setDraft((d) => (d ? applyField(d, lineNumber, field, value) : d));
-
-  /** A typed unit cost, stored as the case cost it implies. */
-  const handleUnitCost = (lineNumber: number, unit: number) =>
-    setDraft((d) => (d ? applyUnitCost(d, lineNumber, unit) : d));
 
   /**
    * Which sub departments this store has, for an added line.
@@ -465,12 +407,14 @@ const Orders = () => {
             seen.set(r.sub_department, r.sub_department_description);
           }
         }
-        setSubDeptsByStore((prev) => ({
-          ...prev,
-          [storeid]: [...seen.entries()]
-            .map(([id, name]) => ({ id, name }))
-            .sort((a, b) => a.name.localeCompare(b.name)),
-        }));
+        ctx.dispatch(
+          addStoreSubDepts({
+            storeid,
+            options: [...seen.entries()]
+              .map(([id, name]) => ({ id, name }))
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          }),
+        );
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLoadingSubDepts(false));
@@ -503,10 +447,6 @@ const Orders = () => {
     setDraft(appendLine(draft, pending));
     setPending(null);
   };
-
-  /** Everything typed or picked on an added line comes through here. */
-  const handlePatch = (lineNumber: number, patch: LinePatch) =>
-    setDraft((d) => (d ? patchLine(d, lineNumber, patch) : d));
 
   /**
    * What the item lookup can fill in from a UPC.
@@ -622,10 +562,7 @@ const Orders = () => {
         // the flags and "Edit again" all go back to the pre-edit costs.
         lines = applySent(lines, d);
         // Sent — so it is no longer a change waiting to go.
-        setDrafts((ds) => {
-          const { [d.doc.key]: _sent, ...rest } = ds;
-          return d.doc.key === openKey ? ds : rest;
-        });
+        ctx.dispatch(dropSentDraft({ key: d.doc.key, openKey }));
       } catch (err) {
         failed.push(
           `${d.doc.storenumber} order ${d.doc.order_id}: ${(err as JsonError).message}`,
@@ -753,36 +690,18 @@ const Orders = () => {
               />
             ) : (
             <OrderEditPanel
-              draft={draft}
-              loading={ctx.loadingAllOrders}
-              search={editSearch}
-              onSearch={setEditSearch}
-              onField={handleField}
-              onUnitCost={handleUnitCost}
-              onRevertLine={(ln) =>
-                setDraft((d) => (d ? revertLine(d, ln) : d))
-              }
-              onRevertAll={() => setDraft((d) => (d ? revertAll(d) : d))}
               onAddLine={handleAddLine}
-              onDropLine={(ln) => setDraft((d) => (d ? dropLine(d, ln) : d))}
               pending={pending}
               onPendingField={handlePendingField}
               onPendingPatch={handlePendingPatch}
               onConfirmPending={handleConfirmPending}
               onCancelPending={() => setPending(null)}
-              pendingSeq={draft ? nextSeq(draft) : 1}
               pendingNonce={pendingNonce}
               onLookup={handleLookup}
-              onPatch={handlePatch}
               lookingUp={lookingUp}
-              vendors={vendors}
-              subDepts={draft ? (subDeptsByStore[draft.doc.storeid] ?? []) : []}
               loadingSubDepts={loadingSubDepts}
               onSubmit={handleSubmit}
-              onFixCost={() => setLeftTab("problems")}
-              stagedCount={changedDrafts.length}
               submitting={submitting}
-              submitted={receipt !== null}
               onLeaveEdit={leaveEdit}
             />
             )}
@@ -834,24 +753,19 @@ const Orders = () => {
       )}
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Orders"
-              description="Select a store or group and date range to load every order in it."
-              buttonLabel="Load orders"
-              onSearch={() => {
-                setSearchModalOpen(false);
-                handleSearch();
-              }}
-              loading={ctx.loadingAllOrders}
-              loadingMessage="Loading orders..."
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            title="Orders"
+            description="Select a store or group and date range to load every order in it."
+            buttonLabel="Load orders"
+            onSearch={() => {
+              setSearchModalOpen(false);
+              handleSearch();
+            }}
+            loading={ctx.loadingAllOrders}
+            loadingMessage="Loading orders..."
+          />
+        </SearchPopup>
       )}
     </div>
   );

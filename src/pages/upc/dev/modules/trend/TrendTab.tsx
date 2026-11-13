@@ -1,28 +1,38 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   setDevTrendLoading,
-  // setDevTrendPeriods, // parked with the Window input row — re-enable together
   mergeDevTrends,
   setDevTrendWindow,
   setDevUpcItems,
 } from "../../../../../features/dev/devUpcDevSlice";
+
+// API
 import { getTrendDetect } from "../../../../../api/upc";
+
+// Utils
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { answerOf } from "../../answer";
-import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
-import type { UpcTrend } from "../../../../../interfaces";
+import { answerOf } from "../../utils";
 import { getTrendStatus, impactUnits } from "./trendStats";
-import { trendRequest } from "./trendWindow";
-import TrendLeftList from "./TrendLeftList";
-import TrendDetailPanel from "./TrendDetailPanel";
+import { trendRequest } from "./utils/trendWindow";
 
-// Parked with the Window input row below — re-enable together.
-// const WINDOW_OPTIONS = [30, 60, 90, 120, 180, 365];
+// Interfaces
+import type { UpcTrend } from "../../../../../interfaces";
 
+// Components
+import TrendLeftList from "./components/TrendLeftList";
+import TrendDetailPanel from "./components/TrendDetailPanel";
+
+/** The UPC List's Trend tab: fetches before/after trend detection for the searched UPCs
+ *  on its first visit, then shows the items in a left list and the picked item's trend
+ *  detail on the right. */
 const TrendTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
@@ -30,10 +40,7 @@ const TrendTab = () => {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [retryTick, retry] = useAbandonedRetry();
 
-  // searchedUpcs, not upcs: `upcs` is the search card's working list and
-  // changes live as the user edits chips in the re-search popup, which would
-  // start fetching the moment they typed rather than when they clicked Search.
-  // `searchedUpcs` only moves when a search is actually committed.
+  // searchedUpcs, not upcs (see PriceOptTab).
   const missing = missingFrom(ctx.searchedUpcs, ctx.trendCoverage);
   const missingKey = missing.join(",");
 
@@ -43,9 +50,9 @@ const TrendTab = () => {
     if (ctx.activeTab !== "trend") return;
     if (ctx.trendLoading || !ctx.storeids || !missingKey) return;
 
-    // `trendPeriods` is the baseline: how many days before the start date to
-    // compare against. What goes out is that plus the days since the start
-    // date, because the endpoint counts its window back from today.
+    // `trendPeriods` is the baseline (days before the start date); what goes
+    // out adds the days since the start date, since the endpoint counts its
+    // window back from today.
     const { periods, window } = trendRequest(ctx.startDate, ctx.trendPeriods);
 
     const load = async () => {
@@ -66,22 +73,16 @@ const TrendTab = () => {
 
         const j = res.data;
         const answer = answerOf(j);
-        // A failure is a failure, not an empty answer. Taking the success path
-        // here extended coverage, which recorded these UPCs as
-        // fetched-and-empty and meant the tab never asked again — the catch
-        // below deliberately leaves coverage alone for exactly this reason. No
-        // sales in the window is a real answer, though, and covers them.
+        // A failure is a failure, not an empty answer, so coverage is left
+        // alone and the tab asks again. No sales in the window is a real
+        // answer and covers them.
         if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Trend detection failed for these UPCs");
           return;
         }
         const rows: UpcTrend[] = answer === "ok" && j.trends?.length > 0 ? j.trends : [];
-        // j.top_5 / j.bottom_5 are dropped on the floor: they're the backend's
-        // own cross-UPC rankings, and nothing in this page reads them — the
-        // left list ranks by impact_units itself, so a stored ranking would
-        // only be one more thing to keep true as UPCs are added and removed.
-        // They'd also be wrong under delta fetching, being a ranking of
-        // whatever subset that one call happened to ask about.
+        // j.top_5 / j.bottom_5 are ignored: the left list ranks by impact
+        // itself, and a ranking of one delta call's subset would be wrong.
         dispatch(setDevTrendWindow(window));
         dispatch(mergeDevTrends({ rows, codes: missing }));
         dispatch(
@@ -100,12 +101,6 @@ const TrendTab = () => {
     load();
   }, [ctx.activeTab, missingKey, retryTick]);
 
-  // Parked with the Window input row below — re-enable together.
-  // const handleWindowChange = (periods: number) => {
-  //   dispatch(setDevTrendPeriods(periods));
-  //   fetchTrends(periods);
-  // };
-
   const rows = useMemo(() => {
     const src =
       ctx.selectedUpcs.length > 0
@@ -122,9 +117,8 @@ const TrendTab = () => {
       );
   }, [ctx.upcTrends, ctx.selectedUpcs, ctx.fixes, ctx.trendWindow]);
 
-  // Keep the detail panel pointed at a valid item — same pattern as Sales
-  // Comp/Price Opt: default to the first row, re-pick if the current
-  // selection drops out of the filtered set.
+  // Keep the detail panel on a valid item: the first row by default, re-picked
+  // if the selection drops out of the filtered set.
   useEffect(() => {
     if (!rows.length) {
       setSelectedCode(null);
@@ -137,7 +131,7 @@ const TrendTab = () => {
 
   if (ctx.trendLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         Loading trend detection…
       </div>
     );
@@ -145,7 +139,7 @@ const TrendTab = () => {
 
   if (!rows.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
         No trend data
       </div>
     );
@@ -155,26 +149,6 @@ const TrendTab = () => {
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
-      {/* Window input parked for now — re-enable when ready.
-      <div className="flex items-center justify-end gap-1.5 px-3 py-2 border-b border-gray-100 flex-shrink-0">
-        <label className="flex items-center gap-1.5 text-[10px] text-content">
-          Window
-          <select
-            value={ctx.trendPeriods}
-            onChange={(e) => handleWindowChange(Number(e.target.value))}
-            className="text-[10px] pl-1.5 pr-4 py-1 rounded border border-content/20 bg-custom-white"
-            style={{ outline: "none", boxShadow: "none" }}
-          >
-            {WINDOW_OPTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}d
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      */}
-
       <div className="flex-1 overflow-hidden flex min-h-0">
         <TrendLeftList
           rows={rows}

@@ -58,7 +58,7 @@ const SavedExportsModal = () => {
       <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Saved exports</h2>
-          <span className="text-[11.5px] text-content/85">
+          <span className="text-[11.5px] text-content/95">
             yours, on any machine · a build made from one carries its name
           </span>
           <div className="flex-1" />
@@ -72,7 +72,7 @@ const SavedExportsModal = () => {
         </div>
 
         {ctx.savedError && (
-          <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12px] text-amber-900">
+          <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 text-[12px] text-severity_watch_text">
             {ctx.savedError}
           </div>
         )}
@@ -82,7 +82,7 @@ const SavedExportsModal = () => {
           <div className="text-[12.5px] font-semibold">
             Save the configuration on screen
           </div>
-          <div className="text-[11.5px] text-content/85">
+          <div className="text-[11.5px] text-content/95">
             {describePayload(toPayload(ctx.config, ctx.source), ctx.source)}
           </div>
           <div className="flex items-end gap-2">
@@ -95,7 +95,7 @@ const SavedExportsModal = () => {
             />
             <TextField
               label={
-                <span className="text-[11px] font-normal text-content/85">
+                <span className="text-[11px] font-normal text-content/95">
                   Description
                 </span>
               }
@@ -132,7 +132,7 @@ const SavedExportsModal = () => {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-2">
+        <div className="cc-scroll flex flex-col gap-2">
           {ctx.saved.map((saved) => (
             <div
               key={saved.id}
@@ -143,16 +143,16 @@ const SavedExportsModal = () => {
               }`}
             >
               <div className="w-8 h-8 rounded-lg bg-custom-white border border-brand_line flex items-center justify-center flex-shrink-0">
-                <BookmarkIcon className="w-4 h-4 text-content/85" />
+                <BookmarkIcon className="w-4 h-4 text-content/95" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-semibold truncate">
                   {saved.name}
                 </div>
-                <div className="text-[11.5px] text-content/85 truncate">
+                <div className="text-[11.5px] text-content/95 truncate">
                   {describePayload(saved.payload, ctx.source)}
                 </div>
-                <div className="text-[11px] text-content/85 mt-0.5">
+                <div className="text-[11px] text-content/95 mt-0.5">
                   saved {when(saved.updated_at || saved.created_at)}
                 </div>
               </div>
@@ -183,7 +183,7 @@ const SavedExportsModal = () => {
           {ctx.savedLoaded && ctx.saved.length === 0 && (
             <div className="py-6 text-center">
               <div className="text-[13px] font-semibold">Nothing saved yet</div>
-              <div className="text-[12.5px] text-content/85 mt-1.5 max-w-[46ch] mx-auto">
+              <div className="text-[12.5px] text-content/95 mt-1.5 max-w-[46ch] mx-auto">
                 Save the configuration above and it comes back on any machine,
                 onto whatever range you have open.
               </div>
@@ -191,7 +191,7 @@ const SavedExportsModal = () => {
           )}
 
           {!ctx.savedLoaded && ctx.savedBusy && (
-            <div className="py-6 text-center text-[12.5px] text-content/85">
+            <div className="py-6 text-center text-[12.5px] text-content/95">
               Reading your saved exports...
             </div>
           )}

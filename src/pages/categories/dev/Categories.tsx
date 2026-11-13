@@ -1,12 +1,16 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useCategoryData, useCategoriesCtx } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import { useCategoryData } from "./useCategoryData";
-import CategoryListPanel from "./CategoryListPanel";
-import CategoryDetailPanel from "./CategoryDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/dev/ItemPerfMobile";
+import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import CategoryListPanel from "./components/CategoryListPanel";
+import CategoryDetailPanel from "./components/CategoryDetailPanel";
 
 /**
  * Categories — Performance.
@@ -23,7 +27,7 @@ const Categories = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.dev.categories);
+  const cats = useCategoriesCtx();
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.
@@ -86,12 +90,7 @@ const Categories = () => {
           the loaded week to change one field is the thing that pattern exists
           to prevent. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
