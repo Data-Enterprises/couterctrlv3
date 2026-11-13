@@ -15,6 +15,7 @@ import {
   salesRows,
   standRows,
   totalsOf,
+  verdictCta,
   verdictOf,
 } from "@/pages/sales/dev/storePanel/subDepts/compare/utils";
 import type { GradedItem } from "@/pages/sales/dev/storePanel/subDepts/interfaces";
@@ -101,6 +102,23 @@ describe("the verdict", () => {
       lead: "Both holding up",
       sides: [{ n: "1 of 1", says: "selling more" }, { n: "1 of 1", says: "selling more" }],
     });
+  });
+});
+
+describe("verdictCta", () => {
+  it("reads as the other tabs' Insight strip, graded watch while a list is losing ground", () => {
+    expect(verdictCta(verdictOf(cells, [6, 5]), ["pepsi", "coke"])).toEqual({
+      name: "pepsi vs coke",
+      cta: {
+        text: "Different problems. pepsi: 3 of 6 gone since last year | coke: 3 of 5 sold less or stopped.",
+        severity: "watch",
+      },
+    });
+  });
+
+  it("goes healthy when both lists are holding up", () => {
+    const up = bucketCells([rowOf(item("u", 20, 10, 5), "sales")]);
+    expect(verdictCta(verdictOf([up, up], [1, 1]), ["pepsi", "coke"]).cta.severity).toBe("healthy");
   });
 });
 

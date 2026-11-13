@@ -23,6 +23,7 @@ import {
   signed,
   standRows,
   totalsOf,
+  verdictCta,
   verdictOf,
 } from "./utils";
 
@@ -36,7 +37,7 @@ import CompareBucketSlide from "./components/CompareBucketSlide";
 import CompareHeader from "./components/CompareHeader";
 import CompareSalesTable from "./components/CompareSalesTable";
 import CompareStandTable from "./components/CompareStandTable";
-import CompareVerdict from "./components/CompareVerdict";
+import InsightToggle from "../../../components/InsightToggle";
 
 interface CompareSlideOverProps {
   open: boolean;
@@ -66,6 +67,9 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
   const counts: [number, number] = [totals[0].count, totals[1].count];
   const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
   const nets = [netVsLw(cells[0]), netVsLw(cells[1])];
+  const insight = verdictCta(verdictOf(cells, counts), names);
+  // The insight line opens over the panel, as on the other tabs; it starts shut.
+  const [insightOpen, setInsightOpen] = useState(false);
 
   // Opens on A's problem (else B's), and again for a new pair.
   // Keyed on the labels: the filter objects are rebuilt on every render.
@@ -110,11 +114,16 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
         onExport={exportCsv}
         onClose={onClose}
       />
+      <InsightToggle
+        name={insight.name}
+        cta={insight.cta}
+        open={insightOpen}
+        onToggle={() => setInsightOpen((v) => !v)}
+      />
 
       <div className="grid grid-cols-[520px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
-        <section className="cc-scroll flex flex-col px-5 pt-2 pb-3 border-r border-line_hair">
-          <CompareVerdict verdict={verdictOf(cells, counts)} />
+        <section className="cc-scroll flex flex-col px-5 pt-1 pb-3 border-r border-line_hair">
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} threshold={threshold} />
           <CompareStandTable
             rows={standRows(cells, counts, metric)}

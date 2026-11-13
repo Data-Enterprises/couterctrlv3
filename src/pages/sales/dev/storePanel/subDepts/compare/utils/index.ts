@@ -1,5 +1,5 @@
 // Utils
-import { formatPct } from "../../../../../../../utils/severity";
+import { formatPct, type Severity } from "../../../../../../../utils/severity";
 import { money, whole } from "../../utils";
 
 // Interfaces
@@ -223,6 +223,20 @@ export const verdictOf = (
   return {
     lead: pa === pb ? (pa ? "Same problem" : "Both holding up") : "Different problems",
     sides: [sideSays(cells[0], counts[0]), sideSays(cells[1], counts[1])],
+  };
+};
+
+/** The verdict as the Insight strip the other Sales tabs use: named for the two
+ *  lists, its line saying each one's problem, graded watch when either list is
+ *  losing ground. */
+export const verdictCta = (v: Verdict, names: [string, string]) => {
+  const half = (i: 0 | 1) => `${names[i]}: ${[v.sides[i].n, v.sides[i].says].filter(Boolean).join(" ")}`;
+  return {
+    name: `${names[0]} vs ${names[1]}`,
+    cta: {
+      text: `${v.lead}. ${half(0)} | ${half(1)}.`,
+      severity: (v.lead === "Both holding up" ? "healthy" : "watch") as Severity,
+    },
   };
 };
 
