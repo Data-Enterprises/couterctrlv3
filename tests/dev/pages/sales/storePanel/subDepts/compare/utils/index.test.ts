@@ -10,9 +10,11 @@ import {
   hotBuckets,
   leadBucket,
   netVsLw,
+  pctText,
   problemOf,
   rowOf,
   salesRows,
+  soldCount,
   standRows,
   totalsOf,
   verdictCta,
@@ -122,6 +124,16 @@ describe("verdictCta", () => {
   });
 });
 
+describe("pctText and soldCount", () => {
+  it("gives a change to a tenth with a real minus", () => {
+    expect([pctText(-26.714), pctText(5.12)]).toEqual(["−26.7%", "+5.1%"]);
+  });
+
+  it("counts the items that sold this week or last", () => {
+    expect([soldCount(cells[0]), soldCount(cells[1])]).toEqual([3, 5]);
+  });
+});
+
 describe("netVsLw and bucketHead", () => {
   it("adds the four this-week buckets up to the list's change against last week", () => {
     expect(netVsLw(cells[1])).toBeCloseTo(totals[1].tyNet - totals[1].lwNet, 6);
@@ -136,8 +148,8 @@ describe("netVsLw and bucketHead", () => {
 describe("standRows", () => {
   it("gives each bucket both lists' count and what those items did", () => {
     const rows = standRows(cells, "sales");
-    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Last year only"]);
-    expect(rows[4].cells[0]).toEqual({ side: "A", count: 3, amount: "−$69.54", tone: "down", note: "vs LY" });
+    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Sold last year only"]);
+    expect(rows[4].cells[0]).toEqual({ side: "A", count: 3, amount: "$69.54", tone: "plain" });
     expect(rows[1].cells[1]).toEqual({ side: "B", count: 2, amount: "−$97.35", tone: "down" });
     expect(rows[2].cells[0]).toEqual({ side: "A", count: 0, amount: "", tone: "plain" });
   });
@@ -173,7 +185,7 @@ describe("the export", () => {
       { side: "B", label: "Crit | coke", rows: rowsB, totals: totals[1] },
     ]);
     expect(rows).toHaveLength(13);
-    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Last year only", "", "", "", "", ""]);
+    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Sold last year only", "", "", "", "", ""]);
     expect(rows[11][2]).toBe("Total (6 items)");
     expect(rows[11][5]).toBe(35.755);
   });

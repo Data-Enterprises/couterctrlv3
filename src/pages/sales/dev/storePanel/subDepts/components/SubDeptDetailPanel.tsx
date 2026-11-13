@@ -229,7 +229,6 @@ const SubDeptDetailPanel = ({
           a={{ filter: pinned, items: pinnedItems }}
           b={{ filter: current, items: textFilteredItems }}
           twDateLabel={twDateLabel}
-          threshold={itemThreshold}
         />
       )}
 

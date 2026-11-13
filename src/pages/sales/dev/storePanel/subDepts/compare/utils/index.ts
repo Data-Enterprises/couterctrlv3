@@ -1,10 +1,10 @@
 // Utils
-import { formatPct, type Severity } from "../../../../../../../utils/severity";
 import { money, whole } from "../../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
 import type { GradedItem, Side } from "../../interfaces";
+import type { Severity } from "../../../../../../../utils/severity";
 import type {
   Bucket,
   BucketCell,
@@ -20,28 +20,21 @@ import type {
 export const SLIDE_OPEN = "translate-x-0 visible";
 export const SLIDE_SHUT = "translate-x-full invisible";
 
-/** A mirrored row: A's figures right of its edge, the label centred, B's left. */
-export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_96px_minmax(0,1fr)] items-center";
+/** A row of the compare sheet: label, A's two columns, B's two, and a chevron
+ *  on the rows that open the carousel. */
+export const SHEET_COLS = "grid grid-cols-[minmax(0,1fr)_62px_70px_62px_70px_10px] gap-x-1.5 items-center";
 
 /** An item in the open tab: list badge, name, UPC, what it did. */
 export const ITEM_COLS = "grid grid-cols-[18px_minmax(0,1fr)_88px_72px] gap-2.5 items-center";
 
-/** A where-the-items-stand row: dot, bucket, A's cell, B's cell, chevron. */
-export const STAND_COLS = "grid grid-cols-[10px_minmax(0,1fr)_122px_122px_14px] gap-2.5 items-center";
-
-/** A bucket's dot: green for gaining ground, red for losing it. */
+/** A bucket's dot: green gaining ground, red losing it, ungraded for items
+ *  that sold nothing this week or last. */
 export const BUCKET_DOT: Record<Bucket, string> = {
   more: "bg-emerald-500",
   new: "bg-emerald-500",
   less: "bg-red-500",
   stopped: "bg-red-500",
-  lyOnly: "bg-red-500",
-};
-
-/** A sales bar per list: this week at full strength, earlier weeks lighter. */
-export const SALES_BAR: Record<Side, [string, string]> = {
-  A: ["bg-brand_navy", "bg-brand_navy/40"],
-  B: ["bg-compare_b", "bg-compare_b/40"],
+  lyOnly: "bg-ungraded",
 };
 
 /** The buckets in table order, with their row and tab names. */
@@ -50,7 +43,7 @@ export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
   { key: "less", label: "Selling less", tab: "Less" },
   { key: "new", label: "New this week", tab: "New" },
   { key: "stopped", label: "Stopped this week", tab: "Stopped" },
-  { key: "lyOnly", label: "Last year only", tab: "Last year" },
+  { key: "lyOnly", label: "Sold last year only", tab: "Last year" },
 ];
 
 /** Change from `then` to `now` in percent; null with nothing to compare against. */
@@ -256,8 +249,15 @@ export const bucketHead = (b: Bucket, n: number) => {
 export const mainFig = (net: number | null, qty: number | null, metric: GradingMetric) =>
   metric === "qty" ? (qty === null ? "—" : whole(qty)) : net === null ? "—" : money(net);
 
-/** A change as text. */
-export const pctText = (p: number) => formatPct(p);
+/** A change as text, to a tenth of a percent. */
+export const pctText = (p: number) => `${p >= 0 ? "+" : "−"}${Math.abs(p).toFixed(1)}%`;
+
+/** A change's colour: direction, not a grade. */
+export const pctClass = (p: number) => (p < 0 ? "text-delta_negative_text" : "text-delta_positive_text");
+
+/** How many of a list's items sold this week or last: the four rows the net
+ *  line adds up. */
+export const soldCount = (c: Record<Bucket, BucketCell>) => c.more.count + c.less.count + c.new.count + c.stopped.count;
 
 /** The sales chart: this week, then last week and last year with each list's
  *  change to this week. */
@@ -279,9 +279,9 @@ export const salesRows = (a: CompareTotals, b: CompareTotals, metric: GradingMet
   ];
 };
 
-/** The where-the-items-stand table: per bucket, each list's count and its
- *  change. Last-year-only items sold nothing last week, so theirs is the drop
- *  against last year, marked as such. */
+/** The bucket rows: per bucket, each list's count and its change against last
+ *  week, or for last-year-only items (which sold nothing last week) last
+ *  year's sales. */
 export const standRows = (
   cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
   metric: GradingMetric,
@@ -295,9 +295,8 @@ export const standRows = (
       return {
         side,
         count: c.count,
-        amount: !c.count ? "" : key === "lyOnly" ? signed(-c.amount, metric) : signed(c.amount, metric),
-        tone: !c.count ? "plain" : key === "lyOnly" || c.amount < 0 ? "down" : "up",
-        ...(key === "lyOnly" && c.count ? { note: "vs LY" } : {}),
+        amount: !c.count ? "" : key === "lyOnly" ? plain(c.amount, metric) : signed(c.amount, metric),
+        tone: !c.count || key === "lyOnly" ? "plain" : c.amount < 0 ? "down" : "up",
       };
     }) as StandRow["cells"],
   }));

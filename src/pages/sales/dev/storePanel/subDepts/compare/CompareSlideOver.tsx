@@ -21,6 +21,7 @@ import {
   rowOf,
   salesRows,
   signed,
+  soldCount,
   standRows,
   totalsOf,
   verdictCta,
@@ -36,6 +37,7 @@ import CompareBucketHead from "./components/CompareBucketHead";
 import CompareBucketSlide from "./components/CompareBucketSlide";
 import CompareHeader from "./components/CompareHeader";
 import CompareSalesTable from "./components/CompareSalesTable";
+import CompareSheetHead from "./components/CompareSheetHead";
 import CompareStandTable from "./components/CompareStandTable";
 import InsightToggle from "../../../components/InsightToggle";
 
@@ -46,17 +48,16 @@ interface CompareSlideOverProps {
   a: CompareInput;
   b: CompareInput;
   twDateLabel: string;
-  threshold: number;
 }
 
 /**
  * A panel over the store panel's report tabs and their content that diagnoses
  * two lists of the open department: the pinned list (A) against the filters
- * showing now (B). On the left, mirrored about its centre (A always left, B
- * always right): the verdict, sales and where the items stand. On the right,
- * each bucket's items in the carousel. Flat, no cards.
+ * showing now (B). The Insight strip carries the verdict; on the left one sheet
+ * with each list's columns side by side (sales, the buckets and their net); on
+ * the right, each bucket's items in the carousel. Flat, no cards.
  */
-const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshold }: CompareSlideOverProps) => {
+const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
 
   const names = listNames(a.filter, b.filter);
@@ -121,17 +122,22 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
         onToggle={() => setInsightOpen((v) => !v)}
       />
 
-      <div className="grid grid-cols-[470px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
+      <div className="grid grid-cols-[480px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
-        <section className="cc-scroll flex flex-col px-4 pt-1 pb-4 border-r border-line_hair">
-          <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} threshold={threshold} />
+        <section className="cc-scroll flex flex-col px-4 pt-4 pb-4 border-r border-line_hair">
+          <CompareSheetHead names={names} />
+          <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} />
           <CompareStandTable
-            names={names}
             rows={standRows(cells, metric)}
             net={[
-              { text: signed(nets[0], metric), down: nets[0] < 0 },
-              { text: signed(nets[1], metric), down: nets[1] < 0 },
+              { count: soldCount(cells[0]), text: signed(nets[0], metric), down: nets[0] < 0 },
+              { count: soldCount(cells[1]), text: signed(nets[1], metric), down: nets[1] < 0 },
             ]}
+            sums={[
+              { sold: soldCount(cells[0]), ly: cells[0].lyOnly.count },
+              { sold: soldCount(cells[1]), ly: cells[1].lyOnly.count },
+            ]}
+            names={names}
             open={tab}
             onOpen={setTab}
           />
