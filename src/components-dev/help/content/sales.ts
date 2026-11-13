@@ -106,15 +106,15 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the comparison",
-          pre: "A panel slides over the report tabs, under the KPIs and day cards. On the left, a one-line verdict: whether the two lists have the same problem, and each one's in a few words. Then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or last year only.",
+          pre: "A panel slides over the report tabs, under the KPIs and day cards. Its left card is mirrored: list A always left of centre, B always right. It opens on the verdict (the same or different problems, and how many of each list's items it covers), then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or sold last year only, with the net against last week.",
           see: "The bucket behind each list's verdict is tinted. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
         },
         {
-          title: "Act on a bucket",
-          pre: "Under the carousel, copy its UPCs or click",
-          chip: "Show in list",
-          post: ". The panel closes and the list shows those items; the × on the Showing chip, or any filter, goes back.",
-          anchor: "compare-show",
+          title: "Copy a bucket's UPCs",
+          pre: "Over the carousel's list, click",
+          chip: "Copy UPCs",
+          post: "to copy the open bucket's UPCs from both lists.",
+          anchor: "compare-items",
         },
         {
           title: "Take it with you",

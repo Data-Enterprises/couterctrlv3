@@ -20,14 +20,15 @@ import type {
 export const SLIDE_OPEN = "translate-x-0 visible";
 export const SLIDE_SHUT = "translate-x-full invisible";
 
-/** A row of either table: its label, then A's and B's cells. */
-export const TABLE_COLS = "grid grid-cols-[minmax(0,1fr)_180px_180px] gap-3 items-center";
+/** A mirrored row: A's figures right of its edge, the label centred, B's left. */
+export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)] items-center";
 
 /** An item in the open tab: list badge, name, UPC, what it did. */
-export const ITEM_COLS = "grid grid-cols-[16px_minmax(0,1fr)_96px_80px] gap-2.5 items-center";
+export const ITEM_COLS = "grid grid-cols-[20px_minmax(0,1fr)_110px_80px] gap-3 items-center";
 
-/** A cell in the bucket that drives a list's verdict. */
+/** A cell in a bucket behind a list's verdict, and its bar. */
 export const HOT_CELL = "bg-delta_negative_bg/60";
+export const HOT_BAR = "bg-delta_negative_text";
 
 /** The buckets in table order, with their row and tab names. */
 export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
@@ -35,7 +36,7 @@ export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
   { key: "less", label: "Selling less", tab: "Selling less" },
   { key: "new", label: "New this week", tab: "New" },
   { key: "stopped", label: "Stopped this week", tab: "Stopped" },
-  { key: "lyOnly", label: "Last year only", tab: "Last year only" },
+  { key: "lyOnly", label: "Sold last year only", tab: "Last year only" },
 ];
 
 /** Change from `then` to `now` in percent; null with nothing to compare against. */
@@ -150,10 +151,31 @@ export const bucketCells = (rows: CompareRowData[]): Record<Bucket, BucketCell> 
 const lossOf = (cells: Record<Bucket, BucketCell>, b: Bucket) =>
   b === "less" || b === "stopped" ? -cells[b].amount : b === "lyOnly" ? cells[b].amount : 0;
 
-/** The bucket that hurt a list most, or null when nothing is losing ground. */
-export const driverOf = (cells: Record<Bucket, BucketCell>): Bucket | null => {
-  const losing = (["less", "stopped", "lyOnly"] as const).filter((b) => cells[b].count > 0 && lossOf(cells, b) > 0);
-  return losing.length ? losing.reduce((m, b) => (lossOf(cells, b) > lossOf(cells, m) ? b : m)) : null;
+/** A list's problem: items gone since last year, items that sold less or
+ *  stopped this week, or none (nothing losing ground). */
+export type Problem = "lyOnly" | "recent" | null;
+
+/** Whichever cost the list more: the last-year-only items, or selling less
+ *  and stopping together. */
+export const problemOf = (cells: Record<Bucket, BucketCell>): Problem => {
+  const ly = lossOf(cells, "lyOnly");
+  const recent = lossOf(cells, "less") + lossOf(cells, "stopped");
+  if (ly <= 0 && recent <= 0) return null;
+  return ly > recent ? "lyOnly" : "recent";
+};
+
+/** The buckets behind a list's problem, tinted in the table. */
+export const hotBuckets = (cells: Record<Bucket, BucketCell>): Bucket[] => {
+  const p = problemOf(cells);
+  if (p === "lyOnly") return ["lyOnly"];
+  if (p === "recent") return (["less", "stopped"] as const).filter((b) => cells[b].count > 0);
+  return [];
+};
+
+/** The bucket the carousel opens on for a list: its problem's biggest. */
+export const leadBucket = (cells: Record<Bucket, BucketCell>): Bucket | null => {
+  const hot = hotBuckets(cells);
+  return hot.length ? hot.reduce((m, b) => (lossOf(cells, b) > lossOf(cells, m) ? b : m)) : null;
 };
 
 /** A difference on the grading measure, with its sign. */
@@ -163,24 +185,43 @@ export const signed = (v: number, metric: GradingMetric) =>
 /** A figure on the grading measure, no sign. */
 const plain = (v: number, metric: GradingMetric) => (metric === "qty" ? `${whole(v)} units` : money(v));
 
-/** What a list's driver says about it, in a few words. */
-const PHRASE: Record<Bucket | "none", string> = {
-  lyOnly: "sold last year, not this week",
-  stopped: "stopped selling this week",
-  less: "selling less",
-  more: "holding up",
-  new: "holding up",
-  none: "holding up",
+/** One list's half of the verdict: how many of its items, doing what. */
+const sideSays = (c: Record<Bucket, BucketCell>, count: number) => {
+  const p = problemOf(c);
+  if (p === "lyOnly") return { n: `${c.lyOnly.count} of ${count}`, says: "sold last year, nothing this week" };
+  if (p === "recent") {
+    const says = c.less.count && c.stopped.count ? "sold less or stopped this week" : c.less.count ? "sold less this week" : "stopped this week";
+    return { n: `${c.less.count + c.stopped.count} of ${count}`, says };
+  }
+  return c.more.count ? { n: `${c.more.count} of ${count}`, says: "selling more" } : { n: "", says: "holding up" };
 };
 
-/** The verdict: whether the two lists have the same problem, and what each
- *  one's is. The figures behind it are the tables', tinted. */
-export const verdictOf = (cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>]): Verdict => {
-  const [da, db] = [driverOf(cells[0]), driverOf(cells[1])];
+/** The verdict: whether the two lists have the same problem, and each one's,
+ *  with how many of its items it covers. */
+export const verdictOf = (
+  cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
+  counts: [number, number],
+): Verdict => {
+  const [pa, pb] = [problemOf(cells[0]), problemOf(cells[1])];
   return {
-    lead: da === db ? (da ? "Same problem." : "Both holding up.") : "Different problems.",
-    phrases: [PHRASE[da ?? "none"], PHRASE[db ?? "none"]],
+    lead: pa === pb ? (pa ? "Same problem" : "Both holding up") : "Different problems",
+    sides: [sideSays(cells[0], counts[0]), sideSays(cells[1], counts[1])],
   };
+};
+
+/** Each list's change against last week: its four this-week buckets added up. */
+export const netVsLw = (c: Record<Bucket, BucketCell>) => c.more.amount + c.less.amount + c.new.amount + c.stopped.amount;
+
+/** The line over the carousel: how many items the open bucket holds, and what they did. */
+export const bucketHead = (b: Bucket, n: number) => {
+  const items = `${n} item${n === 1 ? "" : "s"}`;
+  return {
+    more: `${items} selling more than last week.`,
+    less: `${items} selling less than last week.`,
+    new: `${items} new this week.`,
+    stopped: `${items} that stopped selling this week.`,
+    lyOnly: `${items} sold last year and nothing this week.`,
+  }[b];
 };
 
 /** The figure on the grading measure ("—" for no sale). */
@@ -211,13 +252,13 @@ export const salesRows = (a: CompareTotals, b: CompareTotals, metric: GradingMet
 };
 
 /** The where-the-items-stand table: per bucket, each list's count, what those
- *  items did, their share of the list, and whether it drives the verdict. */
+ *  items did, their share of the list, and whether it is behind the verdict. */
 export const standRows = (
   cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
   counts: [number, number],
   metric: GradingMetric,
 ): StandRow[] => {
-  const drivers = [driverOf(cells[0]), driverOf(cells[1])];
+  const hot = [hotBuckets(cells[0]), hotBuckets(cells[1])];
   return BUCKETS.map(({ key, label }) => ({
     bucket: key,
     label,
@@ -230,7 +271,7 @@ export const standRows = (
         amount: !c.count ? "" : key === "lyOnly" ? `${plain(c.amount, metric)} LY` : signed(c.amount, metric),
         tone: !c.count || key === "lyOnly" ? "plain" : c.amount < 0 ? "down" : "up",
         share: counts[i] ? (c.count / counts[i]) * 100 : 0,
-        hot: drivers[i] === key,
+        hot: hot[i].includes(key),
       };
     }) as StandRow["cells"],
   }));
@@ -246,12 +287,6 @@ export const bucketItems = (a: CompareRowData[], b: CompareRowData[], bucket: Bu
 /** What an item in the open tab did, as the tab reads it. */
 export const itemAmount = (r: CompareRowData, metric: GradingMetric) =>
   r.bucket === "lyOnly" ? plain(r.amount, metric) : signed(r.amount, metric);
-
-/** The open tab's line in the footer: how many from each list. */
-export const footLine = (items: BucketItem[], names: [string, string]) => {
-  const a = items.filter((i) => i.side === "A").length;
-  return `${a} ${names[0]} | ${items.length - a} ${names[1]}`;
-};
 
 /** The export's headings. The changes are on the grading measure. */
 export const csvHeaders = (metric: GradingMetric) => {

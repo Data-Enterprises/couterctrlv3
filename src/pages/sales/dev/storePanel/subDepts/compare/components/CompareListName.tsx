@@ -10,12 +10,12 @@ interface CompareListNameProps {
   count: number;
 }
 
-/** One list in the drawer's header: its badge, its name and its count. */
+/** One list in the navy header: its badge, its name and its count. */
 const CompareListName = ({ side, name, count }: CompareListNameProps) => (
-  <span className="flex items-center gap-1.5 min-w-0" title={`${count.toLocaleString()} items`}>
+  <span className="flex items-center gap-2 min-w-0" title={`${count.toLocaleString()} items`}>
     <ListBadge side={side} onNavy />
-    <span className="cc-navy-title truncate text-[13px]">{name}</span>
-    <span className="text-[11px] text-custom-white flex-shrink-0">{count.toLocaleString()}</span>
+    <span className="cc-navy-title truncate text-[15px] font-bold">{name}</span>
+    <span className="text-[12px] text-custom-white flex-shrink-0">{count.toLocaleString()}</span>
   </span>
 );
 

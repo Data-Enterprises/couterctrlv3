@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   bucketCells,
+  bucketHead,
   bucketItems,
   bucketOf,
   compareFileName,
   csvHeaders,
   csvRows,
-  driverOf,
-  footLine,
+  hotBuckets,
+  leadBucket,
+  netVsLw,
+  problemOf,
   rowOf,
   salesRows,
   standRows,
@@ -39,7 +42,6 @@ const rowsA = pepsi.map((i) => rowOf(i, "sales"));
 const rowsB = coke.map((i) => rowOf(i, "sales"));
 const cells = [bucketCells(rowsA), bucketCells(rowsB)] as [ReturnType<typeof bucketCells>, ReturnType<typeof bucketCells>];
 const totals = [totalsOf(pepsi, "sales"), totalsOf(coke, "sales")] as [ReturnType<typeof totalsOf>, ReturnType<typeof totalsOf>];
-const names: [string, string] = ["pepsi", "coke"];
 
 describe("bucketOf", () => {
   it("puts every item in one place by what it sold this week, last week and last year", () => {
@@ -74,31 +76,52 @@ describe("bucketCells", () => {
 });
 
 describe("the verdict", () => {
-  it("finds each list's biggest loss", () => {
-    expect(driverOf(cells[0])).toBe("lyOnly");
-    expect(driverOf(cells[1])).toBe("less");
+  it("finds each list's problem: gone since last year, or selling less and stopping", () => {
+    expect(problemOf(cells[0])).toBe("lyOnly");
+    expect(problemOf(cells[1])).toBe("recent");
+    expect(hotBuckets(cells[0])).toEqual(["lyOnly"]);
+    expect(hotBuckets(cells[1])).toEqual(["less", "stopped"]);
+    expect(leadBucket(cells[1])).toBe("less");
   });
 
-  it("says when the two lists have different problems, and each one's in a few words", () => {
-    expect(verdictOf(cells)).toEqual({
-      lead: "Different problems.",
-      phrases: ["sold last year, not this week", "selling less"],
+  it("says when the two lists have different problems, with how many items each covers", () => {
+    expect(verdictOf(cells, [6, 5])).toEqual({
+      lead: "Different problems",
+      sides: [
+        { n: "3 of 6", says: "sold last year, nothing this week" },
+        { n: "3 of 5", says: "sold less or stopped this week" },
+      ],
     });
   });
 
   it("says when they share one, or when neither is losing ground", () => {
-    expect(verdictOf([cells[1], cells[1]]).lead).toBe("Same problem.");
+    expect(verdictOf([cells[1], cells[1]], [5, 5]).lead).toBe("Same problem");
     const up = bucketCells([rowOf(item("u", 20, 10, 5), "sales")]);
-    expect(verdictOf([up, up])).toEqual({ lead: "Both holding up.", phrases: ["holding up", "holding up"] });
+    expect(verdictOf([up, up], [1, 1])).toEqual({
+      lead: "Both holding up",
+      sides: [{ n: "1 of 1", says: "selling more" }, { n: "1 of 1", says: "selling more" }],
+    });
+  });
+});
+
+describe("netVsLw and bucketHead", () => {
+  it("adds the four this-week buckets up to the list's change against last week", () => {
+    expect(netVsLw(cells[1])).toBeCloseTo(totals[1].tyNet - totals[1].lwNet, 6);
+  });
+
+  it("says what the open bucket holds", () => {
+    expect(bucketHead("lyOnly", 18)).toBe("18 items sold last year and nothing this week.");
+    expect(bucketHead("new", 1)).toBe("1 item new this week.");
   });
 });
 
 describe("standRows", () => {
   it("gives each bucket both lists' count, what they did and their share, tinting each verdict's bucket", () => {
     const rows = standRows(cells, [6, 5], "sales");
-    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Last year only"]);
+    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Sold last year only"]);
     expect(rows[4].cells[0]).toMatchObject({ count: 3, amount: "$69.54 LY", tone: "plain", share: 50, hot: true });
     expect(rows[1].cells[1]).toMatchObject({ count: 2, amount: "−$97.35", tone: "down", hot: true });
+    expect(rows[3].cells[1]).toMatchObject({ count: 1, hot: true });
     expect(rows[2].cells[0]).toMatchObject({ count: 0, amount: "", hot: false });
   });
 });
@@ -113,11 +136,9 @@ describe("salesRows", () => {
 });
 
 describe("the open tab", () => {
-  it("lists a bucket's items from both lists, biggest first, and says what it holds", () => {
+  it("lists a bucket's items from both lists, biggest first", () => {
     const items = bucketItems(rowsA, rowsB, "less");
     expect(items.map((i) => [i.side, i.row.key])).toEqual([["B", "c1"], ["A", "p3"], ["B", "c3"], ["A", "p1"]]);
-    expect(footLine(items, names)).toBe("2 pepsi | 2 coke");
-    expect(footLine(bucketItems(rowsA, rowsB, "lyOnly"), names)).toBe("3 pepsi | 0 coke");
   });
 });
 
@@ -133,7 +154,7 @@ describe("the export", () => {
       { side: "B", label: "Crit | coke", rows: rowsB, totals: totals[1] },
     ]);
     expect(rows).toHaveLength(13);
-    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Last year only", "", "", "", "", ""]);
+    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Sold last year only", "", "", "", "", ""]);
     expect(rows[11][2]).toBe("Total (6 items)");
     expect(rows[11][5]).toBe(35.755);
   });

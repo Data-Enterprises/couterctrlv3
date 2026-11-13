@@ -6,8 +6,6 @@ import ListActions from "@/pages/sales/dev/storePanel/subDepts/components/ListAc
 const actions = (over: Partial<Parameters<typeof ListActions>[0]> = {}) => {
   const props = {
     shownUpcs: ["111", "222"],
-    focus: null,
-    onClearFocus: vi.fn(),
     pinned: null,
     canCompare: false,
     onPin: vi.fn(),
@@ -48,13 +46,6 @@ describe("ListActions", () => {
     expect(props.onCompare).toHaveBeenCalledOnce();
     await userEvent.click(screen.getByRole("button", { name: "Drop list A" }));
     expect(props.onUnpin).toHaveBeenCalledOnce();
-  });
-
-  it("says what the drawer put in the list, and goes back to the filters", async () => {
-    const props = actions({ focus: { label: "Selling less | pepsi and coke", count: 19 } });
-    expect(screen.getByText("Showing Selling less | pepsi and coke | 19 items")).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Back to the filters" }));
-    expect(props.onClearFocus).toHaveBeenCalledOnce();
   });
 
   it("can't compare A with itself", () => {
