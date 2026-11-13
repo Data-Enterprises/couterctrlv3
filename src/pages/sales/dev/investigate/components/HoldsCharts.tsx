@@ -8,7 +8,7 @@ import type {
 } from "../utils/investigationSteps";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../components/Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";
 import VendorBars from "./VendorBars";

@@ -81,6 +81,7 @@ export default {
           "rgb(var(--color-brand-navy-hover) / <alpha-value>)",
         brand_slate: "rgb(var(--color-brand-slate) / <alpha-value>)",
         brand_slate_2: "rgb(var(--color-brand-slate-2) / <alpha-value>)",
+        compare_b: "rgb(var(--color-compare-b) / <alpha-value>)",
         brand_placeholder:
           "rgb(var(--color-brand-placeholder) / <alpha-value>)",
         brand_line: "rgb(var(--color-brand-line) / <alpha-value>)",

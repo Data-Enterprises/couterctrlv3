@@ -2,6 +2,7 @@
 import type { GradeBasis } from "../utils/ledgerUtils";
 import type { Severity } from "../../../../utils/severity";
 import type { DayDot } from "../../../../interfaces";
+import type { ReactNode } from "react";
 
 /** One store's row in the Sales ledger: its identity, figures and grades. */
 export type LedgerRowData = {
@@ -59,4 +60,12 @@ export interface PeriodRow {
   hasLY: boolean;
   vsLWPct: number;
   vsLYPct: number;
+}
+
+export interface Slide {
+  label: string;
+  /** Printed in the tab. A zero is worth saying — an empty deliveries list
+   *  is the finding, not a missing section. */
+  count?: number;
+  body: ReactNode;
 }
