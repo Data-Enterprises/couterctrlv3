@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  accountLine,
   bucketCells,
   bucketHead,
   bucketItems,
@@ -92,6 +93,12 @@ describe("pctText and soldCount", () => {
 
   it("counts the items that sold this week or last", () => {
     expect([soldCount(cells[0]), soldCount(cells[1])]).toEqual([3, 5]);
+  });
+});
+
+describe("accountLine", () => {
+  it("shows every item of both lists lands in one row", () => {
+    expect(accountLine(cells, ["pepsi", "coke"])).toBe("Every item lands in one row: 3 + 3 = 6 pepsi, 5 + 0 = 5 coke.");
   });
 });
 

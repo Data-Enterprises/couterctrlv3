@@ -10,6 +10,7 @@ import {
   BUCKETS,
   SLIDE_OPEN,
   SLIDE_SHUT,
+  accountLine,
   bucketCells,
   bucketHead,
   bucketItems,
@@ -19,7 +20,6 @@ import {
   leadBucket,
   rowOf,
   salesRows,
-  soldCount,
   standRows,
   totalsOf,
 } from "./utils";
@@ -60,7 +60,6 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
   const aRows = useMemo(() => a.items.map((i) => rowOf(i, metric)), [a.items, metric]);
   const bRows = useMemo(() => b.items.map((i) => rowOf(i, metric)), [b.items, metric]);
   const totals: [CompareTotals, CompareTotals] = [totalsOf(a.items, metric), totalsOf(b.items, metric)];
-  const counts: [number, number] = [totals[0].count, totals[1].count];
   const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
 
   // Opens on A's problem (else B's), and again for a new pair.
@@ -99,9 +98,7 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
       className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
       <CompareHeader
-        deptName={deptName}
-        names={names}
-        counts={counts}
+        line={accountLine(cells, names)}
         canExport={aRows.length + bRows.length > 0}
         onExport={exportCsv}
         onClose={onClose}
@@ -113,11 +110,6 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} />
           <CompareStandTable
             rows={standRows(cells, metric)}
-            sums={[
-              { sold: soldCount(cells[0]), ly: cells[0].lyOnly.count },
-              { sold: soldCount(cells[1]), ly: cells[1].lyOnly.count },
-            ]}
-            names={names}
             open={tab}
             onOpen={setTab}
           />

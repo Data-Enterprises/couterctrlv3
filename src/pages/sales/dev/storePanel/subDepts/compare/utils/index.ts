@@ -212,6 +212,16 @@ export const pctText = (p: number) => `${p >= 0 ? "+" : "−"}${Math.abs(p).toFi
 /** A change's colour: direction, not a grade. */
 export const pctClass = (p: number) => (p < 0 ? "text-delta_negative_text" : "text-delta_positive_text");
 
+/** The compare bar's line: every item of both lists lands in one row. */
+export const accountLine = (cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>], names: [string, string]) =>
+  `Every item lands in one row: ${[0, 1]
+    .map((i) => {
+      const sold = soldCount(cells[i]);
+      const ly = cells[i].lyOnly.count;
+      return `${sold} + ${ly} = ${sold + ly} ${names[i]}`;
+    })
+    .join(", ")}.`;
+
 /** How many of a list's items sold this week or last: the four change rows. */
 export const soldCount = (c: Record<Bucket, BucketCell>) => c.more.count + c.less.count + c.new.count + c.stopped.count;
 
