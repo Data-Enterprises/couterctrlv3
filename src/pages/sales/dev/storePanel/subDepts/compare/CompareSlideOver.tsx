@@ -25,10 +25,16 @@ import {
 } from "./utils";
 
 // Interfaces
-import type { Bucket, BucketCell, CompareInput, CompareTotals } from "./interfaces";
+import type {
+  Bucket,
+  BucketCell,
+  CompareInput,
+  CompareTotals,
+} from "./interfaces";
 
 // Components
-import CompareBucketItems from "./components/CompareBucketItems";
+import Carousel from "../../../components/Carousel";
+import CompareBucketSlide from "./components/CompareBucketSlide";
 import CompareFooter from "./components/CompareFooter";
 import CompareHeader from "./components/CompareHeader";
 import CompareSalesTable from "./components/CompareSalesTable";
@@ -48,19 +54,41 @@ interface CompareSlideOverProps {
 }
 
 /**
- * A drawer over the Insight panel that diagnoses two lists of the open
- * department: the pinned list (A) against the filters showing now (B). The
- * verdict, their sales, where their items stand, and the items behind each.
+ * A drawer over the store panel's report tabs and their content that diagnoses
+ * two lists of the open department: the pinned list (A) against the filters
+ * showing now (B). The verdict, sales and where the items stand on the left;
+ * each bucket's items in a carousel on the right.
  */
-const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, threshold }: CompareSlideOverProps) => {
+const CompareSlideOver = ({
+  open,
+  onClose,
+  onShow,
+  deptName,
+  a,
+  b,
+  twDateLabel,
+  threshold,
+}: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
 
   const names = listNames(a.filter, b.filter);
   const labels = [listLabel(a.filter), listLabel(b.filter)];
-  const aRows = useMemo(() => a.items.map((i) => rowOf(i, metric)), [a.items, metric]);
-  const bRows = useMemo(() => b.items.map((i) => rowOf(i, metric)), [b.items, metric]);
-  const totals: [CompareTotals, CompareTotals] = [totalsOf(a.items, metric), totalsOf(b.items, metric)];
-  const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
+  const aRows = useMemo(
+    () => a.items.map((i) => rowOf(i, metric)),
+    [a.items, metric],
+  );
+  const bRows = useMemo(
+    () => b.items.map((i) => rowOf(i, metric)),
+    [b.items, metric],
+  );
+  const totals: [CompareTotals, CompareTotals] = [
+    totalsOf(a.items, metric),
+    totalsOf(b.items, metric),
+  ];
+  const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [
+    bucketCells(aRows),
+    bucketCells(bRows),
+  ];
   const verdict = verdictOf(cells);
 
   // Opens on the bucket behind A's verdict (else B's), and again for a new pair.
@@ -72,8 +100,17 @@ const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, 
   }, [open, labels[0], labels[1]]);
 
   const items = bucketItems(aRows, bRows, tab);
-  const counts = Object.fromEntries(BUCKETS.map((x) => [x.key, cells[0][x.key].count + cells[1][x.key].count])) as Record<Bucket, number>;
-  const tabName = BUCKETS.find((x) => x.key === tab)?.tab ?? "";
+  const at = BUCKETS.findIndex((x) => x.key === tab);
+  const slides = BUCKETS.map((x) => ({
+    label: x.tab,
+    count: cells[0][x.key].count + cells[1][x.key].count,
+    body: (
+      <CompareBucketSlide
+        items={bucketItems(aRows, bRows, x.key)}
+        metric={metric}
+      />
+    ),
+  }));
 
   // One sortable table: both lists with where each item stands, then totals.
   const exportCsv = () =>
@@ -89,41 +126,61 @@ const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, 
     );
 
   return (
-    <div aria-hidden={!open} className={`absolute inset-0 z-20 ${open ? "visible" : "invisible"}`}>
-      {/* What the drawer covers blurs (never darkens); a click on it closes the drawer. */}
-      <div
-        onClick={onClose}
-        className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
+    <aside
+      aria-hidden={!open}
+      aria-label="Compare two lists"
+      className={`absolute inset-0 z-20 flex flex-col bg-bkg shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
+    >
+      <CompareHeader
+        deptName={deptName}
+        names={names}
+        counts={[totals[0].count, totals[1].count]}
+        canExport={aRows.length + bRows.length > 0}
+        onExport={exportCsv}
+        onClose={onClose}
       />
-      <aside
-        aria-label="Compare two lists"
-        className={`absolute top-0 right-0 bottom-0 w-[600px] max-w-full flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
-      >
-        <CompareHeader
-          deptName={deptName}
-          names={names}
-          counts={[totals[0].count, totals[1].count]}
-          canExport={aRows.length + bRows.length > 0}
-          onExport={exportCsv}
-          onClose={onClose}
-        />
 
-        {/* Scrolls when the drawer is short, so the footer never covers the tabs. */}
-        <div className="cc-scroll flex flex-col gap-3 px-4 pt-3 pb-1">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-4 flex-1 min-h-0 p-3">
+        {/* The diagnosis: scrolls on its own when the panel is short. */}
+        <div className="cc-scroll flex flex-col gap-3 rounded-lg bg-custom-white shadow-card p-3">
           <CompareVerdict verdict={verdict} names={names} />
-          <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} names={names} threshold={threshold} />
-          <CompareStandTable rows={standRows(cells, [totals[0].count, totals[1].count], metric)} />
-          <CompareBucketItems counts={counts} open={tab} onOpen={setTab} items={items} metric={metric} />
+          <CompareSalesTable
+            rows={salesRows(totals[0], totals[1], metric)}
+            names={names}
+            threshold={threshold}
+          />
+          <CompareStandTable
+            rows={standRows(cells, [totals[0].count, totals[1].count], metric)}
+            open={tab}
+            onOpen={setTab}
+          />
         </div>
 
-        <CompareFooter
-          line={footLine(items, names)}
-          count={items.length}
-          onCopy={() => copyToClipboard(items.map((i) => i.row.upc))}
-          onShow={() => onShow(`${tabName} | ${names[0]} and ${names[1]}`, items.map((i) => i.row.upc))}
-        />
-      </aside>
-    </div>
+        {/* Each bucket's items, one slide each; a row on the left turns it. */}
+        <div className="flex flex-col min-h-0 gap-2">
+          <div className="flex-1 min-h-0">
+            <Carousel
+              slides={slides}
+              at={at}
+              onAt={(i) => setTab(BUCKETS[i].key)}
+              fill
+              helpAnchor="compare-items"
+            />
+          </div>
+          <CompareFooter
+            line={footLine(items, names)}
+            count={items.length}
+            onCopy={() => copyToClipboard(items.map((i) => i.row.upc))}
+            onShow={() =>
+              onShow(
+                `${BUCKETS[at].tab} | ${names[0]} and ${names[1]}`,
+                items.map((i) => i.row.upc),
+              )
+            }
+          />
+        </div>
+      </div>
+    </aside>
   );
 };
 

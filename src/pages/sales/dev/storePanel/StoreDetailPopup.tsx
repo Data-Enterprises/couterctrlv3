@@ -118,95 +118,127 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
         <PopupDaySidebar days={selection.days} />
       </div>
 
-      <StorePopupTabs hasGroup={hasGroup} />
+      {/* The tabs and their content: positioned so the Sub depts compare drawer
+          can slide over both, leaving the KPIs and day cards above it. */}
+      <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden">
+        <StorePopupTabs hasGroup={hasGroup} />
 
-      {/* Content — fills remaining height */}
-      <div className="flex-1 overflow-hidden">
-        {loading ? (
-          <div className="relative h-full">
-            <LoadingIndicator message="Loading store detail" />
-          </div>
-        ) : tab === "comparison" ? (
-          hasGroup ? (
-            <PopupComparisonList
-              rows={groupRows as LedgerRowData[]}
-              storeid={selection.storeId}
+        {/* Content — fills remaining height */}
+        <div className="flex-1 overflow-hidden">
+          {loading ? (
+            <div className="relative h-full">
+              <LoadingIndicator message="Loading store detail" />
+            </div>
+          ) : tab === "comparison" ? (
+            hasGroup ? (
+              <PopupComparisonList
+                rows={groupRows as LedgerRowData[]}
+                storeid={selection.storeId}
+                storeNumber={selection.storeNumber}
+                threshold={itemThreshold}
+                openStoreName={headerStoreName}
+              />
+            ) : null
+          ) : tab === "dailyrecap" ? (
+            /* Always the open store, counterpart or not: a recap is a summary
+               of one store's week, not a comparison. Keyed on the store so its
+               open rows and its read items start again with a new one. */
+            <DailyRecap
+              key={`${selection.storeId}__${selection.storeNumber}`}
+              storeId={selection.storeId}
               storeNumber={selection.storeNumber}
-              threshold={itemThreshold}
-              openStoreName={headerStoreName}
+              dates={twRealDates}
+              days={selection.days}
+              selectedDate={selectedDate}
             />
-          ) : null
-        ) : tab === "dailyrecap" ? (
-          /* Always the open store, counterpart or not: a recap is a summary
-             of one store's week, not a comparison. Keyed on the store so its
-             open rows and its read items start again with a new one. */
-          <DailyRecap
-            key={`${selection.storeId}__${selection.storeNumber}`}
-            storeId={selection.storeId}
-            storeNumber={selection.storeNumber}
-            dates={twRealDates}
-            days={selection.days}
-            selectedDate={selectedDate}
-          />
-        ) : tab === "topitems" ? (
-          /* Same rule as Sub depts above: with a counterpart chosen in
-             Stores, this tab IS the comparison. Without one it is the
-             store's own top 200, graded, exactly as it has always been --
-             the single-store tab is not touched by any of this. */
-          counterpart ? (
-            <TopItemsReport
-              openStoreName={headerStoreName}
-              openStoreId={selection.storeId}
-              compareStoreId={counterpart.storeid}
-              compareStoreName={counterpart.storeName}
-              twStart={twStart}
-              twEnd={twEnd}
-              onBack={() => dispatch(setCounterpart(null))}
+          ) : tab === "topitems" ? (
+            /* Same rule as Sub depts above: with a counterpart chosen in
+               Stores, this tab IS the comparison. Without one it is the
+               store's own top 200, graded, exactly as it has always been --
+               the single-store tab is not touched by any of this. */
+            counterpart ? (
+              <TopItemsReport
+                openStoreName={headerStoreName}
+                openStoreId={selection.storeId}
+                compareStoreId={counterpart.storeid}
+                compareStoreName={counterpart.storeName}
+                twStart={twStart}
+                twEnd={twEnd}
+                onBack={() => dispatch(setCounterpart(null))}
+              />
+            ) : (
+            <PopupTopItems
+              storeId={selection.storeId}
+              locations={selection.storeNumbersForId}
+              /* The Top 200 follows the day cards, like the other tabs: a
+                 picked day is that day, against the same weekday last week and
+                 last year, and its share is of that day's net sales. It used to
+                 stay on the week whatever was picked. Dollars always, whatever
+                 the Sales/Qty toggle: a share of net sales is a share of money. */
+              netSales={
+                activeDay
+                  ? {
+                      ty: activeDay.twNet,
+                      lw: activeDay.lwNet !== null && activeDay.lwNet > 0 ? activeDay.lwNet : null,
+                      ly: activeDay.lyNet !== null && activeDay.lyNet > 0 ? activeDay.lyNet : null,
+                    }
+                  : {
+                      ty: weekTotals.twTotal,
+                      lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
+                      ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
+                    }
+              }
+              start={selectedDate ?? twStart}
+              end={selectedDate ?? twEnd}
+              lwStart={selectedDate ? shiftIsoDay(selectedDate, -7) : lwStart}
+              lwEnd={selectedDate ? shiftIsoDay(selectedDate, -7) : lwEnd}
+              lyStart={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart}
+              lyEnd={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd}
             />
-          ) : (
-          <PopupTopItems
-            storeId={selection.storeId}
-            locations={selection.storeNumbersForId}
-            /* The Top 200 follows the day cards, like the other tabs: a
-               picked day is that day, against the same weekday last week and
-               last year, and its share is of that day's net sales. It used to
-               stay on the week whatever was picked. Dollars always, whatever
-               the Sales/Qty toggle: a share of net sales is a share of money. */
-            netSales={
-              activeDay
-                ? {
-                    ty: activeDay.twNet,
-                    lw: activeDay.lwNet !== null && activeDay.lwNet > 0 ? activeDay.lwNet : null,
-                    ly: activeDay.lyNet !== null && activeDay.lyNet > 0 ? activeDay.lyNet : null,
-                  }
-                : {
-                    ty: weekTotals.twTotal,
-                    lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
-                    ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
-                  }
-            }
-            start={selectedDate ?? twStart}
-            end={selectedDate ?? twEnd}
-            lwStart={selectedDate ? shiftIsoDay(selectedDate, -7) : lwStart}
-            lwEnd={selectedDate ? shiftIsoDay(selectedDate, -7) : lwEnd}
-            lyStart={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart}
-            lyEnd={selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd}
-          />
-          )
-        ) : tab === "subdept" ? (
-          /* With a counterpart chosen in Stores, this tab IS the comparison;
-             without one it is the store's own departments, graded, exactly as
-             a single-store search has always had it. The counterpart is page
-             state, so Hourly will answer to the same choice once it can.
+            )
+          ) : tab === "subdept" ? (
+            /* With a counterpart chosen in Stores, this tab IS the comparison;
+               without one it is the store's own departments, graded, exactly as
+               a single-store search has always had it. The counterpart is page
+               state, so Hourly will answer to the same choice once it can.
 
-             With one, it is a report rather than a list: a list ordered by
-             department size put the biggest departments at the top, which
-             are the ones most likely to be level, so the only way to find
-             the problem was to click around until you hit it. */
-          counterpart ? (
-            <DeptReport
+               With one, it is a report rather than a list: a list ordered by
+               department size put the biggest departments at the top, which
+               are the ones most likely to be level, so the only way to find
+               the problem was to click around until you hit it. */
+            counterpart ? (
+              <DeptReport
+                openStoreName={headerStoreName}
+                openStoreId={selection.storeId}
+                openStoreNumber={selection.storeNumber}
+                compareStoreId={counterpart.storeid}
+                compareStoreNumber={counterpart.storeNumber}
+                compareStoreName={counterpart.storeName}
+                twStart={twStart}
+                twEnd={twEnd}
+                lwStart={lwStart}
+                lwEnd={lwEnd}
+                lyStart={lyStart}
+                lyEnd={lyEnd}
+                lwWeekDates={lwWeekDates}
+                lyWeekDates={lyWeekDates}
+                onBack={() => dispatch(setCounterpart(null))}
+              />
+            ) : (
+              <PopupSubDeptList
+                twDateLabel={twDateLabel}
+                lwDateLabel={lwDateLabel}
+                lyDateLabel={lyDateLabel}
+                storeId={selection.storeId}
+                storeNumber={selection.storeNumber}
+                twRealDates={twRealDates}
+              />
+            )
+          ) : counterpart ? (
+            /* Hourly answers to the same counterpart as Sub depts: one choice,
+               every tab that can compare. */
+            <HourlySideBySide
               openStoreName={headerStoreName}
-              openStoreId={selection.storeId}
               openStoreNumber={selection.storeNumber}
               compareStoreId={counterpart.storeid}
               compareStoreNumber={counterpart.storeNumber}
@@ -222,41 +254,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (
-            <PopupSubDeptList
+            <PopupHourlyView
               twDateLabel={twDateLabel}
               lwDateLabel={lwDateLabel}
               lyDateLabel={lyDateLabel}
-              storeId={selection.storeId}
-              storeNumber={selection.storeNumber}
-              twRealDates={twRealDates}
             />
-          )
-        ) : counterpart ? (
-          /* Hourly answers to the same counterpart as Sub depts: one choice,
-             every tab that can compare. */
-          <HourlySideBySide
-            openStoreName={headerStoreName}
-            openStoreNumber={selection.storeNumber}
-            compareStoreId={counterpart.storeid}
-            compareStoreNumber={counterpart.storeNumber}
-            compareStoreName={counterpart.storeName}
-            twStart={twStart}
-            twEnd={twEnd}
-            lwStart={lwStart}
-            lwEnd={lwEnd}
-            lyStart={lyStart}
-            lyEnd={lyEnd}
-            lwWeekDates={lwWeekDates}
-            lyWeekDates={lyWeekDates}
-            onBack={() => dispatch(setCounterpart(null))}
-          />
-        ) : (
-          <PopupHourlyView
-            twDateLabel={twDateLabel}
-            lwDateLabel={lwDateLabel}
-            lyDateLabel={lyDateLabel}
-          />
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
