@@ -11,12 +11,12 @@ import {
 
 // Utils
 import { itemSeverity } from "../../../../../../utils/itemGrading";
-import { getCta, isNarrowed, nextItemSort, searchItems, sortItems } from "../utils";
+import { getCta, isNarrowed, listItems, listLabel, nextItemSort, pickItems, sameFilter, sortItems } from "../utils";
 
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
 import type { Coverage } from "../../../utils/ledgerUtils";
-import type { DeptRow, ItemMenu, ItemSortColumn, ItemSortState } from "../interfaces";
+import type { DeptRow, ItemMenu, ItemSortColumn, ItemSortState, ListFilter } from "../interfaces";
 
 // Components
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
@@ -25,6 +25,7 @@ import PeriodKpis from "../../../components/PeriodKpis";
 import ItemsToolbar from "./ItemsToolbar";
 import ItemsTable from "./ItemsTable";
 import ListActions from "./ListActions";
+import CompareSlideOver from "../compare/CompareSlideOver";
 
 interface SubDeptDetailPanelProps {
   /** The open sub department, or null when none is picked. */
@@ -87,24 +88,29 @@ const SubDeptDetailPanel = ({
   const itemThreshold = itemThresholdRef.current;
 
   const [ctxMenu, setCtxMenu] = useState<ItemMenu>(null);
+  // The list kept as A to compare against, and the compare panel's open flag.
+  // Both go with the department: another one starts clean.
+  const [pinned, setPinned] = useState<ListFilter | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
 
-  const baseItems = useMemo(
-    () =>
-      itemActiveFilter === "inactive"
-        ? inactiveItems
-        : itemActiveFilter === "active"
-          ? items
-          : [...items, ...inactiveItems],
-    [itemActiveFilter, items, inactiveItems],
+  useEffect(() => {
+    setPinned(null);
+    setCompareOpen(false);
+  }, [selectedId]);
+
+  // Active and inactive graded once each, so A and the list can pick their own.
+  const gradedActive = useMemo(
+    () => items.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold, gradingMetric, coverage) })),
+    [items, itemThreshold, gradingMetric, coverage],
+  );
+  const gradedInactive = useMemo(
+    () => inactiveItems.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold, gradingMetric, coverage) })),
+    [inactiveItems, itemThreshold, gradingMetric, coverage],
   );
 
   const itemsWithSev = useMemo(
-    () =>
-      baseItems.map((item) => ({
-        ...item,
-        sev: itemSeverity(item, itemThreshold, gradingMetric, coverage),
-      })),
-    [baseItems, itemThreshold, gradingMetric, coverage],
+    () => pickItems(gradedActive, gradedInactive, itemActiveFilter),
+    [gradedActive, gradedInactive, itemActiveFilter],
   );
 
   useEffect(() => {
@@ -130,19 +136,17 @@ const SubDeptDetailPanel = ({
     [itemsWithSev],
   );
 
-  const visibleItems =
-    itemSevFilter === "all"
-      ? itemsWithSev
-      : itemsWithSev.filter((i) => i.sev === itemSevFilter);
-  const textFilteredItems = searchItems(visibleItems, itemTextFilter);
+  const current: ListFilter = { sev: itemSevFilter, text: itemTextFilter, active: itemActiveFilter };
+  const textFilteredItems = listItems(gradedActive, gradedInactive, current);
   const sortedItems = sortItems(textFilteredItems, itemSort);
   const narrowed = isNarrowed(itemSevFilter, itemTextFilter, itemActiveFilter);
   const shownUpcs = sortedItems.map((i) => i.upc);
+  const pinnedItems = pinned ? listItems(gradedActive, gradedInactive, pinned) : [];
 
   const cta = selected ? getCta(selected, coverage, threshold, gradingMetric) : null;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0">
+    <div className="relative flex flex-col flex-1 min-w-0 overflow-hidden">
       {selected && cta && (
         <InsightToggle
           name={selected.desc}
@@ -179,7 +183,19 @@ const SubDeptDetailPanel = ({
               activeFilter={itemActiveFilter}
               onActiveFilter={setItemActiveFilter}
             />
-            {narrowed && <ListActions shownUpcs={shownUpcs} />}
+            {(narrowed || pinned) && (
+              <ListActions
+                shownUpcs={shownUpcs}
+                pinned={pinned && { label: listLabel(pinned), count: pinnedItems.length }}
+                canCompare={!!pinned && !sameFilter(pinned, current)}
+                onPin={() => setPinned(current)}
+                onUnpin={() => {
+                  setPinned(null);
+                  setCompareOpen(false);
+                }}
+                onCompare={() => setCompareOpen(true)}
+              />
+            )}
 
             {itemsLoading ? (
               <div className="px-4 py-3 text-[11px] text-content">Loading…</div>
@@ -201,6 +217,23 @@ const SubDeptDetailPanel = ({
         <div className="flex items-center justify-center h-full text-[12px] text-content">
           Select a sub department
         </div>
+      )}
+
+      {selected && pinned && (
+        <CompareSlideOver
+          open={compareOpen}
+          onClose={() => setCompareOpen(false)}
+          onClearA={() => {
+            setPinned(null);
+            setCompareOpen(false);
+          }}
+          deptName={selected.desc}
+          a={{ label: listLabel(pinned), items: pinnedItems }}
+          b={{ label: listLabel(current), items: textFilteredItems }}
+          twDateLabel={twDateLabel}
+          lwDateLabel={lwDateLabel}
+          lyDateLabel={lyDateLabel}
+        />
       )}
 
       {ctxMenu && (
