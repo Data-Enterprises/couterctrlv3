@@ -12,14 +12,17 @@ interface UpcContextMenuProps {
   y: number;
   upc: string;
   allUpcs: string[];
+  /** The UPCs a filter leaves on screen, when one is narrowing the list. */
+  shownUpcs?: string[];
   severityUpcs?: SeverityUpcs;
   extraActions?: { label: string; onClick: () => void }[];
   onClose: () => void;
 }
 
-/** Right-click menu for a UPC at the cursor: copy this UPC, copy all UPCs, copy
- *  by severity when given, plus any extra actions. Closes on an outside click. */
-const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
+/** Right-click menu for a UPC at the cursor: copy this UPC, the UPCs shown when
+ *  given, all UPCs, by severity when given, plus any extra actions. Closes on an
+ *  outside click. */
+const UpcContextMenu = ({ x, y, upc, allUpcs, shownUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +35,9 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
 
   const items: { label: string; count: number | null; disabled: boolean; onClick: () => void }[] = [
     { label: "Copy UPC", count: null, disabled: !upc, onClick: () => copyToClipboard([upc]) },
+    ...(shownUpcs
+      ? [{ label: "Copy shown UPCs", count: shownUpcs.length, disabled: shownUpcs.length === 0, onClick: () => copyToClipboard(shownUpcs) }]
+      : []),
     { label: "Copy all UPCs", count: allUpcs.length, disabled: allUpcs.length === 0, onClick: () => copyToClipboard(allUpcs) },
   ];
 

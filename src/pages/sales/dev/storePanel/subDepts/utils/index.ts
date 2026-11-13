@@ -437,6 +437,14 @@ export const searchItems = (items: GradedItem[], text: string) => {
     : items;
 };
 
+/** A small outline button in the row under the item filters. */
+export const LIST_ACTION_BTN =
+  "cc-btn-outline rounded-md px-2.5 py-0.5 text-[11px] text-content bg-custom-white disabled:text-content/40 disabled:cursor-not-allowed";
+
+/** True when a grade, a search or the active picker is narrowing the items. */
+export const isNarrowed = (sev: string, text: string, active: string) =>
+  sev !== "all" || text.trim() !== "" || active !== "";
+
 /** Small counts as words, and the word for a count. */
 export const WORDS = [
   "No",

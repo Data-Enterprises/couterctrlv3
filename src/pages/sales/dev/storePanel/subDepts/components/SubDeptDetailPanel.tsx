@@ -11,7 +11,7 @@ import {
 
 // Utils
 import { itemSeverity } from "../../../../../../utils/itemGrading";
-import { getCta, nextItemSort, searchItems, sortItems } from "../utils";
+import { getCta, isNarrowed, nextItemSort, searchItems, sortItems } from "../utils";
 
 // Interfaces
 import type { SevFilter } from "../../../utils/index";
@@ -24,6 +24,7 @@ import InsightToggle from "../../../components/InsightToggle";
 import PeriodKpis from "../../../components/PeriodKpis";
 import ItemsToolbar from "./ItemsToolbar";
 import ItemsTable from "./ItemsTable";
+import ListActions from "./ListActions";
 
 interface SubDeptDetailPanelProps {
   /** The open sub department, or null when none is picked. */
@@ -135,6 +136,8 @@ const SubDeptDetailPanel = ({
       : itemsWithSev.filter((i) => i.sev === itemSevFilter);
   const textFilteredItems = searchItems(visibleItems, itemTextFilter);
   const sortedItems = sortItems(textFilteredItems, itemSort);
+  const narrowed = isNarrowed(itemSevFilter, itemTextFilter, itemActiveFilter);
+  const shownUpcs = sortedItems.map((i) => i.upc);
 
   const cta = selected ? getCta(selected, coverage, threshold, gradingMetric) : null;
 
@@ -176,6 +179,7 @@ const SubDeptDetailPanel = ({
               activeFilter={itemActiveFilter}
               onActiveFilter={setItemActiveFilter}
             />
+            {narrowed && <ListActions shownUpcs={shownUpcs} />}
 
             {itemsLoading ? (
               <div className="px-4 py-3 text-[11px] text-content">Loading…</div>
@@ -205,6 +209,7 @@ const SubDeptDetailPanel = ({
           y={ctxMenu.y}
           upc={ctxMenu.upc}
           allUpcs={allUpcs}
+          shownUpcs={narrowed ? shownUpcs : undefined}
           severityUpcs={severityUpcs}
           onClose={() => setCtxMenu(null)}
         />
