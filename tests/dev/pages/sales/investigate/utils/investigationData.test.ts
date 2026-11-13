@@ -22,6 +22,7 @@ const {
   fetchOrders,
   fetchReceipts,
   fetchSales,
+  ordersKnownFor,
   supplyWindow,
 } = await import("@/pages/sales/dev/investigate/utils/investigationData");
 
@@ -371,6 +372,28 @@ describe("fetchOrders", () => {
   });
 });
 
+describe("ordersKnownFor", () => {
+  const wave = (over = {}) => ({
+    ok: true, inWindow: 0, mine: [], theirs: [], allMine: [], allTheirs: [],
+    ...over,
+  });
+  const line = { product_code: "1", qty: 1 } as AllOrder;
+
+  it("trusts the order history when either store ordered in this department", () => {
+    expect(ordersKnownFor(wave({ inWindow: 40, theirs: [line] }))).toBe(true);
+    expect(ordersKnownFor(wave({ inWindow: 40, mine: [line] }))).toBe(true);
+  });
+
+  it("does not when the window's orders are all other departments'", () => {
+    // A vendor that delivers this department without purchase orders.
+    expect(ordersKnownFor(wave({ inWindow: 40 }))).toBe(false);
+  });
+
+  it("does not when the orders failed to load", () => {
+    expect(ordersKnownFor(wave({ ok: false, mine: [line] }))).toBe(false);
+  });
+});
+
 describe("fetchReceipts", () => {
   const recvOk = (
     receivers: Array<Record<string, unknown>>,
@@ -410,11 +433,17 @@ describe("fetchReceipts", () => {
     expect(out.mine.map((r) => r.invoiceid)).toEqual([1]);
   });
 
-  it("resolves empty on failure rather than taking the screen down", async () => {
+  it("resolves empty on failure, and says it failed, rather than taking the screen down", async () => {
     searchReceiversByItem.mockRejectedValue(new Error("network"));
     await expect(fetchReceipts(scope, ["A"])).resolves.toEqual({
+      ok: false,
       mine: [],
       theirs: [],
     });
+  });
+
+  it("says it failed when the API answers with an error", async () => {
+    searchReceiversByItem.mockResolvedValue({ data: { error: 1, msg: "no" } });
+    expect((await fetchReceipts(scope, ["A"])).ok).toBe(false);
   });
 });

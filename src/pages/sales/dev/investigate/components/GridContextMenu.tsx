@@ -24,8 +24,8 @@ const GridContextMenu = ({ ctx, shown, chosen, onFind, onClose }: GridContextMen
    *
    * The shared menu offers critical/watch/healthy out of the box, which are
    * threshold grades and mean nothing here. Causes are what somebody acts on:
-   * the never-ordered list goes to a buyer and the didn't-arrive list goes to
-   * a vendor, so those are the two lists worth having on a clipboard.
+   * the never-ordered list goes to a buyer and the no-receiver list goes to
+   * receiving, so those are the two lists worth having on a clipboard.
    *
    * Over the FILTERED set, so what gets copied is what is on screen.
    */
@@ -58,7 +58,7 @@ const GridContextMenu = ({ ctx, shown, chosen, onFind, onClose }: GridContextMen
                    is "was it ever on an order at all" — which is
                    two tabs away and, until now, a UPC retyped by
                    hand. */
-                label: `Find ${chosen.size} in orders and receipts`,
+                label: `Find ${chosen.size} in orders and receivers`,
                 onClick: () => {
                   onFind([...chosen].join(" "));
                 },

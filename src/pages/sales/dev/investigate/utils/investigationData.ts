@@ -363,11 +363,26 @@ export const fetchOrders = async (
   }
 };
 
+/**
+ * Whether there is order history to call an item "never ordered" against.
+ *
+ * This department's, at either store, not the window's. A store that orders
+ * other departments but has its vendor deliver this one without purchase
+ * orders would otherwise call every item here never ordered. Either store's,
+ * not this store's alone: a department this store never ordered from while
+ * the other did is exactly the finding "never ordered" is for.
+ */
+export const ordersKnownFor = (orders: OrdersWave) =>
+  orders.ok && orders.mine.length + orders.theirs.length > 0;
+
 /* ------------------------------------------------------------------ */
 /* Wave 3 — receipts                                                   */
 /* ------------------------------------------------------------------ */
 
 export interface ReceiptsWave {
+  /** Whether both stores' receipts came back. Without them no item can be
+   *  called never ordered, unreceived or unsold, so the page says so instead. */
+  ok: boolean;
   mine: ReceiverItemSearchReceiver[];
   theirs: ReceiverItemSearchReceiver[];
 }
@@ -387,7 +402,7 @@ const fetchStoreReceipts = async (
   scope: Scope,
   store: Store,
   codes: string[],
-): Promise<ReceiverItemSearchReceiver[]> => {
+): Promise<ReceiverItemSearchReceiver[] | null> => {
   if (!codes.length) return [];
   const supply = supplyWindow(scope.tw);
 
@@ -404,7 +419,7 @@ const fetchStoreReceipts = async (
 
   try {
     const body: ReceiverItemSearchResponse = (await ask(1)).data;
-    if (body.error !== 0) return [];
+    if (body.error !== 0) return null;
 
     const all = await fetchAllPages(
       body,
@@ -419,7 +434,8 @@ const fetchStoreReceipts = async (
     );
     return scopeToStoreNumber(all, store.storeNumber);
   } catch {
-    return [];
+    // Null, not empty: an empty list reads as "nothing was delivered".
+    return null;
   }
 };
 
@@ -431,7 +447,11 @@ export const fetchReceipts = async (
     fetchStoreReceipts(scope, scope.mine, codes),
     fetchStoreReceipts(scope, scope.theirs, codes),
   ]);
-  return { mine, theirs };
+  return {
+    ok: mine !== null && theirs !== null,
+    mine: mine ?? [],
+    theirs: theirs ?? [],
+  };
 };
 
 /**

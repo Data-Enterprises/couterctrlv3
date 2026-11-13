@@ -2,6 +2,7 @@
 import { calculateCogs } from "../../../../../utils/cogs";
 import { isWeighted, pricedUnits } from "../../../../../utils/pricedUnits";
 import { judge } from "./deptInvestigation";
+import { codeOf, dayOf } from ".";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -42,7 +43,7 @@ interface Tally {
 /** Item rows arrive one per DAY, so a week is several rows an item. */
 const tally = (rows: SubDeptMargin[], metric: GradingMetric) =>
   rows.reduce<Record<string, Tally>>((acc, r) => {
-    const key = r.product_code;
+    const key = codeOf(r.product_code);
     if (!acc[key]) {
       acc[key] = {
         money: 0,
@@ -77,7 +78,18 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
   const tLy = tally(input.theirsLy, input.metric);
 
   const orderedBy = input.orders.reduce<Record<string, number>>((acc, o) => {
-    acc[o.product_code] = (acc[o.product_code] ?? 0) + o.qty;
+    const c = codeOf(o.product_code);
+    acc[c] = (acc[c] ?? 0) + o.qty;
+    return acc;
+  }, {});
+
+  // The newest order day per item, and what was ordered on it.
+  const lastOrder = input.orders.reduce<Record<string, { day: string; qty: number }>>((acc, o) => {
+    const c = codeOf(o.product_code);
+    const day = dayOf(o.order_date);
+    const at = acc[c];
+    if (!at || day > at.day) acc[c] = { day, qty: o.qty };
+    else if (day === at.day) at.qty += o.qty;
     return acc;
   }, {});
 
@@ -91,7 +103,19 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
       // different thing depending on how the vendor billed, and on a
       // case-billed invoice it comes back 0, which read here as a delivery
       // that never arrived.
-      acc[l.product_code] = (acc[l.product_code] ?? 0) + l.qty;
+      const c = codeOf(l.product_code);
+      acc[c] = (acc[c] ?? 0) + l.qty;
+    });
+    return acc;
+  }, {});
+
+  // Only receivers on or after the newest order can be for that order.
+  const sinceOrder = input.receivers.reduce<Record<string, number>>((acc, r) => {
+    const day = dayOf(r.invoice_date);
+    r.lines.forEach((l) => {
+      const c = codeOf(l.product_code);
+      const ordered = lastOrder[c];
+      if (ordered && day >= ordered.day) acc[c] = (acc[c] ?? 0) + l.qty;
     });
     return acc;
   }, {});
@@ -139,9 +163,13 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
           theirsSales: at(tTw, c, "dollars"),
           orderedQty: orderedBy[c] ?? 0,
           receivedUnits: receivedBy[c] ?? 0,
+          lastOrderDate: lastOrder[c]?.day ?? null,
+          lastOrderQty: lastOrder[c]?.qty ?? 0,
+          receivedSinceOrder: sinceOrder[c] ?? 0,
         },
         input.bands,
         input.ordersKnown ?? true,
+        input.receiptsKnown ?? true,
       ),
     )
     .sort((a, b) => a.gap - b.gap);
@@ -155,6 +183,8 @@ const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-carried",
   "not-received",
+  "unsold",
+  "no-receipts",
   "cost",
   "not-moving",
   "price-mix",

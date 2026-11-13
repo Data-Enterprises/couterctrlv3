@@ -1,5 +1,6 @@
 // Utils
 import { DEFAULT_BANDS } from "./deptInvestigation";
+import { codeOf } from ".";
 
 // Interfaces
 import type { AllOrder, ReceiverItemSearchReceiver, SubsPricePoint } from "../../../../../interfaces";
@@ -28,7 +29,7 @@ export const supplyTimeline = (
   const out: SupplyEvent[] = [];
 
   orders
-    .filter((o) => o.product_code === productCode)
+    .filter((o) => codeOf(o.product_code) === productCode)
     .forEach((o) =>
       out.push({
         date: day(o.order_date),
@@ -41,7 +42,7 @@ export const supplyTimeline = (
 
   receivers.forEach((r) =>
     r.lines
-      .filter((l) => l.product_code === productCode)
+      .filter((l) => codeOf(l.product_code) === productCode)
       .forEach((l) =>
         out.push({
           date: day(r.invoice_date),
@@ -72,7 +73,7 @@ export const ladderFor = (
   weighted = false,
 ): PriceLadder => {
   const mine = points
-    .filter((p) => p.product_code === productCode)
+    .filter((p) => codeOf(p.product_code) === productCode)
     .map((p) => ({
       price: p.price,
       units: p.units,

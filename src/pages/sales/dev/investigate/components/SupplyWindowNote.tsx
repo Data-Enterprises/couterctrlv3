@@ -18,7 +18,7 @@ const SupplyWindowNote = ({ them, window, stage }: SupplyWindowNoteProps) => {
   return (
     <p className="text-[13px] text-content/95 mt-2.5">
       Causes explain this week against {them}.
-      Orders and receipts are read over {SUPPLY_LOOKBACK_DAYS} days (
+      Orders and receivers are read over {SUPPLY_LOOKBACK_DAYS} days (
       {window.start} to {window.end}) — they cannot account for the
       LW or LY columns.
       {STAGE_NOTE[stage] && (

@@ -9,6 +9,7 @@ import type {
   Store,
   Window,
 } from "../utils/investigationData";
+import type { Desk, SupplyRecord } from "../utils/investigationSteps";
 
 export type Col =
   | "mine"
@@ -57,6 +58,78 @@ export interface DocLine {
 /** The four steps along the top of the investigation. */
 export type InvestigationTab = "holds" | "items" | "supply" | "act";
 
+/** Who a Hand-off list goes to; null is the list nobody can be handed. */
+export type HandoffOwner = "buyer" | "receiving" | "price" | null;
+
+/** One person's list on the Hand-off tab: their causes, in order of size. */
+export interface HandoffList {
+  owner: HandoffOwner;
+  desks: Desk[];
+  /** Every item on the list, cause by cause. */
+  items: ItemVerdict[];
+  total: number;
+}
+
+/** The Supply tab's rows: which store, and orders or receipts. */
+export type SupplyKind = "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
+
+/** One Supply row and the documents its slide lists. */
+export interface SupplyRow {
+  kind: SupplyKind;
+  mine: boolean;
+  isOrder: boolean;
+  /** That store's orders or receipts, newest first. */
+  docs: SupplyRecord[];
+  units: number;
+  cost: number;
+}
+
+/** The week-by-week card's answer, in a lead and the rest of the sentence. */
+export interface WeeksVerdict {
+  tone: "worse" | "better" | "steady" | "ahead";
+  lead: string;
+  rest: string;
+}
+
+/** The Summary's rows: which store rang an item, and which way it went. */
+export type RowKind = "onlyTheirs" | "bothLess" | "bothMore" | "onlyMine";
+
+/** Why an item both stores rang is apart: units, price, or both. */
+export type RowReason = "units" | "price" | "both";
+
+/** One line of a row's breakdown, above its items. */
+export interface BreakdownLine {
+  /** The cause the line stands for, on the rows grouped by cause. */
+  cause?: Cause;
+  label: string;
+  amount: number;
+  /** "52 items" or "81%", beside the amount. */
+  side: string;
+  /** Dollars whatever the page shows. A units/price split of a unit count
+   *  means nothing, so those lines are always money. */
+  money: boolean;
+}
+
+/** One Summary row and everything its slide shows. */
+export interface HoldsRow {
+  kind: RowKind;
+  /** Biggest difference first. */
+  items: ItemVerdict[];
+  /** In the page's metric, like the gap column. */
+  total: number;
+  breakdown: BreakdownLine[];
+  /** The items in up to three sections by running share of the row. */
+  sections: RowSection[];
+}
+
+/** A run of a row's items, biggest first, and how much of the row it is. */
+export interface RowSection {
+  items: ItemVerdict[];
+  /** Of the row's whole difference, 0–1. */
+  share: number;
+  total: number;
+}
+
 export type Stage = "sales" | "orders" | "receipts" | "done" | "failed";
 
 export interface Investigation {
@@ -94,6 +167,8 @@ export type Cause =
   | "not-received"
   | "cost"
   | "not-moving"
+  | "unsold"
+  | "no-receipts"
   | "price-mix"
   | "ahead"
   | "streamlined";
@@ -167,6 +242,13 @@ export interface ItemFacts {
   theirsSales: number;
   orderedQty: number;
   receivedUnits: number;
+  /** The newest order day in the window (YYYY-MM-DD), and what was ordered
+   *  that day. Orders carry no expected date, so nothing says when it is due. */
+  lastOrderDate: string | null;
+  lastOrderQty: number;
+  /** Units on receivers dated on or after `lastOrderDate`. A receiver from
+   *  before the order belongs to an earlier one. */
+  receivedSinceOrder: number;
 }
 
 export interface Margins {
@@ -186,6 +268,14 @@ export interface Margins {
    * hides how much of it there was.
    */
   costPenalty: number | null;
+}
+
+/** An item's dollar gap in two parts that add up to it exactly. */
+export interface GapSplit {
+  /** What selling more or fewer units was worth. */
+  units: number;
+  /** What taking more or less a unit was worth. */
+  price: number;
 }
 
 export interface Ratios {
@@ -226,6 +316,8 @@ export interface InvestigationInput {
    *  `causeOf`. Defaults to true, which is the state every caller with
    *  orders in hand is in. */
   ordersKnown?: boolean;
+  /** False when the receipts did not come back. Defaults to true. */
+  receiptsKnown?: boolean;
 }
 
 export interface CauseTotal {

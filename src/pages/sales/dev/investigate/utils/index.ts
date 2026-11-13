@@ -2,6 +2,7 @@
 import { formatBigNumber, formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
+import type { ReceiverItemSearchReceiver } from "../../../../../interfaces";
 import type { Stage, Cause, SupplyEvent, PricePoint } from "../interfaces";
 
 /**
@@ -19,6 +20,20 @@ import type { Stage, Cause, SupplyEvent, PricePoint } from "../interfaces";
  */
 export const PAGE_ROWS = 50;
 
+/** One spelling of an item code for sales, orders and receipts alike, so a
+ *  code padded on one endpoint still meets itself on the others. */
+export const codeOf = (c: unknown) => String(c ?? "").trim();
+
+/** The day of an ISO date, whether or not a time comes behind it. */
+export const dayOf = (d: unknown) => String(d ?? "").slice(0, 10);
+
+/** The newest receiver day among these, or null when there are none. */
+export const newestReceiverDay = (receivers: ReceiverItemSearchReceiver[]) =>
+  receivers.reduce<string | null>((newest, r) => {
+    const d = dayOf(r.invoice_date);
+    return d && (!newest || d > newest) ? d : newest;
+  }, null);
+
 /** mm/dd/yyyy. Noon, so a bare yyyy-mm-dd is not pulled back a day by the
  *  browser's timezone. */
 export const usDate = (d: string) =>
@@ -35,7 +50,7 @@ export const STAGE_NOTE: Record<Stage, string | null> = {
   orders:
     "Reading orders — until they land, nothing can be called never ordered.",
   receipts:
-    "Reading what was received — until it lands, a vendor's miss cannot be told from a merchandising one.",
+    "Reading what was received — until it lands, a supply gap cannot be told from a merchandising one.",
   done: null,
   failed: null,
 };
@@ -59,6 +74,8 @@ export const SUGGESTED: Record<string, Cause[]> = {
 export const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
+  "unsold",
+  "no-receipts",
   "cost",
   "not-moving",
   "price-mix",
@@ -106,6 +123,9 @@ export const splitStore = (name: string, number: string) => {
 };
 
 /** Money to the cent, and a count with separators. */
+/** Under half a cent, an amount prints as $0.00: too small to say anything about. */
+export const CENT = 0.005;
+
 export const money = (v: number) => formatCurrency2(v);
 export const count = (v: number) => formatBigNumber(v, 0);
 

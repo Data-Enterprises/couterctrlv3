@@ -1,3 +1,7 @@
+// Utils
+import { codeOf } from ".";
+import { rowOf } from "./holdsRows";
+
 // Interfaces
 import type { Focus } from "../../utils/deptReport";
 import type { Cause, ItemVerdict } from "../interfaces";
@@ -36,6 +40,8 @@ export interface Holds {
   bothLess: Bucket;
   /** Rang at both, more here. */
   bothMore: Bucket;
+  /** Rang here and not at the counterpart. */
+  onlyMine: Bucket;
   /**
    * Whether the items tell the same story the department totals did.
    *
@@ -45,6 +51,9 @@ export interface Holds {
    * carried differently in the first place.
    */
   verdict: "holds" | "overturned";
+  /** The row the sentence is about: items the other store rang and this one
+   *  did not, or items both rang where this one took less. */
+  about: "onlyTheirs" | "bothLess";
   /** What the items say, in the verdict's own terms. */
   says: string;
 }
@@ -79,20 +88,23 @@ const add = (b: Bucket, gap: number): Bucket => ({
   dollars: b.dollars + gap,
 });
 
-export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
+export const holdsUp = (
+  items: ItemVerdict[],
+  focus: Focus,
+  us = "this store",
+  them = "the other store",
+): Holds => {
   let onlyTheirs: Bucket = { items: 0, dollars: 0 };
   let bothLess: Bucket = { items: 0, dollars: 0 };
   let bothMore: Bucket = { items: 0, dollars: 0 };
+  let onlyMine: Bucket = { items: 0, dollars: 0 };
 
   for (const i of items) {
-    // Units, not money: an item can ring for nothing and still have sold.
-    const here = i.mineUnits > 0;
-    const there = i.theirsUnits > 0;
-    if (!here && there) onlyTheirs = add(onlyTheirs, i.gap);
-    else if (here && there) {
-      if (i.gap < 0) bothLess = add(bothLess, i.gap);
-      else bothMore = add(bothMore, i.gap);
-    }
+    const row = rowOf(i);
+    if (row === "onlyTheirs") onlyTheirs = add(onlyTheirs, i.gap);
+    if (row === "bothLess") bothLess = add(bothLess, i.gap);
+    if (row === "bothMore") bothMore = add(bothMore, i.gap);
+    if (row === "onlyMine") onlyMine = add(onlyMine, i.gap);
   }
 
   const supplyLed =
@@ -102,13 +114,15 @@ export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
   const says =
     verdict === "holds"
       ? supplyLed
-        ? "Most of the gap is items the other store rang and this one did not."
-        : "Most of the gap is items both stores rang, where this one took less."
+        ? `Most of the gap is items ${them} rang and ${us} did not.`
+        : `Most of the gap is items both stores rang, where ${us} took less.`
       : supplyLed
-        ? "The report called it price, but most of the gap is items this store never rang at all."
-        : "The report called it volume, but the items were here — they took less.";
+        ? `The report called it price, but most of the gap is items ${us} never rang at all.`
+        : `The report called it volume, but the items rang at ${us} too; they took less.`;
 
-  return { onlyTheirs, bothLess, bothMore, verdict, says };
+  const about = supplyLed ? "onlyTheirs" : "bothLess";
+
+  return { onlyTheirs, bothLess, bothMore, onlyMine, verdict, about, says };
 };
 
 /* ------------------------------------------------------------------ */
@@ -121,46 +135,16 @@ export interface VendorShare {
   dollars: number;
 }
 
+
 export interface Spread {
   /** Behind-items, worst first. */
   ranked: ItemVerdict[];
-  /** How many of them it takes to reach half the shortfall. */
-  toHalf: number;
-  /** What the ten biggest account for, 0–1. */
-  topTenShare: number;
-  /**
-   * Whether a short list carries it.
-   *
-   * The same cumulative rule the comparison report cuts on, rather than a
-   * second threshold: list items until they reach half, and if that takes
-   * more than a dozen the shortfall is spread — which is a finding, and the
-   * reason to group by vendor instead of printing a top ten nobody can act
-   * on.
-   */
-  concentrated: boolean;
+  /** The shortfall by vendor, worst first. */
   byVendor: VendorShare[];
-  says: string;
 }
-
-/** Past this many items to reach half, a list has stopped being a list. */
-const A_LIST = 12;
 
 export const spreadOf = (items: ItemVerdict[]): Spread => {
   const ranked = items.filter((i) => i.gap < 0).sort((a, b) => a.gap - b.gap);
-  const shortfall = ranked.reduce((t, i) => t - i.gap, 0);
-
-  let running = 0;
-  let toHalf = 0;
-  for (const i of ranked) {
-    if (running >= shortfall / 2) break;
-    running -= i.gap;
-    toHalf += 1;
-  }
-
-  const topTen = ranked.slice(0, 10).reduce((t, i) => t - i.gap, 0);
-  const topTenShare = shortfall > 0 ? topTen / shortfall : 0;
-  const concentrated = toHalf > 0 && toHalf <= A_LIST;
-
   const vendors = new Map<string, VendorShare>();
   for (const i of ranked) {
     const name = i.vendorName || "Unknown vendor";
@@ -171,25 +155,14 @@ export const spreadOf = (items: ItemVerdict[]): Spread => {
   }
   const byVendor = [...vendors.values()].sort((a, b) => a.dollars - b.dollars);
 
-  const pct = Math.round(topTenShare * 100);
-  const says = concentrated
-    ? `A short list carries it — ${toHalf} ${toHalf === 1 ? "item is" : "items are"} half the shortfall.`
-    : `No short list carries it. The ten biggest items are ${pct}% of the shortfall, and the rest is spread across ${ranked.length.toLocaleString("en-US")}.`;
-
-  return { ranked, toHalf, topTenShare, concentrated, byVendor, says };
+  return { ranked, byVendor };
 };
 
 /* ------------------------------------------------------------------ */
 /* 5 · Who fixes it?                                                   */
 /* ------------------------------------------------------------------ */
 
-export type Owner = "buyer" | "vendor" | "price" | null;
-
-export const OWNER_LABEL: Record<Exclude<Owner, null>, string> = {
-  buyer: "Buyer",
-  vendor: "Vendor",
-  price: "Whoever sets price",
-};
+export type Owner = "buyer" | "receiving" | "price" | null;
 
 /**
  * A list is actionable when the evidence names a RECORD: an order that does
@@ -208,10 +181,13 @@ const DESK: Record<Cause, Owner> = {
   // does not. What it does NOT claim is that somebody missed an order --
   // there is no order history in the window to miss.
   "not-carried": "buyer",
-  "not-received": "vendor",
+  // Receiving first: the question is whether the receiver was entered.
+  "not-received": "receiving",
   cost: "buyer",
   "price-mix": "price",
   "not-moving": null,
+  unsold: null,
+  "no-receipts": null,
   streamlined: null,
   ahead: null,
 };
@@ -223,26 +199,7 @@ export interface Desk {
   actionable: boolean;
   items: ItemVerdict[];
   dollars: number;
-  says: string;
 }
-
-const SAYS: Record<Cause, (n: number, money: string) => string> = {
-  "never-ordered": (n, m) =>
-    `${n.toLocaleString("en-US")} items with no order here in the window, worth ${m} at the other store.`,
-  "not-carried": (n, m) =>
-    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No orders came back for either store over the window, so nothing here says whether they were ever asked for.`,
-  "not-received": (n, m) =>
-    `${n.toLocaleString("en-US")} items ordered here that never arrived, worth ${m}.`,
-  cost: (n, m) =>
-    `${n.toLocaleString("en-US")} items bought for more here than there, costing ${m} of margin.`,
-  "price-mix": (n, m) =>
-    `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
-  "not-moving": (n, m) =>
-    `${n.toLocaleString("en-US")} items on the shelf here that sold less than there, worth ${m}. Nothing in this data says why.`,
-  streamlined: (n, m) =>
-    `${n.toLocaleString("en-US")} items level with the other store, worth ${m}. Nothing to chase.`,
-  ahead: (n, m) => `${n.toLocaleString("en-US")} items ahead, worth ${m}.`,
-};
 
 /**
  * The causes as lists, biggest first.
@@ -252,10 +209,7 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
  * quietly vanishes from the hand-off is a shortfall somebody will find again
  * later and not trust.
  */
-export const desksOf = (
-  items: ItemVerdict[],
-  money: (v: number) => string,
-): Desk[] => {
+export const desksOf = (items: ItemVerdict[]): Desk[] => {
   const by = new Map<Cause, ItemVerdict[]>();
   for (const i of items) {
     if (i.cause === "ahead") continue;
@@ -274,7 +228,6 @@ export const desksOf = (
         actionable: owner !== null,
         items: rows.sort((a, b) => a.gap - b.gap),
         dollars,
-        says: SAYS[cause](rows.length, money(Math.abs(dollars))),
       };
     })
     .sort((a, b) => a.dollars - b.dollars);
@@ -320,7 +273,9 @@ export const vitalsOf = (items: ItemVerdict[]): Vitals => {
     weeks: [
       { label: "Last year", gap: sum((i) => i.mineLy) - sum((i) => i.theirsLy) },
       { label: "Last week", gap: sum((i) => i.mineLw) - sum((i) => i.theirsLw) },
-      { label: "This week", gap: mineSales - theirsSales },
+      // The page's metric, like the two weeks above it: on Quantity a dollar
+      // figure here would sit beside two unit counts.
+      { label: "This week", gap: sum((i) => i.mineTy) - sum((i) => i.theirsTy) },
     ],
     index: [
       { label: "Sales", mine: mineSales, theirs: theirsSales, pct: share(mineSales, theirsSales) },
@@ -429,14 +384,14 @@ const sideOf = (
 ): StoreSupply => {
   // Both payloads are department-wide; narrow to the items this comparison
   // is actually about, or a store's figures carry lines nobody is looking at.
-  const lines = orders.filter((o) => codes.has(String(o.product_code)));
+  const lines = orders.filter((o) => codes.has(codeOf(o.product_code)));
   const vendors = new Map<string, SupplyVendor>();
   let deliveries = 0;
   let receivedUnits = 0;
   let receivedCost = 0;
 
   for (const r of receipts) {
-    const mine = r.lines.filter((l) => codes.has(String(l.product_code)));
+    const mine = r.lines.filter((l) => codes.has(codeOf(l.product_code)));
     if (mine.length === 0) continue;
     deliveries += 1;
     const name = r.vendor_name || "Unknown vendor";
@@ -483,7 +438,7 @@ const orderRecords = (
 ): SupplyRecord[] => {
   const by = new Map<number, SupplyRecord>();
   for (const o of lines) {
-    if (!codes.has(String(o.product_code))) continue;
+    if (!codes.has(codeOf(o.product_code))) continue;
     const at =
       by.get(o.order_id) ??
       {
@@ -511,7 +466,7 @@ const deliveryRecords = (
 ): SupplyRecord[] =>
   receipts
     .map((r) => {
-      const lines = r.lines.filter((l) => codes.has(String(l.product_code)));
+      const lines = r.lines.filter((l) => codes.has(codeOf(l.product_code)));
       return {
         id: r.invoiceid,
         date: r.invoice_date,
@@ -547,6 +502,9 @@ export const supplySays = (
   supply: Supply,
   us: string,
   them: string,
+  /** False when the receipts did not come back: then nothing is said about
+   *  what arrived, rather than "neither received anything". */
+  receiptsOk = true,
 ): { lead: string; tail: string } => {
   const m = supply.mine;
   const t = supply.theirs;
@@ -562,8 +520,9 @@ export const supplySays = (
           ? `Only ${them} ordered.`
           : "Neither store ordered this department.";
 
-  const took =
-    m.deliveries > 0 && t.deliveries > 0
+  const took = !receiptsOk
+    ? "The receivers couldn't be read."
+    : m.deliveries > 0 && t.deliveries > 0
       ? "Both received."
       : m.deliveries > 0
         ? `Only ${us} received.`

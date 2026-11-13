@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildFacts, decompose, summarise, tilesAt } from "@/pages/sales/dev/investigate/utils/investigationFacts";
-import { causeOf, judge, ladderSays, marginsOf, ratiosOf, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
+import { causeOf, evidenceSays, judge, ladderSays, marginsOf, ratiosOf, splitGap, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/utils/supplyEvidence";
 import type { PriceLadder, ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 import type {
@@ -32,6 +32,9 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsSales: over.theirsTy ?? 0,
   orderedQty: 0,
   receivedUnits: 0,
+  lastOrderDate: null,
+  lastOrderQty: 0,
+  receivedSinceOrder: 0,
   ...over,
 });
 
@@ -165,14 +168,35 @@ describe("causeOf", () => {
     expect(causeOf(f)).toBe("not-moving");
   });
 
-  it("names a dearer item 'price-mix'", () => {
-    // 1.49 against 1.058 — 41% dearer, well past the 8% band.
+  it("does not call it price when the units carry the gap", () => {
+    // 1.49 against 1.058 is 41% dearer, but 658 units against 1,550 is the
+    // story: the units part is -$1,136, the price part +$477.
     const f = facts({
       mineTy: 980.66, mineUnits: 658,
       theirsTy: 1640.12, theirsUnits: 1550,
       receivedUnits: 720,
     });
-    expect(causeOf(f)).toBe("price-mix");
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("never blames price on a dearer item that is behind", () => {
+    // Dearer means the price part is in its favour, so fewer units are the gap.
+    const f = facts({
+      mineTy: 360, mineUnits: 300,
+      theirsTy: 500, theirsUnits: 500,
+      receivedUnits: 400,
+    });
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("names it 'price-mix' when price is the bigger part", () => {
+    // Same units, 15% cheaper: price carries the whole gap.
+    const g = facts({
+      mineTy: 850, mineUnits: 1000,
+      theirsTy: 1000, theirsUnits: 1000,
+      receivedUnits: 1000,
+    });
+    expect(causeOf(g)).toBe("price-mix");
   });
 
   it("names a cheaper item 'price-mix' too — the band is two-sided", () => {
@@ -194,14 +218,107 @@ describe("causeOf", () => {
     expect(causeOf(f)).toBe("not-moving");
   });
 
-  it("respects a widened price band", () => {
+  it("only counts a receiver dated on or after the order", () => {
+    // Ordered Oct 28; the only receiver is from an earlier order on Oct 1.
     const f = facts({
-      mineTy: 550, mineUnits: 500,
+      mineTy: 0, theirsTy: 400, theirsUnits: 40,
+      orderedQty: 12, receivedUnits: 24,
+      lastOrderDate: "2026-10-28", lastOrderQty: 12, receivedSinceOrder: 0,
+    });
+    expect(causeOf(f)).toBe("not-received");
+    expect(causeOf({ ...f, receivedSinceOrder: 12 })).toBe("unsold");
+  });
+
+  it("wants no receiver at all before it blames supply on an item that rang", () => {
+    // It sold, so it was stocked; a newer order not yet received is no cause.
+    const f = facts({
+      mineTy: 200, mineUnits: 200, theirsTy: 400, theirsUnits: 400,
+      orderedQty: 12, receivedUnits: 300, receivedSinceOrder: 0,
+      lastOrderDate: "2026-11-07",
+    });
+    expect(causeOf(f)).toBe("not-moving");
+  });
+
+  it("states the order and the newest receiver, never that it is late", () => {
+    const item = judge(facts({
+      mineTy: 0, theirsTy: 400, theirsUnits: 40,
+      orderedQty: 12, lastOrderDate: "2026-10-28", lastOrderQty: 12,
+    }));
+    const says = evidenceSays(item, "018", "003", "2026-10-31");
+    expect(says).toContain("018 ordered 12 on Oct 28. No receiver for it is on file since then.");
+    expect(says).toContain("The newest receiver on file for this department is Oct 31.");
+    expect(says).not.toMatch(/late|expect|arriv/i);
+  });
+
+  it("names no supply cause when the receipts could not be read", () => {
+    const never = facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40 });
+    expect(causeOf(never)).toBe("never-ordered");
+    expect(causeOf(never, DEFAULT_BANDS, true, false)).toBe("no-receipts");
+    // An item that rang is judged on its sales, not on a delivery we can't see.
+    const sold = facts({
+      mineTy: 200, mineUnits: 200, theirsTy: 400, theirsUnits: 400, orderedQty: 6,
+    });
+    expect(causeOf(sold)).toBe("not-received");
+    expect(causeOf(sold, DEFAULT_BANDS, true, false)).toBe("not-moving");
+  });
+
+  it("names a delivered item that never rang 'unsold', not 'selling fewer'", () => {
+    const f = facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40, receivedUnits: 24 });
+    expect(causeOf(f)).toBe("unsold");
+  });
+
+  it("only calls an item 'selling fewer' when this store sold some", () => {
+    const f = facts({
+      mineTy: 200, mineUnits: 200,
+      theirsTy: 260, theirsUnits: 260,
+    });
+    expect(causeOf(f)).toBe("not-moving");
+    expect(causeOf({ ...f, mineTy: 0, mineSales: 0, mineUnits: 0 })).toBe("never-ordered");
+  });
+
+  it("gives the same cause whichever way the Sales/Quantity switch is set", () => {
+    // On quantity the metric figures are units; the cause reads the dollars.
+    const dollars = facts({
+      mineTy: 500, mineUnits: 1000,
       theirsTy: 900, theirsUnits: 900,
-      receivedUnits: 600,
+      receivedUnits: 1000,
+    });
+    const units = { ...dollars, mineTy: 1000, theirsTy: 900 };
+    expect(causeOf(dollars)).toBe("price-mix");
+    expect(causeOf(units)).toBe("price-mix");
+    expect(ratiosOf(units).price).toBeCloseTo(0.5);
+  });
+
+  it("respects a widened price band", () => {
+    // 15% cheaper on the same units: price inside a 20% band is no cause.
+    const f = facts({
+      mineTy: 850, mineUnits: 1000,
+      theirsTy: 1000, theirsUnits: 1000,
+      receivedUnits: 1000,
     });
     expect(causeOf(f)).toBe("price-mix");
-    expect(causeOf(f, { ...DEFAULT_BANDS, price: 0.2 })).toBe("not-moving");
+    expect(causeOf(f, { ...DEFAULT_BANDS, price: 0.2 })).toBe("streamlined");
+  });
+});
+
+describe("splitGap", () => {
+  it("splits the gap into units and price that add up to it exactly", () => {
+    const f = facts({ mineTy: 980.66, mineUnits: 658, theirsTy: 1640.12, theirsUnits: 1550 });
+    const { units, price } = splitGap(f);
+    expect(units + price).toBeCloseTo(980.66 - 1640.12, 6);
+    expect(units).toBeLessThan(0);
+    expect(price).toBeGreaterThan(0);
+  });
+
+  it("gives the same split whichever store is the base", () => {
+    const a = facts({ mineTy: 300, mineUnits: 100, theirsTy: 800, theirsUnits: 200 });
+    const b = facts({ mineTy: 800, mineUnits: 200, theirsTy: 300, theirsUnits: 100 });
+    expect(splitGap(a).units).toBeCloseTo(-splitGap(b).units, 6);
+    expect(splitGap(a).price).toBeCloseTo(-splitGap(b).price, 6);
+  });
+
+  it("puts the whole gap in units when only one store sold it", () => {
+    expect(splitGap(facts({ mineTy: 0, theirsTy: 400, theirsUnits: 40 }))).toEqual({ units: -400, price: 0 });
   });
 });
 
@@ -384,6 +501,40 @@ describe("buildFacts", () => {
     const a = out.find((i) => i.productCode === "A");
     expect(a?.receivedUnits).toBe(80);
     expect(a?.orderedQty).toBe(10);
+  });
+
+  it("matches an order and a receipt to the item when a code comes padded", () => {
+    // A padded code on one endpoint read as "never ordered" before.
+    const out = buildFacts({
+      ...base,
+      mineTw: [row({ product_code: "A", total_sales: 100, qty: 40 })],
+      theirsTw: [row({ product_code: "A", total_sales: 400, qty: 160 })],
+      orders: [order(" A ", 10)],
+      receivers: [receiver([["A  ", 50]])],
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].orderedQty).toBe(10);
+    expect(out[0].receivedUnits).toBe(50);
+  });
+
+  it("keeps the newest order day and only the receipts on or after it", () => {
+    const out = buildFacts({
+      ...base,
+      mineTw: [],
+      theirsTw: [row({ product_code: "A", total_sales: 400, qty: 40 })],
+      orders: [
+        order("A", 6, { order_date: "2026-10-01T00:00:00" }),
+        order("A", 12, { order_date: "2026-10-28T00:00:00" }),
+      ],
+      receivers: [
+        receiver([["A", 6]], { invoice_date: "2026-10-03" }),
+        receiver([["A", 5]], { invoice_date: "2026-10-28" }),
+      ],
+    });
+    expect(out[0].lastOrderDate).toBe("2026-10-28");
+    expect(out[0].lastOrderQty).toBe(12);
+    expect(out[0].receivedSinceOrder).toBe(5);
+    expect(out[0].receivedUnits).toBe(11);
   });
 
   it("ignores receipts for items outside the department's sales", () => {

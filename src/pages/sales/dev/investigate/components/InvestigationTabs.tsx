@@ -87,10 +87,9 @@ const InvestigationTabs = ({
       title: "Hand-off",
       needsAll: true,
       answer: () => {
-        const owned = desks.filter((d) => d.actionable);
-        return owned.length
-          ? `${owned.length} ${owned.length === 1 ? "list" : "lists"}`
-          : "No lists";
+        // One list per person, however many causes each holds.
+        const people = new Set(desks.filter((d) => d.actionable).map((d) => d.owner)).size;
+        return people ? `${people} ${people === 1 ? "list" : "lists"}` : "No lists";
       },
     },
   ];

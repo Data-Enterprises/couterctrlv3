@@ -11,6 +11,7 @@ import {
   fetchOrders,
   fetchReceipts,
   fetchSales,
+  ordersKnownFor,
   scopeKey,
   type OrdersWave,
   type ReceiptsWave,
@@ -189,8 +190,8 @@ export const useRowSelection = (
  * Each wave updates state as it lands rather than waiting for the slowest, so
  * the grid is readable after the sales calls and every item's cause sharpens
  * behind it. An item starts as a gap with no cause, gains never-ordered or
- * not-received when orders arrive, and only then can a vendor failure be told
- * from a merchandising one.
+ * no-receiver-on-file when orders arrive, and only then can a supply gap be
+ * told from a merchandising one.
  *
  * `stage` is what the screen shows about itself: it names the wave still
  * OUTSTANDING, so "receipts" means sales and orders are in hand and the
@@ -208,7 +209,7 @@ const NO_ORDERS: OrdersWave = {
   allMine: [],
   allTheirs: [],
 };
-const NO_RECEIPTS: ReceiptsWave = { mine: [], theirs: [] };
+const NO_RECEIPTS: ReceiptsWave = { ok: true, mine: [], theirs: [] };
 
 export const useDeptInvestigation = (args: InvestigationArgs): Investigation => {
   const dispatch = useAppDispatch();
@@ -327,7 +328,9 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
       setReceipts(receiptsWave);
       setStage("done");
 
-      // Only a complete set is kept — see the note on InvestigationWaves.
+      // Only a complete set is kept — see the note on InvestigationWaves. A
+      // wave that failed is not complete, so the next visit asks again.
+      if (!ordersWave.ok || !receiptsWave.ok) return;
       dispatch(
         rememberInvestigation({
           key,
@@ -350,12 +353,9 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
             orders: orders.mine,
             receivers: receipts.mine,
             metric,
-            // Not `orders.mine.length`: a department this store genuinely
-            // never ordered is exactly the finding "never ordered" is for.
-            // What disqualifies the claim is the WINDOW coming back with no
-            // orders for either store, which is a department delivered
-            // straight off the vendor's truck.
-            ordersKnown: orders.ok && orders.inWindow > 0,
+            ordersKnown: ordersKnownFor(orders),
+            // A set cached before `ok` existed was complete by definition.
+            receiptsKnown: receipts.ok !== false,
           })
         : [],
     [sales, orders, receipts, metric],

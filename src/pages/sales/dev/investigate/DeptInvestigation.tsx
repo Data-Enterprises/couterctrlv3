@@ -19,17 +19,19 @@ import {
   spreadOf,
   supplyOf,
   vitalsOf,
-  type Desk,
 } from "./utils/investigationSteps";
-import { cash, PAGE_ROWS, SUGGESTED } from "./utils";
+import { cash, PAGE_ROWS, shortStore, SUGGESTED } from "./utils";
+import { rowsOf } from "./utils/holdsRows";
+import { HANDOFF_NAME, handoffKey } from "./utils/handoff";
 import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
 
 // Interfaces
-import type { ItemVerdict, Col, InvestigationTab } from "./interfaces";
+import type { ItemVerdict, Col, HandoffList, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";
 import HoldsPanel from "./components/HoldsPanel";
+import ReceiptsNote from "./components/ReceiptsNote";
 import SupplyPanel from "./components/SupplyPanel";
 import ActPanel from "./components/ActPanel";
 import InvestigationHeader from "./components/InvestigationHeader";
@@ -158,16 +160,23 @@ const DeptInvestigation = ({
   /* The three steps the grid does not answer. All three are arithmetic over
      items already in hand, so changing tab asks for nothing. */
   const holds = useMemo(
-    () => holdsUp(items, target?.focus ?? "unknown"),
-    [items, target?.focus],
+    () =>
+      holdsUp(
+        items,
+        target?.focus ?? "unknown",
+        shortStore(target?.storeName ?? "this store"),
+        shortStore(target?.compareStoreName ?? "the other store"),
+      ),
+    [items, target?.focus, target?.storeName, target?.compareStoreName],
   );
+  const rows = useMemo(() => rowsOf(items), [items]);
   const spread = useMemo(() => spreadOf(items), [items]);
   const vitals = useMemo(() => vitalsOf(items), [items]);
   const supply = useMemo(
     () => supplyOf(orders, receipts, items),
     [orders, receipts, items],
   );
-  const desks = useMemo(() => desksOf(items, cash), [items]);
+  const desks = useMemo(() => desksOf(items), [items]);
 
   /**
    * The last item the rail showed, kept through the close.
@@ -181,17 +190,18 @@ const DeptInvestigation = ({
   if (pickedItem) lastEvidence.current = pickedItem;
   const evidence = pickedItem ?? lastEvidence.current;
 
-  /** One desk's list, named for who it is going to. The whole-grid export
-   *  in the header is a different file and says so. */
-  const exportDesk = (d: Desk) => {
+  /** One person's list, every cause on it, named for who it is going to.
+   *  The rows carry their cause, so one file holds the whole list. The
+   *  whole-grid export in the header is a different file and says so. */
+  const exportList = (l: HandoffList) => {
     if (!target) return;
     const name = [
       target.storeNumber,
       target.subDeptName.replace(/[^A-Za-z0-9]+/g, "-"),
-      CAUSE_LABEL[d.cause].replace(/[^A-Za-z0-9]+/g, "-"),
+      HANDOFF_NAME[handoffKey(l.owner)].replace(/[^A-Za-z0-9]+/g, "-"),
       twEnd,
     ].join("_");
-    downloadCsv(rowsToCsv(CSV_HEADERS, d.items.map(csvRow)), `${name}.csv`);
+    downloadCsv(rowsToCsv(CSV_HEADERS, l.items.map(csvRow)), `${name}.csv`);
   };
 
   /** Everything the filters left, not the 300 that are drawn. */
@@ -320,6 +330,8 @@ const DeptInvestigation = ({
         desks={desks}
       />
 
+      {allIn && !receipts.ok && <ReceiptsNote />}
+
       {problem ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/95">
           {problem}
@@ -342,10 +354,13 @@ const DeptInvestigation = ({
           {tab === "holds" && salesIn && (
             <HoldsPanel
               holds={holds}
+              rows={rows}
               spread={spread}
               summary={summary}
+              us={target.storeName}
               them={target.compareStoreName}
               vitals={vitals}
+              fmt={fmt}
               cash={cash}
               marginGap={marginGap}
               costPenalty={costPenalty}
@@ -360,6 +375,10 @@ const DeptInvestigation = ({
               onSeeAll={() => {
                 setOnly(null);
                 setTab("items");
+              }}
+              onFindInSupply={(upc) => {
+                setSupplyUpcs(upc);
+                setTab("supply");
               }}
             />
           )}
@@ -381,12 +400,14 @@ const DeptInvestigation = ({
           {tab === "act" && allIn && (
             <ActPanel
               desks={desks}
-              cash={cash}
+              us={shortStore(target.storeName)}
+              them={shortStore(target.compareStoreName)}
+              fmt={fmt}
               onShow={(c) => {
                 setOnly(c);
                 setTab("items");
               }}
-              onExport={exportDesk}
+              onExport={exportList}
               onPickItem={(code) => {
                 show(code);
                 setTab("items");

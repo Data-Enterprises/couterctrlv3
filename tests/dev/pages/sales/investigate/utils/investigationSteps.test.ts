@@ -22,6 +22,9 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsSales: over.theirsTy ?? 0,
   orderedQty: 0,
   receivedUnits: 0,
+  lastOrderDate: null,
+  lastOrderQty: 0,
+  receivedSinceOrder: 0,
   ...over,
 });
 
@@ -55,8 +58,6 @@ const sitting = (n: number) =>
       orderedQty: 20, receivedUnits: 20,
     }),
   );
-
-const money = (v: number) => "$" + v.toFixed(2);
 
 describe("1 · does it hold", () => {
   it("holds when a supply call lands on items we never rang", () => {
@@ -93,6 +94,26 @@ describe("1 · does it hold", () => {
     expect(h.bothMore.dollars).toBeCloseTo(60, 6);
   });
 
+  it("counts the items only this store rang in a row of their own", () => {
+    const h = holdsUp(
+      [...absent(2, 100), item({ productCode: "m", mineTy: 70, mineUnits: 7 })],
+      "orders",
+    );
+    expect(h.onlyMine.items).toBe(1);
+    expect(h.onlyMine.dollars).toBeCloseTo(70, 6);
+    expect(h.bothMore.items).toBe(0);
+  });
+
+  it("says which row its sentence is about", () => {
+    expect(holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders").about).toBe("onlyTheirs");
+    expect(holdsUp([...weaker(8, 40, 90), ...absent(1, 20)], "orders").about).toBe("bothLess");
+  });
+
+  it("names the two stores rather than here and there", () => {
+    const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders", "018", "003");
+    expect(h.says).toBe("Most of the gap is items 003 rang and 018 did not.");
+  });
+
   /** Units, not money: an item can ring for nothing and still have sold. */
   it("reads presence from units, not from sales", () => {
     const h = holdsUp(
@@ -105,33 +126,6 @@ describe("1 · does it hold", () => {
 });
 
 describe("2 · where is it", () => {
-  it("calls it concentrated when a handful carry half", () => {
-    const s = spreadOf([
-      item({ theirsTy: 900, theirsUnits: 90 }),
-      item({ theirsTy: 100, theirsUnits: 10 }),
-      item({ theirsTy: 50, theirsUnits: 5 }),
-    ]);
-    expect(s.toHalf).toBe(1);
-    expect(s.concentrated).toBe(true);
-    expect(s.says).toContain("A short list carries it");
-  });
-
-  /**
-   * Fifty items each a fiftieth of the gap: a top ten is 20% of it, and
-   * printing one would let somebody believe it mattered.
-   */
-  it("calls it spread when no short list reaches half", () => {
-    const s = spreadOf(
-      Array.from({ length: 50 }, (_, i) =>
-        item({ productCode: `s${i}`, theirsTy: 100, theirsUnits: 10 }),
-      ),
-    );
-    expect(s.toHalf).toBe(25);
-    expect(s.concentrated).toBe(false);
-    expect(s.topTenShare).toBeCloseTo(0.2, 6);
-    expect(s.says).toContain("No short list carries it");
-  });
-
   it("leaves the items we are ahead on out of the shortfall", () => {
     const s = spreadOf([
       item({ theirsTy: 100, theirsUnits: 10 }),
@@ -152,12 +146,6 @@ describe("2 · where is it", () => {
     expect(s.byVendor.map((v) => v.vendorName)).toContain("Unknown vendor");
   });
 
-  it("says nothing is behind rather than dividing by zero", () => {
-    const s = spreadOf([item({ mineTy: 90, mineUnits: 9, theirsTy: 10, theirsUnits: 1 })]);
-    expect(s.toHalf).toBe(0);
-    expect(s.topTenShare).toBe(0);
-    expect(s.concentrated).toBe(false);
-  });
 });
 
 describe("5 · who fixes it", () => {
@@ -169,16 +157,16 @@ describe("5 · who fixes it", () => {
   ];
 
   it("leaves what we are ahead on off the hand-off", () => {
-    expect(desksOf(mixed(), money).map((d) => d.cause)).not.toContain("ahead");
+    expect(desksOf(mixed()).map((d) => d.cause)).not.toContain("ahead");
   });
 
   it("gives every actionable cause an owner", () => {
-    const desks = desksOf(mixed(), money);
+    const desks = desksOf(mixed());
     const never = desks.find((d) => d.cause === "never-ordered");
     expect(never?.owner).toBe("buyer");
     expect(never?.actionable).toBe(true);
     const late = desks.find((d) => d.cause === "not-received");
-    expect(late?.owner).toBe("vendor");
+    expect(late?.owner).toBe("receiving");
   });
 
   /**
@@ -188,7 +176,7 @@ describe("5 · who fixes it", () => {
    * is stated and handed to nobody.
    */
   it("hands nobody the causes that name no record", () => {
-    const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)], money);
+    const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)]);
     expect(desks.map((d) => d.cause)).toContain("not-moving");
     for (const d of desks) {
       if (d.cause === "not-moving" || d.cause === "streamlined") {
@@ -198,15 +186,14 @@ describe("5 · who fixes it", () => {
     }
   });
 
-  it("states what cannot be handed over rather than dropping it", () => {
-    const desks = desksOf(sitting(2), money);
-    const quiet = desks.filter((d) => !d.actionable);
+  it("keeps what cannot be handed over rather than dropping it", () => {
+    const quiet = desksOf(sitting(2)).filter((d) => !d.actionable);
     expect(quiet.length).toBeGreaterThan(0);
-    expect(quiet[0].says).toContain("items");
+    expect(quiet[0].items.length).toBeGreaterThan(0);
   });
 
   it("ranks the desks by money, worst first", () => {
-    const desks = desksOf(mixed(), money);
+    const desks = desksOf(mixed());
     for (let i = 1; i < desks.length; i += 1) {
       expect(desks[i - 1].dollars).toBeLessThanOrEqual(desks[i].dollars);
     }
@@ -227,6 +214,14 @@ describe("the department's vitals", () => {
   it("carries the gap in all three periods", () => {
     const v = vitalsOf(dept());
     expect(v.weeks.map((w) => w.gap)).toEqual([20, -120, -100]);
+  });
+
+  it("keeps all three weeks in the page's metric on Quantity", () => {
+    // Units in the metric columns, dollars in the sales ones.
+    const v = vitalsOf([
+      item({ mineTy: 40, mineSales: 400, theirsTy: 50, theirsSales: 500, mineLw: 30, theirsLw: 50 }),
+    ]);
+    expect(v.weeks.map((w) => w.gap)).toEqual([0, -20, -10]);
   });
 
   /** Sales down and units level is a department selling as much and taking
@@ -394,6 +389,16 @@ describe("supply · the proof behind the labels", () => {
   it("names the store when only one of them ordered", () => {
     const r = says({ mine: [], theirs: [order(2, "a", 50)] }, { mine: [], theirs: [] });
     expect(r.lead).toBe("Only 003 ordered. Neither received anything in the window.");
+  });
+
+  it("says the receipts couldn't be read rather than that nothing arrived", () => {
+    const r = supplySays(
+      supplyOf({ mine: [order(1, "a", 10)], theirs: [] }, { mine: [], theirs: [] }, [of("a")]),
+      "002",
+      "003",
+      false,
+    );
+    expect(r.lead).toBe("Only 002 ordered. The receivers couldn't be read.");
   });
 
   it("says so when neither store ordered at all", () => {

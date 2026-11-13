@@ -1,5 +1,8 @@
+// Utils
+import { count, onDay } from ".";
+
 // Interfaces
-import type { Cause, Bands, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
+import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
 
 /**
  * Why one store is behind another in one sub department.
@@ -11,7 +14,8 @@ import type { Cause, Bands, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder
  *
  * The point is the CAUSE. A grid of differences tells you Grocery is $29K
  * behind; it does not tell you that $13K of it was never ordered, which is a
- * buyer's problem, and $6K was ordered and never arrived, which is a vendor's.
+ * buyer's problem, and $6K was ordered with no receiver on file, which is
+ * receiving's to check.
  * Those go to two different people, and the difference between them is three
  * facts this module already has.
  */
@@ -40,6 +44,29 @@ export const marginsOf = (f: ItemFacts): Margins => {
       minePerUnit !== null && theirsPerUnit !== null
         ? (theirsPerUnit - minePerUnit) * f.mineUnits
         : null,
+  };
+};
+
+/** Whether a store rang an item at all. Units or money: an item can ring for
+ *  nothing and still have sold. The Summary's rows count it the same way. */
+export const rangAt = (units: number, sales: number) => units > 0 || sales > 0;
+
+/**
+ * An item's dollar gap, split exactly into what selling more or fewer units
+ * did and what taking more or less a unit did.
+ *
+ * Each part is valued at the midpoint of the two stores (units at the average
+ * price, price at the average units), so neither store is the base and the
+ * two always add up to the gap. An item only one store sold is all units.
+ */
+export const splitGap = (f: ItemFacts): GapSplit => {
+  const gap = f.mineSales - f.theirsSales;
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
+  if (mine === null || theirs === null) return { units: gap, price: 0 };
+  return {
+    units: ((f.mineUnits - f.theirsUnits) * (mine + theirs)) / 2,
+    price: ((mine - theirs) * (f.mineUnits + f.theirsUnits)) / 2,
   };
 };
 
@@ -85,19 +112,34 @@ export const causeOf = (
    * had no order data for and calling it a missed order.
    */
   ordersKnown: boolean = true,
+  /** Whether the receipts came back. Every supply cause rests on them. */
+  receiptsKnown: boolean = true,
 ): Cause => {
-  const gap = f.mineTy - f.theirsTy;
+  // Dollars whatever the page shows: an item's cause must not change with the
+  // Sales/Quantity switch, and on quantity `mineTy` is a unit count.
+  const gap = f.mineSales - f.theirsSales;
   const ordered = f.orderedQty > 0;
   const received = f.receivedUnits > 0;
+  const rangHere = rangAt(f.mineUnits, f.mineSales);
+  const rangThere = rangAt(f.theirsUnits, f.theirsSales);
+
+  // Without receipts nothing can say whether it was delivered, so an item
+  // that did not ring here gets no supply cause at all.
+  if (!receiptsKnown && !rangHere && rangThere) return "no-receipts";
 
   // The two supply failures come first wherever the sales landed: an item
   // that never reached the shelf cannot be explained by what it cost or what
   // it was priced at.
-  if (!ordered && !received && f.mineTy === 0 && f.theirsTy > 0)
+  if (!ordered && !received && !rangHere && rangThere)
     return ordersKnown ? "never-ordered" : "not-carried";
-  // Ordered-but-not-arrived needs an order to have been placed, so it cannot
-  // fire at all without order history.
-  if (ordered && !received && gap < 0) return "not-received";
+  // An order with no receiver on file. Orders carry no expected date, so this
+  // says only what is on record, never that it is late. An item that did not
+  // ring here asks about its newest order; one that rang was stocked from
+  // somewhere, so only no receiver at all in the window points at supply.
+  const noReceiver = rangHere ? !received : f.receivedSinceOrder === 0;
+  if (receiptsKnown && ordered && noReceiver && gap < 0) return "not-received";
+  // Delivered, and none of it rang here while the other store sold it.
+  if (received && !rangHere && rangThere) return "unsold";
 
   // Then buying terms — BEFORE "ahead", and that order is the point. An item
   // can sell more here and still make less, because it is bought for more.
@@ -110,24 +152,32 @@ export const causeOf = (
   if (Math.abs(gap) < bands.floor) return "streamlined";
   if (gap > 0) return "ahead";
 
-  const mine = realised(f.mineTy, f.mineUnits);
-  const theirs = realised(f.theirsTy, f.theirsUnits);
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
+  // Price is the cause only where it is the bigger part of the gap. Past the
+  // band alone it called an item that sold a tenth of the units "price".
+  // Bigger but inside the band, the units are level and the price gap is
+  // under what the page calls a difference, so nothing names it.
   if (mine !== null && theirs !== null && theirs > 0) {
-    if (Math.abs(mine / theirs - 1) > bands.price) return "price-mix";
+    const { units, price } = splitGap(f);
+    if (Math.abs(price) > Math.abs(units))
+      return Math.abs(mine / theirs - 1) > bands.price ? "price-mix" : "streamlined";
   }
 
-  // It was here, it was priced like theirs, and it still did not sell.
-  if (received || f.mineUnits > 0) return "not-moving";
+  // Both sold it, at about the same price, and this store sold fewer.
+  if (rangHere) return "not-moving";
 
   return "streamlined";
 };
 
+/** Dollars, not the page's metric: on quantity the metric figure is units, and
+ *  units over units would make every price ratio 1. */
 export const ratiosOf = (f: ItemFacts): Ratios => {
-  const mine = realised(f.mineTy, f.mineUnits);
-  const theirs = realised(f.theirsTy, f.theirsUnits);
+  const mine = realised(f.mineSales, f.mineUnits);
+  const theirs = realised(f.theirsSales, f.theirsUnits);
   return {
     units: ratio(f.mineUnits, f.theirsUnits),
-    dollars: ratio(f.mineTy, f.theirsTy),
+    dollars: ratio(f.mineSales, f.theirsSales),
     price: mine !== null && theirs !== null && theirs > 0 ? mine / theirs : null,
     sellThrough: f.receivedUnits > 0 ? f.mineUnits / f.receivedUnits : null,
   };
@@ -144,12 +194,31 @@ export const ratiosOf = (f: ItemFacts): Ratios => {
 export const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
   "not-carried": "Not carried here",
-  "not-received": "Didn't arrive",
+  "not-received": "No receiver on file",
   cost: "Costing more",
-  "not-moving": "Not moving",
+  "not-moving": "Selling fewer",
+  unsold: "Received, none sold",
+  "no-receipts": "Receivers unavailable",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
   streamlined: "Streamlined",
+};
+
+/** What each cause means, in one line: the tooltip wherever a cause is a
+ *  label. Kept here so the Summary and the Hand-off say the same thing. */
+export const CAUSE_TIP: Record<Cause, (us: string, them: string) => string> = {
+  "never-ordered": (us, them) =>
+    `No order at ${us} in the window, nothing received, nothing sold. ${them} sold it.`,
+  "not-carried": () =>
+    "Like Never ordered, but neither store ordered in this department, so it can't say one was missed.",
+  "not-received": (us) => `Ordered at ${us}, and no receiver for it is on file since the order.`,
+  unsold: (us) => `Delivered to ${us}, and none of it rang this week.`,
+  "no-receipts": () => "The receivers couldn't be read, so nothing says whether it was delivered.",
+  cost: (us) => `Both sold it, and ${us} buys it for more.`,
+  "price-mix": (us, them) => `${us} took less a unit than ${them}, and price is most of the gap.`,
+  "not-moving": (us) => `Both sold it at about the same price, and ${us} sold fewer.`,
+  streamlined: (_us, them) => `Within $5 of ${them}.`,
+  ahead: (us) => `${us} sold more of it, by more than $5.`,
 };
 
 /** Who owns the fix. The whole reason the causes are named separately is that
@@ -157,9 +226,11 @@ export const CAUSE_LABEL: Record<Cause, string> = {
 export const CAUSE_OWNER: Record<Cause, string> = {
   "never-ordered": "buyer",
   "not-carried": "nothing on file either way",
-  "not-received": "vendor",
+  "not-received": "receiving: check the receiver was entered",
   cost: "buying terms",
   "not-moving": "merchandising",
+  unsold: "merchandising",
+  "no-receipts": "the receivers could not be read",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
   streamlined: "nothing to chase",
@@ -199,6 +270,8 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   // vendor rather than on the shelf. Buying terms are exactly that.
   cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
   "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
+  unsold: { chip: "bg-sky-50 text-sky-900", ring: "ring-sky-900/40" },
+  "no-receipts": { chip: "bg-fill_muted text-content/95", ring: "ring-content/30" },
   "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
   ahead: {
     chip: "bg-delta_positive_bg text-delta_positive_text",
@@ -286,6 +359,9 @@ export const evidenceSays = (
   item: ItemVerdict,
   us: string,
   them: string,
+  /** The newest receiver on file for the department, so a missing one can be
+   *  read against how far the receiving data goes. */
+  newestReceiver: string | null = null,
 ): string => {
   const cash = (v: number) =>
     "$" + Math.abs(v).toLocaleString("en-US", {
@@ -297,8 +373,13 @@ export const evidenceSays = (
   switch (item.cause) {
     case "never-ordered":
       return `${us} never ordered or rang it. ${theirs}`;
-    case "not-received":
-      return `${us} ordered it and it never arrived. ${theirs}`;
+    case "not-received": {
+      const when = item.lastOrderDate ? ` on ${onDay(item.lastOrderDate)}` : "";
+      const newest = newestReceiver
+        ? ` The newest receiver on file for this department is ${onDay(newestReceiver)}.`
+        : "";
+      return `${us} ordered ${count(item.lastOrderQty)}${when}. No receiver for it is on file since then.${newest} ${theirs}`;
+    }
     case "cost": {
       const per = item.margins.minePerUnit !== null && item.margins.theirsPerUnit !== null
         ? item.margins.minePerUnit - item.margins.theirsPerUnit
@@ -308,11 +389,17 @@ export const evidenceSays = (
         : `Both stores sold it. ${us} buys it for ${cash(per)} more a unit, which cost ${cash(item.margins.costPenalty ?? 0)} on the units it sold.`;
     }
     case "not-carried":
-      return `Nothing here says ${us} ever had it, and no orders came back for the window to say whether it was ever asked for. ${theirs}`;
+      return `Nothing here says ${us} ever had it, and no order in this department came back for either store over the window to say whether it was ever asked for. ${theirs}`;
     case "price-mix":
-      return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)} — less per unit, not fewer of them.`;
-    case "not-moving":
-      return `${us} has it and sold ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Nothing in this data says why.`;
+      return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Taking less a unit is most of that difference, more than the units sold.`;
+    case "not-moving": {
+      const lb = item.weighted ? " lb" : "";
+      return `Both stores sold it, at about the same price. ${us} sold ${count(item.mineUnits)}${lb} against ${count(item.theirsUnits)}${lb}. Nothing in this data says why.`;
+    }
+    case "no-receipts":
+      return `${us} did not ring it. We couldn't get the receiver information at this time, so nothing here says whether it was delivered. ${theirs}`;
+    case "unsold":
+      return `${us} received it and none of it rang this week. ${theirs}`;
     case "ahead":
       return `${us} sold ${cash(item.mineSales)} of it against ${cash(item.theirsSales)}, and is ${cash(item.mineSales - item.theirsSales)} ahead on it.`;
     default:
@@ -324,10 +411,11 @@ export const judge = (
   f: ItemFacts,
   bands: Bands = DEFAULT_BANDS,
   ordersKnown: boolean = true,
+  receiptsKnown: boolean = true,
 ): ItemVerdict => ({
   ...f,
   gap: f.mineTy - f.theirsTy,
-  cause: causeOf(f, bands, ordersKnown),
+  cause: causeOf(f, bands, ordersKnown, receiptsKnown),
   ratios: ratiosOf(f),
   margins: marginsOf(f),
 });
