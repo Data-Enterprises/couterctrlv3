@@ -1,18 +1,13 @@
 // Utils
-import { formatPct } from "../../../../../../../utils/severity";
 import { money, whole } from "../../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
 import type { GradedItem, Side } from "../../interfaces";
-import type { CompareRowData, CompareSort, CompareTotals, WeekBoxData } from "../interfaces";
+import type { CompareRowData, CompareTotals, WeekBar } from "../interfaces";
 
-/** A list row: rank, item and UPC, this week, LW, vs LW, LY, vs LY. */
-export const COMPARE_COLS =
-  "grid grid-cols-[18px_minmax(0,1fr)_96px_68px_64px_68px_64px] gap-2 items-center";
-
-/** The top band: the answer, then a box per week. */
-export const BAND_COLS = "grid grid-cols-[minmax(200px,1fr)_repeat(3,minmax(0,250px))] gap-2.5";
+/** A list row: rank, item and UPC, this week, last week, last year. */
+export const COMPARE_COLS = "grid grid-cols-[22px_minmax(0,1fr)_110px_84px_84px] gap-2.5 items-center";
 
 /** A list's rule and its totals row's fill, in its own colour. */
 export const SIDE_EDGE: Record<Side, string> = { A: "border-brand_navy", B: "border-brand_slate" };
@@ -21,13 +16,6 @@ export const SIDE_TINT: Record<Side, string> = { A: "bg-brand_navy/[0.06]", B: "
 /** The panel in and out of view: off to the right, and unreachable, when shut. */
 export const SLIDE_OPEN = "translate-x-0 visible";
 export const SLIDE_SHUT = "translate-x-full invisible";
-
-/** The sort bar's choices. */
-export const SORTS: { value: CompareSort; label: string }[] = [
-  { value: "ty", label: "This week" },
-  { value: "vsLW", label: "vs LW" },
-  { value: "vsLY", label: "vs LY" },
-];
 
 /** Change from `then` to `now` in percent; null with nothing to compare against. */
 export const pctOf = (now: number, then: number | null) =>
@@ -81,18 +69,6 @@ export const totalsOf = (items: GradedItem[], metric: GradingMetric): CompareTot
   };
 };
 
-/** Ranks a list: this week biggest first, or a change biggest drop first. An
- *  item with nothing to rank on goes last. */
-export const sortRows = (rows: CompareRowData[], sort: CompareSort, metric: GradingMetric) => {
-  const key = (r: CompareRowData) =>
-    sort === "ty"
-      ? r.hasTY
-        ? -(metric === "qty" ? r.tyQty : r.tyNet)
-        : Infinity
-      : ((sort === "vsLW" ? r.lwPct : r.lyPct) ?? Infinity);
-  return [...rows].sort((a, b) => key(a) - key(b));
-};
-
 /** The figure on the grading measure ("—" for no sale). */
 export const mainFig = (net: number | null, qty: number | null, metric: GradingMetric) =>
   metric === "qty" ? (qty === null ? "—" : whole(qty)) : net === null ? "—" : money(net);
@@ -100,17 +76,6 @@ export const mainFig = (net: number | null, qty: number | null, metric: GradingM
 /** The figure behind it: money under units, units under money. */
 export const otherFig = (net: number | null, qty: number | null, metric: GradingMetric) =>
   metric === "qty" ? (net === null ? "" : money(net)) : qty === null ? "" : `${whole(qty)} u`;
-
-/** A change as text, "—" when there is nothing to compare against. */
-export const pctText = (p: number | null) => (p === null ? "—" : formatPct(p));
-
-/** A change's colour: direction, not a grade. */
-export const pctTextClass = (p: number | null) =>
-  p === null ? "text-content" : p < 0 ? "text-delta_negative_text" : "text-delta_positive_text";
-
-/** A change's chip in a week box. */
-export const pctChipClass = (p: number) =>
-  p < 0 ? "bg-delta_negative_bg text-delta_negative_text" : "bg-delta_positive_bg text-delta_positive_text";
 
 /** A difference on the grading measure. */
 export const amount = (v: number, metric: GradingMetric) =>
@@ -122,80 +87,51 @@ const figOf = (t: CompareTotals, week: "ty" | "lw" | "ly", metric: GradingMetric
     ? week === "ty" ? t.tyQty : week === "lw" ? t.lwQty : t.lyQty
     : week === "ty" ? t.tyNet : week === "lw" ? t.lwNet : t.lyNet;
 
-/** Which list is ahead by more than a cent, or null when level. */
-const leadOf = (d: number): Side | null => (Math.abs(d) < 0.005 ? null : d > 0 ? "A" : "B");
-
-/** Who is ahead in a week: "B ahead by $67.26" this week, "A led by …" before. */
-export const gapLine = (a: number, b: number, thisWeek: boolean, metric: GradingMetric) => {
-  const lead = leadOf(a - b);
-  return lead ? `${lead} ${thisWeek ? "ahead" : "led"} by ${amount(Math.abs(a - b), metric)}` : "Level";
+/** Who is ahead in a week, by name: "coke ahead by $691.41" this week, "… led
+ *  by …" before, "Level" within a cent. */
+export const gapLine = (
+  a: number,
+  b: number,
+  thisWeek: boolean,
+  metric: GradingMetric,
+  names: [string, string],
+) => {
+  const d = a - b;
+  if (Math.abs(d) < 0.005) return "Level";
+  return `${d > 0 ? names[0] : names[1]} ${thisWeek ? "ahead" : "led"} by ${amount(Math.abs(d), metric)}`;
 };
 
-/** The panel's answer: who sold more this week, and who led last week and
- *  last year. */
-export const answerLine = (a: CompareTotals, b: CompareTotals, metric: GradingMetric) => {
-  const d = figOf(a, "ty", metric) - figOf(b, "ty", metric);
-  const lead = leadOf(d);
-  const first = lead
-    ? `${lead} outsold ${lead === "A" ? "B" : "A"} by ${amount(Math.abs(d), metric)} this week.`
-    : "A and B sold the same this week.";
-  const past = [
-    { when: "last week", has: a.hasLW || b.hasLW, d: figOf(a, "lw", metric) - figOf(b, "lw", metric) },
-    { when: "last year", has: a.hasLY || b.hasLY, d: figOf(a, "ly", metric) - figOf(b, "ly", metric) },
-  ].filter((p) => p.has);
-  if (!past.length) return first;
-  const say = (p: (typeof past)[number]) => {
-    const l = leadOf(p.d);
-    return l ? `${p.when} ${l} led by ${amount(Math.abs(p.d), metric)}` : `${p.when} they were level`;
-  };
-  const [p1, p2] = past;
-  const rest =
-    p2 && leadOf(p1.d) && leadOf(p1.d) === leadOf(p2.d)
-      ? `${say(p1)}, and ${p2.when} by ${amount(Math.abs(p2.d), metric)}`
-      : past.map(say).join(", and ");
-  return `${first} ${rest.charAt(0).toUpperCase()}${rest.slice(1)}.`;
-};
-
-/** The three boxes at the top: this week, last week and last year, each list's
- *  figure with its change to this week, and who is ahead. */
-export const weekBoxes = (
+/** The strip at the top: a bar per week split between the two lists, with
+ *  each half's figure and share, and who is ahead. */
+export const weekBars = (
   a: CompareTotals,
   b: CompareTotals,
   metric: GradingMetric,
-  dates: { tw: string; lw: string; ly: string },
-): WeekBoxData[] => {
-  const now = (side: Side, t: CompareTotals) => ({
-    side,
-    value: mainFig(t.tyNet, t.tyQty, metric),
-    other: otherFig(t.tyNet, t.tyQty, metric),
-    pct: null,
+  names: [string, string],
+): WeekBar[] =>
+  (
+    [
+      { label: "This week", week: "ty", has: true, when: "this week" },
+      { label: "Last week", week: "lw", has: a.hasLW || b.hasLW, when: "last week" },
+      { label: "Last year", week: "ly", has: a.hasLY || b.hasLY, when: "last year" },
+    ] as const
+  ).map(({ label, week, has, when }) => {
+    const av = figOf(a, week, metric);
+    const bv = figOf(b, week, metric);
+    const both = av + bv;
+    const share = has && both > 0 ? (av / both) * 100 : null;
+    const net = (t: CompareTotals) => (week === "ty" ? t.tyNet : week === "lw" ? t.lwNet : t.lyNet);
+    const qty = (t: CompareTotals) => (week === "ty" ? t.tyQty : week === "lw" ? t.lwQty : t.lyQty);
+    return {
+      label,
+      gap: share === null ? `No sales ${when}` : gapLine(av, bv, week === "ty", metric, names),
+      aFig: mainFig(net(a), qty(a), metric),
+      bFig: mainFig(net(b), qty(b), metric),
+      aShare: share,
+      aPct: share === null ? "" : `${Math.round(share)}%`,
+      bPct: share === null ? "" : `${100 - Math.round(share)}%`,
+    };
   });
-  const then = (side: Side, t: CompareTotals, week: "lw" | "ly") => {
-    const has = week === "lw" ? t.hasLW : t.hasLY;
-    const net = has ? (week === "lw" ? t.lwNet : t.lyNet) : null;
-    const qty = has ? (week === "lw" ? t.lwQty : t.lyQty) : null;
-    return { side, value: mainFig(net, qty, metric), other: otherFig(net, qty, metric), pct: week === "lw" ? t.lwPct : t.lyPct };
-  };
-  const past = (week: "lw" | "ly", label: string, when: string, d: string): WeekBoxData => ({
-    label,
-    dates: d,
-    lines: [then("A", a, week), then("B", b, week)],
-    gap:
-      (week === "lw" ? a.hasLW || b.hasLW : a.hasLY || b.hasLY)
-        ? gapLine(figOf(a, week, metric), figOf(b, week, metric), false, metric)
-        : `No sales ${when}`,
-  });
-  return [
-    {
-      label: "This week",
-      dates: dates.tw,
-      lines: [now("A", a), now("B", b)],
-      gap: gapLine(figOf(a, "ty", metric), figOf(b, "ty", metric), true, metric),
-    },
-    past("lw", "vs last week", "last week", dates.lw),
-    past("ly", "vs last year", "last year", dates.ly),
-  ];
-};
 
 /** The export's headings. The changes are on the grading measure. */
 export const csvHeaders = (metric: GradingMetric) => {

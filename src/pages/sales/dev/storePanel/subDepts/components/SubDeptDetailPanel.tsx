@@ -219,7 +219,8 @@ const SubDeptDetailPanel = ({
         </div>
       )}
 
-      {/* Not positioned itself, so the panel covers the whole tab (PopupSubDeptList). */}
+      {/* Nothing between here and StoreDetailPopup's tab area is positioned, so
+          the panel covers the report tabs and their content. */}
       {selected && pinned && (
         <CompareSlideOver
           open={compareOpen}
@@ -229,11 +230,9 @@ const SubDeptDetailPanel = ({
             setCompareOpen(false);
           }}
           deptName={selected.desc}
-          a={{ label: listLabel(pinned), items: pinnedItems }}
-          b={{ label: listLabel(current), items: textFilteredItems }}
+          a={{ filter: pinned, items: pinnedItems }}
+          b={{ filter: current, items: textFilteredItems }}
           twDateLabel={twDateLabel}
-          lwDateLabel={lwDateLabel}
-          lyDateLabel={lyDateLabel}
         />
       )}
 

@@ -1,5 +1,5 @@
 // Utils
-import { COMPARE_COLS, mainFig, otherFig, pctText, pctTextClass } from "../utils";
+import { COMPARE_COLS, mainFig, otherFig } from "../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
@@ -11,8 +11,8 @@ interface CompareRowProps {
   metric: GradingMetric;
 }
 
-/** One item on one line: its rank in the sort, name and UPC, this week, and
- *  last week and last year beside their changes. */
+/** One item on one line: its rank in the sort, name and UPC, then this week,
+ *  last week and last year. */
 const CompareRow = ({ rank, row, metric }: CompareRowProps) => (
   <div className={`${COMPARE_COLS} h-7 px-1 border-b border-line_hair even:bg-row_stripe whitespace-nowrap text-[12px] text-content`}>
     <span className="text-[10.5px] font-semibold">{rank}</span>
@@ -24,9 +24,7 @@ const CompareRow = ({ rank, row, metric }: CompareRowProps) => (
       <span className="text-[10.5px]">{row.hasTY ? otherFig(row.tyNet, row.tyQty, metric) : ""}</span>
     </span>
     <span className="text-right">{mainFig(row.lwNet, row.lwQty, metric)}</span>
-    <span className={`text-right font-semibold ${pctTextClass(row.lwPct)}`}>{pctText(row.lwPct)}</span>
     <span className="text-right">{mainFig(row.lyNet, row.lyQty, metric)}</span>
-    <span className={`text-right font-semibold ${pctTextClass(row.lyPct)}`}>{pctText(row.lyPct)}</span>
   </div>
 );
 

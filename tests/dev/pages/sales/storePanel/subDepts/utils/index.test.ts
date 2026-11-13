@@ -3,6 +3,7 @@ import {
   isNarrowed,
   listItems,
   listLabel,
+  listNames,
   pickItems,
   sameFilter,
 } from "@/pages/sales/dev/storePanel/subDepts/utils";
@@ -46,6 +47,20 @@ describe("listLabel", () => {
     expect(listLabel({ sev: "critical", text: " pepsi ", active: "" })).toBe("Crit | pepsi");
     expect(listLabel({ sev: "healthy", text: "", active: "inactive" })).toBe("OK | Inactive");
     expect(listLabel({ sev: "all", text: "", active: "" })).toBe("All items");
+  });
+});
+
+describe("listNames", () => {
+  it("names two lists by what tells them apart", () => {
+    const crit = (text: string) => ({ sev: "critical" as const, text, active: "" });
+    expect(listNames(crit("pepsi"), crit("coke"))).toEqual(["pepsi", "coke"]);
+    expect(listNames(crit("pepsi"), { sev: "watch", text: "Pepsi", active: "" })).toEqual(["Crit", "Watch"]);
+    expect(listNames(crit("pepsi"), { sev: "watch", text: "coke", active: "" })).toEqual(["Crit pepsi", "Watch coke"]);
+  });
+
+  it("keeps a list's own name when all its filters are shared", () => {
+    expect(listNames({ sev: "critical", text: "", active: "" }, { sev: "critical", text: "pepsi", active: "" })).toEqual(["Crit", "pepsi"]);
+    expect(listNames({ sev: "all", text: "", active: "" }, { sev: "critical", text: "", active: "" })).toEqual(["All items", "Crit"]);
   });
 });
 

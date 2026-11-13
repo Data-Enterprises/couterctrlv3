@@ -1,12 +1,8 @@
 // Interfaces
-import type { GradedItem, Side } from "../../interfaces";
+import type { GradedItem, ListFilter } from "../../interfaces";
 
-/** How both lists are ranked: this week's figure, or the change against last
- *  week or last year, the biggest drop first. */
-export type CompareSort = "ty" | "vsLW" | "vsLY";
-
-/** One list handed to the panel: its name and its items. */
-export type CompareInput = { label: string; items: GradedItem[] };
+/** One list handed to the panel: its filters and its items. */
+export type CompareInput = { filter: ListFilter; items: GradedItem[] };
 
 /** An item's figures, with its changes on the grading measure (null = no
  *  sale to compare against). */
@@ -40,9 +36,14 @@ export type CompareTotals = {
   lyPct: number | null;
 };
 
-/** One list's line in a week box: the week's figure, the one behind it, and
- *  the change to this week (none on the this-week box). */
-export type WeekLine = { side: Side; value: string; other: string; pct: number | null };
-
-/** One of the three boxes at the top. */
-export type WeekBoxData = { label: string; dates: string; lines: WeekLine[]; gap: string };
+/** One week in the strip: who is ahead, each list's figure, and A's share
+ *  of the two (null with nothing sold that week). */
+export type WeekBar = {
+  label: string;
+  gap: string;
+  aFig: string;
+  bFig: string;
+  aShare: number | null;
+  aPct: string;
+  bPct: string;
+};

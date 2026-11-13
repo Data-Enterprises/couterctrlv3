@@ -5,28 +5,26 @@ import { useSalesCtx } from "../../../hooks";
 // Utils
 import { copyToClipboard } from "../../../../../../components-dev/utils";
 import { downloadCsv, rowsToCsv } from "../../../../../../utils/csvExport";
+import { listLabel, listNames, nextItemSort, sortItems } from "../utils";
 import {
-  BAND_COLS,
   SLIDE_OPEN,
   SLIDE_SHUT,
-  answerLine,
   compareFileName,
   csvHeaders,
   csvRows,
   rowOf,
-  sortRows,
   totalsOf,
-  weekBoxes,
+  weekBars,
 } from "./utils";
 
 // Interfaces
-import type { CompareInput, CompareSort } from "./interfaces";
+import type { ItemSortState } from "../interfaces";
+import type { CompareInput } from "./interfaces";
 
 // Components
 import CompareHeader from "./components/CompareHeader";
 import CompareList from "./components/CompareList";
-import CompareToolbar from "./components/CompareToolbar";
-import CompareWeekBox from "./components/CompareWeekBox";
+import CompareWeekBar from "./components/CompareWeekBar";
 
 interface CompareSlideOverProps {
   open: boolean;
@@ -36,36 +34,27 @@ interface CompareSlideOverProps {
   a: CompareInput;
   b: CompareInput;
   twDateLabel: string;
-  lwDateLabel: string;
-  lyDateLabel: string;
 }
 
 /**
  * Two lists of the open department side by side: the pinned list (A) against
- * the filters showing now (B). Slides in over the whole Sub depts tab (its
- * containing block is PopupSubDeptList); × slides it back to the list with the
- * filters as they were.
+ * the filters showing now (B). Slides in over the store panel's report tabs
+ * and their content (its containing block is StoreDetailPopup's tab area), so
+ * only the KPIs and day cards stay above it; × slides it back.
  */
-const CompareSlideOver = ({
-  open,
-  onClose,
-  onClearA,
-  deptName,
-  a,
-  b,
-  twDateLabel,
-  lwDateLabel,
-  lyDateLabel,
-}: CompareSlideOverProps) => {
+const CompareSlideOver = ({ open, onClose, onClearA, deptName, a, b, twDateLabel }: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
-  const [sort, setSort] = useState<CompareSort>("ty");
+  // One sort for both lists, set from either list's headings.
+  const [sort, setSort] = useState<ItemSortState>({ column: "ty", direction: "desc" });
 
+  const names = listNames(a.filter, b.filter);
+  const aLabel = listLabel(a.filter);
+  const bLabel = listLabel(b.filter);
   const aTotals = useMemo(() => totalsOf(a.items, metric), [a.items, metric]);
   const bTotals = useMemo(() => totalsOf(b.items, metric), [b.items, metric]);
-  const aRows = useMemo(() => sortRows(a.items.map((i) => rowOf(i, metric)), sort, metric), [a.items, sort, metric]);
-  const bRows = useMemo(() => sortRows(b.items.map((i) => rowOf(i, metric)), sort, metric), [b.items, sort, metric]);
-  const boxes = weekBoxes(aTotals, bTotals, metric, { tw: twDateLabel, lw: lwDateLabel, ly: lyDateLabel });
-  const storeName = selection?.storeName ?? "";
+  const aRows = useMemo(() => sortItems(a.items, sort).map((i) => rowOf(i, metric)), [a.items, sort, metric]);
+  const bRows = useMemo(() => sortItems(b.items, sort).map((i) => rowOf(i, metric)), [b.items, sort, metric]);
+  const bars = weekBars(aTotals, bTotals, metric, names);
 
   // One sortable table: both lists in the panel's order, then their totals.
   const exportCsv = () =>
@@ -73,11 +62,11 @@ const CompareSlideOver = ({
       rowsToCsv(
         csvHeaders(metric),
         csvRows([
-          { side: "A", label: a.label, rows: aRows, totals: aTotals },
-          { side: "B", label: b.label, rows: bRows, totals: bTotals },
+          { side: "A", label: aLabel, rows: aRows, totals: aTotals },
+          { side: "B", label: bLabel, rows: bRows, totals: bTotals },
         ]),
       ),
-      compareFileName(storeName, deptName, twDateLabel),
+      compareFileName(selection?.storeName ?? "", deptName, twDateLabel),
     );
 
   return (
@@ -85,31 +74,41 @@ const CompareSlideOver = ({
       aria-hidden={!open}
       className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
-      <CompareHeader deptName={deptName} storeName={storeName} onClose={onClose} />
+      <CompareHeader
+        title={`Comparing ${names[0]} to ${names[1]}`}
+        canExport={aRows.length + bRows.length > 0}
+        onExport={exportCsv}
+        onClearA={onClearA}
+        onClose={onClose}
+      />
 
-      <div className={`${BAND_COLS} px-4 py-2.5 border-b border-line_hair flex-shrink-0`}>
-        <p className="self-center text-[13px] font-semibold text-content leading-snug">
-          {answerLine(aTotals, bTotals, metric)}
-        </p>
-        {boxes.map((box) => (
-          <CompareWeekBox key={box.label} label={box.label} dates={box.dates} lines={box.lines} gap={box.gap} />
+      <div className="grid grid-cols-3 gap-5 px-4 py-2 border-b border-line_hair flex-shrink-0">
+        {bars.map((bar) => (
+          <CompareWeekBar key={bar.label} bar={bar} />
         ))}
       </div>
 
-      <CompareToolbar
-        sort={sort}
-        onSort={setSort}
-        aCount={aRows.length}
-        bCount={bRows.length}
-        onCopyA={() => copyToClipboard(aRows.map((r) => r.upc))}
-        onCopyB={() => copyToClipboard(bRows.map((r) => r.upc))}
-        onExport={exportCsv}
-        onClearA={onClearA}
-      />
-
-      <div className="grid grid-cols-2 grid-rows-[minmax(0,1fr)] gap-5 px-4 pt-2 pb-2.5 flex-1 min-h-0">
-        <CompareList side="A" label={a.label} rows={aRows} totals={aTotals} sort={sort} metric={metric} />
-        <CompareList side="B" label={b.label} rows={bRows} totals={bTotals} sort={sort} metric={metric} />
+      <div className="grid grid-cols-2 grid-rows-[minmax(0,1fr)] gap-6 px-4 pt-2 pb-2.5 flex-1 min-h-0">
+        <CompareList
+          side="A"
+          label={aLabel}
+          rows={aRows}
+          totals={aTotals}
+          sort={sort}
+          onSort={(c) => setSort((prev) => nextItemSort(prev, c))}
+          onCopy={() => copyToClipboard(aRows.map((r) => r.upc))}
+          metric={metric}
+        />
+        <CompareList
+          side="B"
+          label={bLabel}
+          rows={bRows}
+          totals={bTotals}
+          sort={sort}
+          onSort={(c) => setSort((prev) => nextItemSort(prev, c))}
+          onCopy={() => copyToClipboard(bRows.map((r) => r.upc))}
+          metric={metric}
+        />
       </div>
     </div>
   );

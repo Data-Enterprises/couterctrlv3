@@ -475,6 +475,23 @@ export const listLabel = (f: ListFilter) => {
   return parts.length ? parts.join(" | ") : "All items";
 };
 
+/** Two lists named by what tells them apart: Crit + pepsi against Crit + coke
+ *  is "pepsi" and "coke"; a list whose filters are all shared keeps its own
+ *  name ("Crit" against "Crit pepsi"). */
+export const listNames = (a: ListFilter, b: ListFilter): [string, string] => {
+  const parts = (f: ListFilter) => [
+    SEV_SHORT[f.sev],
+    f.text.trim() || null,
+    f.active === "active" ? "Active" : f.active === "inactive" ? "Inactive" : null,
+  ];
+  const pa = parts(a);
+  const pb = parts(b);
+  const differs = (i: number) => (pa[i] ?? "").toLowerCase() !== (pb[i] ?? "").toLowerCase();
+  const name = (p: (string | null)[], f: ListFilter) =>
+    p.filter((v, i) => v && differs(i)).join(" ") || listLabel(f).replace(/ \| /g, " ");
+  return [name(pa, a), name(pb, b)];
+};
+
 /** True when two lists have the same filters. */
 export const sameFilter = (a: ListFilter, b: ListFilter) =>
   a.sev === b.sev && a.text.trim().toLowerCase() === b.text.trim().toLowerCase() && a.active === b.active;

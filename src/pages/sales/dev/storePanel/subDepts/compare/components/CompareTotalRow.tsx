@@ -1,5 +1,5 @@
 // Utils
-import { COMPARE_COLS, SIDE_EDGE, SIDE_TINT, mainFig, otherFig, pctText, pctTextClass } from "../utils";
+import { COMPARE_COLS, SIDE_EDGE, SIDE_TINT, mainFig, otherFig } from "../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
@@ -12,8 +12,8 @@ interface CompareTotalRowProps {
   metric: GradingMetric;
 }
 
-/** Under a list, outside its scroll so it always shows: the count, the three
- *  weeks and the list's two changes, in the rows' columns. */
+/** Under a list, outside its scroll so it always shows: the count and the
+ *  three weeks, in the rows' columns. */
 const CompareTotalRow = ({ side, totals, metric }: CompareTotalRowProps) => (
   <div
     className={`${COMPARE_COLS} flex-shrink-0 px-1 py-1.5 border-t-2 whitespace-nowrap text-[12px] text-content ${SIDE_EDGE[side]} ${SIDE_TINT[side]}`}
@@ -32,11 +32,9 @@ const CompareTotalRow = ({ side, totals, metric }: CompareTotalRowProps) => (
     <span className="text-right font-semibold">
       {totals.hasLW ? mainFig(totals.lwNet, totals.lwQty, metric) : "—"}
     </span>
-    <span className={`text-right font-bold ${pctTextClass(totals.lwPct)}`}>{pctText(totals.lwPct)}</span>
     <span className="text-right font-semibold">
       {totals.hasLY ? mainFig(totals.lyNet, totals.lyQty, metric) : "—"}
     </span>
-    <span className={`text-right font-bold ${pctTextClass(totals.lyPct)}`}>{pctText(totals.lyPct)}</span>
   </div>
 );
 

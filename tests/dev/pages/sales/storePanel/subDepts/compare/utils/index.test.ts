@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  answerLine,
   compareFileName,
   csvHeaders,
   csvRows,
   gapLine,
   rowOf,
-  sortRows,
   totalsOf,
-  weekBoxes,
+  weekBars,
 } from "@/pages/sales/dev/storePanel/subDepts/compare/utils";
 import type { GradedItem } from "@/pages/sales/dev/storePanel/subDepts/interfaces";
 
@@ -22,7 +20,6 @@ const item = (upc: string, ty: number, lw: number | null, ly: number | null, ove
 // Sums: A 174.04 / 336.07 / 439.00, B 241.30 / 318.75 / 287.10.
 const pepsi = [item("p1", 100, 200, 300), item("p2", 74.04, 136.07, 139)];
 const coke = [item("c1", 141.3, 218.75, 187.1), item("c2", 100, 100, 100)];
-const dates = { tw: "Nov 6 – Nov 12", lw: "Oct 30 – Nov 5", ly: "Nov 7 – Nov 13" };
 
 describe("totalsOf", () => {
   it("adds a list up and takes its changes on the total", () => {
@@ -46,53 +43,35 @@ describe("totalsOf", () => {
   });
 });
 
-describe("answerLine", () => {
-  it("says who sold more this week, and who led before", () => {
-    expect(answerLine(totalsOf(pepsi, "sales"), totalsOf(coke, "sales"), "sales")).toBe(
-      "B outsold A by $67.26 this week. Last week A led by $17.32, and last year by $151.90.",
-    );
-  });
+const names: [string, string] = ["pepsi", "coke"];
 
-  it("names each leader when they differ", () => {
-    const a = [item("a", 10, 20, 5)];
-    const b = [item("b", 20, 10, 30)];
-    expect(answerLine(totalsOf(a, "sales"), totalsOf(b, "sales"), "sales")).toBe(
-      "B outsold A by $10.00 this week. Last week A led by $10.00, and last year B led by $25.00.",
-    );
+describe("gapLine", () => {
+  it("names who is ahead this week, who led before, and level within a cent", () => {
+    expect(gapLine(5, 2, true, "sales", names)).toBe("pepsi ahead by $3.00");
+    expect(gapLine(2, 5, false, "sales", names)).toBe("coke led by $3.00");
+    expect(gapLine(2, 2.001, true, "sales", names)).toBe("Level");
   });
 
   it("speaks in units when grading on units", () => {
-    const a = [item("a", 10, 10, null)];
-    const b = [item("b", 30, 10, null)];
-    expect(answerLine(totalsOf(a, "qty"), totalsOf(b, "qty"), "qty")).toBe(
-      "B outsold A by 10 units this week. Last week they were level.",
-    );
+    expect(gapLine(10, 30, true, "qty", names)).toBe("coke ahead by 20 units");
   });
 });
 
-describe("gapLine", () => {
-  it("says ahead this week, led before, and level within a cent", () => {
-    expect(gapLine(5, 2, true, "sales")).toBe("A ahead by $3.00");
-    expect(gapLine(2, 5, false, "sales")).toBe("B led by $3.00");
-    expect(gapLine(2, 2.001, true, "sales")).toBe("Level");
-  });
-});
-
-describe("weekBoxes", () => {
-  it("gives each week both lists, their change to this week, and who is ahead", () => {
-    const [tw, lw, ly] = weekBoxes(totalsOf(pepsi, "sales"), totalsOf(coke, "sales"), "sales", dates);
-    expect(tw.lines.map((l) => [l.side, l.value, l.pct])).toEqual([["A", "$174.04", null], ["B", "$241.30", null]]);
-    expect(tw.gap).toBe("B ahead by $67.26");
-    expect(lw.lines[0].value).toBe("$336.07");
-    expect(lw.lines[0].pct).toBeCloseTo(-48.21, 2);
-    expect(lw.gap).toBe("A led by $17.32");
-    expect(ly.dates).toBe("Nov 7 – Nov 13");
+describe("weekBars", () => {
+  it("splits each week between the two lists, this week first, and says who is ahead", () => {
+    const [tw, lw, ly] = weekBars(totalsOf(pepsi, "sales"), totalsOf(coke, "sales"), "sales", names);
+    expect([tw.label, lw.label, ly.label]).toEqual(["This week", "Last week", "Last year"]);
+    expect([tw.aFig, tw.bFig, tw.aPct, tw.bPct]).toEqual(["$174.04", "$241.30", "42%", "58%"]);
+    expect(tw.gap).toBe("coke ahead by $67.26");
+    expect(lw.gap).toBe("pepsi led by $17.32");
+    expect(ly.gap).toBe("pepsi led by $151.90");
+    expect(tw.aShare).toBeCloseTo(41.9, 1);
   });
 
-  it("says when neither list sold that week", () => {
-    const [, lw] = weekBoxes(totalsOf([item("a", 1, null, 1)], "sales"), totalsOf([item("b", 1, null, 1)], "sales"), "sales", dates);
+  it("draws no split for a week neither list sold in", () => {
+    const [, lw] = weekBars(totalsOf([item("a", 1, null, 1)], "sales"), totalsOf([item("b", 1, null, 1)], "sales"), "sales", names);
+    expect(lw.aShare).toBeNull();
     expect(lw.gap).toBe("No sales last week");
-    expect(lw.lines[0].value).toBe("—");
   });
 });
 
@@ -130,18 +109,5 @@ describe("the export", () => {
     expect(compareFileName("018 - PLF LOUISVILLE KY", "Soft Drinks", "Nov 6 – Nov 12")).toBe(
       "018___PLF_LOUISVILLE_KY_Soft_Drinks_compare_Nov_6___Nov_12.csv",
     );
-  });
-});
-
-describe("sortRows", () => {
-  const rows = [item("a", 10, 20, null), item("b", 30, 31, 10), item("c", 0, 5, 5, { hasTY: false })].map((i) => rowOf(i, "sales"));
-
-  it("ranks this week biggest first, an item with no sale this week last", () => {
-    expect(sortRows(rows, "ty", "sales").map((r) => r.key)).toEqual(["b", "a", "c"]);
-  });
-
-  it("ranks a change biggest drop first, nothing to compare last", () => {
-    expect(sortRows(rows, "vsLW", "sales").map((r) => r.key)).toEqual(["c", "a", "b"]);
-    expect(sortRows(rows, "vsLY", "sales").map((r) => r.key)).toEqual(["c", "b", "a"]);
   });
 });

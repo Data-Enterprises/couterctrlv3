@@ -106,12 +106,12 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the comparison",
-          pre: "A panel slides over the whole Sub dept tab. The line at the top says which list sold more this week and which led last week and last year. Each box beside it is a week: both lists' figures, and how far each has moved to this week.",
-          see: "Both lists side by side under one sort, so a row reads across, with each list's total pinned under it. The × slides the panel back with your filters as they were.",
+          pre: "A panel slides over the report tabs, under the KPIs and day cards. Its header names the two lists. The strip under it splits this week, last week and last year between them, each half with its figure and share, and says which list is ahead.",
+          see: "Both lists side by side with this week, last week and last year, and each list's total pinned under it. Click TY, LW or LY in either list to sort both. The × slides the panel back with your filters as they were.",
         },
         {
           title: "Take it with you",
-          pre: "The bar above the lists copies either list's UPCs, or click",
+          pre: "Each list copies its own UPCs from its heading, or click",
           chip: "Export CSV",
           post: "for both lists and their totals in one file.",
           see: "The changes in the file are on the grading measure, which its headings name.",
