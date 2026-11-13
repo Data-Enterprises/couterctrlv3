@@ -1,6 +1,5 @@
 // Interfaces
 import type { AllOrder, ReceiverItemSearchReceiver, SubDeptMargin } from "../../../../../interfaces";
-import type { ReactNode } from "react";
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type {
   OrdersWave,
@@ -31,14 +30,6 @@ export type Col =
   | "received";
 
 export type FilterKind = "item" | "upc" | "vendor" | "cause";
-
-export interface Slide {
-  label: string;
-  /** Printed in the tab. A zero is worth saying — an empty deliveries list
-   *  is the finding, not a missing section. */
-  count?: number;
-  body: ReactNode;
-}
 
 /**
  * One order or invoice, and the department's lines on it.

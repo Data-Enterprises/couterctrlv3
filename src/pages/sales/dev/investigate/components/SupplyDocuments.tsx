@@ -14,7 +14,7 @@ import type { AllOrder } from "../../../../../interfaces";
 import type { DocLine, SupplyKind, SupplyRow } from "../interfaces";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../components/Carousel";
 import SupplySlide from "./SupplySlide";
 import UpcFilter from "./UpcFilter";
 

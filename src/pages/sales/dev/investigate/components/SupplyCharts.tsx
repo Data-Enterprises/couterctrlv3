@@ -5,7 +5,7 @@ import { Fragment } from "react";
 import type { Supply } from "../utils/investigationSteps";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../components/Carousel";
 import Timeline from "./Timeline";
 import SupplySideBySide from "./SupplySideBySide";
 
