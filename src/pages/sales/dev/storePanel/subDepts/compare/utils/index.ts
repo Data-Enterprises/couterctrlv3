@@ -192,3 +192,53 @@ export const weekBoxes = (
     past("ly", "vs last year", "last year", dates.ly),
   ];
 };
+
+/** The export's headings. The changes are on the grading measure. */
+export const csvHeaders = (metric: GradingMetric) => {
+  const on = metric === "qty" ? "units" : "sales";
+  return ["List", "UPC", "Item", "TY $", "TY units", "LW $", "LW units", `vs LW % (${on})`, "LY $", "LY units", `vs LY % (${on})`];
+};
+
+const dp2 = (v: number | null) => (v === null ? "" : v.toFixed(2));
+
+/** Units with the float noise of a sum taken off (87.02, not 87.02000000000001). */
+const qty3 = (v: number | null) => (v === null ? "" : Math.round(v * 1000) / 1000);
+
+/** The export's rows: every item of A then B, in the panel's order, then a
+ *  total for each list. */
+export const csvRows = (
+  lists: { side: Side; label: string; rows: CompareRowData[]; totals: CompareTotals }[],
+): (string | number)[][] => [
+  ...lists.flatMap((l) =>
+    l.rows.map((r) => [
+      `${l.side}: ${l.label}`,
+      r.upc,
+      r.desc,
+      r.hasTY ? dp2(r.tyNet) : "",
+      r.hasTY ? qty3(r.tyQty) : "",
+      dp2(r.lwNet),
+      qty3(r.lwQty),
+      dp2(r.lwPct),
+      dp2(r.lyNet),
+      qty3(r.lyQty),
+      dp2(r.lyPct),
+    ]),
+  ),
+  ...lists.map(({ side, label, totals: t }) => [
+    `${side}: ${label}`,
+    "",
+    `Total (${t.count} item${t.count === 1 ? "" : "s"})`,
+    dp2(t.tyNet),
+    qty3(t.tyQty),
+    t.hasLW ? dp2(t.lwNet) : "",
+    t.hasLW ? qty3(t.lwQty) : "",
+    dp2(t.lwPct),
+    t.hasLY ? dp2(t.lyNet) : "",
+    t.hasLY ? qty3(t.lyQty) : "",
+    dp2(t.lyPct),
+  ]),
+];
+
+/** The export's file name: store, department, "compare" and the week. */
+export const compareFileName = (store: string, dept: string, week: string) =>
+  `${[store, dept, "compare", week].map((s) => s.replace(/[^a-z0-9]/gi, "_")).join("_")}.csv`;

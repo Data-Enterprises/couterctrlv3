@@ -4,10 +4,14 @@ import { useSalesCtx } from "../../../hooks";
 
 // Utils
 import { copyToClipboard } from "../../../../../../components-dev/utils";
+import { downloadCsv, rowsToCsv } from "../../../../../../utils/csvExport";
 import {
   SLIDE_OPEN,
   SLIDE_SHUT,
   answerLine,
+  compareFileName,
+  csvHeaders,
+  csvRows,
   rowOf,
   sortRows,
   totalsOf,
@@ -60,13 +64,27 @@ const CompareSlideOver = ({
   const aRows = useMemo(() => sortRows(a.items.map((i) => rowOf(i, metric)), sort, metric), [a.items, sort, metric]);
   const bRows = useMemo(() => sortRows(b.items.map((i) => rowOf(i, metric)), sort, metric), [b.items, sort, metric]);
   const boxes = weekBoxes(aTotals, bTotals, metric, { tw: twDateLabel, lw: lwDateLabel, ly: lyDateLabel });
+  const storeName = selection?.storeName ?? "";
+
+  // One sortable table: both lists in the panel's order, then their totals.
+  const exportCsv = () =>
+    downloadCsv(
+      rowsToCsv(
+        csvHeaders(metric),
+        csvRows([
+          { side: "A", label: a.label, rows: aRows, totals: aTotals },
+          { side: "B", label: b.label, rows: bRows, totals: bTotals },
+        ]),
+      ),
+      compareFileName(storeName, deptName, twDateLabel),
+    );
 
   return (
     <div
       aria-hidden={!open}
       className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
-      <CompareHeader deptName={deptName} storeName={selection?.storeName ?? ""} onClose={onClose} />
+      <CompareHeader deptName={deptName} storeName={storeName} onClose={onClose} />
 
       <div className="flex flex-col gap-2 px-4 py-2.5 border-b border-line_hair flex-shrink-0">
         <p className="text-[13px] font-semibold text-content leading-snug">
@@ -91,6 +109,7 @@ const CompareSlideOver = ({
         bCount={bRows.length}
         onCopyA={() => copyToClipboard(aRows.map((r) => r.upc))}
         onCopyB={() => copyToClipboard(bRows.map((r) => r.upc))}
+        onExport={exportCsv}
         onClearA={onClearA}
       />
     </div>

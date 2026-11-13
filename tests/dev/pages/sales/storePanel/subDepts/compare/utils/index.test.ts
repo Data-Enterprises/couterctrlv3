@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   answerLine,
+  compareFileName,
+  csvHeaders,
+  csvRows,
   gapLine,
   rowOf,
   sortRows,
@@ -90,6 +93,43 @@ describe("weekBoxes", () => {
     const [, lw] = weekBoxes(totalsOf([item("a", 1, null, 1)], "sales"), totalsOf([item("b", 1, null, 1)], "sales"), "sales", dates);
     expect(lw.gap).toBe("No sales last week");
     expect(lw.lines[0].value).toBe("—");
+  });
+});
+
+describe("the export", () => {
+  it("names the measure its changes are on", () => {
+    expect(csvHeaders("sales")[7]).toBe("vs LW % (sales)");
+    expect(csvHeaders("qty")[10]).toBe("vs LY % (units)");
+  });
+
+  it("lists A then B in the panel's order, then a total for each", () => {
+    const rows = csvRows([
+      { side: "A", label: "Crit | pepsi", rows: pepsi.map((i) => rowOf(i, "sales")), totals: totalsOf(pepsi, "sales") },
+      { side: "B", label: "Crit | coke", rows: coke.map((i) => rowOf(i, "sales")), totals: totalsOf(coke, "sales") },
+    ]);
+    expect(rows.map((r) => [r[0], r[2]])).toEqual([
+      ["A: Crit | pepsi", "p1"],
+      ["A: Crit | pepsi", "p2"],
+      ["B: Crit | coke", "c1"],
+      ["B: Crit | coke", "c2"],
+      ["A: Crit | pepsi", "Total (2 items)"],
+      ["B: Crit | coke", "Total (2 items)"],
+    ]);
+    expect(rows[0]).toEqual(["A: Crit | pepsi", "p1", "p1", "100.00", 50, "200.00", 100, "-50.00", "300.00", 150, "-66.67"]);
+    expect(rows[4].slice(3)).toEqual(["174.04", 87.02, "336.07", 168.035, "-48.21", "439.00", 219.5, "-60.36"]);
+  });
+
+  it("leaves a blank, not a zero, where an item had no sale", () => {
+    const [row] = csvRows([
+      { side: "A", label: "All items", rows: [rowOf(item("x", 0, null, 5, { hasTY: false }), "sales")], totals: totalsOf([], "sales") },
+    ]);
+    expect(row.slice(3, 8)).toEqual(["", "", "", "", ""]);
+  });
+
+  it("names the file for the store, the department and the week", () => {
+    expect(compareFileName("018 - PLF LOUISVILLE KY", "Soft Drinks", "Nov 6 – Nov 12")).toBe(
+      "018___PLF_LOUISVILLE_KY_Soft_Drinks_compare_Nov_6___Nov_12.csv",
+    );
   });
 });
 
