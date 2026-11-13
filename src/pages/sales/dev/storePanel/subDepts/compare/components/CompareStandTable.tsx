@@ -18,6 +18,7 @@ const CompareStandTable = ({ rows, open, onOpen }: CompareStandTableProps) => {
   const lyOnly = rows.filter((r) => r.bucket === "lyOnly");
   return (
     <section>
+      <hr className="mt-3 border-line_field" />
       <CompareSheetCaption title="Change vs last week" cols={["Items", "$ vs LW"]} />
       <div>
         {recent.map((r) => (
@@ -25,6 +26,7 @@ const CompareStandTable = ({ rows, open, onOpen }: CompareStandTableProps) => {
         ))}
       </div>
 
+      <hr className="mt-3 border-line_field" />
       <CompareSheetCaption title="Not sold this week" cols={["Items", "LY sales"]} />
       <div>
         {lyOnly.map((r) => (

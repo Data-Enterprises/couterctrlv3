@@ -67,3 +67,6 @@ export type StandRow = { bucket: Bucket; label: string; cells: [StandCell, Stand
 
 /** An item in the open tab, tagged with its list. */
 export type BucketItem = { side: Side; row: CompareRowData };
+
+/** One list in the compare bar: "pepsi", "16 items", "13 not sold since LY". */
+export type BarList = { side: Side; name: string; items: string; gone: string };

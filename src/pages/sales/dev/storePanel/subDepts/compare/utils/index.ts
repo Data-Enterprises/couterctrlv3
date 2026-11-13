@@ -7,6 +7,7 @@ import type { GradedItem, Side } from "../../interfaces";
 import type {
   Bucket,
   BucketCell,
+  BarList,
   BucketItem,
   CompareRowData,
   CompareTotals,
@@ -212,15 +213,23 @@ export const pctText = (p: number) => `${p >= 0 ? "+" : "−"}${Math.abs(p).toFi
 /** A change's colour: direction, not a grade. */
 export const pctClass = (p: number) => (p < 0 ? "text-delta_negative_text" : "text-delta_positive_text");
 
-/** The compare bar's line: each list's size and how much of it has not sold
- *  since last year. */
-export const accountLine = (cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>], names: [string, string]) =>
-  ([0, 1] as const)
-    .map((i) => {
-      const n = soldCount(cells[i]) + cells[i].lyOnly.count;
-      return `${names[i]} ${n.toLocaleString()} item${n === 1 ? "" : "s"}, ${cells[i].lyOnly.count.toLocaleString()} not sold since last year`;
-    })
-    .join(" | ");
+/** The compare bar's two lists: each one's name, size, and how many of its
+ *  items have not sold since last year. */
+export const barLists = (
+  cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
+  names: [string, string],
+): [BarList, BarList] => {
+  const one = (i: 0 | 1): BarList => {
+    const n = soldCount(cells[i]) + cells[i].lyOnly.count;
+    return {
+      side: i === 0 ? "A" : "B",
+      name: names[i],
+      items: `${n.toLocaleString()} item${n === 1 ? "" : "s"}`,
+      gone: `${cells[i].lyOnly.count.toLocaleString()} not sold since LY`,
+    };
+  };
+  return [one(0), one(1)];
+};
 
 /** How many of a list's items sold this week or last: the four change rows. */
 export const soldCount = (c: Record<Bucket, BucketCell>) => c.more.count + c.less.count + c.new.count + c.stopped.count;

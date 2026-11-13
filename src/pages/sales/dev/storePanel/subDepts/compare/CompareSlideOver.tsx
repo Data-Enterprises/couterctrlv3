@@ -10,7 +10,7 @@ import {
   BUCKETS,
   SLIDE_OPEN,
   SLIDE_SHUT,
-  accountLine,
+  barLists,
   bucketCells,
   bucketHead,
   bucketItems,
@@ -98,7 +98,7 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
       className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-rail transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
       <CompareHeader
-        line={accountLine(cells, names)}
+        lists={barLists(cells, names)}
         canExport={aRows.length + bRows.length > 0}
         onExport={exportCsv}
         onClose={onClose}

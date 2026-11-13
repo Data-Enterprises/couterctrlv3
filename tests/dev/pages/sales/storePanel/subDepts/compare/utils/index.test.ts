@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  accountLine,
+  barLists,
   bucketCells,
   bucketHead,
   bucketItems,
@@ -105,11 +105,12 @@ describe("itemAmountClass", () => {
   });
 });
 
-describe("accountLine", () => {
-  it("gives each list's size and how much of it has not sold since last year", () => {
-    expect(accountLine(cells, ["pepsi", "coke"])).toBe(
-      "pepsi 6 items, 3 not sold since last year | coke 5 items, 0 not sold since last year",
-    );
+describe("barLists", () => {
+  it("gives each list's name, size and how much of it has not sold since last year", () => {
+    expect(barLists(cells, ["pepsi", "coke"])).toEqual([
+      { side: "A", name: "pepsi", items: "6 items", gone: "3 not sold since LY" },
+      { side: "B", name: "coke", items: "5 items", gone: "0 not sold since LY" },
+    ]);
   });
 });
 
