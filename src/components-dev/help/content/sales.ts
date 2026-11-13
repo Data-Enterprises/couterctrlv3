@@ -106,7 +106,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the comparison",
-          pre: "A panel slides over the report tabs, under the KPIs and day cards. Its Insight strip, like the other tabs', opens the verdict: the same or different problems, and how many of each list's items it covers. Under it, one sheet sets the two lists' columns side by side: sales, with this week's change in red or green; the items selling more, selling less, new this week and stopped this week, with their net against last week; and the items sold only last year.",
+          pre: "A panel slides over the report tabs, under the KPIs and day cards. On the left, one sheet sets the two lists' columns side by side: sales, with this week's change in red or green; the items selling more, selling less, new this week and stopped this week, with their change against last week; and the items sold only last year.",
           see: "The bucket behind each list's verdict is tinted. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
         },
         {

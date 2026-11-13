@@ -4,7 +4,6 @@ import { money, whole } from "../../utils";
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
 import type { GradedItem, Side } from "../../interfaces";
-import type { Severity } from "../../../../../../../utils/severity";
 import type {
   Bucket,
   BucketCell,
@@ -13,7 +12,6 @@ import type {
   CompareTotals,
   SalesRow,
   StandRow,
-  Verdict,
 } from "../interfaces";
 
 /** The drawer in and out of view: off to the right, and unreachable, when shut. */
@@ -192,47 +190,6 @@ export const signed = (v: number, metric: GradingMetric) =>
 /** A figure on the grading measure, no sign. */
 const plain = (v: number, metric: GradingMetric) => (metric === "qty" ? `${whole(v)} units` : money(v));
 
-/** One list's half of the verdict: how many of its items, doing what. */
-const sideSays = (c: Record<Bucket, BucketCell>, count: number) => {
-  const p = problemOf(c);
-  if (p === "lyOnly") return { n: `${c.lyOnly.count} of ${count}`, says: "gone since last year" };
-  if (p === "recent") {
-    const says = c.less.count && c.stopped.count ? "sold less or stopped" : c.less.count ? "selling less" : "stopped this week";
-    return { n: `${c.less.count + c.stopped.count} of ${count}`, says };
-  }
-  return c.more.count ? { n: `${c.more.count} of ${count}`, says: "selling more" } : { n: "", says: "holding up" };
-};
-
-/** The verdict: whether the two lists have the same problem, and each one's,
- *  with how many of its items it covers. */
-export const verdictOf = (
-  cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
-  counts: [number, number],
-): Verdict => {
-  const [pa, pb] = [problemOf(cells[0]), problemOf(cells[1])];
-  return {
-    lead: pa === pb ? (pa ? "Same problem" : "Both holding up") : "Different problems",
-    sides: [sideSays(cells[0], counts[0]), sideSays(cells[1], counts[1])],
-  };
-};
-
-/** The verdict as the Insight strip the other Sales tabs use: named for the two
- *  lists, its line saying each one's problem, graded watch when either list is
- *  losing ground. */
-export const verdictCta = (v: Verdict, names: [string, string]) => {
-  const half = (i: 0 | 1) => `${names[i]}: ${[v.sides[i].n, v.sides[i].says].filter(Boolean).join(" ")}`;
-  return {
-    name: `${names[0]} vs ${names[1]}`,
-    cta: {
-      text: `${v.lead}. ${half(0)} | ${half(1)}.`,
-      severity: (v.lead === "Both holding up" ? "healthy" : "watch") as Severity,
-    },
-  };
-};
-
-/** Each list's change against last week: its four this-week buckets added up. */
-export const netVsLw = (c: Record<Bucket, BucketCell>) => c.more.amount + c.less.amount + c.new.amount + c.stopped.amount;
-
 /** The line over the carousel: how many items the open bucket holds, and what they did. */
 export const bucketHead = (b: Bucket, n: number) => {
   const items = `${n} item${n === 1 ? "" : "s"}`;
@@ -255,8 +212,7 @@ export const pctText = (p: number) => `${p >= 0 ? "+" : "−"}${Math.abs(p).toFi
 /** A change's colour: direction, not a grade. */
 export const pctClass = (p: number) => (p < 0 ? "text-delta_negative_text" : "text-delta_positive_text");
 
-/** How many of a list's items sold this week or last: the four rows the net
- *  line adds up. */
+/** How many of a list's items sold this week or last: the four change rows. */
 export const soldCount = (c: Record<Bucket, BucketCell>) => c.more.count + c.less.count + c.new.count + c.stopped.count;
 
 /** The sales chart: this week, then last week and last year with each list's

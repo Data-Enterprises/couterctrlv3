@@ -9,7 +9,6 @@ import {
   csvRows,
   hotBuckets,
   leadBucket,
-  netVsLw,
   pctText,
   problemOf,
   rowOf,
@@ -17,8 +16,6 @@ import {
   soldCount,
   standRows,
   totalsOf,
-  verdictCta,
-  verdictOf,
 } from "@/pages/sales/dev/storePanel/subDepts/compare/utils";
 import type { GradedItem } from "@/pages/sales/dev/storePanel/subDepts/interfaces";
 
@@ -78,49 +75,13 @@ describe("bucketCells", () => {
   });
 });
 
-describe("the verdict", () => {
+describe("a list's problem", () => {
   it("finds each list's problem: gone since last year, or selling less and stopping", () => {
     expect(problemOf(cells[0])).toBe("lyOnly");
     expect(problemOf(cells[1])).toBe("recent");
     expect(hotBuckets(cells[0])).toEqual(["lyOnly"]);
     expect(hotBuckets(cells[1])).toEqual(["less", "stopped"]);
     expect(leadBucket(cells[1])).toBe("less");
-  });
-
-  it("says when the two lists have different problems, with how many items each covers", () => {
-    expect(verdictOf(cells, [6, 5])).toEqual({
-      lead: "Different problems",
-      sides: [
-        { n: "3 of 6", says: "gone since last year" },
-        { n: "3 of 5", says: "sold less or stopped" },
-      ],
-    });
-  });
-
-  it("says when they share one, or when neither is losing ground", () => {
-    expect(verdictOf([cells[1], cells[1]], [5, 5]).lead).toBe("Same problem");
-    const up = bucketCells([rowOf(item("u", 20, 10, 5), "sales")]);
-    expect(verdictOf([up, up], [1, 1])).toEqual({
-      lead: "Both holding up",
-      sides: [{ n: "1 of 1", says: "selling more" }, { n: "1 of 1", says: "selling more" }],
-    });
-  });
-});
-
-describe("verdictCta", () => {
-  it("reads as the other tabs' Insight strip, graded watch while a list is losing ground", () => {
-    expect(verdictCta(verdictOf(cells, [6, 5]), ["pepsi", "coke"])).toEqual({
-      name: "pepsi vs coke",
-      cta: {
-        text: "Different problems. pepsi: 3 of 6 gone since last year | coke: 3 of 5 sold less or stopped.",
-        severity: "watch",
-      },
-    });
-  });
-
-  it("goes healthy when both lists are holding up", () => {
-    const up = bucketCells([rowOf(item("u", 20, 10, 5), "sales")]);
-    expect(verdictCta(verdictOf([up, up], [1, 1]), ["pepsi", "coke"]).cta.severity).toBe("healthy");
   });
 });
 
@@ -134,11 +95,7 @@ describe("pctText and soldCount", () => {
   });
 });
 
-describe("netVsLw and bucketHead", () => {
-  it("adds the four this-week buckets up to the list's change against last week", () => {
-    expect(netVsLw(cells[1])).toBeCloseTo(totals[1].tyNet - totals[1].lwNet, 6);
-  });
-
+describe("bucketHead", () => {
   it("says what the open bucket holds", () => {
     expect(bucketHead("lyOnly", 18)).toBe("18 items sold last year and nothing this week.");
     expect(bucketHead("new", 1)).toBe("1 item new this week.");

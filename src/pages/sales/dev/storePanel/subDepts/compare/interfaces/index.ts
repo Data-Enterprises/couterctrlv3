@@ -47,12 +47,6 @@ export type CompareTotals = {
   lyPct: number | null;
 };
 
-/** One list's half of the verdict: "13 of 16", "sold last year, nothing this week". */
-export type VerdictSide = { n: string; says: string };
-
-/** The verdict at the top: a lead ("Different problems") and each list's half. */
-export type Verdict = { lead: string; sides: [VerdictSide, VerdictSide] };
-
 /** One list's week in the sales chart: its figure as text and as a number
  *  (for the bar), and its change to this week (null on the this-week row). */
 export type SalesCell = { fig: string; value: number; pct: number | null };

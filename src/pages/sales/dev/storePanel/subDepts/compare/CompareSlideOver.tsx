@@ -17,15 +17,11 @@ import {
   csvHeaders,
   csvRows,
   leadBucket,
-  netVsLw,
   rowOf,
   salesRows,
-  signed,
   soldCount,
   standRows,
   totalsOf,
-  verdictCta,
-  verdictOf,
 } from "./utils";
 
 // Interfaces
@@ -39,7 +35,6 @@ import CompareHeader from "./components/CompareHeader";
 import CompareSalesTable from "./components/CompareSalesTable";
 import CompareSheetHead from "./components/CompareSheetHead";
 import CompareStandTable from "./components/CompareStandTable";
-import InsightToggle from "../../../components/InsightToggle";
 
 interface CompareSlideOverProps {
   open: boolean;
@@ -53,9 +48,9 @@ interface CompareSlideOverProps {
 /**
  * A panel over the store panel's report tabs and their content that diagnoses
  * two lists of the open department: the pinned list (A) against the filters
- * showing now (B). The Insight strip carries the verdict; on the left one sheet
- * with each list's columns side by side (sales, the buckets and their net); on
- * the right, each bucket's items in the carousel. Flat, no cards.
+ * showing now (B). On the left one sheet with each list's columns side by side
+ * (sales and the buckets); on the right, each bucket's items in the
+ * carousel. Flat, no cards.
  */
 const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
@@ -67,10 +62,6 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
   const totals: [CompareTotals, CompareTotals] = [totalsOf(a.items, metric), totalsOf(b.items, metric)];
   const counts: [number, number] = [totals[0].count, totals[1].count];
   const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
-  const nets = [netVsLw(cells[0]), netVsLw(cells[1])];
-  const insight = verdictCta(verdictOf(cells, counts), names);
-  // The insight line opens over the panel, as on the other tabs; it starts shut.
-  const [insightOpen, setInsightOpen] = useState(false);
 
   // Opens on A's problem (else B's), and again for a new pair.
   // Keyed on the labels: the filter objects are rebuilt on every render.
@@ -115,13 +106,6 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
         onExport={exportCsv}
         onClose={onClose}
       />
-      <InsightToggle
-        name={insight.name}
-        cta={insight.cta}
-        open={insightOpen}
-        onToggle={() => setInsightOpen((v) => !v)}
-      />
-
       <div className="grid grid-cols-[480px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
         <section className="cc-scroll flex flex-col px-4 pt-4 pb-4 border-r border-line_hair">
@@ -129,10 +113,6 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} />
           <CompareStandTable
             rows={standRows(cells, metric)}
-            net={[
-              { count: soldCount(cells[0]), text: signed(nets[0], metric), down: nets[0] < 0 },
-              { count: soldCount(cells[1]), text: signed(nets[1], metric), down: nets[1] < 0 },
-            ]}
             sums={[
               { sold: soldCount(cells[0]), ly: cells[0].lyOnly.count },
               { sold: soldCount(cells[1]), ly: cells[1].lyOnly.count },
