@@ -12,33 +12,31 @@ interface CompareTotalRowProps {
   metric: GradingMetric;
 }
 
-/** Under a list, outside its scroll so it always shows: the count, this
- *  week's total and the list's two changes. */
+/** Under a list, outside its scroll so it always shows: the count, the three
+ *  weeks and the list's two changes, in the rows' columns. */
 const CompareTotalRow = ({ side, totals, metric }: CompareTotalRowProps) => (
   <div
-    className={`${COMPARE_COLS} flex-shrink-0 px-1 py-1.5 border-t-2 whitespace-nowrap ${SIDE_EDGE[side]} ${SIDE_TINT[side]}`}
+    className={`${COMPARE_COLS} flex-shrink-0 px-1 py-1.5 border-t-2 whitespace-nowrap text-[12px] text-content ${SIDE_EDGE[side]} ${SIDE_TINT[side]}`}
   >
     <span />
-    <span className="min-w-0 flex flex-col">
-      <span className="text-[12px] font-bold text-content">Total</span>
-      <span className="truncate text-[10.5px] font-medium text-content">
+    <span className="min-w-0 truncate">
+      <span className="font-bold">Total</span>{" "}
+      <span className="text-[10.5px] font-medium">
         {totals.count.toLocaleString()} item{totals.count === 1 ? "" : "s"}
       </span>
     </span>
-    <span className="flex flex-col items-end">
-      <span className="text-[12.5px] font-bold text-content">
-        {mainFig(totals.tyNet, totals.tyQty, metric)}
-      </span>
-      <span className="text-[10.5px] font-medium text-content">
-        {otherFig(totals.tyNet, totals.tyQty, metric)}
-      </span>
+    <span className="text-right">
+      <span className="font-bold">{mainFig(totals.tyNet, totals.tyQty, metric)}</span>{" "}
+      <span className="text-[10.5px]">{otherFig(totals.tyNet, totals.tyQty, metric)}</span>
     </span>
-    <span className={`text-right text-[12px] font-bold ${pctTextClass(totals.lwPct)}`}>
-      {pctText(totals.lwPct)}
+    <span className="text-right font-semibold">
+      {totals.hasLW ? mainFig(totals.lwNet, totals.lwQty, metric) : "—"}
     </span>
-    <span className={`text-right text-[12px] font-bold ${pctTextClass(totals.lyPct)}`}>
-      {pctText(totals.lyPct)}
+    <span className={`text-right font-bold ${pctTextClass(totals.lwPct)}`}>{pctText(totals.lwPct)}</span>
+    <span className="text-right font-semibold">
+      {totals.hasLY ? mainFig(totals.lyNet, totals.lyQty, metric) : "—"}
     </span>
+    <span className={`text-right font-bold ${pctTextClass(totals.lyPct)}`}>{pctText(totals.lyPct)}</span>
   </div>
 );
 

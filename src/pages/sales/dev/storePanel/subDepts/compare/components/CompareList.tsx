@@ -4,24 +4,25 @@ import { COMPARE_COLS, SIDE_EDGE } from "../utils";
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
 import type { Side } from "../../interfaces";
-import type { CompareRowData, CompareTotals } from "../interfaces";
+import type { CompareRowData, CompareSort, CompareTotals } from "../interfaces";
 
 // Components
+import ListBadge from "../../components/ListBadge";
 import CompareRow from "./CompareRow";
 import CompareTotalRow from "./CompareTotalRow";
-import ListBadge from "../../components/ListBadge";
 
 interface CompareListProps {
   side: Side;
   label: string;
   rows: CompareRowData[];
   totals: CompareTotals;
+  sort: CompareSort;
   metric: GradingMetric;
 }
 
 /** One list: its name, its items in the shared sort (they scroll), and its
  *  totals pinned underneath. */
-const CompareList = ({ side, label, rows, totals, metric }: CompareListProps) => (
+const CompareList = ({ side, label, rows, totals, sort, metric }: CompareListProps) => (
   <div className="flex flex-col min-h-0 min-w-0">
     <div className={`flex items-center gap-1.5 pb-1 border-b-2 flex-shrink-0 ${SIDE_EDGE[side]}`}>
       <ListBadge side={side} />
@@ -29,12 +30,14 @@ const CompareList = ({ side, label, rows, totals, metric }: CompareListProps) =>
         {label} | {totals.count.toLocaleString()} item{totals.count === 1 ? "" : "s"}
       </span>
     </div>
-    <div className={`${COMPARE_COLS} px-1 py-1 flex-shrink-0`}>
+    <div className={`${COMPARE_COLS} px-1 pt-1 pb-0.5 flex-shrink-0`}>
       <span />
       <span className="cc-caps text-[10px]">Item</span>
-      <span className="cc-caps text-[10px] text-right">TY</span>
-      <span className="cc-caps text-[10px] text-right">vs LW</span>
-      <span className="cc-caps text-[10px] text-right">vs LY</span>
+      <span className="cc-caps text-[10px] text-right">TY{sort === "ty" ? " ▾" : ""}</span>
+      <span className="cc-caps text-[10px] text-right">LW</span>
+      <span className="cc-caps text-[10px] text-right">vs LW{sort === "vsLW" ? " ▾" : ""}</span>
+      <span className="cc-caps text-[10px] text-right">LY</span>
+      <span className="cc-caps text-[10px] text-right">vs LY{sort === "vsLY" ? " ▾" : ""}</span>
     </div>
     <div className="cc-scroll">
       {rows.length ? (

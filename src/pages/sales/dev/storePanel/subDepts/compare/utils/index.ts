@@ -7,8 +7,12 @@ import type { GradingMetric } from "../../../../../../../features/dev/devSalesLe
 import type { GradedItem, Side } from "../../interfaces";
 import type { CompareRowData, CompareSort, CompareTotals, WeekBoxData } from "../interfaces";
 
-/** A list row: rank, item, this week, vs LW, vs LY. */
-export const COMPARE_COLS = "grid grid-cols-[16px_minmax(0,1fr)_64px_58px_58px] gap-1.5 items-center";
+/** A list row: rank, item and UPC, this week, LW, vs LW, LY, vs LY. */
+export const COMPARE_COLS =
+  "grid grid-cols-[18px_minmax(0,1fr)_96px_68px_64px_68px_64px] gap-2 items-center";
+
+/** The top band: the answer, then a box per week. */
+export const BAND_COLS = "grid grid-cols-[minmax(200px,1fr)_repeat(3,minmax(0,250px))] gap-2.5";
 
 /** A list's rule and its totals row's fill, in its own colour. */
 export const SIDE_EDGE: Record<Side, string> = { A: "border-brand_navy", B: "border-brand_slate" };

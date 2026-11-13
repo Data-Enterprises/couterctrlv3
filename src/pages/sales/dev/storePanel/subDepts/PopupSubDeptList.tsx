@@ -97,8 +97,9 @@ const PopupSubDeptList = ({
       ? (rows.find((r) => r.id === selectedSubDeptId) ?? null)
       : null;
 
+  // Positioned so the compare panel (drawn in the detail panel) covers the whole tab.
   return (
-    <div className="flex h-full">
+    <div className="relative flex h-full overflow-hidden">
       <SubDeptSignalList
         rows={rows}
         coverage={coverage}

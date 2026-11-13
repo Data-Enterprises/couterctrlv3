@@ -146,7 +146,7 @@ const SubDeptDetailPanel = ({
   const cta = selected ? getCta(selected, coverage, threshold, gradingMetric) : null;
 
   return (
-    <div className="relative flex flex-col flex-1 min-w-0 overflow-hidden">
+    <div className="flex flex-col flex-1 min-w-0">
       {selected && cta && (
         <InsightToggle
           name={selected.desc}
@@ -219,6 +219,7 @@ const SubDeptDetailPanel = ({
         </div>
       )}
 
+      {/* Not positioned itself, so the panel covers the whole tab (PopupSubDeptList). */}
       {selected && pinned && (
         <CompareSlideOver
           open={compareOpen}

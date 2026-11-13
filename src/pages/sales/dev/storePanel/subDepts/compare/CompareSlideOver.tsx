@@ -6,6 +6,7 @@ import { useSalesCtx } from "../../../hooks";
 import { copyToClipboard } from "../../../../../../components-dev/utils";
 import { downloadCsv, rowsToCsv } from "../../../../../../utils/csvExport";
 import {
+  BAND_COLS,
   SLIDE_OPEN,
   SLIDE_SHUT,
   answerLine,
@@ -22,10 +23,9 @@ import {
 import type { CompareInput, CompareSort } from "./interfaces";
 
 // Components
-import CompareFooter from "./components/CompareFooter";
 import CompareHeader from "./components/CompareHeader";
 import CompareList from "./components/CompareList";
-import CompareSortBar from "./components/CompareSortBar";
+import CompareToolbar from "./components/CompareToolbar";
 import CompareWeekBox from "./components/CompareWeekBox";
 
 interface CompareSlideOverProps {
@@ -42,8 +42,9 @@ interface CompareSlideOverProps {
 
 /**
  * Two lists of the open department side by side: the pinned list (A) against
- * the filters showing now (B). Slides in over the whole right section; × slides
- * it back to the list with the filters as they were.
+ * the filters showing now (B). Slides in over the whole Sub depts tab (its
+ * containing block is PopupSubDeptList); × slides it back to the list with the
+ * filters as they were.
  */
 const CompareSlideOver = ({
   open,
@@ -86,25 +87,18 @@ const CompareSlideOver = ({
     >
       <CompareHeader deptName={deptName} storeName={storeName} onClose={onClose} />
 
-      <div className="flex flex-col gap-2 px-4 py-2.5 border-b border-line_hair flex-shrink-0">
-        <p className="text-[13px] font-semibold text-content leading-snug">
+      <div className={`${BAND_COLS} px-4 py-2.5 border-b border-line_hair flex-shrink-0`}>
+        <p className="self-center text-[13px] font-semibold text-content leading-snug">
           {answerLine(aTotals, bTotals, metric)}
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {boxes.map((box) => (
-            <CompareWeekBox key={box.label} label={box.label} dates={box.dates} lines={box.lines} gap={box.gap} />
-          ))}
-        </div>
+        {boxes.map((box) => (
+          <CompareWeekBox key={box.label} label={box.label} dates={box.dates} lines={box.lines} gap={box.gap} />
+        ))}
       </div>
 
-      <CompareSortBar sort={sort} onSort={setSort} />
-
-      <div className="grid grid-cols-2 grid-rows-[minmax(0,1fr)] gap-4 px-4 py-2 flex-1 min-h-0">
-        <CompareList side="A" label={a.label} rows={aRows} totals={aTotals} metric={metric} />
-        <CompareList side="B" label={b.label} rows={bRows} totals={bTotals} metric={metric} />
-      </div>
-
-      <CompareFooter
+      <CompareToolbar
+        sort={sort}
+        onSort={setSort}
         aCount={aRows.length}
         bCount={bRows.length}
         onCopyA={() => copyToClipboard(aRows.map((r) => r.upc))}
@@ -112,6 +106,11 @@ const CompareSlideOver = ({
         onExport={exportCsv}
         onClearA={onClearA}
       />
+
+      <div className="grid grid-cols-2 grid-rows-[minmax(0,1fr)] gap-5 px-4 pt-2 pb-2.5 flex-1 min-h-0">
+        <CompareList side="A" label={a.label} rows={aRows} totals={aTotals} sort={sort} metric={metric} />
+        <CompareList side="B" label={b.label} rows={bRows} totals={bTotals} sort={sort} metric={metric} />
+      </div>
     </div>
   );
 };

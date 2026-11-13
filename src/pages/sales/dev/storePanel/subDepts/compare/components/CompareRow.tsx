@@ -11,28 +11,22 @@ interface CompareRowProps {
   metric: GradingMetric;
 }
 
-/** One item: its rank in the sort, this week, and its two changes. */
+/** One item on one line: its rank in the sort, name and UPC, this week, and
+ *  last week and last year beside their changes. */
 const CompareRow = ({ rank, row, metric }: CompareRowProps) => (
-  <div className={`${COMPARE_COLS} px-1 py-1 border-b border-line_hair even:bg-row_stripe whitespace-nowrap`}>
-    <span className="text-[10.5px] font-semibold text-content">{rank}</span>
-    <span className="min-w-0 flex flex-col" title={`${row.desc} | ${row.upc}`}>
-      <span className="truncate text-[12px] font-medium text-content">{row.desc}</span>
-      <span className="truncate text-[10.5px] text-content">{row.upc}</span>
+  <div className={`${COMPARE_COLS} h-7 px-1 border-b border-line_hair even:bg-row_stripe whitespace-nowrap text-[12px] text-content`}>
+    <span className="text-[10.5px] font-semibold">{rank}</span>
+    <span className="min-w-0 truncate" title={`${row.desc} | ${row.upc}`}>
+      <span className="font-medium">{row.desc}</span> <span className="text-[10.5px]">{row.upc}</span>
     </span>
-    <span className="flex flex-col items-end">
-      <span className="text-[12px] font-semibold text-content">
-        {row.hasTY ? mainFig(row.tyNet, row.tyQty, metric) : "—"}
-      </span>
-      <span className="text-[10.5px] text-content">
-        {row.hasTY ? otherFig(row.tyNet, row.tyQty, metric) : ""}
-      </span>
+    <span className="text-right">
+      <span className="font-semibold">{row.hasTY ? mainFig(row.tyNet, row.tyQty, metric) : "—"}</span>{" "}
+      <span className="text-[10.5px]">{row.hasTY ? otherFig(row.tyNet, row.tyQty, metric) : ""}</span>
     </span>
-    <span className={`text-right text-[12px] font-semibold ${pctTextClass(row.lwPct)}`}>
-      {pctText(row.lwPct)}
-    </span>
-    <span className={`text-right text-[12px] font-semibold ${pctTextClass(row.lyPct)}`}>
-      {pctText(row.lyPct)}
-    </span>
+    <span className="text-right">{mainFig(row.lwNet, row.lwQty, metric)}</span>
+    <span className={`text-right font-semibold ${pctTextClass(row.lwPct)}`}>{pctText(row.lwPct)}</span>
+    <span className="text-right">{mainFig(row.lyNet, row.lyQty, metric)}</span>
+    <span className={`text-right font-semibold ${pctTextClass(row.lyPct)}`}>{pctText(row.lyPct)}</span>
   </div>
 );
 
