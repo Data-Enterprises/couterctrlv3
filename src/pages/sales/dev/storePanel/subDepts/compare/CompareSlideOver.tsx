@@ -17,7 +17,6 @@ import {
   csvRows,
   driverOf,
   footLine,
-  listMeta,
   rowOf,
   salesRows,
   standRows,
@@ -62,7 +61,7 @@ const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, 
   const bRows = useMemo(() => b.items.map((i) => rowOf(i, metric)), [b.items, metric]);
   const totals: [CompareTotals, CompareTotals] = [totalsOf(a.items, metric), totalsOf(b.items, metric)];
   const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
-  const verdict = verdictOf(names, cells, totals, metric);
+  const verdict = verdictOf(cells);
 
   // Opens on the bucket behind A's verdict (else B's), and again for a new pair.
   // Keyed on the labels: the filter objects are rebuilt on every render.
@@ -103,21 +102,22 @@ const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, 
         <CompareHeader
           deptName={deptName}
           names={names}
-          metas={[listMeta(labels[0], names[0], totals[0].count), listMeta(labels[1], names[1], totals[1].count)]}
+          counts={[totals[0].count, totals[1].count]}
           canExport={aRows.length + bRows.length > 0}
           onExport={exportCsv}
           onClose={onClose}
         />
 
-        <div className="flex flex-col flex-1 min-h-0 gap-4 px-[18px] pt-4">
-          <CompareVerdict verdict={verdict} />
+        {/* Scrolls when the drawer is short, so the footer never covers the tabs. */}
+        <div className="cc-scroll flex flex-col gap-3 px-4 pt-3 pb-1">
+          <CompareVerdict verdict={verdict} names={names} />
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} names={names} threshold={threshold} />
           <CompareStandTable rows={standRows(cells, [totals[0].count, totals[1].count], metric)} />
           <CompareBucketItems counts={counts} open={tab} onOpen={setTab} items={items} metric={metric} />
         </div>
 
         <CompareFooter
-          line={footLine(items, names, tab)}
+          line={footLine(items, names)}
           count={items.length}
           onCopy={() => copyToClipboard(items.map((i) => i.row.upc))}
           onShow={() => onShow(`${tabName} | ${names[0]} and ${names[1]}`, items.map((i) => i.row.upc))}

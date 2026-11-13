@@ -8,7 +8,6 @@ import {
   csvRows,
   driverOf,
   footLine,
-  listMeta,
   rowOf,
   salesRows,
   standRows,
@@ -80,27 +79,24 @@ describe("the verdict", () => {
     expect(driverOf(cells[1])).toBe("less");
   });
 
-  it("says when the two lists have different problems, and why", () => {
-    const v = verdictOf(names, cells, totals, "sales");
-    expect(v.lead).toBe("Different problems.");
-    expect(v.text).toBe(
-      "Pepsi is mostly items that sold last year and not at all this week. Coke is still selling, just less of it.",
-    );
-    expect(v.details[0]).toBe("3 of 6 sold last year only, worth $69.54 of a $195.11 drop vs LY");
-    expect(v.details[1]).toBe("2 of 5 selling less (−$97.35), only partly offset by 1 selling more (+$8.33)");
+  it("says when the two lists have different problems, and each one's in a few words", () => {
+    expect(verdictOf(cells)).toEqual({
+      lead: "Different problems.",
+      phrases: ["sold last year, not this week", "selling less"],
+    });
   });
 
   it("says when they share one, or when neither is losing ground", () => {
-    expect(verdictOf(names, [cells[1], cells[1]], [totals[1], totals[1]], "sales").lead).toBe("Same problem.");
+    expect(verdictOf([cells[1], cells[1]]).lead).toBe("Same problem.");
     const up = bucketCells([rowOf(item("u", 20, 10, 5), "sales")]);
-    expect(verdictOf(names, [up, up], [totals[0], totals[0]], "sales").lead).toBe("Both holding up.");
+    expect(verdictOf([up, up])).toEqual({ lead: "Both holding up.", phrases: ["holding up", "holding up"] });
   });
 });
 
 describe("standRows", () => {
   it("gives each bucket both lists' count, what they did and their share, tinting each verdict's bucket", () => {
     const rows = standRows(cells, [6, 5], "sales");
-    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Sold last year only"]);
+    expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Last year only"]);
     expect(rows[4].cells[0]).toMatchObject({ count: 3, amount: "$69.54 LY", tone: "plain", share: 50, hot: true });
     expect(rows[1].cells[1]).toMatchObject({ count: 2, amount: "−$97.35", tone: "down", hot: true });
     expect(rows[2].cells[0]).toMatchObject({ count: 0, amount: "", hot: false });
@@ -120,17 +116,8 @@ describe("the open tab", () => {
   it("lists a bucket's items from both lists, biggest first, and says what it holds", () => {
     const items = bucketItems(rowsA, rowsB, "less");
     expect(items.map((i) => [i.side, i.row.key])).toEqual([["B", "c1"], ["A", "p3"], ["B", "c3"], ["A", "p1"]]);
-    expect(footLine(items, names, "less")).toBe("4 items | 2 pepsi, 2 coke | biggest change first");
-    expect(footLine(bucketItems(rowsA, rowsB, "lyOnly"), names, "lyOnly")).toBe(
-      "3 items | 3 pepsi, 0 coke | biggest last-year sales first",
-    );
-  });
-});
-
-describe("listMeta", () => {
-  it("gives the count and the filters the name leaves out", () => {
-    expect(listMeta("Crit | pepsi", "pepsi", 16)).toBe("16 items | Crit");
-    expect(listMeta("All items", "All items", 1)).toBe("1 item");
+    expect(footLine(items, names)).toBe("2 pepsi | 2 coke");
+    expect(footLine(bucketItems(rowsA, rowsB, "lyOnly"), names)).toBe("3 pepsi | 0 coke");
   });
 });
 
@@ -146,7 +133,7 @@ describe("the export", () => {
       { side: "B", label: "Crit | coke", rows: rowsB, totals: totals[1] },
     ]);
     expect(rows).toHaveLength(13);
-    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Sold last year only", "", "", "", "", ""]);
+    expect(rows[3].slice(0, 9)).toEqual(["A: Crit | pepsi", "p4", "p4", "Last year only", "", "", "", "", ""]);
     expect(rows[11][2]).toBe("Total (6 items)");
     expect(rows[11][5]).toBe(35.755);
   });

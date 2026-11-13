@@ -106,13 +106,13 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the comparison",
-          pre: "A drawer slides over the items. It opens on the verdict: whether the two lists have the same problem, what each one's is, and the figure behind it. Then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or sold last year only.",
+          pre: "A drawer slides over the items. It opens on a one-line verdict: whether the two lists have the same problem, and each one's in a few words. Then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or last year only.",
           see: "The bucket behind each list's verdict is tinted. The tabs under the table list a bucket's items from both lists, tagged A or B, biggest change first.",
         },
         {
           title: "Act on a bucket",
           pre: "With a tab open, copy its UPCs or click",
-          chip: "Show in the item list",
+          chip: "Show in list",
           post: ". The drawer closes and the list shows those items; the × on the Showing chip, or any filter, goes back.",
           anchor: "compare-show",
         },

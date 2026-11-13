@@ -21,10 +21,10 @@ export const SLIDE_OPEN = "translate-x-0 visible";
 export const SLIDE_SHUT = "translate-x-full invisible";
 
 /** A row of either table: its label, then A's and B's cells. */
-export const TABLE_COLS = "grid grid-cols-[minmax(0,1fr)_190px_190px] gap-3 items-center";
+export const TABLE_COLS = "grid grid-cols-[minmax(0,1fr)_180px_180px] gap-3 items-center";
 
 /** An item in the open tab: list badge, name, UPC, what it did. */
-export const ITEM_COLS = "grid grid-cols-[20px_minmax(0,1fr)_100px_84px] gap-2.5 items-center";
+export const ITEM_COLS = "grid grid-cols-[16px_minmax(0,1fr)_96px_80px] gap-2.5 items-center";
 
 /** A cell in the bucket that drives a list's verdict. */
 export const HOT_CELL = "bg-delta_negative_bg/60";
@@ -35,7 +35,7 @@ export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
   { key: "less", label: "Selling less", tab: "Selling less" },
   { key: "new", label: "New this week", tab: "New" },
   { key: "stopped", label: "Stopped this week", tab: "Stopped" },
-  { key: "lyOnly", label: "Sold last year only", tab: "Sold last year only" },
+  { key: "lyOnly", label: "Last year only", tab: "Last year only" },
 ];
 
 /** Change from `then` to `now` in percent; null with nothing to compare against. */
@@ -163,50 +163,23 @@ export const signed = (v: number, metric: GradingMetric) =>
 /** A figure on the grading measure, no sign. */
 const plain = (v: number, metric: GradingMetric) => (metric === "qty" ? `${whole(v)} units` : money(v));
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-/** What a list's driver says about it. */
-const sentence = (name: string, d: Bucket | null) =>
-  d === "lyOnly"
-    ? `${cap(name)} is mostly items that sold last year and not at all this week.`
-    : d === "stopped"
-      ? `${cap(name)} is mostly items that sold last week and stopped this week.`
-      : d === "less"
-        ? `${cap(name)} is still selling, just less of it.`
-        : `${cap(name)} is holding up: nothing is losing ground.`;
-
-/** The figure behind a list's sentence. */
-const detail = (c: Record<Bucket, BucketCell>, d: Bucket | null, t: CompareTotals, metric: GradingMetric) => {
-  if (d === "lyOnly") {
-    const drop = (metric === "qty" ? t.lyQty - t.tyQty : t.lyNet - t.tyNet);
-    return `${c.lyOnly.count} of ${t.count} sold last year only, worth ${plain(c.lyOnly.amount, metric)}${
-      drop > 0 ? ` of a ${plain(drop, metric)} drop vs LY` : " last year"
-    }`;
-  }
-  if (d === "stopped") return `${c.stopped.count} of ${t.count} stopped this week (${signed(c.stopped.amount, metric)} vs LW)`;
-  if (d === "less") {
-    const offset = c.more.count
-      ? `, ${c.more.amount >= -c.less.amount ? "more than" : "only partly"} offset by ${c.more.count} selling more (${signed(c.more.amount, metric)})`
-      : "";
-    return `${c.less.count} of ${t.count} selling less (${signed(c.less.amount, metric)})${offset}`;
-  }
-  return c.more.count ? `${c.more.count} of ${t.count} selling more (${signed(c.more.amount, metric)})` : `${t.count} items, none losing ground`;
+/** What a list's driver says about it, in a few words. */
+const PHRASE: Record<Bucket | "none", string> = {
+  lyOnly: "sold last year, not this week",
+  stopped: "stopped selling this week",
+  less: "selling less",
+  more: "holding up",
+  new: "holding up",
+  none: "holding up",
 };
 
-/** The verdict: whether the two lists have the same problem, what each one's
- *  is, and the figure behind it. */
-export const verdictOf = (
-  names: [string, string],
-  cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
-  totals: [CompareTotals, CompareTotals],
-  metric: GradingMetric,
-): Verdict => {
+/** The verdict: whether the two lists have the same problem, and what each
+ *  one's is. The figures behind it are the tables', tinted. */
+export const verdictOf = (cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>]): Verdict => {
   const [da, db] = [driverOf(cells[0]), driverOf(cells[1])];
-  const lead = da === db ? (da ? "Same problem." : "Both holding up.") : "Different problems.";
   return {
-    lead,
-    text: `${sentence(names[0], da)} ${sentence(names[1], db)}`,
-    details: [detail(cells[0], da, totals[0], metric), detail(cells[1], db, totals[1], metric)],
+    lead: da === db ? (da ? "Same problem." : "Both holding up.") : "Different problems.",
+    phrases: [PHRASE[da ?? "none"], PHRASE[db ?? "none"]],
   };
 };
 
@@ -274,19 +247,10 @@ export const bucketItems = (a: CompareRowData[], b: CompareRowData[], bucket: Bu
 export const itemAmount = (r: CompareRowData, metric: GradingMetric) =>
   r.bucket === "lyOnly" ? plain(r.amount, metric) : signed(r.amount, metric);
 
-/** The open tab's line in the footer. */
-export const footLine = (items: BucketItem[], names: [string, string], bucket: Bucket) => {
+/** The open tab's line in the footer: how many from each list. */
+export const footLine = (items: BucketItem[], names: [string, string]) => {
   const a = items.filter((i) => i.side === "A").length;
-  return `${items.length} item${items.length === 1 ? "" : "s"} | ${a} ${names[0]}, ${items.length - a} ${names[1]} | ${
-    bucket === "lyOnly" ? "biggest last-year sales first" : "biggest change first"
-  }`;
-};
-
-/** A list's line in the header: its count and the filters its name leaves out. */
-export const listMeta = (label: string, name: string, count: number) => {
-  const words = name.toLowerCase().split(" ");
-  const rest = label === "All items" ? [] : label.split(" | ").filter((p) => !words.includes(p.toLowerCase()));
-  return [`${count.toLocaleString()} item${count === 1 ? "" : "s"}`, ...rest].join(" | ");
+  return `${a} ${names[0]} | ${items.length - a} ${names[1]}`;
 };
 
 /** The export's headings. The changes are on the grading measure. */

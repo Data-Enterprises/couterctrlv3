@@ -47,9 +47,9 @@ export type CompareTotals = {
   lyPct: number | null;
 };
 
-/** The verdict at the top: a lead ("Different problems."), a sentence per
- *  list, and the figure behind each. */
-export type Verdict = { lead: string; text: string; details: [string, string] };
+/** The verdict at the top: a lead ("Different problems.") and a short phrase
+ *  per list ("selling less"). */
+export type Verdict = { lead: string; phrases: [string, string] };
 
 /** One list's figure in a sales row: the figure, the one behind it, and the
  *  change it grades on (null on the this-week row). */
