@@ -66,6 +66,8 @@ export type StandCell = {
   count: number;
   amount: string;
   tone: "up" | "down" | "plain";
+  /** Set when the amount is not against last week ("vs LY"). */
+  note?: string;
 };
 
 /** A row of the where-the-items-stand table. */

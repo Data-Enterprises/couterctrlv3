@@ -121,11 +121,12 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
         onToggle={() => setInsightOpen((v) => !v)}
       />
 
-      <div className="grid grid-cols-[520px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
+      <div className="grid grid-cols-[470px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
-        <section className="cc-scroll flex flex-col px-6 pt-2 pb-4 border-r border-line_hair">
+        <section className="cc-scroll flex flex-col px-4 pt-1 pb-4 border-r border-line_hair">
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} threshold={threshold} />
           <CompareStandTable
+            names={names}
             rows={standRows(cells, metric)}
             net={[
               { text: signed(nets[0], metric), down: nets[0] < 0 },

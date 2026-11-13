@@ -24,7 +24,7 @@ const CompareSalesTable = ({ rows, threshold }: CompareSalesTableProps) => {
     <section>
       <CompareSectionHead title="Sales" />
       {rows.map((r) => (
-        <div key={r.label} className={`${MIRROR_COLS} py-2.5 text-content tabular-nums`}>
+        <div key={r.label} className={`${MIRROR_COLS} py-1.5 text-content tabular-nums`}>
           <CompareSalesSide
             side="A"
             cell={r.cells[0]}

@@ -20,7 +20,7 @@ interface CompareSalesSideProps {
 const CompareSalesSide = ({ side, cell, share, now, chip }: CompareSalesSideProps) => {
   const a = side === "A";
   return (
-    <span className={`flex flex-col gap-1 min-w-0 ${a ? "items-end pr-3" : "items-start pl-3"}`}>
+    <span className={`flex flex-col gap-1 min-w-0 ${a ? "items-end pr-2" : "items-start pl-2"}`}>
       <span className={`flex items-center gap-2 whitespace-nowrap ${a ? "flex-row" : "flex-row-reverse"}`}>
         {chip ? <span className={`cc-tag py-0 text-[11px] ${chip.cls}`}>{chip.text}</span> : null}
         <span className={now ? "text-[15px] font-bold" : "text-[12.5px] font-semibold"}>{cell.fig}</span>
