@@ -134,13 +134,12 @@ describe("netVsLw and bucketHead", () => {
 });
 
 describe("standRows", () => {
-  it("gives each bucket both lists' count, what they did and their share, tinting each verdict's bucket", () => {
-    const rows = standRows(cells, [6, 5], "sales");
+  it("gives each bucket both lists' count and what those items did", () => {
+    const rows = standRows(cells, "sales");
     expect(rows.map((r) => r.label)).toEqual(["Selling more", "Selling less", "New this week", "Stopped this week", "Sold last year only"]);
-    expect(rows[4].cells[0]).toMatchObject({ count: 3, amount: "$69.54 LY", tone: "plain", share: 50, hot: true });
-    expect(rows[1].cells[1]).toMatchObject({ count: 2, amount: "−$97.35", tone: "down", hot: true });
-    expect(rows[3].cells[1]).toMatchObject({ count: 1, hot: true });
-    expect(rows[2].cells[0]).toMatchObject({ count: 0, amount: "", hot: false });
+    expect(rows[4].cells[0]).toEqual({ side: "A", count: 3, amount: "$69.54 LY", tone: "plain" });
+    expect(rows[1].cells[1]).toEqual({ side: "B", count: 2, amount: "−$97.35", tone: "down" });
+    expect(rows[2].cells[0]).toEqual({ side: "A", count: 0, amount: "", tone: "plain" });
   });
 });
 

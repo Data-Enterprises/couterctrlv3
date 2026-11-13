@@ -25,7 +25,7 @@ const CompareSalesSide = ({ side, cell, share, now, chip }: CompareSalesSideProp
         {chip ? <span className={`cc-tag py-0 text-[11px] ${chip.cls}`}>{chip.text}</span> : null}
         <span className={now ? "text-[15px] font-bold" : "text-[12.5px] font-semibold"}>{cell.fig}</span>
       </span>
-      <span className={`flex w-full h-2 rounded-sm bg-fill_track overflow-hidden ${a ? "justify-end" : "justify-start"}`}>
+      <span className={`flex w-full h-1.5 ${a ? "justify-end" : "justify-start"}`}>
         <span className={`block h-full rounded-sm ${SALES_BAR[side][now ? 0 : 1]}`} style={{ width: `${share}%` }} />
       </span>
     </span>

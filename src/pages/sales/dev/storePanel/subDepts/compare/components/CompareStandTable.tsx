@@ -1,5 +1,5 @@
 // Utils
-import { BUCKET_DOT, HOT_CELL, STAND_COLS } from "../utils";
+import { BUCKET_DOT, STAND_COLS } from "../utils";
 
 // Interfaces
 import type { Bucket, StandCell, StandRow } from "../interfaces";
@@ -20,15 +20,15 @@ interface CompareStandTableProps {
 
 /** Where each list's items stand, as the investigation Summary's rows: a dot,
  *  the bucket, each list's count and what those items did, and a chevron.
- *  Picking a row slides the carousel to its items. The buckets behind each
- *  list's verdict are tinted; the net line shows the rows add up to the week. */
+ *  Picking a row slides the carousel to its items; the net line shows the rows
+ *  add up to the week. */
 const CompareStandTable = ({ rows, net, open, onOpen }: CompareStandTableProps) => {
   const amountClass = (c: StandCell) =>
     c.tone === "down" ? "text-delta_negative_text" : c.tone === "up" ? "text-delta_positive_text" : "";
   const cell = (c: StandCell) => (
-    <span className={`flex items-center justify-end gap-2 h-7 px-1.5 rounded whitespace-nowrap ${c.hot ? HOT_CELL : ""}`}>
-      <span className="text-[12px]">{c.count ? `${c.count} items` : "—"}</span>
-      <span className={`w-[78px] text-right text-[12.5px] font-bold ${amountClass(c)}`}>{c.amount}</span>
+    <span className="flex items-baseline justify-end gap-2.5 whitespace-nowrap">
+      <span className="text-[12px]">{c.count || "—"}</span>
+      <span className={`w-[78px] text-right text-[12.5px] font-semibold ${amountClass(c)}`}>{c.amount}</span>
     </span>
   );
   return (
@@ -38,7 +38,7 @@ const CompareStandTable = ({ rows, net, open, onOpen }: CompareStandTableProps) 
         <span />
         <span />
         {(["A", "B"] as const).map((side) => (
-          <span key={side} className="flex justify-end pr-1.5">
+          <span key={side} className="flex justify-end">
             <ListBadge side={side} />
           </span>
         ))}
@@ -53,7 +53,7 @@ const CompareStandTable = ({ rows, net, open, onOpen }: CompareStandTableProps) 
             type="button"
             onClick={() => onOpen(r.bucket)}
             aria-pressed={on}
-            className={`${STAND_COLS} w-full px-2 py-0.5 rounded-md border text-left text-content tabular-nums transition-colors ${
+            className={`${STAND_COLS} w-full h-9 px-2 rounded-md border text-left text-content tabular-nums transition-colors ${
               on ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
             }`}
           >
@@ -65,11 +65,11 @@ const CompareStandTable = ({ rows, net, open, onOpen }: CompareStandTableProps) 
           </button>
         );
       })}
-      <div className={`${STAND_COLS} px-2 h-8 mt-1 border-t border-line_hair text-[12.5px] tabular-nums`}>
+      <div className={`${STAND_COLS} px-2 h-9 mt-1 border-t border-line_hair text-[12.5px] tabular-nums`}>
         <span />
         <span className="text-content">Net vs LW</span>
         {net.map((n, i) => (
-          <span key={i} className={`text-right pr-1.5 font-bold ${n.down ? "text-delta_negative_text" : "text-delta_positive_text"}`}>
+          <span key={i} className={`text-right font-semibold ${n.down ? "text-delta_negative_text" : "text-delta_positive_text"}`}>
             {n.text}
           </span>
         ))}

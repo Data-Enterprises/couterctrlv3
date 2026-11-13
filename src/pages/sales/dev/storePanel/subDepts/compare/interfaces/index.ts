@@ -66,8 +66,6 @@ export type StandCell = {
   count: number;
   amount: string;
   tone: "up" | "down" | "plain";
-  share: number;
-  hot: boolean;
 };
 
 /** A row of the where-the-items-stand table. */

@@ -26,11 +26,8 @@ export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_136px_minmax(0,1fr)] i
 /** An item in the open tab: list badge, name, UPC, what it did. */
 export const ITEM_COLS = "grid grid-cols-[18px_minmax(0,1fr)_88px_72px] gap-2.5 items-center";
 
-/** A cell in a bucket behind a list's verdict. */
-export const HOT_CELL = "bg-delta_negative_bg/60";
-
 /** A where-the-items-stand row: dot, bucket, A's cell, B's cell, chevron. */
-export const STAND_COLS = "grid grid-cols-[10px_minmax(0,1fr)_150px_150px_14px] gap-2 items-center";
+export const STAND_COLS = "grid grid-cols-[10px_minmax(0,1fr)_118px_118px_14px] gap-3 items-center";
 
 /** A bucket's dot: green for gaining ground, red for losing it. */
 export const BUCKET_DOT: Record<Bucket, string> = {
@@ -181,7 +178,7 @@ export const problemOf = (cells: Record<Bucket, BucketCell>): Problem => {
   return ly > recent ? "lyOnly" : "recent";
 };
 
-/** The buckets behind a list's problem, tinted in the table. */
+/** The buckets behind a list's problem. */
 export const hotBuckets = (cells: Record<Bucket, BucketCell>): Bucket[] => {
   const p = problemOf(cells);
   if (p === "lyOnly") return ["lyOnly"];
@@ -282,15 +279,13 @@ export const salesRows = (a: CompareTotals, b: CompareTotals, metric: GradingMet
   ];
 };
 
-/** The where-the-items-stand table: per bucket, each list's count, what those
- *  items did, their share of the list, and whether it is behind the verdict. */
+/** The where-the-items-stand table: per bucket, each list's count and what
+ *  those items did. */
 export const standRows = (
   cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>],
-  counts: [number, number],
   metric: GradingMetric,
-): StandRow[] => {
-  const hot = [hotBuckets(cells[0]), hotBuckets(cells[1])];
-  return BUCKETS.map(({ key, label }) => ({
+): StandRow[] =>
+  BUCKETS.map(({ key, label }) => ({
     bucket: key,
     label,
     cells: ([0, 1] as const).map((i) => {
@@ -301,12 +296,9 @@ export const standRows = (
         count: c.count,
         amount: !c.count ? "" : key === "lyOnly" ? `${plain(c.amount, metric)} LY` : signed(c.amount, metric),
         tone: !c.count || key === "lyOnly" ? "plain" : c.amount < 0 ? "down" : "up",
-        share: counts[i] ? (c.count / counts[i]) * 100 : 0,
-        hot: hot[i].includes(key),
       };
     }) as StandRow["cells"],
   }));
-};
 
 /** A bucket's items from both lists, biggest change first. */
 export const bucketItems = (a: CompareRowData[], b: CompareRowData[], bucket: Bucket): BucketItem[] =>
