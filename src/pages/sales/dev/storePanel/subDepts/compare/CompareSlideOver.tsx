@@ -105,7 +105,7 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
       />
       <div className="grid grid-cols-[480px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
-        <section className="cc-scroll flex flex-col px-4 pt-4 pb-4 border-r border-line_hair">
+        <section className="cc-scroll flex flex-col px-4 pt-3 pb-3 border-r border-line_hair">
           <CompareSheetHead names={names} />
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} />
           <CompareStandTable

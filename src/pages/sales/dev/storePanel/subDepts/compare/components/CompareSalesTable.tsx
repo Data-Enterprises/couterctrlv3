@@ -20,7 +20,7 @@ const CompareSalesTable = ({ rows }: CompareSalesTableProps) => (
       {rows.map((r) => (
         <div
           key={r.label}
-          className={`${SHEET_COLS} h-9 px-2 rounded-md even:bg-row_stripe text-[12.5px] text-content tabular-nums`}
+          className={`${SHEET_COLS} h-8 px-2 rounded-md even:bg-row_stripe text-[12.5px] text-content tabular-nums`}
         >
           <span className="truncate">{r.label}</span>
           {r.cells.map((c, i) => (

@@ -9,11 +9,11 @@ interface CompareHeaderProps {
   onClose: () => void;
 }
 
-/** The compare bar, in the theme grey: how every item of both lists is
+/** The compare bar: how every item of both lists is
  *  accounted for (the lists themselves are named over their columns), then
  *  export and close. */
 const CompareHeader = ({ line, canExport, onExport, onClose }: CompareHeaderProps) => (
-  <div className="flex items-center gap-2.5 h-12 px-[18px] bg-bkg border-b border-line_field flex-shrink-0">
+  <div className="flex items-center gap-2.5 h-12 px-[18px] bg-custom-white border-b border-line_field flex-shrink-0">
     <span className="truncate min-w-0 text-[12.5px] text-content">{line}</span>
     <button
       data-help="compare-export"

@@ -25,7 +25,7 @@ const CompareBucketRow = ({ row, open, onOpen }: CompareBucketRowProps) => {
       type="button"
       onClick={() => onOpen(row.bucket)}
       aria-pressed={on}
-      className={`${SHEET_COLS} w-full h-9 px-2 rounded-md border text-left text-[12.5px] text-content tabular-nums transition-colors ${
+      className={`${SHEET_COLS} w-full h-8 px-2 rounded-md border text-left text-[12.5px] text-content tabular-nums transition-colors ${
         on ? "cc-row-selected" : "border-transparent even:bg-row_stripe hover:bg-fill_soft"
       }`}
     >
