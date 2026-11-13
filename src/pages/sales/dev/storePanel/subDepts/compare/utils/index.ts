@@ -26,9 +26,26 @@ export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_136px_minmax(0,1fr)] i
 /** An item in the open tab: list badge, name, UPC, what it did. */
 export const ITEM_COLS = "grid grid-cols-[18px_minmax(0,1fr)_88px_72px] gap-2.5 items-center";
 
-/** A cell in a bucket behind a list's verdict, and its bar. */
+/** A cell in a bucket behind a list's verdict. */
 export const HOT_CELL = "bg-delta_negative_bg/60";
-export const HOT_BAR = "bg-delta_negative_text";
+
+/** A where-the-items-stand row: dot, bucket, A's cell, B's cell, chevron. */
+export const STAND_COLS = "grid grid-cols-[10px_minmax(0,1fr)_150px_150px_14px] gap-2 items-center";
+
+/** A bucket's dot: green for gaining ground, red for losing it. */
+export const BUCKET_DOT: Record<Bucket, string> = {
+  more: "bg-emerald-500",
+  new: "bg-emerald-500",
+  less: "bg-red-500",
+  stopped: "bg-red-500",
+  lyOnly: "bg-red-500",
+};
+
+/** A sales bar per list: this week at full strength, earlier weeks lighter. */
+export const SALES_BAR: Record<Side, [string, string]> = {
+  A: ["bg-brand_navy", "bg-brand_navy/40"],
+  B: ["bg-compare_b", "bg-compare_b/40"],
+};
 
 /** The buckets in table order, with their row and tab names. */
 export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
@@ -228,26 +245,26 @@ export const bucketHead = (b: Bucket, n: number) => {
 export const mainFig = (net: number | null, qty: number | null, metric: GradingMetric) =>
   metric === "qty" ? (qty === null ? "—" : whole(qty)) : net === null ? "—" : money(net);
 
-/** The figure behind it: money under units, units under money. */
-export const otherFig = (net: number | null, qty: number | null, metric: GradingMetric) =>
-  metric === "qty" ? (net === null ? "" : money(net)) : qty === null ? "" : `${whole(qty)} u`;
-
 /** A change as text. */
 export const pctText = (p: number) => formatPct(p);
 
-/** The sales table: this week, then last week and last year with each list's
+/** The sales chart: this week, then last week and last year with each list's
  *  change to this week. */
 export const salesRows = (a: CompareTotals, b: CompareTotals, metric: GradingMetric): SalesRow[] => {
-  const now = (t: CompareTotals) => ({ main: mainFig(t.tyNet, t.tyQty, metric), sub: otherFig(t.tyNet, t.tyQty, metric), pct: null });
-  const then = (t: CompareTotals, week: "lw" | "ly") => {
-    const has = week === "lw" ? t.hasLW : t.hasLY;
-    const fig = has ? mainFig(week === "lw" ? t.lwNet : t.lyNet, week === "lw" ? t.lwQty : t.lyQty, metric) : "—";
-    return { main: "", sub: fig, pct: week === "lw" ? t.lwPct : t.lyPct };
+  const cell = (t: CompareTotals, week: "ty" | "lw" | "ly") => {
+    const has = week === "ty" || (week === "lw" ? t.hasLW : t.hasLY);
+    const net = week === "ty" ? t.tyNet : week === "lw" ? t.lwNet : t.lyNet;
+    const qty = week === "ty" ? t.tyQty : week === "lw" ? t.lwQty : t.lyQty;
+    return {
+      fig: has ? mainFig(net, qty, metric) : "—",
+      value: has ? (metric === "qty" ? qty : net) : 0,
+      pct: week === "ty" ? null : week === "lw" ? t.lwPct : t.lyPct,
+    };
   };
   return [
-    { label: "This week", cells: [now(a), now(b)] },
-    { label: "vs last week", cells: [then(a, "lw"), then(b, "lw")] },
-    { label: "vs last year", cells: [then(a, "ly"), then(b, "ly")] },
+    { label: "This week", now: true, cells: [cell(a, "ty"), cell(b, "ty")] },
+    { label: "Last week", now: false, cells: [cell(a, "lw"), cell(b, "lw")] },
+    { label: "Last year", now: false, cells: [cell(a, "ly"), cell(b, "ly")] },
   ];
 };
 

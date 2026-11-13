@@ -53,12 +53,12 @@ export type VerdictSide = { n: string; says: string };
 /** The verdict at the top: a lead ("Different problems") and each list's half. */
 export type Verdict = { lead: string; sides: [VerdictSide, VerdictSide] };
 
-/** One list's figure in a sales row: the figure, the one behind it, and the
- *  change it grades on (null on the this-week row). */
-export type SalesCell = { main: string; sub: string; pct: number | null };
+/** One list's week in the sales chart: its figure as text and as a number
+ *  (for the bar), and its change to this week (null on the this-week row). */
+export type SalesCell = { fig: string; value: number; pct: number | null };
 
-/** A row of the sales table. */
-export type SalesRow = { label: string; cells: [SalesCell, SalesCell] };
+/** A week in the sales chart. */
+export type SalesRow = { label: string; now: boolean; cells: [SalesCell, SalesCell] };
 
 /** One list's cell in the where-the-items-stand table. */
 export type StandCell = {

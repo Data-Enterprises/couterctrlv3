@@ -129,8 +129,10 @@ describe("standRows", () => {
 describe("salesRows", () => {
   it("leads with this week, then each list's change against last week and last year", () => {
     const [tw, lw] = salesRows(totals[0], totals[1], "sales");
-    expect(tw.cells[0]).toEqual({ main: "$71.51", sub: "36 u", pct: null });
-    expect(lw.cells[0].sub).toBe("$97.57");
+    expect([tw.cells[0].fig, tw.cells[0].pct]).toEqual(["$71.51", null]);
+    expect(tw.cells[0].value).toBeCloseTo(71.51, 6);
+    expect([lw.label, lw.cells[0].fig]).toEqual(["Last week", "$97.57"]);
+    expect(lw.cells[0].value).toBeCloseTo(97.57, 6);
     expect(lw.cells[0].pct).toBeCloseTo(-26.71, 2);
   });
 });
