@@ -212,15 +212,15 @@ export const pctText = (p: number) => `${p >= 0 ? "+" : "−"}${Math.abs(p).toFi
 /** A change's colour: direction, not a grade. */
 export const pctClass = (p: number) => (p < 0 ? "text-delta_negative_text" : "text-delta_positive_text");
 
-/** The compare bar's line: every item of both lists lands in one row. */
+/** The compare bar's line: each list's size and how much of it has not sold
+ *  since last year. */
 export const accountLine = (cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>], names: [string, string]) =>
-  `Every item lands in one row: ${[0, 1]
+  ([0, 1] as const)
     .map((i) => {
-      const sold = soldCount(cells[i]);
-      const ly = cells[i].lyOnly.count;
-      return `${sold} + ${ly} = ${sold + ly} ${names[i]}`;
+      const n = soldCount(cells[i]) + cells[i].lyOnly.count;
+      return `${names[i]} ${n.toLocaleString()} item${n === 1 ? "" : "s"}, ${cells[i].lyOnly.count.toLocaleString()} not sold since last year`;
     })
-    .join(", ")}.`;
+    .join(" | ");
 
 /** How many of a list's items sold this week or last: the four change rows. */
 export const soldCount = (c: Record<Bucket, BucketCell>) => c.more.count + c.less.count + c.new.count + c.stopped.count;

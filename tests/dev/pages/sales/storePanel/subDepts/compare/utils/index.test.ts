@@ -97,8 +97,10 @@ describe("pctText and soldCount", () => {
 });
 
 describe("accountLine", () => {
-  it("shows every item of both lists lands in one row", () => {
-    expect(accountLine(cells, ["pepsi", "coke"])).toBe("Every item lands in one row: 3 + 3 = 6 pepsi, 5 + 0 = 5 coke.");
+  it("gives each list's size and how much of it has not sold since last year", () => {
+    expect(accountLine(cells, ["pepsi", "coke"])).toBe(
+      "pepsi 6 items, 3 not sold since last year | coke 5 items, 0 not sold since last year",
+    );
   });
 });
 
