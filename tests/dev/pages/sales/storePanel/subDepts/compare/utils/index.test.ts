@@ -9,6 +9,7 @@ import {
   csvHeaders,
   csvRows,
   hotBuckets,
+  itemAmountClass,
   leadBucket,
   pctText,
   problemOf,
@@ -96,6 +97,14 @@ describe("pctText and soldCount", () => {
   });
 });
 
+describe("itemAmountClass", () => {
+  it("colours a change by direction, and leaves last year's sales plain", () => {
+    expect(itemAmountClass(rowsB[0])).toBe("text-delta_negative_text");
+    expect(itemAmountClass(rowsB[1])).toBe("text-delta_positive_text");
+    expect(itemAmountClass(rowsA[3])).toBe("");
+  });
+});
+
 describe("accountLine", () => {
   it("gives each list's size and how much of it has not sold since last year", () => {
     expect(accountLine(cells, ["pepsi", "coke"])).toBe(
@@ -106,8 +115,8 @@ describe("accountLine", () => {
 
 describe("bucketHead", () => {
   it("says what the open bucket holds", () => {
-    expect(bucketHead("lyOnly", 18)).toBe("18 items sold last year and nothing this week.");
-    expect(bucketHead("new", 1)).toBe("1 item new this week.");
+    expect(bucketHead("lyOnly", 18)).toBe("18 items sold last year and nothing this week");
+    expect(bucketHead("new", 1)).toBe("1 item new this week");
   });
 });
 

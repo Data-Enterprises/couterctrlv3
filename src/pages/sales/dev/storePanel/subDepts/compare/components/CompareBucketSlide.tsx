@@ -1,5 +1,5 @@
 // Utils
-import { ITEM_COLS, itemAmount } from "../utils";
+import { ITEM_COLS, itemAmount, itemAmountClass } from "../utils";
 
 // Interfaces
 import type { GradingMetric } from "../../../../../../../features/dev/devSalesLedgerSlice";
@@ -24,7 +24,9 @@ const CompareBucketSlide = ({ items, metric }: CompareBucketSlideProps) =>
             {row.desc}
           </span>
           <span className="text-[12px] text-content tabular-nums">{row.upc}</span>
-          <span className="text-right text-[13px] font-semibold text-content tabular-nums">{itemAmount(row, metric)}</span>
+          <span className={`text-right text-[13px] font-semibold text-content tabular-nums ${itemAmountClass(row)}`}>
+            {itemAmount(row, metric)}
+          </span>
         </div>
       ))}
     </div>

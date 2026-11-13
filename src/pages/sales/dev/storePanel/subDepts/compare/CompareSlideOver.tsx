@@ -95,7 +95,7 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel }: Compar
     <aside
       aria-hidden={!open}
       aria-label="Compare two lists"
-      className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
+      className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-rail transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
       <CompareHeader
         line={accountLine(cells, names)}

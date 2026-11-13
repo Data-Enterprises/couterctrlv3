@@ -26,7 +26,8 @@ const CompareHeader = ({
       disabled={!canExport}
       onClick={onExport}
       title="Download both lists, where each item stands and the totals, as a CSV file"
-      className="cc-btn-outline ml-auto flex items-center h-[30px] px-2 rounded-md bg-custom-white text-[12.5px] text-content flex-shrink-0 disabled:opacity-40"
+      aria-label="Export CSV"
+      className="cc-btn-outline ml-auto w-[30px] h-[30px] px-0 rounded-md bg-custom-white flex items-center justify-center text-content flex-shrink-0 disabled:opacity-40"
     >
       <ArrowDownTrayIcon className="w-4 h-4" />
     </button>

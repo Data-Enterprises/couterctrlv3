@@ -194,11 +194,11 @@ const plain = (v: number, metric: GradingMetric) => (metric === "qty" ? `${whole
 export const bucketHead = (b: Bucket, n: number) => {
   const items = `${n} item${n === 1 ? "" : "s"}`;
   return {
-    more: `${items} selling more than last week.`,
-    less: `${items} selling less than last week.`,
-    new: `${items} new this week.`,
-    stopped: `${items} that stopped selling this week.`,
-    lyOnly: `${items} sold last year and nothing this week.`,
+    more: `${items} selling more than last week`,
+    less: `${items} selling less than last week`,
+    new: `${items} new this week`,
+    stopped: `${items} that stopped selling this week`,
+    lyOnly: `${items} sold last year and nothing this week`,
   }[b];
 };
 
@@ -277,6 +277,11 @@ export const bucketItems = (a: CompareRowData[], b: CompareRowData[], bucket: Bu
 /** What an item in the open tab did, as the tab reads it. */
 export const itemAmount = (r: CompareRowData, metric: GradingMetric) =>
   r.bucket === "lyOnly" ? plain(r.amount, metric) : signed(r.amount, metric);
+
+/** Its colour: direction for a change, as the sheet's rows; none for last
+ *  year's sales or no change. */
+export const itemAmountClass = (r: CompareRowData) =>
+  r.bucket === "lyOnly" || r.amount === 0 ? "" : r.amount < 0 ? "text-delta_negative_text" : "text-delta_positive_text";
 
 /** The export's headings. The changes are on the grading measure. */
 export const csvHeaders = (metric: GradingMetric) => {
