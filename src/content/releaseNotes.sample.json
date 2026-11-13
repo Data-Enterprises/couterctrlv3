@@ -1,6 +1,6 @@
 [
   {
-    "date": "2026-11-11",
+    "date": "2026-11-13",
     "items": [
       {
         "kind": "new",
@@ -117,6 +117,15 @@
           "sales"
         ],
         "newPage": false,
+        "text": "Investigate shows a department's items by store on Summary, each store's orders and receivers on Supply, and one list per person to act on in Hand-off."
+      },
+      {
+        "kind": "improvement",
+        "page": "Sales",
+        "hrefs": [
+          "sales"
+        ],
+        "newPage": false,
         "text": "Top 200 can compare two stores, showing what both sell and what only one of them does."
       },
       {
@@ -199,6 +208,15 @@
         ],
         "newPage": false,
         "text": "The page stays on the week, store and group you searched when you visit another page and come back."
+      },
+      {
+        "kind": "fix",
+        "page": "Sales",
+        "hrefs": [
+          "sales"
+        ],
+        "newPage": false,
+        "text": "Investigate names an item's cause more carefully and says No receiver on file rather than guessing a delivery was late."
       },
       {
         "kind": "fix",
@@ -307,6 +325,20 @@
         ],
         "newPage": false,
         "text": "A coupon transaction's lines show again after you leave the page and come back."
+      },
+      {
+        "kind": "improvement",
+        "page": "Performance on a phone",
+        "hrefs": [
+          "sales",
+          "loss-prevention",
+          "sub-dept-margins",
+          "categories",
+          "vendors",
+          "coupon-sales"
+        ],
+        "newPage": false,
+        "text": "On a phone, every Performance row shows last week as a third bar, and a Sales / Units switch shows every figure in units."
       },
       {
         "kind": "improvement",
