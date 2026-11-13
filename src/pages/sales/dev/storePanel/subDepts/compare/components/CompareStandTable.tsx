@@ -22,14 +22,18 @@ const CompareStandTable = ({ rows, sums, names, open, onOpen }: CompareStandTabl
   return (
     <section>
       <CompareSheetCaption title="Change vs last week" cols={["Items", "$ vs LW"]} />
-      {recent.map((r) => (
-        <CompareBucketRow key={r.bucket} row={r} open={open} onOpen={onOpen} />
-      ))}
+      <div>
+        {recent.map((r) => (
+          <CompareBucketRow key={r.bucket} row={r} open={open} onOpen={onOpen} />
+        ))}
+      </div>
 
       <CompareSheetCaption title="Not sold this week" cols={["Items", "LY sales"]} />
-      {lyOnly.map((r) => (
-        <CompareBucketRow key={r.bucket} row={r} open={open} onOpen={onOpen} />
-      ))}
+      <div>
+        {lyOnly.map((r) => (
+          <CompareBucketRow key={r.bucket} row={r} open={open} onOpen={onOpen} />
+        ))}
+      </div>
       <p className="mt-2 px-2 text-[11.5px] text-content">
         Every item lands in one row: {sums[0].sold} + {sums[0].ly} = {sums[0].sold + sums[0].ly} {names[0]},{" "}
         {sums[1].sold} + {sums[1].ly} = {sums[1].sold + sums[1].ly} {names[1]}.

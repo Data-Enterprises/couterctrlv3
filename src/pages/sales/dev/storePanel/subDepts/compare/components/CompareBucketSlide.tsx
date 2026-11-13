@@ -18,7 +18,7 @@ const CompareBucketSlide = ({ items, metric }: CompareBucketSlideProps) =>
   items.length ? (
     <div>
       {items.map(({ side, row }) => (
-        <div key={`${side}-${row.key}`} className={`${ITEM_COLS} h-[34px] px-2 rounded-md hover:bg-fill_soft`}>
+        <div key={`${side}-${row.key}`} className={`${ITEM_COLS} h-[34px] px-2 rounded-md even:bg-row_stripe hover:bg-fill_soft`}>
           <ListBadge side={side} />
           <span className="truncate text-[13px] font-medium text-content" title={row.desc}>
             {row.desc}

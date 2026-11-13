@@ -18,7 +18,8 @@ interface CarouselProps {
   above?: ReactNode;
   /** The `data-help` the ? panel points at. */
   helpAnchor?: string;
-  /** No card of its own (no fill, corners or shadow), for a flat panel. */
+  /** No card of its own (no fill, corners or shadow) for a flat panel; the
+   *  tab bar takes a soft fill instead so it still reads as a bar. */
   bare?: boolean;
 }
 
@@ -100,7 +101,7 @@ const Carousel = ({
         fill ? "h-full min-h-0" : ""
       }`}
     >
-      <div className="flex items-center gap-0.5 px-2 pt-1.5 border-b border-brand_navy/15">
+      <div className={`flex items-center gap-0.5 px-2 pt-1.5 border-b border-brand_navy/15 ${bare ? "bg-fill_soft" : ""}`}>
         {slides.map((sl, i) => (
           <button
             key={sl.label}

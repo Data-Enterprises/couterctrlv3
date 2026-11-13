@@ -7,9 +7,9 @@ interface CompareSheetCaptionProps {
   cols: [string, string];
 }
 
-/** A section's caption row: its name, then each list's two column names. */
+/** A section's caption strip: its name, then each list's two column names. */
 const CompareSheetCaption = ({ title, cols }: CompareSheetCaptionProps) => (
-  <div className={`${SHEET_COLS} pt-4 pb-1.5 px-2 border-b border-line_hair`}>
+  <div className={`${SHEET_COLS} mt-4 mb-0.5 h-8 px-2 rounded-md bg-fill_soft`}>
     <span className="cc-caps text-[10px] truncate">{title}</span>
     {[0, 1].map((i) => (
       <span key={i} className="contents">
