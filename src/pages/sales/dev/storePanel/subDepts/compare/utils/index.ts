@@ -21,10 +21,10 @@ export const SLIDE_OPEN = "translate-x-0 visible";
 export const SLIDE_SHUT = "translate-x-full invisible";
 
 /** A mirrored row: A's figures right of its edge, the label centred, B's left. */
-export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)] items-center";
+export const MIRROR_COLS = "grid grid-cols-[minmax(0,1fr)_136px_minmax(0,1fr)] items-center";
 
 /** An item in the open tab: list badge, name, UPC, what it did. */
-export const ITEM_COLS = "grid grid-cols-[20px_minmax(0,1fr)_110px_80px] gap-3 items-center";
+export const ITEM_COLS = "grid grid-cols-[18px_minmax(0,1fr)_88px_72px] gap-2.5 items-center";
 
 /** A cell in a bucket behind a list's verdict, and its bar. */
 export const HOT_CELL = "bg-delta_negative_bg/60";
@@ -32,11 +32,11 @@ export const HOT_BAR = "bg-delta_negative_text";
 
 /** The buckets in table order, with their row and tab names. */
 export const BUCKETS: { key: Bucket; label: string; tab: string }[] = [
-  { key: "more", label: "Selling more", tab: "Selling more" },
-  { key: "less", label: "Selling less", tab: "Selling less" },
+  { key: "more", label: "Selling more", tab: "More" },
+  { key: "less", label: "Selling less", tab: "Less" },
   { key: "new", label: "New this week", tab: "New" },
   { key: "stopped", label: "Stopped this week", tab: "Stopped" },
-  { key: "lyOnly", label: "Sold last year only", tab: "Last year only" },
+  { key: "lyOnly", label: "Sold last year only", tab: "Last year" },
 ];
 
 /** Change from `then` to `now` in percent; null with nothing to compare against. */
@@ -188,9 +188,9 @@ const plain = (v: number, metric: GradingMetric) => (metric === "qty" ? `${whole
 /** One list's half of the verdict: how many of its items, doing what. */
 const sideSays = (c: Record<Bucket, BucketCell>, count: number) => {
   const p = problemOf(c);
-  if (p === "lyOnly") return { n: `${c.lyOnly.count} of ${count}`, says: "sold last year, nothing this week" };
+  if (p === "lyOnly") return { n: `${c.lyOnly.count} of ${count}`, says: "gone since last year" };
   if (p === "recent") {
-    const says = c.less.count && c.stopped.count ? "sold less or stopped this week" : c.less.count ? "sold less this week" : "stopped this week";
+    const says = c.less.count && c.stopped.count ? "sold less or stopped" : c.less.count ? "selling less" : "stopped this week";
     return { n: `${c.less.count + c.stopped.count} of ${count}`, says };
   }
   return c.more.count ? { n: `${c.more.count} of ${count}`, says: "selling more" } : { n: "", says: "holding up" };

@@ -106,7 +106,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Read the comparison",
-          pre: "A panel slides over the report tabs, under the KPIs and day cards. Its left card is mirrored: list A always left of centre, B always right. It opens on the verdict (the same or different problems, and how many of each list's items it covers), then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or sold last year only, with the net against last week.",
+          pre: "A panel slides over the report tabs, under the KPIs and day cards. Its left side is mirrored: list A always left of centre, B always right. It opens on the verdict (the same or different problems, and how many of each list's items it covers), then their sales, graded like the items, and where their items stand: selling more, selling less, new this week, stopped this week, or sold last year only, with the net against last week.",
           see: "The bucket behind each list's verdict is tinted. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
         },
         {

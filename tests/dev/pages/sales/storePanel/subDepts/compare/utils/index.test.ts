@@ -88,8 +88,8 @@ describe("the verdict", () => {
     expect(verdictOf(cells, [6, 5])).toEqual({
       lead: "Different problems",
       sides: [
-        { n: "3 of 6", says: "sold last year, nothing this week" },
-        { n: "3 of 5", says: "sold less or stopped this week" },
+        { n: "3 of 6", says: "gone since last year" },
+        { n: "3 of 5", says: "sold less or stopped" },
       ],
     });
   });

@@ -18,6 +18,8 @@ interface CarouselProps {
   above?: ReactNode;
   /** The `data-help` the ? panel points at. */
   helpAnchor?: string;
+  /** No card of its own (no fill, corners or shadow), for a flat panel. */
+  bare?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -42,6 +44,7 @@ const Carousel = ({
   fill = false,
   above,
   helpAnchor,
+  bare = false,
 }: CarouselProps) => {
   const track = useRef<HTMLDivElement>(null);
   const [own, setOwn] = useState(0);
@@ -93,7 +96,7 @@ const Carousel = ({
   return (
     <div
       data-help={helpAnchor}
-      className={`rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0 ${
+      className={`${bare ? "" : "rounded-lg bg-custom-white shadow-card"} overflow-hidden flex flex-col min-w-0 ${
         fill ? "h-full min-h-0" : ""
       }`}
     >

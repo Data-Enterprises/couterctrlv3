@@ -35,7 +35,6 @@ import CompareBucketHead from "./components/CompareBucketHead";
 import CompareBucketSlide from "./components/CompareBucketSlide";
 import CompareHeader from "./components/CompareHeader";
 import CompareSalesTable from "./components/CompareSalesTable";
-import CompareSides from "./components/CompareSides";
 import CompareStandTable from "./components/CompareStandTable";
 import CompareVerdict from "./components/CompareVerdict";
 
@@ -52,9 +51,9 @@ interface CompareSlideOverProps {
 /**
  * A panel over the store panel's report tabs and their content that diagnoses
  * two lists of the open department: the pinned list (A) against the filters
- * showing now (B). On the left, one card mirrored about its centre, A always
- * left and B always right: the verdict, sales and where the items stand. On
- * the right, each bucket's items in the carousel.
+ * showing now (B). On the left, mirrored about its centre (A always left, B
+ * always right): the verdict, sales and where the items stand. On the right,
+ * each bucket's items in the carousel. Flat, no cards.
  */
 const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshold }: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
@@ -101,7 +100,7 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
     <aside
       aria-hidden={!open}
       aria-label="Compare two lists"
-      className={`absolute inset-0 z-20 flex flex-col bg-bkg shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
+      className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
     >
       <CompareHeader
         deptName={deptName}
@@ -112,13 +111,10 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
         onClose={onClose}
       />
 
-      <div className="grid grid-cols-[560px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] gap-4 flex-1 min-h-0 p-4">
+      <div className="grid grid-cols-[520px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] flex-1 min-h-0">
         {/* The diagnosis, mirrored: scrolls on its own when the panel is short. */}
-        <section className="cc-scroll flex flex-col rounded-lg bg-custom-white shadow-card px-[18px] pt-4 pb-3">
-          <CompareSides names={names} counts={counts} />
-          <div className="mt-3">
-            <CompareVerdict verdict={verdictOf(cells, counts)} />
-          </div>
+        <section className="cc-scroll flex flex-col px-5 pt-2 pb-3 border-r border-line_hair">
+          <CompareVerdict verdict={verdictOf(cells, counts)} />
           <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} threshold={threshold} />
           <CompareStandTable
             rows={standRows(cells, counts, metric)}
@@ -132,8 +128,9 @@ const CompareSlideOver = ({ open, onClose, deptName, a, b, twDateLabel, threshol
         </section>
 
         {/* Each bucket's items, one slide each; a row on the left turns it. */}
-        <div className="min-h-0">
+        <div className="min-h-0 pt-1">
           <Carousel
+            bare
             slides={slides}
             at={at}
             onAt={(i) => setTab(BUCKETS[i].key)}
