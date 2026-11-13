@@ -12,6 +12,9 @@ import ListBadge from "./ListBadge";
 interface ListActionsProps {
   /** The UPCs the filters leave on screen. */
   shownUpcs: string[];
+  /** Items the compare drawer put in the list, or null. */
+  focus: { label: string; count: number } | null;
+  onClearFocus: () => void;
   /** The pinned list's name and count, or null with nothing pinned. */
   pinned: { label: string; count: number } | null;
   /** False while the filters still show the pinned list. */
@@ -21,9 +24,19 @@ interface ListActionsProps {
   onCompare: () => void;
 }
 
-/** Under the item filters: the pinned list (A), copy the UPCs shown, and
- *  Compare, which pins this list as A or, with one pinned, opens the panel. */
-const ListActions = ({ shownUpcs, pinned, canCompare, onPin, onUnpin, onCompare }: ListActionsProps) => {
+/** Under the item filters: the pinned list (A), items the drawer sent here,
+ *  copy the UPCs shown, and Compare, which pins this list as A or, with one
+ *  pinned, opens the drawer. */
+const ListActions = ({
+  shownUpcs,
+  focus,
+  onClearFocus,
+  pinned,
+  canCompare,
+  onPin,
+  onUnpin,
+  onCompare,
+}: ListActionsProps) => {
   const [copied, setCopied] = useState(false);
 
   // The "Copied" label goes back after a moment.
@@ -45,6 +58,16 @@ const ListActions = ({ shownUpcs, pinned, canCompare, onPin, onUnpin, onCompare 
             {pinned.label} | {pinned.count.toLocaleString()} item{pinned.count === 1 ? "" : "s"}
           </span>
           <button onClick={onUnpin} title="Drop list A" aria-label="Drop list A" className="cc-muted-link">
+            <XMarkIcon className="w-3 h-3" />
+          </button>
+        </span>
+      )}
+      {focus && (
+        <span className="flex items-center gap-1 min-w-0 pl-2 pr-1 py-0.5 rounded-full border border-brand_navy/35 bg-brand_navy/[0.06]">
+          <span className="truncate text-[11px] font-semibold text-content">
+            Showing {focus.label} | {focus.count.toLocaleString()} item{focus.count === 1 ? "" : "s"}
+          </span>
+          <button onClick={onClearFocus} title="Back to the filters" aria-label="Back to the filters" className="cc-muted-link">
             <XMarkIcon className="w-3 h-3" />
           </button>
         </span>

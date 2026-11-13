@@ -439,8 +439,14 @@ export const searchItems = (items: GradedItem[], text: string) => {
     : items;
 };
 
-/** A compared list's badge colour: navy for A, slate for B. */
-export const SIDE_FILL: Record<Side, string> = { A: "bg-brand_navy", B: "bg-brand_slate" };
+/** A compared list's colour: navy for A, blue for B (bars and badges). */
+export const SIDE_FILL: Record<Side, string> = { A: "bg-brand_navy", B: "bg-compare_b" };
+
+/** A list badge on a navy header, where a navy A would vanish. */
+export const BADGE_ON_NAVY: Record<Side, string> = {
+  A: "bg-custom-white text-brand_navy",
+  B: "bg-compare_b text-custom-white",
+};
 
 /** A small outline button in the row under the item filters. */
 export const LIST_ACTION_BTN =

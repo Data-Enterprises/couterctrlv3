@@ -1,115 +1,128 @@
 // Hooks
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSalesCtx } from "../../../hooks";
 
 // Utils
 import { copyToClipboard } from "../../../../../../components-dev/utils";
 import { downloadCsv, rowsToCsv } from "../../../../../../utils/csvExport";
-import { listLabel, listNames, nextItemSort, sortItems } from "../utils";
+import { listLabel, listNames } from "../utils";
 import {
+  BUCKETS,
   SLIDE_OPEN,
   SLIDE_SHUT,
+  bucketCells,
+  bucketItems,
   compareFileName,
   csvHeaders,
   csvRows,
+  driverOf,
+  footLine,
+  listMeta,
   rowOf,
+  salesRows,
+  standRows,
   totalsOf,
-  weekBars,
+  verdictOf,
 } from "./utils";
 
 // Interfaces
-import type { ItemSortState } from "../interfaces";
-import type { CompareInput } from "./interfaces";
+import type { Bucket, BucketCell, CompareInput, CompareTotals } from "./interfaces";
 
 // Components
+import CompareBucketItems from "./components/CompareBucketItems";
+import CompareFooter from "./components/CompareFooter";
 import CompareHeader from "./components/CompareHeader";
-import CompareList from "./components/CompareList";
-import CompareWeekBar from "./components/CompareWeekBar";
+import CompareSalesTable from "./components/CompareSalesTable";
+import CompareStandTable from "./components/CompareStandTable";
+import CompareVerdict from "./components/CompareVerdict";
 
 interface CompareSlideOverProps {
   open: boolean;
   onClose: () => void;
-  onClearA: () => void;
+  /** Puts these items in the item list, named for the tab they came from. */
+  onShow: (label: string, upcs: string[]) => void;
   deptName: string;
   a: CompareInput;
   b: CompareInput;
   twDateLabel: string;
+  threshold: number;
 }
 
 /**
- * Two lists of the open department side by side: the pinned list (A) against
- * the filters showing now (B). Slides in over the store panel's report tabs
- * and their content (its containing block is StoreDetailPopup's tab area), so
- * only the KPIs and day cards stay above it; × slides it back.
+ * A drawer over the Insight panel that diagnoses two lists of the open
+ * department: the pinned list (A) against the filters showing now (B). The
+ * verdict, their sales, where their items stand, and the items behind each.
  */
-const CompareSlideOver = ({ open, onClose, onClearA, deptName, a, b, twDateLabel }: CompareSlideOverProps) => {
+const CompareSlideOver = ({ open, onClose, onShow, deptName, a, b, twDateLabel, threshold }: CompareSlideOverProps) => {
   const { gradingMetric: metric, selection } = useSalesCtx();
-  // One sort for both lists, set from either list's headings.
-  const [sort, setSort] = useState<ItemSortState>({ column: "ty", direction: "desc" });
 
   const names = listNames(a.filter, b.filter);
-  const aLabel = listLabel(a.filter);
-  const bLabel = listLabel(b.filter);
-  const aTotals = useMemo(() => totalsOf(a.items, metric), [a.items, metric]);
-  const bTotals = useMemo(() => totalsOf(b.items, metric), [b.items, metric]);
-  const aRows = useMemo(() => sortItems(a.items, sort).map((i) => rowOf(i, metric)), [a.items, sort, metric]);
-  const bRows = useMemo(() => sortItems(b.items, sort).map((i) => rowOf(i, metric)), [b.items, sort, metric]);
-  const bars = weekBars(aTotals, bTotals, metric, names);
+  const labels = [listLabel(a.filter), listLabel(b.filter)];
+  const aRows = useMemo(() => a.items.map((i) => rowOf(i, metric)), [a.items, metric]);
+  const bRows = useMemo(() => b.items.map((i) => rowOf(i, metric)), [b.items, metric]);
+  const totals: [CompareTotals, CompareTotals] = [totalsOf(a.items, metric), totalsOf(b.items, metric)];
+  const cells: [Record<Bucket, BucketCell>, Record<Bucket, BucketCell>] = [bucketCells(aRows), bucketCells(bRows)];
+  const verdict = verdictOf(names, cells, totals, metric);
 
-  // One sortable table: both lists in the panel's order, then their totals.
+  // Opens on the bucket behind A's verdict (else B's), and again for a new pair.
+  // Keyed on the labels: the filter objects are rebuilt on every render.
+  const lead: Bucket = driverOf(cells[0]) ?? driverOf(cells[1]) ?? "less";
+  const [tab, setTab] = useState<Bucket>(lead);
+  useEffect(() => {
+    if (open) setTab(lead);
+  }, [open, labels[0], labels[1]]);
+
+  const items = bucketItems(aRows, bRows, tab);
+  const counts = Object.fromEntries(BUCKETS.map((x) => [x.key, cells[0][x.key].count + cells[1][x.key].count])) as Record<Bucket, number>;
+  const tabName = BUCKETS.find((x) => x.key === tab)?.tab ?? "";
+
+  // One sortable table: both lists with where each item stands, then totals.
   const exportCsv = () =>
     downloadCsv(
       rowsToCsv(
         csvHeaders(metric),
         csvRows([
-          { side: "A", label: aLabel, rows: aRows, totals: aTotals },
-          { side: "B", label: bLabel, rows: bRows, totals: bTotals },
+          { side: "A", label: labels[0], rows: aRows, totals: totals[0] },
+          { side: "B", label: labels[1], rows: bRows, totals: totals[1] },
         ]),
       ),
       compareFileName(selection?.storeName ?? "", deptName, twDateLabel),
     );
 
   return (
-    <div
-      aria-hidden={!open}
-      className={`absolute inset-0 z-20 flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
-    >
-      <CompareHeader
-        title={`Comparing ${names[0]} to ${names[1]}`}
-        canExport={aRows.length + bRows.length > 0}
-        onExport={exportCsv}
-        onClearA={onClearA}
-        onClose={onClose}
+    <div aria-hidden={!open} className={`absolute inset-0 z-20 ${open ? "visible" : "invisible"}`}>
+      {/* What the drawer covers blurs (never darkens); a click on it closes the drawer. */}
+      <div
+        onClick={onClose}
+        className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
       />
-
-      <div className="grid grid-cols-3 gap-5 px-4 py-2 border-b border-line_hair flex-shrink-0">
-        {bars.map((bar) => (
-          <CompareWeekBar key={bar.label} bar={bar} />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-2 grid-rows-[minmax(0,1fr)] gap-6 px-4 pt-2 pb-2.5 flex-1 min-h-0">
-        <CompareList
-          side="A"
-          label={aLabel}
-          rows={aRows}
-          totals={aTotals}
-          sort={sort}
-          onSort={(c) => setSort((prev) => nextItemSort(prev, c))}
-          onCopy={() => copyToClipboard(aRows.map((r) => r.upc))}
-          metric={metric}
+      <aside
+        aria-label="Compare two lists"
+        className={`absolute top-0 right-0 bottom-0 w-[600px] max-w-full flex flex-col bg-custom-white shadow-lg transition-[transform,visibility] duration-200 ${open ? SLIDE_OPEN : SLIDE_SHUT}`}
+      >
+        <CompareHeader
+          deptName={deptName}
+          names={names}
+          metas={[listMeta(labels[0], names[0], totals[0].count), listMeta(labels[1], names[1], totals[1].count)]}
+          canExport={aRows.length + bRows.length > 0}
+          onExport={exportCsv}
+          onClose={onClose}
         />
-        <CompareList
-          side="B"
-          label={bLabel}
-          rows={bRows}
-          totals={bTotals}
-          sort={sort}
-          onSort={(c) => setSort((prev) => nextItemSort(prev, c))}
-          onCopy={() => copyToClipboard(bRows.map((r) => r.upc))}
-          metric={metric}
+
+        <div className="flex flex-col flex-1 min-h-0 gap-4 px-[18px] pt-4">
+          <CompareVerdict verdict={verdict} />
+          <CompareSalesTable rows={salesRows(totals[0], totals[1], metric)} names={names} threshold={threshold} />
+          <CompareStandTable rows={standRows(cells, [totals[0].count, totals[1].count], metric)} />
+          <CompareBucketItems counts={counts} open={tab} onOpen={setTab} items={items} metric={metric} />
+        </div>
+
+        <CompareFooter
+          line={footLine(items, names, tab)}
+          count={items.length}
+          onCopy={() => copyToClipboard(items.map((i) => i.row.upc))}
+          onShow={() => onShow(`${tabName} | ${names[0]} and ${names[1]}`, items.map((i) => i.row.upc))}
         />
-      </div>
+      </aside>
     </div>
   );
 };

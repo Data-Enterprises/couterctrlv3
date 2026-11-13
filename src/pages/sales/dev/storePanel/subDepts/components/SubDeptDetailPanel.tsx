@@ -92,11 +92,18 @@ const SubDeptDetailPanel = ({
   // Both go with the department: another one starts clean.
   const [pinned, setPinned] = useState<ListFilter | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
+  // Items the drawer sent to the list ("Show in the item list"): they stand in
+  // for the filters until a filter changes or the chip's x drops them.
+  const [focus, setFocus] = useState<{ label: string; upcs: string[] } | null>(null);
 
   useEffect(() => {
     setPinned(null);
     setCompareOpen(false);
   }, [selectedId]);
+
+  useEffect(() => {
+    setFocus(null);
+  }, [selectedId, itemSevFilter, itemTextFilter, itemActiveFilter]);
 
   // Active and inactive graded once each, so A and the list can pick their own.
   const gradedActive = useMemo(
@@ -137,7 +144,10 @@ const SubDeptDetailPanel = ({
   );
 
   const current: ListFilter = { sev: itemSevFilter, text: itemTextFilter, active: itemActiveFilter };
-  const textFilteredItems = listItems(gradedActive, gradedInactive, current);
+  const filteredItems = listItems(gradedActive, gradedInactive, current);
+  const textFilteredItems = focus
+    ? pickItems(gradedActive, gradedInactive, "").filter((i) => focus.upcs.includes(i.upc))
+    : filteredItems;
   const sortedItems = sortItems(textFilteredItems, itemSort);
   const narrowed = isNarrowed(itemSevFilter, itemTextFilter, itemActiveFilter);
   const shownUpcs = sortedItems.map((i) => i.upc);
@@ -146,7 +156,7 @@ const SubDeptDetailPanel = ({
   const cta = selected ? getCta(selected, coverage, threshold, gradingMetric) : null;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0">
+    <div className="relative flex flex-col flex-1 min-w-0 overflow-hidden">
       {selected && cta && (
         <InsightToggle
           name={selected.desc}
@@ -183,9 +193,11 @@ const SubDeptDetailPanel = ({
               activeFilter={itemActiveFilter}
               onActiveFilter={setItemActiveFilter}
             />
-            {(narrowed || pinned) && (
+            {(narrowed || pinned || focus) && (
               <ListActions
                 shownUpcs={shownUpcs}
+                focus={focus && { label: focus.label, count: textFilteredItems.length }}
+                onClearFocus={() => setFocus(null)}
                 pinned={pinned && { label: listLabel(pinned), count: pinnedItems.length }}
                 canCompare={!!pinned && !sameFilter(pinned, current)}
                 onPin={() => setPinned(current)}
@@ -219,20 +231,19 @@ const SubDeptDetailPanel = ({
         </div>
       )}
 
-      {/* Nothing between here and StoreDetailPopup's tab area is positioned, so
-          the panel covers the report tabs and their content. */}
       {selected && pinned && (
         <CompareSlideOver
           open={compareOpen}
           onClose={() => setCompareOpen(false)}
-          onClearA={() => {
-            setPinned(null);
+          onShow={(label, upcs) => {
+            setFocus({ label, upcs });
             setCompareOpen(false);
           }}
           deptName={selected.desc}
           a={{ filter: pinned, items: pinnedItems }}
-          b={{ filter: current, items: textFilteredItems }}
+          b={{ filter: current, items: filteredItems }}
           twDateLabel={twDateLabel}
+          threshold={itemThreshold}
         />
       )}
 

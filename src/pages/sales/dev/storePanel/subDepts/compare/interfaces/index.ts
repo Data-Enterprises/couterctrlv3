@@ -1,11 +1,19 @@
 // Interfaces
-import type { GradedItem, ListFilter } from "../../interfaces";
+import type { GradedItem, ListFilter, Side } from "../../interfaces";
 
-/** One list handed to the panel: its filters and its items. */
+/** One list handed to the drawer: its filters and its items. */
 export type CompareInput = { filter: ListFilter; items: GradedItem[] };
 
-/** An item's figures, with its changes on the grading measure (null = no
- *  sale to compare against). */
+/** Where an item stands, from what it sold this week, last week and last year.
+ *  Every item that sold in any of the three lands in exactly one. */
+export type Bucket = "more" | "less" | "new" | "stopped" | "lyOnly";
+
+/** A list's items in one bucket: how many, and what they did. The amount is
+ *  the change against last week, or last year's sales for `lyOnly`. */
+export type BucketCell = { count: number; amount: number };
+
+/** An item's figures, its bucket, and its changes on the grading measure
+ *  (null = no sale to compare against). */
 export type CompareRowData = {
   key: string;
   upc: string;
@@ -19,6 +27,9 @@ export type CompareRowData = {
   lyQty: number | null;
   lwPct: number | null;
   lyPct: number | null;
+  bucket: Bucket | null;
+  /** What the item did, the bucket's way: see BucketCell. */
+  amount: number;
 };
 
 /** A list's totals: its count, the three weeks and the changes. */
@@ -36,14 +47,29 @@ export type CompareTotals = {
   lyPct: number | null;
 };
 
-/** One week in the strip: who is ahead, each list's figure, and A's share
- *  of the two (null with nothing sold that week). */
-export type WeekBar = {
-  label: string;
-  gap: string;
-  aFig: string;
-  bFig: string;
-  aShare: number | null;
-  aPct: string;
-  bPct: string;
+/** The verdict at the top: a lead ("Different problems."), a sentence per
+ *  list, and the figure behind each. */
+export type Verdict = { lead: string; text: string; details: [string, string] };
+
+/** One list's figure in a sales row: the figure, the one behind it, and the
+ *  change it grades on (null on the this-week row). */
+export type SalesCell = { main: string; sub: string; pct: number | null };
+
+/** A row of the sales table. */
+export type SalesRow = { label: string; cells: [SalesCell, SalesCell] };
+
+/** One list's cell in the where-the-items-stand table. */
+export type StandCell = {
+  side: Side;
+  count: number;
+  amount: string;
+  tone: "up" | "down" | "plain";
+  share: number;
+  hot: boolean;
 };
+
+/** A row of the where-the-items-stand table. */
+export type StandRow = { bucket: Bucket; label: string; cells: [StandCell, StandCell] };
+
+/** An item in the open tab, tagged with its list. */
+export type BucketItem = { side: Side; row: CompareRowData };
