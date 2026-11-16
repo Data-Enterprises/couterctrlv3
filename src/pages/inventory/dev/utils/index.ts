@@ -1,5 +1,5 @@
 // API
-import { getSubDepts } from "../../../../api/subMargins";
+import { getSubsDaily } from "../../../../api/sales";
 import { getRollup } from "../../../../api/rollup";
 
 // Utils
@@ -21,7 +21,7 @@ import type { PricePointsState } from "../../../../hooks/usePricePoints";
 
 /**
  * Fetching for Price Opt: Sub Department, lazy between two levels:
- * `subs/sub_sales` names the departments that sold; `subs/subs` returns one
+ * `subs/daily` names the departments that sold; `subs/subs` returns one
  * department's item rows when it is opened. One store at a time, like the
  * pages this drills beneath.
  */
@@ -37,16 +37,14 @@ export const fetchSubDepts = async (
   scope: InventoryScope,
 ): Promise<SubDeptSummary[]> => {
   const call = (page: number) =>
-    getSubDepts(
+    getSubsDaily(
       scope.url,
       scope.token,
       scope.start,
       scope.end,
       USE_GROUPS,
       scope.storeid,
-      SINGLE_STORE,
-      0, // consolidated — 0 keeps sale_date
-      0, // displayHourly
+      null,
       page,
     );
 
