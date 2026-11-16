@@ -77,6 +77,13 @@ export const getSalesPanels = async (
   return json;
 };
 
+/**
+ * Each store's totals per day, from `sales/daily`: the same request and `sales`
+ * rows `sales/weekly` gave. Replaces `sales/weekly` for the dev tree on the
+ * endpoint refactor; prod keeps `getWeekly` until it is promoted.
+ *
+ * `searchValue` is a store id, or a group id when `useGroups` is 1.
+ */
 export const getDailySales = async (
   url: string,
   token: string,
@@ -104,6 +111,15 @@ export const getDailySales = async (
   return json;
 };
 
+/**
+ * One page of daily sub-department totals, from `subs/daily`: the `SubSale`
+ * rows `subs/sub_sales` gave. Replaces `subs/sub_sales` for the dev tree on the
+ * endpoint refactor; prod keeps `getSubs` until it is promoted.
+ *
+ * A group comes back one row per store, not merged, and pages hold 5,000 rows,
+ * so a big group needs every page. `sub_department` null or 0 is every
+ * department. `searchValue` is a store id, or a group id when `useGroups` is 1.
+ */
 export const getSubsDaily = async (
   url: string,
   token: string,
@@ -111,7 +127,7 @@ export const getSubsDaily = async (
   endDate: string,
   useGroups: number,
   searchValue: number,
-  sub_department: number,
+  sub_department: number | null = null,
   page: number = 1,
 ) => {
   const json = await axios({
