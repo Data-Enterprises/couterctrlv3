@@ -29,9 +29,10 @@ import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/stor
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { getCogs, getERet } from "../utils";
 import { fmtExportDate } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../../interfaces";
+import type { AllOrderResp, AvailableOrderResp, Store } from "../../../../interfaces";
 import type { MobileStep } from "./interfaces";
 
 // Components
@@ -71,7 +72,7 @@ const OrdersMobile = () => {
             toast.warn(j.msg);
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
     } else {
       fetchAvailable([ctx.lastStore]);
     }
@@ -149,7 +150,7 @@ const OrdersMobile = () => {
           ctx.dispatch(setGroupedAvailableOrders(cards));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
@@ -220,7 +221,7 @@ const OrdersMobile = () => {
           }
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 

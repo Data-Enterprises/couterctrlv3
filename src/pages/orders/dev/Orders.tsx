@@ -51,6 +51,7 @@ import {
   docKey,
 } from "./utils/orderEdit";
 import { itemsInScope, workingOrder } from "./utils/problemItems";
+import { reasonOf } from "../../../utils/serverError";
 
 // Interfaces
 import type {
@@ -283,7 +284,7 @@ const Orders = () => {
             toast.warn(j.msg);
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
     } else {
       fetchAllLines([ctx.lastStore]);
     }
@@ -345,7 +346,7 @@ const Orders = () => {
         ctx.dispatch(setUniqueSubs(uniqueSubs));
         ctx.dispatch(setAllOrders(lines));
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
@@ -416,7 +417,7 @@ const Orders = () => {
           }),
         );
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setLoadingSubDepts(false));
   };
 
@@ -508,7 +509,7 @@ const Orders = () => {
         // Written from outside the boxes, so the boxes are told.
         setDraft((d) => (d ? patchLine(d, lineNumber, found, true) : d));
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setLookingUp(null));
   };
 
