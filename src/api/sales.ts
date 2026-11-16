@@ -77,6 +77,63 @@ export const getSalesPanels = async (
   return json;
 };
 
+export const getDailySales = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "sales/daily",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore: useGroups === 1 ? 0 : 1,
+    },
+  });
+
+  return json;
+};
+
+export const getSubsDaily = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  sub_department: number,
+  page: number = 1,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "subs/daily",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore: useGroups === 1 ? 0 : 1,
+      sub_department,
+      page,
+    },
+  });
+  return json;
+};
+
 export const getWeekly = async (
   url: string,
   token: string,
@@ -176,7 +233,7 @@ export const getSubs = async (
   singleStore: number,
   consolidated: number = 0,
   displayHourly: number = 0,
-  pageNum: number = 1
+  pageNum: number = 1,
 ) => {
   const json = await axios({
     method: "POST",
