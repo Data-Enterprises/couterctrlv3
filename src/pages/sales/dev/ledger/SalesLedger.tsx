@@ -53,7 +53,6 @@ import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import SortHeader from "../../../../components-dev/SortHeader";
 import SearchPopup from "../../../../components-dev/SearchPopup";
 import DeptInvestigation from "../investigate/DeptInvestigation";
-import DeptMatrixPanel from "../deptMatrix/DeptMatrixPanel";
 import GroupComparisonPanel from "../groupCompare/GroupComparisonPanel";
 import StoreDetailPopup from "../storePanel/StoreDetailPopup";
 import LedgerRow from "../components/LedgerRow";
@@ -62,7 +61,7 @@ import LedgerEntryCard from "./components/LedgerEntryCard";
 import LedgerHeader from "./components/LedgerHeader";
 
 /** The Sales page's weekly ledger: search for a store or group and week, then a graded store list
- *  (severity chips, sorting, filters) with the department investigation, matrix and store detail popups. */
+ *  (severity chips, sorting, filters) with the department investigation and store detail popups. */
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -78,7 +77,6 @@ const SalesLedger = () => {
     threshold,
     gradingMetric,
     investigation,
-    matrixOpen,
     url,
     token,
     userid,
@@ -385,19 +383,6 @@ const SalesLedger = () => {
     [baseLedgerRows, activeThreshold],
   );
 
-  /** The matrix asks one store at a time, and these are the stores the
-   *  search already found — so no second call to resolve the group, and
-   *  co-located stores arrive already split by number. */
-  const matrixStores = useMemo(
-    () =>
-      ledgerRows.map((r) => ({
-        storeid: r.storeid,
-        storeNumber: r.store_number,
-        storeName: r.store_name,
-      })),
-    [ledgerRows],
-  );
-
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
@@ -513,18 +498,6 @@ const SalesLedger = () => {
            back button able to put the reader where they were. */
         <div className="h-[calc(100vh-5rem)]">
           <DeptInvestigation {...getDateRanges()} />
-        </div>
-      ) : matrixOpen ? (
-        /* Where to look, before which store. Full width for the same reason
-           the investigation is: nine stores by twenty departments does not
-           fit half a page. */
-        <div className="h-[calc(100vh-5rem)]">
-          <DeptMatrixPanel
-            stores={matrixStores}
-            threshold={activeThreshold}
-            expanded
-            {...getDateRanges()}
-          />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">

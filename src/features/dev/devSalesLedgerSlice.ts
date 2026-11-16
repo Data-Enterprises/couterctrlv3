@@ -168,19 +168,6 @@ interface SalesLedgerState {
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
   counterpart: Counterpart | null;
-  /**
-   * Which group view the right panel rests on.
-   *
-   * Both answer a question about the GROUP, which is why they are two tabs
-   * rather than one screen hidden behind the other: "stores" ranks the
-   * stores, "departments" breaks every store into its departments. The
-   * investigation below them is about selected stores instead, which is a
-   * different scope and so a different screen.
-   */
-  groupView: "stores" | "departments";
-  /** The departments view, taken full width. Nine stores by twenty
-   *  departments is readable in half a page and comfortable in all of it. */
-  matrixOpen: boolean;
 
   // Loading
   ledgerLoading: boolean;
@@ -351,8 +338,6 @@ const initialState: SalesLedgerState = {
   selectedDate: null,
   investigation: null,
   counterpart: null,
-  groupView: "stores",
-  matrixOpen: false,
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -452,22 +437,6 @@ const salesLedgerSlice = createSlice({
       action: PayloadAction<InvestigationTarget | null>,
     ) => {
       state.investigation = action.payload;
-      // Opening an investigation from the matrix leaves the matrix behind,
-      // so Back from the investigation returns to the ledger rather than to
-      // a grid the reader has already finished with.
-      if (action.payload !== null) state.matrixOpen = false;
-    },
-    setGroupView: (
-      state,
-      action: PayloadAction<"stores" | "departments">,
-    ) => {
-      state.groupView = action.payload;
-    },
-    setMatrixOpen: (state, action: PayloadAction<boolean>) => {
-      state.matrixOpen = action.payload;
-      // Expanding is the same view with more room, so coming back from it
-      // lands on the tab it expanded from rather than on the store list.
-      if (action.payload) state.groupView = "departments";
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -796,8 +765,6 @@ export const {
   setLedgerTab,
   setCounterpart,
   setInvestigation,
-  setGroupView,
-  setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,
   setFinancials,

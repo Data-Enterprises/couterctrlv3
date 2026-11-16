@@ -59,14 +59,13 @@ export const useSalesCtx = () =>
       counterpart: s.dev.salesLedger.counterpart,
       lastFetchedStoreKey: s.dev.salesLedger.lastFetchedStoreKey,
       storeCache: s.dev.salesLedger.storeCache,
-      // The ledger: the search, the open store, the store-row threshold, an
-      // open investigation and the dept matrix.
+      // The ledger: the search, the open store, the store-row threshold and
+      // an open investigation.
       hasSearched: s.dev.salesLedger.hasSearched,
       selection: s.dev.salesLedger.selection,
       ledgerLoading: s.dev.salesLedger.ledgerLoading,
       threshold: s.dev.salesLedger.threshold,
       investigation: s.dev.salesLedger.investigation,
-      matrixOpen: s.dev.salesLedger.matrixOpen,
       // Top 200: the open store's items and the caches behind them.
       topItems: s.dev.salesLedger.topItems,
       topItemPoints: s.dev.salesLedger.topItemPoints,
