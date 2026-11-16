@@ -58,6 +58,16 @@ describe("pageCalls", () => {
     expect(groups.map((g) => g.label)).toEqual(["Weekly sales"]);
   });
 
+  it("carries the daily routes the dev pages now read", () => {
+    // Unlabelled, a Sales ticket would carry none of the page's sales.
+    pass(`${API}/sales/daily`, { sales: [] });
+    pass(`${API}/subs/daily`, { subs: [] });
+    expect(consolidate().map((g) => g.label)).toEqual([
+      "Daily sales",
+      "Sub department daily sales",
+    ]);
+  });
+
   it("drops the query string, which is where ids and page numbers live", () => {
     pass(`${API}/sales/weekly?token=abc&page=2`, {});
     expect(getPageCalls()[0].path).toBe("/sales/weekly");

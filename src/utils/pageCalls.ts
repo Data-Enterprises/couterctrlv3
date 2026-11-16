@@ -70,6 +70,10 @@ export interface CallGroup {
  * lives behind it; "Hourly sales" does not.
  */
 const LABELS: Record<string, string> = {
+  // The dev tree's sales datasets since the endpoint refactor.
+  "sales/daily": "Daily sales",
+  "subs/daily": "Sub department daily sales",
+  // Prod pages still call these until they are promoted.
   "sales/weekly": "Weekly sales",
   "sales/storedepts": "Store departments",
   "sales/topten": "Top ten items",
