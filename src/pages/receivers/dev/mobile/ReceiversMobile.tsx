@@ -14,9 +14,10 @@ import {
   storeNumbersIn,
 } from "../../../../utils/storeIdentity";
 import { fmtSearchDate } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
+import type { ReceiverListResponse } from "../../../../interfaces";
 import type { Screen } from "./interfaces";
 
 // Components
@@ -94,7 +95,7 @@ const ReceiversMobile = () => {
           dispatch(actions.setNoReceivers(true));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(actions.setIsFetchingList(false)));
   };
 

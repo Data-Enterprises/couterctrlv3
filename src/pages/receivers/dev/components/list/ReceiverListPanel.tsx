@@ -23,10 +23,10 @@ import {
   applyStoreNumberToName,
   scopeToStoreNumber,
 } from "../../../../../utils/storeIdentity";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type {
-  JsonError,
   ReceiverDetailsResponse,
 } from "../../../../../interfaces";
 
@@ -92,7 +92,7 @@ const ReceiverListPanel = ({ onOpenSearch }: ReceiverListPanelProps) => {
           dispatch(setTotals(j.totals));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(setIsFetchingDetails(false)));
   };
 

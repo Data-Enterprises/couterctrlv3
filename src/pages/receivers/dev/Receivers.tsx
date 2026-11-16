@@ -25,9 +25,10 @@ import {
   scopeToStoreNumber,
   storeNumbersIn,
 } from "../../../utils/storeIdentity";
+import { reasonOf } from "../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, ReceiverListResponse } from "../../../interfaces";
+import type { ReceiverListResponse } from "../../../interfaces";
 
 // Components
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
@@ -88,7 +89,7 @@ const Receivers = () => {
           dispatch(setNoReceivers(true));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(setIsFetchingList(false)));
   };
 
