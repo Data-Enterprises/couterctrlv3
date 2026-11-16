@@ -24,6 +24,11 @@ interface DayCardProps {
   d: DayDot;
 }
 
+/** One day's card in the store popup's day strip: 
+ * 
+ * its sales or quantity and the change against last
+ * year, or last week when last year has no match (starred for holidays). Clicking it selects the day. 
+*/
 const DayCard = ({ d }: DayCardProps) => {
   const dispatch = useAppDispatch();
   const { selectedDate, gradingMetric } = useSalesCtx();
