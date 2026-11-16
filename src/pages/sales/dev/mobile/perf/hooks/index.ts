@@ -116,8 +116,12 @@ export const usePerfFetch = () => {
           null,
           page,
         );
+
+        // Fetches the first page
       const first = await ask(1);
       if (first.data.error !== 0) return first;
+
+      // If successful, fetch all subsequent pages
       const subs = await fetchAllPages(
         first.data,
         first.data.subs ?? [],
@@ -128,6 +132,8 @@ export const usePerfFetch = () => {
       );
       return { ...first, data: { ...first.data, subs } };
     };
+
+    // Fetch all hourly and subs/daily data for the relevant periods in parallel
     const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
       getHourly(context.url, context.token, twStart, twEnd, ...args),
       getHourly(context.url, context.token, lyDates[0], lyDates[6], ...args),
@@ -136,9 +142,11 @@ export const usePerfFetch = () => {
       allSubs(lyDates[0], lyDates[6]),
       allSubs(lwStart, lwEnd),
     ]);
+
     // getHourly and subs/daily (allSubs) both answer on `.subs`, not `.sales`.
     const rows = (r: { data: { error: number; subs: unknown[] } }) =>
       r.data.error === 0 ? r.data.subs : [];
+
     // A bundle is one store, so subs and hours fall back together. Deciding
     // them separately could show Subs against last year and Hours against
     // last week on one card, which is two different questions side by side.
@@ -147,6 +155,7 @@ export const usePerfFetch = () => {
       rows(hLw) as HourlySale[],
     );
     const subs = pickComparison(rows(sLy) as SubSale[], rows(sLw) as SubSale[]);
+    
     return {
       // Last year as it is. Last week is its own bar now, so a store with no
       // last year shows "no history" there rather than last week twice.
