@@ -79,7 +79,7 @@ const initialState: AdminPageState = {
   subExclStores: null,
   subExclCompanyId: "",
   subExclStoreKey: SUB_EXCL_ALL_STORES,
-  subExclDays: "120",
+  subExclDays: "60",
   subExclSearch: "",
   subExclHashOnly: false,
   subExclCatalog: null,

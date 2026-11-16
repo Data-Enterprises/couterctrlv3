@@ -234,11 +234,12 @@ export const COLS =
 /** How far back to look for "which departments does this store have".
  *
  *  There is no dimension table, so the answer is always "what it rang inside
- *  a window". 120 days is the default because it is quick and because a
- *  department that has not rung since spring is not one anybody is trying to
+ *  a window". 60 days is the default because it is quick and because a
+ *  department that has not rung in two months is not one anybody is trying to
  *  keep out of this week's net sales. The longer options exist for onboarding,
  *  where a seasonal department genuinely has not rung yet. */
 export const WINDOWS = [
+  { value: "60", label: "Last 60 days" },
   { value: "120", label: "Last 120 days" },
   { value: "365", label: "Last year" },
   { value: "730", label: "Last 2 years" },
