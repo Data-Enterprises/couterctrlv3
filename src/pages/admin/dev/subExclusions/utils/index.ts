@@ -240,7 +240,6 @@ export const COLS =
  *  where a seasonal department genuinely has not rung yet. */
 export const WINDOWS = [
   { value: "60", label: "Last 60 days" },
-  { value: "120", label: "Last 120 days" },
   { value: "365", label: "Last year" },
   { value: "730", label: "Last 2 years" },
 ];
