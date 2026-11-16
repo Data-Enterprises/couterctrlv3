@@ -8,13 +8,20 @@ import type { Status } from "../interfaces";
  *  so this states the rule rather than changing who gets in today. */
 export const ADMIN_MIN_LEVEL = 7;
 
+/** A store with no company. Below level 9 or support the backend refuses to
+ *  rename one, set its exclusions or manage its users. The type says number,
+ *  but the data has nulls. */
+export const hasNoCompany = (s: Store) => !s.company;
+
 export const adminTabs: {
   id: AdminForm;
   label: string;
   programmerOnly?: boolean;
+  /** Level 9 or a support account: the backend answers anyone else with a 403. */
+  supportOnly?: boolean;
 }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
-  { id: "store_activity", label: "Store activity" },
+  { id: "store_activity", label: "Store activity", supportOnly: true },
   { id: "store_records", label: "Stores" },
   { id: "sub_exclusions", label: "Sub dept exclusions" },
 ];

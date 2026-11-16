@@ -23,15 +23,17 @@ import {
 
 // Utils
 import {
+  hasNoCompany,
   statusOf,
   statusReported,
   withClosedMark,
   withoutClosedMark,
 } from "../utils";
 import { UNKNOWN_NOTE } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, Store } from "../../../../interfaces";
+import type { Store } from "../../../../interfaces";
 import type { StoreForm } from "./interfaces";
 
 // Components
@@ -84,7 +86,7 @@ const StoreRecords = () => {
           ]),
         );
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   useEffect(fetchStores, []);
@@ -142,7 +144,7 @@ const StoreRecords = () => {
         setCreating(false);
         fetchStores();
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setSaving(false));
   };
 
@@ -165,7 +167,7 @@ const StoreRecords = () => {
         setEditing(null);
         fetchStores();
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setSaving(false));
   };
 
@@ -208,7 +210,7 @@ const StoreRecords = () => {
           );
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => fetchStores());
   };
 
@@ -247,13 +249,16 @@ const StoreRecords = () => {
           placeholder="Search stores…"
           className="flex-1"
         />
-        <button
-          onClick={() => setCreating(true)}
-          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover flex-shrink-0"
-        >
-          <PlusIcon className="w-3.5 h-3.5" />
-          New store
-        </button>
+        {/* Creating a store is level 9 or support only on the backend. */}
+        {context.canSeeAllStores && (
+          <button
+            onClick={() => setCreating(true)}
+            className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy_hover flex-shrink-0"
+          >
+            <PlusIcon className="w-3.5 h-3.5" />
+            New store
+          </button>
+        )}
       </div>
 
       <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
@@ -272,6 +277,8 @@ const StoreRecords = () => {
             <StoreRow
               key={`${s.storeid}__${s.store_number}`}
               s={s}
+              canChangeStatus={context.canSeeAllStores}
+              canRename={context.canSeeAllStores || !hasNoCompany(s)}
               setEditing={setEditing}
               setDeactivating={setDeactivating}
               changeStatus={changeStatus}

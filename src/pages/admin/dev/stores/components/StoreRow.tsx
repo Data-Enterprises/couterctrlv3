@@ -14,6 +14,10 @@ import {
 
 interface StoreRowProps {
   s: Store;
+  /** Close and Re-open: level 9 or support only on the backend. */
+  canChangeStatus: boolean;
+  /** Rename: refused below level 9 or support for a store with no company. */
+  canRename: boolean;
   setEditing: (s: Store) => void;
   setDeactivating: (s: Store) => void;
   changeStatus: (s: Store, action: "reactivate") => void;
@@ -21,7 +25,14 @@ interface StoreRowProps {
 
 /** One store row on the Store Records tab: number, name, company and an Active or Closed badge, with Rename
  *  and Close or Re-open buttons. */
-const StoreRow = ({ s, setEditing, setDeactivating, changeStatus }: StoreRowProps) => {
+const StoreRow = ({
+  s,
+  canChangeStatus,
+  canRename,
+  setEditing,
+  setDeactivating,
+  changeStatus,
+}: StoreRowProps) => {
   return (
     <div
       key={`${s.storeid}__${s.store_number}`}
@@ -29,7 +40,12 @@ const StoreRow = ({ s, setEditing, setDeactivating, changeStatus }: StoreRowProp
     >
       <div className="truncate tabular-nums">{s.store_number}</div>
       <div className="truncate">{s.store_name}</div>
-      <div className="truncate">{s.company_name}</div>
+      <div
+        className="truncate"
+        title={canRename ? undefined : "No company: only level 9 or support can change this store"}
+      >
+        {s.company_name || "No company"}
+      </div>
       <div className="truncate">
         {statusOf(s) === "closed" && (
           <span
@@ -47,19 +63,21 @@ const StoreRow = ({ s, setEditing, setDeactivating, changeStatus }: StoreRowProp
       </div>
 
       <div className="flex items-center justify-end gap-1">
-        <IconButton
-          icon={PencilIcon}
-          title={`Rename ${s.store_name}`}
-          onClick={() => setEditing(s)}
-        />
-        {statusOf(s) !== "open" && (
+        {canRename && (
+          <IconButton
+            icon={PencilIcon}
+            title={`Rename ${s.store_name}`}
+            onClick={() => setEditing(s)}
+          />
+        )}
+        {canChangeStatus && statusOf(s) !== "open" && (
           <IconButton
             icon={LockOpenIcon}
             title={`Re-open ${s.store_name}`}
             onClick={() => changeStatus(s, "reactivate")}
           />
         )}
-        {statusOf(s) !== "closed" && (
+        {canChangeStatus && statusOf(s) !== "closed" && (
           <IconButton
             icon={LockClosedIcon}
             title={`Close ${s.store_name}`}

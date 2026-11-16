@@ -46,14 +46,16 @@ const Admin = () => {
   });
 
   const tabs = adminTabs.filter(
-    (t) => context.isProgrammer || !t.programmerOnly,
+    (t) =>
+      (context.isProgrammer || !t.programmerOnly) &&
+      (context.canSeeAllStores || !t.supportOnly),
   );
 
   useEffect(() => {
     if (!tabs.some((t) => t.id === context.adminForm)) {
-      dispatch(setAdminForm("store_activity"));
+      dispatch(setAdminForm(tabs[0].id));
     }
-  }, [context.isProgrammer, context.adminForm]);
+  }, [context.isProgrammer, context.canSeeAllStores, context.adminForm]);
 
   useEffect(() => {
     if (context.refresh) {
