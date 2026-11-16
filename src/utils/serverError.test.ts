@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reasonOf, serverDetail, serverStatus } from "@/pages/exportBuilder/dev/serverError";
+import { reasonOf, serverDetail, serverStatus } from "./serverError";
 
 /** The shape axios rejects with: the response hangs off `response`. */
 const rejected = (status: number, data: unknown) => ({

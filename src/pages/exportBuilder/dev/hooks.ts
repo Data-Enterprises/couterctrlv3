@@ -3,7 +3,7 @@ import { useDevApi } from "../../../hooks/useDevApi";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { isGroupSearch } from "../../../features/searchSlice";
 import { formatGoliathDate } from "../../../utils";
-import { reasonOf, serverDetail, serverStatus } from "./serverError";
+import { reasonOf, serverDetail, serverStatus } from "../../../utils/serverError";
 import {
   getExportPreview,
   getExportTables,
