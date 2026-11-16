@@ -117,7 +117,7 @@ export const usePerfFetch = () => {
           page,
         );
 
-        // Fetches the first page
+      // Fetches the first page
       const first = await ask(1);
       if (first.data.error !== 0) return first;
 

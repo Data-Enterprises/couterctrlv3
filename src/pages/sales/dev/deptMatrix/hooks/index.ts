@@ -17,18 +17,12 @@ import type { MatrixArgs, MatrixState, MatrixStore } from "../interfaces";
 /**
  * Every store against every department, fetched.
  *
- * ONE CALL PER STORE PER PERIOD, which looks wasteful and is not optional:
- * `subs/sub_sales` asked for a GROUP answers with the group consolidated. Its
- * rows carry `sub_department` and `sale_date` but no `storeid` and no
- * `store_number`, so there is no way to tell whose sales they are — a whole
- * group arrives looking like one store. Every other caller in the app asks it
- * for a single store, which is why nobody had hit this. `consolidated` does
- * not help either: that flag decides whether `sale_date` survives, not
- * whether stores do.
- *
- * So the fan-out is the only shape on offer. It is the same one the ledger
- * already falls back to for groups over thirty stores, and the calls go out
- * together rather than in sequence.
+ * One call per store per period. `subs/sub_sales` merged a group into one
+ * store's worth of rows, so this fan-out was the only shape on offer; its
+ * replacement, `subs/daily`, returns a group one row per store, so a single
+ * group call could now do the same job. Kept as a fan-out until that is
+ * validated. It is the same shape the ledger uses for groups over thirty
+ * stores, and the calls go out together rather than in sequence.
  *
  * Department totals only. Item rows for every store in every department would
  * be thousands of rows a store, which is why the matrix narrows to a store
@@ -74,7 +68,7 @@ export const useDeptMatrix = (args: MatrixArgs): MatrixState => {
         getSubsDaily(url, token, start, end, 0, s.storeid, null, page);
 
       const j = (await ask(1)).data as SubSalesJsonResp;
-      if (j.error !== 0) throw new Error(j.msg ?? "sub_sales failed");
+      if (j.error !== 0) throw new Error(j.msg ?? "subs/daily failed");
 
       const all = await fetchAllPages(j, [...(j.subs ?? [])], async (page) => {
         const b = (await ask(page)).data as SubSalesJsonResp;

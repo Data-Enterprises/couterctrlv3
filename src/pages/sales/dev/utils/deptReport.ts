@@ -605,7 +605,7 @@ export const hashTotals = (p: Periods) => ({
  *
  * Hash departments are dropped on the way in. They are in these responses on
  * purpose -- a store's own drill-down should show its fuel -- but a total
- * built from every row disagrees with `sales/weekly`, which leaves them out,
+ * built from every row disagrees with `sales/daily`, which leaves them out,
  * and this report's headline is set beside exactly that figure. Tupelo's
  * $79,943 of fuel and Chapel Hill's -$2,334.95 of cash accounts were the
  * whole $82,277.95 by which the two disagreed.

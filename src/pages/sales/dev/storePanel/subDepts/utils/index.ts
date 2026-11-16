@@ -297,7 +297,7 @@ export const buildDeptRows = (
       const lyNet = ly?.net ?? 0;
       return {
         id,
-        // `sub_sales` only names a department on a row it returned, so the
+        // `subs/daily` only names a department on a row it returned, so the
         // name comes off whichever comparison week has one.
         desc:
           subSalesWk2.find((s) => s.sub_department === id)

@@ -83,7 +83,7 @@ import StoreListControls from "./components/StoreListControls";
  * Weekly Sales on mobile.
  *
  * The screen is one list of stores, and a store is a card that opens where it
- * sits. Collapsed, a card carries only what the group `sales/weekly` already
+ * sits. Collapsed, a card carries only what the group `sales/daily` already
  * returned — name, paired bars, change — so a group of any size lists without
  * a single extra request. Expanding one fetches that store's sub-department
  * and hourly rows once and keeps them, so re-opening it is free.
