@@ -35,6 +35,7 @@ import {
   fetchSubDeptRowsSafe,
 } from "../../../../../../utils/marginRows";
 import { fetchAllPages } from "../../../../../../utils/paging";
+import { subDeptKey, subDeptNumber } from "../../../../../../utils/subDeptKey";
 import { foldDepartmentRings } from "../../../utils/ledgerUtils";
 import { asLastYearSlots } from "../../../../../../utils/perfPairs";
 import {
@@ -306,17 +307,21 @@ export const usePerfItems = (itemKey: string | null, itemScope: ItemScope) => {
 
     const key = itemKey;
     const { storeid, storeNumber } = itemScope;
-    const subId = perf.openSubDept.id;
+    const deptKey = perf.openSubDept.key;
+    const subId = subDeptNumber(deptKey);
     const gen = perf.storeCacheGen;
     // The department's own sales (rung on the department key, no item) are
     // kept as one labelled row rather than dropped, so the list adds up to the
     // department figure above it.
+    // Fetched by number, kept by number AND name: ACE stores file several
+    // departments under one number, and 0 asks for every department.
     const scoped = (rows: SubDeptMargin[]) =>
       foldDepartmentRings(rows).filter(
         (r) =>
-          storeNumber === null ||
-          String(r.store_number).trim().replace(/^0+/, "") ===
-            storeNumber.trim().replace(/^0+/, ""),
+          subDeptKey(r) === deptKey &&
+          (storeNumber === null ||
+            String(r.store_number).trim().replace(/^0+/, "") ===
+              storeNumber.trim().replace(/^0+/, "")),
       );
 
     dispatch(setPerfItemLoading(key));

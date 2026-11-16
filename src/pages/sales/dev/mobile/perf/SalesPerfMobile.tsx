@@ -235,7 +235,7 @@ const SalesPerfMobile = () => {
 
   const itemKey =
     itemScope && perf.openSubDept
-      ? `${itemScope.key}|${perf.openSubDept.id}`
+      ? `${itemScope.key}|${perf.openSubDept.key}`
       : null;
 
   usePerfItems(itemKey, itemScope);
@@ -482,7 +482,7 @@ const SalesPerfMobile = () => {
         when={whenLabel}
         backLabel="Stores"
         onBack={() => dispatch(openPerfDetail(false))}
-        levelKey={`${perf.drill}|${perf.openSubDept?.id ?? ""}`}
+        levelKey={`${perf.drill}|${perf.openSubDept?.key ?? ""}`}
       >
         {drillList}
       </MobilePerfDetail>

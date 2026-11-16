@@ -19,6 +19,7 @@ import {
   type PerfDay,
   type PerfPair,
 } from "../../../../../../utils/perfPairs";
+import { subDeptKey } from "../../../../../../utils/subDeptKey";
 
 // Interfaces
 import type {
@@ -349,7 +350,7 @@ export const buildSubPairs = (
     subsLy,
     day,
     null,
-    (r) => String(r.sub_department),
+    subDeptKey,
     (r) => r.sub_department_description,
     pick,
     match,

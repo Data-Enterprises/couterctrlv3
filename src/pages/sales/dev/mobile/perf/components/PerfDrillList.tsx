@@ -7,6 +7,7 @@ import {
 } from "../utils/perfData";
 import { hourSorts, itemSorts, scaleOf, subSorts } from "../utils";
 import { DEPT_RING_KEY } from "../../../utils/ledgerUtils";
+import { subDeptNumber } from "../../../../../../utils/subDeptKey";
 
 // Interfaces
 import type { PerfDrill } from "../../../../../../features/dev/devSalesPerfSlice";
@@ -39,8 +40,8 @@ interface PerfDrillListProps {
   /** False for the group, whose rows lead nowhere — items are fetched per
    *  store. The rows render the same, they just don't invite a tap. */
   allowItems: boolean;
-  openSubDept: { id: number; label: string } | null;
-  onOpenSubDept: (v: { id: number; label: string } | null) => void;
+  openSubDept: { key: string; label: string } | null;
+  onOpenSubDept: (v: { key: string; label: string } | null) => void;
   items: ItemProps;
   /** How figures read, and what the size sort is called: "Sales" or
    *  "Units", per the switch at the top of the screen. */
@@ -126,7 +127,7 @@ const PerfDrillList = ({
           <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
             <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
             <input
-              id={`perf-item-search-${openSubDept.id}`}
+              id={`perf-item-search-${subDeptNumber(openSubDept.key)}`}
               value={items.query}
               onChange={(e) => items.onQuery(e.target.value)}
               placeholder="Description or UPC"
@@ -260,7 +261,7 @@ const PerfDrillList = ({
                 ? {
                     type: "button" as const,
                     onClick: () =>
-                      onOpenSubDept({ id: Number(p.key), label: p.label }),
+                      onOpenSubDept({ key: p.key, label: p.label }),
                   }
                 : {})}
               className={`block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 ${
