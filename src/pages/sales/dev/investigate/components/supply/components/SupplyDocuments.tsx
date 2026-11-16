@@ -1,20 +1,23 @@
 // Utils
-import { codeOf } from "../utils";
+import { codeOf } from "../../../utils";
 import {
   SUPPLY_ORDER,
   noReceiptsNote,
   supplySlideSays,
   supplyTab,
-} from "../utils/supplyRows";
+} from "../../../utils/supplyRows";
 
 // Interfaces
-import type { OrdersWave, ReceiptsWave } from "../utils/investigationData";
-import type { Supply, SupplyRecord } from "../utils/investigationSteps";
-import type { AllOrder } from "../../../../../interfaces";
-import type { DocLine, SupplyKind, SupplyRow } from "../interfaces";
+import type {
+  OrdersWave,
+  ReceiptsWave,
+} from "../../../utils/investigationData";
+import type { Supply, SupplyRecord } from "../../../utils/investigationSteps";
+import type { AllOrder } from "../../../../../../../interfaces";
+import type { DocLine, SupplyKind, SupplyRow } from "../../../interfaces";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../Carousel";
 import SupplySlide from "./SupplySlide";
 import UpcFilter from "./UpcFilter";
 
@@ -108,14 +111,16 @@ const SupplyDocuments = ({
   const shownOrders = supply.orders.filter((r) => matches(r, true));
   const shownDeliveries = supply.deliveries.filter((r) => matches(r, false));
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
-  const plural = (k: number, one: string) => `${n(k)} ${one}${k === 1 ? "" : "s"}`;
+  const plural = (k: number, one: string) =>
+    `${n(k)} ${one}${k === 1 ? "" : "s"}`;
 
   /** Why an orders list is empty, when it is. The window-wide cases are the
    *  ones that say whether "never ordered" can be claimed at all. */
   const ordersNote = (row: SupplyRow, store: string): string | null => {
     if (!orders.ok)
       return "The orders did not come back for this window, so this card cannot say whether either store ordered. What was received is read separately.";
-    if (row.docs.length > 0) return `No order at ${store} carries any of those codes.`;
+    if (row.docs.length > 0)
+      return `No order at ${store} carries any of those codes.`;
     if (supply.orders.length > 0) return null;
     return orders.inWindow === 0
       ? supply.deliveries.length > 0
@@ -147,7 +152,14 @@ const SupplyDocuments = ({
         <SupplySlide
           row={row}
           shown={shown}
-          says={supplySlideSays(row, store, received, orders.ok, receipts.ok, cash)}
+          says={supplySlideSays(
+            row,
+            store,
+            received,
+            orders.ok,
+            receipts.ok,
+            cash,
+          )}
           note={note}
           warn={row.isOrder && !orders.ok}
           foot={
@@ -155,7 +167,9 @@ const SupplyDocuments = ({
               ? `${plural(shown.length, "order")} | ${n(units)} units | newest first`
               : `${plural(shown.length, "receiver")} | ${n(units)} units | ${cash(cost)} | newest first`
           }
-          linesOf={(r) => (row.isOrder ? orderLines(r.id, r.mine) : invoiceLines(r.id, r.mine))}
+          linesOf={(r) =>
+            row.isOrder ? orderLines(r.id, r.mine) : invoiceLines(r.id, r.mine)
+          }
           /* The receipt search asks for the matched lines only, so an
              invoice has no "whole document" to offer. */
           wholeOf={(r) => (row.isOrder ? wholeOrder(r.id, r.mine) : null)}

@@ -1,10 +1,10 @@
 // Utils
-import { onDay } from "../utils";
-import { SUPPLY_LOOKBACK_DAYS } from "../utils/investigationData";
-import { supplySays, type Supply } from "../utils/investigationSteps";
+import { onDay } from "../../../utils";
+import { SUPPLY_LOOKBACK_DAYS } from "../../../utils/investigationData";
+import { supplySays, type Supply } from "../../../utils/investigationSteps";
 
 // Interfaces
-import type { SupplyKind, SupplyRow } from "../interfaces";
+import type { SupplyKind, SupplyRow } from "../../../interfaces";
 
 // Components
 import SupplyRowChoice from "./SupplyRowChoice";
@@ -77,7 +77,8 @@ const SupplyFinding = ({
 
       {/* The window is the one fact the rows need: it is not the sales week. */}
       <p className="text-[12.5px] text-brand_slate">
-        Read over {SUPPLY_LOOKBACK_DAYS} days, {onDay(window.start)} – {onDay(window.end)}
+        Read over {SUPPLY_LOOKBACK_DAYS} days, {onDay(window.start)} –{" "}
+        {onDay(window.end)}
         {states.length === 1 && supply.orders.length > 0
           ? supply.orders.length === 1
             ? ` | The order is ${String(states[0]).toLowerCase()}`

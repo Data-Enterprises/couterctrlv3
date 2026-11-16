@@ -1,9 +1,9 @@
 // Utils
-import { DOC_COLS } from "../utils/supplyRows";
+import { DOC_COLS } from "../../../utils/supplyRows";
 
 // Interfaces
-import type { DocLine, SupplyRow } from "../interfaces";
-import type { SupplyRecord } from "../utils/investigationSteps";
+import type { DocLine, SupplyRow } from "../../../interfaces";
+import type { SupplyRecord } from "../../../utils/investigationSteps";
 
 // Components
 import Document from "./Document";
@@ -37,12 +37,16 @@ const SupplySlide = ({
   cash,
 }: SupplySlideProps) => (
   <div className="flex-1 min-h-0 flex flex-col gap-3 min-w-0">
-    <p className="text-[17px] font-semibold leading-snug text-content">{says}</p>
+    <p className="text-[17px] font-semibold leading-snug text-content">
+      {says}
+    </p>
 
     {note && (
       <p
         className={`text-[13px] leading-relaxed rounded-md px-3.5 py-2.5 ${
-          warn ? "cc-notice" : "border border-dashed border-brand_navy/25 text-content/95"
+          warn
+            ? "cc-notice"
+            : "border border-dashed border-brand_navy/25 text-content/95"
         }`}
       >
         {note}

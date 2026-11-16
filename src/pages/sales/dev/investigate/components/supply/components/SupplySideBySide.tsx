@@ -1,5 +1,5 @@
 // Interfaces
-import type { Supply } from "../utils/investigationSteps";
+import type { Supply } from "../../../utils/investigationSteps";
 
 // Components
 import KpiBox from "./KpiBox";
@@ -14,7 +14,12 @@ interface SupplySideBySideProps {
 /** The two stores side by side: a column each, their Ordered boxes level with
  *  each other and their Received boxes under them, so each figure sits straight
  *  across from the other store's. Order information, so no grading colours. */
-const SupplySideBySide = ({ supply, us, them, cash }: SupplySideBySideProps) => {
+const SupplySideBySide = ({
+  supply,
+  us,
+  them,
+  cash,
+}: SupplySideBySideProps) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
   const sides = [
     { mine: true, name: us, s: supply.mine },

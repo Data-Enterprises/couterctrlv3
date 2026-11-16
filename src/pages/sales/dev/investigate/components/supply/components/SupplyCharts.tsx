@@ -2,10 +2,10 @@
 import { Fragment } from "react";
 
 // Interfaces
-import type { Supply } from "../utils/investigationSteps";
+import type { Supply } from "../../../utils/investigationSteps";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../Carousel";
 import Timeline from "./Timeline";
 import SupplySideBySide from "./SupplySideBySide";
 
@@ -19,7 +19,13 @@ interface SupplyChartsProps {
 
 /** The Supply tab's charts: the window as a timeline, the two stores side by
  *  side, and the vendors either store took a delivery from. */
-const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => {
+const SupplyCharts = ({
+  supply,
+  them,
+  us,
+  window,
+  cash,
+}: SupplyChartsProps) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
 
   // Every vendor either store took a delivery from, biggest first.
@@ -51,8 +57,7 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
           body: (
             <>
               <p className="text-[12px] text-content/95 leading-snug mb-2.5">
-                Dot size is units ordered. An empty lane means nothing
-                arrived.
+                Dot size is units ordered. An empty lane means nothing arrived.
               </p>
               <Timeline
                 orders={supply.orders}
@@ -66,7 +71,9 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
         },
         {
           label: "Side by side",
-          body: <SupplySideBySide supply={supply} us={us} them={them} cash={cash} />,
+          body: (
+            <SupplySideBySide supply={supply} us={us} them={them} cash={cash} />
+          ),
         },
         ...(vendorRows.length > 0
           ? [
@@ -80,18 +87,16 @@ const SupplyCharts = ({ supply, them, us, window, cash }: SupplyChartsProps) => 
                       gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px",
                     }}
                   >
-                    {["Vendor", "Here", "There", "Cost here"].map(
-                      (h, i) => (
-                        <span
-                          key={h}
-                          className={`text-[11.5px] font-bold uppercase tracking-wide text-content/95 pb-1.5 border-b border-brand_navy/15 ${
-                            i > 0 ? "text-right" : ""
-                          }`}
-                        >
-                          {h}
-                        </span>
-                      ),
-                    )}
+                    {["Vendor", "Here", "There", "Cost here"].map((h, i) => (
+                      <span
+                        key={h}
+                        className={`text-[11.5px] font-bold uppercase tracking-wide text-content/95 pb-1.5 border-b border-brand_navy/15 ${
+                          i > 0 ? "text-right" : ""
+                        }`}
+                      >
+                        {h}
+                      </span>
+                    ))}
                     {vendorRows.map((r) => (
                       <Fragment key={r.name}>
                         <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">

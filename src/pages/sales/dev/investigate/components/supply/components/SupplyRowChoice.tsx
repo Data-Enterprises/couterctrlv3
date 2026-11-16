@@ -1,8 +1,8 @@
 // Utils
-import { supplyLabel } from "../utils/supplyRows";
+import { supplyLabel } from "../../../utils/supplyRows";
 
 // Interfaces
-import type { SupplyRow } from "../interfaces";
+import type { SupplyRow } from "../../../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
@@ -19,7 +19,14 @@ interface SupplyRowChoiceProps {
 
 /** One of the Supply tab's rows. Picking it slides the documents card to
  *  that store's orders or receipts. A received row wears a hollow dot. */
-const SupplyRowChoice = ({ row, us, them, read, on, onPick }: SupplyRowChoiceProps) => {
+const SupplyRowChoice = ({
+  row,
+  us,
+  them,
+  read,
+  on,
+  onPick,
+}: SupplyRowChoiceProps) => {
   const label = supplyLabel(row, us, them);
   const n = row.docs.length;
   return (
@@ -50,7 +57,9 @@ const SupplyRowChoice = ({ row, us, them, read, on, onPick }: SupplyRowChoicePro
         <span className="font-bold text-content">{label.store}</span>
       </span>
       <span className="text-right text-[12.5px] text-content/95 tabular-nums whitespace-nowrap">
-        {read ? `${n.toLocaleString("en-US")} ${row.isOrder ? "order" : "receiver"}${n === 1 ? "" : "s"}` : "not read"}
+        {read
+          ? `${n.toLocaleString("en-US")} ${row.isOrder ? "order" : "receiver"}${n === 1 ? "" : "s"}`
+          : "not read"}
       </span>
       <span className="text-right text-[13px] font-bold tabular-nums text-content whitespace-nowrap">
         {read ? `${Math.round(row.units).toLocaleString("en-US")} units` : "—"}
