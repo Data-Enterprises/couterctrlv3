@@ -6,6 +6,7 @@ import {
   mixedPriceFromServer,
   type MixedPriceInsight,
 } from "../utils/pricePoints";
+import { serverDetail } from "../utils/serverError";
 
 /**
  * The price table from the server, the receipts only on request.
@@ -97,7 +98,10 @@ export const usePricePoints = () => {
         setPrices({
           ...initial,
           upc,
-          error: e instanceof Error ? e.message : "Could not read the prices",
+          // A store the user isn't assigned is a 403 whose reason is in `detail`.
+          error:
+            serverDetail(e) ??
+            (e instanceof Error ? e.message : "Could not read the prices"),
         });
       }
     },
