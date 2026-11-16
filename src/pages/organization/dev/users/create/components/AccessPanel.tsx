@@ -17,6 +17,7 @@ import {
   wizardGroups,
 } from "../../../utils";
 import { NO_PICKS, heldGroupIds, toggleGroup } from "../../utils";
+import { reasonOf } from "../../../../../../utils/serverError";
 
 // Interfaces
 import type { AccessPicks, SelectableStore } from "../../interfaces";
@@ -211,7 +212,7 @@ const AccessPanel = ({
           onCompanyGroupsChange((prev) => ({ ...prev, [companyId]: j.groups }));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const selectCompany = (companyId: number) => {

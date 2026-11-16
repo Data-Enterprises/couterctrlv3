@@ -22,6 +22,7 @@ import {
   visibleCompanyList,
   visibleGroups,
 } from "../utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
 import type { StoreSplit } from "./interfaces";
@@ -115,7 +116,7 @@ const BaseGroups = () => {
         loadMyGroups();
         fetchGroups(created.company);
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setClaiming(false));
   };
 
@@ -159,7 +160,7 @@ const BaseGroups = () => {
           setCompanyGroups((prev) => ({ ...prev, [companyId]: j.groups }));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => fetchingGroups.current.delete(companyId));
   };
 
@@ -181,7 +182,7 @@ const BaseGroups = () => {
           }));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const toggleCompany = (companyId: number) => {
@@ -257,7 +258,7 @@ const BaseGroups = () => {
           toast.error(j.msg || "Could not create base group");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setCreating(false));
   };
 

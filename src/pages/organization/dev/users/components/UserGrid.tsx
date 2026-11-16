@@ -604,11 +604,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                           title="Duplicate"
                           onClick={() => handleDuplicate(u)}
                         />
-                        <IconButton
-                          icon={KeyIcon}
-                          title="Password & security"
-                          onClick={() => setSecurityUser(u)}
-                        />
+                        {/* The backend refuses a password or security reset
+                            for anyone above your level. */}
+                        {!isOutranked(u.user_level) && (
+                          <IconButton
+                            icon={KeyIcon}
+                            title="Password & security"
+                            onClick={() => setSecurityUser(u)}
+                          />
+                        )}
                         {/* Deactivate (reversible from Inactive). Hidden on
                             your own row: the server refuses it. */}
                         {u.id !== ctx.userid && (

@@ -24,9 +24,10 @@ import {
   summarizeUnassign,
   viaLabel,
 } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, Store, User } from "../../../../../interfaces";
+import type { Store, User } from "../../../../../interfaces";
 
 // Components
 import AssignPanel from "../../../../../components-dev/AssignPanel";
@@ -60,7 +61,14 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
   /** A response for a store the reader has already left must not land here. */
   const activeStoreId = useRef(store.storeid);
 
+  /** Below level 9 or support the backend refuses a store with no company. */
+  const noCompanyLocked = !store.company && !ctx.canSeeAllCompanies;
+
   const load = () => {
+    if (noCompanyLocked) {
+      setLoading(false);
+      return;
+    }
     const forStore = store.storeid;
     activeStoreId.current = forStore;
     setLoading(true);
@@ -75,7 +83,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
           toast.error(j.msg || "Could not load this store's users");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => {
         if (activeStoreId.current === forStore) setLoading(false);
       });
@@ -126,7 +134,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       if (summary.tone === "success") toast.success(summary.text);
       else toast.error(summary.text);
     } catch (err) {
-      toast.error((err as JsonError).message);
+      toast.error(reasonOf(err));
     } finally {
       setMoving(false);
       load();
@@ -159,6 +167,25 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
   }));
 
   const viaGroup = assigned.filter((r) => r.via !== null && r.via !== "").length;
+
+  if (noCompanyLocked) {
+    return (
+      <div className="w-full" data-help="stores">
+        <div className="mb-2">
+          <span className="text-[15px] font-semibold text-content">
+            {store.store_number}
+          </span>
+          <span className="text-[12.5px] text-content/95 ml-2 truncate">
+            {store.store_name}
+          </span>
+        </div>
+        <p className="text-[11.5px] text-content/95 leading-snug max-w-[680px]">
+          This store has no company, so only level 9 or support can manage its
+          users.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full" data-help="stores">
