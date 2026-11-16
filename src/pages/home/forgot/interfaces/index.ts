@@ -19,4 +19,6 @@ export interface ForgotReply {
   error: number;
   msg?: string;
   question?: string;
+  /** From a matched answer: the proof the new password must be sent with. */
+  reset_token?: string;
 }
