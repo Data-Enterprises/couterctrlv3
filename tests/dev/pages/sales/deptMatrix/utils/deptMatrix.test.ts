@@ -30,8 +30,11 @@ const row = (
     ...over,
   }) as SubSale;
 
+/** The column key `row` gives a department: its number and name. */
+const deptOf = (dept: number) => `${dept}|${dept === 1 ? "Grocery" : "Deli"}`;
+
 const cell = (m: ReturnType<typeof buildMatrix>, store: string, dept: number) =>
-  m.rows.find((r) => r.storeNumber === store)?.cells.get(dept);
+  m.rows.find((r) => r.storeNumber === store)?.cells.get(deptOf(dept));
 
 describe("basisFor", () => {
   it("prefers last year when it covers as many days as this week", () => {
@@ -233,6 +236,21 @@ describe("buildMatrix", () => {
     });
     expect(m.columns.map((c) => c.subDept)).toEqual([1]);
   });
+
+  it("keeps departments that share a number in their own columns", () => {
+    // ACE stores file several departments under 0.
+    const m = buildMatrix({
+      tw: [
+        row("010", 0, 100, "2026-10-01", { sub_department_description: "DONATION" }),
+        row("010", 0, 50, "2026-10-01", { sub_department_description: "ACE REWARDS" }),
+      ],
+      lw: [],
+      ly: [],
+      metric,
+    });
+    expect(m.columns.map((c) => c.name)).toEqual(["ACE REWARDS", "DONATION"]);
+    expect(m.rows[0].cells.get("0|DONATION")?.ty).toBe(100);
+  });
 });
 
 describe("flagged", () => {
@@ -257,11 +275,11 @@ describe("bestIn", () => {
   });
 
   it("offers whoever is doing that department best", () => {
-    expect(bestIn(m, 1, { storeid: 10, storeNumber: "010" })?.storeNumber).toBe("020");
+    expect(bestIn(m, deptOf(1), { storeid: 10, storeNumber: "010" })?.storeNumber).toBe("020");
   });
 
   it("never offers the store you are already looking at", () => {
-    expect(bestIn(m, 1, { storeid: 20, storeNumber: "020" })?.storeNumber).toBe("030");
+    expect(bestIn(m, deptOf(1), { storeid: 20, storeNumber: "020" })?.storeNumber).toBe("030");
   });
 
   it("offers nobody rather than a store that cannot be measured", () => {
@@ -271,7 +289,7 @@ describe("bestIn", () => {
       ly: [row("010", 1, 100)],
       metric: "sales",
     });
-    expect(bestIn(alone, 1, { storeid: 10, storeNumber: "010" })).toBeNull();
+    expect(bestIn(alone, deptOf(1), { storeid: 10, storeNumber: "010" })).toBeNull();
   });
 
   it("offers nobody in a group of one", () => {
@@ -281,6 +299,6 @@ describe("bestIn", () => {
       ly: [row("010", 1, 100)],
       metric: "sales",
     });
-    expect(bestIn(solo, 1, { storeid: 10, storeNumber: "010" })).toBeNull();
+    expect(bestIn(solo, deptOf(1), { storeid: 10, storeNumber: "010" })).toBeNull();
   });
 });

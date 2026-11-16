@@ -85,7 +85,7 @@ const DeptMatrixPanel = ({
     const store = m.rows.find(
       (r) => r.storeid === cell.storeid && r.storeNumber === cell.storeNumber,
     );
-    const against = bestIn(m, cell.subDept, cell);
+    const against = bestIn(m, cell.key, cell);
     if (!store || !against) return;
     dispatch(
       setInvestigation({
@@ -93,9 +93,8 @@ const DeptMatrixPanel = ({
         storeNumber: store.storeNumber,
         storeName: applyStoreNumberToName(store.storeName, store.storeNumber, []),
         compareStoreid: against.storeid,
-        // The matrix's columns ARE department numbers, so the counterpart it
-        // picked is that same number at the other store. Which is the matrix's
-        // own bug, not this call site's: see deptMatrix's `key`.
+        // A matrix column is a number and name, so the counterpart it picked
+        // sells that same department under the same number.
         compareSubDept: cell.subDept,
         compareStoreNumber: against.storeNumber,
         compareStoreName: applyStoreNumberToName(
@@ -114,7 +113,7 @@ const DeptMatrixPanel = ({
     return matrix.rows.reduce(
       (a, r) =>
         a +
-        matrix.columns.filter((c) => flagged(r.cells.get(c.subDept)?.index ?? null, band))
+        matrix.columns.filter((c) => flagged(r.cells.get(c.key)?.index ?? null, band))
           .length,
       0,
     );
@@ -211,7 +210,7 @@ const DeptMatrixPanel = ({
                   </th>
                   {matrix.columns.map((c) => (
                     <th
-                      key={c.subDept}
+                      key={c.key}
                       className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center cc-caps w-[74px] max-w-[74px]"
                       title={c.name}
                     >
@@ -244,13 +243,13 @@ const DeptMatrixPanel = ({
                     </td>
 
                     {matrix.columns.map((c) => {
-                      const cell = r.cells.get(c.subDept);
+                      const cell = r.cells.get(c.key);
                       const idx = cell?.index ?? null;
                       const on = flagged(idx, band);
                       const tone = shade(idx, band);
                       return (
                         <td
-                          key={c.subDept}
+                          key={c.key}
                           className="border-r border-b border-brand_line p-0 text-center w-[74px] max-w-[74px]"
                         >
                           <button

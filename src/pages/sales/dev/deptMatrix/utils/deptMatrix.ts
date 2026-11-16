@@ -1,3 +1,6 @@
+// Utils
+import { subDeptKey } from "../../../../../utils/subDeptKey";
+
 // Interfaces
 import type { SubSale } from "../../../../../interfaces";
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -28,6 +31,8 @@ export interface Cell {
   storeid: number;
   storeNumber: string;
   subDept: number;
+  /** `subDeptKey`: the column this cell sits in. */
+  key: string;
   ty: number;
   lw: number;
   ly: number;
@@ -41,6 +46,9 @@ export interface Cell {
 
 export interface DeptColumn {
   subDept: number;
+  /** `subDeptKey`: number and name, since one number can hold several
+   *  departments (ACE files eight under 0). */
+  key: string;
   name: string;
   /** Every counted store's week, summed. Sums, never a mean of each store's
    *  index: one small store at 300 must not move the column. */
@@ -55,7 +63,7 @@ export interface StoreRow {
   storeid: number;
   storeNumber: string;
   storeName: string;
-  cells: Map<number, Cell>;
+  cells: Map<string, Cell>;
   /** This store across every department it could be measured in. */
   index: number | null;
 }
@@ -71,14 +79,15 @@ export interface Matrix {
 const value = (r: SubSale, metric: GradingMetric) =>
   metric === "qty" ? r.qty : r.total_sales - r.total_tax;
 
-const key = (storeid: number, storeNumber: string, subDept: number) =>
-  `${storeid}__${storeNumber}__${subDept}`;
+const key = (storeid: number, storeNumber: string, dept: string) =>
+  `${storeid}__${storeNumber}__${dept}`;
 
 interface Bucket {
   storeid: number;
   storeNumber: string;
   storeName: string;
   subDept: number;
+  subDeptKey: string;
   subDeptName: string;
   total: number;
   days: Set<string>;
@@ -88,7 +97,7 @@ interface Bucket {
 const bucket = (rows: SubSale[], metric: GradingMetric) => {
   const out = new Map<string, Bucket>();
   rows.forEach((r) => {
-    const k = key(r.storeid, r.store_number, r.sub_department);
+    const k = key(r.storeid, r.store_number, subDeptKey(r));
     let b = out.get(k);
     if (!b) {
       b = {
@@ -96,6 +105,7 @@ const bucket = (rows: SubSale[], metric: GradingMetric) => {
         storeNumber: r.store_number,
         storeName: r.store_name,
         subDept: r.sub_department,
+        subDeptKey: subDeptKey(r),
         subDeptName: r.sub_department_description,
         total: 0,
         days: new Set(),
@@ -149,10 +159,10 @@ export const buildMatrix = ({ tw, lw, ly, metric }: Input): Matrix => {
   // Departments and stores both come from THIS week: a department nobody sold
   // anything in this week is not a column anyone needs, and a store that did
   // not trade is not a row to grade.
-  const deptNames = new Map<number, string>();
+  const deptNames = new Map<string, { subDept: number; name: string }>();
   const storeOf = new Map<string, { storeid: number; storeNumber: string; storeName: string }>();
   bTw.forEach((b) => {
-    deptNames.set(b.subDept, b.subDeptName);
+    deptNames.set(b.subDeptKey, { subDept: b.subDept, name: b.subDeptName });
     storeOf.set(`${b.storeid}__${b.storeNumber}`, {
       storeid: b.storeid,
       storeNumber: b.storeNumber,
@@ -163,7 +173,10 @@ export const buildMatrix = ({ tw, lw, ly, metric }: Input): Matrix => {
   const stores = [...storeOf.values()].sort((a, b) =>
     a.storeNumber.localeCompare(b.storeNumber),
   );
-  const depts = [...deptNames.entries()].sort((a, b) => a[0] - b[0]);
+  // By number, then name for the departments that share one.
+  const depts = [...deptNames.entries()].sort(
+    (a, b) => a[1].subDept - b[1].subDept || a[1].name.localeCompare(b[1].name),
+  );
 
   // Every cell's basis first: expected depends on the group's basis total,
   // which can only be summed over the cells that HAVE one.
@@ -193,7 +206,7 @@ export const buildMatrix = ({ tw, lw, ly, metric }: Input): Matrix => {
   // Only cells that CAN be measured contribute to either total. A store with
   // no history in a department would otherwise shrink every other store's
   // expected by its own weight and lift the whole column.
-  const groupBy = new Map<number, { ty: number; basis: number }>();
+  const groupBy = new Map<string, { ty: number; basis: number }>();
   depts.forEach(([d]) => {
     let ty = 0;
     let basis = 0;
@@ -206,17 +219,17 @@ export const buildMatrix = ({ tw, lw, ly, metric }: Input): Matrix => {
     groupBy.set(d, { ty, basis });
   });
 
-  const columns: DeptColumn[] = depts.map(([subDept, name]) => {
-    const g = groupBy.get(subDept) ?? { ty: 0, basis: 0 };
-    return { subDept, name, groupTy: g.ty, index: g.basis > 0 ? 100 : null };
+  const columns: DeptColumn[] = depts.map(([d, { subDept, name }]) => {
+    const g = groupBy.get(d) ?? { ty: 0, basis: 0 };
+    return { subDept, key: d, name, groupTy: g.ty, index: g.basis > 0 ? 100 : null };
   });
 
   const rows: StoreRow[] = stores.map((s) => {
-    const cells = new Map<number, Cell>();
+    const cells = new Map<string, Cell>();
     let rowTy = 0;
     let rowExpected = 0;
 
-    depts.forEach(([d]) => {
+    depts.forEach(([d, { subDept }]) => {
       const k = key(s.storeid, s.storeNumber, d);
       const ty = bTw.get(k)?.total ?? 0;
       const basis = basisOf.get(k) ?? null;
@@ -238,7 +251,8 @@ export const buildMatrix = ({ tw, lw, ly, metric }: Input): Matrix => {
       cells.set(d, {
         storeid: s.storeid,
         storeNumber: s.storeNumber,
-        subDept: d,
+        subDept,
+        key: d,
         ty,
         lw: bLw.get(k)?.total ?? 0,
         ly: bLy.get(k)?.total ?? 0,
@@ -278,17 +292,17 @@ export const flagged = (index: number | null, band: number): boolean =>
  */
 export const bestIn = (
   matrix: Matrix,
-  subDept: number,
+  dept: string,
   exclude: { storeid: number; storeNumber: string },
 ): StoreRow | null => {
   const others = matrix.rows.filter(
     (r) =>
       !(r.storeid === exclude.storeid && r.storeNumber === exclude.storeNumber) &&
-      (r.cells.get(subDept)?.index ?? null) !== null,
+      (r.cells.get(dept)?.index ?? null) !== null,
   );
   if (!others.length) return null;
   return others.reduce((best, r) =>
-    (r.cells.get(subDept)?.index ?? 0) > (best.cells.get(subDept)?.index ?? 0)
+    (r.cells.get(dept)?.index ?? 0) > (best.cells.get(dept)?.index ?? 0)
       ? r
       : best,
   );
