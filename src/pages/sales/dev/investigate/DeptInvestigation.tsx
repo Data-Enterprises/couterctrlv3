@@ -1,9 +1,8 @@
 // Hooks
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useSalesCtx } from "../hooks";
-import { useDeptInvestigation, useItemFilters, useRowSelection } from "./hooks";
+import { useDeptInvestigation, useItemsGrid } from "./hooks";
 
 // Redux
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
@@ -12,7 +11,6 @@ import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { supplyWindow } from "./utils/investigationData";
-import { CAUSE_LABEL } from "./utils/deptInvestigation";
 import {
   desksOf,
   holdsUp,
@@ -20,13 +18,13 @@ import {
   supplyOf,
   vitalsOf,
 } from "./utils/investigationSteps";
-import { cash, PAGE_ROWS, shortStore, SUGGESTED } from "./utils";
+import { cash, shortStore } from "./utils";
 import { rowsOf } from "./utils/holdsRows";
 import { HANDOFF_NAME, handoffKey } from "./utils/handoff";
-import { CSV_HEADERS, csvRow, sortValue } from "./utils/columns";
+import { CSV_HEADERS, csvRow } from "./utils/columns";
 
 // Interfaces
-import type { ItemVerdict, Col, HandoffList, InvestigationTab } from "./interfaces";
+import type { HandoffList, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";
@@ -36,15 +34,7 @@ import SupplyPanel from "./supply/SupplyPanel";
 import ActPanel from "./handoff/ActPanel";
 import InvestigationHeader from "./components/InvestigationHeader";
 import InvestigationTabs from "./components/InvestigationTabs";
-import CauseChips from "./items/components/CauseChips";
-import SupplyWindowNote from "./items/components/SupplyWindowNote";
-import GridHead from "./items/components/GridHead";
-import GridBody from "./items/components/GridBody";
-import GridFoot from "./items/components/GridFoot";
-import GridPager from "./items/components/GridPager";
-import EvidenceRail from "./items/components/EvidenceRail";
-import ItemEvidence from "./items/evidence/ItemEvidence";
-import GridContextMenu from "./items/components/GridContextMenu";
+import ItemsTab from "./items/ItemsTab";
 
 interface DeptInvestigationProps {
   twStart: string;
@@ -81,10 +71,6 @@ const DeptInvestigation = ({
 }: DeptInvestigationProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric, investigation: target } = useSalesCtx();
-  const { sort, handleSort, applySort } = useTriStateSort<Col>();
-  /** Which item's evidence is open. Held here rather than in the slice: it
-   *  belongs to this screen and means nothing once you leave it. */
-  const [picked, setPicked] = useState<string | null>(null);
   /**
    * Which step is on screen.
    *
@@ -135,27 +121,9 @@ const DeptInvestigation = ({
   const salesIn = stage !== "sales";
   const allIn = stage === "done" || stage === "failed";
 
-  const filters = useItemFilters(items);
-  const { only, setOnly, setVendorQ, shown } = filters;
-
-  const pickedItem = useMemo(
-    () => items.find((i) => i.productCode === picked) ?? null,
-    [items, picked],
-  );
-
-  /**
-   * An item chosen anywhere else lands on the page that holds it.
-   *
-   * The Summary tab's list and the hand-off's lists both pick an item and
-   * switch to the grid. Without this the grid stays on page one and the
-   * selected row is somewhere the reader cannot see, which reads as the
-   * click having done nothing.
-   */
-  const show = (code: string) => {
-    const i = sorted.findIndex((r) => r.productCode === code);
-    if (i >= 0) setPage(Math.floor(i / PAGE_ROWS));
-    setPicked(code);
-  };
+  const { filters, sorted, show, supplyUpcs, setSupplyUpcs } =
+    useItemsGrid(items);
+  const { setOnly, setVendorQ } = filters;
 
   /* The three steps the grid does not answer. All three are arithmetic over
      items already in hand, so changing tab asks for nothing. */
@@ -177,18 +145,6 @@ const DeptInvestigation = ({
     [orders, receipts, items],
   );
   const desks = useMemo(() => desksOf(items), [items]);
-
-  /**
-   * The last item the rail showed, kept through the close.
-   *
-   * The rail slides out over 200ms, and unmounting its contents on the frame
-   * the selection clears would empty the panel before it has finished moving
-   * — the slide would be of a blank box. Written during render deliberately:
-   * an effect would run a frame late, which is exactly the frame that shows.
-   */
-  const lastEvidence = useRef<ItemVerdict | null>(null);
-  if (pickedItem) lastEvidence.current = pickedItem;
-  const evidence = pickedItem ?? lastEvidence.current;
 
   /** One person's list, every cause on it, named for who it is going to.
    *  The rows carry their cause, so one file holds the whole list. The
@@ -216,28 +172,9 @@ const DeptInvestigation = ({
     downloadCsv(rowsToCsv(CSV_HEADERS, sorted.map(csvRow)), `${name}.csv`);
   };
 
-  /** Which page of the grid is showing, from 0. */
-  const [page, setPage] = useState(0);
-
-  /** Codes the Supply tab is narrowed to, carried over from the grid. */
-  const [supplyUpcs, setSupplyUpcs] = useState("");
-
-  const sorted = applySort(shown, (row, col) => sortValue(row, col));
-  const selection = useRowSelection(sorted, picked, setPicked, show);
-  const { chosen, ctx, setCtx } = selection;
-  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_ROWS));
-  /* Clamped rather than reset: a filter that shortens the list below the
-     current page should land on the last one, not throw the reader back to
-     the first. */
-  const at_ = Math.min(page, pages - 1);
-
-  const from = at_ * PAGE_ROWS;
-  const capped = sorted.slice(from, from + PAGE_ROWS);
-
   if (!target) return null;
 
   const supply_ = supplyWindow({ start: twStart, end: twEnd });
-  const byCause = new Map(summary.byCause.map((c) => [c.cause, c]));
   /**
    * Sales and margin can point opposite ways, and the headline has to say so.
    *
@@ -251,20 +188,6 @@ const DeptInvestigation = ({
     (a, i) => a + Math.min(0, i.margins.costPenalty ?? 0),
     0,
   );
-
-  const suggested = SUGGESTED[target.focus ?? ""] ?? [];
-
-  /** Stepping walks the list the GRID is showing, not every item in the
-   *  department: arrowing through "never ordered" should not wander out of
-   *  it halfway down. It walks the whole filtered list rather than the
-   *  page, because a page boundary is a fact about the table and not about
-   *  the items — the page follows the rail instead. */
-  const at = sorted.findIndex((r) => r.productCode === picked);
-  const stepItem = (d: number) => {
-    const next = sorted[at + d];
-    if (next) setPage(Math.floor((at + d) / PAGE_ROWS));
-    if (next) setPicked(next.productCode);
-  };
 
   /**
    * Going back takes as long as it looks like it takes.
@@ -415,133 +338,21 @@ const DeptInvestigation = ({
             />
           )}
 
-          {/* The grid stays MOUNTED behind `hidden` rather than being
-              unmounted with the tab. Three hundred rows is too much to
-              rebuild on every switch, and keeping it alive preserves the
-              scroll position and the active filter — which matters, because
-              step 5's "Show in grid" lands the reader in it.
-
-              The Data Export preview's grid: one real table, every cell
-              ruled, mono at 11px, a sticky heading row and a sticky row
-              number. Dense is the point — a department is hundreds of items
-              and an airy list shows eight of them. */}
-          <div
-            hidden={tab !== "items" || !salesIn}
-            className={
-              tab === "items" && salesIn
-                ? "flex-1 min-h-0 flex flex-col overflow-hidden"
-                : ""
-            }
-          >
-            <div
-              data-help="causes"
-              className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15"
-            >
-              <CauseChips
-                total={items.length}
-                only={only}
-                onOnly={setOnly}
-                allIn={allIn}
-                byCause={byCause}
-                suggested={suggested}
-                fmt={fmt}
-              />
-
-              <SupplyWindowNote
-                them={target.compareStoreName}
-                window={supply_}
-                stage={stage}
-              />
-            </div>
-
-            <div className="relative flex-1 min-h-0 flex overflow-hidden">
-              {/* The grid and the strip under it are one column of the row; the
-              rail is the other. Left as siblings of the rail the pager
-              became a SECOND column — the grid shrank to its own width and
-              the pager floated in the middle of the space beside it. */}
-              <div
-                data-help="grid"
-                className="flex-1 min-w-0 flex flex-col overflow-hidden"
-              >
-                <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-                  <table className="border-collapse font-mono text-[11px] w-max">
-                    <GridHead
-                      target={target}
-                      filters={filters}
-                      byCause={byCause}
-                      sort={sort}
-                      onSort={handleSort}
-                    />
-                    <GridBody
-                      rows={capped}
-                      selection={selection}
-                      allIn={allIn}
-                      fmt={fmt}
-                    />
-
-                    {capped.length > 0 && <GridFoot shown={shown} fmt={fmt} />}
-                  </table>
-
-                  {capped.length === 0 && stage !== "sales" && (
-                    <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
-                      Nothing in this department to compare.
-                    </div>
-                  )}
-                </div>
-
-                {sorted.length > 0 && (
-                  <GridPager
-                    sorted={sorted}
-                    items={items}
-                    chosen={chosen}
-                    from={from}
-                    page={at_}
-                    pages={pages}
-                    setPage={setPage}
-                  />
-                )}
-              </div>
-
-              <EvidenceRail open={!!pickedItem}>
-                {evidence && target && (
-                  <ItemEvidence
-                    item={evidence}
-                    openStoreName={target.storeName}
-                    openStoreNumber={target.storeNumber}
-                    compareStoreName={target.compareStoreName}
-                    compareStoreNumber={target.compareStoreNumber}
-                    mineOrders={orders.mine}
-                    theirsOrders={orders.theirs}
-                    mineReceipts={receipts.mine}
-                    theirsReceipts={receipts.theirs}
-                    minePoints={sales?.minePoints ?? []}
-                    theirsPoints={sales?.theirsPoints ?? []}
-                    supplyReady={stage === "done"}
-                    position={{
-                      at: Math.max(0, at),
-                      of: sorted.length,
-                      within: only ? CAUSE_LABEL[only] : null,
-                    }}
-                    onStep={stepItem}
-                    onClose={() => setPicked(null)}
-                  />
-                )}
-              </EvidenceRail>
-            </div>
-          </div>
-
-          {ctx && (
-            <GridContextMenu
-              ctx={ctx}
-              shown={shown}
-              chosen={chosen}
-              onFind={(upcs) => {
-                setSupplyUpcs(upcs);
-                setTab("supply");
-              }}
-              onClose={() => setCtx(null)}
-            />
-          )}
+          <ItemsTab
+            open={tab === "items" && salesIn}
+            items={items}
+            stage={stage}
+            allIn={allIn}
+            summary={summary}
+            window={supply_}
+            sales={sales}
+            orders={orders}
+            receipts={receipts}
+            onOpenSupply={(upcs) => {
+              setSupplyUpcs(upcs);
+              setTab("supply");
+            }}
+          />
         </div>
       )}
     </div>

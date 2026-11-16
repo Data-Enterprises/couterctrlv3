@@ -66,6 +66,7 @@ export const useSalesCtx = () =>
       ledgerLoading: s.dev.salesLedger.ledgerLoading,
       threshold: s.dev.salesLedger.threshold,
       investigation: s.dev.salesLedger.investigation,
+      investigationGrid: s.dev.salesLedger.investigationGrid,
       // Top 200: the open store's items and the caches behind them.
       topItems: s.dev.salesLedger.topItems,
       topItemPoints: s.dev.salesLedger.topItemPoints,
