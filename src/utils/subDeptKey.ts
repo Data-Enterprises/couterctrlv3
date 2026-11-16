@@ -9,8 +9,8 @@
 /** The two fields every sub-department row carries. A missing number is 0,
  *  as the backend files it. */
 export interface SubDeptIdentity {
-  sub_department: number | null;
-  sub_department_description: string | null;
+  sub_department?: number | null;
+  sub_department_description?: string | null;
 }
 
 /** `"0|DONATION"`: the number and the description exactly as sent. */

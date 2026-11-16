@@ -3,6 +3,7 @@ import { calculateCogs } from "../../../utils/cogs";
 import { dayOf, lyDateFor, netOf, type DayMatch } from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
 import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
+import { subDeptKey } from "../../../utils/subDeptKey";
 
 // Interfaces
 import type {
@@ -76,11 +77,12 @@ const gpmOf = (sales: number, cogs: number) =>
   sales > 0 ? ((sales - cogs) / sales) * 100 : null;
 
 /** Which field this page groups on. A row only carries the column its own
- *  endpoint grouped by, so the others read undefined and key to "". */
+ *  endpoint grouped by, so the others read undefined and key to "". A
+ *  department is its number and name: ACE stores file several under one. */
 const keyOf = (r: ItemRow, d: ItemDimension) => {
   if (d === "vendor") return String(r.vendor_id ?? "");
   if (d === "category") return String(r.category ?? "");
-  return String(r.sub_department ?? "");
+  return r.sub_department == null ? "" : subDeptKey(r);
 };
 
 /**
