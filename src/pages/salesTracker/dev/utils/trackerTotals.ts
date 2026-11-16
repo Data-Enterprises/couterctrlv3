@@ -1,3 +1,6 @@
+// Utils
+import { subDeptKey } from "../../../../utils/subDeptKey";
+
 // Interfaces
 import type { DayTotal, SubDeptTotal, WeekTotal, WindowPlan } from "../interfaces";
 import type { SubSale } from "../../../../interfaces";
@@ -34,20 +37,27 @@ export const buildSubDeptTotals = (
   type DayAcc = { ty: number; ly: number | null; trans: number; seen: boolean };
 
   // department -> tyDate -> accumulator, keyed on the TY date; the LY side is
-  // reached through the plan's pairing.
-  const byDept = new Map<number, { desc: string; days: Map<string, DayAcc> }>();
+  // reached through the plan's pairing. A department is its number AND name:
+  // ACE stores file several under one number, and a group's stores can use
+  // one number for different departments.
+  const byDept = new Map<
+    string,
+    { id: number; desc: string; days: Map<string, DayAcc> }
+  >();
 
   const blankDay = (): DayAcc => ({ ty: 0, ly: null, trans: 0, seen: false });
 
   const deptOf = (row: SubSale) => {
-    let entry = byDept.get(row.sub_department);
+    const key = subDeptKey(row);
+    let entry = byDept.get(key);
     if (!entry) {
       entry = {
+        id: row.sub_department,
         desc:
           row.sub_department_description ?? `Sub dept ${row.sub_department}`,
         days: new Map(),
       };
-      byDept.set(row.sub_department, entry);
+      byDept.set(key, entry);
     }
     return entry;
   };
@@ -80,7 +90,7 @@ export const buildSubDeptTotals = (
 
   return (
     [...byDept.entries()]
-      .map(([id, entry]) => {
+      .map(([key, entry]) => {
         const weeks: WeekTotal[] = plan.weeks.map((bucket) => {
           const days: DayTotal[] = bucket.dates.map((date) => {
             const pair = plan.byTyDate.get(date);
@@ -146,7 +156,8 @@ export const buildSubDeptTotals = (
         const trans = weeks.reduce((a, w) => a + w.trans, 0);
 
         return {
-          id,
+          id: entry.id,
+          key,
           desc: entry.desc,
           weeks,
           salesTy,
@@ -244,6 +255,7 @@ export const allDeptsTotal = (
 
   return {
     id: -1,
+    key: "all",
     desc: label,
     weeks,
     salesTy,

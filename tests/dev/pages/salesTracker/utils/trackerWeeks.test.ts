@@ -246,3 +246,31 @@ describe("buildWindowPlan on the last-week basis", () => {
     expect(buildWindowPlan("2026-09-21", "2026-09-27").basis).toBe("LY");
   });
 });
+
+describe("buildSubDeptTotals department identity", () => {
+  const day = plan.weeks[0].dates[0];
+
+  it("keeps departments that share a number apart", () => {
+    // ACE stores file several departments under 0.
+    const rows = buildSubDeptTotals(
+      [
+        row(day, { sub_department: 0, sub_department_description: "DONATION" }),
+        row(day, { sub_department: 0, sub_department_description: "ACE REWARDS" }),
+      ],
+      [],
+      plan,
+    );
+    expect(rows.map((r) => r.key).sort()).toEqual(["0|ACE REWARDS", "0|DONATION"]);
+    expect(rows.every((r) => r.id === 0)).toBe(true);
+  });
+
+  it("still adds one department up across a group's stores", () => {
+    const rows = buildSubDeptTotals(
+      [row(day), { ...row(day), storeid: 2, store_number: "369" }],
+      [],
+      plan,
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0].salesTy).toBe(200);
+  });
+});

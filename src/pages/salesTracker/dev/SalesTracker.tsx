@@ -15,7 +15,7 @@ import {
   setAddingWeek,
   MAX_WEEKS,
   MIN_WEEKS,
-  setSelectedSubDept,
+  setSelectedSubDeptKey,
   setSubFilter,
   reQueryTracker,
 } from "../../../features/dev/devSalesTrackerSlice";
@@ -69,7 +69,7 @@ const SalesTracker = () => {
     ty,
     ly,
     basis,
-    selectedSubDept,
+    selectedSubDeptKey,
     subFilter,
     loadedFrom,
     addingWeek,
@@ -159,7 +159,7 @@ const SalesTracker = () => {
   );
 
   const handleRowClick = useCallback(
-    (id: number) => dispatch(setSelectedSubDept(id)),
+    (key: string) => dispatch(setSelectedSubDeptKey(key)),
     [dispatch],
   );
 
@@ -271,9 +271,9 @@ const SalesTracker = () => {
   ).getFullYear()}`;
 
   const selectedRow =
-    selectedSubDept === null
+    selectedSubDeptKey === null
       ? null
-      : (rows.find((r) => r.id === selectedSubDept) ?? null);
+      : (rows.find((r) => r.key === selectedSubDeptKey) ?? null);
 
   if (!hasSearched || (!loading && rows.length === 0)) {
     return (
@@ -393,9 +393,9 @@ const SalesTracker = () => {
 
               {visibleRows.map((row) => (
                 <SubDeptRow
-                  key={row.id}
+                  key={row.key}
                   row={row}
-                  isSelected={selectedSubDept === row.id}
+                  isSelected={selectedSubDeptKey === row.key}
                   onClick={handleRowClick}
                 />
               ))}
