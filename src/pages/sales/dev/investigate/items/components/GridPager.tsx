@@ -1,8 +1,8 @@
 // Utils
-import { PAGE_ROWS } from "../utils";
+import { PAGE_ROWS } from "../../utils";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
+import type { ItemVerdict } from "../../interfaces";
 
 interface GridPagerProps {
   /** The filtered, sorted list the grid pages through. */
@@ -18,7 +18,15 @@ interface GridPagerProps {
 }
 
 /** The strip under the grid: where you are in the list, and the pages. */
-const GridPager = ({ sorted, items, chosen, from, page: at_, pages, setPage }: GridPagerProps) => {
+const GridPager = ({
+  sorted,
+  items,
+  chosen,
+  from,
+  page: at_,
+  pages,
+  setPage,
+}: GridPagerProps) => {
   /**
    * The page numbers worth printing: the first, the last, and a few either
    * side of where you are, with gaps for the rest.
@@ -44,10 +52,7 @@ const GridPager = ({ sorted, items, chosen, from, page: at_, pages, setPage }: G
       <span>
         <span className="font-semibold text-content tabular-nums">
           {(from + 1).toLocaleString("en-US")}–
-          {Math.min(
-            from + PAGE_ROWS,
-            sorted.length,
-          ).toLocaleString("en-US")}
+          {Math.min(from + PAGE_ROWS, sorted.length).toLocaleString("en-US")}
         </span>{" "}
         of {sorted.length.toLocaleString("en-US")}
         {sorted.length !== items.length &&
@@ -77,10 +82,7 @@ const GridPager = ({ sorted, items, chosen, from, page: at_, pages, setPage }: G
         no sense of how much was behind the page in view. */}
           {pageWindow.map((p, i) =>
             p === null ? (
-              <span
-                key={`gap${i}`}
-                className="px-1 text-content/95"
-              >
+              <span key={`gap${i}`} className="px-1 text-content/95">
                 &hellip;
               </span>
             ) : (

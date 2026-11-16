@@ -36,15 +36,15 @@ import SupplyPanel from "./supply/SupplyPanel";
 import ActPanel from "./handoff/ActPanel";
 import InvestigationHeader from "./components/InvestigationHeader";
 import InvestigationTabs from "./components/InvestigationTabs";
-import CauseChips from "./components/CauseChips";
-import SupplyWindowNote from "./components/SupplyWindowNote";
-import GridHead from "./components/GridHead";
-import GridBody from "./components/GridBody";
-import GridFoot from "./components/GridFoot";
-import GridPager from "./components/GridPager";
-import EvidenceRail from "./components/EvidenceRail";
-import ItemEvidence from "./components/ItemEvidence";
-import GridContextMenu from "./components/GridContextMenu";
+import CauseChips from "./items/components/CauseChips";
+import SupplyWindowNote from "./items/components/SupplyWindowNote";
+import GridHead from "./items/components/GridHead";
+import GridBody from "./items/components/GridBody";
+import GridFoot from "./items/components/GridFoot";
+import GridPager from "./items/components/GridPager";
+import EvidenceRail from "./items/components/EvidenceRail";
+import ItemEvidence from "./items/evidence/ItemEvidence";
+import GridContextMenu from "./items/components/GridContextMenu";
 
 interface DeptInvestigationProps {
   twStart: string;

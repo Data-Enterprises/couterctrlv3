@@ -1,8 +1,8 @@
 // Utils
-import { count, EVENT_CLASS } from "../utils";
+import { count, EVENT_CLASS } from "../../../utils";
 
 // Interfaces
-import type { SupplyEvent } from "../interfaces";
+import type { SupplyEvent } from "../../../interfaces";
 
 interface EventTimelineProps {
   events: SupplyEvent[];

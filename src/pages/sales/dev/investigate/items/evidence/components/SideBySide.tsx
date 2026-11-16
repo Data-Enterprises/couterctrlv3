@@ -1,8 +1,8 @@
 // Utils
-import { money, NONE } from "../utils";
+import { money, NONE } from "../../../utils";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
+import type { ItemVerdict } from "../../../interfaces";
 
 // Components
 import StoreHead from "./StoreHead";
@@ -30,7 +30,13 @@ interface SideBySideProps {
  * to look at the shelf price, when the shelf price was fine and the invoice
  * was not.
  */
-const SideBySide = ({ item, mine, mineNumber, theirs, theirsNumber }: SideBySideProps) => {
+const SideBySide = ({
+  item,
+  mine,
+  mineNumber,
+  theirs,
+  theirsNumber,
+}: SideBySideProps) => {
   const m = item.margins;
   const noCost = item.mineCogs === 0 && item.theirsCogs === 0;
 

@@ -2,27 +2,27 @@
 import { useState } from "react";
 
 // Utils
-import { newestReceiverDay } from "../utils";
-import { ladderFor, supplyTimeline } from "../utils/supplyEvidence";
+import { newestReceiverDay } from "../../utils";
+import { ladderFor, supplyTimeline } from "./utils/supplyEvidence";
 import {
   CAUSE_LABEL,
   CAUSE_TONE,
   evidenceSays,
-} from "../utils/deptInvestigation";
+} from "../../utils/deptInvestigation";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
+import type { ItemVerdict } from "../../interfaces";
 import type {
   AllOrder,
   ReceiverItemSearchReceiver,
   SubsPricePoint,
-} from "../../../../../interfaces";
+} from "../../../../../../interfaces";
 
 // Components
-import SideBySide from "./SideBySide";
-import EventTimeline from "./EventTimeline";
-import Ladder from "./Ladder";
-import Fold from "./Fold";
+import SideBySide from "./components/SideBySide";
+import EventTimeline from "./components/EventTimeline";
+import Ladder from "./components/Ladder";
+import Fold from "./components/Fold";
 
 interface ItemEvidenceProps {
   item: ItemVerdict;

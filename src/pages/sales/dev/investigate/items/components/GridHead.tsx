@@ -1,18 +1,18 @@
 // Utils
-import { CAUSE_LABEL } from "../utils/deptInvestigation";
-import { CAUSE_ORDER } from "../utils";
-import { COLUMNS, label, ruleOf, tintOf } from "../utils/columns";
+import { CAUSE_LABEL } from "../../utils/deptInvestigation";
+import { CAUSE_ORDER } from "../../utils";
+import { COLUMNS, label, ruleOf, tintOf } from "../../utils/columns";
 
 // Interfaces
-import type { Cause, CauseTotal, Col, FilterKind } from "../interfaces";
-import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
-import type { SortState } from "../../../../../utils/useTriStateSort";
-import type { useItemFilters } from "../hooks";
+import type { Cause, CauseTotal, Col, FilterKind } from "../../interfaces";
+import type { InvestigationTarget } from "../../../../../../features/dev/devSalesLedgerSlice";
+import type { SortState } from "../../../../../../utils/useTriStateSort";
+import type { useItemFilters } from "../../hooks";
 
 // Components
-import SortHeader from "../../../../../components-dev/SortHeader";
-import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
-import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
+import SortHeader from "../../../../../../components-dev/SortHeader";
+import ColFilter from "../../../../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../../../../components-dev/filters/colFilterStyles";
 
 interface GridHeadProps {
   target: InvestigationTarget;
@@ -23,7 +23,13 @@ interface GridHeadProps {
 }
 
 /** The grid's heading row: a filter, a sort or a plain label per column. */
-const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => {
+const GridHead = ({
+  target,
+  filters,
+  byCause,
+  sort,
+  onSort,
+}: GridHeadProps) => {
   const {
     only,
     setOnly,
@@ -54,12 +60,8 @@ const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => 
                 label={label(c, target)}
                 labelSize="text-[11px]"
                 active={filterActive(c.filter)}
-                onApply={() =>
-                  applyFilter(c.filter as FilterKind)
-                }
-                onClear={() =>
-                  clearFilter(c.filter as FilterKind)
-                }
+                onApply={() => applyFilter(c.filter as FilterKind)}
+                onClear={() => clearFilter(c.filter as FilterKind)}
               >
                 {c.filter === "item" && (
                   <input
@@ -67,9 +69,7 @@ const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => 
                     style={colInputStyle}
                     placeholder="Search item…"
                     value={itemDraft}
-                    onChange={(e) =>
-                      setItemDraft(e.target.value)
-                    }
+                    onChange={(e) => setItemDraft(e.target.value)}
                   />
                 )}
                 {c.filter === "upc" && (
@@ -78,9 +78,7 @@ const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => 
                     style={colInputStyle}
                     placeholder="Search UPC…"
                     value={upcDraft}
-                    onChange={(e) =>
-                      setUpcDraft(e.target.value)
-                    }
+                    onChange={(e) => setUpcDraft(e.target.value)}
                   />
                 )}
                 {/* Vendor and cause are both closed sets, so they
@@ -107,16 +105,11 @@ const GridHead = ({ target, filters, byCause, sort, onSort }: GridHeadProps) => 
                     style={colInputStyle}
                     value={only ?? ""}
                     onChange={(e) =>
-                      setOnly(
-                        (e.target.value ||
-                          null) as Cause | null,
-                      )
+                      setOnly((e.target.value || null) as Cause | null)
                     }
                   >
                     <option value="">Every cause</option>
-                    {CAUSE_ORDER.filter((x) =>
-                      byCause.has(x),
-                    ).map((x) => (
+                    {CAUSE_ORDER.filter((x) => byCause.has(x)).map((x) => (
                       <option key={x} value={x}>
                         {CAUSE_LABEL[x]}
                       </option>

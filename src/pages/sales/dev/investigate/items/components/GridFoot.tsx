@@ -1,8 +1,8 @@
 // Utils
-import { COLUMNS, tintOf } from "../utils/columns";
+import { COLUMNS, tintOf } from "../../utils/columns";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
+import type { ItemVerdict } from "../../interfaces";
 
 interface GridFootProps {
   shown: ItemVerdict[];

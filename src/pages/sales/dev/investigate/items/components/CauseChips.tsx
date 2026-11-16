@@ -1,12 +1,16 @@
 // Utils
-import { CAUSE_LABEL, CAUSE_OWNER, CAUSE_TONE } from "../utils/deptInvestigation";
-import { CAUSE_ORDER } from "../utils";
+import {
+  CAUSE_LABEL,
+  CAUSE_OWNER,
+  CAUSE_TONE,
+} from "../../utils/deptInvestigation";
+import { CAUSE_ORDER } from "../../utils";
 
 // Interfaces
-import type { Cause, CauseTotal } from "../interfaces";
+import type { Cause, CauseTotal } from "../../interfaces";
 
 // Components
-import Bar from "./Bar";
+import Bar from "../../components/Bar";
 
 interface CauseChipsProps {
   /** Every item in the department, before any filter. */
@@ -20,7 +24,15 @@ interface CauseChipsProps {
 }
 
 /** The cause piles, as chips that narrow the grid to one of them. */
-const CauseChips = ({ total, only, onOnly, allIn, byCause, suggested, fmt }: CauseChipsProps) => (
+const CauseChips = ({
+  total,
+  only,
+  onOnly,
+  allIn,
+  byCause,
+  suggested,
+  fmt,
+}: CauseChipsProps) => (
   <div className="flex flex-wrap items-center gap-2">
     <button
       onClick={() => onOnly(null)}

@@ -1,8 +1,8 @@
 // Utils
-import { count, money, perBasket, weightLabel } from "../utils";
+import { count, money, perBasket, weightLabel } from "../../../utils";
 
 // Interfaces
-import type { PricePoint } from "../interfaces";
+import type { PricePoint } from "../../../interfaces";
 
 interface RungProps {
   p: PricePoint;

@@ -2,11 +2,11 @@
 import { useState } from "react";
 
 // Utils
-import { LADDER_SHOWN, money } from "../utils";
-import { ladderSays } from "../utils/deptInvestigation";
+import { LADDER_SHOWN, money } from "../../../utils";
+import { ladderSays } from "../../../utils/deptInvestigation";
 
 // Interfaces
-import type { PriceLadder, PricePoint } from "../interfaces";
+import type { PriceLadder, PricePoint } from "../../../interfaces";
 
 // Components
 import PriceChart from "./PriceChart";

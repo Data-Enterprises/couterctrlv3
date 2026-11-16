@@ -1,12 +1,12 @@
 // Utils
-import { CAUSE_LABEL } from "../utils/deptInvestigation";
-import { CAUSE_ORDER } from "../utils";
+import { CAUSE_LABEL } from "../../utils/deptInvestigation";
+import { CAUSE_ORDER } from "../../utils";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
+import type { ItemVerdict } from "../../interfaces";
 
 // Components
-import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
+import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 
 interface GridContextMenuProps {
   ctx: { x: number; y: number; upc: string };
@@ -18,7 +18,13 @@ interface GridContextMenuProps {
 }
 
 /** The grid's right-click menu: the selection first, then copy by cause. */
-const GridContextMenu = ({ ctx, shown, chosen, onFind, onClose }: GridContextMenuProps) => {
+const GridContextMenu = ({
+  ctx,
+  shown,
+  chosen,
+  onFind,
+  onClose,
+}: GridContextMenuProps) => {
   /**
    * Copying by CAUSE rather than by severity.
    *

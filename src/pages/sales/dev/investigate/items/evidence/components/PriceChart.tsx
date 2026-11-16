@@ -1,8 +1,8 @@
 // Utils
-import { count, money } from "../utils";
+import { count, money } from "../../../utils";
 
 // Interfaces
-import type { PricePoint } from "../interfaces";
+import type { PricePoint } from "../../../interfaces";
 
 interface PriceChartProps {
   points: PricePoint[];

@@ -1,12 +1,12 @@
 // Utils
-import { COLUMNS, tintOf } from "../utils/columns";
+import { COLUMNS, tintOf } from "../../utils/columns";
 
 // Interfaces
-import type { ItemVerdict } from "../interfaces";
-import type { useRowSelection } from "../hooks";
+import type { ItemVerdict } from "../../interfaces";
+import type { useRowSelection } from "../../hooks";
 
 // Components
-import Bar from "./Bar";
+import Bar from "../../components/Bar";
 
 interface GridBodyProps {
   rows: ItemVerdict[];
@@ -65,9 +65,7 @@ const GridBody = ({ rows, selection, allIn, fmt }: GridBodyProps) => {
             <td
               key={c.key}
               className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${
-                isOn(r.productCode)
-                  ? "bg-row_selected"
-                  : tintOf(c)
+                isOn(r.productCode) ? "bg-row_selected" : tintOf(c)
               }`}
             >
               {/* Masked until the orders and deliveries are in.

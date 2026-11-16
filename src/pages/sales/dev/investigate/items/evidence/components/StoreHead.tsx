@@ -1,5 +1,5 @@
 // Utils
-import { splitStore } from "../utils";
+import { splitStore } from "../../../utils";
 
 interface StoreHeadProps {
   name: string;

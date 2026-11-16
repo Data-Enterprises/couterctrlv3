@@ -1,9 +1,9 @@
 // Utils
-import { SUPPLY_LOOKBACK_DAYS } from "../utils/investigationData";
-import { STAGE_NOTE } from "../utils";
+import { SUPPLY_LOOKBACK_DAYS } from "../../utils/investigationData";
+import { STAGE_NOTE } from "../../utils";
 
 // Interfaces
-import type { Stage } from "../interfaces";
+import type { Stage } from "../../interfaces";
 
 interface SupplyWindowNoteProps {
   them: string;
