@@ -27,9 +27,11 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 // Utils
 import { enrichForecastRows } from "./utils/enrichRows";
 import { BATCH_SIZE } from "./utils";
+import { NONE_ASSIGNED, leftOutMessage, onlyAssigned } from "../../../utils/assignedStores";
+import { reasonOf } from "../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
+import type { PriceHistoryFromListResp, Store } from "../../../interfaces";
 
 // Components
 import SearchPopup from "../../../components-dev/SearchPopup";
@@ -48,7 +50,7 @@ const Forecasting = () => {
   const { type, lastStore, lastGroup, singleDate } = useAppSelector(
     (s) => s.search,
   );
-  const { userid } = useAppSelector((s) => s.user);
+  const { userid, assignedStores } = useAppSelector((s) => s.user);
   const { rowData, isLoading, noResults, upcs, adListRows } = useAppSelector(
     (s) => s.dev.forecastDev,
   );
@@ -61,15 +63,25 @@ const Forecasting = () => {
   /* Same request sequence the legacy page runs — two batches, the second
      appended rather than replacing the first — pointed at the dev slice. */
   /** The endpoint takes a list of stores, so a group is resolved first.
-   *  Inactive stores are dropped (their history has stopped). */
-  const resolveStoreids = async (): Promise<string> => {
+   *  Inactive stores are dropped (their history has stopped), and so are
+   *  stores the user isn't assigned: sending one fails the whole request.
+   *  Null means the user has already been told why there is nothing to send. */
+  const resolveStoreids = async (): Promise<string | null> => {
     if (type !== "Group") return String(lastStore);
     const resp = await getStoresAssignedToUserGroup(url, token, userid, lastGroup);
-    const stores = (resp.data.stores ?? []).filter(
+    const active: Store[] = (resp.data.stores ?? []).filter(
       (s: { active: number | boolean }) => Boolean(s.active),
     );
+    const stores = onlyAssigned(active, assignedStores);
+    if (active.length && !stores.length) {
+      toast.warn(NONE_ASSIGNED);
+      return null;
+    }
+    if (stores.length < active.length) {
+      toast.warn(leftOutMessage(active.length - stores.length));
+    }
     dispatch(setSelectedGroupStores(stores));
-    return stores.map((s: { storeid: number }) => s.storeid).join(",");
+    return stores.map((s) => s.storeid).join(",");
   };
 
   const handleSearch = async () => {
@@ -77,12 +89,16 @@ const Forecasting = () => {
     dispatch(setIsLoading(true));
     dispatch(reQuery());
 
-    let storeids = "";
+    let storeids: string | null = "";
     try {
       storeids = await resolveStoreids();
     } catch {
       dispatch(setIsLoading(false));
       toast.error("Couldn't load the stores for that group.");
+      return;
+    }
+    if (storeids === null) {
+      dispatch(setIsLoading(false));
       return;
     }
     if (!storeids) {
@@ -93,7 +109,7 @@ const Forecasting = () => {
     dispatch(setStoreids(storeids));
 
     // `singleDate` is already mm/dd/yyyy, as this endpoint wants; the ISO form
-    // other pages send gets "400: Invalid date formats".
+    // other pages send gets "Invalid date formats".
     const batch1 = upcs.slice(0, BATCH_SIZE);
     const batch2 = upcs.slice(BATCH_SIZE);
 
@@ -175,7 +191,8 @@ const Forecasting = () => {
             toast.warn("Some items could not be loaded — partial results shown.");
           });
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      // A store the user isn't assigned is a 403 whose reason is in `detail`.
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(setIsLoading(false)));
   };
 
