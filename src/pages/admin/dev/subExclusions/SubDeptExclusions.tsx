@@ -7,7 +7,6 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   setSubExclCatalog,
   setSubExclCompanyId,
-  setSubExclDays,
   setSubExclExclusions,
   setSubExclHashOnly,
   setSubExclSearch,
@@ -31,7 +30,7 @@ import {
   deptState,
   planToggle,
   ALL_STORES,
-  WINDOWS,
+  CATALOG_DAYS,
   COLS,
 } from "./utils";
 import { reasonOf, serverDetail, serverStatus } from "../../../../utils/serverError";
@@ -64,14 +63,12 @@ const SubDeptExclusions = () => {
   const stores = context.subExclStores;
   const companyId = context.subExclCompanyId;
   const storeKey = context.subExclStoreKey;
-  const days = context.subExclDays;
   const search = context.subExclSearch;
   const hashOnly = context.subExclHashOnly;
   const catalog = context.subExclCatalog;
   const exclusions = context.subExclExclusions;
   const setCompanyId = (v: string) => dispatch(setSubExclCompanyId(v));
   const setStoreKey = (v: string) => dispatch(setSubExclStoreKey(v));
-  const setDays = (v: string) => dispatch(setSubExclDays(v));
   const setSearch = (v: string) => dispatch(setSubExclSearch(v));
   const setExclusions = (rows: SubDeptExclusionRow[]) =>
     dispatch(setSubExclExclusions(rows));
@@ -156,7 +153,7 @@ const SubDeptExclusions = () => {
     [scope],
   );
   const scopeSig = scopeIds.join(",");
-  const loadKey = `${scopeSig}|${days}`;
+  const loadKey = `${scopeSig}|${CATALOG_DAYS}`;
 
   /**
    * The catalogue and the exclusions, one call each for the whole scope.
@@ -181,7 +178,7 @@ const SubDeptExclusions = () => {
         context.url,
         context.token,
         scopeIds,
-        Number(days),
+        CATALOG_DAYS,
         (done, total) => {
           if (live && total > 1) setProgress({ done, total });
         },
@@ -220,7 +217,7 @@ const SubDeptExclusions = () => {
     return () => {
       live = false;
     };
-  }, [scopeSig, days, context.url, context.token]);
+  }, [scopeSig, context.url, context.token]);
 
   const refetchExclusions = () =>
     getSubDeptExclusions(context.url, context.token, scopeIds)
@@ -362,14 +359,6 @@ const SubDeptExclusions = () => {
               })),
             ]}
             searchable={companyStores.length > 8}
-          />
-        </Field>
-        <Field label="Rang within">
-          <SelectFilter
-            plain
-            value={days}
-            onChange={setDays}
-            options={WINDOWS}
           />
         </Field>
         <TextFilter

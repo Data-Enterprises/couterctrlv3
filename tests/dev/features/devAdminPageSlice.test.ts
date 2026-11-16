@@ -19,11 +19,10 @@ import type { SubDeptCatalogRow } from "@/api/subDeptExclusions";
 const fresh = () => reducer(undefined, { type: "@@init" });
 
 describe("Admin's Sub dept exclusions state", () => {
-  it("starts on every store, the 60-day window and no catalogue", () => {
+  it("starts on every store and no catalogue", () => {
     const s = fresh();
     expect(s.subExclStoreKey).toBe(ALL_STORES);
     expect(SUB_EXCL_ALL_STORES).toBe(ALL_STORES);
-    expect(s.subExclDays).toBe("60");
     expect(s.subExclStores).toBeNull();
     expect(s.subExclCatalog).toBeNull();
     expect(s.subExclLoadedFor).toBeNull();

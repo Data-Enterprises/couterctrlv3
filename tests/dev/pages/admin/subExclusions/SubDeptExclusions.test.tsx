@@ -120,10 +120,8 @@ describe("Sub dept exclusions after leaving the tab and coming back", () => {
     expect(getExclusions).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the search text, Likely hash and the window", async () => {
+  it("keeps the search text and Likely hash", async () => {
     const tab = open();
-    await screen.findByText("Bread");
-    pick("Last 60 days", "Last year");
     await screen.findByText("Bread");
     fireEvent.change(screen.getByPlaceholderText("Search departments…"), {
       target: { value: "bre" },
@@ -146,8 +144,6 @@ describe("Sub dept exclusions after leaving the tab and coming back", () => {
       "Search departments…",
     ) as HTMLInputElement;
     expect(search.value).toBe("lot");
-    expect(screen.getByRole("button", { name: "Last year" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Last 60 days" })).toBeNull();
     // Likely hash is still on: Bread is hidden and Lottery is shown.
     expect(screen.getByText("Lottery")).toBeTruthy();
     fireEvent.change(search, { target: { value: "" } });
@@ -169,17 +165,11 @@ describe("Sub dept exclusions after leaving the tab and coming back", () => {
     expect(screen.queryByRole("button", { name: "Alpha Two" })).toBeNull();
   });
 
-  it("reads the catalogue again when the window changes", async () => {
+  it("reads the catalogue over the last 60 days", async () => {
     open();
     await screen.findByText("Bread");
     expect(getCatalog).toHaveBeenCalledTimes(1);
     expect(getCatalog.mock.calls[0][3]).toBe(60);
-
-    pick("Last 60 days", "Last 2 years");
-    await screen.findByText("Bread");
-
-    expect(getCatalog).toHaveBeenCalledTimes(2);
-    expect(getCatalog.mock.calls[1][3]).toBe(730);
   });
 
   it("reads again on return when the exclusions read failed", async () => {
