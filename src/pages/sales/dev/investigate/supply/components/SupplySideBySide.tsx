@@ -1,5 +1,5 @@
 // Interfaces
-import type { Supply } from "../../../utils/investigationSteps";
+import type { Supply } from "../../utils/investigationSteps";
 
 // Components
 import KpiBox from "./KpiBox";

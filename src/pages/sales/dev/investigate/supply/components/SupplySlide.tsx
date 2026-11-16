@@ -1,9 +1,9 @@
 // Utils
-import { DOC_COLS } from "../../../utils/supplyRows";
+import { DOC_COLS } from "../../utils/supplyRows";
 
 // Interfaces
-import type { DocLine, SupplyRow } from "../../../interfaces";
-import type { SupplyRecord } from "../../../utils/investigationSteps";
+import type { DocLine, SupplyRow } from "../../interfaces";
+import type { SupplyRecord } from "../../utils/investigationSteps";
 
 // Components
 import Document from "./Document";

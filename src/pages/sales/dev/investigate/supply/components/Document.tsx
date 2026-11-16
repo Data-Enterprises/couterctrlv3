@@ -2,12 +2,12 @@
 import { useState } from "react";
 
 // Utils
-import { onDay } from "../../../utils";
-import { DOC_COLS, DOC_LINE_COLS } from "../../../utils/supplyRows";
+import { onDay } from "../../utils";
+import { DOC_COLS, DOC_LINE_COLS } from "../../utils/supplyRows";
 
 // Interfaces
-import type { SupplyRecord } from "../../../utils/investigationSteps";
-import type { DocLine } from "../../../interfaces";
+import type { SupplyRecord } from "../../utils/investigationSteps";
+import type { DocLine } from "../../interfaces";
 
 interface DocumentProps {
   rec: SupplyRecord;

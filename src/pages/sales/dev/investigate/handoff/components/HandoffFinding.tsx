@@ -1,8 +1,8 @@
 // Utils
-import { handoffKey, handoffLead } from "../../../utils/handoff";
+import { handoffKey, handoffLead } from "../../utils/handoff";
 
 // Interfaces
-import type { HandoffList, HandoffOwner } from "../../../interfaces";
+import type { HandoffList, HandoffOwner } from "../../interfaces";
 
 // Components
 import HandoffRowChoice from "./HandoffRowChoice";

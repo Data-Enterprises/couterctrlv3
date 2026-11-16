@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_LABEL } from "../../../utils/deptInvestigation";
-import { HANDOFF_NAME, handoffKey } from "../../../utils/handoff";
+import { CAUSE_LABEL } from "../../utils/deptInvestigation";
+import { HANDOFF_NAME, handoffKey } from "../../utils/handoff";
 
 // Interfaces
-import type { HandoffList } from "../../../interfaces";
+import type { HandoffList } from "../../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

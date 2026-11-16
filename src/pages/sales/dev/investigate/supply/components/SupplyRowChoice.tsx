@@ -1,8 +1,8 @@
 // Utils
-import { supplyLabel } from "../../../utils/supplyRows";
+import { supplyLabel } from "../../utils/supplyRows";
 
 // Interfaces
-import type { SupplyRow } from "../../../interfaces";
+import type { SupplyRow } from "../../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

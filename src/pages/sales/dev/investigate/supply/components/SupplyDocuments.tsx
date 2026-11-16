@@ -1,23 +1,23 @@
 // Utils
-import { codeOf } from "../../../utils";
+import { codeOf } from "../../utils";
 import {
   SUPPLY_ORDER,
   noReceiptsNote,
   supplySlideSays,
   supplyTab,
-} from "../../../utils/supplyRows";
+} from "../../utils/supplyRows";
 
 // Interfaces
 import type {
   OrdersWave,
   ReceiptsWave,
-} from "../../../utils/investigationData";
-import type { Supply, SupplyRecord } from "../../../utils/investigationSteps";
-import type { AllOrder } from "../../../../../../../interfaces";
-import type { DocLine, SupplyKind, SupplyRow } from "../../../interfaces";
+} from "../../utils/investigationData";
+import type { Supply, SupplyRecord } from "../../utils/investigationSteps";
+import type { AllOrder } from "../../../../../../interfaces";
+import type { DocLine, SupplyKind, SupplyRow } from "../../interfaces";
 
 // Components
-import Carousel from "../../Carousel";
+import Carousel from "../../components/Carousel";
 import SupplySlide from "./SupplySlide";
 import UpcFilter from "./UpcFilter";
 

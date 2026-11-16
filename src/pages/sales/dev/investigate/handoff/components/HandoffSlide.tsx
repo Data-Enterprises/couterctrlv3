@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_LABEL } from "../../../utils/deptInvestigation";
-import { HANDOFF_COLS, NOBODY_WHY, handoffSays } from "../../../utils/handoff";
+import { CAUSE_LABEL } from "../../utils/deptInvestigation";
+import { HANDOFF_COLS, NOBODY_WHY, handoffSays } from "../../utils/handoff";
 
 // Interfaces
-import type { Cause, HandoffList } from "../../../interfaces";
+import type { Cause, HandoffList } from "../../interfaces";
 
 // Components
 import HandoffLine from "./HandoffLine";

@@ -1,10 +1,10 @@
 // Utils
-import { onDay } from "../../../utils";
-import { SUPPLY_LOOKBACK_DAYS } from "../../../utils/investigationData";
-import { supplySays, type Supply } from "../../../utils/investigationSteps";
+import { onDay } from "../../utils";
+import { SUPPLY_LOOKBACK_DAYS } from "../../utils/investigationData";
+import { supplySays, type Supply } from "../../utils/investigationSteps";
 
 // Interfaces
-import type { SupplyKind, SupplyRow } from "../../../interfaces";
+import type { SupplyKind, SupplyRow } from "../../interfaces";
 
 // Components
 import SupplyRowChoice from "./SupplyRowChoice";

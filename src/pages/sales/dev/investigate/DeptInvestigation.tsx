@@ -32,8 +32,8 @@ import type { ItemVerdict, Col, HandoffList, InvestigationTab } from "./interfac
 import TabSkeleton from "./components/TabSkeleton";
 import HoldsPanel from "./components/HoldsPanel";
 import ReceiptsNote from "./components/ReceiptsNote";
-import SupplyPanel from "./components/supply/SupplyPanel";
-import ActPanel from "./components/handoff/ActPanel";
+import SupplyPanel from "./supply/SupplyPanel";
+import ActPanel from "./handoff/ActPanel";
 import InvestigationHeader from "./components/InvestigationHeader";
 import InvestigationTabs from "./components/InvestigationTabs";
 import CauseChips from "./components/CauseChips";

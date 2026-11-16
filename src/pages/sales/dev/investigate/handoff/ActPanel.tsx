@@ -2,14 +2,14 @@
 import { useState } from "react";
 
 // Utils
-import { HANDOFF_TAB, handoffKey, handoffOf } from "../../utils/handoff";
+import { HANDOFF_TAB, handoffKey, handoffOf } from "../utils/handoff";
 
 // Interfaces
-import type { Cause, HandoffList, HandoffOwner } from "../../interfaces";
-import type { Desk } from "../../utils/investigationSteps";
+import type { Cause, HandoffList, HandoffOwner } from "../interfaces";
+import type { Desk } from "../utils/investigationSteps";
 
 // Components
-import Carousel from "../Carousel";
+import Carousel from "../components/Carousel";
 import HandoffFinding from "./components/HandoffFinding";
 import HandoffSlide from "./components/HandoffSlide";
 

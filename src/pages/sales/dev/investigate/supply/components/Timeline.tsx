@@ -1,5 +1,5 @@
 // Interfaces
-import type { SupplyRecord } from "../../../utils/investigationSteps";
+import type { SupplyRecord } from "../../utils/investigationSteps";
 
 interface TimelineProps {
   orders: SupplyRecord[];

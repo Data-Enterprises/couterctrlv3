@@ -2,13 +2,13 @@
 import { useState } from "react";
 
 // Utils
-import { shortStore } from "../../utils";
-import { supplyRowsOf } from "../../utils/supplyRows";
+import { shortStore } from "../utils";
+import { supplyRowsOf } from "../utils/supplyRows";
 
 // Interfaces
-import type { OrdersWave, ReceiptsWave } from "../../utils/investigationData";
-import type { Supply } from "../../utils/investigationSteps";
-import type { SupplyKind } from "../../interfaces";
+import type { OrdersWave, ReceiptsWave } from "../utils/investigationData";
+import type { Supply } from "../utils/investigationSteps";
+import type { SupplyKind } from "../interfaces";
 
 // Components
 import SupplyFinding from "./components/SupplyFinding";

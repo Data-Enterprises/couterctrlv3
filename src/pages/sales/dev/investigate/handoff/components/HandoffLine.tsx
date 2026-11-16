@@ -3,11 +3,11 @@ import {
   CAUSE_LABEL,
   CAUSE_TIP,
   CAUSE_TONE,
-} from "../../../utils/deptInvestigation";
-import { HANDOFF_COLS } from "../../../utils/handoff";
+} from "../../utils/deptInvestigation";
+import { HANDOFF_COLS } from "../../utils/handoff";
 
 // Interfaces
-import type { ItemVerdict } from "../../../interfaces";
+import type { ItemVerdict } from "../../interfaces";
 
 interface HandoffLineProps {
   item: ItemVerdict;
