@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useAppSelector } from ".";
 import { getProductLookup, getTransactionList } from "../api/lossPrevention";
 import { fetchAllPages } from "../utils/paging";
+import { serverDetail } from "../utils/serverError";
 import type { ProductLookupResp, TransactionListItem } from "../interfaces";
 
 /**
@@ -170,7 +171,9 @@ export const useActualPricePoints = () => {
         setState({
           ...initial,
           upc,
-          error: e instanceof Error ? e.message : "Could not load transactions",
+          error:
+            serverDetail(e) ??
+            (e instanceof Error ? e.message : "Could not load transactions"),
         });
       }
     },
