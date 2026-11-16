@@ -33,6 +33,11 @@ import type {
   RecapItem,
   RecapMix,
 } from "../../pages/sales/dev/storePanel/summary/interfaces/index";
+import type {
+  Cause,
+  Col,
+} from "../../pages/sales/dev/investigate/interfaces";
+import type { SortState } from "../../utils/useTriStateSort";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -155,6 +160,33 @@ export interface PopupStoreData {
   rawLYHourly: HourlySale[];
 }
 
+/** The open investigation's Items grid: what it is filtered, sorted and paged
+ *  to, and which item's evidence is open. Cleared whenever the investigation
+ *  changes, so each one opens on a clean grid. */
+export interface InvestigationGrid {
+  cause: Cause | null;
+  itemQ: string;
+  upcQ: string;
+  vendorQ: string;
+  sort: SortState<Col>;
+  /** Which page of the grid is showing, from 0. */
+  page: number;
+  picked: string | null;
+  /** Codes the Supply tab is narrowed to, carried over from the grid. */
+  supplyUpcs: string;
+}
+
+export const EMPTY_INVESTIGATION_GRID: InvestigationGrid = {
+  cause: null,
+  itemQ: "",
+  upcQ: "",
+  vendorQ: "",
+  sort: null,
+  page: 0,
+  picked: null,
+  supplyUpcs: "",
+};
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
@@ -167,6 +199,7 @@ interface SalesLedgerState {
   tab: LedgerTab;
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
+  investigationGrid: InvestigationGrid;
   counterpart: Counterpart | null;
 
   // Loading
@@ -337,6 +370,7 @@ const initialState: SalesLedgerState = {
   tab: "subdept",
   selectedDate: null,
   investigation: null,
+  investigationGrid: EMPTY_INVESTIGATION_GRID,
   counterpart: null,
   ledgerLoading: false,
   reportLoading: false,
@@ -437,6 +471,13 @@ const salesLedgerSlice = createSlice({
       action: PayloadAction<InvestigationTarget | null>,
     ) => {
       state.investigation = action.payload;
+      state.investigationGrid = EMPTY_INVESTIGATION_GRID;
+    },
+    setInvestigationGrid: (
+      state,
+      action: PayloadAction<Partial<InvestigationGrid>>,
+    ) => {
+      state.investigationGrid = { ...state.investigationGrid, ...action.payload };
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -765,6 +806,7 @@ export const {
   setLedgerTab,
   setCounterpart,
   setInvestigation,
+  setInvestigationGrid,
   setLedgerSelectedDate,
   setLedgerLoading,
   setFinancials,

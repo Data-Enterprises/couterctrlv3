@@ -4,7 +4,10 @@ import { resetAppSlice } from "../features/appSlice";
 import { setUsername, setUserLevel } from "../features/userSlice";
 import { setLastRoute } from "../features/navSlice";
 import { setCouponSalesHasSearched } from "../features/couponSalesSlice";
-import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
+import {
+  setInvestigationGrid,
+  setThreshold as devSetLedgerThreshold,
+} from "../features/dev/devSalesLedgerSlice";
 
 /**
  * Sign-out empties the store and keeps the username.
@@ -22,6 +25,7 @@ describe("sign-out", () => {
     store.dispatch(setLastRoute("/sales"));
     store.dispatch(setCouponSalesHasSearched(true));
     store.dispatch(devSetLedgerThreshold({ amount: 42, op: "gt" }));
+    store.dispatch(setInvestigationGrid({ page: 4, vendorQ: "Acme" }));
 
     store.dispatch(resetAppSlice());
 
@@ -37,6 +41,9 @@ describe("sign-out", () => {
     );
     expect(s.dev.salesLedger.threshold).toEqual(
       pristine.dev.salesLedger.threshold,
+    );
+    expect(s.dev.salesLedger.investigationGrid).toEqual(
+      pristine.dev.salesLedger.investigationGrid,
     );
   });
 
