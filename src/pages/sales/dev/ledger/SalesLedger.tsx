@@ -10,9 +10,6 @@ import {
   setWeeklySales,
   setWeeklySalesLastWeek,
   setWeeklySalesLastYear,
-  concatWeeklySales,
-  concatWeeklySalesLastWeek,
-  concatWeeklySalesLastYear,
   reQuery,
 } from "../../../../features/dev/devSalesSlice";
 import {
@@ -33,7 +30,6 @@ import { isGroupSearch } from "../../../../features/searchSlice";
 // API
 import { getDailySales } from "../../../../api/sales";
 import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 
 // Utils
 import { shiftIso } from "../../../../utils/grading";
@@ -44,7 +40,6 @@ import { PCT_COL_W, type SevFilter } from "../utils/index";
 import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
 // Interfaces
-import type { Store } from "../../../../interfaces";
 import type { SortColumn } from "./interfaces";
 
 // Components
@@ -79,7 +74,6 @@ const SalesLedger = () => {
     investigation,
     url,
     token,
-    userid,
     search,
     searchedDate,
     assignedStores,
@@ -249,70 +243,8 @@ const SalesLedger = () => {
       .finally(() => dispatch(setFinancialsLoading(false)));
     }
 
-    // Large group path: >30 stores → per-store calls, collect progressively
-    if (isGroup) {
-      try {
-        const groupResp = await getStoresAssignedToUserGroup(
-          url,
-          token,
-          userid,
-          search.lastGroup,
-        );
-        if (groupResp.data.error !== 0) toast.warn(groupResp.data.msg);
-        const stores: Store[] =
-          groupResp.data.error === 0
-            ? groupResp.data.stores.filter((s: any) => s.active)
-            : [];
-
-        if (stores.length > 30) {
-          await Promise.allSettled(
-            stores.map((store) =>
-              Promise.all([
-                getDailySales(
-                  url,
-                  token,
-                  twStart,
-                  twEnd,
-                  0,
-                  store.storeid,
-                ),
-                getDailySales(
-                  url,
-                  token,
-                  lwStart,
-                  lwEnd,
-                  0,
-                  store.storeid,
-                ),
-                getDailySales(
-                  url,
-                  token,
-                  lyStart,
-                  lyEnd,
-                  0,
-                  store.storeid,
-                ),
-              ])
-                .then(([tw, lw, ly]) => {
-                  if (tw.data.error === 0)
-                    dispatch(concatWeeklySales(tw.data.sales));
-                  if (lw.data.error === 0)
-                    dispatch(concatWeeklySalesLastWeek(lw.data.sales));
-                  if (ly.data.error === 0)
-                    dispatch(concatWeeklySalesLastYear(ly.data.sales));
-                })
-                .catch(() => {}),
-            ),
-          );
-          dispatch(setLedgerLoading(false));
-          return;
-        }
-      } catch {
-        // fall through to standard call
-      }
-    }
-
-    // Standard path: single store or small group
+    // One request per period, store or group: `sales/daily` takes a whole
+    // group in one query.
     try {
       const [twResp, lwResp, lyResp] = await Promise.all([
           getDailySales(
