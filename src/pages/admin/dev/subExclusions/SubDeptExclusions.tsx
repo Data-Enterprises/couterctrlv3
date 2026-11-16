@@ -34,9 +34,10 @@ import {
   WINDOWS,
   COLS,
 } from "./utils";
+import { reasonOf, serverDetail, serverStatus } from "../../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, Store } from "../../../../interfaces";
+import type { Store } from "../../../../interfaces";
 import type {
   CompanyDeptRow,
   ExclusionWrite,
@@ -90,7 +91,9 @@ const SubDeptExclusions = () => {
     want: boolean;
   } | null>(null);
 
-  /** Same source and same scoping as the Stores tab — `store_name` and
+  /** The stores assigned to the user, level 9 and support included: the
+   *  backend refuses to read exclusions for any store the user isn't assigned,
+   *  and one such store fails the whole company. `store_name` and
    *  `store_number` come back null often enough that the filters below would
    *  throw on them. */
   useEffect(() => {
@@ -103,14 +106,9 @@ const SubDeptExclusions = () => {
         }
         const valid = (list: Store[]) =>
           list.filter((s) => s.store_number !== null && s.store_name !== null);
-        dispatch(
-          setSubExclStores([
-            ...valid(j.assigned_stores ?? []),
-            ...(context.canSeeAllStores ? valid(j.unassigned_stores ?? []) : []),
-          ]),
-        );
+        dispatch(setSubExclStores(valid(j.assigned_stores ?? [])));
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   }, []);
 
   const companyOptions = useMemo(() => {
@@ -205,13 +203,13 @@ const SubDeptExclusions = () => {
         );
         setExclusions(e.error === 0 ? (e.data ?? []) : []);
       })
-      .catch((err: JsonError & { response?: { status?: number } }) => {
+      .catch((err) => {
         if (!live) return;
         dispatch(setSubExclCatalog({ rows: [], loadedFor: null }));
         toast.error(
-          err.response?.status === 404
+          serverStatus(err) === 404
             ? "The sub department catalogue endpoint is not on this API yet"
-            : err.message,
+            : reasonOf(err),
         );
       })
       .finally(() => {
@@ -230,7 +228,7 @@ const SubDeptExclusions = () => {
         const j = resp.data;
         if (j.error === 0) setExclusions(j.data ?? []);
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
 
   const rows = useMemo(() => {
     const subs: StoreSubDept[] = (catalog ?? []).map((r) => ({
@@ -286,12 +284,21 @@ const SubDeptExclusions = () => {
       ),
     )
       .then((results) => {
-        const failed = results.filter(
+        const failures = results.filter(
           (r) =>
             r.status === "rejected" ||
             (r.status === "fulfilled" && r.value.data?.error !== 0),
-        ).length;
+        );
+        const failed = failures.length;
         const done = results.length - failed;
+        // The first refusal's reason, such as a store with no company.
+        const first = failures[0];
+        const reason = !first
+          ? undefined
+          : first.status === "rejected"
+            ? serverDetail(first.reason)
+            : first.value.data?.msg;
+        const why = reason ? `: ${reason}` : "";
         if (failed === 0) {
           toast.success(
             want
@@ -299,10 +306,10 @@ const SubDeptExclusions = () => {
               : `${label} counts again at ${done} store${done === 1 ? "" : "s"}`,
           );
         } else if (done === 0) {
-          toast.error(`${label} could not be changed`);
+          toast.error(`${label} could not be changed${why}`);
         } else {
           toast.error(
-            `${label} changed at ${done} store${done === 1 ? "" : "s"}, failed at ${failed}`,
+            `${label} changed at ${done} store${done === 1 ? "" : "s"}, failed at ${failed}${why}`,
           );
         }
         return refetchExclusions();
@@ -387,6 +394,7 @@ const SubDeptExclusions = () => {
       <p className="text-[11.5px] text-content/95 mb-2 leading-snug flex-shrink-0">
         An excluded department still appears in every sub-department list — it
         just stops counting towards net sales on the Performance pages.
+        {context.canSeeAllStores && " Only the stores assigned to you are listed."}
         {rows.length > 0 && (
           <span className="font-semibold text-content">
             {" "}
