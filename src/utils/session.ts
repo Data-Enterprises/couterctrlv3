@@ -101,8 +101,12 @@ export const tokenClaim = (token: string, claim: string): unknown => {
   }
 };
 
-/** Who is really signed in, when the session is someone else's. */
+/** Who is really signed in, when the session is someone else's. Tokens now
+ *  carry the username in `imp_name` and an id in `imp`; older tokens carry the
+ *  username in `imp`. */
 export const impersonatedBy = (token: string): string | null => {
+  const name = tokenClaim(token, "imp_name");
+  if (typeof name === "string" && name) return name;
   const imp = tokenClaim(token, "imp");
   return typeof imp === "string" && imp ? imp : null;
 };

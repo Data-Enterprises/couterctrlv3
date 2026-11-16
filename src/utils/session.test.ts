@@ -35,6 +35,12 @@ describe("tokenClaim / impersonatedBy", () => {
     expect(impersonatedBy(t)).toBe("C5m7b4");
   });
 
+  it("reads the username from imp_name when imp is an id", () => {
+    // The refactored backend puts the impersonator's id in `imp`.
+    const t = jwt({ sub: "88", name: "tjsmith", imp: "42", imp_name: "C5m7b4", exp: 1 });
+    expect(impersonatedBy(t)).toBe("C5m7b4");
+  });
+
   it("is null for an ordinary sign-in", () => {
     expect(impersonatedBy(jwt({ sub: "tjsmith", exp: 1 }))).toBeNull();
   });
