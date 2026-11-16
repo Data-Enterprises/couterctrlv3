@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../../hooks";
 import { getTransactionList } from "../../../../api/lossPrevention";
 import { fetchAllPages } from "../../../../utils/paging";
+import { serverDetail } from "../../../../utils/serverError";
 import type { JsonError, TransactionListItem } from "../../../../interfaces";
 
 /**
@@ -110,7 +111,7 @@ export const useCaseReceipts = (scopes: TypeScope[]) => {
         if (requestId.current !== id) return;
         setState({
           ...empty,
-          error: (err as JsonError).message || "Could not read the receipts",
+          error: serverDetail(err) ?? ((err as JsonError).message || "Could not read the receipts"),
         });
       }
     },
