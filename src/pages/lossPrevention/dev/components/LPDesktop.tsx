@@ -45,11 +45,11 @@ import { formatGoliathDate } from "../../../../utils";
 import { scopeToStoreNumber } from "../../../../utils/storeIdentity";
 import { chunkSales } from "../utils";
 import { pickDefaultSaleType } from "../utils/grading";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
 import type {
   CashierDetails,
-  JsonError,
   TransactionIdsResp,
   TransactionListItem,
   TransactionOverview,
@@ -129,7 +129,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setLoading(false));
     getCashierDetails(
       params.url,
@@ -223,7 +223,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => {
         dispatch(setFetchingCashierTransactions(false));
         dispatch(setTransactionLoadingMessage(""));
@@ -394,7 +394,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
           dispatch(setSelectedSaleIds(saleIds));
           fetchTransactions(saleIds, saleType);
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
     } else
       getCashierTable(
         url,
@@ -450,7 +450,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
                       );
                     }
                   })
-                  .catch((err: JsonError) => toast.error(err.message))
+                  .catch((err) => toast.error(reasonOf(err)))
                   .finally(() => {
                     pages.find((p) => p.page === page)!.fetched = true;
                     if (pages.every((p) => p.fetched)) {
@@ -472,7 +472,7 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
             toast.warn(j.msg);
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
 
     // Baseline fetch — prior 2 weeks, used for cashier grading
     getCashierTable(
@@ -580,9 +580,9 @@ const LPDesktop = ({ getSaleTypes }: LPDesktopProps) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => {
+      .catch((err) => {
         dispatch(setTransModalOpen(false));
-        toast.error(err.message);
+        toast.error(reasonOf(err));
       });
   };
 
