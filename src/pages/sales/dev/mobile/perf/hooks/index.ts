@@ -23,16 +23,25 @@ import {
 } from "../../../../../../features/dev/devSalesPerfSlice";
 
 // API
-import { getHourly, getSubs, getWeekly } from "../../../../../../api/sales";
+import {
+  getHourly,
+  getDailySales,
+  getSubsDaily,
+} from "../../../../../../api/sales";
 
 // Utils
 import {
   fetchSubDeptRowsOrEmpty,
   fetchSubDeptRowsSafe,
 } from "../../../../../../utils/marginRows";
+import { fetchAllPages } from "../../../../../../utils/paging";
 import { foldDepartmentRings } from "../../../utils/ledgerUtils";
 import { asLastYearSlots } from "../../../../../../utils/perfPairs";
-import { pickComparison, resolveWeekComparison, storeKeyOf } from "../utils/perfData";
+import {
+  pickComparison,
+  resolveWeekComparison,
+  storeKeyOf,
+} from "../utils/perfData";
 import { perfScopeOf, perfWeekOf } from "../utils";
 
 // Interfaces
@@ -93,15 +102,41 @@ export const usePerfFetch = () => {
   ): Promise<PerfBundle> => {
     const { twStart, twEnd, lyDates, lwStart, lwEnd } = week;
     const args = [grouped, value, single] as const;
+    // Every page of subs/daily as one response. A group card gets one row per
+    // store, which can run past a 5,000-row page; a store card is one page.
+    const allSubs = async (start: string, end: string) => {
+      const ask = (page: number) =>
+        getSubsDaily(
+          context.url,
+          context.token,
+          start,
+          end,
+          grouped,
+          value,
+          null,
+          page,
+        );
+      const first = await ask(1);
+      if (first.data.error !== 0) return first;
+      const subs = await fetchAllPages(
+        first.data,
+        first.data.subs ?? [],
+        async (page) => {
+          const r = await ask(page);
+          return r.data.error === 0 ? (r.data.subs ?? []) : [];
+        },
+      );
+      return { ...first, data: { ...first.data, subs } };
+    };
     const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
       getHourly(context.url, context.token, twStart, twEnd, ...args),
       getHourly(context.url, context.token, lyDates[0], lyDates[6], ...args),
       getHourly(context.url, context.token, lwStart, lwEnd, ...args),
-      getSubs(context.url, context.token, twStart, twEnd, ...args),
-      getSubs(context.url, context.token, lyDates[0], lyDates[6], ...args),
-      getSubs(context.url, context.token, lwStart, lwEnd, ...args),
+      allSubs(twStart, twEnd),
+      allSubs(lyDates[0], lyDates[6]),
+      allSubs(lwStart, lwEnd),
     ]);
-    // getHourly and getSubs both answer on `.subs`, not `.sales`.
+    // getHourly and subs/daily (allSubs) both answer on `.subs`, not `.sales`.
     const rows = (r: { data: { error: number; subs: unknown[] } }) =>
       r.data.error === 0 ? r.data.subs : [];
     // A bundle is one store, so subs and hours fall back together. Deciding
@@ -111,10 +146,7 @@ export const usePerfFetch = () => {
       rows(hLy) as HourlySale[],
       rows(hLw) as HourlySale[],
     );
-    const subs = pickComparison(
-      rows(sLy) as SubSale[],
-      rows(sLw) as SubSale[],
-    );
+    const subs = pickComparison(rows(sLy) as SubSale[], rows(sLw) as SubSale[]);
     return {
       // Last year as it is. Last week is its own bar now, so a store with no
       // last year shows "no history" there rather than last week twice.
@@ -132,7 +164,8 @@ export const usePerfFetch = () => {
   };
 
   const fetchPerf = async () => {
-    const { isStore, useGroups, searchValue, singleStore } = perfScopeOf(search);
+    const { isStore, useGroups, searchValue, singleStore } =
+      perfScopeOf(search);
     const week = perfWeekOf(search.singleDate);
     const { twStart, twEnd, lyDates, lwStart, lwEnd } = week;
     dispatch(
@@ -148,11 +181,17 @@ export const usePerfFetch = () => {
     // Every cached store bundle belongs to the old date range.
     dispatch(clearPerfStoreCache());
     try {
-      const args = [useGroups, searchValue, singleStore] as const;
+      const args = [useGroups, searchValue] as const;
       const [wTy, wLy, wLw, bundle] = await Promise.all([
-        getWeekly(context.url, context.token, twStart, twEnd, ...args),
-        getWeekly(context.url, context.token, lyDates[0], lyDates[6], ...args),
-        getWeekly(context.url, context.token, lwStart, lwEnd, ...args),
+        getDailySales(context.url, context.token, twStart, twEnd, ...args),
+        getDailySales(
+          context.url,
+          context.token,
+          lyDates[0],
+          lyDates[6],
+          ...args,
+        ),
+        getDailySales(context.url, context.token, lwStart, lwEnd, ...args),
         // A group search no longer loads a group-wide breakdown: there is
         // nowhere on screen to show one now that Subs and Hours live inside a
         // store card, and each card fetches its own on the way open. A single
@@ -188,7 +227,11 @@ export const usePerfFetch = () => {
 
 /** Loads a store card's bundle the first time it is opened. */
 export const usePerfStoreBundle = (
-  fetchBundle: (grouped: number, value: number, single: number) => Promise<PerfBundle>,
+  fetchBundle: (
+    grouped: number,
+    value: number,
+    single: number,
+  ) => Promise<PerfBundle>,
 ) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -210,9 +253,7 @@ export const usePerfStoreBundle = (
     // The group's own breakdown is fetched the same way and cached in the same
     // map — it is just a different scope to ask the endpoints for.
     const row =
-      key === GROUP_KEY
-        ? null
-        : perf.weekTy.find((r) => storeKeyOf(r) === key);
+      key === GROUP_KEY ? null : perf.weekTy.find((r) => storeKeyOf(r) === key);
     if (key !== GROUP_KEY && !row) return;
 
     const gen = perf.storeCacheGen;
