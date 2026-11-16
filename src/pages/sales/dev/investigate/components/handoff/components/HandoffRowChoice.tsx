@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_LABEL } from "../utils/deptInvestigation";
-import { HANDOFF_NAME, handoffKey } from "../utils/handoff";
+import { CAUSE_LABEL } from "../../../utils/deptInvestigation";
+import { HANDOFF_NAME, handoffKey } from "../../../utils/handoff";
 
 // Interfaces
-import type { HandoffList } from "../interfaces";
+import type { HandoffList } from "../../../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
@@ -28,9 +28,13 @@ const HandoffRowChoice = ({ list, fmt, on, onPick }: HandoffRowChoiceProps) => {
         on ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
-      <span className={`w-2.5 h-2.5 rounded-full ${nobody ? "bg-ungraded" : "bg-brand_navy"}`} />
+      <span
+        className={`w-2.5 h-2.5 rounded-full ${nobody ? "bg-ungraded" : "bg-brand_navy"}`}
+      />
       <span className="flex flex-col min-w-0">
-        <span className={`text-[13px] text-content ${on ? "font-bold" : "font-semibold"}`}>
+        <span
+          className={`text-[13px] text-content ${on ? "font-bold" : "font-semibold"}`}
+        >
           {HANDOFF_NAME[handoffKey(list.owner)]}
         </span>
         <span className="text-[12px] text-brand_slate truncate">

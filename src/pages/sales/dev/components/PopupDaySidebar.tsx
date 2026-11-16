@@ -6,10 +6,7 @@ import { useSalesCtx } from "../hooks";
 import { setLedgerSelectedDate } from "../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import {
-  formatCurrency2,
-  formatBigNumber,
-} from "../../../../utils";
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { computeDayMatchedTotals } from "../utils/ledgerUtils";
 import { fmtPct } from "../utils";
 
@@ -107,7 +104,7 @@ const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
 
       {/* Day cards */}
       {sorted.map((d) => (
-        <DayCard key={d.sale_date} d={d} />
+        <DayCard key={d.sale_date.split("T")[0]} d={d} />
       ))}
     </div>
   );

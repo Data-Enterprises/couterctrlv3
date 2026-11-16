@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_LABEL } from "../utils/deptInvestigation";
-import { HANDOFF_COLS, NOBODY_WHY, handoffSays } from "../utils/handoff";
+import { CAUSE_LABEL } from "../../../utils/deptInvestigation";
+import { HANDOFF_COLS, NOBODY_WHY, handoffSays } from "../../../utils/handoff";
 
 // Interfaces
-import type { Cause, HandoffList } from "../interfaces";
+import type { Cause, HandoffList } from "../../../interfaces";
 
 // Components
 import HandoffLine from "./HandoffLine";
@@ -22,7 +22,15 @@ interface HandoffSlideProps {
 /** One person's list: a headline with the actions for the whole list, then
  *  every item on it, biggest first. Where a list holds more than one cause
  *  the rows name theirs; the list nobody is handed says why each is left out. */
-const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: HandoffSlideProps) => {
+const HandoffSlide = ({
+  list,
+  us,
+  them,
+  fmt,
+  onShow,
+  onExport,
+  onPickItem,
+}: HandoffSlideProps) => {
   const nobody = list.owner === null;
   const several = list.desks.length > 1;
   const items = [...list.items].sort((a, b) => a.gap - b.gap);
@@ -39,7 +47,9 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
             <>
               <button
                 onClick={() =>
-                  navigator.clipboard.writeText(list.items.map((i) => i.productCode).join(", "))
+                  navigator.clipboard.writeText(
+                    list.items.map((i) => i.productCode).join(", "),
+                  )
                 }
                 className="cc-btn-primary text-[12px]"
               >
@@ -70,15 +80,21 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
       {several && (
         <div className="flex flex-col gap-1">
           {list.desks.map((d) => (
-            <div key={d.cause} className="flex items-baseline gap-2 text-[12.5px]">
+            <div
+              key={d.cause}
+              className="flex items-baseline gap-2 text-[12.5px]"
+            >
               <span className="font-bold text-content whitespace-nowrap">
                 {CAUSE_LABEL[d.cause]}
               </span>
               <span className="text-content/95 tabular-nums whitespace-nowrap">
-                {d.items.length.toLocaleString("en-US")} items | {signed(d.dollars)}
+                {d.items.length.toLocaleString("en-US")} items |{" "}
+                {signed(d.dollars)}
               </span>
               {nobody && (
-                <span className="text-content/95 min-w-0">{NOBODY_WHY[d.cause]?.(us, them)}</span>
+                <span className="text-content/95 min-w-0">
+                  {NOBODY_WHY[d.cause]?.(us, them)}
+                </span>
               )}
               <button
                 onClick={() => onShow(d.cause)}
@@ -91,7 +107,9 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
         </div>
       )}
       {!several && nobody && (
-        <p className="text-[12.5px] text-content/95">{NOBODY_WHY[list.desks[0].cause]?.(us, them)}</p>
+        <p className="text-[12.5px] text-content/95">
+          {NOBODY_WHY[list.desks[0].cause]?.(us, them)}
+        </p>
       )}
 
       <div className="cc-scroll flex flex-col">
@@ -121,8 +139,8 @@ const HandoffSlide = ({ list, us, them, fmt, onShow, onExport, onPickItem }: Han
       </div>
 
       <p className="text-[12.5px] text-content/95 flex-none">
-        {list.items.length.toLocaleString("en-US")} items | {signed(list.total)} | biggest
-        difference first
+        {list.items.length.toLocaleString("en-US")} items | {signed(list.total)}{" "}
+        | biggest difference first
       </p>
     </div>
   );
