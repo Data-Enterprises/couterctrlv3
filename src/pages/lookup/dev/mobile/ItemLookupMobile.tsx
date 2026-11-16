@@ -38,6 +38,7 @@ import {
   computeMargin,
   computeTrend,
   itemDescription, lookupFailureText } from "../utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -174,7 +175,7 @@ const ItemLookupMobile = () => {
           dispatch(setPause(true));
         }
       })
-      .catch((err) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setIsLoading(false));
   };
 

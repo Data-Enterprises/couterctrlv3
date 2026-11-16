@@ -24,6 +24,7 @@ import {
   storeNumbersIn,
 } from "../../../../../utils/storeIdentity";
 import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
+import { serverDetail } from "../../../../../utils/serverError";
 
 // Interfaces
 
@@ -166,14 +167,15 @@ export const useLookupQueue = () => {
               }),
             );
           }
-        } catch {
-          // Network or parse failure — the store was never asked.
+        } catch (err) {
+          // A refusal (store not assigned to you) carries its reason; otherwise
+          // a network or parse failure, and the store was never asked.
           dispatch(
             updateLookupQueueItem({
               upc,
               patch: {
                 status: "error",
-                errorMessage: "There was an issue finding this item",
+                errorMessage: serverDetail(err) ?? "There was an issue finding this item",
               },
             }),
           );
