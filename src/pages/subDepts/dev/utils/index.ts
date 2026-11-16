@@ -262,36 +262,6 @@ export const computeStoreDayMatched = (
   };
 };
 
-/**
- * Sub-department sales totals, using the same formula as Sales' aggSubDepts
- * (`total_sales - total_tax`).
- *
- * Takes any rows carrying a department, sales, tax and quantity, so it works
- * on `subs/sub_sales` rows or on `subs/subs` item rows.
- *
- * This used to insist on `sub_sales`: `subs/subs` matched only
- * `item_ring_type = 'ITEM'` while `sub_sales` matched `'ITEM','SUBD'`, so
- * totals built from item rows ran short by every sale rung straight to a
- * department rather than to an item. **That has since been fixed on the
- * backend** — `subs/subs` now carries both ring types, and all three sales
- * endpoints agree once aggregated.
- */
-export const aggSubDeptSales = (
-  rows: {
-    sub_department: number;
-    total_sales: number;
-    total_tax: number;
-    qty: number;
-  }[],
-): Record<number, SubDeptSalesTotals> =>
-  rows.reduce((acc: Record<number, SubDeptSalesTotals>, s) => {
-    const cur = acc[s.sub_department] ?? { net: 0, qty: 0 };
-    cur.net += s.total_sales - s.total_tax;
-    cur.qty += s.qty;
-    acc[s.sub_department] = cur;
-    return acc;
-  }, {});
-
 /** The counterpart rows that actually pair with a TY day — used where a view
  * needs the matched row SET rather than totals (e.g. to display an LW figure
  * that reconciles with the percentage shown beside it). */
@@ -699,9 +669,9 @@ export const groupTotalsBySubDept = (rows: RollupRow[]) => {
   return by;
 };
 
-// No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
-// every row), so dropping it here made this page show one fewer sub department
-// and a lower total than Sales.
+// No sub_department !== 0 filter — Sales keeps department 0, so dropping it
+// here made this page show one fewer sub department and a lower total than
+// Sales.
 export const deriveSubDepts = (
   rows: { sub_department: number; sub_department_description: string }[],
 ): SubDeptEntry[] => {

@@ -21,7 +21,6 @@ import {
 // Interfaces
 import type {
   WeeklySale,
-  SubSale,
   HourlySale,
   SubDeptMargin,
   Store,
@@ -608,56 +607,6 @@ export const buildLedgerRows = (
 };
 
 // ─── Aggregators ──────────────────────────────────────────────────────────────
-
-export const aggSubDepts = (
-  src: SubSale[],
-): Record<
-  number,
-  {
-    desc: string;
-    net: number;
-    qty: number;
-    digital: number;
-    elecInstore: number;
-    elecStore: number;
-    storeCpn: number;
-  }
-> =>
-  src.reduce(
-    (acc, s) => {
-      if (!acc[s.sub_department])
-        acc[s.sub_department] = {
-          desc: s.sub_department_description,
-          net: 0,
-          qty: 0,
-          digital: 0,
-          elecInstore: 0,
-          elecStore: 0,
-          storeCpn: 0,
-        };
-      // Held on total_sales - total_tax with PopupSubDeptList; see the note
-      // there. (No call sites today.)
-      acc[s.sub_department].net += s.total_sales - s.total_tax;
-      acc[s.sub_department].qty += s.qty;
-      acc[s.sub_department].digital += s.digital_coupons;
-      acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-      acc[s.sub_department].elecStore += s.elec_store_coupons;
-      acc[s.sub_department].storeCpn += s.store_coupon;
-      return acc;
-    },
-    {} as Record<
-      number,
-      {
-        desc: string;
-        net: number;
-        qty: number;
-        digital: number;
-        elecInstore: number;
-        elecStore: number;
-        storeCpn: number;
-      }
-    >,
-  );
 
 export const aggHours = (
   src: HourlySale[],
