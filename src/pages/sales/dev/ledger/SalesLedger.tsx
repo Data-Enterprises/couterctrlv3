@@ -671,6 +671,9 @@ const SalesLedger = () => {
               <GroupComparisonPanel
                 rows={ledgerRows}
                 threshold={activeThreshold}
+                /* From the group comparison, so the store opens on the tab
+                   that continues that question rather than on its own
+                   departments. */
                 onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
               />
             ) : (
