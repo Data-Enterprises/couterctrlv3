@@ -74,7 +74,7 @@ const SubDeptDetailPanel = ({
   const {
     gradingMetric,
     itemThreshold: rawItemThreshold,
-    selectedSubDeptId: selectedId,
+    selectedSubDeptKey: selectedKey,
     selectedSubDeptItems: items,
     inactiveSubDeptItems: inactiveItems,
   } = useSalesCtx();
@@ -109,7 +109,7 @@ const SubDeptDetailPanel = ({
   useEffect(() => {
     dispatch(setExportSubDeptName(selected?.desc ?? ""));
     dispatch(setExportSubDeptItems(selected ? itemsWithSev : []));
-  }, [itemsWithSev, selectedId]);
+  }, [itemsWithSev, selectedKey]);
 
   const counts = {
     critical: itemsWithSev.filter((i) => i.sev === "critical").length,

@@ -319,7 +319,7 @@ interface SalesLedgerState {
   exportSubDeptItems: ExportSubDeptItem[];
 
   // Popup row selections — persist across tab switches, reset on new store
-  selectedSubDeptId: number | null;
+  selectedSubDeptKey: string | null;
   selectedSubDeptItems: Top10Item[];
   // Items that sold LW and/or LY but not at all this week, for the same
   // sub dept/day selection — surfaced via the item list's Active/Inactive
@@ -390,7 +390,7 @@ const initialState: SalesLedgerState = {
   top10: [],
   exportSubDeptName: "",
   exportSubDeptItems: [],
-  selectedSubDeptId: null,
+  selectedSubDeptKey: null,
   selectedSubDeptItems: [],
   inactiveSubDeptItems: [],
   selectedHour: null,
@@ -653,8 +653,8 @@ const salesLedgerSlice = createSlice({
     setExportSubDeptItems: (state, action: PayloadAction<ExportSubDeptItem[]>) => {
       state.exportSubDeptItems = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
     },
     setSelectedSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
       state.selectedSubDeptItems = action.payload;
@@ -672,7 +672,7 @@ const salesLedgerSlice = createSlice({
       state.lastFetchedItemsKey = action.payload;
     },
     clearPopupSelections: (state) => {
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -753,7 +753,7 @@ const salesLedgerSlice = createSlice({
       state.top10 = [];
       state.exportSubDeptName = "";
       state.exportSubDeptItems = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -827,7 +827,7 @@ export const {
   setTop10,
   setExportSubDeptName,
   setExportSubDeptItems,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   setSelectedSubDeptItems,
   setInactiveSubDeptItems,
   setSelectedHour,

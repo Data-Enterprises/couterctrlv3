@@ -14,6 +14,7 @@ import {
 import { shiftIso } from "../../../../../../utils/grading";
 import { formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../../../../utils/marginRows";
+import { subDeptKey, subDeptNumber } from "../../../../../../utils/subDeptKey";
 import { aggregateByCode, matchItemRows } from "../../../../../../utils/itemGrading";
 import { scopeToStoreNumber, withProductCode } from "../../../utils/ledgerUtils";
 
@@ -46,13 +47,13 @@ export const useSubDeptItems = (
   );
   const {
     selectedDate,
-    selectedSubDeptId: selectedId,
+    selectedSubDeptKey: selectedKey,
     lastFetchedItemsKey,
   } = useSalesCtx();
   const [itemsLoading, setItemsLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedId === null) {
+    if (selectedKey === null) {
       dispatch(setSelectedSubDeptItems([]));
       dispatch(setInactiveSubDeptItems([]));
       // The cache key below means "these items are already in Redux", so it
@@ -67,7 +68,7 @@ export const useSubDeptItems = (
     // Remounting with items already fetched for this exact store+sub
     // dept+day (e.g. navigating away and back) shouldn't refire the
     // request — Redux still has it, only the component tree was torn down.
-    const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
+    const itemsKey = `${storeId}__${storeNumber}_${selectedKey}_${selectedDate ?? "all"}`;
     if (lastFetchedItemsKey === itemsKey) return;
     // The guard above lands only once the three calls have come back, so
     // StrictMode's second mount read the state the first had not written yet
@@ -118,7 +119,7 @@ export const useSubDeptItems = (
           fetchSubDeptRowsSafe(
             context.url,
             context.token,
-            selectedId,
+            subDeptNumber(selectedKey),
             tyStart,
             tyEnd,
             0,
@@ -128,7 +129,7 @@ export const useSubDeptItems = (
           fetchSubDeptRowsSafe(
             context.url,
             context.token,
-            selectedId,
+            subDeptNumber(selectedKey),
             lwDayStart,
             lwDayEnd,
             0,
@@ -138,7 +139,7 @@ export const useSubDeptItems = (
           fetchSubDeptRowsSafe(
             context.url,
             context.token,
-            selectedId,
+            subDeptNumber(selectedKey),
             lyDayStart,
             lyDayEnd,
             0,
@@ -151,14 +152,18 @@ export const useSubDeptItems = (
         // withProductCode: the endpoint returns a department catch-all row
         // (product_code 0, described as the department) alongside the real
         // items. See ledgerUtils — it takes real money out of this list.
+        // Fetched by number, kept by number AND name: ACE stores file several
+        // departments under one number, and 0 asks for every department.
+        const inDept = (rows: SubDeptMargin[]) =>
+          rows.filter((r) => subDeptKey(r) === selectedKey);
         const tyItems: SubDeptMargin[] = withProductCode(
-          scopeToStoreNumber(tyRaw, storeNumber),
+          inDept(scopeToStoreNumber(tyRaw, storeNumber)),
         );
         let lwItems: SubDeptMargin[] = withProductCode(
-          scopeToStoreNumber(lwRaw, storeNumber),
+          inDept(scopeToStoreNumber(lwRaw, storeNumber)),
         );
         let lyItems: SubDeptMargin[] = withProductCode(
-          scopeToStoreNumber(lyRaw, storeNumber),
+          inDept(scopeToStoreNumber(lyRaw, storeNumber)),
         );
 
         // Whole-week case: the fetched LW/LY rows can include days that
@@ -256,7 +261,7 @@ export const useSubDeptItems = (
       cancelled = true;
     };
   }, [
-    selectedId,
+    selectedKey,
     selectedDate,
     weekDate,
     context.url,

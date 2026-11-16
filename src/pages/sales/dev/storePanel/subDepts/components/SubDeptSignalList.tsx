@@ -129,7 +129,7 @@ const SubDeptSignalList = ({
 
       <div className="overflow-y-auto thin-scrollbar flex-1">
         {sortedVisible.map((r) => (
-          <SubDeptSignalRow key={r.id} row={r} coverage={coverage} threshold={threshold} />
+          <SubDeptSignalRow key={r.key} row={r} coverage={coverage} threshold={threshold} />
         ))}
       </div>
     </div>

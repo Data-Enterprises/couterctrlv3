@@ -3,7 +3,7 @@ import { useAppDispatch } from "../../../../../../hooks";
 import { useSalesCtx } from "../../../hooks";
 
 // Redux
-import { setSelectedSubDeptId } from "../../../../../../features/dev/devSalesLedgerSlice";
+import { setSelectedSubDeptKey } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
@@ -23,18 +23,18 @@ interface SubDeptSignalRowProps {
 /** One sub department in the left list; a click opens it, a second closes it. */
 const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps) => {
   const dispatch = useAppDispatch();
-  const { gradingMetric, selectedSubDeptId } = useSalesCtx();
+  const { gradingMetric, selectedSubDeptKey } = useSalesCtx();
   const isQty = gradingMetric === "qty";
   const lwComplete = isCompleteCoverage(coverage.lwDayCount, coverage.dayCount);
   const lyComplete = isCompleteCoverage(coverage.lyDayCount, coverage.dayCount);
   const sev = deptSeverity(r, coverage, threshold, gradingMetric);
   const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
   const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
-  const isSel = selectedSubDeptId === r.id;
+  const isSel = selectedSubDeptKey === r.key;
 
   return (
     <button
-      onClick={() => dispatch(setSelectedSubDeptId(isSel ? null : r.id))}
+      onClick={() => dispatch(setSelectedSubDeptKey(isSel ? null : r.key))}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSel
           ? "cc-row-selected"
