@@ -14,10 +14,11 @@ import { getCashierTransaction } from "../../../../api/lossPrevention";
 import { formatCurrency2, formatDate } from "../../../../utils";
 import { couponValueOf } from "../../../../utils/couponValue";
 import { buildSaleId } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
 import type { AggRow, AggUse } from "./interfaces";
-import type { CouponItem, JsonError } from "../../../../interfaces";
+import type { CouponItem } from "../../../../interfaces";
 
 // Components
 import {
@@ -125,7 +126,7 @@ const CpnSectionDetail = ({
           dispatch(setCouponReceiptLines(transactions));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const handleSheetClose = () => {

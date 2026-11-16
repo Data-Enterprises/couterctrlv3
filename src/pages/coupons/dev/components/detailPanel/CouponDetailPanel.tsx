@@ -17,13 +17,13 @@ import { getCashierTransaction } from "../../../../../api/lossPrevention";
 // Utils
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { GroupTab } from "../../interfaces";
 import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
 import type {
   CouponItem,
-  JsonError,
   ThresholdValue,
   TransactionListItem,
 } from "../../../../../interfaces";
@@ -366,7 +366,7 @@ const CouponDetailPanel = ({
           dispatch(setCouponReceiptLines(transactions));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const handleBack = () => {
