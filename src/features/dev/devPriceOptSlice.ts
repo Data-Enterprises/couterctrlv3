@@ -41,7 +41,8 @@ export interface VendorView {
 export interface SubDeptView {
   window: SearchWindow | null;
   subDepts: SubDeptSummary[];
-  openSubDept: number | null;
+  /** The open department's `subDeptKey`. */
+  openSubDept: string | null;
   /**
    * Items per department, for every department opened in this window.
    *
@@ -51,12 +52,12 @@ export interface SubDeptView {
    * fixed store and date range, so the second read was never going to say
    * anything new.
    *
-   * Keyed by department id and emptied whenever the window moves, which is
+   * Keyed by department (`subDeptKey`) and emptied whenever the window moves, which is
    * the only thing that can invalidate it. The open department's list is
    * derived from this rather than stored beside it, so the two cannot
    * disagree about what is on screen.
    */
-  productsBySubDept: Record<number, ProductSummary[]>;
+  productsBySubDept: Record<string, ProductSummary[]>;
 }
 
 interface PriceOptState {
@@ -87,7 +88,7 @@ const priceOptSlice = createSlice({
     /** One department's items into the cache, leaving the rest alone. */
     cacheSubDeptProducts: (
       state,
-      action: PayloadAction<{ subDept: number; products: ProductSummary[] }>,
+      action: PayloadAction<{ subDept: string; products: ProductSummary[] }>,
     ) => {
       state.subDept.productsBySubDept[action.payload.subDept] =
         action.payload.products;

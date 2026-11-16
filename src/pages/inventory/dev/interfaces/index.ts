@@ -12,6 +12,8 @@ export interface InventoryScope {
 
 export interface SubDeptSummary {
   id: number;
+  /** `subDeptKey`: number and name, the department's identity. */
+  key: string;
   description: string;
   sales: number;
   /** Items can't be counted until the department is opened (`subs/daily`

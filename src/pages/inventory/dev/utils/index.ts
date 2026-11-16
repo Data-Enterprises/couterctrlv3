@@ -5,6 +5,7 @@ import { getRollup } from "../../../../api/rollup";
 // Utils
 import { fetchAllPages } from "../../../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import { subDeptKey, subDeptNumber } from "../../../../utils/subDeptKey";
 import { calculateCogs } from "../../../../utils/cogs";
 // Net of tax, the basis every other Sales surface reconciles on.
 import { netOf } from "../../../../utils/perfPairs";
@@ -65,14 +66,17 @@ export const fetchSubDepts = async (
 
   // Rows are per department per day, so a week arrives as seven rows per
   // department and the sales have to be summed before anything is comparable.
-  const byId = new Map<number, SubDeptSummary>();
+  // A department is its number AND name: ACE stores file several under one.
+  const byKey = new Map<string, SubDeptSummary>();
   all.forEach((s: SubSale) => {
-    const found = byId.get(s.sub_department);
+    const key = subDeptKey(s);
+    const found = byKey.get(key);
     if (found) {
       found.sales += netOf(s);
     } else {
-      byId.set(s.sub_department, {
+      byKey.set(key, {
         id: s.sub_department,
+        key,
         description: s.sub_department_description,
         sales: netOf(s),
         itemCount: null,
@@ -80,7 +84,7 @@ export const fetchSubDepts = async (
     }
   });
 
-  return [...byId.values()].sort((a, b) => b.sales - a.sales);
+  return [...byKey.values()].sort((a, b) => b.sales - a.sales);
 };
 
 /** Priced units for an item row: `weight` when non-zero, else `qty`, the same
@@ -150,23 +154,24 @@ export const itemCostStats = (
 };
 
 /** Every UPC in one department. Fetched on demand, one call per department the
- *  user actually opens. */
+ *  user actually opens: asked for by number, kept by number and name (for
+ *  department 0, asking by number returns the whole store). */
 export const fetchProducts = async (
   scope: InventoryScope,
-  subDeptId: number,
-): Promise<ProductSummary[]> =>
-  groupProducts(
-    await fetchSubDeptRows(
-      scope.url,
-      scope.token,
-      subDeptId,
-      scope.start,
-      scope.end,
-      USE_GROUPS,
-      scope.storeid,
-      SINGLE_STORE,
-    ),
+  key: string,
+): Promise<ProductSummary[]> => {
+  const rows = await fetchSubDeptRows(
+    scope.url,
+    scope.token,
+    subDeptNumber(key),
+    scope.start,
+    scope.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
   );
+  return groupProducts(rows.filter((r) => subDeptKey(r) === key));
+};
 
 /* ------------------------------------------------------------------ vendors */
 

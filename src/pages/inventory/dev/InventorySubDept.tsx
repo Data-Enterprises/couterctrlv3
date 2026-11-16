@@ -77,7 +77,7 @@ const InventorySubDept = () => {
     );
   const setSubDepts = (next: SubDeptSummary[]) =>
     dispatch(patchSubDeptView({ subDepts: next }));
-  const setOpenSubDept = (next: number | null) =>
+  const setOpenSubDept = (next: string | null) =>
     dispatch(patchSubDeptView({ openSubDept: next }));
   const [loading, setLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -93,7 +93,7 @@ const InventorySubDept = () => {
 
   /** The department whose items are wanted on screen; a response that no
    *  longer matches lost a race and is discarded. */
-  const wantedSubDept = useRef<number | null>(null);
+  const wantedSubDept = useRef<string | null>(null);
 
   // An open department with no items had its fetch cut off when the page was
   // left, so it is closed rather than shown empty.
@@ -145,7 +145,7 @@ const InventorySubDept = () => {
     }
   };
 
-  const toggleSubDept = async (id: number) => {
+  const toggleSubDept = async (id: string) => {
     if (!scope) return;
     if (id === openSubDept) {
       wantedSubDept.current = null;
@@ -189,7 +189,7 @@ const InventorySubDept = () => {
   };
 
   const groups: TreeGroup[] = subDepts.map((d) => ({
-    id: String(d.id),
+    id: d.key,
     label: d.description,
     sales: d.sales,
     itemCount: d.itemCount,
@@ -249,8 +249,8 @@ const InventorySubDept = () => {
               ? [
                   {
                     label:
-                      subDepts.find((d) => d.id === openSubDept)?.description ??
-                      String(openSubDept),
+                      subDepts.find((d) => d.key === openSubDept)?.description ??
+                      openSubDept,
                     products,
                   },
                 ]
@@ -277,11 +277,11 @@ const InventorySubDept = () => {
           dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}
           filterPlaceholder="Filter departments and items…"
           groups={groups}
-          openGroup={openSubDept === null ? null : String(openSubDept)}
+          openGroup={openSubDept}
           products={products}
           productsLoading={productsLoading}
           selectedUpc={selected?.productCode ?? null}
-          onToggleGroup={(id) => toggleSubDept(Number(id))}
+          onToggleGroup={toggleSubDept}
           onSelectProduct={selectProduct}
           onSearchOpen={() => setSearchOpen(true)}
           onExportOpen={() => setExportOpen(true)}
