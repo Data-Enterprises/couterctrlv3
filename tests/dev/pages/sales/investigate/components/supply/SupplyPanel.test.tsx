@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import SupplyPanel from "@/pages/sales/dev/investigate/components/SupplyPanel";
+import SupplyPanel from "@/pages/sales/dev/investigate/components/supply/SupplyPanel";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { supplyOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
 import type { ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
