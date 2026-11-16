@@ -31,6 +31,7 @@ import {
   type CompareMetric,
 } from "../utils/topItemsCompare";
 import { money, OUTLINE_TONE } from "../utils";
+import { reasonOf } from "../../../../../../utils/serverError";
 
 // Interfaces
 import type { Side } from "../interfaces";
@@ -162,7 +163,7 @@ const TopItemsReport = ({
         setMine(a);
         setTheirs(b);
       })
-      .catch((e: Error) => live && toast.error(e.message))
+      .catch((e) => live && toast.error(reasonOf(e)))
       .finally(() => live && setLoading(false));
 
     return () => {
@@ -263,7 +264,8 @@ const TopItemsReport = ({
         if (!live || j.error !== 0) return;
         setAbsent(j);
       })
-      .catch(() => undefined)
+      // The other store refused (not assigned to you): say so rather than show nothing.
+      .catch((e) => live && toast.warn(reasonOf(e)))
       .finally(() => live && setAbsentLoading(false));
     return () => {
       live = false;

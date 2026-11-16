@@ -46,9 +46,9 @@ import {
   type TopItemCompared,
 } from "./utils/topItems";
 import { dayText, inFlight, pctText } from "./utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
-import type { JsonError } from "../../../../../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
@@ -219,7 +219,7 @@ const PopupTopItems = ({
           }),
         );
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       // The result is written to the slice under its own key, so it stays
       // useful whether or not this tab is still mounted -- which is what
       // lets the request outlive a remount instead of being abandoned by it.
@@ -286,7 +286,7 @@ const PopupTopItems = ({
         }
         setDetail(j);
       })
-      .catch((err: JsonError) => live && toast.error(err.message))
+      .catch((err) => live && toast.error(reasonOf(err)))
       .finally(() => live && setDetailLoading(false));
     return () => {
       live = false;
