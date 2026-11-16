@@ -16,7 +16,3 @@ export const onlyAssigned = <T extends { storeid: number }>(
 
 /** Said when a group has stores but none of them are the user's. */
 export const NONE_ASSIGNED = "None of this group's stores are assigned to you.";
-
-/** Said when some of a group's stores were left out. */
-export const leftOutMessage = (count: number) =>
-  `${count} of this group's stores ${count === 1 ? "isn't" : "aren't"} assigned to you and ${count === 1 ? "was" : "were"} left out.`;

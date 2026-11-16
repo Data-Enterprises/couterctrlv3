@@ -27,7 +27,7 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 // Utils
 import { enrichForecastRows } from "./utils/enrichRows";
 import { BATCH_SIZE } from "./utils";
-import { NONE_ASSIGNED, leftOutMessage, onlyAssigned } from "../../../utils/assignedStores";
+import { NONE_ASSIGNED, onlyAssigned } from "../../../utils/assignedStores";
 import { reasonOf } from "../../../utils/serverError";
 
 // Interfaces
@@ -76,9 +76,6 @@ const Forecasting = () => {
     if (active.length && !stores.length) {
       toast.warn(NONE_ASSIGNED);
       return null;
-    }
-    if (stores.length < active.length) {
-      toast.warn(leftOutMessage(active.length - stores.length));
     }
     dispatch(setSelectedGroupStores(stores));
     return stores.map((s) => s.storeid).join(",");

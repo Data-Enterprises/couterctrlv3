@@ -20,7 +20,7 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 // Utils
 import { upcQueue } from "./upcQueue";
 import { buildScopeKey, sameStores } from "./utils";
-import { NONE_ASSIGNED, leftOutMessage, onlyAssigned } from "../../../utils/assignedStores";
+import { NONE_ASSIGNED, onlyAssigned } from "../../../utils/assignedStores";
 
 // Components
 import SearchPopup from "../../../components-dev/SearchPopup";
@@ -85,9 +85,6 @@ const UpcList = () => {
         if (!stores.length) {
           toast.warn(NONE_ASSIGNED);
           return null;
-        }
-        if (stores.length < active.length) {
-          toast.warn(leftOutMessage(active.length - stores.length));
         }
         return stores.map((s) => s.storeid).join(",");
       } catch {
