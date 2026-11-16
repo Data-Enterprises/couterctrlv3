@@ -10,6 +10,7 @@ import { fetchAllPages } from "../../../../../utils/paging";
 import { formatCurrency2, formatDateSimple } from "../../../../../utils";
 import { ACTION_TONE } from "../../utils/actionTone";
 import { BASKET_COLS, cell, LIST_COLS, num, saleNumber } from "../utils";
+import { serverDetail } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../../interfaces";
@@ -101,7 +102,8 @@ const TransactionSheet = ({
       .catch((e: unknown) => {
         if (cancelled) return;
         setError(
-          e instanceof Error ? e.message : "Could not load that transaction",
+          serverDetail(e) ??
+            (e instanceof Error ? e.message : "Could not load that transaction"),
         );
         setLoading(false);
       });
