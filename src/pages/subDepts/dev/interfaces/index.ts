@@ -2,6 +2,11 @@
 import type { RollupRow } from "../../../../api/rollup";
 import type { SubDeptMargin } from "../../../../interfaces";
 
+/** One department in the list: its number, its `subDeptKey` (number and
+ *  name, the identity: ACE stores file several departments under one number)
+ *  and its name. */
+export type SubDeptEntry = { id: number; key: string; desc: string };
+
 /** Sortable columns. Trend is a shape, not a figure, so it stays static. */
 export type SdSortCol = "ty" | "lw" | "ly";
 

@@ -143,7 +143,7 @@ const MarginPerfExportModal = ({
       return next;
     });
 
-  const gradedCount = subDepts.filter((s) => grades[s.id]).length;
+  const gradedCount = subDepts.filter((s) => grades[s.key]).length;
 
   const setMetricFn = (key: string, fn: AggFn) => {
     setMetrics((prev) => {
@@ -221,7 +221,7 @@ const MarginPerfExportModal = ({
     const pickedDepts =
       deptPick.length === 0
         ? subDepts
-        : subDepts.filter((d) => deptPick.includes(String(d.id)));
+        : subDepts.filter((d) => deptPick.includes(d.key));
 
     if (selected.has("all_depts") && deptSevs.size > 0) {
       const items = collectGradedItems(pickedDepts, grades, threshold, gradingMetric, deptSevs);
@@ -340,7 +340,7 @@ const MarginPerfExportModal = ({
                 <MultiSelectFilter
                   options={subDepts.map((d) => ({
                     label: d.desc,
-                    value: String(d.id),
+                    value: d.key,
                   }))}
                   values={deptPick}
                   onChange={setDeptPick}

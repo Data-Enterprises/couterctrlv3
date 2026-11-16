@@ -8,7 +8,7 @@ import {
 } from "../../../../utils/itemMargins";
 
 // Interfaces
-import type { SubDept } from "../../../../interfaces";
+import type { SubDeptEntry } from "../interfaces";
 import type { SubDeptGrade } from "../../../../features/dev/devSubMarginSlice";
 
 /**
@@ -32,8 +32,8 @@ export interface GradedItem {
 }
 
 export const collectGradedItems = (
-  subDepts: SubDept[],
-  grades: Record<number, SubDeptGrade>,
+  subDepts: SubDeptEntry[],
+  grades: Record<string, SubDeptGrade>,
   threshold: number,
   gradingMetric: ItemGradingMetric,
   sevs: Set<ItemSev>,
@@ -47,7 +47,7 @@ export const collectGradedItems = (
 
   // Department order is the left panel's, so the file reads down the page.
   for (const sd of subDepts) {
-    const grade = grades[sd.id];
+    const grade = grades[sd.key];
     if (!grade) continue;
     const items = buildItemRows(
       grade.tyWeekOneMargins,

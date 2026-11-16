@@ -1,7 +1,8 @@
 // Interfaces
 import type { AggFn } from "../../../../../utils/csvExport";
 import type { ItemGradingMetric } from "../../../../../utils/itemMargins";
-import type { SubDept, SubDeptMargin } from "../../../../../interfaces";
+import type { SubDeptMargin } from "../../../../../interfaces";
+import type { SubDeptEntry } from "../../interfaces";
 import type { SubDeptGrade } from "../../../../../features/dev/devSubMarginSlice";
 
 export type ExportPreset =
@@ -27,11 +28,11 @@ export interface MarginPerfExportModalProps {
   lyMargins: SubDeptMargin[];
   threshold: number;
   /** Every department in the current search, for the all-departments preset. */
-  subDepts: SubDept[];
+  subDepts: SubDeptEntry[];
   /** Their grades, which already carry each department's TY/LW/LY item rows —
    *  so a store-wide export costs no extra calls. Fills in as grading finishes,
    *  which is why the preset says how many are in hand. */
-  grades: Record<number, SubDeptGrade>;
+  grades: Record<string, SubDeptGrade>;
   /** The page's Margin/Sales toggle. Severity has to mean here what it means on
    *  screen, so the export grades on the same metric rather than assuming one. */
   gradingMetric: ItemGradingMetric;

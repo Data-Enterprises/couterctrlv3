@@ -61,7 +61,7 @@ const MarginPerfRightPanel = () => {
     gradingThreshold: rawGradingThreshold,
   } = useSubMarginState();
       const subDeptName =
-    ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
+    ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey)?.desc ?? "";
       // Matches the left panel: for co-located stores the resolved name embeds the
   // sibling's number, so rewrite it to the location currently on screen.
   const resolvedStoreName = useStoreName(ctx.searchValue);
@@ -82,8 +82,8 @@ const MarginPerfRightPanel = () => {
   const gradingThreshold = gradingThresholdRef.current;
 
   const selectedGrade =
-    ctx.selectedSubDeptId != null
-      ? subDeptGrades[ctx.selectedSubDeptId]
+    ctx.selectedSubDeptKey != null
+      ? subDeptGrades[ctx.selectedSubDeptKey]
       : undefined;
   const tier = selectedGrade
     ? getTier(selectedGrade, gradingThreshold, gradingMetric)
@@ -267,7 +267,7 @@ const MarginPerfRightPanel = () => {
    * rows, so this costs nothing until the button is pressed.
    */
   const criticalItems = useMemo(() => {
-    const dept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+    const dept = ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey);
     if (!dept) return [];
     return collectGradedItems(
       [dept],
@@ -278,7 +278,7 @@ const MarginPerfRightPanel = () => {
     ).map((g) => ({ productCode: g.row.productCode, dept: g.dept }));
   }, [
     ctx.subDepts,
-    ctx.selectedSubDeptId,
+    ctx.selectedSubDeptKey,
     subDeptGrades,
     gradingThreshold,
     gradingMetric,
@@ -397,7 +397,7 @@ const MarginPerfRightPanel = () => {
     }
   }, [ctx.selectedWeekDay, ctx.weekOneMargins, ctx.subDeptGridView]);
 
-  if (ctx.selectedSubDeptId == null) {
+  if (ctx.selectedSubDeptKey == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="cc-panel shadow-sm h-full items-center justify-center gap-2">

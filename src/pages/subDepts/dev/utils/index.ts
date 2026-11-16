@@ -12,15 +12,15 @@ import {
   marginPct,
   type MarginDollars,
 } from "../../../../utils/grading";
+import { subDeptKey } from "../../../../utils/subDeptKey";
 
 // Interfaces
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
 import type {
-  SubDept,
   SubDeptMargin,
   SubMarginsJsonResp,
 } from "../../../../interfaces";
-import type { RawSearch } from "../interfaces";
+import type { RawSearch, SubDeptEntry } from "../interfaces";
 
 /** The figure a sub department is graded and ranked on: last year when it
  * covers every day of the week, else last week when that does, else nothing.
@@ -600,11 +600,12 @@ export const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
 
 /** Item rows keyed by the department each row says it belongs to. */
 export const groupBySubDept = (rows: SubDeptMargin[]) => {
-  const by = new Map<number, SubDeptMargin[]>();
+  const by = new Map<string, SubDeptMargin[]>();
   for (const row of rows) {
-    const found = by.get(row.sub_department);
+    const key = subDeptKey(row);
+    const found = by.get(key);
     if (found) found.push(row);
-    else by.set(row.sub_department, [row]);
+    else by.set(key, [row]);
   }
   return by;
 };
@@ -677,15 +678,23 @@ export const computeTotalsGrade = (
   };
 };
 
-/** Rollup rows keyed by department. The key is the department number as
- *  text, "0" for none, which is the number the item rows carry. */
+/** The `subDeptKey` of a rollup row: its number ("0" for none) and name. */
+export const rollupDeptKey = (row: RollupRow) =>
+  subDeptKey({
+    sub_department: Number(row.key),
+    sub_department_description: row.name,
+  });
+
+/** Rollup rows keyed by department. The rollup groups by number only and
+ *  names the row after one of them, so an ACE store's department-0 lines
+ *  arrive as one row until the item rows split them. */
 export const groupTotalsBySubDept = (rows: RollupRow[]) => {
-  const by = new Map<number, RollupRow[]>();
+  const by = new Map<string, RollupRow[]>();
   for (const row of rows) {
-    const id = Number(row.key);
-    const found = by.get(id);
+    const key = rollupDeptKey(row);
+    const found = by.get(key);
     if (found) found.push(row);
-    else by.set(id, [row]);
+    else by.set(key, [row]);
   }
   return by;
 };
@@ -695,18 +704,21 @@ export const groupTotalsBySubDept = (rows: RollupRow[]) => {
 // and a lower total than Sales.
 export const deriveSubDepts = (
   rows: { sub_department: number; sub_department_description: string }[],
-): SubDept[] =>
-  rows
-    .reduce((acc: SubDept[], curr) => {
-      if (!acc.some((s) => s.id === curr.sub_department)) {
-        acc.push({
-          id: curr.sub_department,
-          desc: curr.sub_department_description,
-        });
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => a.id - b.id);
+): SubDeptEntry[] => {
+  const byKey = new Map<string, SubDeptEntry>();
+  for (const r of rows) {
+    const key = subDeptKey(r);
+    if (!byKey.has(key))
+      byKey.set(key, {
+        id: r.sub_department,
+        key,
+        desc: r.sub_department_description,
+      });
+  }
+  return [...byKey.values()].sort(
+    (a, b) => a.id - b.id || a.desc.localeCompare(b.desc),
+  );
+};
 
 /** A sub department's grade from TY, LY and LW margins and the coverage. */
 export const computeSubDeptGrade = (

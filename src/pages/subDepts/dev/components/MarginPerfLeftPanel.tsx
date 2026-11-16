@@ -8,7 +8,7 @@ import { useSubMarginCtx, useSubMarginState } from "../hooks";
 import {
   setGradingThreshold,
   setGradingMetric,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   type MarginTier,
   type SubDeptGrade,
 } from "../../../../features/dev/devSubMarginSlice";
@@ -122,8 +122,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
     return weekDates.map((d) => byDay.get(d) ?? 0);
   };
 
-  const grades = Object.entries(subDeptGrades).map(([id, grade]) => ({
-    id: Number(id),
+  const grades = Object.entries(subDeptGrades).map(([key, grade]) => ({
+    key,
     grade,
     tier: getTier(grade, gradingThreshold, gradingMetric),
   }));
@@ -199,18 +199,21 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
 
   const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
-  const handleSubDeptClick = (id: number) => {
-    if (id === ctx.selectedSubDeptId) return;
-    dispatch(setSelectedSubDeptId(id));
+  const handleSubDeptClick = (key: string) => {
+    if (key === ctx.selectedSubDeptKey) return;
+    dispatch(setSelectedSubDeptKey(key));
   };
 
   const rows = grades
-    .map(({ id, grade, tier }) => {
-      const sd = ctx.subDepts.find((s) => s.id === id);
+    .map(({ key, grade, tier }) => {
+      const sd = ctx.subDepts.find((s) => s.key === key);
       if (!sd) return null;
-      return { id, grade, tier, name: sd.desc };
+      return { id: sd.id, key, grade, tier, name: sd.desc };
     })
-    .filter((r): r is { id: number; grade: SubDeptGrade; tier: MarginTier; name: string } => r !== null);
+    .filter(
+      (r): r is { id: number; key: string; grade: SubDeptGrade; tier: MarginTier; name: string } =>
+        r !== null,
+    );
 
   const sevFilteredRows =
     sevFilter === "all" ? rows : rows.filter((r) => r.tier === sevFilter);
@@ -447,8 +450,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                   None this week
                 </div>
               ) : (
-                visibleRows.map(({ id, grade, tier, name }) => {
-                  const isSel = ctx.selectedSubDeptId === id;
+                visibleRows.map(({ key, grade, tier, name }) => {
+                  const isSel = ctx.selectedSubDeptKey === key;
                   const hasLY = (grade.lyMarginPct ?? 0) > 0 || grade.lySales > 0;
                   const hasLW = grade.lwSales > 0;
 
@@ -471,8 +474,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
 
                   return (
                     <button
-                      key={id}
-                      onClick={() => handleSubDeptClick(id)}
+                      key={key}
+                      onClick={() => handleSubDeptClick(key)}
                       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                         isSel
                           ? "cc-row-selected"
