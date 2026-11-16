@@ -59,7 +59,8 @@ const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
    * days, both weekend days missing.
    */
   const weekMatched = weekHasLY ? weekTotals.lyDayCount : weekTotals.lwDayCount;
-  const weekPartial = weekDisplayPct !== null && weekMatched < weekTotals.dayCount;
+  const weekPartial =
+    weekDisplayPct !== null && weekMatched < weekTotals.dayCount;
 
   const firstDate = sorted[0]?.sale_date.split("T")[0] ?? "";
   const lastDate = sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "";
@@ -85,12 +86,8 @@ const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] cc-caps-strong">
-            All Week
-          </div>
-          <div className="text-[12px] font-bold text-content">
-            {weekRange}
-          </div>
+          <div className="text-[9px] cc-caps-strong">All Week</div>
+          <div className="text-[12px] font-bold text-content">{weekRange}</div>
           <div className="text-[12px] font-bold text-content">
             {isQty ? formatBigNumber(weekTw, 0) : formatCurrency2(weekTw)}
           </div>
@@ -168,9 +165,7 @@ const PopupDaySidebar = ({ days }: PopupDaySidebarProps) => {
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] cc-caps-strong">
-                {dayName}
-              </div>
+              <div className="text-[9px] cc-caps-strong">{dayName}</div>
               <div className="text-[12px] font-bold text-content leading-none">
                 {dateNum}
               </div>

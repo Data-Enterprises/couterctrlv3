@@ -63,8 +63,7 @@ const LedgerRow = ({
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
-  // Built in shared/storeComparison so the group comparison opens a store the
-  // same way this row does.
+  // Built in shared/storeComparison so the group comparison opens a store the same way this row does.
   const handleClick = () => onClick(selectionFor(row));
 
   return (
