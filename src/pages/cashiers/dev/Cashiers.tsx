@@ -29,6 +29,7 @@ import {
 // Utils
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
 import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
+import { reasonOf } from "../../../utils/serverError";
 
 // Interfaces
 import type { JsonError, TransactionListItem } from "../../../interfaces";
@@ -120,7 +121,7 @@ const Cashiers = () => {
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching exceptions: " + err.message),
+        toast.error("Error fetching exceptions: " + reasonOf(err)),
       )
       .finally(() => {
         ctx.dispatch(setExplorerLoading(false));
@@ -228,7 +229,7 @@ const Cashiers = () => {
       ctx.dispatch(setExplorerScopeLabel(scopeLabel()));
       ctx.dispatch(setExplorerRows({ rows, exception }));
     } catch (err) {
-      toast.error("Error loading transactions: " + (err as JsonError).message);
+      toast.error("Error loading transactions: " + reasonOf(err));
       ctx.dispatch(setExplorerRows({ rows: [], exception }));
     } finally {
       ctx.dispatch(setExplorerLoading(false));

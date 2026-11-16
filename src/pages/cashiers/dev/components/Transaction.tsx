@@ -9,6 +9,7 @@ import { emailTransaction } from "../../../../api/lossPrevention";
 import { formatCurrency2 } from "../../../../utils";
 import { exportData } from "../../../../utils/export";
 import { chipStyle, fmtTime } from "../utils";
+import { serverDetail } from "../../../../utils/serverError";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../interfaces";
@@ -161,7 +162,7 @@ const Transaction = ({ trans }: TransactionProps) => {
         if (resp.data.error === 0)
           toast.success("Transaction emailed successfully");
       })
-      .catch(() => toast.error("Error emailing transaction"));
+      .catch((err) => toast.error(serverDetail(err) ?? "Error emailing transaction"));
   };
 
   return (

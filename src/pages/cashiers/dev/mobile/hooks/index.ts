@@ -25,10 +25,11 @@ import {
 // Utils
 import { getStoreName, formatGoliathDate } from "../../../../../utils";
 import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { ExplorerOutcome } from "../interfaces";
-import type { JsonError, TransactionListItem } from "../../../../../interfaces";
+import type { TransactionListItem } from "../../../../../interfaces";
 
 /**
  * The explorer's two-stage fetch, used by the mobile explorer. Stage one
@@ -142,7 +143,7 @@ export const useCashierExplorer = () => {
       };
     } catch (err) {
       if (isStale()) return { types: [], fallback: "", outcome: "stale" };
-      toast.error("Error fetching exceptions: " + (err as JsonError).message);
+      toast.error("Error fetching exceptions: " + reasonOf(err));
       return { types: [], fallback: "", outcome: "error" };
     } finally {
       // Only the newest run owns the spinner.
@@ -258,7 +259,7 @@ export const useCashierExplorer = () => {
       return rows.length ? "loaded" : "empty";
     } catch (err) {
       if (isStale()) return "stale";
-      toast.error("Error loading transactions: " + (err as JsonError).message);
+      toast.error("Error loading transactions: " + reasonOf(err));
       apply([]);
       return "error";
     } finally {
