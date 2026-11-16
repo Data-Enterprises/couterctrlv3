@@ -70,7 +70,6 @@ const DayCard = ({ d }: DayCardProps) => {
 
   return (
     <button
-      key={dateStr}
       onClick={() => onSelect(dateStr)}
       className={`relative flex flex-col rounded-md overflow-hidden flex-1 border transition-colors ${
         isSelected
