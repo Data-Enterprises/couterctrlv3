@@ -1,3 +1,6 @@
+// Utils
+import { serverDetail, serverStatus } from "../../../../utils/serverError";
+
 // Interfaces
 import type { CtaTone, UpcAnswer } from "../interfaces";
 
@@ -13,12 +16,10 @@ export const answerOf = (
  *  status, else unreachable. axios puts a refused call's body under
  *  `response.data`. */
 export const failureReason = (err: unknown): string => {
-  const e = err as { response?: { status?: number; data?: { detail?: unknown; msg?: unknown } } };
-  const body = e.response?.data;
-  const said = typeof body?.detail === "string" ? body.detail : typeof body?.msg === "string" ? body.msg : "";
+  const said = serverDetail(err);
   if (said) return said;
-  if (e.response?.status) return `error ${e.response.status}`;
-  return "the server couldn't be reached";
+  const status = serverStatus(err);
+  return status ? `error ${status}` : "the server couldn't be reached";
 };
 
 /** Each insight tone's fill, hover fill, text and border classes. */

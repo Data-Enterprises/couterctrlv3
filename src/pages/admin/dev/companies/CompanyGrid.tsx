@@ -18,12 +18,12 @@ import { assignUserToCompany } from "../../../../api/user";
 
 // Utils
 import { companyCols } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
 import type {
   Company,
   CompanyJsonResp,
-  JsonError,
 } from "../../../../interfaces";
 import type { CompanyRecord } from "./interfaces";
 
@@ -112,9 +112,7 @@ const CompanyGrid = () => {
             : "Company created — assign it to yourself in User Management",
         );
       })
-      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
-        toast.error(err.response?.data?.detail ?? err.message),
-      );
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const handleUpdate = (form: Company, parent: number | null) => {
@@ -130,9 +128,7 @@ const CompanyGrid = () => {
         }
       })
       // The backend refuses a parent that would make a family two deep; its reason is in `detail`.
-      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
-        toast.error(err.response?.data?.detail ?? err.message),
-      );
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   const handleDeleteConfirm = () => {
@@ -147,9 +143,7 @@ const CompanyGrid = () => {
         }
       })
       // A company others belong under can't be deleted until they move; the backend says so in `detail`.
-      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
-        toast.error(err.response?.data?.detail ?? err.message),
-      );
+      .catch((err) => toast.error(reasonOf(err)));
   };
 
   return (

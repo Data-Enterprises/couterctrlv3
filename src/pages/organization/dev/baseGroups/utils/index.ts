@@ -111,23 +111,6 @@ export const summarizeUnassign = (
   };
 };
 
-/**
- * The reason out of a failed call. The company guard answers 400 with FastAPI's
- * `detail`, so axios throws and the message is read from there.
- */
-export const callReason = (err: unknown): string => {
-  const e = err as {
-    response?: { data?: { detail?: string; msg?: string } };
-    message?: string;
-  };
-  return (
-    e.response?.data?.detail ??
-    e.response?.data?.msg ??
-    e.message ??
-    "The server refused it."
-  );
-};
-
 /** A base group's stores as CSV. */
 export const buildStoresCsv = (stores: Store[], label: string) => {
   const headers = ["Store ID", "Store #", "Store Name"];

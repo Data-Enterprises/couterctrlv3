@@ -21,7 +21,7 @@ import {
 // Utils
 import { peopleConfirm } from "../../utils/bulkConfirm";
 import { accessTypeLabel, grantFor } from "../utils/grantFor";
-import { callReason } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 import { withinReachOf } from "../utils/userReach";
 
 // Interfaces
@@ -102,7 +102,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   /**
    * One call per user, `allSettled`: the server refuses some with a 400 (a
    * single-store user can't take a whole group), and one refusal must not sink
-   * the batch. The reason comes from FastAPI's `detail`; see `callReason`.
+   * the batch. The reason comes from FastAPI's `detail`; see `reasonOf`.
    */
   const run = async (
     ids: number[],
@@ -116,7 +116,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
     const failures = settled
       .map((res, i) => {
         if (res.status === "rejected") {
-          return { userid: ids[i], reason: callReason(res.reason) };
+          return { userid: ids[i], reason: reasonOf(res.reason) };
         }
         return res.value.data.error === 0
           ? null

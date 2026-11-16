@@ -14,7 +14,8 @@ import {
 
 // Utils
 import { groupStoresConfirm } from "../../utils/bulkConfirm";
-import { callReason, summarizeAssign, summarizeUnassign } from "../utils";
+import { summarizeAssign, summarizeUnassign } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { StoreSplit, StoreOutcome } from "../interfaces";
@@ -162,7 +163,7 @@ const BaseGroupDetail = ({
     const outcomes: StoreOutcome[] = settled.map((res, i) => {
       const storeid = ids[i];
       if (res.status === "rejected") {
-        return { storeid, ok: false, reason: callReason(res.reason) };
+        return { storeid, ok: false, reason: reasonOf(res.reason) };
       }
       const j = res.value.data;
       if (j.error !== 0) {

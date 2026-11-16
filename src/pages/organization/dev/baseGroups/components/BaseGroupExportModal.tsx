@@ -7,7 +7,8 @@ import { getBaseGroupUsers } from "../../../../../api/baseGroups";
 
 // Utils
 import { downloadCsv } from "../../../../../utils/csvExport";
-import { buildStoresCsv, buildUsersCsv, callReason } from "../utils";
+import { buildStoresCsv, buildUsersCsv } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 import { withinReachOf } from "../utils/userReach";
 
 // Interfaces
@@ -77,7 +78,7 @@ const BaseGroupExportModal = ({
           setPeopleError(j.msg || "Could not read this group's users.");
         }
       })
-      .catch((err) => live && setPeopleError(callReason(err)));
+      .catch((err) => live && setPeopleError(reasonOf(err)));
     return () => {
       live = false;
     };
