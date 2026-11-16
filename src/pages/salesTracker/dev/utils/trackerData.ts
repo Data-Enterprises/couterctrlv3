@@ -1,40 +1,34 @@
 // API
-import { getSalesTracker, getSubs } from "../../../../api/sales";
+import { getSubsDaily } from "../../../../api/sales";
 
 // Utils
 import { createRequestQueue } from "../../../../utils/requestQueue";
 import { fetchAllPages } from "../../../../utils/paging";
 import { countedRows } from "../../../../utils/hashSubs";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
 import type { TrackerScope, WindowPlan } from "../interfaces";
 import type { SubSale, SubSalesJsonResp } from "../../../../interfaces";
 
 /**
- * Sub-department rows for one store or group over a window. Every read is
- * paged (`fetchAllPages`): page 1 alone drops the most recent weeks.
- * `consolidated: 0` is required: consolidating drops `sale_date`.
+ * Sub-department rows for one store or group over a date range: every page of
+ * `subs/daily` (5,000 rows a page; a group comes back one row per store).
  */
 export const fetchSubSales = async (
-  url: string,
-  token: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
+  scope: TrackerScope,
   start: string,
   end: string,
 ): Promise<SubSale[]> => {
   const call = (page: number) =>
-    getSubs(
-      url,
-      token,
+    getSubsDaily(
+      scope.url,
+      scope.token,
       start,
       end,
-      useGroups,
-      searchValue,
-      singleStore,
-      0,
-      0,
+      scope.useGroups,
+      scope.searchValue,
+      null,
       page,
     );
 
@@ -55,7 +49,7 @@ export const fetchSubSales = async (
 
   /**
    * Fuel, lottery and cash accounts (hash sub depts) come out here, at the
-   * fetch, so totals match the Sales header (`sales/weekly` leaves them out).
+   * fetch, so totals match the Sales header (`sales/daily` leaves them out).
    */
   return countedRows(rows);
 };
@@ -66,74 +60,33 @@ export const fetchSubSales = async (
  * as dashes. A genuine LY failure is swallowed as well, on purpose.
  */
 export const fetchLySubSales = (
-  url: string,
-  token: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
+  scope: TrackerScope,
   start: string,
   end: string,
-): Promise<SubSale[]> =>
-  fetchSubSales(
-    url,
-    token,
-    useGroups,
-    searchValue,
-    singleStore,
-    start,
-    end,
-  ).catch(() => []);
+): Promise<SubSale[]> => fetchSubSales(scope, start, end).catch(() => []);
 
 /**
- * EXPERIMENT, dev only: `subs/sales_tracker` (explicit dates, unpaged, no store
- * columns) instead of `subs/sub_sales`, whose pages took up to 38s. One request
- * per period per batch of weeks. Concurrency 4: the ALB is plain HTTP (no
- * HTTP/2), the browser allows 6 connections per origin, and 4 leaves 2 for the
- * rest of the app.
+ * Four requests at a time: the ALB is plain HTTP (no HTTP/2), the browser
+ * allows 6 connections per origin, and 4 leaves 2 for the rest of the app.
  */
 const trackerQueue = createRequestQueue({ concurrency: 4 });
 
 /**
- * Weeks per request: two (fourteen dates). Transport only: rows are bucketed
- * by `sale_date`, so grouping can't change a figure. The ceiling is the
- * endpoint's store-day budget (~85 stores at fourteen dates). TY and LY stay
- * separate, so this year can render first.
+ * Weeks per request: four. Transport only: rows are bucketed by `sale_date`,
+ * so grouping can't change a figure. It keeps a big group's pages arriving in
+ * steps the progress line can count. TY and LY stay separate, so this year can
+ * render first.
  */
-const WEEKS_PER_REQUEST = 2;
+const WEEKS_PER_REQUEST = 4;
 
-/** The endpoint's message when a request exceeds its store-day budget (a 400
- *  with structured detail saying how to split), surfaced as is. */
-const trackerError = (err: unknown): string => {
-  const detail = (
-    err as { response?: { data?: { detail?: unknown; msg?: string } } }
-  )?.response?.data?.detail;
-  if (typeof detail === "string") return detail;
-  if (detail && typeof detail === "object" && "msg" in detail)
-    return String((detail as { msg: unknown }).msg);
-  return err instanceof Error ? err.message : "Could not load the tracker";
-};
-
-const trackerCall = async (
-  scope: TrackerScope,
-  dates: string[],
-): Promise<SubSale[]> => {
-  const resp = await getSalesTracker(
-    scope.url,
-    scope.token,
-    dates,
-    scope.useGroups,
-    scope.searchValue,
-    scope.singleStore,
-  );
-  const body = resp.data;
-  if (body.error !== 0) throw new Error(body.msg ?? "Failed to load tracker");
-  return body.subs ?? [];
-};
+const dayOf = (row: SubSale) => row.sale_date.split("T")[0];
 
 /**
- * A whole window, one request per period per batch of weeks. LY dates come
- * from the plan's pairs (holiday-safe), deduped. `startRun` abandons a
- * replaced search's queued and in-flight jobs.
+ * A whole window, one range read per period per batch of weeks. Each batch
+ * keeps only its own dates: a holiday can pull two TY days onto one LY date,
+ * so an LY date belongs to the first batch that pairs with it and no day is
+ * counted twice where batches meet. `startRun` abandons a replaced search's
+ * queued and in-flight jobs.
  */
 export const fetchTrackerWindow = async (
   scope: TrackerScope,
@@ -147,21 +100,22 @@ export const fetchTrackerWindow = async (
     batches.push(plan.weeks.slice(i, i + WEEKS_PER_REQUEST));
   }
 
+  const claimed = new Set<string>();
   const jobs = batches.flatMap((batch) => {
     const first = batch[0].index;
     const inBatch = new Set(batch.map((w) => w.index));
-    const tyDates = batch.flatMap((w) => w.dates);
-    // Deduped and sorted: a holiday can pull two TY days onto one LY date, and
-    // batching weeks together makes that likelier at the seam between them.
+    const tyDates = batch.flatMap((w) => w.dates).sort();
     const lyDates = [
       ...new Set(
-        plan.pairs.filter((p) => inBatch.has(p.weekIndex)).map((p) => p.lyDate),
+        plan.pairs
+          .filter((p) => inBatch.has(p.weekIndex) && !claimed.has(p.lyDate))
+          .map((p) => p.lyDate),
       ),
     ].sort();
-    return [
-      { period: "ty" as const, key: `ty-${first}`, dates: tyDates },
-      { period: "ly" as const, key: `ly-${first}`, dates: lyDates },
-    ];
+    lyDates.forEach((d) => claimed.add(d));
+    const ty = { period: "ty" as const, key: `ty-${first}`, dates: tyDates };
+    const ly = { period: "ly" as const, key: `ly-${first}`, dates: lyDates };
+    return lyDates.length ? [ty, ly] : [ty];
   });
 
   let done = 0;
@@ -170,8 +124,11 @@ export const fetchTrackerWindow = async (
   try {
     const results = await Promise.all(
       jobs.map((job) => {
+        const own = new Set(job.dates);
         const call = trackerQueue.enqueue(job.key, () =>
-          trackerCall(scope, job.dates),
+          fetchSubSales(scope, job.dates[0], job.dates[job.dates.length - 1]).then(
+            (rows) => rows.filter((r) => own.has(dayOf(r))),
+          ),
         );
         // An empty last-year batch is a store with no last year; a this-year
         // failure still fails.
@@ -196,6 +153,6 @@ export const fetchTrackerWindow = async (
       ly: results.filter((r) => r.period === "ly").flatMap((r) => r.rows ?? []),
     };
   } catch (err) {
-    throw new Error(trackerError(err));
+    throw new Error(reasonOf(err));
   }
 };

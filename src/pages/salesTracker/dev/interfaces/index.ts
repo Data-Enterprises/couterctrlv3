@@ -52,7 +52,6 @@ export interface TrackerScope {
   token: string;
   useGroups: number;
   searchValue: number;
-  singleStore: number;
 }
 
 export type DayTotal = {

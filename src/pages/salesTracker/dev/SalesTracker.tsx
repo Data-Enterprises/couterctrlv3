@@ -22,11 +22,7 @@ import {
 
 // Utils
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
-import {
-  fetchLySubSales,
-  fetchSubSales,
-  fetchTrackerWindow,
-} from "./utils/trackerData";
+import { fetchLySubSales, fetchTrackerWindow } from "./utils/trackerData";
 import {
   basisWord,
   buildWindowPlan,
@@ -90,23 +86,12 @@ const SalesTracker = () => {
    *  they agree on the store. */
   const isGroup = isGroupSearch(search.type);
   const useGroups = isGroup ? 1 : 0;
-  const singleStore = isGroup ? 0 : 1;
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
-
-  /**
-   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads, gated on
-   * the selected backend (the endpoint is on dev only, and level 7 can switch
-   * APIs), so a prod session takes `fetchSubSales` and never hits a 404. The two
-   * paths return the same six fields this page reads; this one is ~7s against
-   * ~52s for 5 stores over 12 weeks. Drop the flag once the endpoint is on prod.
-   */
-  const useTrackerEndpoint = context.apiEnv === "dev";
   const scope = {
     url: context.url,
     token: context.token,
     useGroups,
     searchValue,
-    singleStore,
   };
 
   const plan = useMemo(
@@ -146,37 +131,9 @@ const SalesTracker = () => {
 
     dispatch(setAddingWeek(true));
     try {
-      let tyRows;
-      let lyRows;
-
-      if (useTrackerEndpoint) {
-        const res = await fetchTrackerWindow(scope, gap);
-        if (!res) return;
-        tyRows = res.ty;
-        lyRows = res.ly;
-      } else {
-        [tyRows, lyRows] = await Promise.all([
-          fetchSubSales(
-            context.url,
-            context.token,
-            useGroups,
-            searchValue,
-            singleStore,
-            gap.tyStart,
-            gap.tyEnd,
-          ),
-          fetchLySubSales(
-            context.url,
-            context.token,
-            useGroups,
-            searchValue,
-            singleStore,
-            gap.lyStart,
-            gap.lyEnd,
-          ),
-        ]);
-      }
-      dispatch(appendRows({ ty: tyRows, ly: lyRows, from: newStart }));
+      const res = await fetchTrackerWindow(scope, gap);
+      if (!res) return;
+      dispatch(appendRows({ ty: res.ty, ly: res.ly, from: newStart }));
       dispatch(setStartDate(isoToDisplay(newStart)));
     } catch {
       toast.error("Could not load that week.");
@@ -244,44 +201,15 @@ const SalesTracker = () => {
     setFetchFailed(false);
 
     try {
-      let tyRows;
-      let lyRows;
-
-      if (useTrackerEndpoint) {
-        // One request per period per week, four at a time. A superseded search
-        // resolves to null rather than to a partial window.
-        const res = await fetchTrackerWindow(scope, plan, (done, total) =>
-          setProgress(done < total ? `${done} of ${total} loaded` : ""),
-        );
-        setProgress("");
-        if (!res) return;
-        tyRows = res.ty;
-        lyRows = res.ly;
-      } else {
-        // Two paged reads: the window, and the day-matched window last year.
-        // The LY range comes from the plan (every day shifted, extremes taken),
-        // so a holiday at either end doesn't break it.
-        [tyRows, lyRows] = await Promise.all([
-          fetchSubSales(
-            context.url,
-            context.token,
-            useGroups,
-            searchValue,
-            singleStore,
-            plan.tyStart,
-            plan.tyEnd,
-          ),
-          fetchLySubSales(
-            context.url,
-            context.token,
-            useGroups,
-            searchValue,
-            singleStore,
-            plan.lyStart,
-            plan.lyEnd,
-          ),
-        ]);
-      }
+      // One request per period per four weeks, four at a time. A superseded
+      // search resolves to null rather than to a partial window.
+      const res = await fetchTrackerWindow(scope, plan, (done, total) =>
+        setProgress(done < total ? `${done} of ${total} loaded` : ""),
+      );
+      setProgress("");
+      if (!res) return;
+      const tyRows = res.ty;
+      let lyRows = res.ly;
 
       /*
        * No last year, so read the window against last week, asked for only
@@ -295,15 +223,7 @@ const SalesTracker = () => {
           formatGoliathDate(search.endDate),
           "LW",
         );
-        const lwRows = await fetchLySubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          lwPlan.lyStart,
-          lwPlan.lyEnd,
-        );
+        const lwRows = await fetchLySubSales(scope, lwPlan.lyStart, lwPlan.lyEnd);
         if (lwRows.length > 0) {
           lyRows = lwRows;
           used = "LW";
