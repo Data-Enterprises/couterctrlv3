@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "../../../../../hooks";
 
 // API
-import { getSubs } from "../../../../../api/sales";
+import { getSubsDaily } from "../../../../../api/sales";
 
 // Utils
 import { fetchAllPages } from "../../../../../utils/paging";
@@ -71,7 +71,7 @@ export const useDeptMatrix = (args: MatrixArgs): MatrixState => {
     /** One store, one window, every page. */
     const walk = async (s: MatrixStore, start: string, end: string) => {
       const ask = (page: number) =>
-        getSubs(url, token, start, end, 0, s.storeid, 1, 0, 0, page);
+        getSubsDaily(url, token, start, end, 0, s.storeid, null, page);
 
       const j = (await ask(1)).data as SubSalesJsonResp;
       if (j.error !== 0) throw new Error(j.msg ?? "sub_sales failed");

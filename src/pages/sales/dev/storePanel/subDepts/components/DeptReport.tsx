@@ -9,7 +9,7 @@ import { setInvestigation } from "../../../../../../features/dev/devSalesLedgerS
 import { rememberCounterpart } from "../../../../../../features/dev/devSalesCacheSlice";
 
 // API
-import { getSubs } from "../../../../../../api/sales";
+import { getSubsDaily } from "../../../../../../api/sales";
 
 // Utils
 import { shiftIso } from "../../../../../../utils/grading";
@@ -155,7 +155,7 @@ const DeptReport = ({
     let live = true;
     setFailed(false);
     const ask = (from: string, to: string) =>
-      getSubs(url, token, from, to, 0, compareStoreId, 1);
+      getSubsDaily(url, token, from, to, 0, compareStoreId);
 
     Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
       .then(([tw, lw, ly]) => {
@@ -464,9 +464,7 @@ const DeptReport = ({
                     Not compared &mdash; departments only one store carries:{" "}
                     {onlyMine.length > 0 && (
                       <>
-                        <span className="font-semibold">
-                          {onlyMine.length}
-                        </span>{" "}
+                        <span className="font-semibold">{onlyMine.length}</span>{" "}
                         only here worth{" "}
                         <span className="font-bold tabular-nums text-delta_positive_text">
                           {money(onlyMineTotal)}

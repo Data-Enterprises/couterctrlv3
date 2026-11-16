@@ -31,7 +31,7 @@ import {
 import { isGroupSearch } from "../../../../features/searchSlice";
 
 // API
-import { getWeekly } from "../../../../api/sales";
+import { getDailySales } from "../../../../api/sales";
 import { FINANCIALS_READY, getFinancials } from "../../../../api/financials";
 import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 
@@ -191,7 +191,6 @@ const SalesLedger = () => {
   const fetchLedger = async () => {
     const isGroup = isGroupSearch(search.type);
     const useGroups = isGroup ? 1 : 0;
-    const singleStore = isGroup ? 0 : 1;
     const searchValue = isGroup ? search.lastGroup : search.lastStore;
     if (!searchValue) return;
 
@@ -271,32 +270,29 @@ const SalesLedger = () => {
           await Promise.allSettled(
             stores.map((store) =>
               Promise.all([
-                getWeekly(
+                getDailySales(
                   url,
                   token,
                   twStart,
                   twEnd,
                   0,
                   store.storeid,
-                  1,
                 ),
-                getWeekly(
+                getDailySales(
                   url,
                   token,
                   lwStart,
                   lwEnd,
                   0,
                   store.storeid,
-                  1,
                 ),
-                getWeekly(
+                getDailySales(
                   url,
                   token,
                   lyStart,
                   lyEnd,
                   0,
                   store.storeid,
-                  1,
                 ),
               ])
                 .then(([tw, lw, ly]) => {
@@ -321,32 +317,29 @@ const SalesLedger = () => {
     // Standard path: single store or small group
     try {
       const [twResp, lwResp, lyResp] = await Promise.all([
-          getWeekly(
+          getDailySales(
             url,
             token,
             twStart,
             twEnd,
             useGroups,
             searchValue,
-            singleStore,
           ),
-          getWeekly(
+          getDailySales(
             url,
             token,
             lwStart,
             lwEnd,
             useGroups,
             searchValue,
-            singleStore,
           ),
-          getWeekly(
+          getDailySales(
             url,
             token,
             lyStart,
             lyEnd,
             useGroups,
             searchValue,
-            singleStore,
           ),
         ]);
       if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
@@ -678,9 +671,6 @@ const SalesLedger = () => {
               <GroupComparisonPanel
                 rows={ledgerRows}
                 threshold={activeThreshold}
-                /* From the group comparison, so the store opens on the tab
-                   that continues that question rather than on its own
-                   departments. */
                 onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
               />
             ) : (
