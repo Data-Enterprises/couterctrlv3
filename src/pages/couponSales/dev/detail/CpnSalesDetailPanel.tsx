@@ -27,9 +27,10 @@ import {
   type GradingOptions,
 } from "../utils";
 import { transactionCsv } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { CouponItem, JsonError, TransactionListItem } from "../../../../interfaces";
+import type { CouponItem, TransactionListItem } from "../../../../interfaces";
 import type { SectionSortCol, TxSortCol } from "./interfaces";
 
 // Components
@@ -106,9 +107,9 @@ const CpnSalesDetailPanel = ({
         );
         dispatch(setCouponReceiptLines(lines));
       })
-      .catch((err: JsonError) => {
+      .catch((err) => {
         setOpenSaleId("");
-        toast.error("Error fetching transaction: " + err.message);
+        toast.error("Error fetching transaction: " + reasonOf(err));
       });
   };
 
