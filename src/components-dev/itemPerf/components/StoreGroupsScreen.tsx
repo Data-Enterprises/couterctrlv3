@@ -1,7 +1,7 @@
 // Hooks
 import { useLayoutEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useCarriedScroll, useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useCarriedScroll, useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import {
@@ -28,7 +28,7 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
  *  vendors or categories as an accordion of cards. */
 const StoreGroupsScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const {
     screen,
     storeName,

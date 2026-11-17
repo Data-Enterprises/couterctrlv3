@@ -1,7 +1,7 @@
 // Hooks
 import { Fragment } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import { clearPerfItem } from "../../../features/dev/devItemPerfSlice";
@@ -20,7 +20,7 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
 /** One item's week: its margin card and a table of its days. */
 const ItemWeekScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const {
     selectedItem,
     itemCode,

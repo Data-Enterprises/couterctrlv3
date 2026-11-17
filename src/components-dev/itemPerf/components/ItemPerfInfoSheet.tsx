@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import { setItemPerfInfoOpen } from "../../../features/dev/devItemPerfSlice";
@@ -15,7 +15,7 @@ import InfoModal from "../../InfoModal";
  *  follows the dimension. */
 const ItemPerfInfoSheet = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { dimension } = useItemPerfCtx();
   return (
     <InfoModal

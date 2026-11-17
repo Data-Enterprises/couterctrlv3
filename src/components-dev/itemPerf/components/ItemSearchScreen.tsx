@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useCarriedScroll, useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useCarriedScroll, useItemPerfCtx, useItemPerfState } from "../hooks";
 import { useScanGun } from "../../scanner/useScanGun";
 
 // Redux
@@ -34,7 +34,7 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
  *  you type, then matches. */
 const ItemSearchScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { storeName, windowLabel, query, recents, rows } = useItemPerfCtx();
   // A scan gun trigger pull does what a camera read does: the code becomes
   // the query and the camera closes.

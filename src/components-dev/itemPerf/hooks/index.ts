@@ -683,6 +683,13 @@ export const useItemPerfView = (
   };
 };
 
+/** Item Perf's slice and the user's stores, read where they are used. */
+export const useItemPerfState = () => {
+  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  return { perf, assignedStores };
+};
+
 export const ItemPerfCtx = createContext<ItemPerfCtxValue | null>(null);
 
 /** The item-perf screens' shared figures; see useItemPerfView. */

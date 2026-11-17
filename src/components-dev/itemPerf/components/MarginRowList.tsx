@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 import { useScanGun } from "../../scanner/useScanGun";
 
 // Redux
@@ -47,7 +47,7 @@ const MarginRowList = ({
   withQuery = false,
 }: MarginRowListProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const {
     sizeLabel,
     activeSort,

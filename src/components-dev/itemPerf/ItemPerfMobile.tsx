@@ -1,10 +1,10 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector } from "../../hooks";
 import {
   ItemPerfCtx,
   useItemPerfLoad,
   useItemPerfView,
+  useItemPerfState,
   useScrollCarry,
 } from "./hooks";
 
@@ -57,7 +57,7 @@ const ItemPerfMobile = ({
   title,
   listLabel,
 }: ItemPerfMobileProps) => {
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   /**
    * Narrows the group list by name.
    *

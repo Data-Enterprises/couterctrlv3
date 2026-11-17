@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import {
@@ -21,8 +21,7 @@ interface ItemPerfSearchCardProps {
  *  search that came back empty. */
 const ItemPerfSearchCard = ({ title, onSearch }: ItemPerfSearchCardProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const { perf, assignedStores } = useItemPerfState();
   const { listLabel } = useItemPerfCtx();
   return (
     <div className="flex h-[calc(100dvh-3rem)] items-start justify-center overflow-y-auto p-4">

@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import {
@@ -16,7 +16,7 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
 /** The items inside one department, vendor or category. */
 const GroupItemsScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { storeName, dayLabel, windowLabel, listLabel, query } =
     useItemPerfCtx();
   return (

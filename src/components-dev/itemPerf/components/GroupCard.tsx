@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import {
@@ -36,7 +36,7 @@ interface GroupCardProps {
  *  bars and change; open it is its day chart, its margins and a way in. */
 const GroupCard = ({ row: r }: GroupCardProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { measure, chartBasis, weekMatchLw, days, listFor } = useItemPerfCtx();
   const isOpen = perf.openGroup?.key === r.key;
   // Against last year, or last week where last year has nothing: the same
