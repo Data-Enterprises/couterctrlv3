@@ -5,7 +5,11 @@ import { useCallback, useRef, useState } from "react";
 import { fetchInvoiceCost } from "../utils/invoiceCost";
 
 // Interfaces
-import type { InvoiceCostState, InvoiceCost, InventoryScope } from "../interfaces";
+import type {
+  InvoiceCostState,
+  InvoiceCost,
+  InventoryScope,
+} from "../interfaces";
 
 const initial: InvoiceCostState = { upc: null, cost: null, loading: false };
 

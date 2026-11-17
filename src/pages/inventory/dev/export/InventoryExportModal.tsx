@@ -18,7 +18,11 @@ import {
 
 // Interfaces
 import type { Col, ItemGroup, ModalMode, Row, Source } from "./interfaces";
-import type { TreeGroup, InvoiceCostState, ProductSummary } from "../interfaces";
+import type {
+  TreeGroup,
+  InvoiceCostState,
+  ProductSummary,
+} from "../interfaces";
 import type { ServerPricePoint } from "../../../../api/pricePoints";
 import type { TransactionListItem } from "../../../../interfaces";
 
@@ -184,9 +188,7 @@ const InventoryExportModal = ({
     >
       <div className="cc-phone-header">
         <div className="min-w-0">
-          <p className="cc-navy-title text-[13px]">
-            Export CSV
-          </p>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
           <p className="text-custom-white/95 text-[10px] truncate">
             {storeName} · {dateLabel}
           </p>
@@ -206,10 +208,7 @@ const InventoryExportModal = ({
             </button>
           ))}
         </div>
-        <button
-          onClick={onClose}
-          className="cc-navy-link justify-self-end"
-        >
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
@@ -255,9 +254,7 @@ const InventoryExportModal = ({
       ) : (
         <div className="grid" style={{ gridTemplateColumns: "220px 1fr" }}>
           <div className="p-3.5 border-r border-line_hair">
-            <p className="text-[10px] cc-caps mb-2">
-              Data source
-            </p>
+            <p className="text-[10px] cc-caps mb-2">Data source</p>
             {PRESETS.map((p) => (
               <label
                 key={p.source}
@@ -275,9 +272,7 @@ const InventoryExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] cc-caps mt-3.5 mb-2">
-              Columns
-            </p>
+            <p className="text-[10px] cc-caps mt-3.5 mb-2">Columns</p>
             {COLS[source].map((c) => (
               <label
                 key={c.key}
@@ -296,9 +291,7 @@ const InventoryExportModal = ({
           </div>
 
           <div className="p-3.5 flex flex-col">
-            <p className="text-[10px] cc-caps mb-2">
-              Preview
-            </p>
+            <p className="text-[10px] cc-caps mb-2">Preview</p>
             <div className="border border-line_hair rounded-md overflow-x-auto">
               <table className="w-full text-[11px]">
                 <thead>
@@ -341,10 +334,7 @@ const InventoryExportModal = ({
             </div>
             <div className="flex-1" />
             <div className="flex items-center justify-between mt-3.5">
-              <button
-                onClick={onClose}
-                className="text-[12px] cc-muted-link"
-              >
+              <button onClick={onClose} className="text-[12px] cc-muted-link">
                 Cancel
               </button>
               <button

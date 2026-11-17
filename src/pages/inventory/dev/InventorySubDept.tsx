@@ -1,10 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useStoreName,
-} from "../../../hooks";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useInvoiceCost } from "./hooks";
@@ -32,7 +28,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SearchPopup from "../../../components-dev/SearchPopup";
-import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
+import InventoryTreePanel from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
@@ -62,9 +58,7 @@ const InventorySubDept = () => {
    *  beside it so the list on screen is always the one that was cached. */
   const products = useMemo(
     () =>
-      openSubDept === null
-        ? []
-        : (view.productsBySubDept[openSubDept] ?? []),
+      openSubDept === null ? [] : (view.productsBySubDept[openSubDept] ?? []),
     [openSubDept, view.productsBySubDept],
   );
   const setScope = (next: InventoryScope | null) =>
@@ -125,9 +119,7 @@ const InventorySubDept = () => {
     wantedSubDept.current = null;
     // The cache belongs to the window it was read in, so a new search empties
     // it rather than letting a previous store's items answer for this one.
-    dispatch(
-      patchSubDeptView({ openSubDept: null, productsBySubDept: {} }),
-    );
+    dispatch(patchSubDeptView({ openSubDept: null, productsBySubDept: {} }));
     setSelected(null);
     resetPrices();
     resetInvoiceCost();
@@ -249,8 +241,8 @@ const InventorySubDept = () => {
               ? [
                   {
                     label:
-                      subDepts.find((d) => d.key === openSubDept)?.description ??
-                      openSubDept,
+                      subDepts.find((d) => d.key === openSubDept)
+                        ?.description ?? openSubDept,
                     products,
                   },
                 ]
@@ -264,7 +256,9 @@ const InventorySubDept = () => {
             selected && prices.upc === selected.productCode ? prices.rows : []
           }
           lines={
-            selected && receipts.upc === selected.productCode ? receipts.lines : []
+            selected && receipts.upc === selected.productCode
+              ? receipts.lines
+              : []
           }
         />
       )}

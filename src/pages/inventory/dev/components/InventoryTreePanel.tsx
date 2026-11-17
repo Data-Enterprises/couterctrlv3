@@ -106,7 +106,10 @@ const InventoryTreePanel = ({
               {storeName} · {dateLabel}
             </div>
           </div>
-          <div data-help="scope" className="flex items-center gap-1.5 flex-shrink-0">
+          <div
+            data-help="scope"
+            className="flex items-center gap-1.5 flex-shrink-0"
+          >
             <PageInfoButton page={helpPage} />
             <HeaderIconButton onClick={onExportOpen} title="Export CSV">
               <ArrowDownTrayIcon className="h-3 w-3" />

@@ -4,7 +4,10 @@ import { getRollup } from "../../../../api/rollup";
 
 // Utils
 import { fetchAllPages } from "../../../../utils/paging";
-import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import {
+  fetchSubDeptRows,
+  fetchSubDeptRowsSafe,
+} from "../../../../utils/marginRows";
 import { subDeptKey, subDeptNumber } from "../../../../utils/subDeptKey";
 import { calculateCogs } from "../../../../utils/cogs";
 // Net of tax, the basis every other Sales surface reconciles on.
@@ -12,7 +15,13 @@ import { netOf } from "../../../../utils/perfPairs";
 import { formatCurrencyCompact } from "../../../../utils";
 
 // Interfaces
-import type { InventoryScope, ItemCostStats, ProductSummary, SubDeptSummary, VendorSummary } from "../interfaces";
+import type {
+  InventoryScope,
+  ItemCostStats,
+  ProductSummary,
+  SubDeptSummary,
+  VendorSummary,
+} from "../interfaces";
 import type {
   SubDeptMargin,
   SubSale,
@@ -260,8 +269,7 @@ export const fetchVendors = async (
     } else {
       byVendor.set(id, {
         vendorId: id,
-        vendorName:
-          id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
+        vendorName: id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
         sales: netOf(r),
         itemCount: 0,
         rows: [r],
@@ -284,11 +292,13 @@ export const TXN_COLS = "90px 1fr 92px 48px 64px";
 
 /** Receipts read "STORE-123456"; the half before the dash is the store, which
  *  is the same for every row on a single-store page. */
-export const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
+export const transactionLabel = (saleId: string) =>
+  saleId.split("-")[1] ?? saleId;
 
 /** Scale items ring a fractional quantity, so decimals only when there are
  *  any — "1" reads better than "1.00" nineteen times over. */
-export const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toFixed(2));
+export const fmtQty = (q: number) =>
+  Number.isInteger(q) ? String(q) : q.toFixed(2);
 
 /**
  * Money down the tree: whole dollars under a thousand, one decimal of a

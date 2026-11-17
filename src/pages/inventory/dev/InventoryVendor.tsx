@@ -1,10 +1,6 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useStoreName,
-} from "../../../hooks";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useInvoiceCost } from "./hooks";
@@ -29,7 +25,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SearchPopup from "../../../components-dev/SearchPopup";
-import InventoryTreePanel, {  } from "./components/InventoryTreePanel";
+import InventoryTreePanel from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
 
@@ -75,7 +71,8 @@ const InventoryVendor = () => {
   const itemsSeq = useRef(0);
   /** The vendors have names and sales but no items yet: the totals landed and
    *  the item rows did not, or the page was left before they did. */
-  const itemsMissing = vendors.length > 0 && vendors.every((v) => v.itemCount === null);
+  const itemsMissing =
+    vendors.length > 0 && vendors.every((v) => v.itemCount === null);
 
   /** Read the item rows for the search on screen and fill the tree in. */
   const loadItems = (forScope: InventoryScope) => {
@@ -264,7 +261,9 @@ const InventoryVendor = () => {
             selected && prices.upc === selected.productCode ? prices.rows : []
           }
           lines={
-            selected && receipts.upc === selected.productCode ? receipts.lines : []
+            selected && receipts.upc === selected.productCode
+              ? receipts.lines
+              : []
           }
         />
       )}

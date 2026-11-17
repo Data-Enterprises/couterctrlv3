@@ -21,7 +21,8 @@ import type { TransactionListItem } from "../../../../../interfaces";
 export const PREVIEW_ROWS = 5;
 export const money = (n: number) => n.toFixed(2);
 export const pct = (n: number | null) => (n === null ? "" : n.toFixed(2));
-export const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
+export const num = (n: number) =>
+  Number.isInteger(n) ? String(n) : n.toFixed(2);
 
 /** The Groups export's columns. */
 export const GROUP_COLS: Col[] = [

@@ -100,10 +100,7 @@ const ItemAnalysisPanel = ({
   );
   // "Package deal" is judged from the server's count of receipts reading the
   // item at two prices; null on a weighed item or an older API (no note).
-  const pattern = useMemo(
-    () => classifyPattern(act, mixed),
-    [act, mixed],
-  );
+  const pattern = useMemo(() => classifyPattern(act, mixed), [act, mixed]);
   // Weighed items have per-pound prices on both sides, so they get a suggestion too.
   const suggestion = useMemo(() => suggestPrice(act), [act]);
   const withheld = suggestionWithheld(act);
@@ -144,9 +141,7 @@ const ItemAnalysisPanel = ({
 
         <div className="grid grid-cols-6 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              Sales
-            </div>
+            <div className="text-[11px] cc-caps-strong">Sales</div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(totals.sales)}
             </div>
@@ -154,9 +149,7 @@ const ItemAnalysisPanel = ({
           {/* The floor under every price on this screen. Without it a reader
               can see that $6.50 moves fastest but not that it's below cost. */}
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              Cost / unit
-            </div>
+            <div className="text-[11px] cc-caps-strong">Cost / unit</div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.unitCost !== null
                 ? formatCurrency2(totals.unitCost)
@@ -173,17 +166,13 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              Units
-            </div>
+            <div className="text-[11px] cc-caps-strong">Units</div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.units % 1 === 0 ? totals.units : totals.units.toFixed(2)}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              GM%
-            </div>
+            <div className="text-[11px] cc-caps-strong">GM%</div>
             <div
               className={`text-[15px] font-bold tabular-nums mt-0.5 ${
                 totals.marginPct === null
@@ -199,17 +188,13 @@ const ItemAnalysisPanel = ({
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              Prices
-            </div>
+            <div className="text-[11px] cc-caps-strong">Prices</div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {totals.prices}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
-            <div className="text-[11px] cc-caps-strong">
-              Trans
-            </div>
+            <div className="text-[11px] cc-caps-strong">Trans</div>
             <div className="text-[15px] font-bold text-content tabular-nums mt-0.5">
               {actual.loading && isCurrent ? (
                 <span className="text-content/95">…</span>
@@ -226,7 +211,9 @@ const ItemAnalysisPanel = ({
           <div className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-line_field bg-fill_soft px-3 py-2 flex gap-2 items-start">
               <InformationCircleIcon className="w-4 h-4 text-content/95 flex-shrink-0 mt-px" />
-              <p className="text-[13px] text-content leading-snug">{withheld}</p>
+              <p className="text-[13px] text-content leading-snug">
+                {withheld}
+              </p>
             </div>
           </div>
         )}
