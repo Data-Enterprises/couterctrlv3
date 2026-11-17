@@ -4,7 +4,7 @@ import { useSalesCtx } from "../../hooks";
 import { useItemsGrid } from "../hooks";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
+import { metricFormat } from "../../utils";
 import { CAUSE_LABEL } from "../utils/deptInvestigation";
 import { SUGGESTED } from "../utils";
 
@@ -60,9 +60,7 @@ const ItemsTab = ({
   const { filters, sorted, picked, setPicked, at } = grid;
   const { only, setOnly } = filters;
 
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) =>
-    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+  const fmt = metricFormat(gradingMetric === "qty");
 
   const pickedItem = useMemo(
     () => items.find((i) => i.productCode === picked) ?? null,

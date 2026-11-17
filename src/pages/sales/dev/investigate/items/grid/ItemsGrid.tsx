@@ -3,7 +3,7 @@ import { useSalesCtx } from "../../../hooks";
 import { useItemsGrid, useRowSelection } from "../../hooks";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
+import { metricFormat } from "../../../utils";
 import { COLUMNS } from "../../utils/columns";
 
 // Interfaces
@@ -40,9 +40,7 @@ const ItemsGrid = ({
   const selection = useRowSelection(sorted, picked, setPicked, show);
   const { chosen, ctx, setCtx } = selection;
 
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) =>
-    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+  const fmt = metricFormat(gradingMetric === "qty");
 
   if (!target) return null;
 

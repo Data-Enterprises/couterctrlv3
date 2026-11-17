@@ -11,7 +11,7 @@ import {
 } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../../utils";
+import { metricFormat } from "../../utils";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
 import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
@@ -54,9 +54,7 @@ const PopupComparisonList = ({
   const { selectedDate, gradingMetric, counterpart } = useSalesCtx();
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const dispatch = useAppDispatch();
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) =>
-    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+  const fmt = metricFormat(gradingMetric === "qty");
   const group = useMemo(
     () => compareForView(rows, gradingMetric, threshold, selectedDate),
     [rows, gradingMetric, threshold, selectedDate],

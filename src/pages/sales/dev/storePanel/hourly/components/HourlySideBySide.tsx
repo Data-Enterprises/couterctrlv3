@@ -4,7 +4,7 @@ import { useSalesCtx, useSalesState } from "../../../hooks";
 import { useCounterpartHours } from "../hooks";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
+import { metricFormat } from "../../../utils";
 import { compareHourRows, hourBars, hourLabel, HOUR_COLS } from "../utils";
 
 // Components
@@ -94,8 +94,7 @@ const HourlySideBySide = ({
     if (theirs === null) setPicked(null);
   }, [theirs]);
 
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
+  const fmt = metricFormat(gradingMetric === "qty");
 
   const rows = useMemo(
     () =>

@@ -8,7 +8,7 @@ import { useDeptInvestigation, useItemsGrid } from "./hooks";
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { metricFormat } from "../utils";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { supplyWindow } from "./utils/investigationData";
 import {
@@ -85,9 +85,7 @@ const DeptInvestigation = ({
    */
   const [tab, setTab] = useState<InvestigationTab>("holds");
 
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) =>
-    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+  const fmt = metricFormat(gradingMetric === "qty");
 
   const args = useMemo(
     () => ({
