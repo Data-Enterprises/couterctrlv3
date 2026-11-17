@@ -33,15 +33,11 @@ const CompanyPicker = ({
           <button
             key={c.id}
             onClick={() => onSelect(c.id)}
-            className="w-full text-left px-3 py-2 border-b border-line_hair text-[12px] transition-colors cursor-pointer hover:bg-fill_soft text-content"
-            style={
+            className={`w-full text-left px-3 py-2 border-b border-l-2 border-b-line_hair text-[12px] transition-colors cursor-pointer text-content ${
               selectedId === c.id
-                ? {
-                    boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)",
-                    background: "white",
-                  }
-                : undefined
-            }
+                ? "cc-row-selected"
+                : "border-l-transparent hover:bg-fill_soft"
+            }`}
           >
             {c.name}
           </button>

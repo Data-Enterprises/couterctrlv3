@@ -51,13 +51,9 @@ const ListControlsRow = ({
           <button
             key={key}
             onClick={() => onMetric(key)}
-            className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
-            style={{
-              background:
-                metric === key
-                  ? "rgba(255,255,255,0.2)"
-                  : "rgba(255,255,255,0.07)",
-            }}
+            className={`px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full ${
+              metric === key ? "bg-custom-white/20" : "bg-custom-white/[0.07]"
+            }`}
           >
             {label}
           </button>
