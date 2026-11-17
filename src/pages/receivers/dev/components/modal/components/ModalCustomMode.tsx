@@ -51,9 +51,7 @@ const ModalCustomMode = ({
         {/* Left: config */}
         <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
           <div>
-            <p className="text-[10px] cc-caps mb-2">
-              Group By
-            </p>
+            <p className="text-[10px] cc-caps mb-2">Group By</p>
             <div className="space-y-1.5">
               {DIMS.map((d) => (
                 <label
@@ -73,9 +71,7 @@ const ModalCustomMode = ({
           </div>
 
           <div>
-            <p className="text-[10px] cc-caps mb-2">
-              Metrics
-            </p>
+            <p className="text-[10px] cc-caps mb-2">Metrics</p>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;
@@ -122,9 +118,7 @@ const ModalCustomMode = ({
         {/* Right: preview */}
         <div className="flex flex-col min-w-0">
           <div className="cc-bar-header flex-shrink-0">
-            <p className="text-[11px] cc-caps">
-              Preview
-            </p>
+            <p className="text-[11px] cc-caps">Preview</p>
             <span className="text-[10px] text-content/95">
               {aggRows.length === 0
                 ? "No data — select at least one group or metric"
@@ -162,10 +156,7 @@ const ModalCustomMode = ({
       </div>
 
       <div className="cc-bar-footer">
-        <button
-          onClick={onClose}
-          className="text-[12px] cc-muted-link"
-        >
+        <button onClick={onClose} className="text-[12px] cc-muted-link">
           Cancel
         </button>
         <button

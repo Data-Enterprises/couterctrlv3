@@ -26,9 +26,7 @@ import {
 import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
-import type {
-  ReceiverDetailsResponse,
-} from "../../../../../interfaces";
+import type { ReceiverDetailsResponse } from "../../../../../interfaces";
 
 // Components
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
@@ -137,10 +135,7 @@ const ReceiverListPanel = ({ onOpenSearch }: ReceiverListPanelProps) => {
   const hasFilters = !!vendorFilter || !!dateFilter;
 
   return (
-    <div
-      className="cc-panel shadow-lg flex-shrink-0"
-      style={{ width: "26%" }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: "26%" }}>
       <ListNavyHeader onOpenSearch={onOpenSearch} storeName={storeName} />
 
       <LocationTabs

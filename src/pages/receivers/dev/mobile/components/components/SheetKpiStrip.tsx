@@ -2,7 +2,10 @@
 import { kpiStrip } from "../utils";
 
 // Interfaces
-import type { ReceiverDetailsItem, ReceiverDetailsTotals } from "../../../../../../interfaces";
+import type {
+  ReceiverDetailsItem,
+  ReceiverDetailsTotals,
+} from "../../../../../../interfaces";
 
 interface SheetKpiStripProps {
   details: ReceiverDetailsItem[];
@@ -18,9 +21,7 @@ const SheetKpiStrip = ({ details, totals }: SheetKpiStripProps) => {
           key={label}
           className="px-2.5 py-1.5 border-r border-line_hair last:border-r-0"
         >
-          <div className="text-[10px] cc-caps">
-            {label}
-          </div>
+          <div className="text-[10px] cc-caps">{label}</div>
           <div className="text-[11px] font-bold text-content mt-0.5 tabular-nums">
             {value}
           </div>

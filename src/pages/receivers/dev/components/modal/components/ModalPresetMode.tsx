@@ -41,9 +41,7 @@ const ModalPresetMode = ({
             className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
           />
           <div>
-            <p className="text-[13px] cc-row-title">
-              Line Items
-            </p>
+            <p className="text-[13px] cc-row-title">Line Items</p>
             <p className="text-[11px] text-content/95 mt-0.5">
               {details.length} line items for {vendorName} — Invoice {invoiceId}
               {totals && ` · Cases ${totals.cases} · Units ${totals.units}`}
@@ -53,10 +51,7 @@ const ModalPresetMode = ({
       </div>
 
       <div className="cc-bar-footer mt-2">
-        <button
-          onClick={onClose}
-          className="text-[12px] cc-muted-link"
-        >
+        <button onClick={onClose} className="text-[12px] cc-muted-link">
           Cancel
         </button>
         <button
