@@ -1,4 +1,5 @@
 // Hooks
+import { useMemo } from "react";
 import { useOrganizationCtx } from "../../../../../hooks";
 
 // Interfaces
@@ -10,7 +11,6 @@ import Checkbox from "../../../../../../../../components-dev/Checkbox";
 interface CompanyColumnProps {
   picks: AccessPicks;
   activeCompany: number | null;
-  companyCounts: Record<number, number>;
   selectCompany: (id: number) => void;
   toggleCompanyPick: (id: number) => void;
 }
@@ -22,14 +22,24 @@ const CompanyColumn = ({
   picks,
   selectCompany,
   activeCompany,
-  companyCounts,
   toggleCompanyPick,
 }: CompanyColumnProps) => {
   const ctx = useOrganizationCtx();
+  const selectedStores = picks.stores;
 
   const companyList = ctx.isProgrammer
     ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
     : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
+
+  // Per-company badge — how many picked stores belong to each company, so
+  // switching away from one does not hide that it already has picks.
+  const companyCounts = useMemo(() => {
+    const map: Record<number, number> = {};
+    selectedStores.forEach((s) => {
+      map[s.company] = (map[s.company] ?? 0) + 1;
+    });
+    return map;
+  }, [selectedStores]);
 
   return (
     <div

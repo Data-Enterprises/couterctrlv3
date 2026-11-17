@@ -18,6 +18,7 @@ import {
 } from "../../../../utils";
 import { NO_PICKS, heldGroupIds, toggleGroup } from "../../../utils";
 import { reasonOf } from "../../../../../../../utils/serverError";
+import { filterGroupsBySearch, filterOpenGroups, toggleIn } from "./utils";
 
 // Interfaces
 import type { AccessPicks, SelectableStore } from "../../../interfaces";
@@ -45,30 +46,14 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
-  /** Locks the person to one store in total. The single-store role can't
-   *  hold a whole group (the server refuses), so this never sees `all`. */
   singleStoreOnly?: boolean;
-  /**
-   * Each group's full roster, lifted so a caller can count what `all` adds up
-   * to (that grant names no stores), and so Review doesn't fetch it again.
-   */
   groupStores: Record<number, Store[]>;
   onGroupStoresChange: (
     updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
   ) => void;
-  /**
-   * A fourth column inside the same card: Edit user puts the effective store
-   * list there, beside the picks it adds up from.
-   */
   rightColumn?: ReactNode;
-  /** Hide the built-in summary strip, for a caller supplying its own footer
-   *  with the Save button in it. */
   hideFooter?: boolean;
-  /** Hide the empty-picks notice, for a caller placing its own higher up the
-   *  screen where a warning is read before the thing it warns about. */
   hideEmptyNotice?: boolean;
-  /** Edit: the groups the person already holds, so the summary can name them
-   *  before their company is opened ("#66 (all)" otherwise). */
   heldGroups?: BaseGroup[];
 }
 
@@ -144,21 +129,14 @@ const AccessPanel = ({
     : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Ticked groups plus any a ticked store implies: what Create saves.
-
   const held = heldGroupIds(picks);
+
   /** Held either way: ticked, or implied by a picked store. */
   const heldSet = new Set(held);
 
   const selectedStores = picks.stores;
   const onChange = (stores: SelectableStore[]) =>
     onPicksChange({ ...picks, stores });
-
-  /**
-   * A company or group ticked in its own right, not inferred from a store, so
-   * ticking East means East, and a company with no stores can still be given.
-   */
-  const toggleIn = (list: number[], id: number) =>
-    list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
   const toggleCompanyPick = (id: number) =>
     onPicksChange({ ...picks, companies: toggleIn(picks.companies, id) });
@@ -186,11 +164,11 @@ const AccessPanel = ({
   const [collapsedSections, setCollapsedSections] = useState<Set<number>>(
     new Set(),
   );
-  const [groupSearch, setGroupSearch] = useState("");
-  const [storeSearch, setStoreSearch] = useState("");
+  const [groupSearch, setGroupSearch] = useState<string>("");
+  const [storeSearch, setStoreSearch] = useState<string>("");
   // The "Jump to selected" dropdown's value, reset to "" after each pick: a
   // scroll shortcut, not a filter.
-  const [storeGroupFilter, setStoreGroupFilter] = useState("");
+  const [storeGroupFilter, setStoreGroupFilter] = useState<string>("");
 
   useEffect(() => {
     if (companyList.length > 0 && activeCompany === null) {
@@ -317,16 +295,6 @@ const AccessPanel = ({
     ]);
   };
 
-  // Per-company badge — how many picked stores belong to each company, so
-  // switching away from one does not hide that it already has picks.
-  const companyCounts = useMemo(() => {
-    const map: Record<number, number> = {};
-    selectedStores.forEach((s) => {
-      map[s.company] = (map[s.company] ?? 0) + 1;
-    });
-    return map;
-  }, [selectedStores]);
-
   const groupsInActiveCompany = activeCompany
     ? wizardGroups(
         companyGroups[activeCompany] ?? [],
@@ -335,12 +303,12 @@ const AccessPanel = ({
         personHeld,
       )
     : [];
-  const filteredGroups = groupsInActiveCompany.filter((g) =>
-    g.name.toLowerCase().includes(groupSearch.toLowerCase()),
+
+  const filteredGroups = filterGroupsBySearch(
+    groupsInActiveCompany,
+    groupSearch,
   );
-  const openGroups = groupsInActiveCompany.filter((g) =>
-    expandedGroups.has(g.id),
-  );
+  const openGroups = filterOpenGroups(groupsInActiveCompany, expandedGroups);
 
   /** Held groups set to pick stores with nothing picked. The server answers
    *  400 for these, so they are named on screen before the save is tried. */
@@ -372,7 +340,6 @@ const AccessPanel = ({
         <CompanyColumn
           picks={picks}
           activeCompany={activeCompany}
-          companyCounts={companyCounts}
           selectCompany={selectCompany}
           toggleCompanyPick={toggleCompanyPick}
         />
