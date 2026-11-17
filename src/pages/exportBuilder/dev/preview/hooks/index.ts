@@ -110,7 +110,9 @@ export const useColumnDrag = (
           // between is the one that must not animate.
           setSettling(true);
           onDrop(a.name, to);
-          requestAnimationFrame(() => requestAnimationFrame(() => setSettling(false)));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => setSettling(false)),
+          );
         }
       }
       setActive(null);

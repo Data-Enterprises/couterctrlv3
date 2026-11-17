@@ -12,7 +12,6 @@ import type { SelectFilterOption } from "../../../../../components-dev/filters/i
  * four places that call it.
  */
 
-
 /**
  * How dates are written in the file.
  *

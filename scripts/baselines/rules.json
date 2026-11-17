@@ -643,14 +643,11 @@
   "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/preview/CsvPreview.tsx": {
-    "commented-code": 2,
-    "doc-comment": 1,
-    "labels": 1
+  "src/pages/exportBuilder/dev/preview/components/CsvTable.tsx": {
+    "commented-code": 2
   },
-  "src/pages/exportBuilder/dev/preview/SummaryPreview.tsx": {
-    "commented-code": 3,
-    "labels": 1
+  "src/pages/exportBuilder/dev/preview/components/SummaryTable.tsx": {
+    "commented-code": 3
   },
   "src/pages/exportBuilder/dev/preview/hooks/index.ts": {
     "labels": 1
