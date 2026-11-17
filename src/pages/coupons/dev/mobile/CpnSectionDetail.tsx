@@ -13,7 +13,7 @@ import { getCashierTransaction } from "../../../../api/lossPrevention";
 // Utils
 import { formatCurrency2, formatDate } from "../../../../utils";
 import { couponValueOf } from "../../../../utils/couponValue";
-import { buildSaleId } from "./utils";
+import { buildSaleId, receiptTotals } from "../utils";
 import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
@@ -173,24 +173,8 @@ const CpnSectionDetail = ({
   };
 
   const txMeta = txLines[0] ?? null;
-  const saleLines = txLines.filter(
-    (r: any) => r.sale_type === "Sale" && r.is_coupon !== 1,
-  );
-  const couponLines = txLines.filter((r: any) => r.is_coupon === 1);
-  const txGross = saleLines.reduce(
-    (s: number, r: any) => s + (r.total_sales ?? 0),
-    0,
-  );
-  const txCoupons = couponLines.reduce(
-    (s: number, r: any) => s + couponValueOf(r),
-    0,
-  );
-  const txTax = saleLines.reduce(
-    (s: number, r: any) => s + (r.total_rounded_tax ?? 0),
-    0,
-  );
-  const txNet = txGross - txCoupons;
-  const txTotal = txNet + txTax;
+  const { txGross, txCoupons, txTax, txNet, txTotal } =
+    receiptTotals(receiptLines);
 
   // The deepest level, in the same wrapper. One tab, so no tab row is drawn;
   // the tab it came from names the level.

@@ -21,6 +21,7 @@ import {
   sumCouponAmount,
 } from "../../../../../utils/couponValue";
 import { reasonOf } from "../../../../../utils/serverError";
+import { buildSaleId, fmtDateRange, receiptTotals } from "../../utils";
 
 // Interfaces
 import type { GroupTab } from "../../interfaces";
@@ -110,11 +111,7 @@ const CouponDetailPanel = ({
         )
       : "";
 
-  const fmtRangePart = (mdy: string, withYear = false) => {
-    const [m, d, y] = mdy.split("/");
-    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
-  };
-  const dateRangeLabel = `${fmtRangePart(ctx.startDate)} – ${fmtRangePart(ctx.endDate, true)}`;
+  const dateRangeLabel = fmtDateRange(ctx.startDate, ctx.endDate);
 
   const visibleRows = useMemo(() => {
     if (!selectedKey) return ctx.coupons;
@@ -340,16 +337,6 @@ const CouponDetailPanel = ({
       ? "— All Stores"
       : "— All Coupons";
 
-  const buildSaleId = (row: {
-    storeid: number;
-    sale_id: number;
-    terminal: string;
-    sale_date: string;
-  }) => {
-    const [y, m, d] = row.sale_date.split("T")[0].split("-");
-    return `${row.storeid}-${row.sale_id}-${row.terminal}-${+m}-${+d}-${y}`;
-  };
-
   const handleRowClick = (row: CouponItem) => {
     const saleId = buildSaleId(row);
     if (saleId === selectedSaleId) return;
@@ -416,24 +403,7 @@ const CouponDetailPanel = ({
   // Transaction data
   const txLines: TransactionListItem[] = ctx.receiptLines;
   const txMeta = txLines[0] ?? null;
-  const saleLines = txLines.filter(
-    (r) => r.sale_type === "Sale" && r.is_coupon !== 1,
-  );
-  const couponLines = txLines.filter((r) => r.is_coupon === 1);
-  const txGross = saleLines.reduce(
-    (s: number, r) => s + (r.total_sales ?? 0),
-    0,
-  );
-  const txCoupons = couponLines.reduce(
-    (s: number, r) => s + couponValueOf(r),
-    0,
-  );
-  const txTax = saleLines.reduce(
-    (s: number, r) => s + (r.total_rounded_tax ?? 0),
-    0,
-  );
-  const txNet = txGross - txCoupons;
-  const txTotal = txNet + txTax;
+  const { txCoupons, txTax, txNet, txTotal } = receiptTotals(txLines);
 
   // Export
   const exportTitle = selectedKey

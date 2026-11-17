@@ -1,7 +1,3 @@
-// Interfaces
-import type { GroupTab } from "../../interfaces";
-import type { CouponItem } from "../../../../../interfaces";
-
 /** A searched m/d/yyyy date as a short label, e.g. Nov 9. */
 export const fmtSearchDate = (mdy: string) => {
   const [m, d, y] = mdy.split("/");
@@ -11,17 +7,4 @@ export const fmtSearchDate = (mdy: string) => {
     month: "short",
     day: "numeric",
   });
-};
-
-/** The overview's group-by tabs. */
-export const TABS: { key: GroupTab; label: string }[] = [
-  { key: "subdept", label: "Sub dept" },
-  { key: "date", label: "Date" },
-  { key: "cashier", label: "Cashier" },
-];
-
-/** A coupon line's sale id: store-sale-terminal-month-day-year. */
-export const buildSaleId = (row: CouponItem) => {
-  const [y, m, d] = row.sale_date.split("T")[0].split("-");
-  return `${row.storeid}-${row.sale_id}-${row.terminal}-${+m}-${+d}-${y}`;
 };

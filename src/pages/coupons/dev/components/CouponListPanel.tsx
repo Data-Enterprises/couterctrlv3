@@ -13,6 +13,7 @@ import {
 } from "../../../../utils/storeIdentity";
 import { sumCouponAmount } from "../../../../utils/couponValue";
 import { formatCurrency2 } from "../../../../utils";
+import { fmtDateRange } from "../utils";
 
 // Components
 import BackButton from "../../../../components-dev/BackButton";
@@ -44,11 +45,7 @@ const CouponListPanel = ({
   const storeName = useStoreName(Number(ctx.lastStore));
   const isGroup = isGroupSearch(ctx.type);
 
-  const fmtRangePart = (mdy: string, withYear = false) => {
-    const [m, d, y] = mdy.split("/");
-    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
-  };
-  const dateLabel = `${fmtRangePart(ctx.startDate)} – ${fmtRangePart(ctx.endDate, true)}`;
+  const dateLabel = fmtDateRange(ctx.startDate, ctx.endDate);
 
   const totalAmount = useMemo(
     () => sumCouponAmount(ctx.coupons),

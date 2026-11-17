@@ -1,6 +1,6 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { GROUP_TABS } from "../utils";
+import { GROUP_TABS } from "../../../utils";
 
 // Interfaces
 import type { GroupTab } from "../../../interfaces";
