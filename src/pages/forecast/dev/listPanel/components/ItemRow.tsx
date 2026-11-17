@@ -17,12 +17,9 @@ interface ItemRowProps {
 const ItemRow = ({ row, checked, isAd, onToggle }: ItemRowProps) => (
   <button
     onClick={onToggle}
-    className={`w-full text-left flex items-start gap-2 px-3 py-2.5 border-b border-line_hair transition-colors ${
-      checked ? "bg-custom-white" : "hover:bg-fill_soft"
+    className={`w-full text-left flex items-start gap-2 px-3 py-2.5 border-b border-l-2 border-b-line_hair transition-colors ${
+      checked ? "cc-row-selected" : "border-l-transparent hover:bg-fill_soft"
     }`}
-    style={
-      checked ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined
-    }
   >
     <div
       className={`flex-shrink-0 mt-[1px] w-3.5 h-3.5 rounded border transition-colors ${
