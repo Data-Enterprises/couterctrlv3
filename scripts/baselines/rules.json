@@ -638,11 +638,6 @@
   "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/exportBar/ExportBar.tsx": {
-    "labels": 1,
-    "shape-extra-code": 2,
-    "shape-named-export": 1
-  },
   "src/pages/exportBuilder/dev/preview/components/CsvTable.tsx": {
     "commented-code": 2
   },
