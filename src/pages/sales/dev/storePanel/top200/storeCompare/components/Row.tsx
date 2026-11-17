@@ -1,11 +1,11 @@
 // Utils
-import { severityDotClass } from "../../../../../../utils/severity";
+import { severityDotClass } from "../../../../../../../utils/severity";
 import {
   metricSigned,
   type ComparedTopItem,
   type CompareMetric,
 } from "../utils/topItemsCompare";
-import { money, pct, pts, signedMoney, TONE_PILL, toneOf } from "../utils";
+import { money, pct, pts, signedMoney, TONE_PILL, toneOf } from "../../utils";
 
 interface RowProps {
   row: ComparedTopItem;

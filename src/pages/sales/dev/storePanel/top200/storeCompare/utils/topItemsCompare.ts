@@ -1,8 +1,8 @@
 // Utils
-import { amountOf, amountUnit, deptName, weighed } from "./topItems";
+import { amountOf, amountUnit, deptName, weighed } from "../../utils/topItems";
 
 // Interfaces
-import type { TopItemRow } from "../../../../../../api/topItems";
+import type { TopItemRow } from "../../../../../../../api/topItems";
 
 /**
  * Two stores' top 200, joined.

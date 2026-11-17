@@ -27,7 +27,7 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import SalesExportModal from "./export/SalesExportModal";
 import PopupTopItems from "./top200/PopupTopItems";
-import TopItemsReport from "./top200/components/TopItemsReport";
+import TopItemsReport from "./top200/storeCompare/TopItemsReport";
 import DailyRecap from "./summary/DailyRecap";
 import PopupComparisonList from "./compare/PopupComparisonList";
 import DeptReport from "./subDepts/components/DeptReport";

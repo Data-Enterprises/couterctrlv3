@@ -29,7 +29,7 @@ import {
   sortCompared,
   type CompareFilter,
   type CompareMetric,
-} from "../utils/topItemsCompare";
+} from "./utils/topItemsCompare";
 import { money, OUTLINE_TONE } from "../utils";
 import { reasonOf } from "../../../../../../utils/serverError";
 
@@ -44,8 +44,8 @@ import SelectFilter from "../../../../../../components-dev/filters/SelectFilter"
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
 import SortHeader from "../../../../../../components-dev/SortHeader";
 import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
-import Row from "./Row";
-import Rail from "./Rail";
+import Row from "./components/Row";
+import Rail from "./components/Rail";
 
 interface TopItemsReportProps {
   openStoreName: string;

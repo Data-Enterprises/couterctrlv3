@@ -10,7 +10,7 @@ import {
   divergenceSigned,
   filterCompared,
   sortCompared,
-} from "@/pages/sales/dev/storePanel/top200/utils/topItemsCompare";
+} from "@/pages/sales/dev/storePanel/top200/storeCompare/utils/topItemsCompare";
 
 /**
  * Two stores' top 200, joined.

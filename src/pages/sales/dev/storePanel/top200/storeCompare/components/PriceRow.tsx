@@ -1,8 +1,8 @@
 // Utils
-import { money, side } from "../utils";
+import { money, side } from "../../utils";
 
 // Interfaces
-import type { PriceLine } from "../interfaces";
+import type { PriceLine } from "../../interfaces";
 
 interface PriceRowProps {
   line: PriceLine;

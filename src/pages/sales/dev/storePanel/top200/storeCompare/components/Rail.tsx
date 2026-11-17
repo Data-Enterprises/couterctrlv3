@@ -2,21 +2,21 @@
 import { useState } from "react";
 
 // Utils
-import { CTA_SEVERITY_CLASSES, severityDotClass } from "../../../../../../utils/severity";
-import { avgPrice } from "../utils/topItems";
+import { CTA_SEVERITY_CLASSES, severityDotClass } from "../../../../../../../utils/severity";
+import { avgPrice } from "../../utils/topItems";
 import {
   amountTextOf,
   metricSigned,
   type ComparedTopItem,
   type CompareMetric,
 } from "../utils/topItemsCompare";
-import { money, pct, priceLines, pts, signedMoney, toneOf } from "../utils";
+import { money, pct, priceLines, pts, signedMoney, toneOf } from "../../utils";
 
 // Interfaces
 import {
   type ItemDetailResponse,
   type TopItemPricePoint,
-} from "../../../../../../api/topItems";
+} from "../../../../../../../api/topItems";
 
 // Components
 import {
