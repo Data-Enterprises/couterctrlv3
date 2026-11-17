@@ -47,7 +47,7 @@ import UpcContextMenu from "../../../../../../components-dev/UpcContextMenu";
 import Row from "./components/Row";
 import Rail from "./components/Rail";
 
-interface TopItemsReportProps {
+interface Top200CompareProps {
   openStoreName: string;
   openStoreId: number;
   compareStoreId: number;
@@ -75,7 +75,7 @@ interface TopItemsReportProps {
  * `item_detail` for the absent side and reports what comes back — which is
  * still a SALES answer: "sold none this week", not "off their shelf".
  */
-const TopItemsReport = ({
+const Top200Compare = ({
   openStoreName,
   openStoreId,
   compareStoreId,
@@ -83,7 +83,7 @@ const TopItemsReport = ({
   twStart,
   twEnd,
   onBack,
-}: TopItemsReportProps) => {
+}: Top200CompareProps) => {
   const { url, token, topItemsCache: cache, topItemsTyCache: tyCache } = useSalesCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -548,4 +548,4 @@ const TopItemsReport = ({
   );
 };
 
-export default TopItemsReport;
+export default Top200Compare;

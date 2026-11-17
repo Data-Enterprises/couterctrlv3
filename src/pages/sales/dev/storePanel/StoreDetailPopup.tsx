@@ -27,7 +27,7 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import PopupDaySidebar from "../components/PopupDaySidebar";
 import SalesExportModal from "./export/SalesExportModal";
 import PopupTopItems from "./top200/PopupTopItems";
-import TopItemsReport from "./top200/storeCompare/TopItemsReport";
+import Top200Compare from "./top200/storeCompare/Top200Compare";
 import DailyRecap from "./summary/DailyRecap";
 import PopupComparisonList from "./compare/PopupComparisonList";
 import DeptReport from "./subDepts/components/DeptReport";
@@ -154,7 +154,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
              store's own top 200, graded, exactly as it has always been --
              the single-store tab is not touched by any of this. */
           counterpart ? (
-            <TopItemsReport
+            <Top200Compare
               openStoreName={headerStoreName}
               openStoreId={selection.storeId}
               compareStoreId={counterpart.storeid}
