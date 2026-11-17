@@ -42,7 +42,11 @@ const StoreRow = ({
       <div className="truncate">{s.store_name}</div>
       <div
         className="truncate"
-        title={canRename ? undefined : "No company: only level 9 or support can change this store"}
+        title={
+          canRename
+            ? undefined
+            : "No company: only level 9 or support can change this store"
+        }
       >
         {s.company_name || "No company"}
       </div>

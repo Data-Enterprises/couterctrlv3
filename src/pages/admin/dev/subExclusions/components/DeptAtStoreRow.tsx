@@ -22,9 +22,7 @@ interface DeptAtStoreRowProps {
  *  with the store number, name, sub dept number and last rang date. */
 const DeptAtStoreRow = ({ a, row, send, saving }: DeptAtStoreRowProps) => {
   return (
-    <div
-      className="flex items-center gap-2 py-1 text-[11.5px] text-content"
-    >
+    <div className="flex items-center gap-2 py-1 text-[11.5px] text-content">
       <Checkbox
         checked={a.excluded}
         disabled={saving}

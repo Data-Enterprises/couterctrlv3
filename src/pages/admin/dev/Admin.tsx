@@ -117,9 +117,7 @@ const Admin = () => {
         style={{ width, height }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="cc-navy-title text-[13px] flex-shrink-0">
-            Admin
-          </span>
+          <span className="cc-navy-title text-[13px] flex-shrink-0">Admin</span>
           {context.adminForm === "store_activity" && (
             <>
               <div className="flex-1" />

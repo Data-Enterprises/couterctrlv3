@@ -33,7 +33,11 @@ import {
   CATALOG_DAYS,
   COLS,
 } from "./utils";
-import { reasonOf, serverDetail, serverStatus } from "../../../../utils/serverError";
+import {
+  reasonOf,
+  serverDetail,
+  serverStatus,
+} from "../../../../utils/serverError";
 
 // Interfaces
 import type { Store } from "../../../../interfaces";
@@ -383,7 +387,8 @@ const SubDeptExclusions = () => {
       <p className="text-[11.5px] text-content/95 mb-2 leading-snug flex-shrink-0">
         An excluded department still appears in every sub-department list — it
         just stops counting towards net sales on the Performance pages.
-        {context.canSeeAllStores && " Only the stores assigned to you are listed."}
+        {context.canSeeAllStores &&
+          " Only the stores assigned to you are listed."}
         {rows.length > 0 && (
           <span className="font-semibold text-content">
             {" "}

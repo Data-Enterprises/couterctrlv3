@@ -44,7 +44,8 @@ const StoreFormModal = ({
   const parsedId = Number(trimmedId);
   /** The insert writes the ID as given, so it has to be a whole number. */
   const idInvalid =
-    !!trimmedId && (!/^\d+$/.test(trimmedId) || !Number.isSafeInteger(parsedId));
+    !!trimmedId &&
+    (!/^\d+$/.test(trimmedId) || !Number.isSafeInteger(parsedId));
   /** storeid is the key every other table joins on; a duplicate fails the
    *  insert anyway, but this says why before the round trip. */
   const idTaken =
@@ -196,11 +197,7 @@ const StoreFormModal = ({
                 : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >
-            {saving
-              ? "Saving…"
-              : isCreate
-                ? "Create store"
-                : "Save name"}
+            {saving ? "Saving…" : isCreate ? "Create store" : "Save name"}
           </button>
         </div>
       </div>

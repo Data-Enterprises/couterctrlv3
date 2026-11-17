@@ -91,10 +91,7 @@ const StoreRecords = () => {
 
   useEffect(fetchStores, []);
 
-  const statusKnown = useMemo(
-    () => statusReported(stores ?? []),
-    [stores],
-  );
+  const statusKnown = useMemo(() => statusReported(stores ?? []), [stores]);
 
   const filtered = useMemo(() => {
     if (!stores) return [];
@@ -112,17 +109,10 @@ const StoreRecords = () => {
       // quietly shorten the list for no reason the reader can see.
       const st = statusOf(s);
       const byStatus =
-        statusFilter === "all" ||
-        st === "unknown" ||
-        st === statusFilter;
+        statusFilter === "all" || st === "unknown" || st === statusFilter;
       return byCompany && bySearch && byStatus;
     });
-  }, [
-    stores,
-    search,
-    companyFilter,
-    statusFilter,
-  ]);
+  }, [stores, search, companyFilter, statusFilter]);
 
   const handleCreate = (form: StoreForm) => {
     setSaving(true);

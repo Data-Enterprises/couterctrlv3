@@ -21,10 +21,7 @@ import { companyCols } from "./utils";
 import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type {
-  Company,
-  CompanyJsonResp,
-} from "../../../../interfaces";
+import type { Company, CompanyJsonResp } from "../../../../interfaces";
 import type { CompanyRecord } from "./interfaces";
 
 // Components

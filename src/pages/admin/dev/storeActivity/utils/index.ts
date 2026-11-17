@@ -20,7 +20,10 @@ export const rowsToCsv = (
 };
 
 /** The Store Activity export: one row per store with its activity figures. */
-export const buildStoreActivityCsv = (stores: StoreWithActivity[], label: string) => {
+export const buildStoreActivityCsv = (
+  stores: StoreWithActivity[],
+  label: string,
+) => {
   const headers = [
     "Store ID",
     "Store Name",

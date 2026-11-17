@@ -53,16 +53,11 @@ const StoreActivityExportModal = ({
     >
       <div className="cc-phone-header">
         <div>
-          <p className="cc-navy-title text-[13px]">
-            Export CSV
-          </p>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
           <p className="text-custom-white text-[10px] mt-0.5">{companyName}</p>
         </div>
         <div />
-        <button
-          onClick={onClose}
-          className="cc-navy-link justify-self-end"
-        >
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
@@ -86,9 +81,7 @@ const StoreActivityExportModal = ({
             className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
           />
           <div>
-            <p className="text-[13px] cc-row-title">
-              All stores
-            </p>
+            <p className="text-[13px] cc-row-title">All stores</p>
             <p className="text-[12px] text-content mt-0.5">
               {stores.length} stores for {companyName}
             </p>
@@ -112,9 +105,7 @@ const StoreActivityExportModal = ({
             className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
           />
           <div>
-            <p className="text-[13px] cc-row-title">
-              Missing only
-            </p>
+            <p className="text-[13px] cc-row-title">Missing only</p>
             <p className="text-[12px] text-content mt-0.5">
               {missingStores.length
                 ? `${missingStores.length} stores with 1+ missing days`
