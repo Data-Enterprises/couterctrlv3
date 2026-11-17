@@ -15,8 +15,10 @@ import type {
   ExplorerTotals,
   Signal,
   SignalTransaction,
+  SortCol,
   SpreadKind,
   StoreNameResolver,
+  TxnSort,
 } from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
@@ -609,4 +611,52 @@ export const chipStyle = {
 export const fmtTime = (raw: string) => {
   const s = raw.length === 5 ? "0" + raw : raw;
   return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
+};
+
+/** A signal's transaction columns; the ones with a `col` sort. */
+export const TXN_COLUMNS: {
+  col: SortCol | null;
+  label: string;
+  align: string;
+}[] = [
+  { col: "date", label: "Date � time", align: "" },
+  { col: "transaction", label: "Transaction", align: "" },
+  { col: null, label: "Cashier", align: "" },
+  { col: null, label: "Lines", align: "" },
+  { col: "qty", label: "Qty", align: "justify-end text-right" },
+  { col: "amount", label: "Amount", align: "justify-end text-right" },
+];
+
+/** A signal's transactions in the chosen order, or as they came when unsorted. */
+export const sortSignalTransactions = (
+  grouped: SignalTransaction[],
+  sort: TxnSort,
+) => {
+  if (!sort) return grouped;
+  const rows = [...grouped];
+  rows.sort((a, b) => {
+    let diff: number;
+    switch (sort.col) {
+      case "date":
+        diff = `${a.saleDate}${a.startTime}`.localeCompare(
+          `${b.saleDate}${b.startTime}`,
+        );
+        break;
+      case "transaction":
+        diff = transactionLabel(a.saleId).localeCompare(
+          transactionLabel(b.saleId),
+          undefined,
+          { numeric: true },
+        );
+        break;
+      case "qty":
+        diff = a.qty - b.qty;
+        break;
+      case "amount":
+        diff = a.amount - b.amount;
+        break;
+    }
+    return sort.dir === "asc" ? diff : -diff;
+  });
+  return rows;
 };

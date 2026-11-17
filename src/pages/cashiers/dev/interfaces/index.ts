@@ -53,3 +53,6 @@ export type ModalMode = "presets" | "custom";
 export type Dataset = "signals" | "transactions" | "lines";
 
 export type SortCol = "date" | "transaction" | "qty" | "amount";
+
+/** How a signal's transactions are sorted; null is their own order. */
+export type TxnSort = { col: SortCol; dir: "desc" | "asc" } | null;
