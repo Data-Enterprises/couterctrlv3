@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysInRange } from "@/pages/exportBuilder/dev/hooks/index";
+import { daysInRange } from "@/pages/exportBuilder/dev/utils";
 
 describe("the days a range covers", () => {
   it("includes both ends", () => {

@@ -647,11 +647,6 @@
     "labels": 1,
     "shape-extra-code": 2
   },
-  "src/pages/exportBuilder/dev/hooks/index.ts": {
-    "file-length": 1,
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/pages/exportBuilder/dev/preview/CsvPreview.tsx": {
     "commented-code": 2,
     "doc-comment": 1,

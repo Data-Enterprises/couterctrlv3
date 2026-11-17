@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { setupStore } from "@/store";
 import { setConfig, setGroupBy } from "@/features/dev/devExportBuilderSlice";
-import { SLOW_AFTER_MS, useExportBuilderCtx } from "@/pages/exportBuilder/dev/hooks/index";
+import { useExportBuilderCtx } from "@/pages/exportBuilder/dev/hooks/index";
+import { SLOW_AFTER_MS } from "@/pages/exportBuilder/dev/utils";
 
 /**
  * The page's calls, driven through the real hook and store with only the
