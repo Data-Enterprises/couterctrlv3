@@ -658,11 +658,6 @@
   "src/pages/exportBuilder/dev/preview/utils/dateFormats.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/queryPanel/QueryPanel.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
   "src/pages/exportBuilder/dev/saved/SavedExportsModal.tsx": {
     "labels": 1,
     "shape-extra-code": 1
