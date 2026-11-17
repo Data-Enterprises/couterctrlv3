@@ -4,8 +4,8 @@ import { useForecastCtx, useForecastSearch } from "./hooks";
 
 // Components
 import SearchPopup from "../../../components-dev/SearchPopup";
-import ForecastEntry from "./components/ForecastEntry";
-import ForecastListPanel from "./components/ForecastListPanel";
+import ForecastEntry from "./entry/ForecastEntry";
+import ForecastListPanel from "./listPanel/ForecastListPanel";
 import ForecastRowsTable from "./rowsTable/ForecastRowsTable";
 import ForecastCalcModal from "./calc/ForecastCalcModal";
 import ForecastExportModal from "./export/ForecastExportModal";
