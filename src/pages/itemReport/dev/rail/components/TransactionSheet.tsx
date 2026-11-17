@@ -1,16 +1,11 @@
 // Hooks
-import { useEffect, useMemo, useState } from "react";
-import { useItemReportCtx } from "../../hooks";
-
-// API
-import { getTransactionList } from "../../../../../api/lossPrevention";
+import { useMemo, useState } from "react";
+import { useBasket } from "../hooks";
 
 // Utils
-import { fetchAllPages } from "../../../../../utils/paging";
 import { formatCurrency2, formatDateSimple } from "../../../../../utils";
-import { ACTION_TONE } from "../../utils/actionTone";
-import { BASKET_COLS, cell, LIST_COLS, num, saleNumber } from "../utils";
-import { serverDetail } from "../../../../../utils/serverError";
+import { saleNumber } from "../utils";
+import { groupSales } from "../utils/basket";
 
 // Interfaces
 import type { TransactionListItem } from "../../../../../interfaces";
@@ -20,6 +15,8 @@ import type { ActionKind } from "../../interfaces";
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
+import SaleList from "./SaleList";
+import BasketTable from "./BasketTable";
 
 interface TransactionSheetProps {
   /** The item whose price row was clicked. */
@@ -59,197 +56,11 @@ const TransactionSheet = ({
   action,
   onClose,
 }: TransactionSheetProps) => {
-  const { url, token } = useItemReportCtx();
   const [openSale, setOpenSale] = useState<TransactionListItem | null>(null);
-  const [basket, setBasket] = useState<TransactionListItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!openSale) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    getTransactionList(url, token, [openSale.sale_id], 1, "Sale")
-      .then(async (resp) => {
-        const body = resp.data;
-        if (body.error !== 0) throw new Error(body.msg ?? "Could not load it");
-        return fetchAllPages(
-          body,
-          (body.transactions ?? []) as TransactionListItem[],
-          async (page) => {
-            try {
-              const r = await getTransactionList(
-                url,
-                token,
-                [openSale.sale_id],
-                page,
-                "Sale",
-              );
-              return r.data.error === 0 ? r.data.transactions : [];
-            } catch {
-              return [];
-            }
-          },
-        );
-      })
-      .then((all) => {
-        if (cancelled) return;
-        // Line order, so the modal reads like the receipt it represents.
-        setBasket([...all].sort((a, b) => a.line_number - b.line_number));
-        setLoading(false);
-      })
-      .catch((e: unknown) => {
-        if (cancelled) return;
-        setError(
-          serverDetail(e) ??
-            (e instanceof Error
-              ? e.message
-              : "Could not load that transaction"),
-        );
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [openSale, url, token]);
-
+  const { basket, loading, error } = useBasket(openSale);
   const inBasket = openSale !== null;
-
-  /**
-   * A "DC <vendor>" line: the register's record of a discount, written as its
-   * own row under the SAME product_code as the item it discounts.
-   *
-   * That shared code is what lets a vendor name find an item whose own
-   * description never mentions it — and it is also why these have to be
-   * separated deliberately. Bucketing on product_code alone folds the discount
-   * into the item and reports the difference as a price: SF BACON rang at
-   * $2.99 with a $1.00 discount beside it, and the two collapsed to "$0.99".
-   */
-  const isDiscountLine = (l: TransactionListItem) =>
-    (l.qty ?? 0) === 0 && l.is_discounted === 1;
-
-  /**
-   * Sale lines only — their `net_sales` already has the discount applied.
-   *
-   * Verified on 111-177563: the bacon line reads `total_sales 3.99,
-   * net_sales 2.99` and carries a separate DC row. Adding the DC row here would
-   * subtract the discount a second time, and its own `net_sales` is doubled
-   * (-2.00 against a real -1.00), so it would subtract it twice over. That is
-   * what made this receipt total $14.62 instead of $18.62.
-   */
-  const basketTotal = basket
-    .filter((l) => !isDiscountLine(l))
-    .reduce((s, l) => s + l.net_sales, 0);
-
-  /**
-   * One row per product, not per scan.
-   *
-   * The register writes a line per scan, so four of the same six-pack is four
-   * identical rows — twelve lines of a basket that only holds five things. The
-   * repetition tells you nothing the quantity doesn't say better, and it costs
-   * the modal most of its height.
-   *
-   * Price type is kept as a set rather than a first-wins value. Two scans of the
-   * same item at different price types is a genuine finding — exactly the kind
-   * of thing this view exists to catch — and collapsing it to whichever came
-   * first would erase it.
-   */
-  /**
-   * One row per transaction, not per scan — the same repetition the basket had.
-   * An item rung four times in one sale was four rows here, all carrying the
-   * same receipt number, which reads like four separate customers.
-   *
-   * Quantity and net are summed so a row says what that customer actually took
-   * and paid, which is the question the list is for.
-   */
-  const sales = useMemo(() => {
-    const bySale = new Map<
-      string,
-      {
-        sale: TransactionListItem;
-        qty: number;
-        net: number;
-        priceTypes: Set<string>;
-      }
-    >();
-    for (const l of lines) {
-      const found = bySale.get(l.sale_id);
-      const q = l.qty ?? 1;
-      if (found) {
-        found.qty += q;
-        found.net += l.net_sales;
-        found.priceTypes.add(l.price_type);
-      } else {
-        bySale.set(l.sale_id, {
-          sale: l,
-          qty: q,
-          net: l.net_sales,
-          priceTypes: new Set([l.price_type]),
-        });
-      }
-    }
-    return [...bySale.values()].sort((a, b) =>
-      a.sale.sale_date.localeCompare(b.sale.sale_date),
-    );
-  }, [lines]);
-
+  const sales = useMemo(() => groupSales(lines), [lines]);
   const soldUnits = sales.reduce((s, r) => s + r.qty, 0);
-
-  const grouped = useMemo(() => {
-    const byCode = new Map<
-      string,
-      {
-        code: string;
-        /** A "DC" line rather than a scan of the item itself. */
-        discount: boolean;
-        description: string;
-        qty: number;
-        net: number;
-        coupon: number;
-        priceTypes: Set<string>;
-        firstLine: number;
-      }
-    >();
-    for (const l of basket) {
-      const code = String(l.product_code);
-      // Keyed on the discount flag as well as the code, so an item and its own
-      // "DC" line stay two rows. They share a product_code, and merging them
-      // reports a price nobody paid.
-      const discount = isDiscountLine(l);
-      const key = `${code}|${discount ? "dc" : "item"}`;
-      const found = byCode.get(key);
-      // `qty` is optional on the line; a scan with none is one unit.
-      const q = l.qty ?? 1;
-      // `total_sales` on a DC row, `net_sales` on a sale row. The discount's
-      // `net_sales` is double its real value — -2.00 where the item went 3.99
-      // to 2.99 — while its `total_sales` is the amount that actually came off.
-      const amount = discount ? l.total_sales : l.net_sales;
-      if (found) {
-        found.qty += q;
-        found.net += amount;
-        found.coupon += l.coupon_amount;
-        found.priceTypes.add(l.price_type);
-      } else {
-        byCode.set(key, {
-          code,
-          discount,
-          description: l.product_description,
-          qty: q,
-          net: amount,
-          coupon: l.coupon_amount,
-          priceTypes: new Set([l.price_type]),
-          firstLine: l.line_number,
-        });
-      }
-    }
-    // Kept in the order the register rang them, so it still reads like the
-    // receipt it represents.
-    return [...byCode.values()].sort((a, b) => a.firstLine - b.firstLine);
-  }, [basket]);
-
-  const itemRowCount = grouped.filter((g) => !g.discount).length;
-  const discountRowCount = grouped.length - itemRowCount;
 
   return (
     <ResizableModalShell
@@ -300,141 +111,13 @@ const TransactionSheet = ({
         ) : inBasket && error ? (
           <div className="px-4 py-6 text-[12px] text-content">{error}</div>
         ) : inBasket ? (
-          <>
-            <div
-              className="cc-thead grid gap-3 px-4 py-1.5 text-[11.5px] cc-caps"
-              style={{ gridTemplateColumns: BASKET_COLS }}
-            >
-              <span>Item</span>
-              <span>Price type</span>
-              <span className="text-right">Qty</span>
-              <span className="text-right">Unit</span>
-              <span className="text-right">Net</span>
-            </div>
-            {grouped.map((l, i) => {
-              const isItem = l.code === productCode;
-              // Applied per cell, not inherited — every cell sets its own
-              // `text-content`, which would win over anything on the row.
-              const ink =
-                isItem && action ? ACTION_TONE[action].text : "text-content";
-              return (
-                <div
-                  key={`${l.code}-${l.discount ? "dc" : "item"}`}
-                  className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair ${
-                    // The line you came for, marked among the rest of the
-                    // basket — that contrast is the whole point of the view,
-                    // and it wears the action's colour so it matches the chip
-                    // on the sheet behind.
-                    isItem
-                      ? action
-                        ? ACTION_TONE[action].row
-                        : "bg-fill_muted"
-                      : i % 2 === 1
-                        ? "bg-row_stripe"
-                        : ""
-                  }`}
-                  style={{ gridTemplateColumns: BASKET_COLS }}
-                >
-                  <div className="min-w-0">
-                    <div className={`text-[13px] font-medium truncate ${ink}`}>
-                      {l.description}
-                    </div>
-                    <div
-                      className={`text-[12px] font-medium truncate ${
-                        isItem ? ink : "text-content/95"
-                      }`}
-                    >
-                      {l.code}
-                      {l.coupon > 0 && ` · ${formatCurrency2(l.coupon)} coupon`}
-                      {/* Both halves of a discounted item are marked, and each
-                          says which half it is — the pair is the finding, and
-                          "this item" twice with different money on it would
-                          read as a duplicate row. */}
-                      {isItem &&
-                        (l.discount
-                          ? " · discount on this item"
-                          : " · this item")}
-                    </div>
-                  </div>
-                  {/* Every price type this item rang under. More than one is
-                      worth seeing, so they are joined rather than reduced. */}
-                  <span className={`${cell} ${ink}`}>
-                    {[...l.priceTypes].join(" · ")}
-                  </span>
-                  <span className={`${num} ${ink}`}>
-                    {l.discount ? "—" : l.qty}
-                  </span>
-                  {/* Per unit, because with quantity aggregated the line total
-                      no longer says what anything actually rang at — and the
-                      unit price is what you compare against the price row you
-                      arrived from. */}
-                  <span className={`${num} ${ink}`}>
-                    {l.qty > 0 ? formatCurrency2(l.net / l.qty) : "—"}
-                  </span>
-                  <span className={`${num} ${ink}`}>
-                    {formatCurrency2(l.net)}
-                  </span>
-                </div>
-              );
-            })}
-            {grouped.length > 0 && (
-              <div className="px-4 py-2 text-[12px] font-medium text-content flex items-center justify-between">
-                {/* Discount rows are counted apart from the items. They are
-                    their own rows in the table, but calling one an item would
-                    say the basket held something it did not. */}
-                <span>
-                  {itemRowCount} item{itemRowCount === 1 ? "" : "s"}
-                  {discountRowCount > 0 &&
-                    ` · ${discountRowCount} discount${discountRowCount === 1 ? "" : "s"}`}
-                  {" · "}
-                  {basket.length} line{basket.length === 1 ? "" : "s"}
-                </span>
-                <span className="tabular-nums">
-                  {formatCurrency2(basketTotal)}
-                </span>
-              </div>
-            )}
-          </>
+          <BasketTable
+            basket={basket}
+            productCode={productCode}
+            action={action}
+          />
         ) : (
-          <>
-            <div
-              className="cc-thead grid gap-3 px-4 py-1.5 text-[11.5px] cc-caps"
-              style={{ gridTemplateColumns: LIST_COLS }}
-            >
-              <span>Transaction</span>
-              <span>Date</span>
-              <span>Terminal</span>
-              <span>Cashier</span>
-              <span>Price type</span>
-              <span className="text-right">Qty</span>
-              <span className="text-right">Net</span>
-            </div>
-            {sales.map((r, i) => (
-              <div
-                key={r.sale.sale_id}
-                onClick={() => setOpenSale(r.sale)}
-                className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair cursor-pointer hover:bg-brand_navy/[0.06] ${
-                  i % 2 === 1 ? "bg-row_stripe" : ""
-                }`}
-                style={{ gridTemplateColumns: LIST_COLS }}
-              >
-                <span className="text-[12px] font-medium text-brand_navy underline underline-offset-2 truncate">
-                  {saleNumber(r.sale.sale_id)}
-                </span>
-                <span className={cell}>
-                  {formatDateSimple(r.sale.sale_date)}
-                </span>
-                <span className={cell}>{r.sale.terminal}</span>
-                <span className={cell}>{r.sale.cashier_name}</span>
-                {/* Why it rang at this price. `TPR` is a planned promotion and
-                    needs no action; `Regular` at a promotional price is the
-                    shelf being wrong, which is the whole reason to look. */}
-                <span className={cell}>{[...r.priceTypes].join(" · ")}</span>
-                <span className={num}>{r.qty}</span>
-                <span className={num}>{formatCurrency2(r.net)}</span>
-              </div>
-            ))}
-          </>
+          <SaleList sales={sales} onOpen={setOpenSale} />
         )}
       </div>
     </ResizableModalShell>
