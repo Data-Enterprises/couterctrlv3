@@ -14,6 +14,16 @@ import {
 
 // Interfaces
 import type { CouponItem, Store } from "../../../../../interfaces";
+import type { Scope } from "../interfaces";
+
+/** How many rows the Custom preview shows. */
+export const PREVIEW_ROWS = 12;
+
+/** The export's two scopes. */
+export const SCOPE_OPTIONS: { key: Scope; label: string }[] = [
+  { key: "store", label: "Selected store" },
+  { key: "all", label: "All stores in search" },
+];
 
 /** What the export is grouped by. Mirrors the page's own breakdowns, so an
  *  exported file matches what was on screen when it was pulled. */

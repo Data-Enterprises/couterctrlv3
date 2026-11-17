@@ -40,7 +40,11 @@ const ExportModalHeader = ({
         </button>
       ))}
     </div>
-    <button onClick={onClose} className="cc-navy-link justify-self-end">
+    <button
+      onClick={onClose}
+      aria-label="Close"
+      className="cc-navy-link justify-self-end"
+    >
       <XMarkIcon className="w-4 h-4" />
     </button>
   </div>
