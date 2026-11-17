@@ -1,36 +1,31 @@
+// Hooks
 import { useEffect, useState } from "react";
-import { BookmarkIcon } from "@heroicons/react/24/outline";
-import Modal from "../../../../components-dev/Modal";
-import ConfirmDelete from "../../../../components-dev/ConfirmDelete";
-import TextField from "../../../../components-dev/inputs/TextField";
-import { useExportBuilderCtx } from "../hooks/index";
-import { describePayload, toPayload } from "../utils/savedExports";
+import { useExportBuilderCtx } from "../hooks";
+
+// Redux
 import { openSaved } from "../../../../features/dev/devExportBuilderSlice";
 
-const when = (iso: string) => {
-  const at = new Date(iso);
-  return Number.isNaN(at.getTime())
-    ? ""
-    : at.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-};
+// Utils
+import { describePayload, toPayload } from "../utils/savedExports";
+
+// Components
+import Modal from "../../../../components-dev/Modal";
+import ConfirmDelete from "../../../../components-dev/ConfirmDelete";
+import SavedExportsHeader from "./components/SavedExportsHeader";
+import SaveCurrentCard from "./components/SaveCurrentCard";
+import SavedExportRow from "./components/SavedExportRow";
+import NoSavedExports from "./components/NoSavedExports";
 
 /**
- * Configurations someone set up once and wants again.
- *
- * They live in a file in S3 keyed to the user, not in this page, so the shrink
- * report set up on Monday is still there on Friday and on another machine.
- * What is saved is the question — the columns, the grouping, the filters —
- * and never the dates: a saved export is loaded onto whichever range is open,
- * because September's report is October's report with October's dates.
- *
- * Loading one intersects it with what the open range actually holds, and says
- * what it could not honour. A report that quietly stopped covering two of its
- * five stores is worse than one that says so.
+ * Configurations someone set up once and wants again. They live in S3, keyed
+ * to the user, so they follow them to another machine. What is saved is the
+ * question and never the dates: one loads onto whichever range is open, and
+ * says what that range could not honour.
  */
 const SavedExportsModal = () => {
   const ctx = useExportBuilderCtx();
-  const [name, setName] = useState("");
-  const [note, setNote] = useState("");
+  const [name, setName] = useState<string>("");
+  const [note, setNote] = useState<string>("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
   // The list is read once a session, when someone first opens this.
@@ -56,20 +51,7 @@ const SavedExportsModal = () => {
       modalClassName="bg-card_bg w-[720px] max-w-[94vw] max-h-[82vh] flex flex-col"
     >
       <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
-        <div className="flex items-baseline gap-3 flex-shrink-0">
-          <h2 className="text-[15px] font-semibold">Saved exports</h2>
-          <span className="text-[11.5px] text-content/95">
-            yours, on any machine · a build made from one carries its name
-          </span>
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={close}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
-          >
-            Close
-          </button>
-        </div>
+        <SavedExportsHeader onClose={close} />
 
         {ctx.savedError && (
           <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 text-[12px] text-severity_watch_text">
@@ -77,118 +59,42 @@ const SavedExportsModal = () => {
           </div>
         )}
 
-        {/* Saving what is on screen, which is the reason most people open this */}
-        <div className="flex-shrink-0 border border-brand_line rounded-lg p-3 bg-custom-white flex flex-col gap-2">
-          <div className="text-[12.5px] font-semibold">
-            Save the configuration on screen
-          </div>
-          <div className="text-[11.5px] text-content/95">
-            {describePayload(toPayload(ctx.config, ctx.source), ctx.source)}
-          </div>
-          <div className="flex items-end gap-2">
-            <TextField
-              label="Name"
-              value={name}
-              placeholder="Shrink by vendor"
-              onChange={setName}
-              className="w-[200px]"
-            />
-            <TextField
-              label={
-                <span className="text-[11px] font-normal text-content/95">
-                  Description
-                </span>
-              }
-              value={note}
-              placeholder="What it answers"
-              onChange={setNote}
-              className="flex-1 min-w-0"
-            />
-            <button
-              type="button"
-              onClick={saveNew}
-              disabled={!name.trim() || ctx.savedBusy}
-              className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Save
-            </button>
-            {current && (
-              <button
-                type="button"
-                onClick={() =>
-                  ctx.saveCurrent(
-                    current.name,
-                    current.id,
-                    note.trim() || current.description,
-                  )
-                }
-                disabled={ctx.savedBusy}
-                title={`Replace "${current.name}" with what is on screen`}
-                className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
-              >
-                Update "{current.name}"
-              </button>
-            )}
-          </div>
-        </div>
+        <SaveCurrentCard
+          summary={describePayload(
+            toPayload(ctx.config, ctx.source),
+            ctx.source,
+          )}
+          name={name}
+          setName={setName}
+          note={note}
+          setNote={setNote}
+          busy={ctx.savedBusy}
+          current={current}
+          onSave={saveNew}
+          onUpdate={(cur) =>
+            ctx.saveCurrent(cur.name, cur.id, note.trim() || cur.description)
+          }
+        />
 
         <div className="cc-scroll flex flex-col gap-2">
           {ctx.saved.map((saved) => (
-            <div
+            <SavedExportRow
               key={saved.id}
-              className={`flex items-center gap-3 border rounded-xl px-3 py-2.5 ${
-                saved.id === ctx.savedCurrentId
-                  ? "border-brand_line_2 bg-filter_active"
-                  : "border-brand_line bg-card_bg"
-              }`}
-            >
-              <div className="w-8 h-8 rounded-lg bg-custom-white border border-brand_line flex items-center justify-center flex-shrink-0">
-                <BookmarkIcon className="w-4 h-4 text-content/95" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold truncate">
-                  {saved.name}
-                </div>
-                <div className="text-[11.5px] text-content/95 truncate">
-                  {describePayload(saved.payload, ctx.source)}
-                </div>
-                <div className="text-[11px] text-content/95 mt-0.5">
-                  saved {when(saved.updated_at || saved.created_at)}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  ctx.applySaved(saved);
-                  setName(saved.name);
-                  setNote(saved.description ?? "");
-                  close();
-                }}
-                className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"
-              >
-                Load
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeleting(saved.id)}
-                disabled={ctx.savedBusy}
-                aria-label={`Delete ${saved.name}`}
-                className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
-              >
-                Delete
-              </button>
-            </div>
+              saved={saved}
+              summary={describePayload(saved.payload, ctx.source)}
+              isCurrent={saved.id === ctx.savedCurrentId}
+              busy={ctx.savedBusy}
+              onLoad={() => {
+                ctx.applySaved(saved);
+                setName(saved.name);
+                setNote(saved.description ?? "");
+                close();
+              }}
+              onDelete={() => setDeleting(saved.id)}
+            />
           ))}
 
-          {ctx.savedLoaded && ctx.saved.length === 0 && (
-            <div className="py-6 text-center">
-              <div className="text-[13px] font-semibold">Nothing saved yet</div>
-              <div className="text-[12.5px] text-content/95 mt-1.5 max-w-[46ch] mx-auto">
-                Save the configuration above and it comes back on any machine,
-                onto whatever range you have open.
-              </div>
-            </div>
-          )}
+          {ctx.savedLoaded && ctx.saved.length === 0 && <NoSavedExports />}
 
           {!ctx.savedLoaded && ctx.savedBusy && (
             <div className="py-6 text-center text-[12.5px] text-content/95">

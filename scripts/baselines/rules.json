@@ -658,10 +658,6 @@
   "src/pages/exportBuilder/dev/preview/utils/dateFormats.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/saved/SavedExportsModal.tsx": {
-    "labels": 1,
-    "shape-extra-code": 1
-  },
   "src/pages/exportBuilder/dev/utils/aggregates.ts": {
     "labels": 1
   },
