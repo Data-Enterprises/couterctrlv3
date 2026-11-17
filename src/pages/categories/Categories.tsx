@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../hooks";
+
+// Components
 import ProdCategories from "./prod/Categories";
 import DevCategories from "./dev/Categories";
 

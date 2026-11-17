@@ -23,17 +23,35 @@ import {
 } from "../../../../features/dev/devCategoriesSlice";
 
 // Utils
-import {
-  onlyStoreNumber,
-  storeNumbersIn,
-} from "../../../../utils/storeIdentity";
+import { storeNumbersIn } from "../../../../utils/storeIdentity";
 import { formatGoliathDate, getStoreName } from "../../../../utils";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,
   fetchHourlyPeriods,
 } from "../utils/categoriesData";
-import { buildCategoryRows, countedCatRows, scopePeriods } from "../utils";
+import {
+  buildCategoryRows,
+  countedCatRows,
+  scopePeriods,
+  scopeStoreNumber,
+} from "../utils";
+
+/** The Categories page's slice, with the connection, search and stores it
+ *  needs, read where it is used instead of passed down. */
+export const useCategoriesCtx = () =>
+  useAppSelector(
+    (s) => ({
+      ...s.dev.categories,
+      url: s.app.url,
+      token: s.app.token,
+      isMobile: s.app.isMobile,
+      singleDate: s.search.singleDate,
+      lastStore: s.search.lastStore,
+      assignedStores: s.user.assignedStores,
+    }),
+    shallowEqual,
+  );
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the
@@ -44,31 +62,9 @@ import { buildCategoryRows, countedCatRows, scopePeriods } from "../utils";
  * would fire every item fetch twice. The desktop container calls it and hands
  * the two functions to whichever layout renders.
  */
-/** One location's rows across all three periods, for the per-category drill
- *  loads. They are fetched by storeid, so a co-located pair arrives as both
- *  stores; the list beside them is showing one. */
-const scopeStoreNumber = <T extends { store_number: string }>(
-  rows: { tw: T[]; lw: T[]; ly: T[] },
-  storeNumber: string | null,
-) =>
-  storeNumber === null
-    ? rows
-    : {
-        tw: onlyStoreNumber(rows.tw, storeNumber),
-        lw: onlyStoreNumber(rows.lw, storeNumber),
-        ly: onlyStoreNumber(rows.ly, storeNumber),
-      };
-
-/** The Categories page's slice, read where it is used instead of passed down. */
-export const useCategoriesCtx = () =>
-  useAppSelector((s) => s.dev.categories, shallowEqual);
-
 export const useCategoryData = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const context = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const user = useAppSelector((s) => s.user);
   const cats = useCategoriesCtx();
 
   /** Resolves to the row count, so a caller can tell "found nothing" from
@@ -81,7 +77,7 @@ export const useCategoryData = () => {
 
     // The week runs backwards from the chosen date, matching every other
     // Performance page — the picker names the end of the week, not the start.
-    const end = formatGoliathDate(search.singleDate);
+    const end = formatGoliathDate(cats.singleDate);
     const [y, m, d] = end.split("-").map(Number);
     const startDt = new Date(Date.UTC(y, m - 1, d - 6));
     const start = startDt.toISOString().slice(0, 10);
@@ -93,13 +89,13 @@ export const useCategoryData = () => {
     dispatch(
       setStore({
         storeid: storeId,
-        storeName: getStoreName(user.assignedStores, storeId),
+        storeName: getStoreName(cats.assignedStores, storeId),
       }),
     );
 
     try {
       const { tw, lw, ly, twDates } = await fetchAllPeriods(
-        { url: context.url, token: context.token, storeid: storeId },
+        { url: cats.url, token: cats.token, storeid: storeId },
         start,
         end,
       );
@@ -149,7 +145,7 @@ export const useCategoryData = () => {
     dispatch(setLoadingHourly(true));
     try {
       const rows = await fetchHourlyPeriods(
-        { url: context.url, token: context.token, storeid: cats.storeid },
+        { url: cats.url, token: cats.token, storeid: cats.storeid },
         cats.twStart,
         cats.twEnd,
         cats.selectedCategory,
@@ -182,7 +178,7 @@ export const useCategoryData = () => {
     (async () => {
       try {
         const rows = await fetchCatItemPeriods(
-          { url: context.url, token: context.token, storeid: cats.storeid },
+          { url: cats.url, token: cats.token, storeid: cats.storeid },
           cats.twStart,
           cats.twEnd,
           category,
@@ -208,8 +204,8 @@ export const useCategoryData = () => {
     cats.twStart,
     cats.twEnd,
     cats.storeid,
-    context.url,
-    context.token,
+    cats.url,
+    cats.token,
   ]);
 
   /**

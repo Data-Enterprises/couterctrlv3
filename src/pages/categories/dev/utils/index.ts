@@ -420,3 +420,18 @@ export const CHIP_ON: Record<CategoryTier, string> = {
   healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
   ungraded: "ring-2 ring-ungraded/40 shadow-sm",
 };
+
+/** One location's rows across all three periods, for the per-category drill
+ *  loads. They are fetched by storeid, so a co-located pair arrives as both
+ *  stores; the list beside them is showing one. */
+export const scopeStoreNumber = <T extends { store_number: string }>(
+  rows: { tw: T[]; lw: T[]; ly: T[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? rows
+    : {
+        tw: onlyStoreNumber(rows.tw, storeNumber),
+        lw: onlyStoreNumber(rows.lw, storeNumber),
+        ly: onlyStoreNumber(rows.ly, storeNumber),
+      };

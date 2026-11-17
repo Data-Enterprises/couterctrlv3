@@ -611,9 +611,6 @@
     "commented-code": 2,
     "labels": 2
   },
-  "src/pages/categories/Categories.tsx": {
-    "labels": 1
-  },
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
   },
