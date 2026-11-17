@@ -44,47 +44,32 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
-  /** Locks the person to one store in total. The single-store role can't
-   *  hold a whole group (the server refuses), so this never sees `all`. */
+  /** One store in total. The server refuses whole groups for this role, so
+   *  `mode` is never `all` here. */
   singleStoreOnly?: boolean;
-  /**
-   * Each group's full roster, lifted so a caller can count what `all` adds up
-   * to (that grant names no stores), and so Review doesn't fetch it again.
-   */
+  /** Each group's roster, lifted so the caller can count an `all` grant and
+   *  Review doesn't fetch it again. */
   groupStores: Record<number, Store[]>;
   onGroupStoresChange: (
     updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
   ) => void;
-  /**
-   * A fourth column inside the same card: Edit user puts the effective store
-   * list there, beside the picks it adds up from.
-   */
+  /** An extra column in the card: Edit user's effective stores. */
   rightColumn?: ReactNode;
-  /** Hide the built-in summary strip, for a caller supplying its own footer
-   *  with the Save button in it. */
+  /** For a caller with its own footer and Save button. */
   hideFooter?: boolean;
-  /** Hide the empty-picks notice, for a caller placing its own higher up the
-   *  screen where a warning is read before the thing it warns about. */
+  /** For a caller that shows its own notice higher up. */
   hideEmptyNotice?: boolean;
-  /** Edit: the groups the person already holds, so the summary can name them
-   *  before their company is opened ("#66 (all)" otherwise). */
+  /** Edit: the groups the person holds, so the summary can name them before
+   *  their company is opened. */
   heldGroups?: BaseGroup[];
 }
 
 /**
- * Three-column drill-down: companies → base groups in the active company →
- * stores for every expanded group (several can stay open at once).
- * `companyGroups` stays lifted so Review can name groups too.
- *
- * `picks.mode` is the person's answer from the Access type step, for every
- * group here:
- *
- * - **By group** (`all`): the whole group and any store added later; the
- *   third column is a read-only preview.
- * - **By store** (`selected`): only what is ticked; a store added later does
- *   *not* reach this person.
- *
- * **There is no per-group control.** The chip says how a group is held.
+ * Who a person can reach: companies, then the active company's base groups,
+ * then the stores of every group opened. `picks.mode`, from the Access type
+ * step, applies to every group: By group (`all`) gives the whole group,
+ * including stores added later, and the stores are read-only; By store
+ * (`selected`) gives only what is ticked.
  */
 const AccessPanel = ({
   picks,
@@ -103,11 +88,8 @@ const AccessPanel = ({
   const ctx = useOrganizationCtx();
   const scope = useBaseGroupsCtx();
 
-  /**
-   * The groups the editor holds: below level 9 (and DCR support), the only ones
-   * they may hand out, by the Base Groups tab's rule (the page's `utils`).
-   * Null until read; until then nothing is changeable.
-   */
+  /** The groups the editor holds: below level 9 (and DCR support), the only
+   *  ones they may hand out. Null until read, so nothing is changeable yet. */
   const [editorHeld, setEditorHeld] = useState<Set<number> | null>(null);
   useEffect(() => {
     if (scope.canSeeAllCompanies) return;
@@ -133,19 +115,14 @@ const AccessPanel = ({
   const mayChange = (id: number) =>
     mayChangeGroup(id, scope.canSeeAllCompanies, mine);
 
-  /**
-   * Who may be handed what: a programmer may give any company; everyone else
-   * only what is on their own account. Flattens `Company.id` and
-   * `UserCompany.company`, which name the id differently.
-   */
+  /** A programmer may give any company, everyone else only their own. The two
+   *  lists name the id differently (`id`, `company`). */
   const companyList = ctx.isProgrammer
     ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
     : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Ticked groups plus any a ticked store implies: what Create saves.
   const held = heldGroupIds(picks);
-
-  /** Held either way: ticked, or implied by a picked store. */
   const heldSet = new Set(held);
 
   const selectedStores = picks.stores;
@@ -155,11 +132,8 @@ const AccessPanel = ({
   const toggleCompanyPick = (id: number) =>
     onPicksChange({ ...picks, companies: toggleIn(picks.companies, id) });
 
-  /**
-   * Unticking a group drops its ticked stores too (a ticked store holds its
-   * group). Ticking one while By store ticks its whole roster, as the mode
-   * switch does; a single-store person gets no roster, they pick one store next.
-   */
+  /** Unticking a group drops its stores too. Ticking one in By store ticks its
+   *  whole roster, except for a single-store person, who picks one store next. */
   const toggleGroupPick = (id: number) => {
     if (!mayChange(id)) return;
     const roster =
@@ -170,8 +144,7 @@ const AccessPanel = ({
   };
 
   const [activeCompany, setActiveCompany] = useState<number | null>(null);
-  // Which groups are selected for viewing — drives the middle column's
-  // highlight and which groups get a section in the stores column at all.
+  // Groups opened in the middle column; each gets a section of stores.
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
   const [groupSearch, setGroupSearch] = useState<string>("");
 
@@ -211,8 +184,7 @@ const AccessPanel = ({
     if (!companyGroups[companyId]) fetchGroupsForCompany(companyId);
   };
 
-  // A store record can come back with a null store_name — filter those out
-  // before they reach the search below, same fix as StoresDirectory.tsx.
+  // Some stores come back with no name; drop them before the search sees them.
   const validOnly = (list: Store[]) => list.filter((s) => s.store_name != null);
 
   const fetchStoresForGroup = (groupId: number): Promise<Store[]> => {
@@ -233,8 +205,8 @@ const AccessPanel = ({
       });
   };
 
-  // Fetch every group's roster once its company is active, so the middle
-  // column can show "X of Y" before any group is expanded.
+  // Every roster as soon as its company opens, so the middle column can show
+  // "X of Y" before a group is opened.
   useEffect(() => {
     if (!activeCompany) return;
     const groups = companyGroups[activeCompany];
@@ -264,8 +236,7 @@ const AccessPanel = ({
       );
       return;
     }
-    // One store, total — not one per group. The server enforces it either way
-    // and refuses the whole call, so the panel replaces rather than adds.
+    // One store in total: the server refuses more, so replace rather than add.
     if (singleStoreOnly) {
       onChange([{ ...store, base_group: group.id }]);
       return;
@@ -306,8 +277,8 @@ const AccessPanel = ({
   );
   const openGroups = filterOpenGroups(groupsInActiveCompany, expandedGroups);
 
-  /** Held groups set to pick stores with nothing picked. The server answers
-   *  400 for these, so they are named on screen before the save is tried. */
+  /** By store groups with no store picked: the server refuses them, so they
+   *  are named before the save. */
   const emptyPicks = picks.baseGroups.filter(
     (id) =>
       picks.mode === "selected" &&
@@ -325,7 +296,6 @@ const AccessPanel = ({
           toggleCompanyPick={toggleCompanyPick}
         />
 
-        {/* Base groups in the active company */}
         <BaseGroupColumn
           activeCompany={activeCompany}
           companyName={companyName}
@@ -376,15 +346,14 @@ const AccessPanel = ({
         <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[12px] font-semibold text-content">
-              {/* No company tally: a held group carries its own company. Review
-                shows what is written. */}
+              {/* No company tally: a held group carries its own company. */}
               {held.length} base group
               {held.length === 1 ? "" : "s"}, {selectedStores.length} store
               {selectedStores.length === 1 ? "" : "s"} picked
             </span>
             <button
-              // Clears the picks, not the access type. A group that isn't the
-              // editor's stays as the person holds it.
+              // Clears the picks, not the access type; groups that aren't the
+              // editor's stay as they are.
               onClick={() =>
                 onPicksChange({
                   ...NO_PICKS,
