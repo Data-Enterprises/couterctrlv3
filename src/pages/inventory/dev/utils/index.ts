@@ -28,6 +28,7 @@ import type {
   SubSalesJsonResp,
 } from "../../../../interfaces";
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
+import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
 
 /**
  * Fetching for Price Opt: Sub Department, lazy between two levels:
@@ -314,3 +315,16 @@ export const treeMoney = (n: number) =>
 export const EST_COLS = "1fr 50px 46px 56px 38px";
 export const NO_ROWS: PricePointsState["rows"] = [];
 export const dash = "—";
+
+/** The selected item's price rows and receipt lines for the export. Empty when
+ *  a read belongs to a previously-clicked UPC, the same guard the panel uses,
+ *  so nothing is exported under the wrong item's name. */
+export const currentItemReads = (
+  selected: ProductSummary | null,
+  prices: PricePointsState,
+  receipts: ActualFetchState,
+) => ({
+  prices: selected && prices.upc === selected.productCode ? prices.rows : [],
+  lines:
+    selected && receipts.upc === selected.productCode ? receipts.lines : [],
+});

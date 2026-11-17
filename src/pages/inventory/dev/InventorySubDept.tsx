@@ -1,27 +1,11 @@
 // Hooks
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { usePricePoints } from "../../../hooks/usePricePoints";
-import { useInvoiceCost } from "./hooks";
-
-// Redux
-import {
-  patchSubDeptView,
-  cacheSubDeptProducts,
-} from "../../../features/dev/devPriceOptSlice";
+import { useState } from "react";
+import { useStoreName } from "../../../hooks";
+import { usePriceOptCtx, useItemSelection, useSubDeptData } from "./hooks";
 
 // Utils
-import { formatGoliathDate, formatDate } from "../../../utils";
-import { fetchSubDepts, fetchProducts } from "./utils";
-
-// Interfaces
-import type {
-  TreeGroup,
-  InventoryScope,
-  ProductSummary,
-  SubDeptSummary,
-} from "./interfaces";
+import { formatDate } from "../../../utils";
+import { currentItemReads } from "./utils";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -29,180 +13,45 @@ import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import InventoryTreePanel from "./components/InventoryTreePanel";
+import NoItemPanel from "./components/NoItemPanel";
 import InventoryExportModal from "./export/InventoryExportModal";
 import ItemAnalysisPanel from "./itemPanel/ItemAnalysisPanel";
 
 /**
  * Price Opt: Sub Department. Estimated against actual price points for one
  * item, reached by opening a department and picking a UPC. The fetch lives
- * here, except the register fetch, whose hook carries a staleness guard.
+ * in useSubDeptData, except the register fetch, whose hook carries a
+ * staleness guard.
  */
 const InventorySubDept = () => {
-  const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
-  const { assignedStores } = useAppSelector((s) => s.user);
-
-  const dispatch = useAppDispatch();
-  const [storeId, setStoreId] = useState(lastStore || 0);
-  // Kept in the slice so a return visit lands on the last result. The token
-  // comes from the session each render, never from the slice.
-  const view = useAppSelector((s) => s.dev.priceOpt.subDept);
-  const scope = useMemo<InventoryScope | null>(
-    () => (view.window ? { url, token, ...view.window } : null),
-    [view.window, url, token],
-  );
-  const subDepts = view.subDepts;
-  const openSubDept = view.openSubDept;
-  /** The open department's items, out of the cache. Derived rather than held
-   *  beside it so the list on screen is always the one that was cached. */
-  const products = useMemo(
-    () =>
-      openSubDept === null ? [] : (view.productsBySubDept[openSubDept] ?? []),
-    [openSubDept, view.productsBySubDept],
-  );
-  const setScope = (next: InventoryScope | null) =>
-    dispatch(
-      patchSubDeptView({
-        window: next
-          ? { storeid: next.storeid, start: next.start, end: next.end }
-          : null,
-      }),
-    );
-  const setSubDepts = (next: SubDeptSummary[]) =>
-    dispatch(patchSubDeptView({ subDepts: next }));
-  const setOpenSubDept = (next: string | null) =>
-    dispatch(patchSubDeptView({ openSubDept: next }));
-  const [loading, setLoading] = useState(false);
+  const ctx = usePriceOptCtx();
+  const [storeId, setStoreId] = useState(ctx.lastStore || 0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [selected, setSelected] = useState<ProductSummary | null>(null);
-
-  const { prices, loadPrices, resetPrices, receipts, loadReceipts } =
-    usePricePoints();
-  const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
+  const item = useItemSelection();
+  const data = useSubDeptData(ctx, storeId, item.clearItem, () =>
+    setSearchOpen(false),
+  );
+  const { scope, subDepts, openSubDept, products, groups } = data;
   const storeName = useStoreName(scope?.storeid ?? storeId);
-
-  /** The department whose items are wanted on screen; a response that no
-   *  longer matches lost a race and is discarded. */
-  const wantedSubDept = useRef<string | null>(null);
-
-  // An open department with no items had its fetch cut off when the page was
-  // left, so it is closed rather than shown empty.
-  useEffect(() => {
-    // Nothing cached for it means the fetch was still in flight, not that the
-    // department is empty -- a cached empty department keeps its entry.
-    if (openSubDept !== null && !(openSubDept in view.productsBySubDept)) {
-      setOpenSubDept(null);
-    }
-    // Once, on arrival: this is about what the slice kept, not what changes.
-  }, []);
-
-  const runSearch = async () => {
-    if (!storeId) {
-      toast.warn("Please select a store");
-      return;
-    }
-    const next: InventoryScope = {
-      url,
-      token,
-      storeid: storeId,
-      start: formatGoliathDate(startDate),
-      end: formatGoliathDate(endDate),
-    };
-    setSearchOpen(false);
-    setLoading(true);
-    // A new window invalidates everything below it, including any register
-    // fetch still in flight for an item from the old one.
-    wantedSubDept.current = null;
-    // The cache belongs to the window it was read in, so a new search empties
-    // it rather than letting a previous store's items answer for this one.
-    dispatch(patchSubDeptView({ openSubDept: null, productsBySubDept: {} }));
-    setSelected(null);
-    resetPrices();
-    resetInvoiceCost();
-    try {
-      const depts = await fetchSubDepts(next);
-      if (depts.length === 0) toast.warn("No departments sold in that window");
-      setSubDepts(depts);
-      setScope(next);
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Could not load departments",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleSubDept = async (id: string) => {
-    if (!scope) return;
-    if (id === openSubDept) {
-      wantedSubDept.current = null;
-      setOpenSubDept(null);
-      return;
-    }
-    // Opening a different one closes the item panel (the item belongs to the
-    // old list); collapsing the open one keeps it.
-    setSelected(null);
-    resetPrices();
-    resetInvoiceCost();
-    wantedSubDept.current = id;
-    setOpenSubDept(id);
-
-    // Already read in this window: a department's items can't change inside
-    // a fixed store and range, so reopening is a render, not a request.
-    if (id in view.productsBySubDept) return;
-
-    setProductsLoading(true);
-    try {
-      const rows = await fetchProducts(scope, id);
-      if (wantedSubDept.current !== id) return;
-      dispatch(cacheSubDeptProducts({ subDept: id, products: rows }));
-    } catch (e) {
-      if (wantedSubDept.current !== id) return;
-      // Left out of the cache deliberately, so reopening it tries again.
-      toast.error(e instanceof Error ? e.message : "Could not load items");
-    } finally {
-      // Only the winning request clears the spinner.
-      if (wantedSubDept.current === id) setProductsLoading(false);
-    }
-  };
-
-  const selectProduct = (p: ProductSummary) => {
-    if (!scope) return;
-    setSelected(p);
-    // Description, not UPC — that is the only search `cashier_table` offers.
-    // The over-match it causes is filtered out again on product_code.
-    loadPrices(p.productCode, scope.storeid, scope.start, scope.end);
-    loadInvoiceCost(scope, p.productCode);
-  };
-
-  const groups: TreeGroup[] = subDepts.map((d) => ({
-    id: d.key,
-    label: d.description,
-    sales: d.sales,
-    itemCount: d.itemCount,
-  }));
 
   const entry = (
     <SingleStoreSearchCard
       title="Price Opt — Sub Department"
       description="Pick a store and a date range, then open a department to compare an item's estimated prices against what the registers actually rang."
       buttonLabel="Load departments"
-      stores={assignedStores}
+      stores={ctx.assignedStores}
       selectedStoreId={storeId}
       onStoreSelect={setStoreId}
-      onSearch={runSearch}
-      loading={loading}
+      onSearch={data.runSearch}
+      loading={data.loading}
       loadingMessage="Loading departments..."
       datePicker={<DatePickers showBtn={false} stacked />}
     />
   );
 
-  if (loading) {
+  if (data.loading) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] relative">
         <LoadingIndicator message="Loading departments..." />
@@ -217,6 +66,8 @@ const InventorySubDept = () => {
       </div>
     );
   }
+
+  const dateLabel = `${formatDate(scope.start)} – ${formatDate(scope.end)}`;
 
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
@@ -234,7 +85,7 @@ const InventorySubDept = () => {
           groupNoun="Department"
           pageSlug="sub-department"
           storeName={storeName}
-          dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}
+          dateLabel={dateLabel}
           groups={groups}
           itemGroups={
             openSubDept !== null && products.length > 0
@@ -248,18 +99,9 @@ const InventorySubDept = () => {
                 ]
               : []
           }
-          selected={selected}
-          // Same staleness guard the panel applies — a response for the
-          // previously-clicked UPC must not be exported under this one's name.
-          invoice={invoice}
-          prices={
-            selected && prices.upc === selected.productCode ? prices.rows : []
-          }
-          lines={
-            selected && receipts.upc === selected.productCode
-              ? receipts.lines
-              : []
-          }
+          selected={item.selected}
+          invoice={item.invoice}
+          {...currentItemReads(item.selected, item.prices, item.receipts)}
         />
       )}
 
@@ -268,35 +110,29 @@ const InventorySubDept = () => {
           helpPage="price-opt-sub-dept"
           title="Price Opt — Sub Department"
           storeName={storeName}
-          dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}
+          dateLabel={dateLabel}
           filterPlaceholder="Filter departments and items…"
           groups={groups}
           openGroup={openSubDept}
           products={products}
-          productsLoading={productsLoading}
-          selectedUpc={selected?.productCode ?? null}
-          onToggleGroup={toggleSubDept}
-          onSelectProduct={selectProduct}
+          productsLoading={data.productsLoading}
+          selectedUpc={item.selected?.productCode ?? null}
+          onToggleGroup={data.toggleSubDept}
+          onSelectProduct={(p) => item.selectProduct(scope, p)}
           onSearchOpen={() => setSearchOpen(true)}
           onExportOpen={() => setExportOpen(true)}
         />
 
-        {selected ? (
+        {item.selected ? (
           <ItemAnalysisPanel
-            product={selected}
-            prices={prices}
-            receipts={receipts}
-            onLoadReceipts={loadReceipts}
-            invoice={invoice}
+            product={item.selected}
+            prices={item.prices}
+            receipts={item.receipts}
+            onLoadReceipts={item.loadReceipts}
+            invoice={item.invoice}
           />
         ) : (
-          <div className="flex-1 min-w-0 shadow-lg">
-            <div className="cc-panel shadow-sm h-full items-center justify-center">
-              <p className="text-[14px] text-content/95">
-                Open a department and pick an item
-              </p>
-            </div>
-          </div>
+          <NoItemPanel message="Open a department and pick an item" />
         )}
       </div>
     </div>

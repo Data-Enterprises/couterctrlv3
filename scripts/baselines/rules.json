@@ -716,12 +716,6 @@
   "src/pages/home/portal/walkthrough/walkthroughContent.ts": {
     "labels": 1
   },
-  "src/pages/inventory/InventorySubDept.tsx": {
-    "labels": 1
-  },
-  "src/pages/inventory/InventoryVendor.tsx": {
-    "labels": 1
-  },
   "src/pages/invoices/Invoices.tsx": {
     "labels": 1
   },
