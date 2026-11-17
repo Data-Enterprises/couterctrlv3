@@ -61,7 +61,15 @@ interface CategoryDetailPanelProps {
 const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const cats = useCategoriesCtx();
-  const { rows, metric, threshold, selectedCategory, selectedDay, hourly, loadingHourly } = cats;
+  const {
+    rows,
+    metric,
+    threshold,
+    selectedCategory,
+    selectedDay,
+    hourly,
+    loadingHourly,
+  } = cats;
 
   const [tab, setTab] = useState<Tab>("items");
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
@@ -84,7 +92,8 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
 
   const activeThreshold = threshold ?? CATEGORY_THRESHOLD_DEFAULT;
   const isQty = metric === "qty";
-  const fmt = (n: number) => (isQty ? formatBigNumber(n, 0) : formatCurrency2(n));
+  const fmt = (n: number) =>
+    isQty ? formatBigNumber(n, 0) : formatCurrency2(n);
 
   const row = useMemo(
     () => rows.find((r) => r.category === selectedCategory) ?? null,
@@ -100,12 +109,33 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
   const hourRows = useMemo(() => {
     const narrow = (list: typeof hourly.tw, offset: number) =>
       selectedDay
-        ? list.filter((h) => h.sale_date.split("T")[0] === shiftIso(selectedDay, offset))
+        ? list.filter(
+            (h) => h.sale_date.split("T")[0] === shiftIso(selectedDay, offset),
+          )
         : list;
     const fold = (list: typeof hourly.tw) => {
-      const m = new Map<number, { v: number; gross: number; tax: number; qty: number; basket: number; avgPrice: number; n: number }>();
+      const m = new Map<
+        number,
+        {
+          v: number;
+          gross: number;
+          tax: number;
+          qty: number;
+          basket: number;
+          avgPrice: number;
+          n: number;
+        }
+      >();
       for (const h of list) {
-        const cur = m.get(h.hour) ?? { v: 0, gross: 0, tax: 0, qty: 0, basket: 0, avgPrice: 0, n: 0 };
+        const cur = m.get(h.hour) ?? {
+          v: 0,
+          gross: 0,
+          tax: 0,
+          qty: 0,
+          basket: 0,
+          avgPrice: 0,
+          n: 0,
+        };
         cur.v += isQty ? h.qty : h.net_sales;
         cur.gross += h.total_sales;
         cur.tax += h.total_tax;
@@ -161,20 +191,50 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
     : null;
 
   const twValue = activeDay ? dayTw(activeDay) : isQty ? row.twQty : row.twNet;
-  const lwValue = activeDay ? dayLw(activeDay) : row.hasLW ? (isQty ? row.lwQty : row.lwNet) : null;
-  const lyValue = activeDay ? dayLy(activeDay) : row.hasLY ? (isQty ? row.lyQty : row.lyNet) : null;
-  const twForLW = activeDay ? dayTw(activeDay) : isQty ? row.twQtyForLW : row.twNetForLW;
-  const twForLY = activeDay ? dayTw(activeDay) : isQty ? row.twQtyForLY : row.twNetForLY;
-  const lwPct = lwValue === null || lwValue === 0 ? null : pctChange(twForLW, lwValue);
-  const lyPct = lyValue === null || lyValue === 0 ? null : pctChange(twForLY, lyValue);
+  const lwValue = activeDay
+    ? dayLw(activeDay)
+    : row.hasLW
+      ? isQty
+        ? row.lwQty
+        : row.lwNet
+      : null;
+  const lyValue = activeDay
+    ? dayLy(activeDay)
+    : row.hasLY
+      ? isQty
+        ? row.lyQty
+        : row.lyNet
+      : null;
+  const twForLW = activeDay
+    ? dayTw(activeDay)
+    : isQty
+      ? row.twQtyForLW
+      : row.twNetForLW;
+  const twForLY = activeDay
+    ? dayTw(activeDay)
+    : isQty
+      ? row.twQtyForLY
+      : row.twNetForLY;
+  const lwPct =
+    lwValue === null || lwValue === 0 ? null : pctChange(twForLW, lwValue);
+  const lyPct =
+    lyValue === null || lyValue === 0 ? null : pctChange(twForLY, lyValue);
 
-  const twLabel = selectedDay ? fmtDayLabel(selectedDay) : fmtRangeLabel(cats.twStart, cats.twEnd);
+  const twLabel = selectedDay
+    ? fmtDayLabel(selectedDay)
+    : fmtRangeLabel(cats.twStart, cats.twEnd);
   const lwLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LW_OFFSET))
-    : fmtRangeLabel(shiftIso(cats.twStart, LW_OFFSET), shiftIso(cats.twEnd, LW_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(cats.twStart, LW_OFFSET),
+        shiftIso(cats.twEnd, LW_OFFSET),
+      );
   const lyLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LY_OFFSET))
-    : fmtRangeLabel(shiftIso(cats.twStart, LY_OFFSET), shiftIso(cats.twEnd, LY_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(cats.twStart, LY_OFFSET),
+        shiftIso(cats.twEnd, LY_OFFSET),
+      );
 
   /* ── Day strip ─────────────────────────────────────────────────────────── */
 
@@ -229,22 +289,31 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
     // The category's coverage applies to its hours: last year only when it
     // covers the whole week, else last week, else ungraded.
     shownPct:
-      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LY"
+      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) ===
+      "LY"
         ? h.lyPct
-        : gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LW"
+        : gradeBasis(
+              { hasLY: h.lyPct !== null, hasLW: h.lwPct !== null },
+              cov,
+            ) === "LW"
           ? h.lwPct
           : null,
     sev: tierOf(
-      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LY"
+      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) ===
+        "LY"
         ? h.lyPct
-        : gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LW"
+        : gradeBasis(
+              { hasLY: h.lyPct !== null, hasLW: h.lwPct !== null },
+              cov,
+            ) === "LW"
           ? h.lwPct
           : null,
       activeThreshold,
     ),
   }));
 
-  const shown = sevFilter === "all" ? list : list.filter((r) => r.sev === sevFilter);
+  const shown =
+    sevFilter === "all" ? list : list.filter((r) => r.sev === sevFilter);
   const count = (s: Severity) => list.filter((r) => r.sev === s).length;
 
   const selectedKey = selectedHour === null ? null : String(selectedHour);
@@ -275,7 +344,12 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
         ["Net sales", formatCurrency2(dt.v)],
         ["Tax", formatCurrency2(dt.tax)],
         ["Units", formatBigNumber(dt.qty, 0)],
-        ["Avg basket", isQty ? formatBigNumber(dt.basket / Math.max(dt.n, 1), 0) : formatCurrency2(dt.basket / Math.max(dt.n, 1))],
+        [
+          "Avg basket",
+          isQty
+            ? formatBigNumber(dt.basket / Math.max(dt.n, 1), 0)
+            : formatCurrency2(dt.basket / Math.max(dt.n, 1)),
+        ],
         ["Avg item price", formatCurrency2(dt.avgPrice / Math.max(dt.n, 1))],
       ] as [string, string][],
     };
@@ -370,7 +444,9 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
       <DayCardStrip
         days={dayCards}
         weekValue={fmt(isQty ? row.twQty : row.twNet)}
-        weekDelta={basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null}
+        weekDelta={
+          basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null
+        }
         weekDeltaBasis={basis ?? undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
@@ -385,7 +461,8 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
             onClick={() => {
               setTab(k);
               setSevFilter("all");
-              if (k === "hours" && hourly.tw.length === 0 && !loadingHourly) onLoadHourly();
+              if (k === "hours" && hourly.tw.length === 0 && !loadingHourly)
+                onLoadHourly();
             }}
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               tab === k
@@ -434,8 +511,14 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                       className="w-[92px] flex-shrink-0"
                     />
                     <ThresholdFilter
-                      value={threshold === null ? null : { op: "lt", amount: threshold }}
-                      onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
+                      value={
+                        threshold === null
+                          ? null
+                          : { op: "lt", amount: threshold }
+                      }
+                      onChange={(v) =>
+                        dispatch(setThreshold(v?.amount ?? null))
+                      }
                       showOp={false}
                       suffix="%"
                       inputWidth={40}
@@ -477,7 +560,11 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
                     className={`text-[11px] font-semibold px-1.5 py-0.5 rounded text-center flex-shrink-0 whitespace-nowrap ${
                       r.shownPct !== null
                         ? pillClass(r.shownPct, activeThreshold)
-                        : comparisonPillClass(r.yp ?? r.lp, false, activeThreshold)
+                        : comparisonPillClass(
+                            r.yp ?? r.lp,
+                            false,
+                            activeThreshold,
+                          )
                     }`}
                     style={{ minWidth: PCT_COL_W }}
                   >
@@ -500,7 +587,9 @@ const CategoryDetailPanel = ({ onLoadHourly }: CategoryDetailPanelProps) => {
           ) : (
             <div className="flex-1 overflow-y-auto thin-scrollbar">
               <div className="px-3 py-2 border-b border-line_hair bg-fill_soft">
-                <span className="text-[12px] font-bold text-content">{report.title}</span>
+                <span className="text-[12px] font-bold text-content">
+                  {report.title}
+                </span>
               </div>
               {report.stats.map(([label, value]) => (
                 <Stat key={label} label={label} value={value} />

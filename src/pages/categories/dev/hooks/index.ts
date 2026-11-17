@@ -23,18 +23,17 @@ import {
 } from "../../../../features/dev/devCategoriesSlice";
 
 // Utils
-import { onlyStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+import {
+  onlyStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
 import { formatGoliathDate, getStoreName } from "../../../../utils";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,
   fetchHourlyPeriods,
 } from "../utils/categoriesData";
-import {
-  buildCategoryRows,
-  countedCatRows,
-  scopePeriods,
-} from "../utils";
+import { buildCategoryRows, countedCatRows, scopePeriods } from "../utils";
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the
@@ -158,11 +157,7 @@ export const useCategoryData = () => {
       // Fetched by storeid like everything else here, so a co-located pair
       // comes back as both stores. Narrow it to the location the list is
       // showing, or the hours contradict the row that was clicked.
-      dispatch(
-        setHourly(
-          scopeStoreNumber(rows, cats.selectedStoreNumber),
-        ),
-      );
+      dispatch(setHourly(scopeStoreNumber(rows, cats.selectedStoreNumber)));
     } catch {
       toast.error("Couldn't load the hourly breakdown.");
     } finally {

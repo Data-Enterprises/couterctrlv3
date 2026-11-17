@@ -58,14 +58,14 @@ const CategoryRow = ({
     <button
       onClick={handleClick}
       className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSelected
-          ? "cc-row-selected"
-          : "border-transparent hover:bg-fill_soft"
+        isSelected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-content truncate">{label}</div>
+        <div className="text-[13px] font-medium text-content truncate">
+          {label}
+        </div>
         {/* The comparison values themselves, so a percentage can be weighed
             against the size of what it moved. */}
         <div className="text-[12px] text-content/95 truncate">

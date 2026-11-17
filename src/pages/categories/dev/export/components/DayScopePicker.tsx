@@ -9,7 +9,12 @@ interface DayScopePickerProps {
 }
 
 /** All week, or any of its days: the one scope every dataset follows. */
-const DayScopePicker = ({ weekDates, exportDays, onAll, onToggle }: DayScopePickerProps) => {
+const DayScopePicker = ({
+  weekDates,
+  exportDays,
+  onAll,
+  onToggle,
+}: DayScopePickerProps) => {
   return (
     <>
       <button

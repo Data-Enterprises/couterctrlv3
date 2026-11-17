@@ -13,7 +13,13 @@ interface ExportModalHeaderProps {
 }
 
 /** The title, the Presets / Custom switch and the close button. */
-const ExportModalHeader = ({ categoryName, storeName, mode, onMode, onClose }: ExportModalHeaderProps) => {
+const ExportModalHeader = ({
+  categoryName,
+  storeName,
+  mode,
+  onMode,
+  onClose,
+}: ExportModalHeaderProps) => {
   return (
     <div className="cc-phone-header">
       <div>
@@ -28,17 +34,16 @@ const ExportModalHeader = ({ categoryName, storeName, mode, onMode, onClose }: E
             key={m}
             onClick={() => onMode(m)}
             className={`cc-chip-btn text-[11px] ${
-              mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
+              mode === m
+                ? "bg-custom-white text-brand_navy"
+                : "text-custom-white"
             }`}
           >
             {m === "presets" ? "Presets" : "Custom"}
           </button>
         ))}
       </div>
-      <button
-        onClick={onClose}
-        className="cc-navy-link justify-self-end"
-      >
+      <button onClick={onClose} className="cc-navy-link justify-self-end">
         <XMarkIcon className="w-4 h-4" />
       </button>
     </div>

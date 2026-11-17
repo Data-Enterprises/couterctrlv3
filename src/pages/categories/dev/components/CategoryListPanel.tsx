@@ -74,7 +74,8 @@ const CategoryListPanel = ({
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const cats = useCategoriesCtx();
-  const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } = cats;
+  const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } =
+    cats;
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
@@ -88,11 +89,15 @@ const CategoryListPanel = ({
    * four label these stores identically.
    */
   const locationName = cats.selectedStoreNumber
-    ? applyStoreNumberToName(cats.storeName, cats.selectedStoreNumber, cats.availableStoreNumbers)
-    // No location picked is the combined tab, which is both of them. Falling
-    // through to the stored name put one store's number over a figure that is
-    // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
-    : combinedStoreName(cats.storeName, cats.availableStoreNumbers);
+    ? applyStoreNumberToName(
+        cats.storeName,
+        cats.selectedStoreNumber,
+        cats.availableStoreNumbers,
+      )
+    : // No location picked is the combined tab, which is both of them. Falling
+      // through to the stored name put one store's number over a figure that is
+      // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
+      combinedStoreName(cats.storeName, cats.availableStoreNumbers);
 
   const activeThreshold = threshold ?? CATEGORY_THRESHOLD_DEFAULT;
 
@@ -105,12 +110,19 @@ const CategoryListPanel = ({
       rows.map((r) => {
         const isQty = metric === "qty";
         const lwPct = r.hasLW
-          ? pctChange(isQty ? r.twQtyForLW : r.twNetForLW, isQty ? r.lwQty : r.lwNet)
+          ? pctChange(
+              isQty ? r.twQtyForLW : r.twNetForLW,
+              isQty ? r.lwQty : r.lwNet,
+            )
           : null;
         const lyPct = r.hasLY
-          ? pctChange(isQty ? r.twQtyForLY : r.twNetForLY, isQty ? r.lyQty : r.lyNet)
+          ? pctChange(
+              isQty ? r.twQtyForLY : r.twNetForLY,
+              isQty ? r.lyQty : r.lyNet,
+            )
           : null;
-        const f = (n: number) => (isQty ? formatBigNumber(n) : formatCurrency2(n));
+        const f = (n: number) =>
+          isQty ? formatBigNumber(n) : formatCurrency2(n);
         return {
           ...r,
           delta: categoryDelta(r, metric),
@@ -156,7 +168,11 @@ const CategoryListPanel = ({
   );
 
   // Store-level, so every category row carries the same coverage.
-  const headerCov = rows[0]?.coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 };
+  const headerCov = rows[0]?.coverage ?? {
+    dayCount: 0,
+    lwDayCount: 0,
+    lyDayCount: 0,
+  };
 
   const counts = useMemo(() => {
     const c = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };
@@ -187,11 +203,26 @@ const CategoryListPanel = ({
 
   /** Header aggregates — the whole store's week, and how it moved. */
   const totals = useMemo(() => {
-    const tw = graded.reduce((a, g) => a + (metric === "qty" ? g.twQty : g.twNet), 0);
-    const twLW = graded.reduce((a, g) => a + (metric === "qty" ? g.twQtyForLW : g.twNetForLW), 0);
-    const lw = graded.reduce((a, g) => a + (metric === "qty" ? g.lwQty : g.lwNet), 0);
-    const twLY = graded.reduce((a, g) => a + (metric === "qty" ? g.twQtyForLY : g.twNetForLY), 0);
-    const ly = graded.reduce((a, g) => a + (metric === "qty" ? g.lyQty : g.lyNet), 0);
+    const tw = graded.reduce(
+      (a, g) => a + (metric === "qty" ? g.twQty : g.twNet),
+      0,
+    );
+    const twLW = graded.reduce(
+      (a, g) => a + (metric === "qty" ? g.twQtyForLW : g.twNetForLW),
+      0,
+    );
+    const lw = graded.reduce(
+      (a, g) => a + (metric === "qty" ? g.lwQty : g.lwNet),
+      0,
+    );
+    const twLY = graded.reduce(
+      (a, g) => a + (metric === "qty" ? g.twQtyForLY : g.twNetForLY),
+      0,
+    );
+    const ly = graded.reduce(
+      (a, g) => a + (metric === "qty" ? g.lyQty : g.lyNet),
+      0,
+    );
     return {
       tw,
       lwPct: lw > 0 ? pctChange(twLW, lw) : null,
@@ -246,8 +277,18 @@ const CategoryListPanel = ({
   };
 
   /** Built once each rather than three times inline, as the Sales header does. */
-  const lwPill = headerDeltaPill(totals.lwPct ?? 0, headerCov.lwDayCount, headerCov.dayCount, "last week");
-  const lyPill = headerDeltaPill(totals.lyPct ?? 0, headerCov.lyDayCount, headerCov.dayCount, "last year");
+  const lwPill = headerDeltaPill(
+    totals.lwPct ?? 0,
+    headerCov.lwDayCount,
+    headerCov.dayCount,
+    "last week",
+  );
+  const lyPill = headerDeltaPill(
+    totals.lyPct ?? 0,
+    headerCov.lyDayCount,
+    headerCov.dayCount,
+    "last year",
+  );
   const pillTitle = (basis: string, note: string | undefined) =>
     [basis, note].filter(Boolean).join(" ") || undefined;
 
@@ -346,7 +387,9 @@ const CategoryListPanel = ({
                 className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
                 style={{
                   background:
-                    metric === key ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)",
+                    metric === key
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(255,255,255,0.07)",
                 }}
               >
                 {label}
@@ -358,8 +401,13 @@ const CategoryListPanel = ({
 
           {/* Threshold. The label stays generic so the Performance headers read
               identically — the page already says what is being graded. */}
-          <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[11px] text-custom-white font-medium">Threshold</span>
+          <div
+            data-help="threshold"
+            className="flex items-center gap-1.5 flex-shrink-0"
+          >
+            <span className="text-[11px] text-custom-white font-medium">
+              Threshold
+            </span>
             <ThresholdFilter
               value={threshValue}
               onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
@@ -386,7 +434,10 @@ const CategoryListPanel = ({
 
       {/* Filter row */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair">
-        <div data-help="severity-chips" className="flex items-center gap-1.5 flex-wrap">
+        <div
+          data-help="severity-chips"
+          className="flex items-center gap-1.5 flex-wrap"
+        >
           {chip("critical", "Crit", counts.critical)}
           {chip("watch", "Watch", counts.watch)}
           {chip("healthy", "OK", counts.healthy)}
@@ -402,10 +453,12 @@ const CategoryListPanel = ({
 
       {uncategorized.count > 0 && (
         <div className="px-4 py-1.5 bg-custom-white border-x border-b border-line_hair text-[11px] text-content/95 flex-shrink-0">
-          <span className="font-medium text-content">{fmt(uncategorized.value)}</span>{" "}
+          <span className="font-medium text-content">
+            {fmt(uncategorized.value)}
+          </span>{" "}
           across {uncategorized.count} uncategorized{" "}
-          {uncategorized.count === 1 ? "bucket" : "buckets"} — items with no category
-          at the POS.
+          {uncategorized.count === 1 ? "bucket" : "buckets"} — items with no
+          category at the POS.
         </div>
       )}
 
@@ -413,9 +466,7 @@ const CategoryListPanel = ({
         {/* Column headers */}
         <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
-          <span className="text-[11.5px] cc-caps flex-1">
-            Category
-          </span>
+          <span className="text-[11.5px] cc-caps flex-1">Category</span>
           <div data-help="sort" className="flex items-center gap-[14px]">
             <SortHeader
               col="ty"

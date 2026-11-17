@@ -15,7 +15,14 @@ interface GradedItemsOptionProps {
 }
 
 /** Graded items: the checkbox, plus severity chips that are the filter. */
-const GradedItemsOption = ({ hasItems, checked, onToggle, itemSevs, onSev, basis }: GradedItemsOptionProps) => {
+const GradedItemsOption = ({
+  hasItems,
+  checked,
+  onToggle,
+  itemSevs,
+  onSev,
+  basis,
+}: GradedItemsOptionProps) => {
   return (
     <div className={`flex items-start gap-3 ${hasItems ? "" : "opacity-40"}`}>
       <input

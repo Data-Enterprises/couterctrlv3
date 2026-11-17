@@ -10,10 +10,18 @@ interface ExportFooterProps {
 }
 
 /** Cancel and Download CSV. */
-const ExportFooter = ({ onCancel, onDownload, disabled, className = "" }: ExportFooterProps) => {
+const ExportFooter = ({
+  onCancel,
+  onDownload,
+  disabled,
+  className = "",
+}: ExportFooterProps) => {
   return (
     <div className={`cc-bar-footer ${className}`}>
-      <button onClick={onCancel} className="text-[12px] text-content transition-colors">
+      <button
+        onClick={onCancel}
+        className="text-[12px] text-content transition-colors"
+      >
         Cancel
       </button>
       <button

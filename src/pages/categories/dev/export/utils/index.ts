@@ -89,14 +89,26 @@ export const buildCategoriesCsv = (
       // comparison when both sides have it, and it contributes to *both*
       // sides or neither. Summing all seven TY days against three LY ones is
       // exactly the bug the whole-week subtotals exist to prevent.
-      let lwSum = 0, twLW = 0, lwSeen = false;
-      let lySum = 0, twLY = 0, lySeen = false;
+      let lwSum = 0,
+        twLW = 0,
+        lwSeen = false;
+      let lySum = 0,
+        twLY = 0,
+        lySeen = false;
       for (const d of sel) {
         const t = isQty ? d.twQty : d.twNet;
         const l = isQty ? d.lwQty : d.lwNet;
         const y = isQty ? d.lyQty : d.lyNet;
-        if (l !== null) { lwSum += l; twLW += t; lwSeen = true; }
-        if (y !== null) { lySum += y; twLY += t; lySeen = true; }
+        if (l !== null) {
+          lwSum += l;
+          twLW += t;
+          lwSeen = true;
+        }
+        if (y !== null) {
+          lySum += y;
+          twLY += t;
+          lySeen = true;
+        }
       }
       lw = lwSeen ? lwSum : null;
       ly = lySeen ? lySum : null;
@@ -334,7 +346,11 @@ export const fmtDate = (d: string) =>
   });
 
 /** The graded-items filter chips, coloured when picked. */
-export const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
+export const SEV_CHIP: {
+  sev: GradedSev;
+  label: string;
+  activeClass: string;
+}[] = [
   {
     sev: "critical",
     label: "Critical",

@@ -11,7 +11,11 @@ interface SourcePickerProps {
 }
 
 /** Which week the custom export reads: this week, last week or last year. */
-const SourcePicker = ({ source, onSource, categoryName }: SourcePickerProps) => {
+const SourcePicker = ({
+  source,
+  onSource,
+  categoryName,
+}: SourcePickerProps) => {
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">

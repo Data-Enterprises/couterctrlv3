@@ -60,7 +60,9 @@ const CategoryExportModal = (props: CategoryExportProps) => {
                 onAll={() => x.setExportDays(new Set())}
                 onToggle={x.toggleDay}
               />
-              <span className="text-[10px] text-content w-full">{x.scopeNote}</span>
+              <span className="text-[10px] text-content w-full">
+                {x.scopeNote}
+              </span>
             </div>
 
             {x.presetDatasets.map(({ id, label, description, disabled }) => (
@@ -127,7 +129,11 @@ const CategoryExportModal = (props: CategoryExportProps) => {
               />
             </div>
 
-            <CustomPreview columns={x.columns} aggRows={x.aggRows} hasItems={x.hasItems} />
+            <CustomPreview
+              columns={x.columns}
+              aggRows={x.aggRows}
+              hasItems={x.hasItems}
+            />
           </div>
           <ExportFooter
             onCancel={onClose}

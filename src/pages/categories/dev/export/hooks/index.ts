@@ -273,7 +273,9 @@ export const useCategoryExport = ({
         `${title("Category Performance")}\n${buildCategoriesCsv(rows, metric, threshold, exportDays)}`,
       );
     if (selected.has("items"))
-      sections.push(`${title("Items Report")}\n${buildItemsCsv(scoped.items.tw)}`);
+      sections.push(
+        `${title("Items Report")}\n${buildItemsCsv(scoped.items.tw)}`,
+      );
     if (selected.has("items_graded") && itemSevs.size > 0)
       sections.push(
         `${title("Items Graded")}\n${buildItemsGradedCsv(scoped.items, itemThreshold, gradingMetric, itemSevs)}`,
@@ -291,10 +293,7 @@ export const useCategoryExport = ({
     if (!columns.length || !aggRows.length) return;
     const headers = columns.map((c) => c.label);
     const out = aggRows.map((r) => columns.map((c) => r[c.key] ?? ""));
-    downloadCsv(
-      rowsToCsv(headers, out),
-      `${safeName}_custom_${fileDate}.csv`,
-    );
+    downloadCsv(rowsToCsv(headers, out), `${safeName}_custom_${fileDate}.csv`);
     onClose();
   };
 
