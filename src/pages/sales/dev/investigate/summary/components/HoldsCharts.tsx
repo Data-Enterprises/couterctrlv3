@@ -10,7 +10,7 @@ import type {
 // Components
 import Carousel from "../../components/Carousel";
 import Weeks from "./Weeks";
-import Index from "./IndexChart";
+import IndexChart from "./IndexChart";
 import VendorBars from "./VendorBars";
 
 interface HoldsChartsProps {
@@ -54,7 +54,7 @@ const HoldsCharts = ({
               <p className="text-[12px] text-content/95 leading-snug mb-2.5">
                 One rule for all three, so measures that disagree are seen to.
               </p>
-              <Index vitals={vitals} them={them} cash={cash} />
+              <IndexChart vitals={vitals} them={them} cash={cash} />
             </>
           ),
         },
