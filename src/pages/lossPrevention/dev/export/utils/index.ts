@@ -108,3 +108,31 @@ export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
 
 /** How many rows the custom preview shows. */
 export const PREVIEW_ROWS = 5;
+
+/** The cashier summary's severity chips: each one's label and its look when on. */
+export const SEVERITY_CHIPS: {
+  sev: CashierSeverity;
+  label: string;
+  activeClass: string;
+}[] = [
+  {
+    sev: "critical",
+    label: "Critical",
+    activeClass: "bg-brand_danger border-brand_danger text-custom-white",
+  },
+  {
+    sev: "watch",
+    label: "Watch",
+    activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+  },
+  {
+    sev: "ok",
+    label: "OK",
+    activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+  },
+  {
+    sev: "ungraded",
+    label: "Ungraded",
+    activeClass: "bg-ungraded border-ungraded text-custom-white",
+  },
+];
