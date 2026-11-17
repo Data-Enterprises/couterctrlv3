@@ -58,3 +58,10 @@ export interface CompanyDeptRow {
   lastRung: string;
   hashHint: boolean;
 }
+
+/** Writes waiting on the "every store" confirmation. */
+export interface PendingToggle {
+  writes: ExclusionWrite[];
+  label: string;
+  want: boolean;
+}
