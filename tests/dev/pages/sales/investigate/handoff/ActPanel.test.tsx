@@ -1,9 +1,12 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import ActPanel from "@/pages/sales/dev/investigate/handoff/ActPanel";
+import ActPanel from "@/pages/sales/dev/investigate/handoff/HandoffTab";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { desksOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
-import type { ItemFacts, ItemVerdict } from "@/pages/sales/dev/investigate/interfaces";
+import type {
+  ItemFacts,
+  ItemVerdict,
+} from "@/pages/sales/dev/investigate/interfaces";
 
 /*
  * The Hand-off tab: one list per person. A row picks the list card, each
@@ -12,22 +15,57 @@ import type { ItemFacts, ItemVerdict } from "@/pages/sales/dev/investigate/inter
 
 const item = (over: Partial<ItemFacts> = {}): ItemVerdict =>
   judge({
-    productCode: "0001", description: "Thing", vendorName: "AWG",
-    mineTy: 0, theirsTy: 0, mineLw: 0, theirsLw: 0, mineLy: 0, theirsLy: 0,
-    mineUnits: 0, theirsUnits: 0, weighted: false, mineCogs: 0, theirsCogs: 0,
-    mineSales: over.mineTy ?? 0, theirsSales: over.theirsTy ?? 0,
-    orderedQty: 0, receivedUnits: 0, lastOrderDate: null, lastOrderQty: 0, receivedSinceOrder: 0,
+    productCode: "0001",
+    description: "Thing",
+    vendorName: "AWG",
+    mineTy: 0,
+    theirsTy: 0,
+    mineLw: 0,
+    theirsLw: 0,
+    mineLy: 0,
+    theirsLy: 0,
+    mineUnits: 0,
+    theirsUnits: 0,
+    weighted: false,
+    mineCogs: 0,
+    theirsCogs: 0,
+    mineSales: over.mineTy ?? 0,
+    theirsSales: over.theirsTy ?? 0,
+    orderedQty: 0,
+    receivedUnits: 0,
+    lastOrderDate: null,
+    lastOrderQty: 0,
+    receivedSinceOrder: 0,
     ...over,
   });
 const money = (v: number) => "$" + v.toFixed(2);
 
-const desks = desksOf(
-  [
-    item({ productCode: "n1", description: "GROUND BEEF", theirsTy: 900, theirsUnits: 90 }),
-    item({ productCode: "r1", description: "PORK CHOPS", mineTy: 100, mineUnits: 100, theirsTy: 300, theirsUnits: 300, orderedQty: 6 }),
-    item({ productCode: "s1", description: "HOT DOGS", mineTy: 200, mineUnits: 200, theirsTy: 260, theirsUnits: 260, receivedUnits: 50 }),
-  ],
-);
+const desks = desksOf([
+  item({
+    productCode: "n1",
+    description: "GROUND BEEF",
+    theirsTy: 900,
+    theirsUnits: 90,
+  }),
+  item({
+    productCode: "r1",
+    description: "PORK CHOPS",
+    mineTy: 100,
+    mineUnits: 100,
+    theirsTy: 300,
+    theirsUnits: 300,
+    orderedQty: 6,
+  }),
+  item({
+    productCode: "s1",
+    description: "HOT DOGS",
+    mineTy: 200,
+    mineUnits: 200,
+    theirsTy: 260,
+    theirsUnits: 260,
+    receivedUnits: 50,
+  }),
+]);
 
 const panel = (onExport = vi.fn(), onShow = vi.fn()) =>
   render(
@@ -47,14 +85,28 @@ beforeAll(() => {
 });
 
 const row = (name: RegExp) =>
-  screen.getAllByRole("button").find((b) => b.getAttribute("aria-pressed") !== null && name.test(b.textContent ?? ""))!;
+  screen
+    .getAllByRole("button")
+    .find(
+      (b) =>
+        b.getAttribute("aria-pressed") !== null &&
+        name.test(b.textContent ?? ""),
+    )!;
 
 describe("Investigation Hand-off", () => {
   it("leads with how much has an owner and opens on the first person", () => {
     panel();
-    expect(screen.getByText("Most of the shortfall has someone to hand it to: 2 lists, one for each desk.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Most of the shortfall has someone to hand it to: 2 lists, one for each desk.",
+      ),
+    ).toBeInTheDocument();
     expect(row(/^Buyer/)).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("1 item for the buyer, worth −$900.00: never ordered at 018.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "1 item for the buyer, worth −$900.00: never ordered at 018.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("slides to a person's list when their row is clicked, and exports that list", () => {
@@ -86,7 +138,9 @@ describe("Investigation Hand-off", () => {
     panel();
     fireEvent.click(row(/^Not handed/));
     expect(
-      screen.getByText("Both stores sold these at about the same price and 018 sold fewer. No record names who could fix that."),
+      screen.getByText(
+        "Both stores sold these at about the same price and 018 sold fewer. No record names who could fix that.",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText("HOT DOGS")).toBeInTheDocument();
   });

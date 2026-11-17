@@ -13,7 +13,7 @@ import Carousel from "../components/Carousel";
 import HandoffFinding from "./components/HandoffFinding";
 import HandoffSlide from "./components/HandoffSlide";
 
-interface ActPanelProps {
+interface HandoffTabProps {
   desks: Desk[];
   /** The two stores' numbers. */
   us: string;
@@ -33,7 +33,7 @@ interface ActPanelProps {
 /** The investigation's "who fixes it" tab: one list per person rather than one
  *  card per cause. The left card says how much has an owner and picks a
  *  person; the right card is that person's whole list, with its actions. */
-const ActPanel = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: ActPanelProps) => {
+const HandoffTab = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: HandoffTabProps) => {
   const lists = handoffOf(desks);
   const owners = lists.map((l) => l.owner);
   /** The list on show: the first person's until another is picked. */
@@ -85,4 +85,4 @@ const ActPanel = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: ActPan
   );
 };
 
-export default ActPanel;
+export default HandoffTab;

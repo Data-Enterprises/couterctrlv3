@@ -28,10 +28,10 @@ import type { HandoffList, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";
-import HoldsPanel from "./summary/HoldsPanel";
+import SummaryTab from "./summary/SummaryTab";
 import ReceiptsNote from "./components/ReceiptsNote";
-import SupplyPanel from "./supply/SupplyPanel";
-import ActPanel from "./handoff/ActPanel";
+import SupplyTab from "./supply/SupplyTab";
+import HandoffTab from "./handoff/HandoffTab";
 import InvestigationHeader from "./components/InvestigationHeader";
 import InvestigationTabs from "./components/InvestigationTabs";
 import ItemsTab from "./items/ItemsTab";
@@ -275,7 +275,7 @@ const DeptInvestigation = ({
           {tab === "act" && !allIn && <TabSkeleton tab="act" />}
 
           {tab === "holds" && salesIn && (
-            <HoldsPanel
+            <SummaryTab
               holds={holds}
               rows={rows}
               spread={spread}
@@ -307,7 +307,7 @@ const DeptInvestigation = ({
           )}
 
           {tab === "supply" && allIn && (
-            <SupplyPanel
+            <SupplyTab
               supply={supply}
               us={target.storeName}
               them={target.compareStoreName}
@@ -321,7 +321,7 @@ const DeptInvestigation = ({
           )}
 
           {tab === "act" && allIn && (
-            <ActPanel
+            <HandoffTab
               desks={desks}
               us={shortStore(target.storeName)}
               them={shortStore(target.compareStoreName)}

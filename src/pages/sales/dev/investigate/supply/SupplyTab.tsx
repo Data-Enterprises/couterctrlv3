@@ -15,7 +15,7 @@ import SupplyFinding from "./components/SupplyFinding";
 import SupplyCharts from "./components/SupplyCharts";
 import SupplyDocuments from "./components/SupplyDocuments";
 
-interface SupplyPanelProps {
+interface SupplyTabProps {
   supply: Supply;
   them: string;
   us: string;
@@ -46,7 +46,7 @@ interface SupplyPanelProps {
  * The same shape the Summary tab uses: a verdict card over an evidence
  * carousel on the left, and the list the verdict is about on the right.
  */
-const SupplyPanel = ({
+const SupplyTab = ({
   supply,
   them,
   us,
@@ -56,7 +56,7 @@ const SupplyPanel = ({
   receipts,
   upcQuery,
   onUpcQuery,
-}: SupplyPanelProps) => {
+}: SupplyTabProps) => {
   /** The row the documents card shows: this store's orders until another
    *  is picked. */
   const [selected, setSelected] = useState<SupplyKind>("ordersMine");
@@ -135,4 +135,4 @@ const SupplyPanel = ({
   );
 };
 
-export default SupplyPanel;
+export default SupplyTab;

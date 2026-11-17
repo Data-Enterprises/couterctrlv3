@@ -15,11 +15,11 @@ import type {
 
 // Components
 import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
-import HoldsFinding from "./HoldsFinding";
-import HoldsCharts from "./HoldsCharts";
-import RowItems from "./RowItems";
+import HoldsFinding from "./components/HoldsFinding";
+import HoldsCharts from "./components/HoldsCharts";
+import RowItems from "./components/RowItems";
 
-interface HoldsPanelProps {
+interface SummaryTabProps {
   holds: Holds;
   rows: HoldsRow[];
   spread: Spread;
@@ -44,7 +44,7 @@ interface HoldsPanelProps {
 
 /** The investigation's first tab: whether the report holds, led by the biggest row against
  *  the other store, with the charts and the picked row's items behind it. */
-const HoldsPanel = ({
+const SummaryTab = ({
   holds,
   rows,
   spread,
@@ -60,7 +60,7 @@ const HoldsPanel = ({
   onVendor,
   onSeeAll,
   onFindInSupply,
-}: HoldsPanelProps) => {
+}: SummaryTabProps) => {
   /** The row the items card shows. Until one is picked, the row with the
    *  most money in it, which is the one the finding leads with. */
   const [picked, setPicked] = useState<RowKind | null>(null);
@@ -151,4 +151,4 @@ const HoldsPanel = ({
   );
 };
 
-export default HoldsPanel;
+export default SummaryTab;
