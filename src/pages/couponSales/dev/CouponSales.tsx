@@ -26,7 +26,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
 import EventPerfMobile from "../../../components-dev/eventPerf/EventPerfMobile";
 import SearchPopup from "../../../components-dev/SearchPopup";
-import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
+import CpnSalesStorePanel from "./storePanel/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./export/CpnSalesExportModal";
 

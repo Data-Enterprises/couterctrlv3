@@ -34,7 +34,7 @@ import type { CouponItem, TransactionListItem } from "../../../../interfaces";
 import type { SectionSortCol, TxSortCol } from "./interfaces";
 
 // Components
-import CpnSalesDayCards from "../components/CpnSalesDayCards";
+import CpnSalesDayCards from "./components/CpnSalesDayCards";
 import DetailTitleBar from "./components/DetailTitleBar";
 import DetailKpiStrip from "./components/DetailKpiStrip";
 import BreakdownTabs from "./components/BreakdownTabs";

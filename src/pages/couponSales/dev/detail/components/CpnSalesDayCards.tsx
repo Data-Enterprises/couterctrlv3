@@ -2,15 +2,15 @@
 import { useMemo } from "react";
 
 // Utils
-import { formatCurrency2 } from "../../../../utils";
-import { avgOf, isoOf, weekdayOf } from "../utils";
+import { formatCurrency2 } from "../../../../../utils";
+import { avgOf, isoOf, weekdayOf } from "../../utils";
 
 // Interfaces
-import type { CouponItem } from "../../../../interfaces";
-import type { DayCardEntry } from "../../../../components-dev/interfaces";
+import type { CouponItem } from "../../../../../interfaces";
+import type { DayCardEntry } from "../../../../../components-dev/interfaces";
 
 // Components
-import DayCardStrip from "../../../../components-dev/DayCardStrip";
+import DayCardStrip from "../../../../../components-dev/DayCardStrip";
 
 interface CpnSalesDayCardsProps {
   /** This week's coupons for the selected store. */
