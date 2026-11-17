@@ -2,11 +2,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch } from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
+import { useSelectedItem, useTop200View } from "./hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
+  EMPTY_TOP200_VIEW,
   restoreTopItems,
+  setTop200View,
   setTopItems,
   setTopItemsLoading,
 } from "../../../../../features/dev/devSalesLedgerSlice";
@@ -25,47 +28,19 @@ import {
 // Utils
 import {
   compareWindows,
-  deptName,
-  deptOptions,
-  deptRollups,
-  contributionOf,
-  topItemsTotals,
-  pointsFor,
-  displayVerdict,
-  marginAt,
-  rankHistory,
-  rankIn,
-  retailMix,
-  topPriceOf,
-  unitCost,
   rankBySales,
-  sortTopItems,
-  DEFAULT_TOP_ITEM_SORT,
-  topItemInsight,
-  type TopItemSort,
   type TopItemCompared,
 } from "./utils/topItems";
-import { dayText, inFlight, pctText } from "./utils";
+import { dayText, inFlight } from "./utils";
 import { reasonOf } from "../../../../../utils/serverError";
-
-// Interfaces
 
 // Components
 import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
-import ItemListToolbar from "./components/ItemListToolbar";
-import ItemListHead from "./components/ItemListHead";
-import ItemRows from "./components/ItemRows";
-import TotalsStrip from "./components/TotalsStrip";
-import DeptShareList from "./components/DeptShareList";
 import ItemCta from "./components/ItemCta";
-import ItemIdentity from "./components/ItemIdentity";
-import ItemRetail from "./components/ItemRetail";
-import ItemCost from "./components/ItemCost";
-import ItemBuyCost from "./components/ItemBuyCost";
-import ItemHistory from "./components/ItemHistory";
-import ItemDisplay from "./components/ItemDisplay";
-import InvoicesButton from "./components/InvoicesButton";
 import InvoicesRail from "./components/InvoicesRail";
+import ItemList from "./list/ItemList";
+import Top200Landing from "./landing/Top200Landing";
+import ItemReport from "./item/ItemReport";
 
 interface PopupTopItemsProps {
   storeId: number;
@@ -129,7 +104,6 @@ const PopupTopItems = ({
     url,
     token,
     topItems,
-    topItemPoints,
     topItemsLW,
     topItemsLY,
     topItemsKey,
@@ -137,9 +111,11 @@ const PopupTopItems = ({
     topItemsCache,
   } = useSalesCtx();
 
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
-  const [dept, setDept] = useState("");
+  const { selectedCode, detail } = useTop200View();
+  const setDetail = (next: typeof detail) =>
+    dispatch(setTop200View({ detail: next }));
+  const setDetailLoading = (loading: boolean) =>
+    dispatch(setTop200View({ detailLoading: loading }));
   /** One picked day or the week, as the headings name it. */
   const oneDay = start === end;
   const periodLabel = oneDay ? dayText(start) : "This week";
@@ -157,13 +133,10 @@ const PopupTopItems = ({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-  const [selectedCode, setSelectedCode] = useState<string | null>(null);
   /** The invoices rail. Closed on arrival and on every change of item: a
    *  different item's invoices are a different list, and leaving it open
    *  would show new rows under a heading opened for the old one. */
   const [invoicesOpen, setInvoicesOpen] = useState(false);
-  const [detail, setDetail] = useState<ItemDetailResponse | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
   const key = `${storeId}__${start}__${end}`;
   const haveRows = topItemsKey === key;
 
@@ -255,10 +228,17 @@ const PopupTopItems = ({
 
   // A code from the last store is not a code in this one.
   useEffect(() => {
-    setSelectedCode(null);
-    setDetail(null);
-    setDept("");
+    dispatch(setTop200View({ selectedCode: null, detail: null, dept: "" }));
   }, [key]);
+
+  // The list's state was the tab's own until it moved to the slice; it still
+  // goes when the tab closes.
+  useEffect(
+    () => () => {
+      dispatch(setTop200View(EMPTY_TOP200_VIEW));
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!selectedCode) {
@@ -299,105 +279,7 @@ const PopupTopItems = ({
     return compareWindows(top, topItemsLW, topItemsLY);
   }, [topItems, haveRows, topItemsLW, topItemsLY]);
 
-  const depts = useMemo(() => deptOptions(ranked), [ranked]);
-
-  /** The landing report. Rolled up from the rows on screen, so it costs no
-   *  call and cannot disagree with the list beside it. */
-  const rollups = useMemo(() => deptRollups(ranked), [ranked]);
-  const totals = useMemo(() => topItemsTotals(ranked), [ranked]);
-
-  /** The share of each period's week these items carried. */
-  const share = useMemo(
-    () => ({
-      ty: contributionOf(totals.ty, netSales.ty),
-      lw: contributionOf(totals.lw, netSales.lw),
-      ly: contributionOf(totals.ly, netSales.ly),
-    }),
-    [totals, netSales],
-  );
-  const landing = useMemo(() => {
-    const byMoney = [...rollups].sort((a, b) => b.ty - a.ty);
-    // Every department, biggest first: the list is short enough to read
-    // whole, and a tail folded into "8 more" hid where the rest went.
-    return {
-      shown: byMoney,
-      // The bar runs against the biggest department, not against the whole
-      // list: scaled to the total, most of the bars would be stubs.
-      top: byMoney.length ? byMoney[0].ty : 0,
-      total: byMoney.reduce((n, d) => n + d.ty, 0),
-    };
-  }, [rollups]);
-
-  const shown = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const matched = ranked.filter((r) => {
-      if (dept && deptName(r.ty) !== dept) return false;
-      if (!q) return true;
-      return (
-        r.ty.product_description.toLowerCase().includes(q) ||
-        r.ty.product_code.includes(q)
-      );
-    });
-    return sortTopItems(matched, sort);
-  }, [ranked, search, sort, dept]);
-
-  const selected =
-    ranked.find((r) => r.ty.product_code === selectedCode) ?? null;
-
-  const points = useMemo(
-    () => (selected ? pointsFor(topItemPoints, selected.ty.product_code) : []),
-    [selected, topItemPoints],
-  );
-
-  const insight = selected ? topItemInsight(selected.ty, points) : null;
-
-  /** Where it sits in the list, and how much of the list it is. */
-  const rank = selected
-    ? ranked.findIndex((r) => r.ty.product_code === selected.ty.product_code) +
-      1
-    : 0;
-  const shareOfTop =
-    selected && totals.ty > 0
-      ? (selected.ty.total_sales / totals.ty) * 100
-      : null;
-
-  const perUnitCost = selected ? unitCost(selected.ty) : null;
-
-  /** What kind of retail sold it, this week's rank history, and whether it
-   *  is worth a display. All of it off rows already in hand. */
-  const mix = useMemo(
-    () => (selected ? retailMix(selected.ty) : null),
-    [selected],
-  );
-  const topPrice = useMemo(() => topPriceOf(points), [points]);
-  const topMargin = useMemo(
-    () => marginAt(topPrice, perUnitCost),
-    [topPrice, perUnitCost],
-  );
-
-  const history = useMemo(() => {
-    if (!selected) return rankHistory(null, null, null);
-    const code = selected.ty.product_code;
-    return rankHistory(
-      rank || null,
-      rankIn(topItemsLW, code, TOP_ITEMS_SHOWN),
-      rankIn(topItemsLY, code, TOP_ITEMS_SHOWN),
-    );
-  }, [selected, rank, topItemsLW, topItemsLY]);
-
-  const display = useMemo(
-    () =>
-      selected
-        ? displayVerdict(
-            rank || null,
-            selected.ty.margin,
-            selected.vsLW,
-            !selected.lw,
-            pctText,
-          )
-        : displayVerdict(null, null, null, false, pctText),
-    [selected, rank],
-  );
+  const { selected, insight } = useSelectedItem(ranked);
 
   if (topItemsLoading && !haveRows) {
     return (
@@ -440,26 +322,7 @@ const PopupTopItems = ({
 
       <div className="flex flex-1 min-h-0">
         {/* The ranked list */}
-        <div className="w-[471px] flex-shrink-0 flex flex-col border-r border-line_hair">
-          <ItemListToolbar
-            search={search}
-            setSearch={setSearch}
-            dept={dept}
-            setDept={setDept}
-            depts={depts}
-            shown={shown}
-            ranked={ranked}
-          />
-
-          <ItemListHead sort={sort} setSort={setSort} />
-
-          <ItemRows
-            shown={shown}
-            topItemPoints={topItemPoints}
-            selectedCode={selectedCode}
-            setSelectedCode={setSelectedCode}
-          />
-        </div>
+        <ItemList ranked={ranked} />
 
         {/* The selected item */}
         <div className="relative flex-1 min-w-0 flex flex-col overflow-hidden">
@@ -467,21 +330,17 @@ const PopupTopItems = ({
             /* Nothing picked: where the week's money came from, by department.
              Rolled up from the rows already on screen, so it costs no call
              and cannot disagree with the list beside it. */
-            <div className="flex flex-col h-full min-h-0">
-              <TotalsStrip
-                oneDay={oneDay}
-                start={start}
-                end={end}
-                lwStart={lwStart}
-                lwEnd={lwEnd}
-                lyStart={lyStart}
-                lyEnd={lyEnd}
-                totals={totals}
-                share={share}
-              />
-
-              <DeptShareList landing={landing} dept={dept} setDept={setDept} />
-            </div>
+            <Top200Landing
+              ranked={ranked}
+              netSales={netSales}
+              oneDay={oneDay}
+              start={start}
+              end={end}
+              lwStart={lwStart}
+              lwEnd={lwEnd}
+              lyStart={lyStart}
+              lyEnd={lyEnd}
+            />
           ) : (
             <>
               {/* The Sub dept tab's strip, to the letter: icon, name, the
@@ -495,72 +354,11 @@ const PopupTopItems = ({
                 fold={fold}
               />
 
-              {/* The whole report scrolls as one. The sections below answer
-                  different questions and a reader works down them; pinning
-                  the top three and scrolling the rest only moved the seam. */}
-              <div className="cc-scroll">
-                {/* Identity, and how much of the list this is. Contribution
-                    sits here rather than in a tile of its own: the figure,
-                    the money and the bar fit on one line, and a third tile
-                    would have cost a quarter of the panel. */}
-                <ItemIdentity
-                  selected={selected}
-                  rank={rank}
-                  count={ranked.length}
-                  shareOfTop={shareOfTop}
-                />
-
-                {/* 1 — what retail is actually selling it. First because
-                    "all on ad at $11.99" explains a negative margin far more
-                    often than the cost does. */}
-                <ItemRetail
-                  selected={selected}
-                  mix={mix}
-                  points={points}
-                  topPrice={topPrice}
-                />
-
-                {/* 2 — is the cost and the retail right. */}
-                <ItemCost
-                  selected={selected}
-                  points={points}
-                  mix={mix}
-                  detail={detail}
-                  perUnitCost={perUnitCost}
-                  topPrice={topPrice}
-                  topMargin={topMargin}
-                />
-
-                {/* What it costs to buy, with the cost it compares
-                    against directly above it. */}
-                <ItemBuyCost detail={detail} detailLoading={detailLoading} />
-
-                {/* 3 — is any of this new. An item that has sat at #40 all
-                    year is a different conversation from one that arrived
-                    this week, and that has to be said before anybody reads
-                    the margin above. */}
-                <ItemHistory
-                  history={history}
-                  periodLabel={periodLabel}
-                  selected={selected}
-                />
-
-                {/* 4 — should it be on display. Three readings it can make
-                    and one it cannot. */}
-                <ItemDisplay display={display} />
-
-                {/* The way into the invoices. They were a folded section
-                    under the cost cards; seventeen rows of a weekly-delivered
-                    item pushed everything above them off the panel, and the
-                    reader opening it is asking a different question from the
-                    one the panel answers. */}
-                {detail && detail.cost_history.length > 0 && (
-                  <InvoicesButton
-                    detail={detail}
-                    setInvoicesOpen={setInvoicesOpen}
-                  />
-                )}
-              </div>
+              <ItemReport
+                ranked={ranked}
+                periodLabel={periodLabel}
+                setInvoicesOpen={setInvoicesOpen}
+              />
             </>
           )}
 

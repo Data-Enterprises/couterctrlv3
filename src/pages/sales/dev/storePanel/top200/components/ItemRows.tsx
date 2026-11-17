@@ -1,5 +1,6 @@
 // Hooks
 import { useSalesCtx } from "../../../hooks";
+import { useTop200View } from "../hooks";
 
 // Utils
 import { pillClass } from "../../../../../../utils/severity";
@@ -12,20 +13,16 @@ import {
 } from "../utils/topItems";
 import { dotClass, moneyText, pctText } from "../utils";
 
-// Interfaces
-import type { TopItemPricePoint } from "../../../../../../api/topItems";
-
 interface ItemRowsProps {
   shown: TopItemCompared[];
-  topItemPoints: TopItemPricePoint[];
-  selectedCode: string | null;
-  setSelectedCode: (code: string | null) => void;
 }
 
 /** The ranked list's rows. */
-const ItemRows = ({ shown, topItemPoints, selectedCode, setSelectedCode }: ItemRowsProps) => {
+const ItemRows = ({ shown }: ItemRowsProps) => {
+  const { itemThreshold, topItemPoints } = useSalesCtx();
+  const { selectedCode, setSelectedCode } = useTop200View();
   /** The page's grading threshold, so these pills grade like every other. */
-  const threshold = useSalesCtx().itemThreshold ?? 9;
+  const threshold = itemThreshold ?? 9;
 
   return (
     <div className="overflow-y-auto thin-scrollbar flex-1">
