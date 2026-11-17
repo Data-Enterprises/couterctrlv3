@@ -61,7 +61,11 @@ export const totals = (rows: TransactionOverview[]) => ({
 });
 
 /** Worst-first order of the severities. */
-export const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
+export const SEV_RANK: Record<Severity, number> = {
+  critical: 0,
+  watch: 1,
+  healthy: 2,
+};
 
 /**
  * The fetch parameters for a searched scope: its store or group, and the week

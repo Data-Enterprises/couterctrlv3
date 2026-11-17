@@ -73,9 +73,7 @@ const TransactionFilters = ({
             style={inputStyle}
             placeholder="Search ID…"
             value={draftTransId}
-            onChange={(e) =>
-              setDraftTransId(e.target.value)
-            }
+            onChange={(e) => setDraftTransId(e.target.value)}
           />
         </ColFilter>
       </div>
@@ -83,11 +81,7 @@ const TransactionFilters = ({
         <ColFilter
           label="Date"
           active={!!saleDateFilter}
-          appliedDisplay={
-            saleDateFilter
-              ? fmtDate(saleDateFilter)
-              : undefined
-          }
+          appliedDisplay={saleDateFilter ? fmtDate(saleDateFilter) : undefined}
           onApply={() => {}}
           onClear={() => dispatch(setSaleDateFilter(""))}
         >

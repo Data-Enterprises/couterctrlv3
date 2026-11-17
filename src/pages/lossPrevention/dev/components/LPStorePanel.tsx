@@ -4,10 +4,20 @@ import { useLossPreventionCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 // Utils
-import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact } from "../../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  getStoreName,
+  formatCurrencyCompact,
+} from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { severityDotClass, type SevFilter } from "../../../../utils/severity";
-import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../utils/grading";
+import {
+  isNoDollarType,
+  storeSeverity,
+  directionalPillClass,
+  weekRangeLabel,
+} from "../utils/grading";
 import { SEV_RANK } from "../utils";
 import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
@@ -36,7 +46,13 @@ interface LPStorePanelProps {
 /** Loss Prevention's left panel: the week's totals, exception type tabs, severity chips, a
  *  day picker and store filter, and the sortable store list graded against the two-week
  *  baseline. Clicking a store loads its transactions. */
-const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: LPStorePanelProps) => {
+const LPStorePanel = ({
+  loading,
+  onSaleTypeSelect,
+  onStoreSelect,
+  onOpenSearch,
+  onDaySelect,
+}: LPStorePanelProps) => {
   const cashier = useLossPreventionCtx();
   const { weekDate, assignedStores } = cashier;
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
@@ -44,9 +60,16 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   const { sort, handleSort, applySort } = useTriStateSort<LpSortCol>();
 
   const {
-    saleTypes, selectedSaleType, cashierDetails, baselineDetails,
-    selectedStoreId, selectedStoreNumber,
-    selectedDay, dayDetails, dayBaselineDetails, loadingDay,
+    saleTypes,
+    selectedSaleType,
+    cashierDetails,
+    baselineDetails,
+    selectedStoreId,
+    selectedStoreNumber,
+    selectedDay,
+    dayDetails,
+    dayBaselineDetails,
+    loadingDay,
   } = cashier;
 
   // With a day selected the rows and their baseline both come from that day's
@@ -63,7 +86,11 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       const dt = new Date(y, m - 1, d - i);
       return {
         value: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`,
-        label: dt.toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" }),
+        label: dt.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "numeric",
+          day: "numeric",
+        }),
       };
     }).filter(() => !Number.isNaN(end.getTime()));
   }, [weekDate]);
@@ -72,9 +99,15 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
   // Header totals follow the filter — week totals beside day-scoped rows would
   // read as though the rows didn't add up.
-  const totalSales  = activeDetails.reduce((acc, d) => acc + Math.abs(d.amount), 0);
-  const totalTrans  = activeDetails.reduce((acc, d) => acc + d.transaction_count, 0);
-  const totalItems  = activeDetails.reduce((acc, d) => acc + d.total_items, 0);
+  const totalSales = activeDetails.reduce(
+    (acc, d) => acc + Math.abs(d.amount),
+    0,
+  );
+  const totalTrans = activeDetails.reduce(
+    (acc, d) => acc + d.transaction_count,
+    0,
+  );
+  const totalItems = activeDetails.reduce((acc, d) => acc + d.total_items, 0);
 
   const hasAmount = !isNoDollarType(selectedSaleType);
 
@@ -179,26 +212,43 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   return (
     <div className="cc-panel shadow-lg" style={{ width: "39%", flexShrink: 0 }}>
       {/* Navy header */}
-      <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "rgb(var(--color-brand-navy))" }}>
+      <div
+        className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
+        style={{ background: "rgb(var(--color-brand-navy))" }}
+      >
         {/* Row 1: date | totals */}
         <div className="flex items-center gap-2 min-h-[24px]">
-          <span className="text-[13px] cc-navy-title flex-shrink-0">{dateLabel}</span>
+          <span className="text-[13px] cc-navy-title flex-shrink-0">
+            {dateLabel}
+          </span>
           <div className="flex-1" />
           {activeDetails.length > 0 && (
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Sales</span>
-                <span className="text-[13px] font-medium text-custom-white">{formatCurrencyCompact(totalSales)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
+                  Sales
+                </span>
+                <span className="text-[13px] font-medium text-custom-white">
+                  {formatCurrencyCompact(totalSales)}
+                </span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Trans</span>
-                <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalTrans, 0)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
+                  Trans
+                </span>
+                <span className="text-[13px] font-medium text-custom-white">
+                  {formatBigNumber(totalTrans, 0)}
+                </span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">Qty</span>
-                <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalItems, 0)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
+                  Qty
+                </span>
+                <span className="text-[13px] font-medium text-custom-white">
+                  {formatBigNumber(totalItems, 0)}
+                </span>
               </div>
             </>
           )}
@@ -208,7 +258,9 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
         <div className="flex items-center gap-2 cc-navy-header-row">
           <BackButton onClick={onOpenSearch} helpAnchor="search" />
           <div className="flex-1" />
-          <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/95 flex-shrink-0">Exception activity vs baseline</span>
+          <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/95 flex-shrink-0">
+            Exception activity vs baseline
+          </span>
           <div className="relative flex-shrink-0">
             <PageInfoButton page="loss-prevention" />
           </div>
@@ -216,51 +268,73 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       </div>
 
       {/* Exception type tabs — Description and Tender excluded until further notice */}
-      <div data-help="type-tabs" className="flex flex-shrink-0 border-b border-line_hair overflow-x-auto no-scrollbar">
-        {saleTypes.filter((st) => st.sale_type !== "Description" && st.sale_type !== "Tender").map((st) => (
-          <button
-            key={st.sale_type}
-            onClick={() => onSaleTypeSelect(st.sale_type)}
-            className={`flex-1 text-center px-2 py-2 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
-              selectedSaleType === st.sale_type
-                ? "border-brand_navy text-content"
-                : "border-transparent text-content"
-            }`}
-          >
-            {st.sale_type}
-          </button>
-        ))}
+      <div
+        data-help="type-tabs"
+        className="flex flex-shrink-0 border-b border-line_hair overflow-x-auto no-scrollbar"
+      >
+        {saleTypes
+          .filter(
+            (st) => st.sale_type !== "Description" && st.sale_type !== "Tender",
+          )
+          .map((st) => (
+            <button
+              key={st.sale_type}
+              onClick={() => onSaleTypeSelect(st.sale_type)}
+              className={`flex-1 text-center px-2 py-2 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+                selectedSaleType === st.sale_type
+                  ? "border-brand_navy text-content"
+                  : "border-transparent text-content"
+              }`}
+            >
+              {st.sale_type}
+            </button>
+          ))}
       </div>
 
       {/* Severity filter chips + text filter */}
       <div className="flex items-center justify-between gap-1.5 px-3 py-2 bg-custom-white border-b border-line_hair">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
-            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+              sevFilter === "critical"
+                ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                : ""
             }`}
           >
             Crit ({criticalCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+              sevFilter === "watch"
+                ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                : ""
             }`}
           >
             Watch ({watchCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+              sevFilter === "healthy"
+                ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                : ""
             }`}
           >
             OK ({healthyCount})
           </button>
         </div>
-        <div data-help="day-select" className="flex items-center gap-1.5 flex-shrink-0">
+        <div
+          data-help="day-select"
+          className="flex items-center gap-1.5 flex-shrink-0"
+        >
           {/* Day filter — narrows the rows to one day and re-bases their
               grading to the same weekday in the baseline weeks. */}
           <SelectFilter
@@ -295,9 +369,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
           <>
             <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
               <span className="w-2.5 flex-shrink-0" />
-              <span className="text-[11.5px] cc-caps flex-1">
-                Store
-              </span>
+              <span className="text-[11.5px] cc-caps flex-1">Store</span>
               <div data-help="sort" className="flex items-center gap-[14px]">
                 <SortHeader
                   col="trans"
@@ -338,71 +410,96 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
               </div>
             </div>
 
-            <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar">
+            <div
+              data-help="store-list"
+              className="flex-1 overflow-y-auto thin-scrollbar"
+            >
               {visibleStores.length === 0 ? (
                 <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
                   No stores match
                 </div>
               ) : (
-                visibleStores.map(({ detail, name, sev, transPct, itemsPct, amountPct, avgPct }) => {
-                  const isSel =
-                    detail.storeid === selectedStoreId &&
-                    detail.store_number === selectedStoreNumber;
-                  return (
-                    <button
-                      key={`${detail.storeid}__${detail.store_number}`}
-                      onClick={() => onStoreSelect(detail)}
-                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-                        isSel
-                          ? "cc-row-selected"
-                          : "border-transparent hover:bg-fill_soft"
-                      }`}
-                    >
-                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`} />
-                      <span className="text-[13px] font-medium text-content truncate flex-1">
-                        {name}
-                      </span>
-                      <div className="flex items-center gap-[14px]">
+                visibleStores.map(
+                  ({
+                    detail,
+                    name,
+                    sev,
+                    transPct,
+                    itemsPct,
+                    amountPct,
+                    avgPct,
+                  }) => {
+                    const isSel =
+                      detail.storeid === selectedStoreId &&
+                      detail.store_number === selectedStoreNumber;
+                    return (
+                      <button
+                        key={`${detail.storeid}__${detail.store_number}`}
+                        onClick={() => onStoreSelect(detail)}
+                        className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
+                          isSel
+                            ? "cc-row-selected"
+                            : "border-transparent hover:bg-fill_soft"
+                        }`}
+                      >
                         <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            transPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(transPct)
-                          }`}
-                          style={{ minWidth: 58 }}
-                        >
-                          {formatBigNumber(detail.transaction_count, 0)}
+                          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`}
+                        />
+                        <span className="text-[13px] font-medium text-content truncate flex-1">
+                          {name}
                         </span>
-                        <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            itemsPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(itemsPct)
-                          }`}
-                          style={{ minWidth: 58 }}
-                        >
-                          {formatBigNumber(detail.total_items, 0)}
-                        </span>
-                        {hasAmount && (
+                        <div className="flex items-center gap-[14px]">
                           <span
                             className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                              amountPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(amountPct)
-                            }`}
-                            style={{ minWidth: 64 }}
-                          >
-                            {formatCurrency2(Math.abs(detail.amount))}
-                          </span>
-                        )}
-                        {hasAmount && (
-                          <span
-                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                              avgPct === null ? "bg-row_stripe text-brand_slate" : directionalPillClass(avgPct)
+                              transPct === null
+                                ? "bg-row_stripe text-brand_slate"
+                                : directionalPillClass(transPct)
                             }`}
                             style={{ minWidth: 58 }}
                           >
-                            {formatCurrency2(Math.abs(detail.average_dollars))}
+                            {formatBigNumber(detail.transaction_count, 0)}
                           </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })
+                          <span
+                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                              itemsPct === null
+                                ? "bg-row_stripe text-brand_slate"
+                                : directionalPillClass(itemsPct)
+                            }`}
+                            style={{ minWidth: 58 }}
+                          >
+                            {formatBigNumber(detail.total_items, 0)}
+                          </span>
+                          {hasAmount && (
+                            <span
+                              className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                                amountPct === null
+                                  ? "bg-row_stripe text-brand_slate"
+                                  : directionalPillClass(amountPct)
+                              }`}
+                              style={{ minWidth: 64 }}
+                            >
+                              {formatCurrency2(Math.abs(detail.amount))}
+                            </span>
+                          )}
+                          {hasAmount && (
+                            <span
+                              className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                                avgPct === null
+                                  ? "bg-row_stripe text-brand_slate"
+                                  : directionalPillClass(avgPct)
+                              }`}
+                              style={{ minWidth: 58 }}
+                            >
+                              {formatCurrency2(
+                                Math.abs(detail.average_dollars),
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  },
+                )
               )}
             </div>
           </>

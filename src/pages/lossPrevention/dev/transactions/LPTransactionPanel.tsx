@@ -48,7 +48,9 @@ interface LPTransactionPanelProps {
 
 /** The open store's LP report: its figures, its days, its graded cashiers and
  *  their transactions or one receipt. */
-const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => {
+const LPTransactionPanel = ({
+  onTransactionClick,
+}: LPTransactionPanelProps) => {
   const dispatch = useAppDispatch();
   const cashier = useLossPreventionCtx();
   const { weekDate } = cashier;
@@ -56,7 +58,9 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
   const [selectedOverview, setSelectedOverview] =
     useState<TransactionOverview | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [cashierSevFilter, setCashierSevFilter] = useState<CashierSeverity | "all">("all");
+  const [cashierSevFilter, setCashierSevFilter] = useState<
+    CashierSeverity | "all"
+  >("all");
   // What is typed in each column filter, applied only on Apply. Kept here so
   // it survives the filter row unmounting while a receipt is open.
   const [draftTransId, setDraftTransId] = useState("");
@@ -146,7 +150,9 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
       (g) => g.cashier_number === selectedCashier.cashier_number,
     ) ?? null;
 
-  const critCount = cashierGrades.filter((g) => g.severity === "critical").length;
+  const critCount = cashierGrades.filter(
+    (g) => g.severity === "critical",
+  ).length;
   const watchCount = cashierGrades.filter((g) => g.severity === "watch").length;
   const okCount = cashierGrades.filter((g) => g.severity === "ok").length;
   const visibleGrades =
@@ -248,7 +254,9 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
             storeName={storeName}
             selectedSaleType={selectedSaleType}
             dateLabel={dateLabel}
-            canExport={transOverviews.length > 0 && !fetchingCashierTransactions}
+            canExport={
+              transOverviews.length > 0 && !fetchingCashierTransactions
+            }
             onExport={() => setExportOpen(true)}
           />
 
@@ -279,18 +287,18 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
           {/* Split body */}
           <div className="flex flex-1 min-h-0">
             {/* Left: cashier list */}
-              <CashierList
-                fetchingCashierTransactions={fetchingCashierTransactions}
-                cashierGrades={cashierGrades}
-                visibleGrades={visibleGrades}
-                critCount={critCount}
-                watchCount={watchCount}
-                okCount={okCount}
-                cashierSevFilter={cashierSevFilter}
-                setCashierSevFilter={setCashierSevFilter}
-                selectedCashier={selectedCashier}
-                onCashierClick={handleCashierClick}
-              />
+            <CashierList
+              fetchingCashierTransactions={fetchingCashierTransactions}
+              cashierGrades={cashierGrades}
+              visibleGrades={visibleGrades}
+              critCount={critCount}
+              watchCount={watchCount}
+              okCount={okCount}
+              cashierSevFilter={cashierSevFilter}
+              setCashierSevFilter={setCashierSevFilter}
+              selectedCashier={selectedCashier}
+              onCashierClick={handleCashierClick}
+            />
 
             {/* Right: score strip + transaction list / receipt */}
             <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -337,7 +345,9 @@ const LPTransactionPanel = ({ onTransactionClick }: LPTransactionPanelProps) => 
                           uniqueDates={uniqueDates}
                         />
                         <TransactionRows
-                          fetchingCashierTransactions={fetchingCashierTransactions}
+                          fetchingCashierTransactions={
+                            fetchingCashierTransactions
+                          }
                           transactionLoadingMessage={transactionLoadingMessage}
                           filteredOverviews={filteredOverviews}
                           handleRowClick={handleRowClick}

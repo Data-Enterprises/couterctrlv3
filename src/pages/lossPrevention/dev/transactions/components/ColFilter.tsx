@@ -70,7 +70,10 @@ const ColFilter = ({
       {active && appliedDisplay && (
         <span
           className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
+          style={{
+            background: "rgb(var(--color-brand-navy) / 0.08)",
+            maxWidth: 90,
+          }}
         >
           <span className="text-[8px] font-medium text-brand_navy truncate">
             {appliedDisplay}

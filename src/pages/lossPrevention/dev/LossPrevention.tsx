@@ -15,7 +15,10 @@ import { isGroupSearch } from "../../../features/searchSlice";
 
 // API
 import { getSaleTypes } from "../../../api/lossPrevention";
-import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter";
+import {
+  fetchLpEvents,
+  fetchLpReceipt,
+} from "../../../api/eventPerf/lpAdapter";
 
 // Interfaces
 import type { JsonError } from "../../../interfaces";
