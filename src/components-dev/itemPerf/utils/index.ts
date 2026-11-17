@@ -22,7 +22,8 @@ export const HELP_PAGE: Record<ItemDimension, HelpPage> = {
   category: "categories",
 };
 
-export const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
+export const pct = (v: number | null) =>
+  v === null ? "—" : `${v.toFixed(2)}%`;
 
 export const fmtChange = (v: number) =>
   `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)}%`;

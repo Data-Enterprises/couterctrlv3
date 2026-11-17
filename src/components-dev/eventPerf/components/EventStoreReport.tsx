@@ -152,9 +152,7 @@ const EventStoreReport = ({
             ] as [string, string][]
           ).map(([k, v]) => (
             <div key={k} className="flex flex-col items-center text-center">
-              <span className="cc-caps-mono text-[9.5px]">
-                {k}
-              </span>
+              <span className="cc-caps-mono text-[9.5px]">{k}</span>
               <span className="font-display text-[15px] font-bold text-content">
                 {v}
               </span>

@@ -75,8 +75,9 @@ export const useNextWeek = () => {
    *  holiday while the other keeps a weekday shift. */
   const lyDates = useMemo(
     () =>
-      Array.from({ length: 7 }, (_, i) =>
-        sameWeekDayLastYear(shiftIso(twStart, i)).date,
+      Array.from(
+        { length: 7 },
+        (_, i) => sameWeekDayLastYear(shiftIso(twStart, i)).date,
       ).sort(),
     [twStart],
   );
@@ -287,8 +288,7 @@ export const useItemPerfView = (
   const weekNoLy = perf.lyMissing || noLyHistory(weekMatch, null);
   const cardNoLy = perf.lyMissing || noLyHistory(weekMatch, perf.selectedDay);
   /** Nothing on file last week either, for the LW bar. */
-  const cardNoLw =
-    perf.lwMissing || noLyHistory(weekMatchLw, perf.selectedDay);
+  const cardNoLw = perf.lwMissing || noLyHistory(weekMatchLw, perf.selectedDay);
   /**
    * The day chart's second column: last year, or last week where last year
    * has nothing on file. One store per screen, so one answer covers it; the
@@ -307,7 +307,9 @@ export const useItemPerfView = (
    *  narrows to neither. */
   const itemCode = perf.selectedItemCode;
   const groupKey =
-    screen === "search" || screen === "list" ? null : (perf.openGroup?.key ?? null);
+    screen === "search" || screen === "list"
+      ? null
+      : (perf.openGroup?.key ?? null);
 
   const totals = useMemo(
     () =>
@@ -342,12 +344,28 @@ export const useItemPerfView = (
    *  rows draw both. */
   const daysLy = useMemo(
     () =>
-      buildMarginDays(ty, ly, dimension, groupKey, itemCode, weekDates, measure),
+      buildMarginDays(
+        ty,
+        ly,
+        dimension,
+        groupKey,
+        itemCode,
+        weekDates,
+        measure,
+      ),
     [ty, ly, dimension, groupKey, itemCode, weekDates, measure],
   );
   const daysLw = useMemo(
     () =>
-      buildMarginDays(ty, lw, dimension, groupKey, itemCode, weekDates, measure),
+      buildMarginDays(
+        ty,
+        lw,
+        dimension,
+        groupKey,
+        itemCode,
+        weekDates,
+        measure,
+      ),
     [ty, lw, dimension, groupKey, itemCode, weekDates, measure],
   );
   const days = chartBasis === "lw" ? daysLw : daysLy;
@@ -388,7 +406,8 @@ export const useItemPerfView = (
    * Narrowed to what each screen consumes, opening a card leaves this object
    * identical, so nothing defers and nothing rebuilds.
    */
-  const listGroupKey = screen === "items" ? (perf.openGroup?.key ?? null) : null;
+  const listGroupKey =
+    screen === "items" ? (perf.openGroup?.key ?? null) : null;
   const listQuery = screen === "list" ? "" : query;
   const listInputs = useMemo(
     () => ({
@@ -417,17 +436,22 @@ export const useItemPerfView = (
 
   const rows: MarginRow[] = useMemo(() => {
     // No chip pressed means the order the list was built in.
-    const ordered = (
-      built: MarginRow[],
-      sort: typeof listFor.groupSort,
-    ) =>
+    const ordered = (built: MarginRow[], sort: typeof listFor.groupSort) =>
       sort
         ? sortMarginRows(built, sort.key, sort.reversed, listFor.measure)
         : built;
 
     if (listFor.screen === "list")
       return ordered(
-        buildGroupRows(ty, ly, dimension, listFor.day, weekMatch, lw, weekMatchLw),
+        buildGroupRows(
+          ty,
+          ly,
+          dimension,
+          listFor.day,
+          weekMatch,
+          lw,
+          weekMatchLw,
+        ),
         listFor.groupSort,
       );
 
@@ -492,7 +516,17 @@ export const useItemPerfView = (
     return perf.recentItems
       .map((code) => all.find((r) => r.key === code))
       .filter((r): r is MarginRow => Boolean(r));
-  }, [ty, ly, lw, dimension, screen, perf.recentItems, query, weekMatch, weekMatchLw]);
+  }, [
+    ty,
+    ly,
+    lw,
+    dimension,
+    screen,
+    perf.recentItems,
+    query,
+    weekMatch,
+    weekMatchLw,
+  ]);
 
   const dailyRows = useMemo(
     () => buildDailyRows(ty, itemCode, weekDates),
@@ -595,7 +629,9 @@ export const useItemPerfView = (
     ? marginDirOf(activeSort.key, activeSort.reversed)
     : null;
   const onSort = (key: MarginSort) =>
-    dispatch(onGroupList ? setItemPerfGroupSort(key) : setItemPerfItemSort(key));
+    dispatch(
+      onGroupList ? setItemPerfGroupSort(key) : setItemPerfItemSort(key),
+    );
 
   const windowLabel = `${formatDateSimple(viewStart)} \u2013 ${formatDateSimple(viewEnd)}`;
 

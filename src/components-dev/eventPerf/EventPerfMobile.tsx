@@ -25,7 +25,8 @@ import EventListScreen from "./components/EventListScreen";
  * in hand rather than firing a request.
  */
 const EventPerfMobile = (props: EventPerfMobileProps) => {
-  const { title, description, buttonLabel, allLabel, measure, helpPage } = props;
+  const { title, description, buttonLabel, allLabel, measure, helpPage } =
+    props;
   /** Narrows a long store list. Ephemeral by design — it describes what you
    *  are looking for right now, not what the search returned. */
   const [storeFilter, setStoreFilter] = useState("");
@@ -47,11 +48,17 @@ const EventPerfMobile = (props: EventPerfMobileProps) => {
           : "list";
 
   return (
-    <EventPerfCtx.Provider value={{ ...view, typePickerOpen, setTypePickerOpen }}>
+    <EventPerfCtx.Provider
+      value={{ ...view, typePickerOpen, setTypePickerOpen }}
+    >
       {screen === "loading" ? (
         <EventLoading />
       ) : screen === "search" ? (
-        <EventSearchScreen title={title} description={description} buttonLabel={buttonLabel} />
+        <EventSearchScreen
+          title={title}
+          description={description}
+          buttonLabel={buttonLabel}
+        />
       ) : screen === "detail" ? (
         <EventDetailScreen title={title} measure={measure} />
       ) : (

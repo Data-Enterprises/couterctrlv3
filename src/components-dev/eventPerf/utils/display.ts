@@ -20,9 +20,7 @@ export const sortOptions = (
     // Store number only. It is an identifier, and running down the stores in
     // order is a real way to read the list; sorting cashiers or lanes
     // alphabetically is not, so those lose the chip.
-    ...(by === "store"
-      ? [{ key: "name" as const, label: "Store #" }]
-      : []),
+    ...(by === "store" ? [{ key: "name" as const, label: "Store #" }] : []),
   ];
 };
 

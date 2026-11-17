@@ -61,9 +61,7 @@ const EventStoreCard = ({ r, measure }: EventStoreCardProps) => {
           fmt(measure === "amount" ? r.amount : r.transactions)
         ) : (
           <PerfDelta
-            ty={
-              measure === "amount" ? r.amount : r.transactions
-            }
+            ty={measure === "amount" ? r.amount : r.transactions}
             ly={r.baseline}
             format={fmt}
             className="!text-[12px] !font-semibold"
@@ -72,11 +70,7 @@ const EventStoreCard = ({ r, measure }: EventStoreCardProps) => {
       }
       open={isOpen}
       minimised={!isOpen && perf.selectedStoreKey !== null}
-      onToggle={() =>
-        dispatch(
-          toggleEventCard({ key: r.key, label: r.label }),
-        )
-      }
+      onToggle={() => dispatch(toggleEventCard({ key: r.key, label: r.label }))}
       bars={
         <PairedBars
           ty={measure === "amount" ? r.amount : r.transactions}

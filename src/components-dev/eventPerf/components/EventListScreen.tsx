@@ -3,7 +3,11 @@ import { useAppDispatch } from "../../../hooks";
 import { useEventPerfCtx } from "../hooks";
 
 // Redux
-import { ROWS_PER_PAGE, setEventInfoOpen, showMoreEvents } from "../../../features/dev/devEventPerfSlice";
+import {
+  ROWS_PER_PAGE,
+  setEventInfoOpen,
+  showMoreEvents,
+} from "../../../features/dev/devEventPerfSlice";
 
 // Utils
 import { fmtInt } from "../utils/display";
@@ -84,7 +88,9 @@ const EventListScreen = ({
             (listBuilding ? (
               <section
                 className="rounded-2xl border border-line_field bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
-                style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
+                style={{
+                  animation: "delayed-fade-in 140ms ease-out 200ms both",
+                }}
               >
                 Building the list...
               </section>
@@ -105,24 +111,28 @@ const EventListScreen = ({
               ))
             ))}
 
-          {multiStore && !listBuilding && visibleStores.length > listRows.length && (
-            <button
-              type="button"
-              onClick={() => dispatch(showMoreEvents())}
-              className="rounded-2xl border border-line_field bg-custom-white py-3 text-center text-[12px] font-semibold shadow-md active:bg-bkg"
-              style={{ color: TY_COLOR }}
-            >
-              Show {ROWS_PER_PAGE} more
-              <span className="text-content/95">
-                {" "}
-                · {fmtInt(visibleStores.length - listRows.length)} left
-              </span>
-            </button>
-          )}
+          {multiStore &&
+            !listBuilding &&
+            visibleStores.length > listRows.length && (
+              <button
+                type="button"
+                onClick={() => dispatch(showMoreEvents())}
+                className="rounded-2xl border border-line_field bg-custom-white py-3 text-center text-[12px] font-semibold shadow-md active:bg-bkg"
+                style={{ color: TY_COLOR }}
+              >
+                Show {ROWS_PER_PAGE} more
+                <span className="text-content/95">
+                  {" "}
+                  · {fmtInt(visibleStores.length - listRows.length)} left
+                </span>
+              </button>
+            )}
         </div>
       </div>
 
-      {typePickerOpen && <TypePickerSheet allLabel={allLabel} measure={measure} />}
+      {typePickerOpen && (
+        <TypePickerSheet allLabel={allLabel} measure={measure} />
+      )}
 
       <InfoModal
         page={helpPage}

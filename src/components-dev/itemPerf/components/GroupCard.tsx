@@ -10,7 +10,11 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { gradedChange, noLyHistory, type MarginRow } from "../utils/itemPerfData";
+import {
+  gradedChange,
+  noLyHistory,
+  type MarginRow,
+} from "../utils/itemPerfData";
 import { cmpWord, fmtChange } from "../utils";
 
 // Interfaces
@@ -46,9 +50,7 @@ const GroupCard = ({ row: r }: GroupCardProps) => {
       open={isOpen}
       minimised={!isOpen && perf.openGroup !== null}
       onToggle={() =>
-        dispatch(
-          toggleItemPerfGroup({ key: r.key, label: r.label }),
-        )
+        dispatch(toggleItemPerfGroup({ key: r.key, label: r.label }))
       }
     >
       <div className="border-t border-brand_line">

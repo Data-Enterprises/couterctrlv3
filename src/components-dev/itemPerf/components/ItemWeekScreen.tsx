@@ -44,7 +44,9 @@ const ItemWeekScreen = () => {
           itemCode === DEPT_RING_KEY ? DEPT_RING_NOTE : (itemCode ?? "")
         } · ${windowLabel}`}
         // Back names where it goes, because this screen is reached two ways.
-        backLabel={perf.searchOpen ? "Search" : (perf.openGroup?.label ?? "Items")}
+        backLabel={
+          perf.searchOpen ? "Search" : (perf.openGroup?.label ?? "Items")
+        }
         onBack={() => dispatch(clearPerfItem())}
         levelKey={`item|${itemCode ?? ""}`}
       >

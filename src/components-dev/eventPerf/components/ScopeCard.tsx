@@ -109,8 +109,8 @@ const ScopeCard = ({ allLabel, measure }: ScopeCardProps) => {
                 compact
               />
               <p className="mt-1.5 text-[11px] text-content/95">
-                WK {groupDayLabel ? "selected day" : "this week"} · AVG
-                prior 2-wk avg{groupDayLabel ? ", same weekday" : ""}
+                WK {groupDayLabel ? "selected day" : "this week"} · AVG prior
+                2-wk avg{groupDayLabel ? ", same weekday" : ""}
               </p>
             </div>
           )}
@@ -132,9 +132,7 @@ const ScopeCard = ({ allLabel, measure }: ScopeCardProps) => {
               ] as [string, string][]
             ).map(([k, v]) => (
               <div key={k} className="flex flex-col items-center text-center">
-                <span className="cc-caps-mono text-[10px]">
-                  {k}
-                </span>
+                <span className="cc-caps-mono text-[10px]">{k}</span>
                 <span className="font-display text-[15px] font-bold text-content">
                   {v}
                 </span>

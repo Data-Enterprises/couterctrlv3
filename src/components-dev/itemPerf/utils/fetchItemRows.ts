@@ -12,7 +12,10 @@ import type {
   CatSalesDaily,
   CatSalesResponse,
 } from "../../../interfaces";
-import type { ItemDimension, ItemRow } from "../../../features/dev/devItemPerfSlice";
+import type {
+  ItemDimension,
+  ItemRow,
+} from "../../../features/dev/devItemPerfSlice";
 
 /** Every group in one read. As a REQUEST argument 0 means "all"; as a ROW
  *  value 0 is a real department, which is why this is named. */

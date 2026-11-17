@@ -41,7 +41,11 @@ interface MarginRowListProps {
 
 /** A sortable list of margin rows: groups on the list screen, items below
  *  it, search results beside it. One row shape, three callers. */
-const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListProps) => {
+const MarginRowList = ({
+  onRow,
+  emptyText,
+  withQuery = false,
+}: MarginRowListProps) => {
   const dispatch = useAppDispatch();
   const perf = useAppSelector((s) => s.dev.itemPerf);
   const {
@@ -144,10 +148,7 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
           className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95"
           style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
         >
-          <span
-            className="cc-spinner"
-            style={{ borderTopColor: TY_COLOR }}
-          />
+          <span className="cc-spinner" style={{ borderTopColor: TY_COLOR }} />
           Building the list...
         </div>
       ) : shown.length === 0 ? (
@@ -205,9 +206,10 @@ const MarginRowList = ({ onRow, emptyText, withQuery = false }: MarginRowListPro
           style={{ color: TY_COLOR }}
         >
           Show{" "}
-          {Math.min(ROWS_PER_PAGE, visibleRows.length - shown.length).toLocaleString(
-            "en-US",
-          )}{" "}
+          {Math.min(
+            ROWS_PER_PAGE,
+            visibleRows.length - shown.length,
+          ).toLocaleString("en-US")}{" "}
           more
           <span className="text-content/95">
             {" "}

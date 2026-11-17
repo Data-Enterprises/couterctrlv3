@@ -16,7 +16,11 @@ interface EventSearchScreenProps {
 
 /** The search card: the first visit, a re-search over a loaded week, or a
  *  search that found nothing. */
-const EventSearchScreen = ({ title, description, buttonLabel }: EventSearchScreenProps) => {
+const EventSearchScreen = ({
+  title,
+  description,
+  buttonLabel,
+}: EventSearchScreenProps) => {
   const dispatch = useAppDispatch();
   const { perf, mine, hasResults, runSearch } = useEventPerfCtx();
   return (
@@ -33,9 +37,7 @@ const EventSearchScreen = ({ title, description, buttonLabel }: EventSearchScree
         // Opened over a week already loaded, the card needs a way back to it
         // that is not a search — changing the picker alone loads nothing.
         onBack={
-          hasResults
-            ? () => dispatch(setEventSearchOpen(false))
-            : undefined
+          hasResults ? () => dispatch(setEventSearchOpen(false)) : undefined
         }
         notice={
           mine && perf.hasSearched && perf.rows.length === 0

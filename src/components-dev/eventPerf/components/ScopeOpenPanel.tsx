@@ -3,7 +3,10 @@ import { useAppDispatch } from "../../../hooks";
 import { useEventPerfCtx } from "../hooks";
 
 // Redux
-import { openEventDetail, toggleEventGroupDay } from "../../../features/dev/devEventPerfSlice";
+import {
+  openEventDetail,
+  toggleEventGroupDay,
+} from "../../../features/dev/devEventPerfSlice";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

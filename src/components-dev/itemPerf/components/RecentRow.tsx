@@ -2,7 +2,10 @@
 import { useAppDispatch } from "../../../hooks";
 
 // Redux
-import { selectPerfItem, setRecentsOpen } from "../../../features/dev/devItemPerfSlice";
+import {
+  selectPerfItem,
+  setRecentsOpen,
+} from "../../../features/dev/devItemPerfSlice";
 
 // Utils
 import { formatCurrency2 } from "../../../utils";

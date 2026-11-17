@@ -1,6 +1,11 @@
 // Utils
 import { calculateCogs } from "../../../utils/cogs";
-import { dayOf, lyDateFor, netOf, type DayMatch } from "../../../utils/perfPairs";
+import {
+  dayOf,
+  lyDateFor,
+  netOf,
+  type DayMatch,
+} from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
 import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
 import { subDeptKey } from "../../../utils/subDeptKey";
@@ -12,7 +17,6 @@ import type {
   MarginMeasure,
   MarginSort,
 } from "../../../features/dev/devItemPerfSlice";
-
 
 export {
   isPartialMatch,
@@ -652,17 +656,16 @@ export const sortMarginRows = (
   const flip = reversed ? -1 : 1;
   const size = (r: MarginRow) => (measure === "units" ? r.units : r.sales);
   const bySales = (a: MarginRow, b: MarginRow) => size(b) - size(a);
-  const nullsLast = (
-    pick: (r: MarginRow) => number | null,
-    dir: number,
-  ) => (a: MarginRow, b: MarginRow) => {
-    const va = pick(a);
-    const vb = pick(b);
-    if (va === null && vb === null) return bySales(a, b);
-    if (va === null) return 1;
-    if (vb === null) return -1;
-    return (va - vb) * dir || bySales(a, b);
-  };
+  const nullsLast =
+    (pick: (r: MarginRow) => number | null, dir: number) =>
+    (a: MarginRow, b: MarginRow) => {
+      const va = pick(a);
+      const vb = pick(b);
+      if (va === null && vb === null) return bySales(a, b);
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      return (va - vb) * dir || bySales(a, b);
+    };
   const out = [...rows];
   switch (sort) {
     case "sales":
@@ -707,4 +710,8 @@ export const marginDirOf = (
   sort: MarginSort,
   reversed: boolean,
 ): "asc" | "desc" =>
-  reversed ? (MARGIN_SORT_DIR[sort] === "asc" ? "desc" : "asc") : MARGIN_SORT_DIR[sort];
+  reversed
+    ? MARGIN_SORT_DIR[sort] === "asc"
+      ? "desc"
+      : "asc"
+    : MARGIN_SORT_DIR[sort];

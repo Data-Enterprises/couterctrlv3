@@ -83,7 +83,11 @@ const StoreGroupsScreen = () => {
       )}
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        className="flex-1 overflow-y-auto pb-14"
+      >
         <div className="flex flex-col gap-3 p-3">
           {/* ── the store ───────────────────────────────────────── */}
           {/* Not a card in the accordion: the store's breakdown IS the list
@@ -174,7 +178,10 @@ const StoreGroupsScreen = () => {
             </section>
           ) : (
             shown.map((r) => (
-              <div key={r.key} ref={perf.openGroup?.key === r.key ? openCard : undefined}>
+              <div
+                key={r.key}
+                ref={perf.openGroup?.key === r.key ? openCard : undefined}
+              >
                 <GroupCard row={r} />
               </div>
             ))

@@ -1,7 +1,12 @@
 // Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../hooks";
-import { ItemPerfCtx, useItemPerfLoad, useItemPerfView, useScrollCarry } from "./hooks";
+import {
+  ItemPerfCtx,
+  useItemPerfLoad,
+  useItemPerfView,
+  useScrollCarry,
+} from "./hooks";
 
 // Interfaces
 import type { ItemDimension } from "../../features/dev/devItemPerfSlice";
@@ -47,7 +52,11 @@ interface ItemPerfMobileProps {
  * read against last year, and against last week only where last year has
  * nothing on file — the rule mobile Sales uses.
  */
-const ItemPerfMobile = ({ dimension, title, listLabel }: ItemPerfMobileProps) => {
+const ItemPerfMobile = ({
+  dimension,
+  title,
+  listLabel,
+}: ItemPerfMobileProps) => {
   const perf = useAppSelector((s) => s.dev.itemPerf);
   /**
    * Narrows the group list by name.
@@ -74,7 +83,9 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: ItemPerfMobileProps) =>
   const scrollCarry = useScrollCarry(screen);
 
   return (
-    <ItemPerfCtx.Provider value={{ ...view, groupFilter, setGroupFilter, scrollCarry }}>
+    <ItemPerfCtx.Provider
+      value={{ ...view, groupFilter, setGroupFilter, scrollCarry }}
+    >
       {screen === null ? (
         <ItemPerfSearchCard title={title} onSearch={fetchItems} />
       ) : screen === "item" ? (

@@ -133,7 +133,11 @@ const ItemSearchScreen = () => {
         </div>
       </header>
 
-      <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        className="flex-1 overflow-y-auto pb-14"
+      >
         <div className="flex flex-col gap-3 p-3">
           {perf.scannerOpen && (
             <section className="cc-card-phone p-3">
@@ -150,8 +154,8 @@ const ItemSearchScreen = () => {
                 Recent items
               </div>
               {recents.slice(0, RECENTS_INLINE).map((r) => (
-                  <RecentRow key={r.key} row={r} />
-                ))}
+                <RecentRow key={r.key} row={r} />
+              ))}
               {recents.length > RECENTS_INLINE && (
                 <button
                   type="button"
@@ -177,10 +181,10 @@ const ItemSearchScreen = () => {
             </section>
           ) : (
             <section className="cc-card-phone">
-                <MarginRowList
-                  onRow={(r) => dispatch(selectPerfItem(r.key))}
-                  emptyText={`Nothing matches "${query}".`}
-                />
+              <MarginRowList
+                onRow={(r) => dispatch(selectPerfItem(r.key))}
+                emptyText={`Nothing matches "${query}".`}
+              />
             </section>
           )}
         </div>
@@ -192,8 +196,8 @@ const ItemSearchScreen = () => {
             Recent items
           </div>
           {recents.map((r) => (
-              <RecentRow key={r.key} row={r} />
-            ))}
+            <RecentRow key={r.key} row={r} />
+          ))}
         </BottomSheet>
       )}
       <ItemPerfInfoSheet />
