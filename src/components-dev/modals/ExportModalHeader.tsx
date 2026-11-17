@@ -10,8 +10,9 @@ interface ExportModalHeaderProps {
   mode: ExportMode;
   onMode: (mode: ExportMode) => void;
   onClose: () => void;
-  /** A 12px subtitle instead of 10px, as Item Actions draws it. */
-  largeSubtitle?: boolean;
+  /** The subtitle's size: 10px by default, 11px as Cashiers draws it, 12px
+   *  as Item Actions does. */
+  subtitleSize?: "sm" | "md" | "lg";
 }
 
 /** An export pop-up's navy title bar: what is being exported, the Presets /
@@ -21,16 +22,18 @@ const ExportModalHeader = ({
   mode,
   onMode,
   onClose,
-  largeSubtitle = false,
+  subtitleSize = "sm",
 }: ExportModalHeaderProps) => (
   <div className="cc-phone-header">
     <div className="min-w-0">
       <p className="cc-navy-title text-[13px]">Export CSV</p>
       <p
         className={
-          largeSubtitle
+          subtitleSize === "lg"
             ? "text-custom-white text-[12px] truncate"
-            : "text-custom-white text-[10px] mt-0.5 truncate"
+            : subtitleSize === "md"
+              ? "text-custom-white text-[11px] mt-0.5 truncate"
+              : "text-custom-white text-[10px] mt-0.5 truncate"
         }
       >
         {subtitle}

@@ -125,6 +125,7 @@ const CashiersExportModal = ({
         mode={mode}
         onMode={setMode}
         onClose={onClose}
+        subtitleSize="md"
       />
 
       {mode === "presets" && (

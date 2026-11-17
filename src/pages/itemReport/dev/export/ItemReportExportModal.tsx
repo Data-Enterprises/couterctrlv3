@@ -72,7 +72,7 @@ const ItemReportExportModal = ({
         mode={ex.mode}
         onMode={ex.setMode}
         onClose={onClose}
-        largeSubtitle
+        subtitleSize="lg"
       />
 
       {!receivingComplete && (
