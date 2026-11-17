@@ -4,16 +4,17 @@ import { useItemsGrid, useRowSelection } from "../../hooks";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
+import { COLUMNS } from "../../utils/columns";
 
 // Interfaces
 import type { Cause, CauseTotal, ItemVerdict, Stage } from "../../interfaces";
 
 // Components
-import GridBody from "./components/GridBody";
 import GridContextMenu from "./components/GridContextMenu";
 import GridFoot from "./components/GridFoot";
-import GridHead from "./components/GridHead";
+import GridHeadCell from "./components/GridHeadCell";
 import GridPager from "./components/GridPager";
+import GridRow from "./components/GridRow";
 
 interface ItemsGridProps {
   items: ItemVerdict[];
@@ -53,19 +54,38 @@ const ItemsGrid = ({
       >
         <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
           <table className="border-collapse font-mono text-[11px] w-max">
-            <GridHead
-              target={target}
-              filters={filters}
-              byCause={byCause}
-              sort={grid.sort}
-              onSort={grid.handleSort}
-            />
-            <GridBody
-              rows={capped}
-              selection={selection}
-              allIn={allIn}
-              fmt={fmt}
-            />
+            <thead>
+              <tr>
+                <th className="sticky top-0 left-0 z-30 w-[44px] bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5"></th>
+                {COLUMNS.map((c) => (
+                  <GridHeadCell
+                    key={c.key}
+                    column={c}
+                    target={target}
+                    filters={filters}
+                    byCause={byCause}
+                    sort={grid.sort}
+                    onSort={grid.handleSort}
+                  />
+                ))}
+              </tr>
+            </thead>
+
+            {/* No zebra stripe: every cell is ruled, which is what separates
+                the rows here, and the sticky number column is opaque white —
+                a stripe would stop dead under it. */}
+            <tbody>
+              {capped.map((r, i) => (
+                <GridRow
+                  key={r.productCode}
+                  row={r}
+                  n={i + 1}
+                  selection={selection}
+                  allIn={allIn}
+                  fmt={fmt}
+                />
+              ))}
+            </tbody>
 
             {capped.length > 0 && (
               <GridFoot shown={filters.shown} fmt={fmt} />
