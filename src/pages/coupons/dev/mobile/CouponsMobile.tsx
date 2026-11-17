@@ -17,11 +17,10 @@ import type { Screen } from "./interfaces";
 import type { CouponItem } from "../../../../interfaces";
 
 // Components
-import StorePicker from "../../../../components-dev/storePicker/StorePicker";
-import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
+import CpnEntryCard from "./components/CpnEntryCard";
 
 /** The phone Coupons page. It holds the search card, then moves through the store list (group searches only),
  *  the overview with its Sub dept/Date/Cashier tabs, and a section's product detail. */
@@ -203,36 +202,13 @@ const CouponsMobile = () => {
 
   // Entry screen
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg">
-      <div className="mx-4 pt-4 pb-2">
-        <div className="bg-custom-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
-          <div>
-            <div className="text-[15px] font-bold text-content">Coupons</div>
-            <div className="text-[10px] text-content/95 mt-1">
-              Select a store or group and date range to load coupon activity.
-            </div>
-          </div>
-          {ctx.noCouponsFound && (
-            <div className="cc-notice text-[11.5px] leading-snug">
-              No coupons came back for this search.
-            </div>
-          )}
-          <StorePicker />
-          <DatePickers showBtn={false} handleQuery={getData} />
-          <button
-            onClick={getData}
-            disabled={ctx.isFetching || nothingPicked}
-            className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-60 transition-colors"
-          >
-            {ctx.isFetching
-              ? "Loading…"
-              : nothingPicked
-                ? pickLabel
-                : "Load Coupons"}
-          </button>
-        </div>
-      </div>
-    </div>
+    <CpnEntryCard
+      noCouponsFound={ctx.noCouponsFound}
+      loading={ctx.isFetching}
+      nothingPicked={nothingPicked}
+      pickLabel={pickLabel}
+      onSearch={getData}
+    />
   );
 };
 
