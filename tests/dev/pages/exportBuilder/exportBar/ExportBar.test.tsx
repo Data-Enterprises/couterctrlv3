@@ -7,7 +7,7 @@ import {
   setConfig,
   toggleGroupBy,
 } from "@/features/dev/devExportBuilderSlice";
-import ExportBar from "@/pages/exportBuilder/dev/components/ExportBar";
+import ExportBar from "@/pages/exportBuilder/dev/exportBar/ExportBar";
 
 vi.mock("@/components/toasts/hooks/useToast", () => ({
   useToast: () => ({

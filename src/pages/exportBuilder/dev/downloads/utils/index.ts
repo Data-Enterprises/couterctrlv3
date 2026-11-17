@@ -1,9 +1,6 @@
 // Interfaces
 import type { ExportBuild } from "../../../../../api/exportBuilds";
 
-/** A size in megabytes, to one place. */
-export const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-
 /**
  * When it ran, in the reader's own time. The manifest stamps UTC, so a build
  * run at 9:50am Central carries 14:50 and printed as-is reads as the future.

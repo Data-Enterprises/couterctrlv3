@@ -4,7 +4,7 @@ import SearchPopup from "../../../components-dev/SearchPopup";
 import ConfigPanel from "./config/ConfigPanel";
 import CsvPreview from "./preview/CsvPreview";
 import SummaryPreview from "./preview/SummaryPreview";
-import ExportBar from "./components/ExportBar";
+import ExportBar from "./exportBar/ExportBar";
 import SqlModal from "./components/SqlModal";
 import QueryPanel from "./queryPanel/QueryPanel";
 import DownloadsModal from "./downloads/DownloadsModal";

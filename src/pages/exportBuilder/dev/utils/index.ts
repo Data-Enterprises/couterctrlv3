@@ -74,3 +74,6 @@ export const savedOn = (iso: string) => {
     ? ""
     : at.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 };
+
+/** A size in megabytes, to one place. */
+export const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;

@@ -1,5 +1,6 @@
 // Utils
-import { fileName, mb, ranAt } from "../utils";
+import { mb } from "../../utils";
+import { fileName, ranAt } from "../utils";
 
 // Interfaces
 import type { ExportBuild } from "../../../../../api/exportBuilds";
