@@ -22,7 +22,8 @@ export const seesEverything = (userLevel: number, email: string) =>
  * Sonic (6), Ace (17) and Brooks (21) are family 1; everyone else stands alone.
  * DCR (5) is not in it. A missing `parent_company_id` reads as standing alone.
  */
-export const familyOf = (c: CompanyRef): number => c.parent_company_id ?? c.company;
+export const familyOf = (c: CompanyRef): number =>
+  c.parent_company_id ?? c.company;
 
 /**
  * The families the viewer administers through: holding Food Giant reaches
@@ -89,8 +90,7 @@ export const visibleCompanyList = <T extends { id: number }>(
   companies: T[],
   canSeeAll: boolean,
   withHeld: Set<number>,
-): T[] =>
-  canSeeAll ? companies : companies.filter((c) => withHeld.has(c.id));
+): T[] => (canSeeAll ? companies : companies.filter((c) => withHeld.has(c.id)));
 
 /**
  * The groups the Add/Edit wizard lists for a company, by the Base Groups tab's

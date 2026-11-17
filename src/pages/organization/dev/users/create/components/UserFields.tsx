@@ -15,7 +15,10 @@ import { checkEmail, checkUsername } from "../../../../../../api/team";
 
 // Utils
 import { roles } from "../../utils/roles";
-import { passwordOk, passwordRules } from "../../../../../../utils/passwordRules";
+import {
+  passwordOk,
+  passwordRules,
+} from "../../../../../../utils/passwordRules";
 import { NOT_AVAILABLE } from "../utils/wizardRules";
 import { nextUp } from "../utils";
 
@@ -256,36 +259,36 @@ const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
         </Section>
 
         {!editing && (
-        <Section
-          title="Security"
-          desc="They can change it after first sign-in."
-          last
-        >
-          <PasswordInput
-            label="Password"
-            name="password"
-            autoComplete="new-password"
-            text={ctx.userInfo.password}
-            setText={(v) =>
-              ctx.dispatch(setUserInfo({ key: "password", value: v }))
-            }
-            leftCompare={ctx.userInfo.password}
-            rightCompare={ctx.userInfo.confirm_password}
-            className="py-2"
-          />
-          <PasswordInput
-            label="Confirm password"
-            name="confirm_password"
-            autoComplete="new-password"
-            text={ctx.userInfo.confirm_password}
-            setText={(v) =>
-              ctx.dispatch(setUserInfo({ key: "confirm_password", value: v }))
-            }
-            leftCompare={ctx.userInfo.password}
-            rightCompare={ctx.userInfo.confirm_password}
-            className="py-2"
-          />
-        </Section>
+          <Section
+            title="Security"
+            desc="They can change it after first sign-in."
+            last
+          >
+            <PasswordInput
+              label="Password"
+              name="password"
+              autoComplete="new-password"
+              text={ctx.userInfo.password}
+              setText={(v) =>
+                ctx.dispatch(setUserInfo({ key: "password", value: v }))
+              }
+              leftCompare={ctx.userInfo.password}
+              rightCompare={ctx.userInfo.confirm_password}
+              className="py-2"
+            />
+            <PasswordInput
+              label="Confirm password"
+              name="confirm_password"
+              autoComplete="new-password"
+              text={ctx.userInfo.confirm_password}
+              setText={(v) =>
+                ctx.dispatch(setUserInfo({ key: "confirm_password", value: v }))
+              }
+              leftCompare={ctx.userInfo.password}
+              rightCompare={ctx.userInfo.confirm_password}
+              className="py-2"
+            />
+          </Section>
         )}
       </form>
 

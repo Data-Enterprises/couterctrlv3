@@ -15,8 +15,7 @@ export interface CompanyPlan {
 }
 
 export type UserOutcome =
-  | { userid: number; ok: true }
-  | { userid: number; ok: false; reason: string };
+  { userid: number; ok: true } | { userid: number; ok: false; reason: string };
 
 export interface MembershipSummary {
   tone: "success" | "error";

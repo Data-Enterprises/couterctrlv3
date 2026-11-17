@@ -14,8 +14,8 @@ const EmptyPicksNotice = ({ labels }: EmptyPicksNoticeProps) => {
     <div className="px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
       <span className="text-[11.5px] text-content leading-snug">
         <span className="font-semibold">{labels.join(", ")}</span>{" "}
-        {labels.length === 1 ? "has" : "have"} no stores picked. Pick at
-        least one store, or untick the group.
+        {labels.length === 1 ? "has" : "have"} no stores picked. Pick at least
+        one store, or untick the group.
       </span>
     </div>
   );

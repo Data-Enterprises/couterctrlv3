@@ -37,7 +37,11 @@ interface CompanyUsersPanelProps {
  * replaces; see `companies/utils`). Users above the acting level are kept off
  * both columns: the endpoint checks no levels.
  */
-const CompanyUsersPanel = ({ company, users, onChanged }: CompanyUsersPanelProps) => {
+const CompanyUsersPanel = ({
+  company,
+  users,
+  onChanged,
+}: CompanyUsersPanelProps) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();
@@ -104,7 +108,10 @@ const CompanyUsersPanel = ({ company, users, onChanged }: CompanyUsersPanelProps
     return best && best[1] > 1 ? best[0] : null;
   }, [unassigned]);
 
-  const unassignedIds = useMemo(() => unassigned.map((u) => u.id), [unassigned]);
+  const unassignedIds = useMemo(
+    () => unassigned.map((u) => u.id),
+    [unassigned],
+  );
   const companyOptions = useCompanyFilterOptions(
     reachable,
     unassignedIds,
@@ -246,7 +253,13 @@ const CompanyUsersPanel = ({ company, users, onChanged }: CompanyUsersPanelProps
         // included.
         moving={moving}
         confirmBulk={(direction, ids) =>
-          peopleConfirm({ direction, ids, me: ctx.userid, what: company.name, always: true })
+          peopleConfirm({
+            direction,
+            ids,
+            me: ctx.userid,
+            what: company.name,
+            always: true,
+          })
         }
         leftPredicate={heldPredicate}
         searchHint={

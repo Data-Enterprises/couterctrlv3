@@ -129,7 +129,8 @@ const BaseGroups = () => {
   /** A company whose every group belongs to somebody else is a row that opens
    *  onto nothing, so it is not listed. */
   const visibleCompanies = useMemo(
-    () => visibleCompanyList(allCompanies, ctx.canSeeAllCompanies, heldCompanies),
+    () =>
+      visibleCompanyList(allCompanies, ctx.canSeeAllCompanies, heldCompanies),
     [allCompanies, ctx.canSeeAllCompanies, heldCompanies],
   );
 
@@ -289,7 +290,10 @@ const BaseGroups = () => {
 
   return (
     <div className="flex-1 flex min-h-0 w-full">
-      <div data-help="base-groups" className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col">
+      <div
+        data-help="base-groups"
+        className="w-72 border-r border-line_hair flex-shrink-0 flex flex-col"
+      >
         <div className="p-2.5 border-b border-line_hair flex gap-1.5">
           <TextFilter
             value={search}
@@ -313,8 +317,8 @@ const BaseGroups = () => {
             className="m-2 mb-0 px-2.5 py-2 rounded-lg bg-filter_active border border-filter_active_border text-[11.5px] text-content leading-snug flex-shrink-0"
           >
             <span className="font-semibold">{created.name}</span> was created.
-            You don’t hold it yet, so it isn’t listed for you and you can’t
-            fill it. Hold it to fill it:
+            You don’t hold it yet, so it isn’t listed for you and you can’t fill
+            it. Hold it to fill it:
             <div className="flex items-center gap-2 mt-1.5">
               <button
                 onClick={claimCreated}
@@ -358,7 +362,9 @@ const BaseGroups = () => {
                 >
                   <ChevronRightIcon
                     className="w-3 h-3 text-brand_navy/95 flex-shrink-0 transition-transform"
-                    style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                    style={{
+                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
                   />
                   <span className="text-[12px] font-semibold text-brand_navy flex-1 text-left truncate">
                     {c.name}
@@ -377,7 +383,10 @@ const BaseGroups = () => {
                           onClick={() => selectGroup(g)}
                           style={
                             isSel
-                              ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
+                              ? {
+                                  boxShadow:
+                                    "inset 0 0 8px rgba(37,99,235,0.22)",
+                                }
                               : undefined
                           }
                           className={`w-full flex flex-col items-start pl-6 pr-3 py-2 text-left transition-colors ${

@@ -12,9 +12,7 @@ import {
   setDuplicateSource,
   clearDuplicateSource,
 } from "../../../../../features/dev/devUsersSlice";
-import {
-  setUsersGridFilter,
-} from "../../../../../features/dev/devOrganizationSlice";
+import { setUsersGridFilter } from "../../../../../features/dev/devOrganizationSlice";
 
 // API
 import {
@@ -23,7 +21,12 @@ import {
 } from "../../../../../api/team";
 
 // Utils
-import { accessLabel, filterUsers, NO_COMPANY_VALUE, sortUsers } from "../../utils/userFilters";
+import {
+  accessLabel,
+  filterUsers,
+  NO_COMPANY_VALUE,
+  sortUsers,
+} from "../../utils/userFilters";
 import { accessModeOf, formatDate } from "../utils";
 import { roles } from "../utils/roles";
 
@@ -114,7 +117,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [securityUser, setSecurityUser] = useState<User | null>(null);
   // Draft text for the Username/Email header filters: typing doesn't filter
   // live, only ColFilter's Apply does.
-  const [draftUsernameFilter, setDraftUsernameFilter] = useState(usernameFilter);
+  const [draftUsernameFilter, setDraftUsernameFilter] =
+    useState(usernameFilter);
   const [draftEmailFilter, setDraftEmailFilter] = useState(emailFilter);
   const showInactive = statusFilter === "inactive";
 
@@ -137,7 +141,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [sort, setSort] = useState<UserSort | null>(null);
   const toggleSort = (key: UserSortKey) =>
     setSort((prev) =>
-      prev?.key !== key ? { key, desc: false } : prev.desc ? null : { key, desc: true },
+      prev?.key !== key
+        ? { key, desc: false }
+        : prev.desc
+          ? null
+          : { key, desc: true },
     );
   const SortHead = ({ label, k }: { label: string; k: UserSortKey }) => (
     <button
@@ -147,13 +155,19 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       className="flex items-center gap-1 text-left uppercase tracking-wide font-semibold hover:text-brand_navy"
     >
       {label}
-      {sort?.key === k && <span aria-hidden="true">{sort.desc ? "↓" : "↑"}</span>}
+      {sort?.key === k && (
+        <span aria-hidden="true">{sort.desc ? "↓" : "↑"}</span>
+      )}
     </button>
   );
 
   const filtered = useMemo(
     () =>
-      sortUsers(filterUsers(sourceUsers, ctx.usersGridFilters), sort, renderRoleText),
+      sortUsers(
+        filterUsers(sourceUsers, ctx.usersGridFilters),
+        sort,
+        renderRoleText,
+      ),
     [sourceUsers, ctx.usersGridFilters, sort],
   );
 
@@ -210,7 +224,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       else selectableShown.forEach((u) => next.add(u.id));
       return next;
     });
-
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,
@@ -329,7 +342,10 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
-      <div data-help="filters" className="flex flex-wrap items-center gap-2 mb-3">
+      <div
+        data-help="filters"
+        className="flex flex-wrap items-center gap-2 mb-3"
+      >
         <SelectFilter
           options={companyOptions}
           value={companyFilter}
@@ -339,7 +355,10 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         />
         <SelectFilter
           options={[
-            { value: "inactive", label: `Inactive (${ctx.inactiveUsers.length})` },
+            {
+              value: "inactive",
+              label: `Inactive (${ctx.inactiveUsers.length})`,
+            },
           ]}
           value={statusFilter}
           onChange={setStatusFilter}
@@ -422,7 +441,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       {selecting && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
           <span className="text-[12.5px] font-semibold text-brand_navy">
-            {showInactive ? "Choose who to reactivate" : "Choose who to deactivate"}
+            {showInactive
+              ? "Choose who to reactivate"
+              : "Choose who to deactivate"}
           </span>
           <span className="text-[12px] tabular-nums text-content/95">
             {selectedShown.length} of {selectableShown.length} picked
@@ -522,7 +543,10 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             <SortHead label="Last visited" k="visited" />
             <div></div>
           </div>
-          <div data-help="grid" className="cc-scroll divide-y divide-brand_navy/15">
+          <div
+            data-help="grid"
+            className="cc-scroll divide-y divide-brand_navy/15"
+          >
             {filtered.map((u) => {
               const outranked = isOutranked(u.user_level);
               // While picking, the whole row is the target, not just the box.

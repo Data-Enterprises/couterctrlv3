@@ -19,11 +19,7 @@ import {
 
 // Utils
 import { peopleConfirm } from "../../utils/bulkConfirm";
-import {
-  summarizeAssign,
-  summarizeUnassign,
-  viaLabel,
-} from "../utils";
+import { summarizeAssign, summarizeUnassign, viaLabel } from "../utils";
 import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
@@ -166,7 +162,9 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
     sublabel: r.email ?? undefined,
   }));
 
-  const viaGroup = assigned.filter((r) => r.via !== null && r.via !== "").length;
+  const viaGroup = assigned.filter(
+    (r) => r.via !== null && r.via !== "",
+  ).length;
 
   if (noCompanyLocked) {
     return (
@@ -204,23 +202,21 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       </div>
 
       <p className="text-[11.5px] text-content/95 leading-snug mb-2 max-w-[680px]">
-        Assigning here is <span className="font-semibold text-content">fixed</span>{" "}
-        access: it belongs to the person, not to a group, so no group change
-        can take it away.
+        Assigning here is{" "}
+        <span className="font-semibold text-content">fixed</span> access: it
+        belongs to the person, not to a group, so no group change can take it
+        away.
         {viaGroup > 0 && (
           <>
             {" "}
             {viaGroup === 1 ? "One user holds" : `${viaGroup} users hold`} this
-            store through a base group — those can only be changed on the
-            group.
+            store through a base group — those can only be changed on the group.
           </>
         )}
       </p>
 
       {!levelsKnown && (
-        <div className="text-[11.5px] text-content/95 mb-2">
-          Loading users…
-        </div>
+        <div className="text-[11.5px] text-content/95 mb-2">Loading users…</div>
       )}
 
       <AssignPanel

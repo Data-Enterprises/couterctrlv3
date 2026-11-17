@@ -100,7 +100,10 @@ const StepReview = ({
   // picker's own list.
   const roleName =
     roles.find((r) => r.value === String(info.role))?.label ?? info.role;
-  const roleLevel = [roleName, ctx.userLevels.find((l) => l.id === info.user_level)?.name]
+  const roleLevel = [
+    roleName,
+    ctx.userLevels.find((l) => l.id === info.user_level)?.name,
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -125,7 +128,8 @@ const StepReview = ({
           <InformationCircleIcon className="w-[18px] h-[18px] text-brand_navy flex-shrink-0 mt-px" />
           <span className="text-[12px] text-content leading-snug">
             <span className="font-semibold">
-              Sets access type to {picks.mode === "all" ? "By group" : "By store"}.
+              Sets access type to{" "}
+              {picks.mode === "all" ? "By group" : "By store"}.
             </span>{" "}
             This user had none on file. Saving writes all {held.length} base
             group{held.length === 1 ? "" : "s"} they hold that way.
@@ -215,7 +219,8 @@ const StepReview = ({
             const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
             const mode = picks.mode;
             const total = groupStores[id]?.length;
-            const count = mode === "all" ? total : picksInGroup(picks, id).length;
+            const count =
+              mode === "all" ? total : picksInGroup(picks, id).length;
             return (
               <Row
                 key={id}

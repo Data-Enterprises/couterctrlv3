@@ -21,11 +21,25 @@ import {
 import { getCompaniesAssignedToUser } from "../../../../../../api/company";
 
 // Utils
-import { heldGroupIds, picksForMode, changedSets, accessModeOf } from "../../utils";
+import {
+  heldGroupIds,
+  picksForMode,
+  changedSets,
+  accessModeOf,
+} from "../../utils";
 
 // Interfaces
-import type { AccessPicks, AccessSets, SelectableStore } from "../../interfaces";
-import type { AccessOutcome, AccessStep, ExistingAccess, HeldRead } from "../interfaces";
+import type {
+  AccessPicks,
+  AccessSets,
+  SelectableStore,
+} from "../../interfaces";
+import type {
+  AccessOutcome,
+  AccessStep,
+  ExistingAccess,
+  HeldRead,
+} from "../interfaces";
 import type {
   GrantMode,
   JsonError,
@@ -425,7 +439,9 @@ export const useHeldAccess = (userid: number) => {
         if (j.error !== 0) return settle("companies", false);
         ctx.dispatch(
           setUserCompanyIds(
-            ((j.companies ?? []) as { company: number }[]).map((c) => c.company),
+            ((j.companies ?? []) as { company: number }[]).map(
+              (c) => c.company,
+            ),
           ),
         );
         settle("companies", true);

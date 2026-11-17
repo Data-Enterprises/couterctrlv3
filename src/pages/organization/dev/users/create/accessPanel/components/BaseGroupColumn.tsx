@@ -1,9 +1,6 @@
 // Interfaces
 import type { AccessPicks, SelectableStore } from "../../../interfaces";
-import type {
-  CompanyBaseGroup,
-  Store,
-} from "../../../../../../../interfaces";
+import type { CompanyBaseGroup, Store } from "../../../../../../../interfaces";
 
 // Components
 import TextFilter from "../../../../../../../components-dev/filters/TextFilter";

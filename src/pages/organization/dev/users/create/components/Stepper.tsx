@@ -21,7 +21,12 @@ interface StepperProps {
  * The four steps, across the top. A finished step is clickable, an unreached
  * one is not; `limit` stops skipping past a step emptied since it was reached.
  */
-const Stepper = ({ current, furthest, limit = STEP_ORDER.length - 1, onGoTo }: StepperProps) => {
+const Stepper = ({
+  current,
+  furthest,
+  limit = STEP_ORDER.length - 1,
+  onGoTo,
+}: StepperProps) => {
   const currentAt = STEP_ORDER.indexOf(current);
   const furthestAt = Math.min(STEP_ORDER.indexOf(furthest), limit);
 

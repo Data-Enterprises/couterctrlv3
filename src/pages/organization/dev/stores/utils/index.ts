@@ -100,7 +100,13 @@ export const viaLabel = (via: string | null): string =>
 
 /** The stores export as CSV. */
 export const buildStoresCsv = (stores: Store[], label: string) => {
-  const headers = ["Store ID", "Store #", "Store Name", "Company ID", "Company Name"];
+  const headers = [
+    "Store ID",
+    "Store #",
+    "Store Name",
+    "Company ID",
+    "Company Name",
+  ];
   const rows = stores.map((s) => [
     s.storeid,
     s.store_number,

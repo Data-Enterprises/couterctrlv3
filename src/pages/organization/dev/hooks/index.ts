@@ -44,11 +44,9 @@ export const useOrganizationCtx = () => {
   const { activeBaseGroups, inactiveBaseGroups, userCompany } = useAppSelector(
     (state) => state.dev.baseGroup,
   );
-  const {
-    usersExportOpen,
-    usersGridFilters,
-    unsavedWizard,
-  } = useAppSelector((state) => state.dev.organization);
+  const { usersExportOpen, usersGridFilters, unsavedWizard } = useAppSelector(
+    (state) => state.dev.organization,
+  );
 
   return {
     dispatch,

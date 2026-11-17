@@ -106,7 +106,9 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
    */
   const run = async (
     ids: number[],
-    call: (userid: number) => Promise<{ data: { error: number; msg?: string } }>,
+    call: (
+      userid: number,
+    ) => Promise<{ data: { error: number; msg?: string } }>,
     verb: string,
   ) => {
     setMoving(true);
@@ -156,7 +158,11 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
     let groupStoreIds: number[] = [];
     if (anyByStore) {
       try {
-        const resp = await getAllStoresInBaseGroup(ctx.url, ctx.token, group.id);
+        const resp = await getAllStoresInBaseGroup(
+          ctx.url,
+          ctx.token,
+          group.id,
+        );
         const j = resp.data;
         if (j.error !== 0) {
           toast.error(j.msg || "Could not read this group's stores");
@@ -193,7 +199,8 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const handleUnassign = (ids: number[]) =>
     void run(
       ids,
-      (userid) => deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
+      (userid) =>
+        deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
       "unassigned",
     );
 

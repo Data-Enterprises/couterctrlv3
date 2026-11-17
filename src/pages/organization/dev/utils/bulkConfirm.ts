@@ -26,7 +26,10 @@ export const peopleConfirm = ({
 }): BulkConfirm | null => {
   const who = `${people(ids.length)}${ids.includes(me) ? ", including you" : ""}`;
   if (direction === "out") {
-    return { message: `Take ${what} off ${who}?`, confirmLabel: "Yes, take it off" };
+    return {
+      message: `Take ${what} off ${who}?`,
+      confirmLabel: "Yes, take it off",
+    };
   }
   return always || ids.length > HANDFUL
     ? { message: `Give ${what} to ${who}?`, confirmLabel: "Yes, give it" }

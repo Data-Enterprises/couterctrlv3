@@ -56,7 +56,9 @@ import StoresTab from "./stores/StoresTab";
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
+  const tabs = TABS.filter(
+    (t) => t.minLevel === null || ctx.userLevel >= t.minLevel,
+  );
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "users");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
   /** A tab asked for while Add or Edit has unsaved changes. */
@@ -122,7 +124,9 @@ const Organization = () => {
         );
       })
       .catch((err: JsonError) => {
-        ctx.dispatch(setUsersLoad("The users could not be read: " + err.message));
+        ctx.dispatch(
+          setUsersLoad("The users could not be read: " + err.message),
+        );
         toast.error("Error fetching users " + err.message);
       });
     getUserLevels(ctx.url, ctx.token)
@@ -204,7 +208,10 @@ const Organization = () => {
           <PageInfoButton page="user-management" title="About this page" />
         </div>
 
-        <div data-help="tabs" className="flex border-b border-line_hair flex-shrink-0">
+        <div
+          data-help="tabs"
+          className="flex border-b border-line_hair flex-shrink-0"
+        >
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -236,28 +243,31 @@ const Organization = () => {
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <PanelFitContext.Provider value={setFit}>
-          {tab === "users" && canSeeUsers && <Users />}
-          {tab === "users" && canSeeUsers && ctx.usersExportOpen && (
-            <UsersExportModal
-              onClose={() => ctx.dispatch(setUsersExportOpen(false))}
-              allUsers={exportSource}
-              filteredUsers={filterUsers(exportSource, ctx.usersGridFilters)}
-              userLevels={ctx.userLevels}
-              scopeLabel={exportInactive ? "Inactive users" : "Active users"}
-              filtersActive={filtersApplied(ctx.usersGridFilters)}
-            />
-          )}
-          {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}
-          {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && <BaseGroups />}
-          {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (
-            <StoresTab
-              exportOpen={storesExportOpen}
-              onCloseExport={() => setStoresExportOpen(false)}
-            />
-          )}
+            {tab === "users" && canSeeUsers && <Users />}
+            {tab === "users" && canSeeUsers && ctx.usersExportOpen && (
+              <UsersExportModal
+                onClose={() => ctx.dispatch(setUsersExportOpen(false))}
+                allUsers={exportSource}
+                filteredUsers={filterUsers(exportSource, ctx.usersGridFilters)}
+                userLevels={ctx.userLevels}
+                scopeLabel={exportInactive ? "Inactive users" : "Active users"}
+                filtersActive={filtersApplied(ctx.usersGridFilters)}
+              />
+            )}
+            {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && (
+              <Companies />
+            )}
+            {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && (
+              <BaseGroups />
+            )}
+            {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (
+              <StoresTab
+                exportOpen={storesExportOpen}
+                onCloseExport={() => setStoresExportOpen(false)}
+              />
+            )}
           </PanelFitContext.Provider>
         </div>
-
       </div>
     </div>
   );

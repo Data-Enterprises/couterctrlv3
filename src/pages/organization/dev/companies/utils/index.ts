@@ -1,5 +1,10 @@
 // Interfaces
-import type { CompanyPlan, MemberUser, MembershipSummary, UserOutcome } from "../interfaces";
+import type {
+  CompanyPlan,
+  MemberUser,
+  MembershipSummary,
+  UserOutcome,
+} from "../interfaces";
 
 /**
  * Moving users in and out of a company.

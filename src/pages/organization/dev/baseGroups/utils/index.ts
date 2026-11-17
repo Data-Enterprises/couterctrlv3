@@ -57,9 +57,7 @@ export const summarizeAssign = (
       : " Nobody holds this group automatically, so no access changed.";
 
   const skippedNote =
-    skipped > 0
-      ? ` ${plural(skipped, "single-store user")} skipped.`
-      : "";
+    skipped > 0 ? ` ${plural(skipped, "single-store user")} skipped.` : "";
 
   const failedNote =
     failed.length > 0 ? ` ${failed.length} could not be added.` : "";
@@ -127,7 +125,12 @@ export const buildUsersCsv = (
   const headers = ["Username", "First Name", "Last Name", "Email"];
   const body = rows.map((r) => {
     const u = byId.get(r.userid);
-    return [r.username, u?.first_name ?? "", u?.last_name ?? "", r.email ?? u?.email ?? ""];
+    return [
+      r.username,
+      u?.first_name ?? "",
+      u?.last_name ?? "",
+      r.email ?? u?.email ?? "",
+    ];
   });
   return `${label}\n${rowsToCsv(headers, body)}`;
 };

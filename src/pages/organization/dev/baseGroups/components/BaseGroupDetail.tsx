@@ -19,7 +19,11 @@ import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { StoreSplit, StoreOutcome } from "../interfaces";
-import type { CompanyBaseGroup, JsonError, User } from "../../../../../interfaces";
+import type {
+  CompanyBaseGroup,
+  JsonError,
+  User,
+} from "../../../../../interfaces";
 
 // Components
 import {
@@ -167,7 +171,11 @@ const BaseGroupDetail = ({
       }
       const j = res.value.data;
       if (j.error !== 0) {
-        return { storeid, ok: false, reason: j.msg ?? "The server refused it." };
+        return {
+          storeid,
+          ok: false,
+          reason: j.msg ?? "The server refused it.",
+        };
       }
       return {
         storeid,
@@ -241,7 +249,10 @@ const BaseGroupDetail = ({
       </div>
       <div className="text-[11.5px] text-content/95 mb-2">{companyName}</div>
 
-      <div data-help="group-tabs" className="flex border-b border-line_hair mb-4">
+      <div
+        data-help="group-tabs"
+        className="flex border-b border-line_hair mb-4"
+      >
         {(["stores", "users"] as const).map((t) => (
           <button
             key={t}
@@ -286,7 +297,11 @@ const BaseGroupDetail = ({
               onUnassign={handleUnassign}
               moving={moving}
               confirmBulk={(direction, ids) =>
-                groupStoresConfirm({ direction, count: ids.length, group: group.name })
+                groupStoresConfirm({
+                  direction,
+                  count: ids.length,
+                  group: group.name,
+                })
               }
             />
           </div>

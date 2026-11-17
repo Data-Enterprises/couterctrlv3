@@ -51,7 +51,9 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
         setStores([
           ...validOnly(j.assigned_stores ?? []),
           // The unassigned half is other operators' stores for anyone else.
-          ...(ctx.canSeeAllCompanies ? validOnly(j.unassigned_stores ?? []) : []),
+          ...(ctx.canSeeAllCompanies
+            ? validOnly(j.unassigned_stores ?? [])
+            : []),
         ]);
       })
       .catch((err: JsonError) => toast.error(err.message));

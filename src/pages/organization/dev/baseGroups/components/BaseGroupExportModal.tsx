@@ -109,9 +109,13 @@ const BaseGroupExportModal = ({
     if (selected.has("assigned"))
       sections.push(buildStoresCsv(assigned, `Assigned Stores — ${groupName}`));
     if (selected.has("unassigned"))
-      sections.push(buildStoresCsv(unassigned, `Unassigned Stores — ${groupName}`));
+      sections.push(
+        buildStoresCsv(unassigned, `Unassigned Stores — ${groupName}`),
+      );
     if (selected.has("assignedUsers"))
-      sections.push(buildUsersCsv(assignedUsers, byId, `Assigned Users — ${groupName}`));
+      sections.push(
+        buildUsersCsv(assignedUsers, byId, `Assigned Users — ${groupName}`),
+      );
     if (selected.has("unassignedUsers"))
       sections.push(
         buildUsersCsv(unassignedUsers, byId, `Unassigned Users — ${groupName}`),
@@ -119,9 +123,14 @@ const BaseGroupExportModal = ({
     if (!sections.length) return;
 
     const hasStores = selected.has("assigned") || selected.has("unassigned");
-    const hasUsers = selected.has("assignedUsers") || selected.has("unassignedUsers");
+    const hasUsers =
+      selected.has("assignedUsers") || selected.has("unassignedUsers");
     const what =
-      hasStores && hasUsers ? "stores_and_users" : hasUsers ? "users" : "stores";
+      hasStores && hasUsers
+        ? "stores_and_users"
+        : hasUsers
+          ? "users"
+          : "stores";
     const safeName = `${companyName}_${groupName}`.replace(/[^a-z0-9]/gi, "_");
     downloadCsv(sections.join("\n\n"), `${safeName}_${what}.csv`);
     onClose();
@@ -134,89 +143,89 @@ const BaseGroupExportModal = ({
       defaultWidth={560}
       defaultHeight={560}
     >
-        <div className="cc-phone-header">
-          <div>
-            <p className="cc-navy-title text-[13px]">Export CSV</p>
-            <p className="text-custom-white text-[10px] mt-0.5">
-              {companyName} — {groupName}
-            </p>
-          </div>
-          <div />
-          <button
-            onClick={onClose}
-            className="cc-navy-link justify-self-end"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="px-4 pt-4 pb-2 space-y-3">
-          <p className="text-[11px] text-content uppercase tracking-wide font-medium">
-            Stores
+      <div className="cc-phone-header">
+        <div>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
+          <p className="text-custom-white text-[10px] mt-0.5">
+            {companyName} — {groupName}
           </p>
-          <Option
-            checked={selected.has("assigned")}
-            disabled={!assigned.length}
-            onToggle={() => toggle("assigned")}
-            title="Assigned stores"
-            detail={
-              assigned.length
-                ? `${assigned.length} stores in ${groupName}`
-                : "No stores assigned yet"
-            }
-          />
-          <Option
-            checked={selected.has("unassigned")}
-            disabled={!unassigned.length}
-            onToggle={() => toggle("unassigned")}
-            title="Unassigned stores"
-            detail={
-              unassigned.length
-                ? `${unassigned.length} stores not in ${groupName}`
-                : "None remaining"
-            }
-          />
-
-          <p className="text-[11px] text-content uppercase tracking-wide font-medium pt-2">
-            Users
-          </p>
-          <Option
-            checked={selected.has("assignedUsers")}
-            disabled={!peopleReady || !assignedUsers.length}
-            onToggle={() => toggle("assignedUsers")}
-            title="Assigned users"
-            detail={userDetail(
-              assignedUsers.length,
-              `${assignedUsers.length} users holding ${groupName}`,
-              "Nobody holds this group yet",
-            )}
-          />
-          <Option
-            checked={selected.has("unassignedUsers")}
-            disabled={!peopleReady || !unassignedUsers.length}
-            onToggle={() => toggle("unassignedUsers")}
-            title="Unassigned users"
-            detail={userDetail(
-              unassignedUsers.length,
-              `${unassignedUsers.length} users who don't hold it`,
-              "Everyone holds it",
-            )}
-          />
         </div>
+        <div />
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        <div className="cc-bar-footer mt-2">
-          <button onClick={onClose} className="text-[12px] text-content transition-colors">
-            Cancel
-          </button>
-          <button
-            onClick={handleDownload}
-            disabled={selected.size === 0}
-            className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
-          >
-            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-            Download CSV
-          </button>
-        </div>
+      <div className="px-4 pt-4 pb-2 space-y-3">
+        <p className="text-[11px] text-content uppercase tracking-wide font-medium">
+          Stores
+        </p>
+        <Option
+          checked={selected.has("assigned")}
+          disabled={!assigned.length}
+          onToggle={() => toggle("assigned")}
+          title="Assigned stores"
+          detail={
+            assigned.length
+              ? `${assigned.length} stores in ${groupName}`
+              : "No stores assigned yet"
+          }
+        />
+        <Option
+          checked={selected.has("unassigned")}
+          disabled={!unassigned.length}
+          onToggle={() => toggle("unassigned")}
+          title="Unassigned stores"
+          detail={
+            unassigned.length
+              ? `${unassigned.length} stores not in ${groupName}`
+              : "None remaining"
+          }
+        />
+
+        <p className="text-[11px] text-content uppercase tracking-wide font-medium pt-2">
+          Users
+        </p>
+        <Option
+          checked={selected.has("assignedUsers")}
+          disabled={!peopleReady || !assignedUsers.length}
+          onToggle={() => toggle("assignedUsers")}
+          title="Assigned users"
+          detail={userDetail(
+            assignedUsers.length,
+            `${assignedUsers.length} users holding ${groupName}`,
+            "Nobody holds this group yet",
+          )}
+        />
+        <Option
+          checked={selected.has("unassignedUsers")}
+          disabled={!peopleReady || !unassignedUsers.length}
+          onToggle={() => toggle("unassignedUsers")}
+          title="Unassigned users"
+          detail={userDetail(
+            unassignedUsers.length,
+            `${unassignedUsers.length} users who don't hold it`,
+            "Everyone holds it",
+          )}
+        />
+      </div>
+
+      <div className="cc-bar-footer mt-2">
+        <button
+          onClick={onClose}
+          className="text-[12px] text-content transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDownload}
+          disabled={selected.size === 0}
+          className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+        >
+          <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+          Download CSV
+        </button>
+      </div>
     </ResizableModalShell>
   );
 };

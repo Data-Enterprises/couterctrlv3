@@ -52,7 +52,10 @@ export const useCompanyFilterOptions = (
     });
 
     const options = [...counts.entries()]
-      .map(([id, { name, n }]) => ({ value: String(id), label: `${name} (${n})` }))
+      .map(([id, { name, n }]) => ({
+        value: String(id),
+        label: `${name} (${n})`,
+      }))
       .sort((a, b) => a.label.localeCompare(b.label));
 
     // Its own option: someone holding nothing is who onboarding looks for, and
@@ -77,4 +80,3 @@ export const useCompanyFilterPredicate = (users: User[], value: string) =>
         : held.some((c) => c.company === Number(value));
     };
   }, [users, value]);
-
