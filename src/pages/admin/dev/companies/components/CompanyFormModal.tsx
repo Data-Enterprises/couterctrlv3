@@ -37,7 +37,6 @@ const CompanyFormModal = ({
     initial?.parent_company_id ?? null,
   );
 
-  // Families are one level deep; see companyFamily for both rules.
   const parentOptions = parentChoices(companies, initial?.id);
   const members = membersOf(companies, initial?.id);
   const isParent = members.length > 0;
