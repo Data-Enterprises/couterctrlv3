@@ -77,10 +77,7 @@ const GroupsList = ({
 
       <GroupTypeTabs show={show} setShow={setShow} count={count} />
 
-      <div
-        data-help="group-list"
-        className="cc-scroll"
-      >
+      <div data-help="group-list" className="cc-scroll">
         {visible.length === 0 && (
           <div className="p-4 text-[11px] text-content text-center">
             {empty}

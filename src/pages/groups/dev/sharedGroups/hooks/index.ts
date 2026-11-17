@@ -8,7 +8,6 @@ import { setGroups, type Group } from "../../../../../features/groupSlice";
 // API
 import { getGroups } from "../../../../../api/groups";
 
-
 export const useSharedGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);
   const { userid, userLevel } = useAppSelector((s) => s.user);
