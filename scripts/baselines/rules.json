@@ -644,12 +644,7 @@
     "labels": 1
   },
   "src/pages/exportBuilder/dev/config/ConfigPanel.tsx": {
-    "doc-comment": 1,
-    "file-length": 1,
-    "labels": 1,
-    "shape-extra-code": 8,
-    "shape-extra-component": 3,
-    "shape-extra-type": 1
+    "file-length": 1
   },
   "src/pages/exportBuilder/dev/downloads/DownloadsModal.tsx": {
     "labels": 1,

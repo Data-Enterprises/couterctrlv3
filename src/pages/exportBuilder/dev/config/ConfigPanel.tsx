@@ -1,22 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  ArrowPathIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
-import InfoButton from "../../../../components-dev/InfoButton";
-import HelpPanel from "../../../../components-dev/help/HelpPanel";
-import { HELP_CONTENT } from "../../../../components-dev/help/content";
-import Checkbox from "../../../../components-dev/Checkbox";
-import TextField from "../../../../components-dev/inputs/TextField";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
+// Hooks
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useExportBuilderCtx } from "../hooks/index";
-import { isPii } from "../utils/piiColumns";
-import { aliasFor, fnsFor, FN_LABELS } from "../utils/aggregates";
-import { sketchExpr } from "../utils/query/sketchExpr";
 
-import { parseProductCodes, parseDescriptionTerms } from "../utils/productCodes";
-import type { FlagFilter, ListFilter } from "../utils/sources";
+// Redux
 import {
   setFlag,
   clearSelections,
@@ -44,67 +30,42 @@ import {
   type ExportListItem,
 } from "../../../../features/dev/devExportBuilderSlice";
 
-/** Which row is open: one of the fixed rows, or a list by its filter name. */
-type Section = string;
+// Utils
+import { HELP_CONTENT } from "../../../../components-dev/help/content";
+import { isPii } from "../utils/piiColumns";
+import { aliasFor, fnsFor, FN_LABELS } from "../utils/aggregates";
+import { sketchExpr } from "../utils/query/sketchExpr";
+import { parseProductCodes, parseDescriptionTerms } from "../utils/productCodes";
+import {
+  choiceToFlag,
+  dayLabel,
+  FILE_FORMATS,
+  flagChoices,
+  flagToChoice,
+  PREFIX_OK,
+  storeLabel,
+} from "./utils";
 
-/**
- * One collapsible row.
- *
- * Declared here rather than inside ConfigPanel on purpose: a component
- * defined in a render body is a NEW component type on every render, so React
- * unmounts the old tree and mounts a fresh one — which took the focus out of
- * the column search box after a single keystroke.
- */
-const Row = ({
-  label,
-  summary,
-  isOpen,
-  onToggle,
-  children,
-  warn = false,
-}: {
-  label: string;
-  summary: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-  /** This section is the one standing between here and a file. */
-  warn?: boolean;
-}) => (
-  <div
-    className={`rounded-lg overflow-hidden flex flex-col flex-shrink-0 border ${
-      warn ? "bg-severity_watch_bg border-severity_watch_text/20" : "bg-card_bg border-brand_line"
-    }`}
-  >
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-expanded={isOpen}
-      className="w-full flex items-center gap-2 px-3 py-2.5 text-left flex-shrink-0"
-    >
-      <ChevronRightIcon
-        className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${
-          warn ? "text-severity_watch_text" : "text-content/95"
-        } ${isOpen ? "rotate-90" : ""}`}
-      />
-      <span
-        className={`text-[13px] font-semibold flex-1 ${
-          warn ? "text-severity_watch_text" : ""
-        }`}
-      >
-        {label}
-      </span>
-      <span
-        className={`text-[12px] ${
-          warn ? "text-severity_watch_text font-semibold" : "text-content/95"
-        }`}
-      >
-        {summary}
-      </span>
-    </button>
-    {isOpen && children}
-  </div>
-);
+// Interfaces
+import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
+import type { Section } from "./interfaces";
+
+// Components
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
+import InfoButton from "../../../../components-dev/InfoButton";
+import HelpPanel from "../../../../components-dev/help/HelpPanel";
+import Checkbox from "../../../../components-dev/Checkbox";
+import TextField from "../../../../components-dev/inputs/TextField";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import AllNone from "./components/AllNone";
+import ChoiceLabel from "./components/ChoiceLabel";
+import ConfigRow from "./components/ConfigRow";
+import ListSearch from "./components/ListSearch";
+
+interface ConfigPanelProps {
+  /** Change on the Data line: the search card, over the page. */
+  onChangeSearch: () => void;
+}
 
 /**
  * The left panel: four rows that each open to show their own question.
@@ -118,189 +79,6 @@ const Row = ({
  * Everything starts shut. The summary on each row is the answer, so the panel
  * reads as a list of decisions already made; opening one is for changing it.
  */
-/**
- * What to call a store in the list.
- *
- * `store_name` usually arrives with the number already in it ("001 - IGA
- * GLASGOW KY"), so printing `store_number` beside it reads as two stores. The
- * number is only prefixed when the name does not already carry it.
- */
-const storeLabel = ({
-  store_number,
-  store_name,
-}: {
-  store_number: string;
-  store_name: string;
-}) =>
-  (() => {
-    const name = String(store_name ?? "");
-    const id = String(store_number ?? "");
-    // Compare the numbers, not the text: "1" is in "IGA 100" by accident.
-    const leading = name.match(/^\s*0*(\d+)/)?.[1];
-    const number = id.replace(/^0+/, "") || id;
-    return leading === number ? name : `${id} - ${name}`;
-  })();
-
-/**
- * The three states of a flag filter.
- *
- * "Only" is not a rarity here: the line someone is hunting for is usually the
- * voided or refunded one, and a file of nothing else is the fastest way to
- * find it. The endpoint reads null, 0 and 1 — and tests COALESCE(flag, 0)
- * rather than equality, so "only refunds" catches every marker that column
- * uses rather than the literal 1.
- */
-const flagChoices = (flag: FlagFilter): SelectFilterOption[] => [
-  { value: "all", label: "All lines" },
-  { value: "exclude", label: `Exclude ${flag.plural}` },
-  { value: "only", label: `Only ${flag.plural}` },
-];
-
-/**
- * How one choice in a list reads, by the list's look.
- *
- * At module scope for the same reason as Row: it builds JSX for a list that
- * re-renders on every tick.
- */
-const choiceLabel = (list: ListFilter, item: ExportListItem): ReactNode => {
-  switch (list.look) {
-    case "idName":
-      return (
-        <span className="flex items-center gap-2 min-w-0">
-          <span className="font-medium">{item.value}</span>
-          <span className="truncate text-content/95">{item.label}</span>
-        </span>
-      );
-    case "name":
-      return <span className="truncate">{item.label || item.value}</span>;
-    case "codeName":
-      return (
-        <span className="flex items-center gap-2 min-w-0">
-          <span className="font-mono text-[11.5px] text-content/95">{item.value}</span>
-          <span className="truncate">{item.label || "—"}</span>
-        </span>
-      );
-    default:
-      return list.blankHint && item.value === "" ? (
-        <span className="flex items-center gap-1.5">
-          {item.label}
-          <span className="text-[11px] text-content/95">{list.blankHint}</span>
-        </span>
-      ) : (
-        item.label
-      );
-  }
-};
-
-/**
- * What the endpoint will take as a file name.
- *
- * It names the build's folder in S3, one segment along from the one that
- * makes a listing yours, so dots are refused outright rather than
- * special-cased — `sales.csv` is a 400 there and is caught here first.
- */
-const PREFIX_OK = /^[A-Za-z0-9_-]{1,60}$/;
-
-const flagToChoice = (flag: number | null) =>
-  flag === null ? "all" : flag ? "only" : "exclude";
-
-const choiceToFlag = (choice: string) =>
-  choice === "all" ? null : choice === "only" ? 1 : 0;
-
-/**
- * A day, with its weekday.
- *
- * The weekday is the point of this list — "every Saturday in the month" is
- * the question it exists to answer, and picking those out of bare dates means
- * counting on your fingers. Read in UTC, because the strings are plain days
- * and a local reading turns one of them into the evening before.
- */
-const dayLabel = (day: string) => {
-  const at = new Date(day + "T00:00:00Z");
-  if (Number.isNaN(at.getTime())) return day;
-  const weekday = at.toLocaleDateString(undefined, {
-    weekday: "short",
-    timeZone: "UTC",
-  });
-  return `${weekday} · ${day}`;
-};
-
-/** What the export endpoint accepts for `fileFormat`. */
-const FILE_FORMATS: SelectFilterOption[] = [
-  { value: "csv", label: "CSV" },
-  { value: "text", label: "Text" },
-  { value: "binary", label: "Binary" },
-];
-
-/** all / none, for the lists that have too many rows to tick by hand. */
-const AllNone = ({
-  onAll,
-  onNone,
-}: {
-  onAll: () => void;
-  onNone: () => void;
-}) => (
-  <div className="flex gap-3">
-    <button
-      type="button"
-      onClick={onAll}
-      className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-    >
-      all
-    </button>
-    <button
-      type="button"
-      onClick={onNone}
-      className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-    >
-      none
-    </button>
-  </div>
-);
-
-/**
- * The narrowing box that sits above a long list.
- *
- * At module scope, like Row: a component declared inside a render body is a
- * new component type every render, React unmounts the old tree, and the input
- * being typed into loses the focus after a single character. That is exactly
- * what happened to the column search.
- */
-const ListSearch = ({
-  value,
-  onChange,
-  label,
-  shown,
-  total,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-  shown: number;
-  total: number;
-}) => (
-  <div className="flex flex-col gap-1">
-    <input
-      type="search"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={label}
-      aria-label={label}
-      className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
-    />
-    {value.trim().length > 0 && (
-      <span className="text-[11px] text-content/95">
-        {shown} of {total} shown · ticking is unaffected by the search
-      </span>
-    )}
-  </div>
-);
-
-interface ConfigPanelProps {
-  /** Change on the Data line: the search card, over the page. */
-  onChangeSearch: () => void;
-}
-
 const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -566,7 +344,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
 
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 min-h-0 overflow-y-auto thin-scrollbar">
 
-      <Row
+      <ConfigRow
         label="Stores"
         isOpen={open === "stores"}
         onToggle={() => setOpen(open === "stores" ? null : "stores")}
@@ -595,10 +373,10 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             ))}
           </div>
         </div>
-      </Row>
+      </ConfigRow>
 
       {ctx.days.length > 1 && (
-        <Row
+        <ConfigRow
           label="Days"
           isOpen={open === "days"}
           onToggle={() => setOpen(open === "days" ? null : "days")}
@@ -632,7 +410,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
               ))}
             </div>
           </div>
-        </Row>
+        </ConfigRow>
       )}
 
       {/*
@@ -665,11 +443,11 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 ? "py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
                 : "text-[12.5px]"
             }
-            label={choiceLabel(list, item)}
+            label={<ChoiceLabel list={list} item={item} />}
           />
         );
         return (
-          <Row
+          <ConfigRow
             key={list.filter}
             label={list.label}
             isOpen={open === list.filter}
@@ -714,11 +492,11 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
                 <span className="text-[12px] text-content/95">{list.empty}</span>
               )}
             </div>
-          </Row>
+          </ConfigRow>
         );
       })}
 
-      <Row
+      <ConfigRow
         label="Products"
         isOpen={open === "productCodes"}
         onToggle={() =>
@@ -818,9 +596,9 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             </span>
           )}
         </div>
-      </Row>
+      </ConfigRow>
 
-      <Row
+      <ConfigRow
         label="Columns"
         isOpen={open === "columns"}
         onToggle={() => setOpen(open === "columns" ? null : "columns")}
@@ -916,9 +694,9 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             )}
           </div>
         </div>
-      </Row>
+      </ConfigRow>
 
-      <Row
+      <ConfigRow
         label="Group By"
         warn={needsKey}
         isOpen={open === "groupBy"}
@@ -995,9 +773,9 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             ))}
           </div>
         </div>
-      </Row>
+      </ConfigRow>
 
-      <Row
+      <ConfigRow
         label="Aggregates"
         isOpen={open === "aggregates"}
         onToggle={() => setOpen(open === "aggregates" ? null : "aggregates")}
@@ -1127,10 +905,10 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             </span>
           )}
         </div>
-      </Row>
+      </ConfigRow>
 
       {/* The export endpoint's switches, not the preview's data */}
-      <Row
+      <ConfigRow
         label="Output"
         isOpen={open === "output"}
         onToggle={() => setOpen(open === "output" ? null : "output")}
@@ -1280,7 +1058,7 @@ const ConfigPanel = ({ onChangeSearch }: ConfigPanelProps) => {
             }
           />
         </div>
-      </Row>
+      </ConfigRow>
       </div>
 
       {help && (
