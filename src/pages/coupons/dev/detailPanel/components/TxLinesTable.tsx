@@ -33,7 +33,7 @@ const TxLinesTable = ({ txLines }: TxLinesTableProps) => (
           return (
             <tr
               key={i}
-              style={isCpn ? { background: "rgba(234,179,8,0.07)" } : undefined}
+              className={isCpn ? "bg-severity_watch_bg/40" : undefined}
             >
               <td className="px-2 py-2 text-right tabular-nums text-content/95">
                 {item.line_number}

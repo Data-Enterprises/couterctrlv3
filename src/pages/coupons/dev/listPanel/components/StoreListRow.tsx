@@ -23,12 +23,9 @@ const StoreListRow = ({
 }: StoreListRowProps) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-      selected ? "bg-custom-white" : "hover:bg-fill_soft"
+    className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors border-l-2 ${
+      selected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
     }`}
-    style={
-      selected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.18)" } : undefined
-    }
   >
     <span
       className={

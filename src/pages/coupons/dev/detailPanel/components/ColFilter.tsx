@@ -96,15 +96,14 @@ const ColFilter = ({
       {open && (
         <div
           onKeyDown={handleKeyDown}
+          className="bg-custom-white shadow-lg"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            background: "white",
             border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
             minWidth: 176,
           }}
@@ -112,11 +111,7 @@ const ColFilter = ({
           {children}
           <button
             onClick={handleApply}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{
-              background: "rgb(var(--color-brand-navy))",
-              color: "white",
-            }}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium bg-brand_navy text-custom-white"
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply

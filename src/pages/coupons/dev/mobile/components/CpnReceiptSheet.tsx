@@ -90,11 +90,10 @@ const CpnReceiptSheet = ({
               return (
                 <div
                   key={i}
-                  className="grid px-4 py-1.5 border-b border-line_faint items-center"
-                  style={{
-                    gridTemplateColumns: "18px 1fr 20px 56px 40px",
-                    background: isCpn ? "rgba(234,179,8,0.06)" : undefined,
-                  }}
+                  className={`grid px-4 py-1.5 border-b border-line_faint items-center ${
+                    isCpn ? "bg-severity_watch_bg/40" : ""
+                  }`}
+                  style={{ gridTemplateColumns: "18px 1fr 20px 56px 40px" }}
                 >
                   <span className="text-[10px] text-content/95 tabular-nums">
                     {item.line_number}
