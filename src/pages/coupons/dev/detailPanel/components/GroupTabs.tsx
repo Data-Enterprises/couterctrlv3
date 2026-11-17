@@ -1,8 +1,8 @@
 // Utils
-import { GROUP_TABS } from "../../../utils";
+import { GROUP_TABS } from "../../utils";
 
 // Interfaces
-import type { GroupTab } from "../../../interfaces";
+import type { GroupTab } from "../../interfaces";
 
 interface GroupTabsProps {
   groupTab: GroupTab;

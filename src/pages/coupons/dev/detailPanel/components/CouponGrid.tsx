@@ -1,5 +1,5 @@
 // Interfaces
-import type { CouponItem } from "../../../../../../interfaces";
+import type { CouponItem } from "../../../../../interfaces";
 import type { AggRow, GridFilters } from "../interfaces";
 
 // Components

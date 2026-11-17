@@ -1,40 +1,40 @@
 // Hooks
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useStoreName } from "../../../../../hooks";
-import { useCouponContext } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useStoreName } from "../../../../hooks";
+import { useCouponContext } from "../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
   setCouponGridFilter,
   setCouponReceiptLines,
-} from "../../../../../features/dev/devCouponSlice";
-import { isGroupSearch } from "../../../../../features/searchSlice";
+} from "../../../../features/dev/devCouponSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 // API
-import { getCashierTransaction } from "../../../../../api/lossPrevention";
+import { getCashierTransaction } from "../../../../api/lossPrevention";
 
 // Utils
-import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import {
   couponValueOf,
   sumCouponAmount,
-} from "../../../../../utils/couponValue";
-import { reasonOf } from "../../../../../utils/serverError";
-import { buildSaleId, fmtDateRange, receiptTotals } from "../../utils";
+} from "../../../../utils/couponValue";
+import { reasonOf } from "../../../../utils/serverError";
+import { buildSaleId, fmtDateRange, receiptTotals } from "../utils";
 
 // Interfaces
-import type { GroupTab } from "../../interfaces";
+import type { GroupTab } from "../interfaces";
 import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
 import type {
   CouponItem,
   ThresholdValue,
   TransactionListItem,
-} from "../../../../../interfaces";
+} from "../../../../interfaces";
 
 // Components
-import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
-import CouponsExportModal from "../../export/CouponsExportModal";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import CouponsExportModal from "./export/CouponsExportModal";
 import DetailHeader from "./components/DetailHeader";
 import KpiStrip from "./components/KpiStrip";
 import GroupTabs from "./components/GroupTabs";

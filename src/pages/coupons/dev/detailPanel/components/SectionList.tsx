@@ -1,5 +1,5 @@
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
 
 // Interfaces
 import type { GroupedSection } from "../interfaces";

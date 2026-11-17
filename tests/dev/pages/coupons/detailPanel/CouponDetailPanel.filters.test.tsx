@@ -14,7 +14,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import type { CouponItem } from "@/interfaces";
 
 // Components
-import CouponDetailPanel from "@/pages/coupons/dev/components/detailPanel/CouponDetailPanel";
+import CouponDetailPanel from "@/pages/coupons/dev/detailPanel/CouponDetailPanel";
 
 vi.mock("@/api/lossPrevention", () => ({ getCashierTransaction: vi.fn() }));
 vi.mock("@/components/toasts/hooks/useToast", () => ({

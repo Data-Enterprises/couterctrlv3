@@ -7,8 +7,8 @@ import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import CouponsMobile from "./mobile/CouponsMobile";
-import CouponListPanel from "./components/CouponListPanel";
-import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
+import CouponListPanel from "./listPanel/CouponListPanel";
+import CouponDetailPanel from "./detailPanel/CouponDetailPanel";
 
 /** The Coupons page: a search card to load coupon activity for a store or group and date range, then a store list
  *  beside the detail panel. Phones get the mobile screens instead. */

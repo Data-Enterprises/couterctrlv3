@@ -5,8 +5,8 @@ import { fmtThreshold } from "../utils";
 import type { GridFilters } from "../interfaces";
 
 // Components
-import ThresholdFilter from "../../../../../../components-dev/filters/ThresholdFilter";
-import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
+import ThresholdFilter from "../../../../../components-dev/filters/ThresholdFilter";
+import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import ColFilter from "./ColFilter";
 
 interface GridHeaderProps {

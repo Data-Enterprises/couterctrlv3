@@ -1,8 +1,8 @@
 // Interfaces
-import type { TransactionListItem } from "../../../../../../interfaces";
+import type { TransactionListItem } from "../../../../../interfaces";
 
 // Components
-import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+import LoadingIndicator from "../../../../../components-dev/loading/LoadingIndicator";
 import TxHeader from "./TxHeader";
 import TxLinesTable from "./TxLinesTable";
 import TxTotals from "./TxTotals";

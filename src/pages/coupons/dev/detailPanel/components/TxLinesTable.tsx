@@ -1,9 +1,9 @@
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
-import { couponValueOf } from "../../../../../../utils/couponValue";
+import { formatCurrency2 } from "../../../../../utils";
+import { couponValueOf } from "../../../../../utils/couponValue";
 
 // Interfaces
-import type { TransactionListItem } from "../../../../../../interfaces";
+import type { TransactionListItem } from "../../../../../interfaces";
 
 interface TxLinesTableProps {
   txLines: TransactionListItem[];

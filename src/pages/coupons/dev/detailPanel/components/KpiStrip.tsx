@@ -1,5 +1,5 @@
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
 
 interface KpiStripProps {
   totalCoupons: number;

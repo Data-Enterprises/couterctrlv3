@@ -1,9 +1,9 @@
 // Utils
-import { formatCurrency2 } from "../../../../../../utils";
-import { GROUP_TABS } from "../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
+import { GROUP_TABS } from "../../utils";
 
 // Interfaces
-import type { GroupTab } from "../../../interfaces";
+import type { GroupTab } from "../../interfaces";
 import type { GroupedSection } from "../interfaces";
 
 interface SectionHeaderProps {

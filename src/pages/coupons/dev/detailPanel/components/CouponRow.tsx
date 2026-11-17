@@ -1,8 +1,8 @@
 // Utils
-import { formatCurrency2, formatDate } from "../../../../../../utils";
+import { formatCurrency2, formatDate } from "../../../../../utils";
 
 // Interfaces
-import type { CouponItem } from "../../../../../../interfaces";
+import type { CouponItem } from "../../../../../interfaces";
 import type { AggRow } from "../interfaces";
 
 // Components

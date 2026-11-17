@@ -1,8 +1,8 @@
 // Utils
-import { formatDate } from "../../../../../../utils";
+import { formatDate } from "../../../../../utils";
 
 // Interfaces
-import type { TransactionListItem } from "../../../../../../interfaces";
+import type { TransactionListItem } from "../../../../../interfaces";
 
 // Components
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";

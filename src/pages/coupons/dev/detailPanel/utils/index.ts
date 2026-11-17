@@ -1,5 +1,5 @@
 // Interfaces
-import type { ThresholdValue } from "../../../../../../interfaces";
+import type { ThresholdValue } from "../../../../../interfaces";
 
 /** A threshold filter as its chip shows it, such as "> $5". */
 export const fmtThreshold = (t: ThresholdValue | null, prefix = ""): string => {

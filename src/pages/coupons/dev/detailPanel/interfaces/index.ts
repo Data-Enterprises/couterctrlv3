@@ -1,5 +1,5 @@
 // Interfaces
-import type { CouponItem, ThresholdValue } from "../../../../../../interfaces";
+import type { CouponItem, ThresholdValue } from "../../../../../interfaces";
 
 /** One group in the detail panel's list: a sub dept, a date or a cashier. */
 export type GroupedSection = {
