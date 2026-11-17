@@ -37,7 +37,9 @@ import {
   buildDayBuckets,
   computeMargin,
   computeTrend,
-  itemDescription, lookupFailureText } from "../utils";
+  itemDescription,
+  lookupFailureText,
+} from "../utils";
 import { reasonOf } from "../../../../utils/serverError";
 
 // Components

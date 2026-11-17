@@ -62,7 +62,9 @@ const SaleTypeBreakdown = ({
             key={s.saleType}
             type="button"
             aria-pressed={isSelected}
-            onClick={() => onSelect(isSelected && !isSale ? "Sale" : s.saleType)}
+            onClick={() =>
+              onSelect(isSelected && !isSale ? "Sale" : s.saleType)
+            }
             title={
               isSelected && !isSale
                 ? "Back to the sales timeline"

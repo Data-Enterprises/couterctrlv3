@@ -28,7 +28,6 @@ import { serverDetail } from "../../../../../utils/serverError";
 
 // Interfaces
 
-
 // The lookup is by storeid, so a co-located storeid returns both locations;
 // scoping the rows re-derives every figure without a refetch. Takes every line
 // type: the breakdown counts them all, the rest counts Sale rows only.
@@ -36,7 +35,9 @@ const deriveTotals = (
   allHistory: ItemLookupHistory[],
   storeNumber: string | null,
 ) => {
-  const scoped = storeNumber ? scopeToStoreNumber(allHistory, storeNumber) : allHistory;
+  const scoped = storeNumber
+    ? scopeToStoreNumber(allHistory, storeNumber)
+    : allHistory;
   const rows = scoped.filter(isSaleRow);
   const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
   const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
@@ -175,7 +176,8 @@ export const useLookupQueue = () => {
               upc,
               patch: {
                 status: "error",
-                errorMessage: serverDetail(err) ?? "There was an issue finding this item",
+                errorMessage:
+                  serverDetail(err) ?? "There was an issue finding this item",
               },
             }),
           );

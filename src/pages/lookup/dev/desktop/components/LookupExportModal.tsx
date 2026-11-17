@@ -53,11 +53,13 @@ const LookupExportModal = ({
   const [mode, setMode] = useState<ModalMode>("presets");
   const [preset, setPreset] = useState<Preset>("batch");
   const [source, setSource] = useState<Preset>("batch");
-  const [chosenCols, setChosenCols] = useState<Record<Preset, Set<string>>>(() => ({
-    batch: defaultsFor("batch"),
-    daily: defaultsFor("daily"),
-    saleTypes: defaultsFor("saleTypes"),
-  }));
+  const [chosenCols, setChosenCols] = useState<Record<Preset, Set<string>>>(
+    () => ({
+      batch: defaultsFor("batch"),
+      daily: defaultsFor("daily"),
+      saleTypes: defaultsFor("saleTypes"),
+    }),
+  );
 
   const batchRows = useMemo(() => buildBatchRows(queue), [queue]);
   const saleTypeRows = useMemo(() => buildSaleTypeRows(queue), [queue]);
@@ -84,7 +86,9 @@ const LookupExportModal = ({
     const cols = COLS[src].filter((c) => !only || only.has(c.key));
     const rows =
       src === "batch"
-        ? batchRows.map((r) => cols.map((c) => batchCell(r, c.key as BatchColKey)))
+        ? batchRows.map((r) =>
+            cols.map((c) => batchCell(r, c.key as BatchColKey)),
+          )
         : src === "daily"
           ? buckets.map((b) =>
               cols.map((c) =>
@@ -111,7 +115,13 @@ const LookupExportModal = ({
     const src = mode === "presets" ? preset : source;
     const { cols, rows } =
       mode === "presets" ? tableFor(src) : tableFor(src, chosenCols[src]);
-    downloadCsv(rowsToCsv(cols.map((c) => c.label), rows), fileName[src]);
+    downloadCsv(
+      rowsToCsv(
+        cols.map((c) => c.label),
+        rows,
+      ),
+      fileName[src],
+    );
     onClose();
   };
 
@@ -155,174 +165,163 @@ const LookupExportModal = ({
       defaultWidth={1140}
       defaultHeight={960}
     >
-        <div className="cc-phone-header">
-          <p className="cc-navy-title text-[13px]">
-            Export CSV
+      <div className="cc-phone-header">
+        <p className="cc-navy-title text-[13px]">Export CSV</p>
+        <div className="cc-segment-navy">
+          {(["presets", "custom"] as ModalMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`cc-chip-btn text-[11px] ${
+                mode === m
+                  ? "bg-custom-white text-brand_navy"
+                  : "text-custom-white/95 hover:text-custom-white"
+              }`}
+            >
+              {m === "presets" ? "Presets" : "Custom"}
+            </button>
+          ))}
+        </div>
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
+
+      {mode === "presets" ? (
+        <div className="p-4">
+          <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-2">
+            Select data to include
           </p>
-          <div className="cc-segment-navy">
-            {(["presets", "custom"] as ModalMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`cc-chip-btn text-[11px] ${
-                  mode === m
-                    ? "bg-custom-white text-brand_navy"
-                    : "text-custom-white/95 hover:text-custom-white"
-                }`}
-              >
-                {m === "presets" ? "Presets" : "Custom"}
-              </button>
-            ))}
-          </div>
+          {presetOptions.map((o, i) => (
+            <label
+              key={o.key}
+              className={`flex items-start gap-2.5 py-2.5 cursor-pointer ${
+                i < presetOptions.length - 1 ? "border-b border-line_hair" : ""
+              } ${!available[o.key] ? "opacity-40" : ""}`}
+            >
+              <input
+                type="radio"
+                checked={preset === o.key}
+                onChange={() => setPreset(o.key)}
+                disabled={!available[o.key]}
+                className="mt-0.5"
+              />
+              <div>
+                <p className="text-[13px] font-medium text-content">
+                  {o.title}
+                </p>
+                <p className="text-[11px] text-content/95 mt-0.5">{o.detail}</p>
+              </div>
+            </label>
+          ))}
           <button
-            onClick={onClose}
-            className="cc-navy-link justify-self-end"
+            onClick={handleDownload}
+            disabled={!canDownload}
+            className="w-full mt-3 flex items-center justify-center gap-1.5 cc-btn-primary text-[12px]"
           >
-            <XMarkIcon className="w-4 h-4" />
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            Download CSV
           </button>
         </div>
-
-        {mode === "presets" ? (
-          <div className="p-4">
-            <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-2">
-              Select data to include
-            </p>
-            {presetOptions.map((o, i) => (
+      ) : (
+        <div className="grid" style={{ gridTemplateColumns: "200px 1fr" }}>
+          <div className="p-3.5 border-r border-line_hair">
+            <p className="text-[10px] cc-caps mb-2">Data source</p>
+            {(Object.keys(sourceLabels) as Preset[]).map((src, i, all) => (
               <label
-                key={o.key}
-                className={`flex items-start gap-2.5 py-2.5 cursor-pointer ${
-                  i < presetOptions.length - 1 ? "border-b border-line_hair" : ""
-                } ${!available[o.key] ? "opacity-40" : ""}`}
+                key={src}
+                className={`flex items-center gap-1.5 cursor-pointer ${
+                  i === all.length - 1 ? "mb-3.5" : "mb-1.5"
+                } ${!available[src] ? "opacity-40" : ""}`}
               >
                 <input
                   type="radio"
-                  checked={preset === o.key}
-                  onChange={() => setPreset(o.key)}
-                  disabled={!available[o.key]}
-                  className="mt-0.5"
+                  checked={source === src}
+                  onChange={() => setSource(src)}
+                  disabled={!available[src]}
                 />
-                <div>
-                  <p className="text-[13px] font-medium text-content">{o.title}</p>
-                  <p className="text-[11px] text-content/95 mt-0.5">{o.detail}</p>
-                </div>
+                <span className="text-[11.5px] text-content">
+                  {sourceLabels[src]}
+                </span>
               </label>
             ))}
-            <button
-              onClick={handleDownload}
-              disabled={!canDownload}
-              className="w-full mt-3 flex items-center justify-center gap-1.5 cc-btn-primary text-[12px]"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              Download CSV
-            </button>
+
+            <p className="text-[10px] cc-caps mb-2">Columns</p>
+            {COLS[source].map((c) => (
+              <label
+                key={c.key}
+                className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={chosenCols[source].has(c.key)}
+                  onChange={() => toggleCol(source, c.key)}
+                />
+                <span className="text-[11.5px] text-content">{c.label}</span>
+              </label>
+            ))}
           </div>
-        ) : (
-          <div className="grid" style={{ gridTemplateColumns: "200px 1fr" }}>
-            <div className="p-3.5 border-r border-line_hair">
-              <p className="text-[10px] cc-caps mb-2">
-                Data source
-              </p>
-              {(Object.keys(sourceLabels) as Preset[]).map((src, i, all) => (
-                <label
-                  key={src}
-                  className={`flex items-center gap-1.5 cursor-pointer ${
-                    i === all.length - 1 ? "mb-3.5" : "mb-1.5"
-                  } ${!available[src] ? "opacity-40" : ""}`}
-                >
-                  <input
-                    type="radio"
-                    checked={source === src}
-                    onChange={() => setSource(src)}
-                    disabled={!available[src]}
-                  />
-                  <span className="text-[11.5px] text-content">
-                    {sourceLabels[src]}
-                  </span>
-                </label>
-              ))}
 
-              <p className="text-[10px] cc-caps mb-2">
-                Columns
-              </p>
-              {COLS[source].map((c) => (
-                <label
-                  key={c.key}
-                  className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={chosenCols[source].has(c.key)}
-                    onChange={() => toggleCol(source, c.key)}
-                  />
-                  <span className="text-[11.5px] text-content">{c.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="p-3.5 flex flex-col">
-              <p className="text-[10px] cc-caps mb-2">
-                Preview
-              </p>
-              <div className="border border-line_hair rounded-md overflow-hidden">
-                <table className="w-full text-[11px]">
-                  <thead>
-                    <tr className="bg-fill_soft border-b border-line_hair">
-                      {custom.cols.map((c) => (
-                        <th
-                          key={c.key}
-                          className="text-left px-2.5 py-1.5 text-content/95 font-semibold whitespace-nowrap"
+          <div className="p-3.5 flex flex-col">
+            <p className="text-[10px] cc-caps mb-2">Preview</p>
+            <div className="border border-line_hair rounded-md overflow-hidden">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="bg-fill_soft border-b border-line_hair">
+                    {custom.cols.map((c) => (
+                      <th
+                        key={c.key}
+                        className="text-left px-2.5 py-1.5 text-content/95 font-semibold whitespace-nowrap"
+                      >
+                        {c.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {custom.rows.slice(0, PREVIEW_ROWS).map((row, ri) => (
+                    <tr key={ri} className="border-b border-line_faint">
+                      {row.map((cell, ci) => (
+                        <td
+                          key={custom.cols[ci].key}
+                          className="px-2.5 py-1 text-content/95 whitespace-nowrap"
                         >
-                          {c.label}
-                        </th>
+                          {cell}
+                        </td>
                       ))}
                     </tr>
-                  </thead>
-                  <tbody>
-                    {custom.rows.slice(0, PREVIEW_ROWS).map((row, ri) => (
-                      <tr key={ri} className="border-b border-line_faint">
-                        {row.map((cell, ci) => (
-                          <td
-                            key={custom.cols[ci].key}
-                            className="px-2.5 py-1 text-content/95 whitespace-nowrap"
-                          >
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                    {custom.rows.length > PREVIEW_ROWS && (
-                      <tr>
-                        <td
-                          colSpan={custom.cols.length}
-                          className="px-2.5 py-1.5 text-[10px] text-content/95 italic"
-                        >
-                          +{custom.rows.length - PREVIEW_ROWS} more rows in download…
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex-1" />
-              <div className="flex items-center justify-between mt-3.5">
-                <button
-                  onClick={onClose}
-                  className="text-[12px] cc-muted-link"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDownload}
-                  disabled={!canDownload}
-                  className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
-                >
-                  <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                  Download CSV
-                </button>
-              </div>
+                  ))}
+                  {custom.rows.length > PREVIEW_ROWS && (
+                    <tr>
+                      <td
+                        colSpan={custom.cols.length}
+                        className="px-2.5 py-1.5 text-[10px] text-content/95 italic"
+                      >
+                        +{custom.rows.length - PREVIEW_ROWS} more rows in
+                        download…
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex-1" />
+            <div className="flex items-center justify-between mt-3.5">
+              <button onClick={onClose} className="text-[12px] cc-muted-link">
+                Cancel
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={!canDownload}
+                className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+              >
+                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+                Download CSV
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </ResizableModalShell>
   );
 };

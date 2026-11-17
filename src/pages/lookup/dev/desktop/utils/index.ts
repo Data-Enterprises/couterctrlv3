@@ -27,7 +27,11 @@ export const parseUpcs = (raw: string): string[] =>
     .filter((u) => u.length > 0);
 
 /** The Batch summary export's columns. */
-export const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }[] = [
+export const BATCH_COLS: {
+  key: BatchColKey;
+  label: string;
+  defaultOn: boolean;
+}[] = [
   { key: "upc", label: "UPC", defaultOn: true },
   { key: "description", label: "Description", defaultOn: true },
   { key: "marginPct", label: "Margin %", defaultOn: true },
@@ -39,7 +43,11 @@ export const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }
 ];
 
 /** The Daily export's columns. */
-export const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }[] = [
+export const DAILY_COLS: {
+  key: DailyColKey;
+  label: string;
+  defaultOn: boolean;
+}[] = [
   { key: "date", label: "Date", defaultOn: true },
   { key: "saleType", label: "Sale type", defaultOn: true },
   { key: "qty", label: "Qty", defaultOn: true },
@@ -52,7 +60,11 @@ export const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }
 ];
 
 /** The Sale types export's columns. */
-export const SALE_TYPE_COLS: { key: SaleTypeColKey; label: string; defaultOn: boolean }[] = [
+export const SALE_TYPE_COLS: {
+  key: SaleTypeColKey;
+  label: string;
+  defaultOn: boolean;
+}[] = [
   { key: "upc", label: "UPC", defaultOn: true },
   { key: "description", label: "Description", defaultOn: true },
   { key: "saleType", label: "Sale type", defaultOn: true },
@@ -69,7 +81,11 @@ export const buildSaleTypeRows = (queue: QueueItem[]): SaleTypeRow[] =>
   queue
     .filter((q) => q.status === "loaded" && q.history)
     .flatMap((q) => {
-      const { weighed } = computeMargin(q.history!, q.totalSales ?? 0, q.totalQty ?? 0);
+      const { weighed } = computeMargin(
+        q.history!,
+        q.totalSales ?? 0,
+        q.totalQty ?? 0,
+      );
       const types = buildSaleTypeBreakdown(q.historyAll ?? q.history!);
       const saleDollars = types.find((t) => t.saleType === "Sale")?.sales ?? 0;
       return types.map((t) => ({
@@ -81,12 +97,17 @@ export const buildSaleTypeRows = (queue: QueueItem[]): SaleTypeRow[] =>
         qty: t.qty,
         weight: weighed ? t.units : null,
         pctOfSales:
-          t.saleType === "Sale" || saleDollars <= 0 ? null : (t.sales / saleDollars) * 100,
+          t.saleType === "Sale" || saleDollars <= 0
+            ? null
+            : (t.sales / saleDollars) * 100,
       }));
     });
 
 /** One sale-type row's value for one column. */
-export const saleTypeCell = (row: SaleTypeRow, key: SaleTypeColKey): string | number => {
+export const saleTypeCell = (
+  row: SaleTypeRow,
+  key: SaleTypeColKey,
+): string | number => {
   switch (key) {
     case "upc":
       return row.upc;
@@ -168,7 +189,10 @@ export const dailyCell = (
   // An each-priced item has no weight; blank rather than a copy of qty.
   if (key === "weight") return weighed ? Number(b.units.toFixed(2)) : "";
   // Cost and margin don't apply to a voided or restored line.
-  if (saleType !== "Sale" && (key === "cost" || key === "caseCost" || key === "marginPct")) {
+  if (
+    saleType !== "Sale" &&
+    (key === "cost" || key === "caseCost" || key === "marginPct")
+  ) {
     return "";
   }
   switch (key) {

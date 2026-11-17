@@ -6,9 +6,7 @@ import type { QueueItem } from "../../../../../features/dev/devItemLookupSlice";
 
 // Components
 import BackButton from "../../../../../components-dev/BackButton";
-import {
-  ExclamationTriangleIcon,
-} from "@heroicons/react/20/solid";
+import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
 
@@ -48,10 +46,7 @@ const LookupQueuePanel = ({
   const dateRangeLabel = `${fmtRangeDate(start)} – ${fmtRangeDate(end)}`;
 
   return (
-    <div
-      className="cc-panel shadow-lg flex-shrink-0"
-      style={{ width: "25%" }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: "25%" }}>
       <div
         className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
         style={{ background: "rgb(var(--color-brand-navy))" }}
@@ -91,7 +86,10 @@ const LookupQueuePanel = ({
         onChange={onStoreNumberChange}
       />
 
-      <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar">
+      <div
+        data-help="item-list"
+        className="flex-1 overflow-y-auto thin-scrollbar"
+      >
         {queue.map((item) => {
           if (item.status === "loaded") {
             const isSelected = item.upc === selectedUpc;
@@ -146,7 +144,8 @@ const LookupQueuePanel = ({
                 </div>
                 <div className="pl-[18px] mt-0.5">
                   <span className="text-[10.5px] text-brand_danger">
-                    {item.errorMessage ?? "There was an issue finding this item"}
+                    {item.errorMessage ??
+                      "There was an issue finding this item"}
                   </span>
                 </div>
               </div>

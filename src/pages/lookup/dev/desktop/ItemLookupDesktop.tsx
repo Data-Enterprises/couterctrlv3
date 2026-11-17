@@ -47,7 +47,10 @@ const ItemLookupDesktop = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   // Remembered against the item it was picked on, so selecting another item
   // lands on its sales rather than a type it may not even have.
-  const [saleTypePick, setSaleTypePick] = useState<{ upc: string | null; type: string }>({
+  const [saleTypePick, setSaleTypePick] = useState<{
+    upc: string | null;
+    type: string;
+  }>({
     upc: null,
     type: "Sale",
   });
@@ -66,10 +69,18 @@ const ItemLookupDesktop = () => {
     );
   }
 
-  const selectedItem = queue.find((q) => q.upc === selectedUpc && q.status === "loaded");
-  const buckets = selectedItem?.history ? buildDayBuckets(selectedItem.history) : [];
+  const selectedItem = queue.find(
+    (q) => q.upc === selectedUpc && q.status === "loaded",
+  );
+  const buckets = selectedItem?.history
+    ? buildDayBuckets(selectedItem.history)
+    : [];
   const margin = selectedItem?.history
-    ? computeMargin(selectedItem.history, selectedItem.totalSales ?? 0, selectedItem.totalQty ?? 0)
+    ? computeMargin(
+        selectedItem.history,
+        selectedItem.totalSales ?? 0,
+        selectedItem.totalQty ?? 0,
+      )
     : null;
   const historyAll = selectedItem?.historyAll ?? selectedItem?.history ?? [];
   const saleTypes = buildSaleTypeBreakdown(historyAll);
@@ -115,14 +126,18 @@ const ItemLookupDesktop = () => {
           gaps={findGaps(buckets)}
           saleTypes={saleTypes}
           selectedSaleType={selectedSaleType}
-          onSelectSaleType={(type) => setSaleTypePick({ upc: selectedUpc, type })}
+          onSelectSaleType={(type) =>
+            setSaleTypePick({ upc: selectedUpc, type })
+          }
           timeline={timeline}
           onExportOpen={() => setExportModalOpen(true)}
         />
       ) : (
         <div className="flex-1 min-w-0 shadow-lg">
           <div className="cc-panel shadow-sm h-full items-center justify-center">
-            <p className="text-[13px] text-content/95">Select an item from the queue</p>
+            <p className="text-[13px] text-content/95">
+              Select an item from the queue
+            </p>
           </div>
         </div>
       )}

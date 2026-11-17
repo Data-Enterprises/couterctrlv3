@@ -26,7 +26,12 @@ interface LookupDayRowsProps {
  * `PerfDrillList`. Read-only: the chart is the one filter, and a row highlights
  * when the chart scopes its day.
  */
-const LookupDayRows = ({ buckets, weighed, selected, isSale }: LookupDayRowsProps) => {
+const LookupDayRows = ({
+  buckets,
+  weighed,
+  selected,
+  isSale,
+}: LookupDayRowsProps) => {
   const max = buckets.reduce((m, b) => Math.max(m, b.revenue), 0) || 1;
   const rate = weighed ? "/lb" : " ea";
 
