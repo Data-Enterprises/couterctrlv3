@@ -3,7 +3,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { useOrganizationCtx } from "../../hooks";
 import { usePanelFit } from "../../utils/panelFit";
-import { useSeededPicks, useAccessSave, outcomeSentence, NOTHING_HELD, useAccessMode, failedReadsText, useHeldAccess, useExistingAccess } from "./hooks";
+import {
+  useSeededPicks,
+  useAccessSave,
+  outcomeSentence,
+  NOTHING_HELD,
+  useAccessMode,
+  failedReadsText,
+  useHeldAccess,
+  useExistingAccess,
+} from "./hooks";
 
 // Redux
 import { setUnsavedWizard } from "../../../../../features/dev/devOrganizationSlice";
@@ -21,7 +30,14 @@ import { createUser, updateUser } from "../../../../../api/team";
 import { getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
 
 // Utils
-import { accessSets, directStoreIds, emptySelectedGroupIds, groupCompanies, hasChanges, NO_PICKS } from "../utils";
+import {
+  accessSets,
+  directStoreIds,
+  emptySelectedGroupIds,
+  groupCompanies,
+  hasChanges,
+  NO_PICKS,
+} from "../utils";
 import { identityOf, isSingleStoreRole, STEP_FIT, STEP_ORDER } from "./utils";
 import {
   createBlockReason,
@@ -48,7 +64,7 @@ import type {
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import UserFields from "./components/UserFields";
-import AccessPanel from "./components/AccessPanel";
+import AccessPanel from "./components/accessPanel/AccessPanel";
 import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
 import Stepper from "./components/Stepper";
 import StepAccessType from "./components/StepAccessType";
@@ -126,7 +142,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
    * The identity as it was opened, for "did any of it change", from the slice
    * (a copy taken at mount was retaken after a tab switch).
    */
-  const identityBefore = ctx.userInfoBefore ? identityOf(ctx.userInfoBefore) : null;
+  const identityBefore = ctx.userInfoBefore
+    ? identityOf(ctx.userInfoBefore)
+    : null;
   const emailBefore = ctx.userInfoBefore?.email ?? "";
 
   /**
@@ -137,7 +155,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   useEffect(() => {
     if (!editing) return;
     held.heldGroups.forEach((g) => {
-      if (groupStores[g.id] !== undefined || rosterAsked.current.has(g.id)) return;
+      if (groupStores[g.id] !== undefined || rosterAsked.current.has(g.id))
+        return;
       rosterAsked.current.add(g.id);
       const land = (stores: Store[]) =>
         setGroupStores((prev) =>
@@ -148,7 +167,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           const j = resp.data;
           land(
             j.error === 0
-              ? (j.assigned_stores as Store[]).filter((s) => s.store_name != null)
+              ? (j.assigned_stores as Store[]).filter(
+                  (s) => s.store_name != null,
+                )
               : [],
           );
         })
@@ -255,7 +276,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
   const hasAccess = sets.companyIds.length > 0 || sets.grants.length > 0;
 
   const identityDirty =
-    editing && identityBefore !== null && identityBefore !== identityOf(ctx.userInfo);
+    editing &&
+    identityBefore !== null &&
+    identityBefore !== identityOf(ctx.userInfo);
   const accessDirty = editing && hasChanges(sets, before);
 
   const stepReady = readiness({
@@ -286,7 +309,12 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         identityDirty,
         accessDirty,
         hasAccess,
-        held: held.failed.length > 0 ? "failed" : held.loaded ? "loaded" : "loading",
+        held:
+          held.failed.length > 0
+            ? "failed"
+            : held.loaded
+              ? "loaded"
+              : "loading",
       })
     : null;
   const canSave = editing ? editReason === null : canAdvance;
@@ -501,7 +529,12 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       </h2>
 
       <div data-help="wizard" className="flex-shrink-0 mb-4">
-        <Stepper current={step} furthest={furthest} limit={limit} onGoTo={goTo} />
+        <Stepper
+          current={step}
+          furthest={furthest}
+          limit={limit}
+          onGoTo={goTo}
+        />
       </div>
 
       {/* Danger, not severity: the severity family grades data against a
@@ -542,8 +575,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             <span className="font-semibold">
               Couldn’t read their {failedReadsText(held.failed)}.
             </span>{" "}
-            What they hold may be missing below, so Save changes is off until
-            it loads.
+            What they hold may be missing below, so Save changes is off until it
+            loads.
           </div>
           <button
             onClick={held.reload}
@@ -561,9 +594,9 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
           </div>
           <div className="text-[11.5px] text-content/95">
             {outcomeSentence(failure)}
-            {failure.reason ? ` ${failure.reason}` : ""} What did save has
-            been re-read, and your changes are still on screen. Press Save
-            changes to send the rest.
+            {failure.reason ? ` ${failure.reason}` : ""} What did save has been
+            re-read, and your changes are still on screen. Press Save changes to
+            send the rest.
           </div>
         </div>
       )}
@@ -673,7 +706,10 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </button>
         <div className="flex items-center gap-2.5">
           {blockReason && (
-            <span className="text-[11.5px] font-semibold text-content" role="status">
+            <span
+              className="text-[11.5px] font-semibold text-content"
+              role="status"
+            >
               {blockReason}
             </span>
           )}
@@ -693,9 +729,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             </button>
           )}
           <button
-            onClick={
-              isLast ? (editing ? handleSave : handleCreate) : advance
-            }
+            onClick={isLast ? (editing ? handleSave : handleCreate) : advance}
             disabled={!primaryEnabled}
             className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
               primaryEnabled

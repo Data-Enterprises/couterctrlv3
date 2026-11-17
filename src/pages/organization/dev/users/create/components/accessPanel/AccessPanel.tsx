@@ -1,39 +1,39 @@
 // Hooks
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useToast } from "../../../../../../components/toasts/hooks/useToast";
-import { useOrganizationCtx, useBaseGroupsCtx } from "../../../hooks";
+import { useToast } from "../../../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx, useBaseGroupsCtx } from "../../../../hooks";
 
 // API
 import {
   getBaseGroups,
   getAllStoresInBaseGroup,
-} from "../../../../../../api/baseGroups";
-import { getBaseGroupsAssignedToUser } from "../../../../../../api/team";
+} from "../../../../../../../api/baseGroups";
+import { getBaseGroupsAssignedToUser } from "../../../../../../../api/team";
 
 // Utils
 import {
   heldGroupIds as editorHeldGroupIds,
   mayChangeGroup,
   wizardGroups,
-} from "../../../utils";
-import { NO_PICKS, heldGroupIds, toggleGroup } from "../../utils";
-import { reasonOf } from "../../../../../../utils/serverError";
+} from "../../../../utils";
+import { NO_PICKS, heldGroupIds, toggleGroup } from "../../../utils";
+import { reasonOf } from "../../../../../../../utils/serverError";
 
 // Interfaces
-import type { AccessPicks, SelectableStore } from "../../interfaces";
+import type { AccessPicks, SelectableStore } from "../../../interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
-} from "../../../../../../interfaces";
+} from "../../../../../../../interfaces";
 
 // Components
-import TextFilter from "../../../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
-import Checkbox from "../../../../../../components-dev/Checkbox";
-import GrantModeChip from "./GrantModeChip";
-import EmptyPicksNotice from "./EmptyPicksNotice";
+import TextFilter from "../../../../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../../../../components-dev/filters/SelectFilter";
+import Checkbox from "../../../../../../../components-dev/Checkbox";
+import GrantModeChip from "../GrantModeChip";
+import EmptyPicksNotice from "../EmptyPicksNotice";
 
 interface AccessPanelProps {
   picks: AccessPicks;
@@ -115,7 +115,9 @@ const AccessPanel = ({
       .then((resp) => {
         const j = resp.data;
         setEditorHeld(
-          editorHeldGroupIds(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []),
+          editorHeldGroupIds(
+            j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : [],
+          ),
         );
       })
       .catch((err: JsonError) =>
@@ -124,8 +126,12 @@ const AccessPanel = ({
   }, [scope.canSeeAllCompanies, scope.userid, ctx.url, ctx.token]);
   const mine = editorHeld ?? new Set<number>();
   /** Groups the person already holds, listed even when not the editor's. */
-  const personHeld = useMemo(() => new Set(heldGroups.map((g) => g.id)), [heldGroups]);
-  const mayChange = (id: number) => mayChangeGroup(id, scope.canSeeAllCompanies, mine);
+  const personHeld = useMemo(
+    () => new Set(heldGroups.map((g) => g.id)),
+    [heldGroups],
+  );
+  const mayChange = (id: number) =>
+    mayChangeGroup(id, scope.canSeeAllCompanies, mine);
 
   /**
    * Who may be handed what: a programmer may give any company; everyone else
@@ -367,9 +373,7 @@ const AccessPanel = ({
           style={{ width: 220 }}
         >
           <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
-            <span className="text-[9px] cc-caps-strong">
-              Companies
-            </span>
+            <span className="text-[9px] cc-caps-strong">Companies</span>
           </div>
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {companyList.map((c) => {
@@ -419,7 +423,8 @@ const AccessPanel = ({
         >
           <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
             <span className="text-[9px] cc-caps-strong block mb-1.5">
-              Base groups {activeCompany ? `in ${companyName(activeCompany)}` : ""}
+              Base groups{" "}
+              {activeCompany ? `in ${companyName(activeCompany)}` : ""}
             </span>
             <TextFilter
               value={groupSearch}
@@ -663,54 +668,56 @@ const AccessPanel = ({
       )}
 
       {!hideFooter && (
-      <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[12px] font-semibold text-content">
-            {/* No company tally: a held group carries its own company. Review
+        <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[12px] font-semibold text-content">
+              {/* No company tally: a held group carries its own company. Review
                 shows what is written. */}
-            {held.length} base group
-            {held.length === 1 ? "" : "s"}, {selectedStores.length}{" "}
-            store{selectedStores.length === 1 ? "" : "s"} picked
-          </span>
-          <button
-            // Clears the picks, not the access type. A group that isn't the
-            // editor's stays as the person holds it.
-            onClick={() =>
-              onPicksChange({
-                ...NO_PICKS,
-                mode: picks.mode,
-                baseGroups: picks.baseGroups.filter((id) => !mayChange(id)),
-                stores: picks.stores.filter((s) => !mayChange(s.base_group)),
-              })
-            }
-            className="text-[10.5px] text-brand_navy font-semibold hover:underline"
-          >
-            Clear all
-          </button>
+              {held.length} base group
+              {held.length === 1 ? "" : "s"}, {selectedStores.length} store
+              {selectedStores.length === 1 ? "" : "s"} picked
+            </span>
+            <button
+              // Clears the picks, not the access type. A group that isn't the
+              // editor's stays as the person holds it.
+              onClick={() =>
+                onPicksChange({
+                  ...NO_PICKS,
+                  mode: picks.mode,
+                  baseGroups: picks.baseGroups.filter((id) => !mayChange(id)),
+                  stores: picks.stores.filter((s) => !mayChange(s.base_group)),
+                })
+              }
+              className="text-[10.5px] text-brand_navy font-semibold hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+          {held.length === 0 ? (
+            <div className="text-[11.5px] text-content/95">
+              Nothing selected yet
+            </div>
+          ) : (
+            <div className="text-[11.5px] text-content/95 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
+              {held.map((id, i) => {
+                const group =
+                  groupsById[id] ?? heldGroups.find((g) => g.id === id);
+                const mode = picks.mode;
+                const count = selectedStores.filter(
+                  (s) => s.base_group === id,
+                ).length;
+                return (
+                  <span key={id}>
+                    {i > 0 && "; "}
+                    {companyName(group?.company ?? 0)}:{" "}
+                    {group?.name ?? `#${id}`}{" "}
+                    {mode === "all" ? "(all)" : `(${count})`}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
-        {held.length === 0 ? (
-          <div className="text-[11.5px] text-content/95">
-            Nothing selected yet
-          </div>
-        ) : (
-          <div className="text-[11.5px] text-content/95 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
-            {held.map((id, i) => {
-              const group = groupsById[id] ?? heldGroups.find((g) => g.id === id);
-              const mode = picks.mode;
-              const count = selectedStores.filter(
-                (s) => s.base_group === id,
-              ).length;
-              return (
-                <span key={id}>
-                  {i > 0 && "; "}
-                  {companyName(group?.company ?? 0)}: {group?.name ?? `#${id}`}{" "}
-                  {mode === "all" ? "(all)" : `(${count})`}
-                </span>
-              );
-            })}
-          </div>
-        )}
-      </div>
       )}
     </div>
   );

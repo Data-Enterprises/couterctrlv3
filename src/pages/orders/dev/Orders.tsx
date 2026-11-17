@@ -60,7 +60,15 @@ import type {
   Store,
   UpdateFileResp,
 } from "../../../interfaces";
-import type { EditSearch, DraftLine, EditableField, LinePatch, OrderDoc, OrderDraft, SortKey } from "./interfaces";
+import type {
+  EditSearch,
+  DraftLine,
+  EditableField,
+  LinePatch,
+  OrderDoc,
+  OrderDraft,
+  SortKey,
+} from "./interfaces";
 
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
@@ -113,7 +121,8 @@ const Orders = () => {
    * changes. A new search drops the drafts, whose lines are gone.
    */
   const edit = ctx.edit;
-  const patchEdit = (p: Partial<OrdersEdit>) => ctx.dispatch(patchOrdersEdit(p));
+  const patchEdit = (p: Partial<OrdersEdit>) =>
+    ctx.dispatch(patchOrdersEdit(p));
   const draftActions = useOrderDraftActions();
   const { editing, drafts, openKey, submittedCounts, receipt } = edit;
   const setEditing = (editing: boolean) => patchEdit({ editing });
@@ -132,10 +141,7 @@ const Orders = () => {
    * reloaded search needs.
    */
   const setDraft = (
-    next:
-      | OrderDraft
-      | null
-      | ((d: OrderDraft | null) => OrderDraft | null),
+    next: OrderDraft | null | ((d: OrderDraft | null) => OrderDraft | null),
   ) => {
     if (next === null) draftActions.clearDrafts();
     else if (typeof next === "function") draftActions.editDraft(openKey, next);
@@ -160,7 +166,8 @@ const Orders = () => {
    */
   const { leftTab, problemCode } = edit;
   const setLeftTab = (leftTab: OrdersEdit["leftTab"]) => patchEdit({ leftTab });
-  const setProblemCode = (problemCode: string | null) => patchEdit({ problemCode });
+  const setProblemCode = (problemCode: string | null) =>
+    patchEdit({ problemCode });
   const skipped = useMemo(() => new Set(edit.skipped), [edit.skipped]);
   const setSkipped = (next: Set<string>) => patchEdit({ skipped: [...next] });
 
@@ -174,7 +181,8 @@ const Orders = () => {
    */
   const problemScope = ctx.allOrders;
   const scopeStores = useMemo(
-    () => new Set(problemScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
+    () =>
+      new Set(problemScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
     [problemScope],
   );
   const scopeOrders = useMemo(
@@ -213,8 +221,8 @@ const Orders = () => {
     const rest = toDo.filter((i) => !excluding.has(i.code));
     const at = toDo.findIndex((i) => i.code === code);
     return (
-      rest.find((i) => toDo.indexOf(i) > at) ?? rest[0] ?? null
-    )?.code ?? null;
+      (rest.find((i) => toDo.indexOf(i) > at) ?? rest[0] ?? null)?.code ?? null
+    );
   };
 
   const handleStageItem = (keys: string[], unit: number) => {
@@ -223,7 +231,9 @@ const Orders = () => {
     const rows = problemScope.filter(
       (o) => String(o.product_code) === problemCode && keySet.has(docKey(o)),
     );
-    draftActions.editDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
+    draftActions.editDrafts((ds) =>
+      stageUnitCost(ds, rows, ctx.allOrders, unit),
+    );
     setProblemCode(nextAfter(problemCode, new Set([problemCode])));
   };
 
@@ -270,14 +280,19 @@ const Orders = () => {
 
   const handleSearch = () => {
     if (isGroupSearch(ctx.type)) {
-      getStoresAssignedToUserGroup(ctx.url, ctx.token, ctx.userid, ctx.lastGroup)
+      getStoresAssignedToUserGroup(
+        ctx.url,
+        ctx.token,
+        ctx.userid,
+        ctx.lastGroup,
+      )
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
             // `active` rides the group response, not Store itself.
-            const activeStores = (j.stores as (Store & { active?: boolean })[]).filter(
-              (s) => s.active,
-            );
+            const activeStores = (
+              j.stores as (Store & { active?: boolean })[]
+            ).filter((s) => s.active);
             ctx.dispatch(setSelectedGroupStores(activeStores));
             fetchAllLines(activeStores.map((s: Store) => s.storeid));
           } else {
@@ -326,9 +341,23 @@ const Orders = () => {
           const net_cost = o.net_cost ?? 0;
           const weight = o.weight ?? 0;
           const casesize = o.casesize ?? 0;
-          const e_ret = getERet(o.qty, weight, o.active_retail_price, o.scalable);
+          const e_ret = getERet(
+            o.qty,
+            weight,
+            o.active_retail_price,
+            o.scalable,
+          );
           const cogs = getCogs(base_cost, o.qty, o.scalable, weight, casesize);
-          return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev: e_ret - cogs };
+          return {
+            ...o,
+            e_ret,
+            base_cost,
+            net_cost,
+            weight,
+            casesize,
+            cogs,
+            rev: e_ret - cogs,
+          };
         });
 
         const uniqueSubs = lines.reduce((acc: UniqueSub[], o) => {
@@ -360,7 +389,6 @@ const Orders = () => {
 
   /** The orders in the result, for the picker. No call: see buildDocs. */
   const docs = useMemo(() => buildDocs(ctx.allOrders), [ctx.allOrders]);
-
 
   const dirty =
     (changedDrafts.length > 0 || pending !== null) && receipt === null;
@@ -436,7 +464,12 @@ const Orders = () => {
   /** The composing line is edited the same way, into its own state. */
   const handlePendingField = (field: EditableField, value: number) =>
     setPending((l) =>
-      l ? recompute({ ...l, [field]: field === "qty" ? Math.round(value) : value }) : l,
+      l
+        ? recompute({
+            ...l,
+            [field]: field === "qty" ? Math.round(value) : value,
+          })
+        : l,
     );
 
   const handlePendingPatch = (patch: LinePatch) =>
@@ -529,11 +562,7 @@ const Orders = () => {
     }
     // The open order counts even untouched, so pressing Submit on it does
     // what it always did; staged orders count only when they changed.
-    const toSend = changedDrafts.length
-      ? changedDrafts
-      : draft
-        ? [draft]
-        : [];
+    const toSend = changedDrafts.length ? changedDrafts : draft ? [draft] : [];
     if (!toSend.length) return;
 
     setSubmitting(true);
@@ -690,21 +719,21 @@ const Orders = () => {
                 submitting={submitting}
               />
             ) : (
-            <OrderEditPanel
-              onAddLine={handleAddLine}
-              pending={pending}
-              onPendingField={handlePendingField}
-              onPendingPatch={handlePendingPatch}
-              onConfirmPending={handleConfirmPending}
-              onCancelPending={() => setPending(null)}
-              pendingNonce={pendingNonce}
-              onLookup={handleLookup}
-              lookingUp={lookingUp}
-              loadingSubDepts={loadingSubDepts}
-              onSubmit={handleSubmit}
-              submitting={submitting}
-              onLeaveEdit={leaveEdit}
-            />
+              <OrderEditPanel
+                onAddLine={handleAddLine}
+                pending={pending}
+                onPendingField={handlePendingField}
+                onPendingPatch={handlePendingPatch}
+                onConfirmPending={handleConfirmPending}
+                onCancelPending={() => setPending(null)}
+                pendingNonce={pendingNonce}
+                onLookup={handleLookup}
+                lookingUp={lookingUp}
+                loadingSubDepts={loadingSubDepts}
+                onSubmit={handleSubmit}
+                submitting={submitting}
+                onLeaveEdit={leaveEdit}
+              />
             )}
 
             <SubmitReceipt
@@ -724,32 +753,32 @@ const Orders = () => {
         </>
       ) : (
         <>
-      <OrdersConfigPanel
-        lines={ctx.allOrders}
-        filters={ctx.filters}
-        onChange={(key: keyof OrdersFilters, values) =>
-          ctx.dispatch(setOrdersFilter({ key, values }))
-        }
-        onMarginOver={(v) => ctx.dispatch(setOrdersMarginOver(v))}
-        onClear={() => ctx.dispatch(clearOrdersFilters())}
-        loading={ctx.loadingAllOrders}
-        matched={gridRows.length}
-        startDate={ctx.startDate}
-        endDate={ctx.endDate}
-        onOpenSearch={() => setSearchModalOpen(true)}
-        scopeLabel={scopeLabel}
-      />
+          <OrdersConfigPanel
+            lines={ctx.allOrders}
+            filters={ctx.filters}
+            onChange={(key: keyof OrdersFilters, values) =>
+              ctx.dispatch(setOrdersFilter({ key, values }))
+            }
+            onMarginOver={(v) => ctx.dispatch(setOrdersMarginOver(v))}
+            onClear={() => ctx.dispatch(clearOrdersFilters())}
+            loading={ctx.loadingAllOrders}
+            matched={gridRows.length}
+            startDate={ctx.startDate}
+            endDate={ctx.endDate}
+            onOpenSearch={() => setSearchModalOpen(true)}
+            scopeLabel={scopeLabel}
+          />
 
-      <OrderReportPanel
-        rows={gridRows}
-        sort={sort}
-        marginOver={ctx.filters.marginOver}
-        onSort={handleSort}
-        loading={ctx.loadingAllOrders}
-        onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
-        onEnterEdit={() => setEditing(true)}
-        canEdit={canEdit}
-      />
+          <OrderReportPanel
+            rows={gridRows}
+            sort={sort}
+            marginOver={ctx.filters.marginOver}
+            onSort={handleSort}
+            loading={ctx.loadingAllOrders}
+            onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
+            onEnterEdit={() => setEditing(true)}
+            canEdit={canEdit}
+          />
         </>
       )}
 
