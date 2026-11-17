@@ -27,7 +27,8 @@ interface ForecastListPanelProps {
  */
 const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
   const dispatch = useAppDispatch();
-  const { search, rowData, checkedUpcs, listFilter, adListRows } = useForecastCtx();
+  const { search, rowData, checkedUpcs, listFilter, adListRows } =
+    useForecastCtx();
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
   const locationLabel =
@@ -38,7 +39,8 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
 
   const visible = useMemo(() => {
     let rows = rowData;
-    if (showSelectedOnly) rows = rows.filter((r) => checkedUpcs.includes(r.upc));
+    if (showSelectedOnly)
+      rows = rows.filter((r) => checkedUpcs.includes(r.upc));
     if (listFilter) {
       const q = listFilter.toLowerCase();
       rows = rows.filter(
@@ -100,7 +102,9 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
           />
           <div className="flex gap-2 flex-shrink-0">
             <button
-              onClick={() => dispatch(setCheckedUpcs(visible.map((r) => r.upc)))}
+              onClick={() =>
+                dispatch(setCheckedUpcs(visible.map((r) => r.upc)))
+              }
               className="text-[10px] text-brand_navy font-medium hover:underline"
             >
               All
@@ -116,7 +120,9 @@ const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
             <button
               onClick={() => setShowSelectedOnly((p) => !p)}
               className={`text-[10px] font-medium transition-colors ${
-                showSelectedOnly ? "text-brand_navy underline" : "text-content/95"
+                showSelectedOnly
+                  ? "text-brand_navy underline"
+                  : "text-content/95"
               }`}
             >
               Only

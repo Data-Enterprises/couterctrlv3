@@ -1,5 +1,9 @@
 // Utils
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../../../../utils/forecastCalc";
+import {
+  calcFcstQty,
+  estimateDaysActive,
+  forecastUnits,
+} from "../../../../../utils/forecastCalc";
 
 // Interfaces
 import type { Args, ScenarioRow } from "../interfaces";

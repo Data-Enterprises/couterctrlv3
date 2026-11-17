@@ -9,7 +9,10 @@ import { formatRowData, formatSinglePriceRowData } from ".";
 
 // Interfaces
 import type { PriceHistoryFromListResp } from "../../../../interfaces";
-import type { AdListData, AdListRow } from "../../../../features/dev/devForecastDevSlice";
+import type {
+  AdListData,
+  AdListRow,
+} from "../../../../features/dev/devForecastDevSlice";
 
 /**
  * Ad-list enrichment and row formatting, the same arithmetic as legacy (only
@@ -41,14 +44,19 @@ export const enrichForecastRows = (
       .sort((a, b) => b[1] - a[1]);
 
     const linear = fitLinearDemand(prices);
-    const rawPredicted = prices.length >= 3
-      ? predictQty(adPrice, linear, prices)
-      : linear.intercept + linear.slope * adPrice;
-    const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
-      ? rawPredicted
-      : prices[0][1];
+    const rawPredicted =
+      prices.length >= 3
+        ? predictQty(adPrice, linear, prices)
+        : linear.intercept + linear.slope * adPrice;
+    const safePredicted =
+      isFinite(rawPredicted) && !isNaN(rawPredicted)
+        ? rawPredicted
+        : prices[0][1];
     const predictedQty = Math.max(0, Math.round(safePredicted));
-    const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+    const estimatedDays = Math.max(
+      1,
+      estimateDaysActive(result.price_history, adPrice),
+    );
 
     return {
       ...result,
@@ -67,8 +75,12 @@ export const enrichForecastRows = (
   // Update the lookup map to use enriched results
   enrichedResults.forEach((r) => resultsByUpc.set(r.upc, r));
 
-  const singlePrices = enrichedResults.filter((item) => item.price_history.length === 1);
-  const multiPrices = enrichedResults.filter((item) => item.price_history.length > 1);
+  const singlePrices = enrichedResults.filter(
+    (item) => item.price_history.length === 1,
+  );
+  const multiPrices = enrichedResults.filter(
+    (item) => item.price_history.length > 1,
+  );
   const rawRows = [
     ...formatRowData(multiPrices),
     ...formatSinglePriceRowData(singlePrices),
@@ -90,16 +102,21 @@ export const enrichForecastRows = (
 
       const linear = fitLinearDemand(prices);
 
-      const rawPredicted = prices.length >= 3
-        ? predictQty(adPrice, linear, prices)
-        : linear.intercept + linear.slope * adPrice;
-      const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
-        ? rawPredicted
-        : prices[0][1]; // fall back to highest-volume historical qty
+      const rawPredicted =
+        prices.length >= 3
+          ? predictQty(adPrice, linear, prices)
+          : linear.intercept + linear.slope * adPrice;
+      const safePredicted =
+        isFinite(rawPredicted) && !isNaN(rawPredicted)
+          ? rawPredicted
+          : prices[0][1]; // fall back to highest-volume historical qty
       const predictedQty = Math.max(0, Math.round(safePredicted));
 
       // Guard against 0: forecastUnits divides by sellingDaysAtPrice internally
-      const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+      const estimatedDays = Math.max(
+        1,
+        estimateDaysActive(result.price_history, adPrice),
+      );
 
       const rawUnits = forecastUnits(
         adPrice,

@@ -225,9 +225,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
       {/* Header */}
       <div className="cc-phone-header">
         <div>
-          <p className="cc-navy-title text-[13px]">
-            Export CSV
-          </p>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
           <p className="text-custom-white text-[10px] mt-0.5">
             {scopeLabel} · 90 days ending {singleDate}
           </p>
@@ -247,10 +245,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
             </button>
           ))}
         </div>
-        <button
-          onClick={onClose}
-          className="cc-navy-link justify-self-end"
-        >
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
@@ -282,9 +277,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
                   className={CHECKBOX}
                 />
                 <div>
-                  <p className="text-[13px] cc-row-title">
-                    {label}
-                  </p>
+                  <p className="text-[13px] cc-row-title">{label}</p>
                   <p className="text-[11px] text-content mt-0.5">
                     {description}
                   </p>
@@ -410,10 +403,7 @@ const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
                     <thead className="sticky top-0 bg-fill_soft z-10">
                       <tr>
                         {activeCols.map((c) => (
-                          <th
-                            key={c.key}
-                            className="cc-th text-content"
-                          >
+                          <th key={c.key} className="cc-th text-content">
                             {c.label}
                           </th>
                         ))}

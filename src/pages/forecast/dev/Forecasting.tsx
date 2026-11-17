@@ -68,7 +68,12 @@ const Forecasting = () => {
    *  Null means the user has already been told why there is nothing to send. */
   const resolveStoreids = async (): Promise<string | null> => {
     if (type !== "Group") return String(lastStore);
-    const resp = await getStoresAssignedToUserGroup(url, token, userid, lastGroup);
+    const resp = await getStoresAssignedToUserGroup(
+      url,
+      token,
+      userid,
+      lastGroup,
+    );
     const active: Store[] = (resp.data.stores ?? []).filter(
       (s: { active: number | boolean }) => Boolean(s.active),
     );
@@ -185,7 +190,9 @@ const Forecasting = () => {
           })
           .catch(() => {
             dispatch(setIsLoadingMore(false));
-            toast.warn("Some items could not be loaded — partial results shown.");
+            toast.warn(
+              "Some items could not be loaded — partial results shown.",
+            );
           });
       })
       // A store the user isn't assigned is a 403 whose reason is in `detail`.

@@ -17,7 +17,18 @@ import {
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { rankRows, tierCounts, tierSummary, exceptionsFor, EXCEPTION_LABEL, TIER_LABEL, TIER_STRIPE, TIER_CHIP_ON_NAVY, TIER_CHIP_BASE, TIER_CHIP_ON } from "../utils/forecastRanking";
+import {
+  rankRows,
+  tierCounts,
+  tierSummary,
+  exceptionsFor,
+  EXCEPTION_LABEL,
+  TIER_LABEL,
+  TIER_STRIPE,
+  TIER_CHIP_ON_NAVY,
+  TIER_CHIP_BASE,
+  TIER_CHIP_ON,
+} from "../utils/forecastRanking";
 import { COLS, HEAD, HEAD_CELLS, sortValue } from "../utils";
 import { PERF_SORT_HEADER } from "../../../../components-dev/utils";
 
@@ -243,9 +254,7 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
             ["Markdown", formatCurrency2(totals.markdown)],
           ].map(([label, value]) => (
             <div key={label} className="px-4 pt-2.5 pb-2.5 text-center min-w-0">
-              <div className="text-[10px] cc-caps-strong">
-                {label}
-              </div>
+              <div className="text-[10px] cc-caps-strong">{label}</div>
               <div className="text-[13px] font-bold text-content truncate">
                 {value}
               </div>
@@ -255,7 +264,10 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
 
         {/* Contribution tiers, not a grade: A items are the ones the ad's
             numbers rest on. */}
-        <div data-help="bands" className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-line_hair flex-shrink-0">
+        <div
+          data-help="bands"
+          className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-line_hair flex-shrink-0"
+        >
           {(
             [
               ["A", counts.A],
@@ -298,7 +310,10 @@ const ForecastRowsTable = ({ onExportClick }: ForecastRowsTableProps) => {
         </div>
 
         {/* batch setter — writes to every ticked row, so the count is named */}
-        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-fill_soft border-b border-line_hair flex-shrink-0">
+        <div
+          data-help="toolbar"
+          className="flex items-center gap-1.5 px-3 py-2 bg-fill_soft border-b border-line_hair flex-shrink-0"
+        >
           <span className="text-[11px] cc-caps">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}

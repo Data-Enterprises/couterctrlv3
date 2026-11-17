@@ -148,9 +148,7 @@ const ForecastCalcModal = () => {
           ] as const
         ).map(([label, value]) => (
           <div key={label} className="px-4 pt-2.5 pb-2.5 text-center min-w-0">
-            <div className="text-[10px] cc-caps-strong">
-              {label}
-            </div>
+            <div className="text-[10px] cc-caps-strong">{label}</div>
             <div className="text-[13px] font-bold text-content truncate tabular-nums">
               {value}
             </div>
@@ -253,9 +251,7 @@ const ForecastCalcModal = () => {
           {/* Note */}
           <div className={SECTION}>
             <div className="flex items-stretch bg-fill_soft border-b border-line_hair">
-              <div className="px-3 py-1.5 text-[11px] cc-caps flex-1">
-                Note
-              </div>
+              <div className="px-3 py-1.5 text-[11px] cc-caps flex-1">Note</div>
               {noteText !== (row.notes ?? "") && (
                 <button
                   onClick={() =>

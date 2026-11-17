@@ -1,5 +1,9 @@
 // Utils
-import { fitLinearDemand, predictQty, forecastUnits } from "../../../../utils/forecastCalc";
+import {
+  fitLinearDemand,
+  predictQty,
+  forecastUnits,
+} from "../../../../utils/forecastCalc";
 
 // Interfaces
 import type { PriceHistoryResult } from "../../../../interfaces";
@@ -16,7 +20,7 @@ export const formatRowData = (data: PriceHistoryResult[]) => {
     const predictedQty = predictQty(prices[0][0], linear, prices);
     const price = prices[0][0];
     const daysAtPrice = item.price_history.find(
-      (p) => parseFloat(p.price) === price
+      (p) => parseFloat(p.price) === price,
     )!.days_active;
 
     const units = forecastUnits(
@@ -27,7 +31,7 @@ export const formatRowData = (data: PriceHistoryResult[]) => {
       90, // on 90 day period
       daysAtPrice, // days at price => based on the price history => 3
       7, // forecastwindow
-      prices // price history to get qty at price
+      prices, // price history to get qty at price
       // adDays === undefined
     );
 
@@ -63,7 +67,7 @@ export const formatSinglePriceRowData = (data: PriceHistoryResult[]) => {
       90,
       ph.days_active,
       7,
-      [[price, ph.qty]]
+      [[price, ph.qty]],
     );
     const markdownDollars = (item.regular_retail_price - price) * units;
     return {
@@ -96,7 +100,8 @@ export const parseUpcs = (text: string): string[] =>
     .filter((u) => u.length > 0 && /^\d+$/.test(u));
 
 /** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | share | markdown */
-export const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
+export const COLS =
+  "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
 
 /** The forecast grid's sticky header row. */
 export const HEAD =

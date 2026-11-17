@@ -57,7 +57,8 @@ const ForecastEntry = ({
   const { nothingPicked, pickLabel } = useSearchPick();
   // Dev's own list — see the note in forecastDevSlice. Nothing loaded here
   // reaches the legacy page or the UPC List page.
-  const { search, assignedStores, upcs, upcText, adListRows, adListFileName } = useForecastCtx();
+  const { search, assignedStores, upcs, upcText, adListRows, adListFileName } =
+    useForecastCtx();
 
   const handleParseText = () => {
     const parsed = parseUpcs(upcText);
@@ -228,7 +229,10 @@ const ForecastEntry = ({
               </div>
 
               {upcs.length > 0 && (
-                <div data-help="upc-input" className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar">
+                <div
+                  data-help="upc-input"
+                  className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar"
+                >
                   {upcs.map((upc) => (
                     <span
                       key={upc}
