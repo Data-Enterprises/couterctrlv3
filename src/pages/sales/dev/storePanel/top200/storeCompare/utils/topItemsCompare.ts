@@ -307,3 +307,39 @@ export const amountTextOf = (r: TopItemRow | null): string | null =>
         minimumFractionDigits: weighed(r) ? 1 : 0,
         maximumFractionDigits: weighed(r) ? 1 : 0,
       })} ${amountUnit(r)}`;
+
+/**
+ * The departments on offer, and which of them the OTHER filters have emptied.
+ *
+ * An option that would return nothing is marked rather than dropped when it
+ * is selected, so a pick never vanishes and leaves the screen blank with
+ * nothing to click to undo -- MultiSelectFilter's own rule.
+ */
+export const compareDeptOptions = (
+  rows: ComparedTopItem[],
+  filter: CompareFilter,
+  text: string,
+) => {
+  const live = new Set(filterCompared(rows, filter, text).map((r) => r.dept));
+  return deptsPresent(rows).map((d) => ({
+    value: d.dept,
+    label: `${d.dept} (${d.count})`,
+    unavailable: !live.has(d.dept),
+  }));
+};
+
+/**
+ * What the right-click menu can copy: the codes on screen, and the same codes
+ * split by which way they went.
+ *
+ * `watch` is empty because this screen grades in two -- ahead or behind --
+ * and an empty list is how the menu knows not to offer that line.
+ */
+export const compareUpcs = (shown: ComparedTopItem[], metric: CompareMetric) => ({
+  all: shown.map((r) => r.code),
+  bySeverity: {
+    critical: shown.filter((r) => metricSigned(r, metric) < 0).map((r) => r.code),
+    watch: [],
+    healthy: shown.filter((r) => metricSigned(r, metric) >= 0).map((r) => r.code),
+  },
+});

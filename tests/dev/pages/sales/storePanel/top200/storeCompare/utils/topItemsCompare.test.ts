@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { TopItemRow } from "@/api/topItems";
 import {
   amountTextOf,
+  compareDeptOptions,
   compareTopItems,
+  compareUpcs,
   compareTotals,
   deptsPresent,
   divergence,
@@ -270,5 +272,32 @@ describe("the department filter", () => {
     expect(
       filterCompared(rows, "both", "", ["Fresh Meat"]).map((r) => r.code),
     ).toEqual(["SHARED"]);
+  });
+});
+
+describe("compareDeptOptions", () => {
+  it("lists every department and marks one the other filters have emptied", () => {
+    const rows = compareTopItems(
+      [row({ product_code: "A" }), row({ product_code: "B", sub_department_description: "Dairy" })],
+      [row({ product_code: "A" })],
+    );
+    const opts = compareDeptOptions(rows, "both", "");
+    expect(opts.map((o) => o.value).sort()).toEqual(["Dairy", "Produce"]);
+    expect(opts.find((o) => o.value === "Dairy")?.unavailable).toBe(true);
+    expect(opts.find((o) => o.value === "Produce")?.unavailable).toBe(false);
+  });
+});
+
+describe("compareUpcs", () => {
+  it("copies every code on screen, split by ahead and behind", () => {
+    const rows = compareTopItems(
+      [row({ product_code: "A", total_sales: 300 }), row({ product_code: "B", total_sales: 50 })],
+      [row({ product_code: "A", total_sales: 100 }), row({ product_code: "B", total_sales: 200 })],
+    );
+    const upcs = compareUpcs(rows, "sales");
+    expect(upcs.all.sort()).toEqual(["A", "B"]);
+    expect(upcs.bySeverity.healthy).toEqual(["A"]);
+    expect(upcs.bySeverity.critical).toEqual(["B"]);
+    expect(upcs.bySeverity.watch).toEqual([]);
   });
 });
