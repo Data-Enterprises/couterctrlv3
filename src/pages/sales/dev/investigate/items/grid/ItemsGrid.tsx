@@ -9,11 +9,11 @@ import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
 import type { Cause, CauseTotal, ItemVerdict, Stage } from "../../interfaces";
 
 // Components
-import GridBody from "../components/GridBody";
-import GridContextMenu from "../components/GridContextMenu";
-import GridFoot from "../components/GridFoot";
-import GridHead from "../components/GridHead";
-import GridPager from "../components/GridPager";
+import GridBody from "./components/GridBody";
+import GridContextMenu from "./components/GridContextMenu";
+import GridFoot from "./components/GridFoot";
+import GridHead from "./components/GridHead";
+import GridPager from "./components/GridPager";
 
 interface ItemsGridProps {
   items: ItemVerdict[];

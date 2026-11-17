@@ -1,8 +1,8 @@
 // Utils
-import { PAGE_ROWS } from "../../utils";
+import { PAGE_ROWS } from "../../../utils";
 
 // Interfaces
-import type { ItemVerdict } from "../../interfaces";
+import type { ItemVerdict } from "../../../interfaces";
 
 interface GridPagerProps {
   /** The filtered, sorted list the grid pages through. */

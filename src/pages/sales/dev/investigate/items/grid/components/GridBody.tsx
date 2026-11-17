@@ -1,12 +1,12 @@
 // Utils
-import { COLUMNS, tintOf } from "../../utils/columns";
+import { COLUMNS, tintOf } from "../../../utils/columns";
 
 // Interfaces
-import type { ItemVerdict } from "../../interfaces";
-import type { useRowSelection } from "../../hooks";
+import type { ItemVerdict } from "../../../interfaces";
+import type { useRowSelection } from "../../../hooks";
 
 // Components
-import Bar from "../../components/Bar";
+import Bar from "../../../components/Bar";
 
 interface GridBodyProps {
   rows: ItemVerdict[];
