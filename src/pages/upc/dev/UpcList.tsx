@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 
@@ -35,7 +35,7 @@ const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const searchState = useAppSelector((s) => s.search);
+  const searchState = ctx.liveSearch;
   const [reSearchOpen, setReSearchOpen] = useState(false);
   /**
    * Which search is the newest. Each search takes a number; one whose group
