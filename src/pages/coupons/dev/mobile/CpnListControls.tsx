@@ -12,7 +12,11 @@ interface CpnListControlsProps {
  * The sort chips above a coupon list, with Export on the end of the row
  * (`PerfCardHeader` has no actions slot for it).
  */
-const CpnListControls = ({ value, onChange, onExport }: CpnListControlsProps) => (
+const CpnListControls = ({
+  value,
+  onChange,
+  onExport,
+}: CpnListControlsProps) => (
   <div className="flex items-center border-b border-brand_line">
     <div className="min-w-0 flex-1">
       <MobileSortChips

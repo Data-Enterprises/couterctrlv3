@@ -41,7 +41,12 @@ const CouponsMobile = () => {
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
   const toast = useToast();
-  const { selectedGroup, userid, assignedStores, selectedGroupStores: groupStores } = ctx;
+  const {
+    selectedGroup,
+    userid,
+    assignedStores,
+    selectedGroupStores: groupStores,
+  } = ctx;
 
   const [screen, setScreen] = useState<Screen>("entry");
   // null in group mode means "All stores" — the whole group, unscoped.
@@ -278,7 +283,11 @@ const CouponsMobile = () => {
             disabled={ctx.isFetching || nothingPicked}
             className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-60 transition-colors"
           >
-            {ctx.isFetching ? "Loading…" : nothingPicked ? pickLabel : "Load Coupons"}
+            {ctx.isFetching
+              ? "Loading…"
+              : nothingPicked
+                ? pickLabel
+                : "Load Coupons"}
           </button>
         </div>
       </div>

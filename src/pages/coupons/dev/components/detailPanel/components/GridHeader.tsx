@@ -36,10 +36,7 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
   } = filters;
   return (
     <tr className="cc-thead">
-      <th
-        className="px-3 py-2 text-left w-32"
-        style={{ overflow: "visible" }}
-      >
+      <th className="px-3 py-2 text-left w-32" style={{ overflow: "visible" }}>
         <ColFilter
           label="UPC"
           active={!!appliedUpc}
@@ -68,10 +65,7 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
           />
         </ColFilter>
       </th>
-      <th
-        className="px-3 py-2 text-left"
-        style={{ overflow: "visible" }}
-      >
+      <th className="px-3 py-2 text-left" style={{ overflow: "visible" }}>
         <ColFilter
           label="Product"
           active={!!appliedProduct}
@@ -96,9 +90,7 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
             }}
             placeholder="Search product…"
             value={draftProduct}
-            onChange={(e) =>
-              setDraftProduct(e.target.value)
-            }
+            onChange={(e) => setDraftProduct(e.target.value)}
           />
         </ColFilter>
       </th>
@@ -131,20 +123,12 @@ const GridHeader = ({ filters }: GridHeaderProps) => {
       >
         Trans
       </th>
-      <th className="px-3 py-2 text-[10px] cc-caps text-right w-12">
-        Count
-      </th>
-      <th
-        className="px-3 py-2 text-right w-24"
-        style={{ overflow: "visible" }}
-      >
+      <th className="px-3 py-2 text-[10px] cc-caps text-right w-12">Count</th>
+      <th className="px-3 py-2 text-right w-24" style={{ overflow: "visible" }}>
         <ColFilter
           label="Total"
           active={!!appliedAmount}
-          appliedDisplay={fmtThreshold(
-            appliedAmount,
-            "$",
-          )}
+          appliedDisplay={fmtThreshold(appliedAmount, "$")}
           align="right"
           onApply={() => setAppliedAmount(draftAmount)}
           onClear={() => {

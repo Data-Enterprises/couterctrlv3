@@ -58,7 +58,6 @@ const CpnSectionDetail = ({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedSaleId, setSelectedSaleId] = useState("");
 
-
   const aggRows = useMemo((): AggRow[] => {
     const map = new Map<string, AggRow>();
     coupons.forEach((c) => {
@@ -197,93 +196,93 @@ const CpnSectionDetail = ({
   // the tab it came from names the level.
   return (
     <>
-    <MobilePerfDetail
-      tabs={[{ key: "products" as const, label: tabLabel }]}
-      active="products"
-      onTab={() => {}}
-      scopeName={sectionLabel}
-      when={dateRangeLabel}
-      backLabel="Back to coupons"
-      onBack={onBack}
-      levelKey={`cpnSection|${sectionLabel}`}
-    >
-      <div className="flex flex-col gap-3">
-        <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
+      <MobilePerfDetail
+        tabs={[{ key: "products" as const, label: tabLabel }]}
+        active="products"
+        onTab={() => {}}
+        scopeName={sectionLabel}
+        when={dateRangeLabel}
+        backLabel="Back to coupons"
+        onBack={onBack}
+        levelKey={`cpnSection|${sectionLabel}`}
+      >
+        <div className="flex flex-col gap-3">
+          <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
 
-        <section className="cc-card-phone">
-      {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
+          <section className="cc-card-phone">
+            {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
           the scroll and already clears the fixed tab bar. */}
-      <div>
-        {aggRows.map((agg) => {
-          const isExp = expanded.has(agg.product_code);
-          return (
-            <div
-              key={agg.product_code}
-              className="border-b border-brand_line last:border-b-0"
-            >
-              <button
-                onClick={() => toggleExpanded(agg.product_code)}
-                className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left active:bg-bkg"
-              >
-                {isExp ? (
-                  <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
-                ) : (
-                  <ChevronRightIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
-                )}
-                <span className="flex-1 text-[11px] font-medium text-content truncate">
-                  {agg.product_description}
-                </span>
-                <span className="text-[10px] text-content/95 flex-shrink-0">
-                  {agg.product_code}
-                </span>
-                <span className="text-[10px] text-content/95 flex-shrink-0">
-                  {agg.count}×
-                </span>
-                <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
-                  {formatCurrency2(agg.total)}
-                </span>
-              </button>
-              {isExp && (
-                <div className="border-t border-brand_line">
-                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-fill_muted border-b border-brand_line">
-                    {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
-                      <div
-                        key={h}
-                        className={`text-[10px] cc-caps ${i === 3 ? "text-right" : ""}`}
-                      >
-                        {h}
-                      </div>
-                    ))}
-                  </div>
-                  {agg.uses.map((use) => (
+            <div>
+              {aggRows.map((agg) => {
+                const isExp = expanded.has(agg.product_code);
+                return (
+                  <div
+                    key={agg.product_code}
+                    className="border-b border-brand_line last:border-b-0"
+                  >
                     <button
-                      key={use.sale_id}
-                      onClick={() => handleUseClick(use)}
-                      className="w-full grid grid-cols-4 gap-2 px-3.5 py-2 border-b border-brand_line last:border-0 text-left active:bg-bkg"
+                      onClick={() => toggleExpanded(agg.product_code)}
+                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left active:bg-bkg"
                     >
-                      <span className="text-[10px] text-content/95 truncate">
-                        {use.cashier_name}
+                      {isExp ? (
+                        <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
+                      ) : (
+                        <ChevronRightIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
+                      )}
+                      <span className="flex-1 text-[11px] font-medium text-content truncate">
+                        {agg.product_description}
                       </span>
-                      <span className="text-[10px] text-content/95">
-                        {formatDate(use.sale_date.split("T")[0])}
+                      <span className="text-[10px] text-content/95 flex-shrink-0">
+                        {agg.product_code}
                       </span>
-                      <span className="text-[10px] text-content/95 tabular-nums">
-                        #{use.sale_id}
+                      <span className="text-[10px] text-content/95 flex-shrink-0">
+                        {agg.count}×
                       </span>
-                      <span className="text-[10px] font-semibold text-content text-right tabular-nums">
-                        {formatCurrency2(use.amount)}
+                      <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
+                        {formatCurrency2(agg.total)}
                       </span>
                     </button>
-                  ))}
-                </div>
-              )}
+                    {isExp && (
+                      <div className="border-t border-brand_line">
+                        <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-fill_muted border-b border-brand_line">
+                          {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
+                            <div
+                              key={h}
+                              className={`text-[10px] cc-caps ${i === 3 ? "text-right" : ""}`}
+                            >
+                              {h}
+                            </div>
+                          ))}
+                        </div>
+                        {agg.uses.map((use) => (
+                          <button
+                            key={use.sale_id}
+                            onClick={() => handleUseClick(use)}
+                            className="w-full grid grid-cols-4 gap-2 px-3.5 py-2 border-b border-brand_line last:border-0 text-left active:bg-bkg"
+                          >
+                            <span className="text-[10px] text-content/95 truncate">
+                              {use.cashier_name}
+                            </span>
+                            <span className="text-[10px] text-content/95">
+                              {formatDate(use.sale_date.split("T")[0])}
+                            </span>
+                            <span className="text-[10px] text-content/95 tabular-nums">
+                              #{use.sale_id}
+                            </span>
+                            <span className="text-[10px] font-semibold text-content text-right tabular-nums">
+                              {formatCurrency2(use.amount)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-        </section>
-      </div>
-    </MobilePerfDetail>
+          </section>
+        </div>
+      </MobilePerfDetail>
 
       {/* Transaction bottom sheet */}
       {selectedSaleId && (

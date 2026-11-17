@@ -46,7 +46,8 @@ const CpnStoreList = ({
   const [exportOpen, setExportOpen] = useState(false);
   // Store names come from assignedStores, never the coupon payload; groupStores
   // covers searched-group stores this user isn't assigned to.
-  const { assignedStores, selectedGroupStores: groupStores } = useCouponContext();
+  const { assignedStores, selectedGroupStores: groupStores } =
+    useCouponContext();
   const [infoOpen, setInfoOpen] = useState(false);
   // Still needed for the All-stores row; the card derives its own.
   const totalAmount = sumCouponAmount(coupons);

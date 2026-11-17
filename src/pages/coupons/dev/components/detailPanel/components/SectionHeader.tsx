@@ -28,13 +28,10 @@ const SectionHeader = ({
   secAvg,
   secProducts,
 }: SectionHeaderProps) => {
-  const sec = groupedSections.find(
-    (s) => s.key === selectedSection,
-  );
+  const sec = groupedSections.find((s) => s.key === selectedSection);
   if (!sec) return null;
   const tabLabel =
-    GROUP_TABS.find((t) => t.key === groupTab)?.label ??
-    groupTab;
+    GROUP_TABS.find((t) => t.key === groupTab)?.label ?? groupTab;
   return (
     <>
       <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-fill_muted border-b border-line_hair flex-shrink-0">
@@ -59,12 +56,8 @@ const SectionHeader = ({
           { label: "Products", value: String(secProducts) },
         ].map(({ label, value }) => (
           <div key={label} className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] cc-caps-strong">
-              {label}
-            </div>
-            <div className="text-[13px] font-bold text-content">
-              {value}
-            </div>
+            <div className="text-[10px] cc-caps-strong">{label}</div>
+            <div className="text-[13px] font-bold text-content">{value}</div>
           </div>
         ))}
       </div>

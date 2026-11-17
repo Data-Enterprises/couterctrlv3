@@ -69,7 +69,10 @@ const ColFilter = ({
       {active && appliedDisplay && (
         <span
           className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
+          style={{
+            background: "rgb(var(--color-brand-navy) / 0.08)",
+            maxWidth: 90,
+          }}
         >
           <span className="text-[8px] font-medium text-brand_navy truncate">
             {appliedDisplay}
@@ -110,7 +113,10 @@ const ColFilter = ({
           <button
             onClick={handleApply}
             className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
+            style={{
+              background: "rgb(var(--color-brand-navy))",
+              color: "white",
+            }}
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply

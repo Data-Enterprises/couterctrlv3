@@ -9,7 +9,20 @@ export const buildPresetCsv = (rows: CouponItem[], label: string) => {
   // coupon_amount can be null with the figure in store_coupon/vendor_coupon
   // (a transaction-level fallback); resolved here so the file matches the page.
   const resolved = withResolvedCouponAmount(rows);
-  const headers = ["Store #", "Store", "Date", "Trans", "Cpn Type", "Cpn Amt", "UPC", "Description", "Cashier #", "Cashier", "Customer ID", "Sub Dept"];
+  const headers = [
+    "Store #",
+    "Store",
+    "Date",
+    "Trans",
+    "Cpn Type",
+    "Cpn Amt",
+    "UPC",
+    "Description",
+    "Cashier #",
+    "Cashier",
+    "Customer ID",
+    "Sub Dept",
+  ];
   const data = resolved.map((r) => [
     r.store_number,
     r.store_name,
@@ -28,17 +41,17 @@ export const buildPresetCsv = (rows: CouponItem[], label: string) => {
 };
 
 export const DIMS = [
-  { key: "store_name",                 label: "Store" },
+  { key: "store_name", label: "Store" },
   { key: "sub_department_description", label: "Sub Dept" },
-  { key: "coupon_type",                label: "Cpn Type" },
-  { key: "cashier_name",               label: "Cashier" },
-  { key: "product_description",        label: "Description" },
-  { key: "customer_id",                label: "Customer ID" },
+  { key: "coupon_type", label: "Cpn Type" },
+  { key: "cashier_name", label: "Cashier" },
+  { key: "product_description", label: "Description" },
+  { key: "customer_id", label: "Customer ID" },
 ];
 
 export const METRICS = [
   { key: "coupon_amount", label: "Cpn Amt" },
-  { key: "qty",           label: "Qty" },
+  { key: "qty", label: "Qty" },
 ];
 
 // Moved to utils/csvExport beside AggFn; re-exported for this page's files.

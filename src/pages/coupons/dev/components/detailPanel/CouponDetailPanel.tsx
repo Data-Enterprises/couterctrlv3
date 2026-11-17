@@ -16,7 +16,10 @@ import { getCashierTransaction } from "../../../../../api/lossPrevention";
 
 // Utils
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
-import { couponValueOf, sumCouponAmount } from "../../../../../utils/couponValue";
+import {
+  couponValueOf,
+  sumCouponAmount,
+} from "../../../../../utils/couponValue";
 import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
@@ -44,7 +47,6 @@ interface CouponDetailPanelProps {
   sortMetric: "amount" | "qty";
 }
 
-
 /** The Coupons page's right panel for the chosen store or all stores: header, KPI strip, Sub dept/Date/Cashier tabs
  *  with their section cards, and the coupon grid, which swaps to a single transaction's receipt when a row is clicked. */
 const CouponDetailPanel = ({
@@ -70,15 +72,20 @@ const CouponDetailPanel = ({
   const appliedUpc = applied.upc;
   const appliedSubDept = applied.subDept;
   const appliedAmount = applied.amount;
-  const setAppliedProduct = (v: string) => dispatch(setCouponGridFilter({ product: v }));
-  const setAppliedUpc = (v: string) => dispatch(setCouponGridFilter({ upc: v }));
-  const setAppliedSubDept = (v: string) => dispatch(setCouponGridFilter({ subDept: v }));
+  const setAppliedProduct = (v: string) =>
+    dispatch(setCouponGridFilter({ product: v }));
+  const setAppliedUpc = (v: string) =>
+    dispatch(setCouponGridFilter({ upc: v }));
+  const setAppliedSubDept = (v: string) =>
+    dispatch(setCouponGridFilter({ subDept: v }));
   const setAppliedAmount = (v: ThresholdValue | null) =>
     dispatch(setCouponGridFilter({ amount: v }));
   const [draftProduct, setDraftProduct] = useState(appliedProduct);
   const [draftUpc, setDraftUpc] = useState(appliedUpc);
   const [draftSubDept, setDraftSubDept] = useState(appliedSubDept);
-  const [draftAmount, setDraftAmount] = useState<ThresholdValue | null>(appliedAmount);
+  const [draftAmount, setDraftAmount] = useState<ThresholdValue | null>(
+    appliedAmount,
+  );
   const [expandedCoupons, setExpandedCoupons] = useState<Set<string>>(
     new Set(),
   );
@@ -392,10 +399,7 @@ const CouponDetailPanel = ({
       item.is_coupon === 1 ? "" : (item.total_sales ?? ""),
       item.is_coupon === 1 ? couponValueOf(item) : "",
     ]);
-    const csv = [
-      headers.join(","),
-      ...rows.map((r) => r.join(",")),
-    ].join("\n");
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -461,10 +465,7 @@ const CouponDetailPanel = ({
   };
 
   return (
-    <div
-      className="cc-panel shadow-lg"
-      style={{ flex: 1, minWidth: 0 }}
-    >
+    <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
       {exportOpen && (
         <CouponsExportModal
           onClose={() => setExportOpen(false)}

@@ -29,19 +29,29 @@ const TransactionDetail = ({
   txNet,
   txTotal,
 }: TransactionDetailProps) => (
-    <>
-      <TxHeader txMeta={txMeta} txLines={txLines} onBack={onBack} onExport={onExport} />
-      {txLines.length === 0 ? (
-        <div className="flex-1 relative min-h-0">
-          <LoadingIndicator message="Loading transaction..." />
-        </div>
-      ) : (
-        <>
-          <TxLinesTable txLines={txLines} />
-          <TxTotals txCoupons={txCoupons} txTax={txTax} txNet={txNet} txTotal={txTotal} />
-        </>
-      )}
-    </>
+  <>
+    <TxHeader
+      txMeta={txMeta}
+      txLines={txLines}
+      onBack={onBack}
+      onExport={onExport}
+    />
+    {txLines.length === 0 ? (
+      <div className="flex-1 relative min-h-0">
+        <LoadingIndicator message="Loading transaction..." />
+      </div>
+    ) : (
+      <>
+        <TxLinesTable txLines={txLines} />
+        <TxTotals
+          txCoupons={txCoupons}
+          txTax={txTax}
+          txNet={txNet}
+          txTotal={txTotal}
+        />
+      </>
+    )}
+  </>
 );
 
 export default TransactionDetail;

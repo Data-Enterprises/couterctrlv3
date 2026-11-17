@@ -50,7 +50,11 @@ const Coupons = () => {
       getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
         .then((resp) => {
           if (resp.data.error === 0) {
-            dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
+            dispatch(
+              setSelectedGroupStores(
+                resp.data.stores.filter((s: any) => s.active),
+              ),
+            );
           } else {
             toast.warn(resp.data.msg);
           }
@@ -63,11 +67,21 @@ const Coupons = () => {
     dispatch(setNoCouponsFound(false));
     const useGroups = isGroupSearch(context.type) ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(context.type) ? context.lastGroup : context.lastStore;
+    const searchValue = isGroupSearch(context.type)
+      ? context.lastGroup
+      : context.lastStore;
     const start = formatGoliathDate(context.startDate);
     const end = formatGoliathDate(context.endDate);
 
-    getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
+    getCoupons(
+      context.url,
+      context.token,
+      start,
+      end,
+      useGroups,
+      singleStore,
+      searchValue,
+    )
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error !== 0) {
@@ -125,7 +139,10 @@ const Coupons = () => {
             title="Coupons"
             description="Select a store or group and date range to load coupon activity."
             buttonLabel="Load Coupons"
-            onSearch={() => { setSearchModalOpen(false); getData(); }}
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getData();
+            }}
             loading={context.isFetching}
             loadingMessage="Finding coupons..."
           />

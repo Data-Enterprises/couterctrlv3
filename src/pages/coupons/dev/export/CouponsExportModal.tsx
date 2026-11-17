@@ -10,12 +10,7 @@ import {
   type AggFn,
   type AggRow,
 } from "../../../../utils/csvExport";
-import {
-  buildPresetCsv,
-  DIMS,
-  METRICS,
-  AGG_OPTIONS,
-} from "../utils";
+import { buildPresetCsv, DIMS, METRICS, AGG_OPTIONS } from "../utils";
 import { PREVIEW_ROWS } from "./utils";
 
 // Interfaces
@@ -177,9 +172,7 @@ const CouponsExportModal = ({
   const StoreFilter = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] cc-caps">
-          Stores
-        </p>
+        <p className="text-[10px] cc-caps">Stores</p>
         <div className="flex gap-1.5">
           <button
             onClick={() =>
@@ -229,254 +222,227 @@ const CouponsExportModal = ({
       defaultWidth={1140}
       defaultHeight={960}
     >
-        {/* Header */}
-        <div className="cc-phone-header">
-          <div>
-            <p className="cc-navy-title text-[13px]">
-              Export CSV
-            </p>
-            <p className="text-custom-white/95 text-[10px] mt-0.5">
-              {subtitle}
-            </p>
-          </div>
-          <div className="cc-segment-navy">
-            {(["presets", "custom"] as ModalMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`cc-chip-btn text-[11px] ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
-              >
-                {m === "presets" ? "Presets" : "Custom"}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={onClose}
-            className="cc-navy-link justify-self-end"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
+      {/* Header */}
+      <div className="cc-phone-header">
+        <div>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
+          <p className="text-custom-white/95 text-[10px] mt-0.5">{subtitle}</p>
         </div>
+        <div className="cc-segment-navy">
+          {(["presets", "custom"] as ModalMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`cc-chip-btn text-[11px] ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
+            >
+              {m === "presets" ? "Presets" : "Custom"}
+            </button>
+          ))}
+        </div>
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* PRESETS */}
-        {mode === "presets" && (
-          <>
-            <div className="px-4 pt-4 pb-2 space-y-4">
+      {/* PRESETS */}
+      {mode === "presets" && (
+        <>
+          <div className="px-4 pt-4 pb-2 space-y-4">
+            {isMultiStore && <StoreFilter />}
+            <div>
+              {!isMultiStore && (
+                <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-3">
+                  Select data to include
+                </p>
+              )}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked
+                  readOnly
+                  className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
+                />
+                <div>
+                  <p className="text-[13px] cc-row-title">Coupon Records</p>
+                  <p className="text-[11px] text-content/95 mt-0.5">
+                    {filteredRows.length} rows
+                    {isMultiStore && selectedStores.size < uniqueStores.length
+                      ? ` · ${selectedStores.size} of ${uniqueStores.length} stores`
+                      : ""}
+                    {" · "}
+                    {title}
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div className="cc-bar-footer mt-2">
+            <button onClick={onClose} className="text-[12px] cc-muted-link">
+              Cancel
+            </button>
+            <button
+              onClick={handlePresetDownload}
+              disabled={filteredRows.length === 0}
+              className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              Download CSV
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* CUSTOM */}
+      {mode === "custom" && (
+        <>
+          <div className="grid grid-cols-[220px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
+            {/* Config */}
+            <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
               {isMultiStore && <StoreFilter />}
               <div>
-                {!isMultiStore && (
-                  <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium mb-3">
-                    Select data to include
-                  </p>
-                )}
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked
-                    readOnly
-                    className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-[13px] cc-row-title">
-                      Coupon Records
-                    </p>
-                    <p className="text-[11px] text-content/95 mt-0.5">
-                      {filteredRows.length} rows
-                      {isMultiStore && selectedStores.size < uniqueStores.length
-                        ? ` · ${selectedStores.size} of ${uniqueStores.length} stores`
-                        : ""}
-                      {" · "}
-                      {title}
-                    </p>
-                  </div>
-                </label>
+                <p className="text-[10px] cc-caps mb-2">Group By</p>
+                <div className="space-y-1.5">
+                  {DIMS.map((d) => (
+                    <label
+                      key={d.key}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={groupBy.has(d.key)}
+                        onChange={() => toggleGroupBy(d.key)}
+                        className="cc-checkbox flex-shrink-0"
+                      />
+                      <span className="text-[12px] text-content">
+                        {d.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="cc-bar-footer mt-2">
-              <button
-                onClick={onClose}
-                className="text-[12px] cc-muted-link"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePresetDownload}
-                disabled={filteredRows.length === 0}
-                className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* CUSTOM */}
-        {mode === "custom" && (
-          <>
-            <div className="grid grid-cols-[220px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
-              {/* Config */}
-              <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
-                {isMultiStore && <StoreFilter />}
-                <div>
-                  <p className="text-[10px] cc-caps mb-2">
-                    Group By
-                  </p>
-                  <div className="space-y-1.5">
-                    {DIMS.map((d) => (
-                      <label
-                        key={d.key}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
+              <div>
+                <p className="text-[10px] cc-caps mb-2">Metrics</p>
+                <div className="space-y-2">
+                  {METRICS.map((m) => {
+                    const sel = metrics.get(m.key)!;
+                    return (
+                      <div key={m.key} className="flex items-center gap-1.5">
                         <input
                           type="checkbox"
-                          checked={groupBy.has(d.key)}
-                          onChange={() => toggleGroupBy(d.key)}
+                          checked={sel.enabled}
+                          onChange={() => toggleMetric(m.key)}
                           className="cc-checkbox flex-shrink-0"
                         />
-                        <span className="text-[12px] text-content">
-                          {d.label}
+                        <span
+                          className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
+                        >
+                          {m.label}
                         </span>
-                      </label>
-                    ))}
-                  </div>
+                        <select
+                          value={sel.fn}
+                          disabled={!sel.enabled}
+                          onChange={(e) =>
+                            setMetricFn(m.key, e.target.value as AggFn)
+                          }
+                          className="text-[10px] cc-field-sm disabled:opacity-30"
+                          style={{ minWidth: 52 }}
+                        >
+                          {AGG_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div>
-                  <p className="text-[10px] cc-caps mb-2">
-                    Metrics
-                  </p>
-                  <div className="space-y-2">
-                    {METRICS.map((m) => {
-                      const sel = metrics.get(m.key)!;
-                      return (
-                        <div key={m.key} className="flex items-center gap-1.5">
-                          <input
-                            type="checkbox"
-                            checked={sel.enabled}
-                            onChange={() => toggleMetric(m.key)}
-                            className="cc-checkbox flex-shrink-0"
-                          />
-                          <span
-                            className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
-                          >
-                            {m.label}
-                          </span>
-                          <select
-                            value={sel.fn}
-                            disabled={!sel.enabled}
-                            onChange={(e) =>
-                              setMetricFn(m.key, e.target.value as AggFn)
-                            }
-                            className="text-[10px] cc-field-sm disabled:opacity-30"
-                            style={{ minWidth: 52 }}
-                          >
-                            {AGG_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>
-                                {o.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <p className="text-[10px] text-content/95 italic leading-relaxed">
-                  {filteredRows.length} rows
-                  {isMultiStore && selectedStores.size < uniqueStores.length
-                    ? ` · ${selectedStores.size}/${uniqueStores.length} stores`
-                    : ""}
-                </p>
               </div>
+              <p className="text-[10px] text-content/95 italic leading-relaxed">
+                {filteredRows.length} rows
+                {isMultiStore && selectedStores.size < uniqueStores.length
+                  ? ` · ${selectedStores.size}/${uniqueStores.length} stores`
+                  : ""}
+              </p>
+            </div>
 
-              {/* Preview */}
-              <div className="flex flex-col min-w-0">
-                <div className="cc-bar-header flex-shrink-0">
-                  <p className="text-[11px] cc-caps">
-                    Preview
+            {/* Preview */}
+            <div className="flex flex-col min-w-0">
+              <div className="cc-bar-header flex-shrink-0">
+                <p className="text-[11px] cc-caps">Preview</p>
+                <span className="text-[10px] text-content/95">
+                  {aggRows.length === 0
+                    ? "No data"
+                    : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
+                </span>
+              </div>
+              {columns.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-6 text-center">
+                  <p className="text-[12px] text-content/95 leading-relaxed">
+                    Select at least one group-by
+                    <br />
+                    or metric to see a preview.
                   </p>
-                  <span className="text-[10px] text-content/95">
-                    {aggRows.length === 0
-                      ? "No data"
-                      : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
-                  </span>
                 </div>
-                {columns.length === 0 ? (
-                  <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content/95 leading-relaxed">
-                      Select at least one group-by
-                      <br />
-                      or metric to see a preview.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-auto thin-scrollbar">
-                    <table className="min-w-full text-[11px] border-collapse">
-                      <thead className="sticky top-0 bg-fill_soft z-10">
-                        <tr>
+              ) : (
+                <div className="flex-1 overflow-auto thin-scrollbar">
+                  <table className="min-w-full text-[11px] border-collapse">
+                    <thead className="sticky top-0 bg-fill_soft z-10">
+                      <tr>
+                        {columns.map((c) => (
+                          <th key={c.key} className="cc-th text-content/95">
+                            {c.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
+                        <tr
+                          key={i}
+                          className={
+                            i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"
+                          }
+                        >
                           {columns.map((c) => (
-                            <th
-                              key={c.key}
-                              className="cc-th text-content/95"
-                            >
-                              {c.label}
-                            </th>
+                            <td key={c.key} className="cc-td text-content/95">
+                              {row[c.key] ?? "—"}
+                            </td>
                           ))}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr
-                            key={i}
-                            className={
-                              i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"
-                            }
+                      ))}
+                      {aggRows.length > PREVIEW_ROWS && (
+                        <tr>
+                          <td
+                            colSpan={columns.length}
+                            className="px-3 py-2 text-[10px] text-content/95 italic"
                           >
-                            {columns.map((c) => (
-                              <td
-                                key={c.key}
-                                className="cc-td text-content/95"
-                              >
-                                {row[c.key] ?? "—"}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                        {aggRows.length > PREVIEW_ROWS && (
-                          <tr>
-                            <td
-                              colSpan={columns.length}
-                              className="px-3 py-2 text-[10px] text-content/95 italic"
-                            >
-                              + {aggRows.length - PREVIEW_ROWS} more rows…
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+                            + {aggRows.length - PREVIEW_ROWS} more rows…
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="cc-bar-footer">
-              <button
-                onClick={onClose}
-                className="text-[12px] cc-muted-link"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCustomDownload}
-                disabled={!columns.length || !aggRows.length}
-                className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
+          <div className="cc-bar-footer">
+            <button onClick={onClose} className="text-[12px] cc-muted-link">
+              Cancel
+            </button>
+            <button
+              onClick={handleCustomDownload}
+              disabled={!columns.length || !aggRows.length}
+              className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              Download CSV
+            </button>
+          </div>
+        </>
+      )}
     </ResizableModalShell>
   );
 };

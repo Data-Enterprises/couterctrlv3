@@ -7,7 +7,10 @@ import { useCouponContext } from "../hooks";
 import { isGroupSearch } from "../../../../features/searchSlice";
 
 // Utils
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
 import { sumCouponAmount } from "../../../../utils/couponValue";
 import { formatCurrency2 } from "../../../../utils";
 
@@ -104,10 +107,7 @@ const CouponListPanel = ({
     : storeItems;
 
   return (
-    <div
-      className="cc-panel shadow-lg flex-shrink-0"
-      style={{ width: "22%" }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: "22%" }}>
       {/* Navy header */}
       <div
         className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
@@ -152,7 +152,10 @@ const CouponListPanel = ({
             </span>
           )}
           <div className="flex-1" />
-          <div data-help="metric" className="flex items-center gap-0.5 flex-shrink-0">
+          <div
+            data-help="metric"
+            className="flex items-center gap-0.5 flex-shrink-0"
+          >
             {(["amount", "qty"] as const).map((m) => (
               <button
                 key={m}
@@ -195,7 +198,10 @@ const CouponListPanel = ({
       )}
 
       {/* Flat store list */}
-      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar">
+      <div
+        data-help="store-list"
+        className="flex-1 overflow-y-auto thin-scrollbar"
+      >
         {filtered.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-[11px] text-content/95">
             No results

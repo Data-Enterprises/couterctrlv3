@@ -29,7 +29,12 @@ interface CpnExportSheetProps {
 
 /** The phone Coupons export sheet: Presets downloads the coupon records, Custom groups by chosen fields with
  *  sum/count metrics. Multi-store data adds a store checklist. */
-const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps) => {
+const CpnExportSheet = ({
+  onClose,
+  title,
+  subtitle,
+  rows,
+}: CpnExportSheetProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -43,14 +48,22 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
   const uniqueStores = useMemo(() => {
     const map = new Map<string, { name: string; number: string }>();
     rows.forEach((r) => {
-      if (!map.has(r.store_number)) map.set(r.store_number, { name: r.store_name ?? r.store_number, number: r.store_number });
+      if (!map.has(r.store_number))
+        map.set(r.store_number, {
+          name: r.store_name ?? r.store_number,
+          number: r.store_number,
+        });
     });
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(map.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }, [rows]);
 
   const isMultiStore = uniqueStores.length > 1;
 
-  const [selectedStores, setSelectedStores] = useState<Set<string>>(() => new Set());
+  const [selectedStores, setSelectedStores] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const toggleStore = (num: string) =>
     setSelectedStores((prev) => {
@@ -63,7 +76,10 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
   const noneSelected = selectedStores.size === 0;
 
   const filteredRows = useMemo(
-    () => (isMultiStore ? rows.filter((r) => selectedStores.has(r.store_number)) : rows),
+    () =>
+      isMultiStore
+        ? rows.filter((r) => selectedStores.has(r.store_number))
+        : rows,
     [rows, selectedStores, isMultiStore],
   );
 
@@ -90,12 +106,17 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
       return n;
     });
 
-  const flatRows = useMemo<AggRow[]>(() => filteredRows.map((r) => ({ ...r }) as unknown as AggRow), [filteredRows]);
+  const flatRows = useMemo<AggRow[]>(
+    () => filteredRows.map((r) => ({ ...r }) as unknown as AggRow),
+    [filteredRows],
+  );
 
   const { aggRows, columns } = useMemo(() => {
     const activeDims = DIMS.filter((d) => groupBy.has(d.key));
-    const activeMetrics = METRICS
-      .map((m) => ({ ...m, sel: metrics.get(m.key) }))
+    const activeMetrics = METRICS.map((m) => ({
+      ...m,
+      sel: metrics.get(m.key),
+    }))
       .filter((m) => m.sel?.enabled)
       .map((m) => ({ key: m.key, fn: m.sel!.fn, label: m.label }));
 
@@ -149,7 +170,9 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="text-[10px] cc-caps">Stores</div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))}
+            onClick={() =>
+              setSelectedStores(new Set(uniqueStores.map((s) => s.number)))
+            }
             disabled={allSelected}
             className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
           >
@@ -174,8 +197,12 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               onChange={() => toggleStore(s.number)}
               className="cc-checkbox flex-shrink-0"
             />
-            <span className="text-[12px] text-content truncate flex-1">{s.name}</span>
-            <span className="text-[10px] text-content/95 flex-shrink-0">#{s.number}</span>
+            <span className="text-[12px] text-content truncate flex-1">
+              {s.name}
+            </span>
+            <span className="text-[10px] text-content/95 flex-shrink-0">
+              #{s.number}
+            </span>
           </label>
         ))}
       </div>
@@ -187,7 +214,9 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
       <div className="flex items-center justify-between px-4 pb-3 border-b border-line_hair">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
-          <div className="text-[10px] text-content/95 mt-0.5 truncate">{subtitle}</div>
+          <div className="text-[10px] text-content/95 mt-0.5 truncate">
+            {subtitle}
+          </div>
         </div>
         <div className="flex items-center gap-0.5 bg-content/5 rounded-md p-0.5 flex-shrink-0">
           {(["presets", "custom"] as ModalMode[]).map((m) => (
@@ -195,7 +224,9 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               key={m}
               onClick={() => setMode(m)}
               className={`cc-chip-btn text-[11px] ${
-                mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
+                mode === m
+                  ? "bg-brand_navy text-custom-white"
+                  : "text-content/95"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -208,13 +239,23 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div className="flex items-start gap-3">
-            <input type="checkbox" checked readOnly className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0" />
+            <input
+              type="checkbox"
+              checked
+              readOnly
+              className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
+            />
             <div>
-              <div className="text-[13px] font-medium text-content">Coupon Records</div>
+              <div className="text-[13px] font-medium text-content">
+                Coupon Records
+              </div>
               <div className="text-[11px] text-content/95 mt-0.5">
                 {filteredRows.length} rows
-                {isMultiStore && selectedStores.size < uniqueStores.length ? ` · ${selectedStores.size} of ${uniqueStores.length} stores` : ""}
-                {" · "}{title}
+                {isMultiStore && selectedStores.size < uniqueStores.length
+                  ? ` · ${selectedStores.size} of ${uniqueStores.length} stores`
+                  : ""}
+                {" · "}
+                {title}
               </div>
             </div>
           </div>
@@ -251,11 +292,17 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       onChange={() => toggleMetric(m.key)}
                       className="cc-checkbox flex-shrink-0"
                     />
-                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
+                    <span
+                      className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
+                    >
+                      {m.label}
+                    </span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
-                      onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
+                      onChange={(e) =>
+                        setMetricFn(m.key, e.target.value as AggFn)
+                      }
                       className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
@@ -282,8 +329,14 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
           Cancel
         </button>
         <button
-          onClick={mode === "presets" ? handlePresetDownload : handleCustomDownload}
-          disabled={mode === "presets" ? filteredRows.length === 0 : !columns.length || !aggRows.length}
+          onClick={
+            mode === "presets" ? handlePresetDownload : handleCustomDownload
+          }
+          disabled={
+            mode === "presets"
+              ? filteredRows.length === 0
+              : !columns.length || !aggRows.length
+          }
           className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />

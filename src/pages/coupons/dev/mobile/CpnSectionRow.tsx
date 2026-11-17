@@ -15,7 +15,12 @@ interface CpnSectionRowProps {
  * One grouped row: a store, a sub department, a date or a cashier. The count
  * sits on line two beside the average, which is derived as total over count.
  */
-const CpnSectionRow = ({ label, count, total, onClick }: CpnSectionRowProps) => (
+const CpnSectionRow = ({
+  label,
+  count,
+  total,
+  onClick,
+}: CpnSectionRowProps) => (
   <button
     type="button"
     onClick={onClick}
