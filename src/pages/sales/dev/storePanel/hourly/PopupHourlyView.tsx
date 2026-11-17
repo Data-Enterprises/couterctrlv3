@@ -1,6 +1,6 @@
 // Hooks
-import { useMemo, useRef, useState } from "react";
-import { useSalesCtx, useSalesState } from "../../hooks";
+import { useMemo, useState } from "react";
+import { useLastValidThreshold, useSalesCtx, useSalesState } from "../../hooks";
 
 // Utils
 import { buildHourRows } from "./utils";
@@ -31,9 +31,7 @@ const PopupHourlyView = ({
 
   // A cleared threshold box keeps grading on the last valid amount, so rows do
   // not move until a new number is typed.
-  const thresholdRef = useRef<number>(hourlyThreshold ?? 9);
-  if (hourlyThreshold != null) thresholdRef.current = hourlyThreshold;
-  const threshold = thresholdRef.current;
+  const threshold = useLastValidThreshold(hourlyThreshold);
 
   // Kept here, above the empty-day return, so the filter, sort and open
   // toggles survive a day with no rows.

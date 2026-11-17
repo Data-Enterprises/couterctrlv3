@@ -1,7 +1,6 @@
 // Hooks
-import { useRef } from "react";
 import { useAppDispatch } from "../../../../../hooks";
-import { useSalesCtx } from "../../hooks";
+import { useLastValidThreshold, useSalesCtx } from "../../hooks";
 
 // Redux
 import {
@@ -70,8 +69,7 @@ const LedgerHeader = ({
   // keeps grading against the last valid amount so rows don't reshuffle. The
   // slider has to hold that same position or it would show a value nothing is
   // actually graded against.
-  const lastValidRef = useRef<number>(threshold?.amount ?? THRESHOLD_DEFAULT);
-  if (threshold?.amount != null) lastValidRef.current = threshold.amount;
+  const lastValid = useLastValidThreshold(threshold?.amount, THRESHOLD_DEFAULT);
 
   /**
    * A comparison missing days is not the same claim as a complete one.
@@ -161,7 +159,7 @@ const LedgerHeader = ({
             Store Threshold
           </span>
           <ThresholdSlider
-            value={lastValidRef.current}
+            value={lastValid}
             onChange={(amount) =>
               dispatch(setThreshold({ op: threshold?.op ?? "gt", amount }))
             }

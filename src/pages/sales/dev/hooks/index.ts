@@ -1,4 +1,5 @@
 // Hooks
+import { useRef } from "react";
 import { useAppSelector } from "../../../../hooks";
 
 // Redux
@@ -90,3 +91,20 @@ export const useSalesCtx = () =>
     }),
     shallowEqual,
   );
+
+/**
+ * A grading threshold that holds its last real value.
+ *
+ * Grading should never move rows around on its own when the threshold input
+ * is cleared: with no new number typed, keep grading against the last valid
+ * amount so severity and sort order stay exactly where they were. Returned
+ * as a plain value, since a ref's `.current` is not a sound memo dependency.
+ */
+export const useLastValidThreshold = (
+  amount: number | null | undefined,
+  fallback = 9,
+) => {
+  const last = useRef<number>(amount ?? fallback);
+  if (amount != null) last.current = amount;
+  return last.current;
+};
