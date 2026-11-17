@@ -28,7 +28,7 @@ import {
 } from "@heroicons/react/20/solid";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import CpnTotalsCard from "./CpnTotalsCard";
+import CpnTotalsCard from "./components/CpnTotalsCard";
 
 interface CpnSectionDetailProps {
   coupons: CouponItem[];

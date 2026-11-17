@@ -17,9 +17,9 @@ import type { CouponItem } from "../../../../interfaces";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import InfoModal from "../../../../components-dev/InfoModal";
 import CpnExportSheet from "./CpnExportSheet";
-import CpnListControls from "./CpnListControls";
-import CpnSectionRow from "./CpnSectionRow";
-import CpnTotalsCard from "./CpnTotalsCard";
+import CpnListControls from "./components/CpnListControls";
+import CpnSectionRow from "./components/CpnSectionRow";
+import CpnTotalsCard from "./components/CpnTotalsCard";
 
 interface CpnStoreListProps {
   coupons: CouponItem[];

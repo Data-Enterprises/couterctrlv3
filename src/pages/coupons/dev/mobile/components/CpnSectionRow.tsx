@@ -1,5 +1,5 @@
 // Utils
-import { formatCurrency2 } from "../../../../utils";
+import { formatCurrency2 } from "../../../../../utils";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

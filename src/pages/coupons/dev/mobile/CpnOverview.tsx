@@ -12,9 +12,9 @@ import type { GroupTab } from "../interfaces";
 // Components
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import CpnExportSheet from "./CpnExportSheet";
-import CpnListControls from "./CpnListControls";
-import CpnSectionRow from "./CpnSectionRow";
-import CpnTotalsCard from "./CpnTotalsCard";
+import CpnListControls from "./components/CpnListControls";
+import CpnSectionRow from "./components/CpnSectionRow";
+import CpnTotalsCard from "./components/CpnTotalsCard";
 
 interface CpnOverviewProps {
   coupons: CouponItem[];

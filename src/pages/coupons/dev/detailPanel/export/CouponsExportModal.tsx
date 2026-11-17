@@ -1,6 +1,6 @@
 // Hooks
 import { useState } from "react";
-import { useCouponExport } from "./hooks";
+import { useCouponExport } from "../../hooks";
 
 // Utils
 import { rowsToCsv, downloadCsv } from "../../../../../utils/csvExport";

@@ -1,6 +1,6 @@
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import MobileSortChips from "../../../../components-dev/mobile/MobileSortChips";
+import MobileSortChips from "../../../../../components-dev/mobile/MobileSortChips";
 
 interface CpnListControlsProps {
   value: "amount" | "qty";
