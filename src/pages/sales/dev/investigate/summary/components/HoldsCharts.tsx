@@ -1,14 +1,14 @@
 // Utils
-import { shortStore } from "../utils";
+import { shortStore } from "../../utils";
 
 // Interfaces
 import type {
   Spread,
   Vitals as VitalsShape,
-} from "../utils/investigationSteps";
+} from "../../utils/investigationSteps";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../components/Carousel";
 import Weeks from "./Weeks";
 import Index from "./Index";
 import VendorBars from "./VendorBars";
@@ -52,8 +52,7 @@ const HoldsCharts = ({
           body: (
             <>
               <p className="text-[12px] text-content/95 leading-snug mb-2.5">
-                One rule for all three, so measures that disagree are
-                seen to.
+                One rule for all three, so measures that disagree are seen to.
               </p>
               <Index vitals={vitals} them={them} cash={cash} />
             </>
@@ -67,10 +66,13 @@ const HoldsCharts = ({
                 body: (
                   <>
                     <p className="text-[12px] text-content/95 leading-snug mb-2.5">
-                      The shortfall by vendor. Pick one to narrow the
-                      items.
+                      The shortfall by vendor. Pick one to narrow the items.
                     </p>
-                    <VendorBars vendors={vendors} fmt={fmt} onVendor={onVendor} />
+                    <VendorBars
+                      vendors={vendors}
+                      fmt={fmt}
+                      onVendor={onVendor}
+                    />
                   </>
                 ),
               },

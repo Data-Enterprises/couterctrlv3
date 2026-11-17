@@ -1,9 +1,9 @@
 // Utils
-import { CAUSE_TIP } from "../utils/deptInvestigation";
-import { partTip } from "../utils/holdsRows";
+import { CAUSE_TIP } from "../../utils/deptInvestigation";
+import { partTip } from "../../utils/holdsRows";
 
 // Interfaces
-import type { BreakdownLine } from "../interfaces";
+import type { BreakdownLine } from "../../interfaces";
 
 interface RowBreakdownProps {
   lines: BreakdownLine[];
@@ -26,7 +26,9 @@ const RowBreakdown = ({ lines, us, them, fmt, cash }: RowBreakdownProps) => {
         <div
           key={l.label}
           className="grid grid-cols-[150px_minmax(0,1fr)_64px_96px] gap-2.5 items-center"
-          title={l.cause ? CAUSE_TIP[l.cause](us, them) : partTip(l, total, cash)}
+          title={
+            l.cause ? CAUSE_TIP[l.cause](us, them) : partTip(l, total, cash)
+          }
         >
           <span className="text-[12.5px] font-semibold text-content truncate">
             {l.label}
@@ -44,7 +46,9 @@ const RowBreakdown = ({ lines, us, them, fmt, cash }: RowBreakdownProps) => {
           </span>
           <span
             className={`text-right text-[12.5px] font-bold tabular-nums whitespace-nowrap ${
-              l.amount < 0 ? "text-delta_negative_text" : "text-delta_positive_text"
+              l.amount < 0
+                ? "text-delta_negative_text"
+                : "text-delta_positive_text"
             }`}
           >
             {l.amount < 0 ? "−" : "+"}

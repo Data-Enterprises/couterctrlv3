@@ -1,5 +1,5 @@
 // Interfaces
-import type { Vitals as VitalsShape } from "../utils/investigationSteps";
+import type { Vitals as VitalsShape } from "../../utils/investigationSteps";
 
 interface IndexProps {
   vitals: VitalsShape;

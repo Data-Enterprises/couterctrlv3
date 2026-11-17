@@ -1,8 +1,8 @@
 // Utils
-import { rowLabel } from "../utils/holdsRows";
+import { rowLabel } from "../../utils/holdsRows";
 
 // Interfaces
-import type { HoldsRow } from "../interfaces";
+import type { HoldsRow } from "../../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";

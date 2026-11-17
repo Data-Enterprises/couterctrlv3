@@ -2,10 +2,15 @@
 import { useState } from "react";
 
 // Utils
-import { AVG_PRICE_TIP, ROW_COLS, rowHeads, rowSays } from "../utils/holdsRows";
+import {
+  AVG_PRICE_TIP,
+  ROW_COLS,
+  rowHeads,
+  rowSays,
+} from "../../utils/holdsRows";
 
 // Interfaces
-import type { HoldsRow } from "../interfaces";
+import type { HoldsRow } from "../../interfaces";
 
 // Components
 import RowBreakdown from "./RowBreakdown";

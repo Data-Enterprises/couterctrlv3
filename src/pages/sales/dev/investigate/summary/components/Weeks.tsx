@@ -1,8 +1,8 @@
 // Utils
-import { weeksSay } from "../utils/weeks";
+import { weeksSay } from "../../utils/weeks";
 
 // Interfaces
-import type { Vitals as VitalsShape } from "../utils/investigationSteps";
+import type { Vitals as VitalsShape } from "../../utils/investigationSteps";
 
 interface WeeksProps {
   vitals: VitalsShape;
@@ -58,7 +58,9 @@ const Weeks = ({ vitals, fmt }: WeeksProps) => {
             </span>
             <span
               className={`text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
-                w.gap >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+                w.gap >= 0
+                  ? "text-delta_positive_text"
+                  : "text-delta_negative_text"
               }`}
             >
               {w.gap >= 0 ? "+" : "−"}

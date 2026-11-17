@@ -28,7 +28,7 @@ import type { HandoffList, InvestigationTab } from "./interfaces";
 
 // Components
 import TabSkeleton from "./components/TabSkeleton";
-import HoldsPanel from "./components/HoldsPanel";
+import HoldsPanel from "./summary/HoldsPanel";
 import ReceiptsNote from "./components/ReceiptsNote";
 import SupplyPanel from "./supply/SupplyPanel";
 import ActPanel from "./handoff/ActPanel";

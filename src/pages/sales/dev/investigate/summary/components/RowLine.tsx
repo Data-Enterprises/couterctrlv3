@@ -1,9 +1,14 @@
 // Utils
-import { count, money } from "../utils";
-import { REASON_TIP, ROW_COLS, reasonLabel, reasonOf } from "../utils/holdsRows";
+import { count, money } from "../../utils";
+import {
+  REASON_TIP,
+  ROW_COLS,
+  reasonLabel,
+  reasonOf,
+} from "../../utils/holdsRows";
 
 // Interfaces
-import type { ItemVerdict, RowKind } from "../interfaces";
+import type { ItemVerdict, RowKind } from "../../interfaces";
 
 interface RowLineProps {
   item: ItemVerdict;
@@ -18,14 +23,23 @@ interface RowLineProps {
 
 /** One item in a row's slide: the two stores' figures, why it is apart where
  *  both rang it, and the difference. Its cause lives in the Items grid. */
-const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) => {
+const RowLine = ({
+  item,
+  n,
+  kind,
+  fmt,
+  widest,
+  onPick,
+  onMenu,
+}: RowLineProps) => {
   const lb = item.weighted ? " lb" : "";
   const per = item.weighted ? "/lb" : "";
   const both = kind === "bothLess" || kind === "bothMore";
   const reason = both ? reasonOf(item) : null;
   const behind = item.gap < 0;
   const minePer = item.mineUnits > 0 ? item.mineSales / item.mineUnits : 0;
-  const theirsPer = item.theirsUnits > 0 ? item.theirsSales / item.theirsUnits : 0;
+  const theirsPer =
+    item.theirsUnits > 0 ? item.theirsSales / item.theirsUnits : 0;
 
   return (
     <button
@@ -92,7 +106,9 @@ const RowLine = ({ item, n, kind, fmt, widest, onPick, onMenu }: RowLineProps) =
         <span className="h-[8.4px] rounded-sm bg-bkg">
           <span
             className={`block h-[8.4px] rounded-sm ${behind ? "bg-red-500" : "bg-emerald-500"}`}
-            style={{ width: `${(Math.abs(item.gap) / Math.max(1e-9, widest)) * 100}%` }}
+            style={{
+              width: `${(Math.abs(item.gap) / Math.max(1e-9, widest)) * 100}%`,
+            }}
           />
         </span>
       )}

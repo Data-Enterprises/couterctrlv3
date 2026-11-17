@@ -1,5 +1,5 @@
 // Interfaces
-import type { VendorShare } from "../utils/investigationSteps";
+import type { VendorShare } from "../../utils/investigationSteps";
 
 interface VendorBarsProps {
   vendors: VendorShare[];

@@ -1,11 +1,11 @@
 // Utils
-import { ROW_ORDER, rowTab } from "../utils/holdsRows";
+import { ROW_ORDER, rowTab } from "../../utils/holdsRows";
 
 // Interfaces
-import type { HoldsRow, RowKind } from "../interfaces";
+import type { HoldsRow, RowKind } from "../../interfaces";
 
 // Components
-import Carousel from "./Carousel";
+import Carousel from "../../components/Carousel";
 import RowSlide from "./RowSlide";
 
 interface RowItemsProps {

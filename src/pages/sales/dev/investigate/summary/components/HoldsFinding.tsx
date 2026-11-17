@@ -1,10 +1,10 @@
 // Utils
-import { CENT } from "../utils";
-import { findingRow, rowPhrase } from "../utils/holdsRows";
+import { CENT } from "../../utils";
+import { findingRow, rowPhrase } from "../../utils/holdsRows";
 
 // Interfaces
-import type { HoldsRow, RowKind, Summary } from "../interfaces";
-import type { Holds } from "../utils/investigationSteps";
+import type { HoldsRow, RowKind, Summary } from "../../interfaces";
+import type { Holds } from "../../utils/investigationSteps";
 
 // Components
 import RowChoice from "./RowChoice";
@@ -94,7 +94,9 @@ const HoldsFinding = ({
           {costPenalty <= -CENT && summary.gap < 0 && (
             <p className="text-[12.5px] leading-snug text-content/95">
               Buying the same goods for more took another{" "}
-              <span className="font-semibold text-content">{cash(Math.abs(costPenalty))}</span>{" "}
+              <span className="font-semibold text-content">
+                {cash(Math.abs(costPenalty))}
+              </span>{" "}
               of margin on top of the sales gap.
             </p>
           )}
@@ -118,12 +120,14 @@ const HoldsFinding = ({
             margin point opposite ways, which nothing else on the card says. */}
         {summary.gap >= 0 && marginGap <= -CENT && (
           <p className="cc-notice text-[14px] leading-relaxed px-3 py-2">
-            <span className="font-bold text-[13px]">Ahead on sales, behind on margin.</span> This
-            department took {cash(summary.gap)} more and kept {cash(Math.abs(marginGap))} less,
-            because it buys the same goods for more.
+            <span className="font-bold text-[13px]">
+              Ahead on sales, behind on margin.
+            </span>{" "}
+            This department took {cash(summary.gap)} more and kept{" "}
+            {cash(Math.abs(marginGap))} less, because it buys the same goods for
+            more.
           </p>
         )}
-
       </div>
     </div>
   );
