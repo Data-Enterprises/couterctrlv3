@@ -426,3 +426,36 @@ export interface PriceLadder {
    */
   weighted: boolean;
 }
+
+/** How a grid figure is formatted: the page's money or quantity. */
+export type Fmt = (v: number) => string;
+
+export interface ColumnDef {
+  key: string;
+  /** A column that can be narrowed. The popover lives in the heading, which
+   *  is where this app puts column filters everywhere else. */
+  filter?: FilterKind;
+  /** Whose figure this is. Eight of the columns belong to one store or the
+   *  other and read identically without it — the tint is what stops somebody
+   *  comparing 015 LW against 015 LY and thinking they have compared the
+   *  stores. */
+  of?: "open" | "compare";
+  /** `{mine}` and `{theirs}` are filled with the two store numbers, so a
+   *  heading names the store rather than leaving the reader to remember
+   *  which side of the comparison it is. */
+  label: string;
+  width: number;
+  right?: boolean;
+  sort?: Col;
+  render: (r: ItemVerdict, fmt: Fmt) => ReactNode;
+  /**
+   * This column's total, across the FILTERED set rather than the 300 rows
+   * drawn. A footer that summed only what fits would be wrong by whatever
+   * the cap left out, and nothing on screen would say so.
+   *
+   * Columns with no total leave it off: a per-unit cost and a ratio cannot
+   * be added across items, and a blended figure over a case of soda and a
+   * candy bar is a number that looks right and means nothing.
+   */
+  foot?: (rows: ItemVerdict[], fmt: Fmt) => ReactNode;
+}
