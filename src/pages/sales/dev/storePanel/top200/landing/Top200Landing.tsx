@@ -10,8 +10,8 @@ import {
 } from "../utils/topItems";
 
 // Components
-import DeptShareList from "../components/DeptShareList";
-import TotalsStrip from "../components/TotalsStrip";
+import DeptShareList from "./components/DeptShareList";
+import TotalsStrip from "./components/TotalsStrip";
 
 interface Top200LandingProps {
   ranked: TopItemCompared[];

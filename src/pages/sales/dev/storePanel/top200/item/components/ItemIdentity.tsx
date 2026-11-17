@@ -1,5 +1,5 @@
 // Utils
-import { deptName, type TopItemCompared } from "../utils/topItems";
+import { deptName, type TopItemCompared } from "../../utils/topItems";
 
 interface ItemIdentityProps {
   selected: TopItemCompared;

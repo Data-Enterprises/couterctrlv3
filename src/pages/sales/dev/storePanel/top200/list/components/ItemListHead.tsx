@@ -3,7 +3,7 @@ import {
   nextTopItemSort,
   type TopItemSort,
   type TopItemSortCol,
-} from "../utils/topItems";
+} from "../../utils/topItems";
 
 // Interfaces
 import type { Dispatch, SetStateAction } from "react";

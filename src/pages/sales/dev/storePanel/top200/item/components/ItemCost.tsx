@@ -7,11 +7,11 @@ import {
   type pointsFor,
   type RetailMix,
   type TopItemCompared,
-} from "../utils/topItems";
-import { dayText, moneyText } from "../utils";
+} from "../../utils/topItems";
+import { dayText, moneyText } from "../../utils";
 
 // Interfaces
-import type { ItemDetailResponse } from "../../../../../../api/topItems";
+import type { ItemDetailResponse } from "../../../../../../../api/topItems";
 
 interface ItemCostProps {
   selected: TopItemCompared;

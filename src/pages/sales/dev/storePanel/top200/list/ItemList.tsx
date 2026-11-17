@@ -11,9 +11,9 @@ import {
 } from "../utils/topItems";
 
 // Components
-import ItemListHead from "../components/ItemListHead";
-import ItemListToolbar from "../components/ItemListToolbar";
-import ItemRows from "../components/ItemRows";
+import ItemListHead from "./components/ItemListHead";
+import ItemListToolbar from "./components/ItemListToolbar";
+import ItemRows from "./components/ItemRows";
 
 interface ItemListProps {
   /** The store's top 200, ranked by sales and joined to last week and last

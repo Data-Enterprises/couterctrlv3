@@ -1,8 +1,8 @@
 // API
-import { TOP_ITEMS_SHOWN } from "../../../../../../api/topItems";
+import { TOP_ITEMS_SHOWN } from "../../../../../../../api/topItems";
 
 // Interfaces
-import type { TopItemCompared } from "../utils/topItems";
+import type { TopItemCompared } from "../../utils/topItems";
 
 interface ItemListToolbarProps {
   search: string;

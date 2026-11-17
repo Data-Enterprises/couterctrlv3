@@ -1,5 +1,5 @@
 // Interfaces
-import type { DisplayVerdict } from "../utils/topItems";
+import type { DisplayVerdict } from "../../utils/topItems";
 
 interface ItemDisplayProps {
   display: DisplayVerdict;

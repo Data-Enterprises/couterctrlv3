@@ -5,8 +5,8 @@ import {
   type pointsFor,
   type RetailMix,
   type TopItemCompared,
-} from "../utils/topItems";
-import { moneyText } from "../utils";
+} from "../../utils/topItems";
+import { moneyText } from "../../utils";
 
 interface ItemRetailProps {
   selected: TopItemCompared;

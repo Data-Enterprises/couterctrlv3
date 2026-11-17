@@ -21,13 +21,13 @@ import {
 import { pctText } from "../utils";
 
 // Components
-import InvoicesButton from "../components/InvoicesButton";
-import ItemBuyCost from "../components/ItemBuyCost";
-import ItemCost from "../components/ItemCost";
-import ItemDisplay from "../components/ItemDisplay";
-import ItemHistory from "../components/ItemHistory";
-import ItemIdentity from "../components/ItemIdentity";
-import ItemRetail from "../components/ItemRetail";
+import InvoicesButton from "./components/InvoicesButton";
+import ItemBuyCost from "./components/ItemBuyCost";
+import ItemCost from "./components/ItemCost";
+import ItemDisplay from "./components/ItemDisplay";
+import ItemHistory from "./components/ItemHistory";
+import ItemIdentity from "./components/ItemIdentity";
+import ItemRetail from "./components/ItemRetail";
 
 interface ItemReportProps {
   ranked: TopItemCompared[];

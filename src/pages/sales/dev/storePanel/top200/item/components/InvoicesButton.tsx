@@ -1,8 +1,8 @@
 // Utils
-import { dayText } from "../utils";
+import { dayText } from "../../utils";
 
 // Interfaces
-import type { ItemDetailResponse } from "../../../../../../api/topItems";
+import type { ItemDetailResponse } from "../../../../../../../api/topItems";
 
 // Components
 import {

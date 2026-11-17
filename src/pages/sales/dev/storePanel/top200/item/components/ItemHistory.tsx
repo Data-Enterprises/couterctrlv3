@@ -9,8 +9,8 @@ import {
   weighed,
   type RankHistory,
   type TopItemCompared,
-} from "../utils/topItems";
-import { moneyText, pctText, pointsText } from "../utils";
+} from "../../utils/topItems";
+import { moneyText, pctText, pointsText } from "../../utils";
 
 interface ItemHistoryProps {
   history: RankHistory;

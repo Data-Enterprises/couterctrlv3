@@ -1,6 +1,6 @@
 // Utils
-import { contributionGap } from "../utils/topItems";
-import { dayText, moneyText } from "../utils";
+import { contributionGap } from "../../utils/topItems";
+import { dayText, moneyText } from "../../utils";
 
 interface TotalsStripProps {
   oneDay: boolean;

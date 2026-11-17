@@ -1,17 +1,17 @@
 // Hooks
-import { useSalesCtx } from "../../../hooks";
-import { useTop200View } from "../hooks";
+import { useSalesCtx } from "../../../../hooks";
+import { useTop200View } from "../../hooks";
 
 // Utils
-import { pillClass } from "../../../../../../utils/severity";
+import { pillClass } from "../../../../../../../utils/severity";
 import {
   amountText,
   deptName,
   pointsFor,
   topItemInsight,
   type TopItemCompared,
-} from "../utils/topItems";
-import { dotClass, moneyText, pctText } from "../utils";
+} from "../../utils/topItems";
+import { dotClass, moneyText, pctText } from "../../utils";
 
 interface ItemRowsProps {
   shown: TopItemCompared[];

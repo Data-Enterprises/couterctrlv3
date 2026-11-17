@@ -1,11 +1,11 @@
 // Hooks
-import { useTop200View } from "../hooks";
+import { useTop200View } from "../../hooks";
 
 // Utils
-import { LANDING_COLS, moneyText } from "../utils";
+import { LANDING_COLS, moneyText } from "../../utils";
 
 // Interfaces
-import type { DeptRollup } from "../utils/topItems";
+import type { DeptRollup } from "../../utils/topItems";
 
 interface DeptShareListProps {
   landing: { shown: DeptRollup[]; top: number; total: number };
