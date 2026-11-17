@@ -430,6 +430,16 @@ export interface PriceLadder {
 /** How a grid figure is formatted: the page's money or quantity. */
 export type Fmt = (v: number) => string;
 
+/** What one grid cell shows, described rather than drawn so the column table
+ *  holds no markup; `GridCellContent` draws it. `signed` is a cell's change
+ *  pill and `signedTotal` the footer's; `text` is the figure already
+ *  formatted (a signed one without its sign). */
+export type GridCell =
+  | { kind: "text"; text: string; look?: "bold" | "muted" | "caps" }
+  | { kind: "signed"; value: number; text: string }
+  | { kind: "signedTotal"; value: number; text: string }
+  | { kind: "cause"; cause: Cause };
+
 export interface ColumnDef {
   key: string;
   /** A column that can be narrowed. The popover lives in the heading, which
@@ -447,7 +457,7 @@ export interface ColumnDef {
   width: number;
   right?: boolean;
   sort?: Col;
-  render: (r: ItemVerdict, fmt: Fmt) => ReactNode;
+  render: (r: ItemVerdict, fmt: Fmt) => GridCell;
   /**
    * This column's total, across the FILTERED set rather than the 300 rows
    * drawn. A footer that summed only what fits would be wrong by whatever
@@ -457,5 +467,5 @@ export interface ColumnDef {
    * be added across items, and a blended figure over a case of soda and a
    * candy bar is a number that looks right and means nothing.
    */
-  foot?: (rows: ItemVerdict[], fmt: Fmt) => ReactNode;
+  foot?: (rows: ItemVerdict[], fmt: Fmt) => GridCell;
 }

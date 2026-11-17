@@ -1,10 +1,10 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import { CAUSE_LABEL, CAUSE_OWNER, CAUSE_TONE } from "./deptInvestigation";
+import { CAUSE_LABEL, CAUSE_OWNER } from "./deptInvestigation";
 import { cash } from ".";
 
 // Interfaces
-import type { ColumnDef, Col, Fmt, ItemVerdict } from "../interfaces";
+import type { ColumnDef, Col, Fmt, GridCell, ItemVerdict } from "../interfaces";
 import type { InvestigationTarget } from "../../../../../features/dev/devSalesLedgerSlice";
 
 /* ------------------------------------------------------------------ */
@@ -44,32 +44,26 @@ const pct = (v: number | null) =>
 const sum = (rows: ItemVerdict[], pick: (r: ItemVerdict) => number | null) =>
   rows.reduce((a, r) => a + (pick(r) ?? 0), 0);
 
+/** A plain figure, as the cell or total shows it. */
+const text = (t: string, look?: "bold" | "muted" | "caps"): GridCell => ({
+  kind: "text",
+  text: t,
+  look,
+});
+
 /** A plain total, in whatever the page's metric is. */
 const money =
   (pick: (r: ItemVerdict) => number | null) =>
   (rows: ItemVerdict[], fmt: Fmt) =>
-    fmt(sum(rows, pick));
+    text(fmt(sum(rows, pick)));
 
 /** A total that carries direction, in the same pill its column's cells use. */
 const signedWith =
   (pick: (r: ItemVerdict) => number | null, force?: Fmt) =>
-  (rows: ItemVerdict[], fmt: Fmt) => {
+  (rows: ItemVerdict[], fmt: Fmt): GridCell => {
     const v = sum(rows, pick);
     const show = force ?? fmt;
-    return (
-      <span
-        className={`inline-block cc-tag ${
-          v === 0
-            ? "bg-fill_muted text-content/95"
-            : v > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-        }`}
-      >
-        {v >= 0 ? "+" : "−"}
-        {show(Math.abs(v))}
-      </span>
-    );
+    return { kind: "signedTotal", value: v, text: show(Math.abs(v)) };
   };
 
 const signed = (pick: (r: ItemVerdict) => number | null) => signedWith(pick);
@@ -79,7 +73,7 @@ const signedCash = (pick: (r: ItemVerdict) => number | null) =>
 
 /** A count, which is a count whichever metric the page is in. */
 const counted = (pick: (r: ItemVerdict) => number) => (rows: ItemVerdict[]) =>
-  sum(rows, pick).toLocaleString("en-US");
+  text(sum(rows, pick).toLocaleString("en-US"));
 
 export const sortValue = (r: ItemVerdict, col: Col): number | null => {
   switch (col) {
@@ -198,41 +192,33 @@ export const COLUMNS: ColumnDef[] = [
     label: "Item",
     width: 250,
     filter: "item",
-    render: (r) => <span className="font-semibold">{r.description}</span>,
-    foot: (rows) => (
-      <span className="uppercase tracking-wide">
-        Totals · {rows.length.toLocaleString("en-US")}{" "}
-        {rows.length === 1 ? "item" : "items"}
-      </span>
-    ),
+    render: (r) => text(r.description, "bold"),
+    foot: (rows) =>
+      text(
+        `Totals · ${rows.length.toLocaleString("en-US")} ${rows.length === 1 ? "item" : "items"}`,
+        "caps",
+      ),
   },
   {
     key: "upc",
     label: "UPC",
     width: 120,
     filter: "upc",
-    render: (r) => r.productCode,
+    render: (r) => text(r.productCode),
   },
   {
     key: "vendor",
     label: "Vendor",
     width: 150,
     filter: "vendor",
-    render: (r) => r.vendorName || <span className="text-content/95">—</span>,
+    render: (r) => (r.vendorName ? text(r.vendorName) : text("—", "muted")),
   },
   {
     key: "cause",
     label: "Cause",
     width: 118,
     filter: "cause",
-    render: (r) => (
-      <span
-        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${CAUSE_TONE[r.cause].chip}`}
-        title={CAUSE_OWNER[r.cause]}
-      >
-        {CAUSE_LABEL[r.cause]}
-      </span>
-    ),
+    render: (r) => ({ kind: "cause", cause: r.cause }),
   },
   {
     key: "mineTy",
@@ -242,7 +228,7 @@ export const COLUMNS: ColumnDef[] = [
     right: true,
     sort: "mine",
     foot: money((r) => r.mineTy),
-    render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
+    render: (r, fmt) => text(fmt(r.mineTy), "bold"),
   },
   {
     key: "theirsTy",
@@ -252,7 +238,7 @@ export const COLUMNS: ColumnDef[] = [
     right: true,
     sort: "theirs",
     foot: money((r) => r.theirsTy),
-    render: (r, fmt) => fmt(r.theirsTy),
+    render: (r, fmt) => text(fmt(r.theirsTy)),
   },
   {
     key: "marginDiff",
@@ -267,20 +253,11 @@ export const COLUMNS: ColumnDef[] = [
     // stores are not a baseline for each other, so there is no threshold
     // this could be measured against — green is up, red is down, nothing
     // more is being claimed.
-    render: (r) => (
-      <span
-        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
-          r.margins.diff === 0
-            ? "bg-fill_muted text-content/95"
-            : r.margins.diff > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-        }`}
-      >
-        {r.margins.diff >= 0 ? "+" : "−"}
-        {cash(Math.abs(r.margins.diff))}
-      </span>
-    ),
+    render: (r) => ({
+      kind: "signed",
+      value: r.margins.diff,
+      text: cash(Math.abs(r.margins.diff)),
+    }),
   },
   {
     key: "gap",
@@ -292,20 +269,11 @@ export const COLUMNS: ColumnDef[] = [
     // The ledger's pill, sized for a dense row: the comparison styling is
     // the same everywhere on this page, and a graded figure that changes
     // shape per grid is one a reader has to re-learn.
-    render: (r, fmt) => (
-      <span
-        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
-          r.gap === 0
-            ? "bg-fill_muted text-content/95"
-            : r.gap > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-        }`}
-      >
-        {r.gap >= 0 ? "+" : "−"}
-        {fmt(Math.abs(r.gap))}
-      </span>
-    ),
+    render: (r, fmt) => ({
+      kind: "signed",
+      value: r.gap,
+      text: fmt(Math.abs(r.gap)),
+    }),
   },
   {
     key: "mineLw",
@@ -314,7 +282,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 90,
     right: true,
     sort: "mineLw",
-    render: (r, fmt) => fmt(r.mineLw),
+    render: (r, fmt) => text(fmt(r.mineLw)),
     foot: money((r) => r.mineLw),
   },
   {
@@ -324,7 +292,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 90,
     right: true,
     sort: "theirsLw",
-    render: (r, fmt) => fmt(r.theirsLw),
+    render: (r, fmt) => text(fmt(r.theirsLw)),
     foot: money((r) => r.theirsLw),
   },
   {
@@ -334,7 +302,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 90,
     right: true,
     sort: "mineLy",
-    render: (r, fmt) => fmt(r.mineLy),
+    render: (r, fmt) => text(fmt(r.mineLy)),
     foot: money((r) => r.mineLy),
   },
   {
@@ -344,7 +312,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 90,
     right: true,
     sort: "theirsLy",
-    render: (r, fmt) => fmt(r.theirsLy),
+    render: (r, fmt) => text(fmt(r.theirsLy)),
     foot: money((r) => r.theirsLy),
   },
   {
@@ -354,7 +322,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 88,
     right: true,
     sort: "mineUnits",
-    render: (r) => r.mineUnits.toLocaleString("en-US"),
+    render: (r) => text(r.mineUnits.toLocaleString("en-US")),
     foot: counted((r) => r.mineUnits),
   },
   {
@@ -364,7 +332,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 88,
     right: true,
     sort: "theirsUnits",
-    render: (r) => r.theirsUnits.toLocaleString("en-US"),
+    render: (r) => text(r.theirsUnits.toLocaleString("en-US")),
     foot: counted((r) => r.theirsUnits),
   },
   {
@@ -375,7 +343,7 @@ export const COLUMNS: ColumnDef[] = [
     right: true,
     sort: "mineCost",
     render: (r) =>
-      r.margins.minePerUnit === null ? "—" : cash(r.margins.minePerUnit),
+      text(r.margins.minePerUnit === null ? "—" : cash(r.margins.minePerUnit)),
   },
   {
     key: "theirsCost",
@@ -385,7 +353,9 @@ export const COLUMNS: ColumnDef[] = [
     right: true,
     sort: "theirsCost",
     render: (r) =>
-      r.margins.theirsPerUnit === null ? "—" : cash(r.margins.theirsPerUnit),
+      text(
+        r.margins.theirsPerUnit === null ? "—" : cash(r.margins.theirsPerUnit),
+      ),
   },
   {
     // What the per-unit difference took on the units WE sold. Money, not a
@@ -398,19 +368,8 @@ export const COLUMNS: ColumnDef[] = [
     foot: signedCash((r) => r.margins.costPenalty),
     render: (r) => {
       const v = r.margins.costPenalty;
-      if (v === null || Math.abs(v) < 0.005) return "—";
-      return (
-        <span
-          className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
-            v > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-          }`}
-        >
-          {v >= 0 ? "+" : "−"}
-          {cash(Math.abs(v))}
-        </span>
-      );
+      if (v === null || Math.abs(v) < 0.005) return text("—");
+      return { kind: "signed", value: v, text: cash(Math.abs(v)) };
     },
   },
   {
@@ -421,7 +380,7 @@ export const COLUMNS: ColumnDef[] = [
     width: 82,
     right: true,
     sort: "price",
-    render: (r) => mult(r.ratios.price),
+    render: (r) => text(mult(r.ratios.price)),
   },
   {
     key: "ordered",
@@ -431,11 +390,9 @@ export const COLUMNS: ColumnDef[] = [
     sort: "ordered",
     foot: counted((r) => r.orderedQty),
     render: (r) =>
-      r.orderedQty > 0 ? (
-        r.orderedQty.toLocaleString("en-US")
-      ) : (
-        <span className="text-content/95">none</span>
-      ),
+      r.orderedQty > 0
+        ? text(r.orderedQty.toLocaleString("en-US"))
+        : text("none", "muted"),
   },
   {
     key: "received",
@@ -445,11 +402,9 @@ export const COLUMNS: ColumnDef[] = [
     sort: "received",
     foot: counted((r) => r.receivedUnits),
     render: (r) =>
-      r.receivedUnits > 0 ? (
-        r.receivedUnits.toLocaleString("en-US")
-      ) : (
-        <span className="text-content/95">none</span>
-      ),
+      r.receivedUnits > 0
+        ? text(r.receivedUnits.toLocaleString("en-US"))
+        : text("none", "muted"),
   },
   {
     key: "sellThrough",
@@ -457,6 +412,6 @@ export const COLUMNS: ColumnDef[] = [
     width: 84,
     right: true,
     sort: "sellThrough",
-    render: (r) => pct(r.ratios.sellThrough),
+    render: (r) => text(pct(r.ratios.sellThrough)),
   },
 ];

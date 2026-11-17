@@ -7,6 +7,7 @@ import type { useRowSelection } from "../../../hooks";
 
 // Components
 import Bar from "../../../components/Bar";
+import GridCellContent from "./GridCellContent";
 
 interface GridRowProps {
   row: ItemVerdict;
@@ -69,7 +70,7 @@ const GridRow = ({ row: r, n, selection, allIn, fmt }: GridRowProps) => {
           {c.key === "cause" && !allIn ? (
             <Bar w="88%" h={14} />
           ) : (
-            c.render(r, fmt)
+            <GridCellContent cell={c.render(r, fmt)} />
           )}
         </td>
       ))}

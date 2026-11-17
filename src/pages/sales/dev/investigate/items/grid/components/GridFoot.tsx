@@ -4,6 +4,9 @@ import { COLUMNS, tintOf } from "../../../utils/columns";
 // Interfaces
 import type { ItemVerdict } from "../../../interfaces";
 
+// Components
+import GridCellContent from "./GridCellContent";
+
 interface GridFootProps {
   shown: ItemVerdict[];
   fmt: (v: number) => string;
@@ -26,7 +29,7 @@ const GridFoot = ({ shown, fmt }: GridFootProps) => {
               c.right ? "text-right" : ""
             } ${tintOf(c) || "bg-bkg"}`}
           >
-            {c.foot ? c.foot(shown, fmt) : null}
+            {c.foot ? <GridCellContent cell={c.foot(shown, fmt)} /> : null}
           </td>
         ))}
       </tr>
