@@ -30,13 +30,10 @@ import type {
 } from "../../../../../../interfaces";
 
 // Components
-import TextFilter from "../../../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
-import Checkbox from "../../../../../../components-dev/Checkbox";
-import GrantModeChip from "../components/GrantModeChip";
 import EmptyPicksNotice from "./components/EmptyPicksNotice";
 import CompanyColumn from "./components/CompanyColumn";
 import BaseGroupColumn from "./components/BaseGroupColumn";
+import StoreColumn from "./components/StoreColumn";
 
 interface AccessPanelProps {
   picks: AccessPicks;
@@ -176,16 +173,7 @@ const AccessPanel = ({
   // Which groups are selected for viewing — drives the middle column's
   // highlight and which groups get a section in the stores column at all.
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
-  // Which groups' store lists are collapsed in the stores column: display
-  // only, independent of expandedGroups and of what is held.
-  const [collapsedSections, setCollapsedSections] = useState<Set<number>>(
-    new Set(),
-  );
   const [groupSearch, setGroupSearch] = useState<string>("");
-  const [storeSearch, setStoreSearch] = useState<string>("");
-  // The "Jump to selected" dropdown's value, reset to "" after each pick: a
-  // scroll shortcut, not a filter.
-  const [storeGroupFilter, setStoreGroupFilter] = useState<string>("");
 
   useEffect(() => {
     if (companyList.length > 0 && activeCompany === null) {
@@ -220,7 +208,6 @@ const AccessPanel = ({
   const selectCompany = (companyId: number) => {
     setActiveCompany(companyId);
     setGroupSearch("");
-    setStoreGroupFilter("");
     if (!companyGroups[companyId]) fetchGroupsForCompany(companyId);
   };
 
@@ -261,14 +248,6 @@ const AccessPanel = ({
     setExpandedGroups((prev) => {
       const next = new Set(prev);
       next.has(group.id) ? next.delete(group.id) : next.add(group.id);
-      return next;
-    });
-  };
-
-  const toggleSectionCollapse = (groupId: number) => {
-    setCollapsedSections((prev) => {
-      const next = new Set(prev);
-      next.has(groupId) ? next.delete(groupId) : next.add(groupId);
       return next;
     });
   };
@@ -335,21 +314,6 @@ const AccessPanel = ({
       !selectedStores.some((s) => s.base_group === id),
   );
 
-  const handleJumpToGroup = (value: string) => {
-    if (!value) return;
-    const groupId = Number(value);
-    setCollapsedSections((prev) => {
-      if (!prev.has(groupId)) return prev;
-      const next = new Set(prev);
-      next.delete(groupId);
-      return next;
-    });
-    document
-      .getElementById(`assignments-group-${value}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setStoreGroupFilter("");
-  };
-
   return (
     <div className="w-full h-full flex flex-col min-h-0">
       <div className="flex-1 min-h-0 flex border border-line_hair rounded-lg overflow-hidden">
@@ -379,151 +343,17 @@ const AccessPanel = ({
           toggleGroupExpand={toggleGroupExpand}
         />
 
-        {/* Stores for every expanded group */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0 flex items-center gap-2">
-            <TextFilter
-              value={storeSearch}
-              onChange={setStoreSearch}
-              placeholder="Search stores…"
-              className="flex-1"
-            />
-            <SelectFilter
-              options={openGroups.map((g) => ({
-                value: String(g.id),
-                label: g.name,
-              }))}
-              value={storeGroupFilter}
-              onChange={handleJumpToGroup}
-              placeholder="Jump to group…"
-              className="w-[150px] flex-shrink-0"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
-            {openGroups.length === 0 && (
-              <div className="flex items-center justify-center h-full text-[11px] text-content/95 p-6 text-center">
-                Pick a base group to see its stores
-              </div>
-            )}
-            {openGroups.map((group) => {
-              const held = heldSet.has(group.id);
-              const mode = picks.mode;
-              // By group: no store is picked one at a time, so no checkboxes;
-              // a held group shows all ticked, one opened to look a plain list.
-              const preview = mode === "all";
-              const inGroup = selectedStores.filter(
-                (s) => s.base_group === group.id,
-              );
-              const total = groupStores[group.id]?.length;
-              const isCollapsed = collapsedSections.has(group.id);
-              const stores = (groupStores[group.id] ?? []).filter((s) =>
-                s.store_name.toLowerCase().includes(storeSearch.toLowerCase()),
-              );
-              return (
-                <div key={group.id} id={`assignments-group-${group.id}`}>
-                  <button
-                    onClick={() => toggleSectionCollapse(group.id)}
-                    className="cc-thead w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left hover:bg-fill_muted transition-colors"
-                  >
-                    <span className="flex items-center gap-1.5 min-w-0">
-                      <span
-                        className={`text-[10px] text-content/95 flex-shrink-0 transition-transform ${
-                          isCollapsed ? "" : "rotate-90"
-                        }`}
-                      >
-                        ▶
-                      </span>
-                      <span className="text-[11px] font-semibold text-content truncate">
-                        {group.name}
-                        {preview
-                          ? total !== undefined
-                            ? held
-                              ? ` — all ${total}`
-                              : ` — ${total} store${total === 1 ? "" : "s"}`
-                            : ""
-                          : ` — ${inGroup.length}${
-                              total !== undefined ? ` of ${total}` : ""
-                            }`}
-                      </span>
-                      {held && <GrantModeChip mode={mode} />}
-                    </span>
-                    {/* No Select all on a preview: there is nothing to select,
-                        and the whole group is already the answer. */}
-                    {!preview && !singleStoreOnly && mayChange(group.id) && (
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectAllForGroup(group);
-                        }}
-                        className="text-[10.5px] text-brand_navy font-semibold flex-shrink-0 hover:underline"
-                      >
-                        Select all
-                      </span>
-                    )}
-                  </button>
-                  {!isCollapsed && (
-                    <div className="px-2 divide-y divide-brand_navy/15">
-                      {preview && (
-                        <p className="text-[10.5px] text-content/95 leading-snug px-1 py-1.5">
-                          {held
-                            ? "Read only — this person has the whole group. Stores added to it later will appear for them automatically."
-                            : "Viewing only. Tick the group to give them every store in it, or choose By store on the Access type step to pick stores one at a time."}
-                        </p>
-                      )}
-                      {stores.map((s) => {
-                        const isSelected = inGroup.some(
-                          (sel) => sel.storeid === s.storeid,
-                        );
-                        return preview ? (
-                          // Held: ticked and disabled, since every store is
-                          // included. Not held: no box, nothing to tick.
-                          <div
-                            key={s.storeid}
-                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/95"
-                          >
-                            {held && (
-                              <Checkbox
-                                checked
-                                disabled
-                                onChange={() => undefined}
-                                ariaLabel={`${s.store_name} is included automatically`}
-                              />
-                            )}
-                            <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
-                              {s.store_number}
-                            </span>
-                            <span className="truncate">{s.store_name}</span>
-                          </div>
-                        ) : (
-                          <div
-                            key={s.storeid}
-                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content"
-                          >
-                            <Checkbox
-                              checked={isSelected}
-                              disabled={!mayChange(group.id)}
-                              onChange={() => toggleStore(s, group)}
-                              ariaLabel={`Pick ${s.store_name}`}
-                            />
-                            <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
-                              {s.store_number}
-                            </span>
-                            <span className="truncate">{s.store_name}</span>
-                          </div>
-                        );
-                      })}
-                      {groupStores[group.id] === undefined && (
-                        <div className="py-3 text-[11px] text-content/95 text-center">
-                          Loading…
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <StoreColumn
+          openGroups={openGroups}
+          heldSet={heldSet}
+          mode={picks.mode}
+          selectedStores={selectedStores}
+          groupStores={groupStores}
+          singleStoreOnly={singleStoreOnly}
+          mayChange={mayChange}
+          onToggleStore={toggleStore}
+          onSelectAll={handleSelectAllForGroup}
+        />
 
         {rightColumn && (
           <div className="w-[300px] flex-shrink-0 border-l border-line_hair hidden xl:flex flex-col min-h-0">
