@@ -17,7 +17,7 @@ import {
   listExportBuilds,
   nestRequest,
 } from "./exportBuilds";
-import { SALES, filterNames } from "../pages/exportBuilder/dev/sources";
+import { SALES, filterNames } from "../pages/exportBuilder/dev/utils/sources";
 
 type Req = { url: string; method: string; data?: Record<string, unknown> };
 const lastRequest = () => axiosMock.mock.calls.at(-1)![0] as Req;

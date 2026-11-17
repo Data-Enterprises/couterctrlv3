@@ -629,7 +629,22 @@
   "src/pages/exportBuilder/ExportBuilder.tsx": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/ConfigPanel.tsx": {
+  "src/pages/exportBuilder/dev/ExportBuilder.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/components/ExportBar.tsx": {
+    "labels": 1,
+    "shape-extra-code": 2,
+    "shape-named-export": 1
+  },
+  "src/pages/exportBuilder/dev/components/SourcePicker.tsx": {
+    "labels": 1,
+    "selector-outside-hook": 1
+  },
+  "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/config/ConfigPanel.tsx": {
     "doc-comment": 1,
     "file-length": 1,
     "labels": 1,
@@ -637,85 +652,71 @@
     "shape-extra-component": 3,
     "shape-extra-type": 1
   },
-  "src/pages/exportBuilder/dev/CsvPreview.tsx": {
-    "commented-code": 2,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/DownloadsModal.tsx": {
+  "src/pages/exportBuilder/dev/downloads/DownloadsModal.tsx": {
     "labels": 1,
     "shape-extra-code": 2
   },
-  "src/pages/exportBuilder/dev/ExportBar.tsx": {
-    "labels": 1,
-    "shape-extra-code": 2,
-    "shape-named-export": 1
-  },
-  "src/pages/exportBuilder/dev/ExportBuilder.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/QueryPanel.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/pages/exportBuilder/dev/SavedExportsModal.tsx": {
-    "labels": 1,
-    "shape-extra-code": 1
-  },
-  "src/pages/exportBuilder/dev/SourcePicker.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/SqlModal.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/SummaryPreview.tsx": {
-    "commented-code": 3,
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/aggregates.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/dateFormats.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/hooks.ts": {
+  "src/pages/exportBuilder/dev/hooks/index.ts": {
     "file-length": 1,
     "labels": 1,
     "one-line-per-source": 1
   },
-  "src/pages/exportBuilder/dev/query/applyQuery.ts": {
+  "src/pages/exportBuilder/dev/preview/CsvPreview.tsx": {
+    "commented-code": 2,
+    "doc-comment": 1,
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/query/configToQuery.ts": {
+  "src/pages/exportBuilder/dev/preview/SummaryPreview.tsx": {
+    "commented-code": 3,
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/query/evalQuery.ts": {
+  "src/pages/exportBuilder/dev/preview/hooks/index.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/preview/utils/dateFormats.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/queryPanel/QueryPanel.tsx": {
+    "doc-comment": 1,
+    "labels": 1,
+    "shape-props-name": 1
+  },
+  "src/pages/exportBuilder/dev/saved/SavedExportsModal.tsx": {
+    "labels": 1,
+    "shape-extra-code": 1
+  },
+  "src/pages/exportBuilder/dev/utils/aggregates.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/utils/query/applyQuery.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/utils/query/configToQuery.ts": {
+    "labels": 1
+  },
+  "src/pages/exportBuilder/dev/utils/query/evalQuery.ts": {
     "labels": 1,
     "one-line-per-source": 1
   },
-  "src/pages/exportBuilder/dev/query/parseQuery.ts": {
+  "src/pages/exportBuilder/dev/utils/query/parseQuery.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/query/sketchExpr.ts": {
+  "src/pages/exportBuilder/dev/utils/query/sketchExpr.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/rollup.ts": {
+  "src/pages/exportBuilder/dev/utils/rollup.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/sampleRows.ts": {
+  "src/pages/exportBuilder/dev/utils/sampleRows.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/savedExports.ts": {
+  "src/pages/exportBuilder/dev/utils/savedExports.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/sortRows.ts": {
+  "src/pages/exportBuilder/dev/utils/sortRows.ts": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/sources.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/useColumnDrag.ts": {
+  "src/pages/exportBuilder/dev/utils/sources.ts": {
     "labels": 1
   },
   "src/pages/forecast/Forecasting.tsx": {

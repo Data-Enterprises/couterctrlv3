@@ -31,7 +31,7 @@ import reducer, {
 } from "@/features/dev/devExportBuilderSlice";
 import type { ExportBuild } from "@/api/exportBuilds";
 import type { SavedConfig } from "@/api/savedConfigs";
-import { SALES } from "@/pages/exportBuilder/dev/sources";
+import { SALES } from "@/pages/exportBuilder/dev/utils/sources";
 
 /** A preview's facets, turned into the slice's lists the way the page does. */
 const salesLists = (facets: Record<string, unknown>) =>

@@ -1,0 +1,349 @@
+import { useState } from "react";
+import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import Modal from "../../../../components-dev/Modal";
+import ConfirmDelete from "../../../../components-dev/ConfirmDelete";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import { useExportBuilderCtx } from "../hooks/index";
+import { openBuilds } from "../../../../features/dev/devExportBuilderSlice";
+import { requestToQuery } from "../utils/query/configToQuery";
+import type { ExportBuild } from "../../../../api/exportBuilds";
+
+const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+
+/**
+ * When it ran, in the reader's own time.
+ *
+ * The manifest stamps UTC with microseconds. A build run at 9:50am Central
+ * carries 14:50, and printed as-is the list reads as the future.
+ */
+const ranAt = (iso: string) => {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "";
+  return at.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
+
+/**
+ * Previous Builds: the questions as they were asked, and their files.
+ *
+ * A build is not a configuration. It is one run — the exact payload, the
+ * dates, the stores, the counts — written to a manifest beside the file and
+ * never rewritten. So reloading one comes from the build rather than from the
+ * configuration it names: that configuration may have been edited or deleted
+ * since, and the manifest is literally what produced the file.
+ *
+ * Grouped by the configuration it came from, with everything ad-hoc together
+ * at the end. The grouping is ours to do — the endpoint joins nothing.
+ */
+const DownloadsModal = () => {
+  const ctx = useExportBuilderCtx();
+  const [labelling, setLabelling] = useState<string | null>(null);
+  const [showing, setShowing] = useState<string | null>(null);
+  const [parts, setParts] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<ExportBuild | null>(null);
+
+  const close = () => ctx.dispatch(openBuilds(false));
+
+  /** One bucket per configuration, in the order the builds arrive, with the
+   *  ad-hoc ones last however many there are. */
+  const groups: { id: number | null; name: string; builds: ExportBuild[] }[] = [];
+  for (const build of ctx.builds) {
+    const found = groups.find((g) => g.id === build.userQueryId);
+    if (found) {
+      found.builds.push(build);
+      continue;
+    }
+    groups.push({
+      id: build.userQueryId,
+      name: build.userQueryName ?? "Ad-hoc",
+      builds: [build],
+    });
+  }
+  groups.sort((a, b) => (a.id === null ? 1 : 0) - (b.id === null ? 1 : 0));
+
+  // The empty row is SelectFilter's `placeholder`, below — prepended here as
+  // well it showed twice, and under two different words, because this one was
+  // letting the placeholder fall back to its "All" default.
+  const configOptions = ctx.saved.map((c) => ({
+    value: String(c.id),
+    label: c.name,
+  }));
+
+  return (
+    <Modal
+      isOpen
+      onClose={close}
+      modalClassName="bg-card_bg w-[860px] max-w-[94vw] max-h-[84vh] flex flex-col"
+    >
+      <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
+        <div className="flex items-baseline gap-3 flex-shrink-0">
+          <h2 className="text-[15px] font-semibold">Previous builds</h2>
+          <span className="text-[11.5px] text-content/95">
+            yours, newest first · links last {ctx.buildsExpireMinutes} min from
+            this listing
+          </span>
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => ctx.loadBuilds()}
+            disabled={ctx.buildsLoading}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
+          >
+            {ctx.buildsLoading ? "Reading..." : "Refresh"}
+          </button>
+          <button
+            type="button"
+            onClick={close}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
+          >
+            Close
+          </button>
+        </div>
+
+        {ctx.buildsError && (
+          <div className="flex-shrink-0 bg-severity_watch_bg border border-severity_watch_text/20 rounded-lg px-3 py-2 text-[12px] text-severity_watch_text">
+            {ctx.buildsError}
+          </div>
+        )}
+
+        <div className="cc-scroll flex flex-col gap-3">
+          {groups.map((group) => (
+            <div key={group.id ?? "adhoc"} className="flex flex-col gap-1.5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[11px] cc-caps">
+                  {group.name}
+                </span>
+                <span className="text-[11px] text-content/95">
+                  {group.builds.length} build
+                  {group.builds.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              {group.builds.map((build) => (
+                <div
+                  key={build.buildId}
+                  className={`flex items-center gap-3 border rounded-xl px-3 py-2.5 ${
+                    build.expired
+                      ? "border-brand_line bg-custom-white opacity-70"
+                      : "border-brand_line bg-card_bg"
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      build.expired ? "bg-brand_line" : "bg-brand_green_tint"
+                    }`}
+                  >
+                    <ArrowDownTrayIcon
+                      className={`w-4 h-4 ${
+                        build.expired ? "text-content/95" : "text-brand_green"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {/* The file's own name first: it is what lands in the
+                        downloads folder, and what someone asks about later. */}
+                    {/* The first name, and a count. Joined, a split build
+                        ran past the row and truncated mid-word, so it named
+                        no file properly rather than one clearly. */}
+                    <div className="font-mono text-[12.5px] font-semibold truncate">
+                      {build.files[0]?.key.split("/").pop() ?? "no file"}
+                      {build.files.length > 1 && (
+                        <span className="font-sans font-normal text-content/95">
+                          {" "}
+                          + {build.files.length - 1} more
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11.5px] text-content/95 mt-0.5">
+                      {build.startDate} to {build.endDate} ·{" "}
+                      {build.storeCount} store
+                      {build.storeCount === 1 ? "" : "s"} ·{" "}
+                      {build.rowsUploaded.toLocaleString()} rows ·{" "}
+                      {mb(build.bytesUploaded)} ·{" "}
+                      {build.fileFormat.toUpperCase()}
+                    </div>
+                    <div className="text-[11px] text-content/95 mt-0.5">
+                      ran {ranAt(build.createdAt)} · built in{" "}
+                      {build.elapsedSeconds.toFixed(1)}s
+                      {" · "}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowing(
+                            showing === build.buildId ? null : build.buildId,
+                          )
+                        }
+                        className="text-brand_navy_hover underline underline-offset-2"
+                      >
+                        {showing === build.buildId
+                          ? "hide the query"
+                          : "the query it ran"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Relabelling only rewrites the manifest; the file is never
+                      touched, which is why it is offered here at all. */}
+                  {labelling === build.buildId ? (
+                    <SelectFilter
+                      plain
+                      searchable
+                      searchPlaceholder="Find a configuration..."
+                      placeholder="Ad-hoc (no configuration)"
+                      options={configOptions}
+                      value={build.userQueryId ? String(build.userQueryId) : ""}
+                      onChange={(value) => {
+                        ctx.labelBuild(build.buildId, value ? Number(value) : null);
+                        setLabelling(null);
+                      }}
+                      className="w-[170px] flex-shrink-0"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setLabelling(build.buildId)}
+                      className="text-[11.5px] text-brand_navy_hover underline underline-offset-2 flex-shrink-0"
+                    >
+                      {build.userQueryId ? "Relabel" : "Label"}
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleting(build)}
+                    aria-label={`Delete the build from ${build.startDate}`}
+                    title="Delete this build's file and its record"
+                    className="text-[11.5px] font-medium px-2.5 py-2 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors flex-shrink-0"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => ctx.reloadBuild(build)}
+                    title="Put this build's settings and dates back on the page"
+                    className="flex items-center gap-1 text-[12.5px] font-medium px-3 py-2 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors flex-shrink-0"
+                  >
+                    <ArrowPathIcon className="w-3.5 h-3.5" />
+                    Reload
+                  </button>
+
+                  {/*
+                    * One control per build, not one per file.
+                    *
+                    * A split build drew a Download for every part, all
+                    * labelled the same — three identical buttons saying
+                    * nothing about which part each was, and enough of them to
+                    * push the rest of the row out of shape. Now the parts are
+                    * a list you open, and each one is named.
+                    */}
+                  {build.expired ? (
+                    <span className="text-[11.5px] text-content/95 text-right max-w-[14ch] flex-shrink-0">
+                      File is gone — build it again
+                    </span>
+                  ) : build.files.length === 1 ? (
+                    <a
+                      href={build.files[0].url}
+                      download
+                      className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      Download
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setParts(parts === build.buildId ? null : build.buildId)
+                      }
+                      aria-expanded={parts === build.buildId}
+                      className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      {build.files.length} files
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {group.builds
+                .filter(
+                  (build) =>
+                    parts === build.buildId && build.files.length > 1,
+                )
+                .map((build) => (
+                  <div
+                    key={`${build.buildId}-parts`}
+                    className="flex flex-col gap-1 bg-custom-white border border-brand_line rounded-lg px-3 py-2"
+                  >
+                    {build.files.map((file, i) => (
+                      <div
+                        key={file.key}
+                        className="flex items-center gap-3 text-[12px]"
+                      >
+                        <span className="min-w-0 flex-1 truncate font-mono">
+                          {file.key.split("/").pop()}
+                        </span>
+                        <a
+                          href={file.url}
+                          download
+                          className="flex-shrink-0 font-semibold text-brand_navy_hover underline underline-offset-2"
+                        >
+                          Part {i + 1}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+              {group.builds
+                .filter((build) => showing === build.buildId)
+                .map((build) => (
+                  <pre
+                    key={`${build.buildId}-query`}
+                    className="bg-custom-white border border-brand_line rounded-lg px-3 py-2 text-[11.5px] font-mono whitespace-pre-wrap break-words text-content"
+                  >
+                    {requestToQuery(build.request, ctx.source)}
+                  </pre>
+                ))}
+            </div>
+          ))}
+
+          {ctx.builds.length === 0 && (
+            <div className="py-8 text-center">
+              <div className="text-[13px] font-semibold">
+                {ctx.buildsLoading ? "Reading your builds..." : "No builds yet"}
+              </div>
+              <div className="text-[12.5px] text-content/95 mt-1.5 max-w-[48ch] mx-auto">
+                Every file you build lands here with the settings that made it,
+                so a month from now you can download it again or put those
+                settings back on the page.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {deleting && (
+        <ConfirmDelete
+          what={
+            deleting.files.map((f) => f.key.split("/").pop()).join(", ") ||
+            `the build from ${deleting.startDate}`
+          }
+          kind="build"
+          detail="The file and its record go together, and there is no undo — the bucket keeps no previous version. The configuration it came from is untouched."
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => {
+            ctx.removeBuild(deleting.buildId);
+            setDeleting(null);
+          }}
+        />
+      )}
+    </Modal>
+  );
+};
+
+export default DownloadsModal;
