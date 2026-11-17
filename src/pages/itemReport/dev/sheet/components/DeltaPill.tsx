@@ -1,6 +1,6 @@
 // Utils
-import { formatPct, pillClass } from "../../../../utils/severity";
-import { DELTA_THRESHOLD } from "../utils";
+import { formatPct, pillClass } from "../../../../../utils/severity";
+import { DELTA_THRESHOLD } from "../../utils";
 
 interface DeltaPillProps {
   pct: number | null;

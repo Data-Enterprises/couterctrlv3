@@ -29,7 +29,7 @@ import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import ItemReportEntry from "./components/ItemReportEntry";
 import InvoiceSheet from "./components/InvoiceSheet";
-import ItemReportSheet from "./components/ItemReportSheet";
+import ItemReportSheet from "./sheet/ItemReportSheet";
 import ItemReportRail from "./rail/ItemReportRail";
 import ItemReportExportModal from "./export/ItemReportExportModal";
 

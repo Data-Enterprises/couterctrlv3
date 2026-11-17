@@ -33,8 +33,8 @@ import { colInputStyle } from "../../../../components-dev/filters/colFilterStyle
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
-import DetailPopover from "./DetailPopover";
-import DeltaPill from "./DeltaPill";
+import DetailPopover from "../components/DetailPopover";
+import DeltaPill from "./components/DeltaPill";
 
 /**
  * The report itself: one row per item, its action, and the evidence for it.
