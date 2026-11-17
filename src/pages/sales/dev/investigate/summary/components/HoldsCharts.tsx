@@ -10,7 +10,7 @@ import type {
 // Components
 import Carousel from "../../components/Carousel";
 import Weeks from "./Weeks";
-import Index from "./Index";
+import Index from "./IndexChart";
 import VendorBars from "./VendorBars";
 
 interface HoldsChartsProps {

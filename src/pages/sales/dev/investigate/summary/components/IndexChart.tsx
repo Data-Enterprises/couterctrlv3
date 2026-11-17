@@ -1,7 +1,7 @@
 // Interfaces
 import type { Vitals as VitalsShape } from "../../utils/investigationSteps";
 
-interface IndexProps {
+interface IndexChartProps {
   vitals: VitalsShape;
   them: string;
   cash: (v: number) => string;
@@ -9,7 +9,7 @@ interface IndexProps {
 
 /** Sales, units and margin on ONE rule, the counterpart at 100, so measures
  *  that disagree are seen to disagree. */
-const Index = ({ vitals, them, cash }: IndexProps) => {
+const IndexChart = ({ vitals, them, cash }: IndexChartProps) => {
   // Three bars pinned at zero say nothing, in the one case where the reason
   // they are at zero IS the finding.
   if (vitals.index.every((m) => m.mine === 0)) {
@@ -66,4 +66,4 @@ const Index = ({ vitals, them, cash }: IndexProps) => {
   );
 };
 
-export default Index;
+export default IndexChart;
