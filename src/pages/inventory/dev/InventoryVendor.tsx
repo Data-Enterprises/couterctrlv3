@@ -27,7 +27,7 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import InventoryTreePanel from "./components/InventoryTreePanel";
 import InventoryExportModal from "./export/InventoryExportModal";
-import ItemAnalysisPanel from "./components/ItemAnalysisPanel";
+import ItemAnalysisPanel from "./itemPanel/ItemAnalysisPanel";
 
 /**
  * Price Opt: Vendor. Identical to Sub Department from the item rightward; only

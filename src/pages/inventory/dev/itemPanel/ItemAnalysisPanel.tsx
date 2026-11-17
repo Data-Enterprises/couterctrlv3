@@ -27,7 +27,7 @@ import {
   InformationCircleIcon,
   ArrowTrendingUpIcon,
 } from "@heroicons/react/20/solid";
-import ActualPriceRow from "./ActualPriceRow";
+import ActualPriceRow from "./components/ActualPriceRow";
 
 interface ItemAnalysisPanelProps {
   product: ProductSummary;
