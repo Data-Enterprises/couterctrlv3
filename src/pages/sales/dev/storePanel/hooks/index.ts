@@ -1,6 +1,10 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../../hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
 
 // Redux
@@ -23,7 +27,10 @@ import { getHourly, getSubsDaily } from "../../../../../api/sales";
 // Utils
 import { shiftIso } from "../../../../../utils/grading";
 import { sameWeekDayLastYear } from "../../../../../utils";
-import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/ledgerUtils";
+import {
+  applyStoreNumberToName,
+  scopeToStoreNumber,
+} from "../../utils/ledgerUtils";
 import { buildDateLabels, buildWeekWindow } from "../utils";
 
 // Interfaces
@@ -60,7 +67,10 @@ export const useDateLabels = () => {
  * swapped to this location's.
  */
 export const useStoreNames = (selection: StoreSelection) => {
-  const resolvedStoreName = useStoreName(selection.storeId, selection.storeName);
+  const resolvedStoreName = useStoreName(
+    selection.storeId,
+    selection.storeName,
+  );
   const headerStoreName = applyStoreNumberToName(
     resolvedStoreName,
     selection.storeNumber,

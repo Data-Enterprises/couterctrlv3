@@ -70,9 +70,7 @@ const LedgerRow = ({
     <button
       onClick={handleClick}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSelected
-          ? "cc-row-selected"
-          : "border-transparent hover:bg-fill_soft"
+        isSelected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span

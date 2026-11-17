@@ -23,7 +23,14 @@ interface DocumentProps {
 
 /** One order or receipt row: date, vendor, number, status or cost, lines and units.
  *  Click to open its lines, with a switch between this department's lines and the whole document. */
-const Document = ({ rec, lines, whole, cash, isOrder, showStore = true }: DocumentProps) => {
+const Document = ({
+  rec,
+  lines,
+  whole,
+  cash,
+  isOrder,
+  showStore = true,
+}: DocumentProps) => {
   const [open, setOpen] = useState(false);
   const [everything, setEverything] = useState(false);
   const rows = everything && whole ? whole : lines;
@@ -56,7 +63,9 @@ const Document = ({ rec, lines, whole, cash, isOrder, showStore = true }: Docume
         )}
         <span
           className={`min-w-0 truncate text-[12.5px] ${
-            rec.mine || !showStore ? "font-semibold text-content" : "text-content/95"
+            rec.mine || !showStore
+              ? "font-semibold text-content"
+              : "text-content/95"
           }`}
         >
           {rec.vendor}

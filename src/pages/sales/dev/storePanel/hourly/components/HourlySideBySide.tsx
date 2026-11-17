@@ -109,7 +109,13 @@ const HourlySideBySide = ({
             gradingMetric,
           )
         : [],
-    [theirs, hourlySales, hourlySalesLastWeek, hourlySalesLastYear, gradingMetric],
+    [
+      theirs,
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      gradingMetric,
+    ],
   );
 
   const { shareMine, shareTheirs, widthOf, gapOf, gapText } = hourBars(
@@ -130,10 +136,11 @@ const HourlySideBySide = ({
           &lsaquo; All stores
         </button>
         <span className="text-[12px] text-content/95 truncate">
-          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          How{" "}
+          <span className="font-semibold text-content">{openStoreName}</span>{" "}
           trades against{" "}
-          <span className="font-semibold text-content">{compareStoreName}</span>,
-          hour by hour
+          <span className="font-semibold text-content">{compareStoreName}</span>
+          , hour by hour
         </span>
 
         <span className="ml-auto inline-flex rounded-full border border-brand_line overflow-hidden flex-shrink-0">
@@ -172,7 +179,9 @@ const HourlySideBySide = ({
               <span>
                 {openStoreNumber} against {compareStoreNumber}
               </span>
-              <span className="text-right">{mode === "money" ? "vs TY" : "Share"}</span>
+              <span className="text-right">
+                {mode === "money" ? "vs TY" : "Share"}
+              </span>
             </div>
 
             <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
@@ -203,7 +212,8 @@ const HourlySideBySide = ({
                 <div className="text-[15px] font-bold text-content leading-snug">
                   {focus.label}
                   <span className="text-[12px] font-medium text-content/95">
-                    {" "}&ndash; {hourLabel((focus.hour + 1) % 24)}
+                    {" "}
+                    &ndash; {hourLabel((focus.hour + 1) % 24)}
                   </span>
                 </div>
                 {focus.b === 0 && (
@@ -255,7 +265,10 @@ const HourlySideBySide = ({
                     {" "}
                     &mdash;{" "}
                     <span className="font-semibold text-content">
-                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(1)} points
+                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(
+                        1,
+                      )}{" "}
+                      points
                     </span>{" "}
                     busier at{" "}
                     {shareMine(focus) > shareTheirs(focus)
@@ -270,9 +283,12 @@ const HourlySideBySide = ({
                   a reader hunting for one. An hour does not name a department,
                   and the investigation needs one. */}
               <p className="mt-auto text-[10.5px] text-content/95 leading-snug border-t border-brand_navy/15 pt-2.5">
-                Hours say <span className="font-semibold text-content">when</span>{" "}
-                the two diverge. For <span className="font-semibold text-content">what</span>,
-                use Sub depts &mdash; the item investigation is scoped to a department.
+                Hours say{" "}
+                <span className="font-semibold text-content">when</span> the two
+                diverge. For{" "}
+                <span className="font-semibold text-content">what</span>, use
+                Sub depts &mdash; the item investigation is scoped to a
+                department.
               </p>
             </div>
           )}

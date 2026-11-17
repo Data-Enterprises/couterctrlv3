@@ -79,7 +79,9 @@ export const useCounterpartHours = (args: {
         const lwSet = new Set(lwWeekDates);
         const lySet = new Set(lyWeekDates);
         const lwDay = selectedDate ? shiftIso(selectedDate, -7) : null;
-        const lyDay = selectedDate ? sameWeekDayLastYear(selectedDate).date : null;
+        const lyDay = selectedDate
+          ? sameWeekDayLastYear(selectedDate).date
+          : null;
 
         setTheirs({
           tw: selectedDate

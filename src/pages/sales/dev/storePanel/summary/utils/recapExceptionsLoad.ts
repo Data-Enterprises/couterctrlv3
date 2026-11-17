@@ -1,5 +1,9 @@
 // API
-import { getExceptionLines, type ExceptionLine, type ExceptionLinesResp } from "../../../../../../api/exceptionLines";
+import {
+  getExceptionLines,
+  type ExceptionLine,
+  type ExceptionLinesResp,
+} from "../../../../../../api/exceptionLines";
 
 // Utils
 import { fetchAllPages } from "../../../../../../utils/paging";
@@ -25,17 +29,35 @@ export const loadWeekExceptions = async (
   startDate: string,
   endDate: string,
 ): Promise<ExceptionLine[]> => {
-  const first = await getExceptionLines(url, token, storeId, startDate, endDate, 1);
+  const first = await getExceptionLines(
+    url,
+    token,
+    storeId,
+    startDate,
+    endDate,
+    1,
+  );
   const j: ExceptionLinesResp = first.data;
   if (isEmptyAnswer(j)) return [];
   if (j.error !== 0) throw new Error(j.msg || "Exceptions could not be read");
-  const lines = await fetchAllPages(j, [...(j.transactions ?? [])], async (page) => {
-    try {
-      const r = await getExceptionLines(url, token, storeId, startDate, endDate, page);
-      return r.data.error === 0 ? (r.data.transactions ?? []) : [];
-    } catch {
-      return [];
-    }
-  });
+  const lines = await fetchAllPages(
+    j,
+    [...(j.transactions ?? [])],
+    async (page) => {
+      try {
+        const r = await getExceptionLines(
+          url,
+          token,
+          storeId,
+          startDate,
+          endDate,
+          page,
+        );
+        return r.data.error === 0 ? (r.data.transactions ?? []) : [];
+      } catch {
+        return [];
+      }
+    },
+  );
   return scopeToStoreNumber(lines, storeNumber);
 };

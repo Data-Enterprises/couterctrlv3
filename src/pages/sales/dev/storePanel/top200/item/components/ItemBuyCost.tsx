@@ -17,10 +17,7 @@ interface ItemBuyCostProps {
 
 /** What it costs to buy: paying now, best seen, and what waiting could save. */
 const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
-  <div
-    data-help="item-buy"
-    className="px-4 py-2.5 border-b border-line_hair"
-  >
+  <div data-help="item-buy" className="px-4 py-2.5 border-b border-line_hair">
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-[10px] font-bold uppercase tracking-wide text-content/95">
         What it costs to buy
@@ -28,8 +25,8 @@ const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
       {detail?.cost_summary && (
         <span className="text-[11.5px] text-content/95">
           {detail.cost_summary.purchases} purchase
-          {detail.cost_summary.purchases === 1 ? "" : "s"}{" "}
-          &middot; {COST_HISTORY_DAYS} days
+          {detail.cost_summary.purchases === 1 ? "" : "s"} &middot;{" "}
+          {COST_HISTORY_DAYS} days
         </span>
       )}
     </div>
@@ -42,25 +39,22 @@ const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
 
     {!detailLoading && !detail?.cost_summary && (
       <p className="text-[13px] text-content/95 leading-snug mt-1.5">
-        Nothing bought in the last {COST_HISTORY_DAYS} days, so
-        there is no cost history to compare against.
+        Nothing bought in the last {COST_HISTORY_DAYS} days, so there is no cost
+        history to compare against.
       </p>
     )}
 
     {detail?.cost_summary && (
       <div className="grid grid-cols-3 gap-2 mt-2">
         <div className="rounded-md bg-bkg px-2.5 py-2">
-          <div className="text-[11px] text-content/95">
-            Paying now
-          </div>
+          <div className="text-[11px] text-content/95">Paying now</div>
           <div className="text-[14.5px] font-semibold text-content tabular-nums">
             {moneyText(detail.cost_summary.paying_now)}
           </div>
         </div>
         <div className="rounded-md bg-bkg px-2.5 py-2">
           <div className="text-[11px] text-content/95 truncate">
-            Best seen &middot;{" "}
-            {dayText(detail.cost_summary.best_seen_on)}
+            Best seen &middot; {dayText(detail.cost_summary.best_seen_on)}
           </div>
           <div className="text-[14.5px] font-semibold text-content tabular-nums">
             {moneyText(detail.cost_summary.best_seen)}
@@ -71,9 +65,7 @@ const ItemBuyCost = ({ detail, detailLoading }: ItemBuyCostProps) => (
             there. */}
         <div
           className={`rounded-md px-2.5 py-2 ${
-            detail.cost_summary.gap > 0.0001
-              ? "bg-severity_watch_bg"
-              : "bg-bkg"
+            detail.cost_summary.gap > 0.0001 ? "bg-severity_watch_bg" : "bg-bkg"
           }`}
         >
           <div

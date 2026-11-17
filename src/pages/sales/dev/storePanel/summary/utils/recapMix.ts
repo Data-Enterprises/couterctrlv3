@@ -6,7 +6,8 @@ import type { RecapMix } from "../interfaces/index";
  * A row's type as text. The columns are typed as strings but not every POS
  * sends one: a numeric price type took the whole panel down on `.trim()`.
  */
-const text = (v: unknown) => (v === null || v === undefined ? "" : String(v)).trim();
+const text = (v: unknown) =>
+  (v === null || v === undefined ? "" : String(v)).trim();
 
 const isRefund = (r: SubDeptMargin) => /^refund/i.test(text(r.sale_type));
 

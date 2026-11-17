@@ -133,6 +133,7 @@ export const shareDayNoteOf = (days: ShareDay[]): ShareDayNote => {
     runFrom,
     below: under.length,
     weekMoney: priced.reduce((n, d) => n + (d.money as number), 0),
-    worstIsBiggestDay: worst !== null && biggest !== null && worst.date === biggest.date,
+    worstIsBiggestDay:
+      worst !== null && biggest !== null && worst.date === biggest.date,
   };
 };

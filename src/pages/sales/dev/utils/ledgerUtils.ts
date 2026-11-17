@@ -10,7 +10,11 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../../../utils/grading";
-import { getHolidayName, getHolidayLastYear, type HolidayName } from "../../../../utils/holidays";
+import {
+  getHolidayName,
+  getHolidayLastYear,
+  type HolidayName,
+} from "../../../../utils/holidays";
 import {
   DEPT_RING_KEY,
   DEPT_RING_LABEL,
@@ -117,7 +121,12 @@ export const regradeLedgerRows = (
     rows.map((r) => {
       // The basis doesn't move with the threshold — coverage decides it —
       // so only the severity on that basis is recomputed.
-      const severity = gradeOnBasis(r.gradedOn, r.vsLWPct, r.vsLYPct, threshold);
+      const severity = gradeOnBasis(
+        r.gradedOn,
+        r.vsLWPct,
+        r.vsLYPct,
+        threshold,
+      );
       return severity === r.severity ? r : { ...r, severity };
     }),
   );
@@ -172,7 +181,12 @@ export const withProductCode = <T extends { product_code: string }>(
 
 // Moved to utils so the margin screens can label them too; re-exported for the
 // Sales call sites.
-export { DEPT_RING_KEY, DEPT_RING_LABEL, foldDepartmentRings, isDepartmentRing };
+export {
+  DEPT_RING_KEY,
+  DEPT_RING_LABEL,
+  foldDepartmentRings,
+  isDepartmentRing,
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -240,14 +254,24 @@ export const deptSeverity = (
   coverage: Coverage,
   threshold = 9,
 ): Severity | null =>
-  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
+  gradeOnBasis(
+    gradeBasis({ ...r, ...coverage }),
+    r.vsLWPct,
+    r.vsLYPct,
+    threshold,
+  );
 
 export const hourSeverity = (
   r: HourRow,
   coverage: Coverage,
   threshold = 9,
 ): Severity | null =>
-  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
+  gradeOnBasis(
+    gradeBasis({ ...r, ...coverage }),
+    r.vsLWPct,
+    r.vsLYPct,
+    threshold,
+  );
 
 // ─── Day-matched comparison helpers ────────────────────────────────────────────
 //

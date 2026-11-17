@@ -2,7 +2,12 @@
 import { NO_VENDOR } from "./recapItems";
 
 // Interfaces
-import type { DayItemsState, RecapItem, RecapItemRow, RecapVendorPart } from "../interfaces/index";
+import type {
+  DayItemsState,
+  RecapItem,
+  RecapItemRow,
+  RecapVendorPart,
+} from "../interfaces/index";
 import type { MultiSelectOption } from "../../../../../../components-dev/filters/interfaces";
 
 /** Where a period's items are: every day's in hand, or why not. */
@@ -16,7 +21,10 @@ export type PeriodItems =
  * ready only when every day is, so a week missing a day never passes for the
  * whole. A day that failed names itself; one still out keeps it loading.
  */
-export const periodItems = (dates: string[], states: DayItemsState[]): PeriodItems => {
+export const periodItems = (
+  dates: string[],
+  states: DayItemsState[],
+): PeriodItems => {
   const failed = dates.filter((_, i) => states[i]?.status === "error");
   if (failed.length) return { status: "error", dates: failed };
   const days: RecapItem[][] = [];
@@ -32,7 +40,14 @@ export const periodItems = (dates: string[], states: DayItemsState[]): PeriodIte
 const partsOf = (item: RecapItem): RecapVendorPart[] =>
   item.vendors?.length
     ? item.vendors
-    : [{ vendor: NO_VENDOR, units: item.units, pounds: item.pounds, net: item.net }];
+    : [
+        {
+          vendor: NO_VENDOR,
+          units: item.units,
+          pounds: item.pounds,
+          net: item.net,
+        },
+      ];
 
 /**
  * The period's items, one row each, under a vendor filter.
@@ -46,7 +61,10 @@ const partsOf = (item: RecapItem): RecapVendorPart[] =>
  * The name and sub dept come from the day that took the most money, as each
  * day's own fold takes them from its biggest row.
  */
-export const mergeItems = (days: RecapItem[][], vendors: string[]): RecapItemRow[] => {
+export const mergeItems = (
+  days: RecapItem[][],
+  vendors: string[],
+): RecapItemRow[] => {
   const only = vendors.length ? new Set(vendors) : null;
   const byCode = new Map<
     string,
@@ -85,18 +103,26 @@ export const mergeItems = (days: RecapItem[][], vendors: string[]): RecapItemRow
   }
   return [...byCode.values()].map(({ row, byVendor }) => ({
     ...row,
-    vendors: [...byVendor.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v),
+    vendors: [...byVendor.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([v]) => v),
   }));
 };
 
 /** The rows left by the sub dept filter and the search (name or UPC). */
-export const filterItemRows = (rows: RecapItemRow[], subDepts: string[], search: string) => {
+export const filterItemRows = (
+  rows: RecapItemRow[],
+  subDepts: string[],
+  search: string,
+) => {
   const depts = subDepts.length ? new Set(subDepts) : null;
   const q = search.trim().toLowerCase();
   return rows.filter(
     (r) =>
       (!depts || depts.has(r.subDeptName)) &&
-      (!q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q)),
+      (!q ||
+        r.name.toLowerCase().includes(q) ||
+        r.code.toLowerCase().includes(q)),
   );
 };
 
@@ -108,7 +134,8 @@ export const itemTotals = (rows: RecapItemRow[]) => ({
   net: rows.reduce((t, r) => t + r.net, 0),
 });
 
-const byLabel = (a: MultiSelectOption, b: MultiSelectOption) => a.label.localeCompare(b.label);
+const byLabel = (a: MultiSelectOption, b: MultiSelectOption) =>
+  a.label.localeCompare(b.label);
 
 /**
  * The Sub depts filter's options: every sub dept the period sold, each marked
@@ -129,7 +156,10 @@ export const subDeptOptions = (
  * The Vendors filter's options: every vendor the period's items came from,
  * each marked unavailable when it sold nothing in the sub depts ticked.
  */
-export const vendorOptions = (all: RecapItemRow[], subDepts: string[]): MultiSelectOption[] => {
+export const vendorOptions = (
+  all: RecapItemRow[],
+  subDepts: string[],
+): MultiSelectOption[] => {
   const depts = subDepts.length ? new Set(subDepts) : null;
   const live = new Set<string>();
   const every = new Set<string>();

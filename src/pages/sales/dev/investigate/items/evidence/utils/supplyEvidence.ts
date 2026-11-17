@@ -3,7 +3,11 @@ import { DEFAULT_BANDS } from "../../../utils/deptInvestigation";
 import { codeOf } from "../../../utils";
 
 // Interfaces
-import type { AllOrder, ReceiverItemSearchReceiver, SubsPricePoint } from "../../../../../../../interfaces";
+import type {
+  AllOrder,
+  ReceiverItemSearchReceiver,
+  SubsPricePoint,
+} from "../../../../../../../interfaces";
 import type { Bands, SupplyEvent, PriceLadder } from "../../../interfaces";
 
 const day = (v: string) => (v ?? "").split("T")[0];
@@ -52,7 +56,9 @@ export const supplyTimeline = (
           // that plainly delivered something.
           amount: l.qty,
           unit: "units",
-          detail: [r.vendor_name, `inv ${r.invoiceid}`].filter(Boolean).join(" · "),
+          detail: [r.vendor_name, `inv ${r.invoiceid}`]
+            .filter(Boolean)
+            .join(" · "),
         }),
       ),
   );

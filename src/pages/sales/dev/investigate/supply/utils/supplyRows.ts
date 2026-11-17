@@ -16,7 +16,8 @@ export const SUPPLY_ORDER: SupplyKind[] = [
 /** A document list's columns, with or without the store dot. Literal, so
  *  Tailwind emits them. */
 export const DOC_COLS = {
-  withStore: "grid-cols-[62px_16px_minmax(0,1fr)_88px_minmax(0,110px)_62px_76px]",
+  withStore:
+    "grid-cols-[62px_16px_minmax(0,1fr)_88px_minmax(0,110px)_62px_76px]",
   oneStore: "grid-cols-[62px_minmax(0,1fr)_88px_minmax(0,110px)_62px_76px]",
 };
 
@@ -36,7 +37,9 @@ export const supplyRowsOf = (supply: Supply): SupplyRow[] =>
       kind,
       mine,
       isOrder,
-      docs: (isOrder ? supply.orders : supply.deliveries).filter((d) => d.mine === mine),
+      docs: (isOrder ? supply.orders : supply.deliveries).filter(
+        (d) => d.mine === mine,
+      ),
       units: isOrder ? side.orderedUnits : side.receivedUnits,
       cost: isOrder ? 0 : side.receivedCost,
     };
@@ -73,13 +76,17 @@ export const supplySlideSays = (
   const n = row.docs.length;
   if (row.isOrder) {
     if (!ordersOk) return "The orders couldn't be read this time.";
-    if (n === 0) return `No orders at ${store} in this department in the window.`;
+    if (n === 0)
+      return `No orders at ${store} in this department in the window.`;
     const states = [...new Set(row.docs.map((d) => d.status).filter(Boolean))];
     const all =
       states.length === 1
         ? `, ${n === 1 ? "still" : "all still"} ${String(states[0]).toLowerCase()}`
         : "";
-    const none = received === 0 && receiptsOk ? ", and no receiver on file against them" : "";
+    const none =
+      received === 0 && receiptsOk
+        ? ", and no receiver on file against them"
+        : "";
     const biggest = [...row.docs].sort((a, b) => b.units - a.units)[0];
     const carries =
       // Three or more: of two orders, one always holds half.
@@ -88,11 +95,15 @@ export const supplySlideSays = (
         : "";
     return `${many(n, "order")} at ${store}${all}${none}.${carries}`;
   }
-  if (!receiptsOk) return "We couldn't get the receiver information at this time.";
+  if (!receiptsOk)
+    return "We couldn't get the receiver information at this time.";
   if (n === 0) return `No receiver on file at ${store} in the window.`;
   return `${many(n, "receiver")} at ${store}: ${whole(row.units)} units, ${cash(row.cost)}.`;
 };
 
 /** What an empty receipts slide says beneath its headline. */
-export const noReceiptsNote = (store: string, window: { start: string; end: string }) =>
+export const noReceiptsNote = (
+  store: string,
+  window: { start: string; end: string },
+) =>
   `Nothing was received at ${store} for this department between ${onDay(window.start)} and ${onDay(window.end)}. If deliveries came in, their receivers may not be entered yet.`;

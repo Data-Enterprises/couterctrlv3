@@ -17,7 +17,13 @@ interface RecapPagerProps {
  * The item view's pager, laid out as the Orders report's: the range shown,
  * rows per page, then First, Prev, page of pages, Next and Last.
  */
-const RecapPager = ({ page, pageSize, total, onPage, onPageSize }: RecapPagerProps) => {
+const RecapPager = ({
+  page,
+  pageSize,
+  total,
+  onPage,
+  onPageSize,
+}: RecapPagerProps) => {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   return (
     <div className="flex-none flex items-center gap-3.5 px-[18px] py-1.5 border-t border-brand_line text-[12px] text-content">
@@ -46,13 +52,29 @@ const RecapPager = ({ page, pageSize, total, onPage, onPageSize }: RecapPagerPro
       </label>
       <div className="flex-1" />
       <div className="flex items-center gap-1">
-        <PagerButton label="First" disabled={page === 0} onClick={() => onPage(0)} />
-        <PagerButton label="Prev" disabled={page === 0} onClick={() => onPage(page - 1)} />
+        <PagerButton
+          label="First"
+          disabled={page === 0}
+          onClick={() => onPage(0)}
+        />
+        <PagerButton
+          label="Prev"
+          disabled={page === 0}
+          onClick={() => onPage(page - 1)}
+        />
         <span className="px-1.5 font-semibold tabular-nums">
           {page + 1} / {pages}
         </span>
-        <PagerButton label="Next" disabled={page >= pages - 1} onClick={() => onPage(page + 1)} />
-        <PagerButton label="Last" disabled={page >= pages - 1} onClick={() => onPage(pages - 1)} />
+        <PagerButton
+          label="Next"
+          disabled={page >= pages - 1}
+          onClick={() => onPage(page + 1)}
+        />
+        <PagerButton
+          label="Last"
+          disabled={page >= pages - 1}
+          onClick={() => onPage(pages - 1)}
+        />
       </div>
     </div>
   );

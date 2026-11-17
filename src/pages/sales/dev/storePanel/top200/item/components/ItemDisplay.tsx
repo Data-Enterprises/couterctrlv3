@@ -49,8 +49,8 @@ const ItemDisplay = ({ display }: ItemDisplayProps) => (
       ))}
     </div>
     <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
-      Nothing here says what is on display today &mdash; that one
-      needs a look in the store.
+      Nothing here says what is on display today &mdash; that one needs a look
+      in the store.
     </p>
   </div>
 );

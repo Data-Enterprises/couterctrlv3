@@ -56,13 +56,15 @@ const SubDeptSignalList = ({
   const { gradingMetric, subDeptThreshold } = useSalesCtx();
   const isQty = gradingMetric === "qty";
 
-  const sevOf = (r: DeptRow) => deptSeverity(r, coverage, threshold, gradingMetric);
+  const sevOf = (r: DeptRow) =>
+    deptSeverity(r, coverage, threshold, gradingMetric);
   const counts = {
     critical: rows.filter((r) => sevOf(r) === "critical").length,
     watch: rows.filter((r) => sevOf(r) === "watch").length,
     healthy: rows.filter((r) => sevOf(r) === "healthy").length,
   };
-  const visible = sevFilter === "all" ? rows : rows.filter((r) => sevOf(r) === sevFilter);
+  const visible =
+    sevFilter === "all" ? rows : rows.filter((r) => sevOf(r) === sevFilter);
   const sortedVisible = sortDeptRows(visible, deptSort, isQty);
 
   const sortBy = (column: DeptSortColumn) =>
@@ -81,7 +83,11 @@ const SubDeptSignalList = ({
       style={{ width: "39.5%" }}
     >
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-fill_muted">
-        <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
+        <SeverityChips
+          value={sevFilter}
+          onChange={setSevFilter}
+          counts={counts}
+        />
         <ThresholdChip
           value={subDeptThreshold}
           onChange={(v) => dispatch(setSubDeptThreshold(v))}
@@ -93,7 +99,10 @@ const SubDeptSignalList = ({
         <span className="w-2.5 flex-shrink-0" />
         {/* A floor on the name, so a window too narrow for the row clips its
             right edge rather than hiding which department a number is for. */}
-        <button onClick={() => sortBy("dept")} className={`${SIGNAL_HEAD} flex-1 min-w-[88px]`}>
+        <button
+          onClick={() => sortBy("dept")}
+          className={`${SIGNAL_HEAD} flex-1 min-w-[88px]`}
+        >
           Sub Dept
           {chevron("dept")}
         </button>
@@ -129,7 +138,12 @@ const SubDeptSignalList = ({
 
       <div className="overflow-y-auto thin-scrollbar flex-1">
         {sortedVisible.map((r) => (
-          <SubDeptSignalRow key={r.key} row={r} coverage={coverage} threshold={threshold} />
+          <SubDeptSignalRow
+            key={r.key}
+            row={r}
+            coverage={coverage}
+            threshold={threshold}
+          />
         ))}
       </div>
     </div>

@@ -1,8 +1,15 @@
 // API
-import { FINANCIALS_READY, type FinancialsRow } from "../../../../../../api/financials";
+import {
+  FINANCIALS_READY,
+  type FinancialsRow,
+} from "../../../../../../api/financials";
 
 // Utils
-import { fmtNum, rowsToCsv, type AggFn } from "../../../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  type AggFn,
+} from "../../../../../../utils/csvExport";
 import { subDeptKey } from "../../../../../../utils/subDeptKey";
 
 // Interfaces
@@ -70,7 +77,11 @@ export const buildFinancialsCsv = (rows: FinancialsRow[]) => {
   );
 };
 
-export const buildSubDeptCsv = (ty: SubSale[], lw: SubSale[], ly: SubSale[]) => {
+export const buildSubDeptCsv = (
+  ty: SubSale[],
+  lw: SubSale[],
+  ly: SubSale[],
+) => {
   const headers = [
     "Date",
     "Sub Dept #",
@@ -224,7 +235,10 @@ const SEV_LABEL: Record<ItemSev, string> = {
 const fmtPctRaw = (pct: number | null) =>
   pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
-export const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
+export const buildItemsCsv = (
+  items: ExportSubDeptItem[],
+  sevs: Set<ItemSev>,
+) => {
   // Ungraded items (neither comparison covers the week) go out only with the
   // full export — they don't belong under any one severity.
   const everything = sevs.size >= 3;
@@ -323,8 +337,7 @@ export const PRESET_DATASETS: {
   {
     id: "subdept",
     label: "Sub Department",
-    description:
-      "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
+    description: "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
   },
   {
     id: "deptgrid",
@@ -358,20 +371,21 @@ export const PRESET_DATASETS: {
     : []),
 ];
 
-export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-  {
-    sev: "critical",
-    label: "Critical",
-    activeClass: "bg-brand_danger border-brand_danger text-custom-white",
-  },
-  {
-    sev: "watch",
-    label: "Watch",
-    activeClass: "bg-amber-500 border-amber-500 text-custom-white",
-  },
-  {
-    sev: "healthy",
-    label: "Healthy",
-    activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
-  },
-];
+export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] =
+  [
+    {
+      sev: "critical",
+      label: "Critical",
+      activeClass: "bg-brand_danger border-brand_danger text-custom-white",
+    },
+    {
+      sev: "watch",
+      label: "Watch",
+      activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+    },
+    {
+      sev: "healthy",
+      label: "Healthy",
+      activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+    },
+  ];

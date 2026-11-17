@@ -80,9 +80,20 @@ const LedgerHeader = ({
    * the pill drops its red/green fill and says what it covers instead. Green
    * and red are for verdicts.
    */
-  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week", isGroup);
-  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year", isGroup);
-
+  const lwPill = headerDeltaPill(
+    vsLWPct,
+    lwDayCount,
+    dayCount,
+    "last week",
+    isGroup,
+  );
+  const lyPill = headerDeltaPill(
+    vsLYPct,
+    lyDayCount,
+    dayCount,
+    "last year",
+    isGroup,
+  );
 
   return (
     <div className="cc-navy-panel-header flex flex-col gap-0">
@@ -154,7 +165,10 @@ const LedgerHeader = ({
         {/* Threshold — slider for exploring, numeric input for committing to
             an exact figure. Both write the same value; the slider is capped at
             a range that's meaningful for grading rather than 0-100. */}
-        <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
+        <div
+          data-help="threshold"
+          className="flex items-center gap-1.5 flex-shrink-0"
+        >
           <span className="text-[11px] text-custom-white font-medium">
             Store Threshold
           </span>

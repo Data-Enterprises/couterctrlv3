@@ -16,11 +16,20 @@ import { getSubsDaily } from "../../../../../../api/sales";
 
 // Utils
 import { shiftIso } from "../../../../../../utils/grading";
-import { formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
+import {
+  formatGoliathDate,
+  sameWeekDayLastYear,
+} from "../../../../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../../../../utils/marginRows";
 import { subDeptKey, subDeptNumber } from "../../../../../../utils/subDeptKey";
-import { aggregateByCode, matchItemRows } from "../../../../../../utils/itemGrading";
-import { scopeToStoreNumber, withProductCode } from "../../../utils/ledgerUtils";
+import {
+  aggregateByCode,
+  matchItemRows,
+} from "../../../../../../utils/itemGrading";
+import {
+  scopeToStoreNumber,
+  withProductCode,
+} from "../../../utils/ledgerUtils";
 import { day } from "../utils";
 
 // Interfaces
@@ -90,18 +99,12 @@ export const useSubDeptItems = (
       .sort();
     const lyStart = lyWeekDates[0] ?? lwEnd;
     const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
-    const lwWeekDates = twRealDates.map(
-      (d) => shiftIso(d, -7),
-    );
+    const lwWeekDates = twRealDates.map((d) => shiftIso(d, -7));
 
     const tyStart = selectedDate ?? twStart;
     const tyEnd = selectedDate ?? twEnd;
-    const lwDayStart = selectedDate
-      ? shiftIso(selectedDate, -7)
-      : lwStart;
-    const lwDayEnd = selectedDate
-      ? shiftIso(selectedDate, -7)
-      : lwEnd;
+    const lwDayStart = selectedDate ? shiftIso(selectedDate, -7) : lwStart;
+    const lwDayEnd = selectedDate ? shiftIso(selectedDate, -7) : lwEnd;
     const lyDayStart = selectedDate
       ? sameWeekDayLastYear(selectedDate).date
       : lyStart;

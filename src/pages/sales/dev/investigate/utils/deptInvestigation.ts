@@ -2,7 +2,16 @@
 import { count, onDay } from ".";
 
 // Interfaces
-import type { Cause, Bands, GapSplit, ItemFacts, Margins, Ratios, ItemVerdict, PriceLadder } from "../interfaces";
+import type {
+  Cause,
+  Bands,
+  GapSplit,
+  ItemFacts,
+  Margins,
+  Ratios,
+  ItemVerdict,
+  PriceLadder,
+} from "../interfaces";
 
 /**
  * Why one store is behind another in one sub department.
@@ -161,7 +170,9 @@ export const causeOf = (
   if (mine !== null && theirs !== null && theirs > 0) {
     const { units, price } = splitGap(f);
     if (Math.abs(price) > Math.abs(units))
-      return Math.abs(mine / theirs - 1) > bands.price ? "price-mix" : "streamlined";
+      return Math.abs(mine / theirs - 1) > bands.price
+        ? "price-mix"
+        : "streamlined";
   }
 
   // Both sold it, at about the same price, and this store sold fewer.
@@ -178,7 +189,8 @@ export const ratiosOf = (f: ItemFacts): Ratios => {
   return {
     units: ratio(f.mineUnits, f.theirsUnits),
     dollars: ratio(f.mineSales, f.theirsSales),
-    price: mine !== null && theirs !== null && theirs > 0 ? mine / theirs : null,
+    price:
+      mine !== null && theirs !== null && theirs > 0 ? mine / theirs : null,
     sellThrough: f.receivedUnits > 0 ? f.mineUnits / f.receivedUnits : null,
   };
 };
@@ -211,12 +223,16 @@ export const CAUSE_TIP: Record<Cause, (us: string, them: string) => string> = {
     `No order at ${us} in the window, nothing received, nothing sold. ${them} sold it.`,
   "not-carried": () =>
     "Like Never ordered, but neither store ordered in this department, so it can't say one was missed.",
-  "not-received": (us) => `Ordered at ${us}, and no receiver for it is on file since the order.`,
+  "not-received": (us) =>
+    `Ordered at ${us}, and no receiver for it is on file since the order.`,
   unsold: (us) => `Delivered to ${us}, and none of it rang this week.`,
-  "no-receipts": () => "The receivers couldn't be read, so nothing says whether it was delivered.",
+  "no-receipts": () =>
+    "The receivers couldn't be read, so nothing says whether it was delivered.",
   cost: (us) => `Both sold it, and ${us} buys it for more.`,
-  "price-mix": (us, them) => `${us} took less a unit than ${them}, and price is most of the gap.`,
-  "not-moving": (us) => `Both sold it at about the same price, and ${us} sold fewer.`,
+  "price-mix": (us, them) =>
+    `${us} took less a unit than ${them}, and price is most of the gap.`,
+  "not-moving": (us) =>
+    `Both sold it at about the same price, and ${us} sold fewer.`,
   streamlined: (_us, them) => `Within $5 of ${them}.`,
   ahead: (us) => `${us} sold more of it, by more than $5.`,
 };
@@ -271,7 +287,10 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
   "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
   unsold: { chip: "bg-sky-50 text-sky-900", ring: "ring-sky-900/40" },
-  "no-receipts": { chip: "bg-fill_muted text-content/95", ring: "ring-content/30" },
+  "no-receipts": {
+    chip: "bg-fill_muted text-content/95",
+    ring: "ring-content/30",
+  },
   "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
   ahead: {
     chip: "bg-delta_positive_bg text-delta_positive_text",
@@ -280,7 +299,10 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   // Grey is the honest colour for a department's quiet majority. Giving it a
   // hue would put it on the same footing as the five findings that mean
   // something, and there is nothing here to act on.
-  streamlined: { chip: "bg-fill_muted text-content/95", ring: "ring-content/30" },
+  streamlined: {
+    chip: "bg-fill_muted text-content/95",
+    ring: "ring-content/30",
+  },
 };
 
 /**
@@ -299,7 +321,11 @@ export const ladderSays = (ladder: PriceLadder): string | null => {
   if (pts.length < 2) return null;
 
   const cash = (v: number) =>
-    "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    "$" +
+    v.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   const whole = (v: number) => Math.round(v).toLocaleString("en-US");
 
   const prices = pts.map((p) => p.price);
@@ -319,9 +345,10 @@ export const ladderSays = (ladder: PriceLadder): string | null => {
   /* The band the units actually went at: the modal price and anything
      within a dime of it, which is where a scale item's rounding lands and
      a genuine second price does not. */
-  const near = ladder.modal === null
-    ? []
-    : pts.filter((p) => Math.abs(p.price - ladder.modal!) <= 0.1);
+  const near =
+    ladder.modal === null
+      ? []
+      : pts.filter((p) => Math.abs(p.price - ladder.modal!) <= 0.1);
   const nearUnits = near.reduce((t, p) => t + p.units, 0);
   const nearLo = near.length ? Math.min(...near.map((p) => p.price)) : null;
   const nearHi = near.length ? Math.max(...near.map((p) => p.price)) : null;
@@ -364,7 +391,8 @@ export const evidenceSays = (
   newestReceiver: string | null = null,
 ): string => {
   const cash = (v: number) =>
-    "$" + Math.abs(v).toLocaleString("en-US", {
+    "$" +
+    Math.abs(v).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -381,9 +409,10 @@ export const evidenceSays = (
       return `${us} ordered ${count(item.lastOrderQty)}${when}. No receiver for it is on file since then.${newest} ${theirs}`;
     }
     case "cost": {
-      const per = item.margins.minePerUnit !== null && item.margins.theirsPerUnit !== null
-        ? item.margins.minePerUnit - item.margins.theirsPerUnit
-        : null;
+      const per =
+        item.margins.minePerUnit !== null && item.margins.theirsPerUnit !== null
+          ? item.margins.minePerUnit - item.margins.theirsPerUnit
+          : null;
       return per === null
         ? `Both stores sold it, and ${us} buys it for more.`
         : `Both stores sold it. ${us} buys it for ${cash(per)} more a unit, which cost ${cash(item.margins.costPenalty ?? 0)} on the units it sold.`;

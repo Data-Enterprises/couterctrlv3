@@ -38,15 +38,25 @@ export const byTypeOrder = (a: { type: string }, b: { type: string }) =>
  *
  * Only types with lines that day appear.
  */
-export const exceptionsByDay = (lines: ExceptionLine[]): Map<string, RecapExceptions> => {
+export const exceptionsByDay = (
+  lines: ExceptionLine[],
+): Map<string, RecapExceptions> => {
   const days = new Map<
     string,
-    { receipts: Set<string>; amount: number; types: Map<string, RecapExceptionType & { ids: Set<string> }> }
+    {
+      receipts: Set<string>;
+      amount: number;
+      types: Map<string, RecapExceptionType & { ids: Set<string> }>;
+    }
   >();
   for (const l of lines) {
     if (NOT_EXCEPTIONS.has(String(l.sale_type ?? "").trim())) continue;
     const date = l.sale_date.split("T")[0];
-    const day = days.get(date) ?? { receipts: new Set(), amount: 0, types: new Map() };
+    const day = days.get(date) ?? {
+      receipts: new Set(),
+      amount: 0,
+      types: new Map(),
+    };
     const type = String(l.sale_type ?? "").trim() || "Other";
     const nothing = RINGS_NOTHING.has(type);
     const t = day.types.get(type) ?? {
@@ -82,4 +92,8 @@ export const exceptionsByDay = (lines: ExceptionLine[]): Map<string, RecapExcept
 };
 
 /** A day with no exception lines. */
-export const NO_EXCEPTIONS: RecapExceptions = { transactions: 0, amount: 0, types: [] };
+export const NO_EXCEPTIONS: RecapExceptions = {
+  transactions: 0,
+  amount: 0,
+  types: [],
+};

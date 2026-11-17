@@ -14,7 +14,10 @@ interface RecapViewItemsButtonProps {
  * its item view. Hovering it says what the list will hold, for the week or
  * the day picked, in a tip that follows the mouse like the hour chart's.
  */
-const RecapViewItemsButton = ({ tip: text, onClick }: RecapViewItemsButtonProps) => {
+const RecapViewItemsButton = ({
+  tip: text,
+  onClick,
+}: RecapViewItemsButtonProps) => {
   const { tip, track, clear } = useCursorTip<true>();
   return (
     <>

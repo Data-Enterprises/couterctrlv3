@@ -10,22 +10,23 @@ interface ItemIdentityProps {
 }
 
 /** The selected item's code, sub dept, rank, and share of the list. */
-const ItemIdentity = ({ selected, rank, count, shareOfTop }: ItemIdentityProps) => (
+const ItemIdentity = ({
+  selected,
+  rank,
+  count,
+  shareOfTop,
+}: ItemIdentityProps) => (
   <div className="flex items-center gap-3 px-4 py-2 border-b border-line_hair">
     <div className="min-w-0 flex-1 text-[11.5px] text-content/95 truncate">
-      <span className="tabular-nums">
-        {selected.ty.product_code}
-      </span>{" "}
-      &middot; {deptName(selected.ty)} &middot;{" "}
+      <span className="tabular-nums">{selected.ty.product_code}</span> &middot;{" "}
+      {deptName(selected.ty)} &middot;{" "}
       <span className="font-semibold text-content tabular-nums">
         #{rank} of {count}
       </span>
     </div>
     <div className="flex-shrink-0 text-right">
       <div className="text-[13.5px] font-bold text-content tabular-nums leading-tight">
-        {shareOfTop === null
-          ? "\u2014"
-          : `${shareOfTop.toFixed(1)}%`}
+        {shareOfTop === null ? "\u2014" : `${shareOfTop.toFixed(1)}%`}
         <span className="text-[11px] font-normal text-content/95">
           {" "}
           of top 200

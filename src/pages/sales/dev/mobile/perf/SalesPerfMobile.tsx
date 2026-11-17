@@ -107,8 +107,14 @@ const SalesPerfMobile = () => {
 
   usePerfStoreBundle(fetchBundle);
 
-  const { nameOf, shownGroupDay, shownDay, storePairs, visibleStores, listMax } =
-    usePerfStores(storeFilter);
+  const {
+    nameOf,
+    shownGroupDay,
+    shownDay,
+    storePairs,
+    visibleStores,
+    listMax,
+  } = usePerfStores(storeFilter);
   const sel = usePerfSelection(storePairs, shownGroupDay, shownDay);
   const {
     openKey,
@@ -150,7 +156,6 @@ const SalesPerfMobile = () => {
     const el = scroller.current;
     if (el) el.scrollTop = listScroll.current;
   }, [perf.detailOpen]);
-
 
   const {
     totals,
@@ -198,7 +203,10 @@ const SalesPerfMobile = () => {
   /** Sales or units, in the page's own card: the group card on a group
    *  search, the store's card on a single-store one. */
   const measureSwitch = (
-    <MeasureSwitch value={perf.measure} onChange={(m) => dispatch(setPerfMeasure(m))} />
+    <MeasureSwitch
+      value={perf.measure}
+      onChange={(m) => dispatch(setPerfMeasure(m))}
+    />
   );
 
   const drillList = perf.drill ? (
@@ -207,7 +215,9 @@ const SalesPerfMobile = () => {
       pairs={drillPairs}
       sort={drillSort?.key ?? null}
       sortDir={drillSort ? dirOf(drillSort.key, drillSort.reversed) : null}
-      onSort={(key) => dispatch(setPerfSort({ dimension: drillDim, sort: key }))}
+      onSort={(key) =>
+        dispatch(setPerfSort({ dimension: drillDim, sort: key }))
+      }
       listPartial={listPartial}
       listNote={matchedNote(weekMatch)}
       shownDay={cardDay}
@@ -236,7 +246,8 @@ const SalesPerfMobile = () => {
         // at $0.00 against its last-year figure — so the list needs to say
         // why rather than leave the reader to infer it from a column of
         // zeroes.
-        noTy: !!openItems && openItems.ty.length === 0 && openItems.ly.length > 0,
+        noTy:
+          !!openItems && openItems.ty.length === 0 && openItems.ly.length > 0,
       }}
     />
   ) : null;
@@ -327,7 +338,9 @@ const SalesPerfMobile = () => {
                           : groupTotals.valueLy
                       }
                       format={fmt}
-                      unavailable={noLyHistory(groupMatch, null) && groupTotals.noLw}
+                      unavailable={
+                        noLyHistory(groupMatch, null) && groupTotals.noLw
+                      }
                       className="ml-auto"
                     />
                   </div>
@@ -431,7 +444,9 @@ const SalesPerfMobile = () => {
                         : undefined
                     }
                     onInfo={
-                      isStore ? () => dispatch(setPerfInfoOpen(true)) : undefined
+                      isStore
+                        ? () => dispatch(setPerfInfoOpen(true))
+                        : undefined
                     }
                     actions={isStore ? measureSwitch : undefined}
                   >

@@ -30,7 +30,14 @@ interface RowProps {
  * has all of it. The unknown is a hatched cap OUTSIDE the bar: drawing it
  * inside would shorten a measured thing to make room for an unmeasured one.
  */
-const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => {
+const Row = ({
+  row,
+  widest,
+  metric,
+  selected,
+  onPick,
+  onContext,
+}: RowProps) => {
   const signed = metricSigned(row, metric);
   // Ahead or behind, in the ledger's own two colours. No threshold: a
   // third band would have to be "close", and nothing on this screen asks
@@ -83,7 +90,10 @@ const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => 
       </span>
 
       <span className="block mt-1.5 h-[9px] rounded-sm bg-bkg overflow-hidden flex">
-        <span className="h-full flex" style={{ width: `${(row.pair / Math.max(1, widest)) * 100}%` }}>
+        <span
+          className="h-full flex"
+          style={{ width: `${(row.pair / Math.max(1, widest)) * 100}%` }}
+        >
           {/* delta_positive_TEXT, not _mid. `delta_positive_mid` is a CSS
               variable that was never added to the Tailwind config, so the
               class produced nothing and every "ahead" segment rendered
@@ -92,7 +102,10 @@ const Row = ({ row, widest, metric, selected, onPick, onContext }: RowProps) => 
             className={severityDotClass[sev]}
             style={{ width: `${minePct}%` }}
           />
-          <span className="bg-brand_navy/15" style={{ width: `${theirsPct}%` }} />
+          <span
+            className="bg-brand_navy/15"
+            style={{ width: `${theirsPct}%` }}
+          />
         </span>
         {row.only !== null && (
           <span

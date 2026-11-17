@@ -3,11 +3,7 @@ import type { DayDot } from "../../../../../interfaces";
 import type { DayMatchedTotals, LyWindow } from "../../utils/ledgerUtils";
 
 export type PopupTab =
-  | "subdept"
-  | "hourly"
-  | "comparison"
-  | "topitems"
-  | "dailyrecap";
+  "subdept" | "hourly" | "comparison" | "topitems" | "dailyrecap";
 
 /** The searched week and the weeks it is compared with. */
 export interface WeekWindow {

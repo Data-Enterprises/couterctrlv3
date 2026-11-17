@@ -7,7 +7,11 @@ import { setSelectedSubDeptKey } from "../../../../../../features/dev/devSalesLe
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
-import { comparisonPillClass, isCompleteCoverage, type Coverage } from "../../../utils/ledgerUtils";
+import {
+  comparisonPillClass,
+  isCompleteCoverage,
+  type Coverage,
+} from "../../../utils/ledgerUtils";
 import { formatPct, severityDotClass, PCT_COL_W } from "../../../utils/index";
 import { deptSeverity } from "../utils";
 
@@ -21,7 +25,11 @@ interface SubDeptSignalRowProps {
 }
 
 /** One sub department in the left list; a click opens it, a second closes it. */
-const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps) => {
+const SubDeptSignalRow = ({
+  row: r,
+  coverage,
+  threshold,
+}: SubDeptSignalRowProps) => {
   const dispatch = useAppDispatch();
   const { gradingMetric, selectedSubDeptKey } = useSalesCtx();
   const isQty = gradingMetric === "qty";
@@ -36,9 +44,7 @@ const SubDeptSignalRow = ({ row: r, coverage, threshold }: SubDeptSignalRowProps
     <button
       onClick={() => dispatch(setSelectedSubDeptKey(isSel ? null : r.key))}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSel
-          ? "cc-row-selected"
-          : "border-transparent hover:bg-fill_soft"
+        isSel ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span

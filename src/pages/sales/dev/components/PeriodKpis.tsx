@@ -1,6 +1,10 @@
 // Utils
 import { formatCurrency2 } from "../../../../utils";
-import { comparisonPillClass, isCompleteCoverage, type Coverage } from "../utils/ledgerUtils";
+import {
+  comparisonPillClass,
+  isCompleteCoverage,
+  type Coverage,
+} from "../utils/ledgerUtils";
 import { DATE, formatPct, LABEL, UNITS, VALUE } from "../utils/index";
 
 // Interfaces
@@ -37,8 +41,12 @@ const PeriodKpis = ({
       <div className={LABEL}>vs Last Week</div>
       <div className={DATE}>{lwDateLabel}</div>
       <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
-        <span className={VALUE}>{row.hasLW ? formatCurrency2(row.lw) : "—"}</span>
-        {row.lwQty > 0 && <span className={UNITS}>{row.lwQty.toLocaleString()} u</span>}
+        <span className={VALUE}>
+          {row.hasLW ? formatCurrency2(row.lw) : "—"}
+        </span>
+        {row.lwQty > 0 && (
+          <span className={UNITS}>{row.lwQty.toLocaleString()} u</span>
+        )}
         {row.hasLW && (
           <span
             className={`text-[10px] cc-tag ${comparisonPillClass(row.vsLWPct, isCompleteCoverage(coverage.lwDayCount, coverage.dayCount), threshold)}`}
@@ -52,8 +60,12 @@ const PeriodKpis = ({
       <div className={LABEL}>vs Last Year</div>
       <div className={DATE}>{lyDateLabel}</div>
       <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
-        <span className={VALUE}>{row.hasLY ? formatCurrency2(row.ly) : "—"}</span>
-        {row.lyQty > 0 && <span className={UNITS}>{row.lyQty.toLocaleString()} u</span>}
+        <span className={VALUE}>
+          {row.hasLY ? formatCurrency2(row.ly) : "—"}
+        </span>
+        {row.lyQty > 0 && (
+          <span className={UNITS}>{row.lyQty.toLocaleString()} u</span>
+        )}
         {row.hasLY && (
           <span
             className={`text-[10px] cc-tag ${comparisonPillClass(row.vsLYPct, isCompleteCoverage(coverage.lyDayCount, coverage.dayCount), threshold)}`}

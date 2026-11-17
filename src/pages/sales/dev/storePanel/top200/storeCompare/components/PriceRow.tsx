@@ -13,14 +13,10 @@ const PriceRow = ({ line }: PriceRowProps) => (
   <>
     <span className="tabular-nums font-bold">{money(line.price)}</span>
     <span className="text-right tabular-nums">
-      {side(line.mine) ?? (
-        <span className="text-content">never rang it</span>
-      )}
+      {side(line.mine) ?? <span className="text-content">never rang it</span>}
     </span>
     <span className="text-right tabular-nums">
-      {side(line.theirs) ?? (
-        <span className="text-content">never rang it</span>
-      )}
+      {side(line.theirs) ?? <span className="text-content">never rang it</span>}
     </span>
   </>
 );

@@ -5,10 +5,7 @@ import { dayText } from "../../utils";
 import type { ItemDetailResponse } from "../../../../../../../api/topItems";
 
 // Components
-import {
-  ChevronRightIcon,
-  DocumentTextIcon,
-} from "@heroicons/react/20/solid";
+import { ChevronRightIcon, DocumentTextIcon } from "@heroicons/react/20/solid";
 
 interface InvoicesButtonProps {
   detail: ItemDetailResponse;
@@ -23,15 +20,12 @@ const InvoicesButton = ({ detail, setInvoicesOpen }: InvoicesButtonProps) => (
     style={{ width: "calc(100% - 2rem)" }}
   >
     <DocumentTextIcon className="w-4 h-4 flex-shrink-0 text-content/95" />
-    <span className="text-[12.5px] font-semibold text-content">
-      Invoices
-    </span>
+    <span className="text-[12.5px] font-semibold text-content">Invoices</span>
     <span className="text-[11.5px] text-content/95 truncate">
       {detail.cost_history.length} deliver
       {detail.cost_history.length === 1 ? "y" : "ies"} ·{" "}
       {dayText(
-        detail.cost_history[detail.cost_history.length - 1]
-          ?.invoice_date,
+        detail.cost_history[detail.cost_history.length - 1]?.invoice_date,
       )}{" "}
       most recent
     </span>

@@ -69,7 +69,10 @@ const Carousel = ({
     giveUp.current = window.setTimeout(() => {
       bound.current = null;
     }, 600);
-    el.scrollTo({ left: n * el.clientWidth, behavior: smooth ? "smooth" : "auto" });
+    el.scrollTo({
+      left: n * el.clientWidth,
+      behavior: smooth ? "smooth" : "auto",
+    });
   };
 
   const go = (i: number) => {
@@ -86,7 +89,8 @@ const Carousel = ({
     first.current = false;
     const el = track.current;
     if (picked === undefined || !el) return;
-    if (Math.round(el.scrollLeft / Math.max(1, el.clientWidth)) === picked) return;
+    if (Math.round(el.scrollLeft / Math.max(1, el.clientWidth)) === picked)
+      return;
     slideTo(picked, smooth);
   }, [picked]);
 
@@ -156,7 +160,9 @@ const Carousel = ({
           <div
             key={sl.label}
             className={`flex-none w-full snap-start px-4 py-3.5 min-w-0 ${
-              fill ? "h-full min-h-0 flex flex-col overflow-y-auto thin-scrollbar" : ""
+              fill
+                ? "h-full min-h-0 flex flex-col overflow-y-auto thin-scrollbar"
+                : ""
             }`}
           >
             {sl.body}

@@ -40,7 +40,11 @@ const RecapBasketsCard = ({
   const perBasket = itemsPerBasket(day.units, day.transactions);
   const unitPrice = avgItemPrice(day.net, day.units);
   const items =
-    mix.status === "ready" ? count(mix.mix.items) : mix.status === "error" ? "—" : "…";
+    mix.status === "ready"
+      ? count(mix.mix.items)
+      : mix.status === "error"
+        ? "—"
+        : "…";
   return (
     <RecapStatCard
       title="Baskets"
@@ -52,9 +56,13 @@ const RecapBasketsCard = ({
         {
           label: "Qty",
           value: count(day.units),
-          sub: perBasket === null ? undefined : ` | ${one(perBasket)} per basket`,
+          sub:
+            perBasket === null ? undefined : ` | ${one(perBasket)} per basket`,
         },
-        { label: "Avg unit price", value: unitPrice === null ? "—" : money(unitPrice) },
+        {
+          label: "Avg unit price",
+          value: unitPrice === null ? "—" : money(unitPrice),
+        },
         ...(withPounds
           ? [
               {

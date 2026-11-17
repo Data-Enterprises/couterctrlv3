@@ -34,10 +34,7 @@ const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
           <thead className="sticky top-0 bg-fill_soft z-10">
             <tr>
               {columns.map((c) => (
-                <th
-                  key={c.key}
-                  className="cc-th text-content"
-                >
+                <th key={c.key} className="cc-th text-content">
                   {c.label}
                 </th>
               ))}
@@ -50,10 +47,7 @@ const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
                 className={i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}
               >
                 {columns.map((c) => (
-                  <td
-                    key={c.key}
-                    className="cc-td text-content"
-                  >
+                  <td key={c.key} className="cc-td text-content">
                     {row[c.key] ?? "—"}
                   </td>
                 ))}
@@ -65,8 +59,7 @@ const CustomPreview = ({ rows, columns }: CustomPreviewProps) => (
                   colSpan={columns.length}
                   className="px-3 py-2 text-[10px] text-content italic"
                 >
-                  + {rows.length - PREVIEW_ROWS} more rows in
-                  download…
+                  + {rows.length - PREVIEW_ROWS} more rows in download…
                 </td>
               </tr>
             )}

@@ -13,7 +13,11 @@ import {
   vendorOptions,
   type PeriodItems,
 } from "../utils/recapItemRows";
-import { DEFAULT_ITEM_SORT, nextItemSort, sortItemRows } from "../utils/recapItemSort";
+import {
+  DEFAULT_ITEM_SORT,
+  nextItemSort,
+  sortItemRows,
+} from "../utils/recapItemSort";
 
 // Interfaces
 import type { ItemSort, ItemSortCol } from "../interfaces/index";
@@ -54,7 +58,13 @@ interface RecapItemsViewProps {
  * No grades, no last week or last year. The download is the Items Sold
  * preset in Export CSV.
  */
-const RecapItemsView = ({ items, periodKey, withPounds, narrow, onBack }: RecapItemsViewProps) => {
+const RecapItemsView = ({
+  items,
+  periodKey,
+  withPounds,
+  narrow,
+  onBack,
+}: RecapItemsViewProps) => {
   const [search, setSearch] = useState("");
   const [subDepts, setSubDepts] = useState<string[]>([]);
   const [vendors, setVendors] = useState<string[]>([]);

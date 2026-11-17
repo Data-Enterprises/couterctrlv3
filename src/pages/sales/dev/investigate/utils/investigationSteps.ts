@@ -107,8 +107,7 @@ export const holdsUp = (
     if (row === "onlyMine") onlyMine = add(onlyMine, i.gap);
   }
 
-  const supplyLed =
-    Math.abs(onlyTheirs.dollars) >= Math.abs(bothLess.dollars);
+  const supplyLed = Math.abs(onlyTheirs.dollars) >= Math.abs(bothLess.dollars);
   const verdict = EXPECTS_SUPPLY[focus] === supplyLed ? "holds" : "overturned";
 
   const says =
@@ -134,7 +133,6 @@ export interface VendorShare {
   items: number;
   dollars: number;
 }
-
 
 export interface Spread {
   /** Behind-items, worst first. */
@@ -271,16 +269,40 @@ export const vitalsOf = (items: ItemVerdict[]): Vitals => {
 
   return {
     weeks: [
-      { label: "Last year", gap: sum((i) => i.mineLy) - sum((i) => i.theirsLy) },
-      { label: "Last week", gap: sum((i) => i.mineLw) - sum((i) => i.theirsLw) },
+      {
+        label: "Last year",
+        gap: sum((i) => i.mineLy) - sum((i) => i.theirsLy),
+      },
+      {
+        label: "Last week",
+        gap: sum((i) => i.mineLw) - sum((i) => i.theirsLw),
+      },
       // The page's metric, like the two weeks above it: on Quantity a dollar
       // figure here would sit beside two unit counts.
-      { label: "This week", gap: sum((i) => i.mineTy) - sum((i) => i.theirsTy) },
+      {
+        label: "This week",
+        gap: sum((i) => i.mineTy) - sum((i) => i.theirsTy),
+      },
     ],
     index: [
-      { label: "Sales", mine: mineSales, theirs: theirsSales, pct: share(mineSales, theirsSales) },
-      { label: "Units", mine: mineUnits, theirs: theirsUnits, pct: share(mineUnits, theirsUnits) },
-      { label: "Margin", mine: mineMargin, theirs: theirsMargin, pct: share(mineMargin, theirsMargin) },
+      {
+        label: "Sales",
+        mine: mineSales,
+        theirs: theirsSales,
+        pct: share(mineSales, theirsSales),
+      },
+      {
+        label: "Units",
+        mine: mineUnits,
+        theirs: theirsUnits,
+        pct: share(mineUnits, theirsUnits),
+      },
+      {
+        label: "Margin",
+        mine: mineMargin,
+        theirs: theirsMargin,
+        pct: share(mineMargin, theirsMargin),
+      },
     ],
   };
 };
@@ -439,18 +461,16 @@ const orderRecords = (
   const by = new Map<number, SupplyRecord>();
   for (const o of lines) {
     if (!codes.has(codeOf(o.product_code))) continue;
-    const at =
-      by.get(o.order_id) ??
-      {
-        id: o.order_id,
-        date: o.order_date,
-        vendor: o.vendor_name || "Unknown vendor",
-        lines: 0,
-        units: 0,
-        cost: 0,
-        status: o.status || null,
-        mine,
-      };
+    const at = by.get(o.order_id) ?? {
+      id: o.order_id,
+      date: o.order_date,
+      vendor: o.vendor_name || "Unknown vendor",
+      lines: 0,
+      units: 0,
+      cost: 0,
+      status: o.status || null,
+      mine,
+    };
     at.lines += 1;
     at.units += o.qty;
     by.set(o.order_id, at);
@@ -541,7 +561,9 @@ export const supplySays = (
 
   /* A status every order agrees on is worth a clause; a mix of them is a
      column in the list, not a sentence. */
-  const states = [...new Set(supply.orders.map((o) => o.status).filter(Boolean))];
+  const states = [
+    ...new Set(supply.orders.map((o) => o.status).filter(Boolean)),
+  ];
   if (states.length === 1 && supply.orders.length > 0) {
     counts.push(
       supply.orders.length === 1
@@ -575,7 +597,11 @@ export const supplyOf = (
       ...deliveryRecords(receipts.mine, codes, true),
       ...deliveryRecords(receipts.theirs, codes, false),
     ].sort(newestFirst),
-    onlyTheirs: theirs.vendors.filter((v) => !mineNames.has(v.name)).map((v) => v.name),
-    onlyMine: mine.vendors.filter((v) => !theirNames.has(v.name)).map((v) => v.name),
+    onlyTheirs: theirs.vendors
+      .filter((v) => !mineNames.has(v.name))
+      .map((v) => v.name),
+    onlyMine: mine.vendors
+      .filter((v) => !theirNames.has(v.name))
+      .map((v) => v.name),
   };
 };

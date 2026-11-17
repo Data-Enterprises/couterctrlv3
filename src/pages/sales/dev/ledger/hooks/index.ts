@@ -62,7 +62,10 @@ export const useLedgerSearch = (onStart: () => void) => {
     dispatch(
       setSearchedGroup(
         isGroup && search.selectedGroup?.id
-          ? { id: search.selectedGroup.id, name: search.selectedGroup.group_name }
+          ? {
+              id: search.selectedGroup.id,
+              name: search.selectedGroup.group_name,
+            }
           : null,
       ),
     );
@@ -173,7 +176,8 @@ export const useLedgerSelection = () => {
   const handleRowClick = useCallback(
     // Summary, the first tab, on All week: the store's week at a glance
     // before any drill-down. Sub depts and the rest are steps taken from there.
-    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "dailyrecap", true),
+    (s: Parameters<typeof setLedgerSelection>[0]) =>
+      openStore(s, "dailyrecap", true),
     [openStore],
   );
 

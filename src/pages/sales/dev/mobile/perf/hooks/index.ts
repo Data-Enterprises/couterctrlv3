@@ -156,7 +156,7 @@ export const usePerfFetch = () => {
       rows(hLw) as HourlySale[],
     );
     const subs = pickComparison(rows(sLy) as SubSale[], rows(sLw) as SubSale[]);
-    
+
     return {
       // Last year as it is. Last week is its own bar now, so a store with no
       // last year shows "no history" there rather than last week twice.

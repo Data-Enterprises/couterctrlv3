@@ -16,7 +16,12 @@ interface InvoicesRailProps {
 }
 
 /** The selected item's invoices, sliding over the panel. */
-const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: InvoicesRailProps) => (
+const InvoicesRail = ({
+  invoicesOpen,
+  setInvoicesOpen,
+  selected,
+  detail,
+}: InvoicesRailProps) => (
   <div
     aria-hidden={!invoicesOpen}
     className={`absolute inset-y-0 right-0 w-full z-30 flex flex-col bg-custom-white border-l-2 border-brand_navy/25 shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
@@ -29,9 +34,7 @@ const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: Invoi
       className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-fill_soft hover:bg-fill_muted transition-colors text-left"
     >
       <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/95" />
-      <span className="text-[12.5px] font-semibold text-content">
-        Invoices
-      </span>
+      <span className="text-[12.5px] font-semibold text-content">Invoices</span>
       <span className="text-[11.5px] text-content/95 truncate">
         {selected?.ty.product_description}
       </span>
@@ -61,9 +64,7 @@ const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: Invoi
           key={h.invoice_date}
           className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[12px] text-content even:bg-row_stripe"
         >
-          <span className="tabular-nums">
-            {dayText(h.invoice_date)}
-          </span>
+          <span className="tabular-nums">{dayText(h.invoice_date)}</span>
           <span className="truncate text-content/95">
             {h.vendor_name ?? "—"}
           </span>
@@ -93,9 +94,9 @@ const InvoicesRail = ({ invoicesOpen, setInvoicesOpen, selected, detail }: Invoi
         </div>
       ))}
       <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
-        Green is an allowance — paid under list. Cost reaches back
-        further than the sales week on purpose: a week cannot say
-        whether today&rsquo;s price is a good one.
+        Green is an allowance — paid under list. Cost reaches back further than
+        the sales week on purpose: a week cannot say whether today&rsquo;s price
+        is a good one.
       </p>
     </div>
   </div>

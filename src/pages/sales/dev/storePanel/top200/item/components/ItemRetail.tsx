@@ -86,10 +86,9 @@ const ItemRetail = ({ selected, mix, points, topPrice }: ItemRetailProps) => (
           </span>
           <span className="text-right">
             {weighed(selected.ty) && pt.price > 0
-              ? (pt.netSales / pt.price).toLocaleString(
-                  undefined,
-                  { maximumFractionDigits: 1 },
-                )
+              ? (pt.netSales / pt.price).toLocaleString(undefined, {
+                  maximumFractionDigits: 1,
+                })
               : pt.units.toLocaleString()}
           </span>
           <span className="text-right">{moneyText(pt.netSales)}</span>

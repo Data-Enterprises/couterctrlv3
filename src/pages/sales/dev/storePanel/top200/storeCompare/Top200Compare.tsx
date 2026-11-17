@@ -93,8 +93,7 @@ const Top200Compare = ({
   } | null>(null);
 
   const rows = useMemo(
-    () =>
-      mine && theirs ? compareTopItems(mine.rows, theirs.rows) : [],
+    () => (mine && theirs ? compareTopItems(mine.rows, theirs.rows) : []),
     [mine, theirs],
   );
   const totals = useMemo(() => compareTotals(rows), [rows]);

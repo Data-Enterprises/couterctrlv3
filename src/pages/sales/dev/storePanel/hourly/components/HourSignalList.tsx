@@ -45,13 +45,15 @@ const HourSignalList = ({
   const { gradingMetric, hourlyThreshold } = useSalesCtx();
   const isQty = gradingMetric === "qty";
 
-  const sevOf = (r: HourRow) => hourSeverity(r, coverage, threshold, gradingMetric);
+  const sevOf = (r: HourRow) =>
+    hourSeverity(r, coverage, threshold, gradingMetric);
   const counts = {
     critical: rows.filter((r) => sevOf(r) === "critical").length,
     watch: rows.filter((r) => sevOf(r) === "watch").length,
     healthy: rows.filter((r) => sevOf(r) === "healthy").length,
   };
-  const visible = sevFilter === "all" ? rows : rows.filter((r) => sevOf(r) === sevFilter);
+  const visible =
+    sevFilter === "all" ? rows : rows.filter((r) => sevOf(r) === sevFilter);
   const sortedVisible = sortHourRows(visible, hourSort, isQty);
 
   const sortBy = (column: HourSortColumn) =>
@@ -65,9 +67,16 @@ const HourSignalList = ({
     ));
 
   return (
-    <div className="flex flex-col border-r border-line_hair" style={{ width: "36.5%" }}>
+    <div
+      className="flex flex-col border-r border-line_hair"
+      style={{ width: "36.5%" }}
+    >
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-line_hair bg-fill_muted">
-        <SeverityChips value={sevFilter} onChange={setSevFilter} counts={counts} />
+        <SeverityChips
+          value={sevFilter}
+          onChange={setSevFilter}
+          counts={counts}
+        />
         <ThresholdChip
           value={hourlyThreshold}
           onChange={(v) => dispatch(setHourlyThreshold(v))}
@@ -77,9 +86,7 @@ const HourSignalList = ({
 
       <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
-        <span className="text-[11.5px] cc-caps flex-1">
-          Hour
-        </span>
+        <span className="text-[11.5px] cc-caps flex-1">Hour</span>
         <div className="flex items-center gap-[14px]">
           <button
             onClick={() => sortBy("ty")}
@@ -110,7 +117,12 @@ const HourSignalList = ({
 
       <div className="overflow-y-auto thin-scrollbar flex-1">
         {sortedVisible.map((r) => (
-          <HourSignalRow key={r.hour} row={r} coverage={coverage} threshold={threshold} />
+          <HourSignalRow
+            key={r.hour}
+            row={r}
+            coverage={coverage}
+            threshold={threshold}
+          />
         ))}
       </div>
     </div>

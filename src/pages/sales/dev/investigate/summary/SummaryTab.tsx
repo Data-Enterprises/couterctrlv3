@@ -68,9 +68,14 @@ const SummaryTab = ({
   const mine = shortStore(us);
   const theirs = shortStore(them);
   /** The items card's right-click menu, while it is open. */
-  const [menu, setMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const [menu, setMenu] = useState<{
+    x: number;
+    y: number;
+    upc: string;
+  } | null>(null);
   const slideUpcs =
-    rows.find((r) => r.kind === selected)?.items.map((i) => i.productCode) ?? [];
+    rows.find((r) => r.kind === selected)?.items.map((i) => i.productCode) ??
+    [];
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5 flex flex-col">
@@ -142,7 +147,10 @@ const SummaryTab = ({
           upc={menu.upc}
           allUpcs={slideUpcs}
           extraActions={[
-            { label: "View in Supply", onClick: () => onFindInSupply(menu.upc) },
+            {
+              label: "View in Supply",
+              onClick: () => onFindInSupply(menu.upc),
+            },
           ]}
           onClose={() => setMenu(null)}
         />

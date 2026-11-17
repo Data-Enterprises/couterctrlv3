@@ -7,7 +7,11 @@ import { setSelectedHour } from "../../../../../../features/dev/devSalesLedgerSl
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
-import { comparisonPillClass, isCompleteCoverage, type Coverage } from "../../../utils/ledgerUtils";
+import {
+  comparisonPillClass,
+  isCompleteCoverage,
+  type Coverage,
+} from "../../../utils/ledgerUtils";
 import { formatPct, severityDotClass, PCT_COL_W } from "../../../utils/index";
 import { formatHourRange, hourSeverity } from "../utils";
 
@@ -36,9 +40,7 @@ const HourSignalRow = ({ row: r, coverage, threshold }: HourSignalRowProps) => {
     <button
       onClick={() => dispatch(setSelectedHour(isSel ? null : r.hour))}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSel
-          ? "cc-row-selected"
-          : "border-transparent hover:bg-fill_soft"
+        isSel ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span

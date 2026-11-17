@@ -27,7 +27,8 @@ const PopupHourlyView = ({
   lyDateLabel,
 }: PopupHourlyViewProps) => {
   const { gradingMetric, hourlyThreshold, selectedHour } = useSalesCtx();
-  const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } = useSalesState();
+  const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
+    useSalesState();
 
   // A cleared threshold box keeps grading on the last valid amount, so rows do
   // not move until a new number is typed.
@@ -49,7 +50,13 @@ const PopupHourlyView = ({
         threshold,
         gradingMetric,
       ),
-    [hourlySales, hourlySalesLastWeek, hourlySalesLastYear, threshold, gradingMetric],
+    [
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      threshold,
+      gradingMetric,
+    ],
   );
 
   if (!rows.length) {
@@ -61,7 +68,9 @@ const PopupHourlyView = ({
   }
 
   const selected =
-    selectedHour !== null ? (rows.find((h) => h.hour === selectedHour) ?? null) : null;
+    selectedHour !== null
+      ? (rows.find((h) => h.hour === selectedHour) ?? null)
+      : null;
 
   return (
     <div className="flex h-full">

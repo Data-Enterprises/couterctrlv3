@@ -37,7 +37,9 @@ export const usePanelSize = (
         // A zero side is a panel not laid out yet, not a tiny one.
         const narrow = width > 0 && width < narrowBelow;
         const short = height > 0 && height < shortBelow;
-        setSize((s) => (s.narrow === narrow && s.short === short ? s : { narrow, short }));
+        setSize((s) =>
+          s.narrow === narrow && s.short === short ? s : { narrow, short },
+        );
       };
       measure();
       observer.current = new ResizeObserver(measure);

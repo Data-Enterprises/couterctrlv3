@@ -13,7 +13,10 @@ import {
 // Utils
 import { metricFormat } from "../../utils";
 import { applyStoreNumberToName } from "../../utils/ledgerUtils";
-import { compareForView, type ComparisonRow } from "../../utils/storeComparison";
+import {
+  compareForView,
+  type ComparisonRow,
+} from "../../utils/storeComparison";
 import { PERF_SORT_HEADER } from "../../../../../components-dev/utils";
 import { COLS, GRID_MIN, HEAD } from "./utils";
 
@@ -72,7 +75,6 @@ const PopupComparisonList = ({
       </div>
     );
   }
-
 
   /**
    * The OPEN store's week against this row's, in each of the three periods.
@@ -201,7 +203,8 @@ const PopupComparisonList = ({
     <div className="h-full overflow-auto thin-scrollbar">
       <div style={{ minWidth: GRID_MIN }}>
         <p className="px-2 py-2 text-[12px] text-content/95 border-b border-line_hair">
-          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          How{" "}
+          <span className="font-semibold text-content">{openStoreName}</span>{" "}
           <span className="font-semibold text-content tabular-nums">
             {fmt(open.ty)}
           </span>{" "}
@@ -213,12 +216,36 @@ const PopupComparisonList = ({
           <span className="min-w-0 flex items-center">
             <StoreColFilter value={storeFilter} onApply={setStoreFilter} />
           </span>
-          <SortHeader col="theirsTy" label="Store TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
+          <SortHeader
+            col="theirsTy"
+            label="Store TY"
+            sort={sort}
+            onSort={handleSort}
+            className={`${PERF_SORT_HEADER} justify-start min-w-0`}
+          />
           {/* Each one is this store's movement against the open store's, over
               the same comparison. */}
-          <SortHeader col="tyGap" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
-          <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
-          <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+          <SortHeader
+            col="tyGap"
+            label="vs TY"
+            sort={sort}
+            onSort={handleSort}
+            className={`${PERF_SORT_HEADER} justify-start`}
+          />
+          <SortHeader
+            col="lwGap"
+            label="vs LW"
+            sort={sort}
+            onSort={handleSort}
+            className={`${PERF_SORT_HEADER} justify-start`}
+          />
+          <SortHeader
+            col="lyGap"
+            label="vs LY"
+            sort={sort}
+            onSort={handleSort}
+            className={`${PERF_SORT_HEADER} justify-start`}
+          />
         </div>
 
         {sorted.map((r) => (

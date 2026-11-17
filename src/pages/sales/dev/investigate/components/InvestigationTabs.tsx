@@ -88,8 +88,12 @@ const InvestigationTabs = ({
       needsAll: true,
       answer: () => {
         // One list per person, however many causes each holds.
-        const people = new Set(desks.filter((d) => d.actionable).map((d) => d.owner)).size;
-        return people ? `${people} ${people === 1 ? "list" : "lists"}` : "No lists";
+        const people = new Set(
+          desks.filter((d) => d.actionable).map((d) => d.owner),
+        ).size;
+        return people
+          ? `${people} ${people === 1 ? "list" : "lists"}`
+          : "No lists";
       },
     },
   ];

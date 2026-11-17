@@ -8,7 +8,6 @@ interface FoldProps {
 
 // Interfaces
 
-
 /**
  * A section that folds.
  *

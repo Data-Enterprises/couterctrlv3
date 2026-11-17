@@ -145,10 +145,7 @@ export const buildHourRows = (
   const isQty = gradingMetric === "qty";
   const buildMap = (src: HourlySale[]) =>
     src.reduce(
-      (
-        acc: Record<number, { net: number; trans: number; qty: number }>,
-        h,
-      ) => {
+      (acc: Record<number, { net: number; trans: number; qty: number }>, h) => {
         if (!acc[h.hour]) acc[h.hour] = { net: 0, trans: 0, qty: 0 };
         acc[h.hour].net += h.total_sales - h.total_tax;
         acc[h.hour].trans += h.transactions;
@@ -177,11 +174,9 @@ export const buildHourRows = (
 
   const allHours = Array.from(
     new Set(
-      [
-        ...Object.keys(twMap),
-        ...Object.keys(lwMap),
-        ...Object.keys(lyMap),
-      ].map(Number),
+      [...Object.keys(twMap), ...Object.keys(lwMap), ...Object.keys(lyMap)].map(
+        Number,
+      ),
     ),
   ).sort((a, b) => a - b);
 
@@ -249,8 +244,7 @@ export const buildWeekHourDays = (
   const sumFor = (src: HourlySale[], dateStr: string) =>
     src
       .filter(
-        (h) =>
-          h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
+        (h) => h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
       )
       .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
 
@@ -291,20 +285,27 @@ const hourSortValue = (row: HourRow, column: HourSortColumn, isQty: boolean) =>
         ? row.vsLYQtyPct
         : row.vsLYPct;
 
-export const sortHourRows = (rows: HourRow[], sort: HourSortState, isQty: boolean) =>
+export const sortHourRows = (
+  rows: HourRow[],
+  sort: HourSortState,
+  isQty: boolean,
+) =>
   sort
     ? [...rows].sort((a, b) => {
         const diff =
-          hourSortValue(a, sort.column, isQty) - hourSortValue(b, sort.column, isQty);
+          hourSortValue(a, sort.column, isQty) -
+          hourSortValue(b, sort.column, isQty);
         return sort.direction === "desc" ? -diff : diff;
       })
     : rows;
 
 /** Change against a reference, in percent. */
-export const pctChange = (value: number, ref: number) => ((value - ref) / ref) * 100;
+export const pctChange = (value: number, ref: number) =>
+  ((value - ref) / ref) * 100;
 
 /** Average basket: net sales over transactions, 0 with none. */
-export const basket = (net: number, trans: number) => (trans > 0 ? net / trans : 0);
+export const basket = (net: number, trans: number) =>
+  trans > 0 ? net / trans : 0;
 
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
 export const MINUS = "−";
@@ -338,7 +339,11 @@ export const HEAD =
   "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0";
 
 /** Three weeks of hourly rows for one store: this week, last week, last year. */
-export type HourWeeks = { tw: HourlySale[]; lw: HourlySale[]; ly: HourlySale[] };
+export type HourWeeks = {
+  tw: HourlySale[];
+  lw: HourlySale[];
+  ly: HourlySale[];
+};
 
 /** The store-against-store hour list: every hour either store traded in any
  *  period, the open store's figure against the counterpart's, and the gap in

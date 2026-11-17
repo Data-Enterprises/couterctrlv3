@@ -17,14 +17,11 @@ const SupplyWindowNote = ({ them, window, stage }: SupplyWindowNoteProps) => {
      letting the grid imply every column is diagnosed. */
   return (
     <p className="text-[13px] text-content/95 mt-2.5">
-      Causes explain this week against {them}.
-      Orders and receivers are read over {SUPPLY_LOOKBACK_DAYS} days (
-      {window.start} to {window.end}) — they cannot account for the
-      LW or LY columns.
+      Causes explain this week against {them}. Orders and receivers are read
+      over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to {window.end}) — they
+      cannot account for the LW or LY columns.
       {STAGE_NOTE[stage] && (
-        <span className="ml-1.5 font-semibold">
-          {STAGE_NOTE[stage]}
-        </span>
+        <span className="ml-1.5 font-semibold">{STAGE_NOTE[stage]}</span>
       )}
     </p>
   );

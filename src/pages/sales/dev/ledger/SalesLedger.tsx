@@ -187,7 +187,10 @@ const SalesLedger = () => {
 
             {/* Tier summary pills — click to filter the list below */}
             <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-line_hair">
-              <div data-help="severity-chips" className="flex items-center gap-1.5">
+              <div
+                data-help="severity-chips"
+                className="flex items-center gap-1.5"
+              >
                 <SeverityChips
                   value={sevFilter}
                   onChange={setSevFilter}
@@ -206,7 +209,10 @@ const SalesLedger = () => {
               <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
                 <span className="w-2 flex-shrink-0" />
                 <span className="flex-1 min-w-0 flex items-center">
-                  <StoreColFilter value={storeFilter} onApply={setStoreFilter} />
+                  <StoreColFilter
+                    value={storeFilter}
+                    onApply={setStoreFilter}
+                  />
                 </span>
                 <div className="flex items-center gap-[14px]">
                   <SortHeader
@@ -235,7 +241,10 @@ const SalesLedger = () => {
                   />
                 </div>
               </div>
-              <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
+              <div
+                data-help="list"
+                className="flex-1 overflow-y-auto thin-scrollbar"
+              >
                 {visibleRows.map((row) => (
                   <LedgerRow
                     key={`${row.storeid}__${row.store_number}`}
@@ -281,7 +290,9 @@ const SalesLedger = () => {
                 /* From the group comparison, so the store opens on the tab
                    that continues that question rather than on its own
                    departments. */
-                onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
+                onSelectStore={(row) =>
+                  openStore(selectionFor(row), "comparison")
+                }
               />
             ) : (
               <EmptyPrompt

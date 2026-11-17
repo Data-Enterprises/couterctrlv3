@@ -108,9 +108,7 @@ const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
             key={label}
             className={`rounded-md px-2.5 py-2 ${i === 2 ? "border cc-row-selected" : "bg-bkg"}`}
           >
-            <div className="text-[11px] text-content/95">
-              {label}
-            </div>
+            <div className="text-[11px] text-content/95">{label}</div>
             <div className="text-[13.5px] font-semibold text-content tabular-nums">
               {at === null ? "not in top 200" : `#${at}`}
             </div>
@@ -146,8 +144,8 @@ const ItemHistory = ({ history, periodLabel, selected }: ItemHistoryProps) => {
           this tab does not call it; saying so beats a bar that
           cannot be drawn. */}
       <p className="text-[13px] text-content/95 mt-1.5 leading-snug">
-        What arrived this week is not read here &mdash; the
-        department investigation reads ordering against sales.
+        What arrived this week is not read here &mdash; the department
+        investigation reads ordering against sales.
       </p>
     </div>
   );

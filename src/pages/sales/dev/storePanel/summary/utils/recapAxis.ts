@@ -11,9 +11,12 @@ export const niceTicks = (max: number, steps = 3): number[] => {
   const rough = max / steps;
   const mag = 10 ** Math.floor(Math.log10(rough));
   const norm = rough / mag;
-  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+  const step =
+    (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) *
+    mag;
   const top = Math.ceil(max / step) * step;
   const ticks: number[] = [];
-  for (let t = 0; t <= top + step / 2; t += step) ticks.push(Math.round(t * 100) / 100);
+  for (let t = 0; t <= top + step / 2; t += step)
+    ticks.push(Math.round(t * 100) / 100);
   return ticks;
 };

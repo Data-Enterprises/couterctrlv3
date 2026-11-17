@@ -5,8 +5,8 @@ const ReceiptsNote = () => (
     <span className="font-bold">
       We couldn&rsquo;t get the receiver information at this time.
     </span>{" "}
-    Until it loads, no item here is called never ordered, no receiver on file
-    or received but unsold. Items this store did not ring read as Receivers
+    Until it loads, no item here is called never ordered, no receiver on file or
+    received but unsold. Items this store did not ring read as Receivers
     unavailable.
   </p>
 );

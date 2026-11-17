@@ -4,7 +4,13 @@ import { formatCurrency2 } from "../../../../../../utils";
 /** "12 PM", the way the Hourly tab writes an hour. */
 export const hourLabel = (h: number) => {
   const x = ((h % 24) + 24) % 24;
-  return x === 0 ? "12 AM" : x < 12 ? `${x} AM` : x === 12 ? "12 PM" : `${x - 12} PM`;
+  return x === 0
+    ? "12 AM"
+    : x < 12
+      ? `${x} AM`
+      : x === 12
+        ? "12 PM"
+        : `${x - 12} PM`;
 };
 
 /** "12 PM – 1 PM". */
@@ -54,12 +60,18 @@ export const money0 = (n: number) =>
 export const count = (n: number) => Math.round(n).toLocaleString("en-US");
 
 export const one = (n: number) =>
-  n.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  n.toLocaleString("en-US", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
 
 export const pounds = one;
 
 /** A weight to three places, as the item view lists it: 105.700. */
 export const weight3 = (n: number) =>
-  n.toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  n.toLocaleString("en-US", {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
 
 export const pct = (n: number) => `${Math.round(n)}%`;

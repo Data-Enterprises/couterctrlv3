@@ -25,7 +25,9 @@ const RecapPriceMix = ({ state, short }: RecapPriceMixProps) => {
   if (state.status !== "ready") {
     return (
       <div className={`${gap} text-[13px] text-content`}>
-        {state.status === "error" ? "Price mix could not be read" : "Reading the price mix…"}
+        {state.status === "error"
+          ? "Price mix could not be read"
+          : "Reading the price mix…"}
       </div>
     );
   }
@@ -34,7 +36,9 @@ const RecapPriceMix = ({ state, short }: RecapPriceMixProps) => {
     return (
       <div className={gap}>
         <div className="h-2 rounded border border-dashed border-row_selected_border" />
-        <div className="mt-1.5 text-[13px] text-content">Price mix not reported</div>
+        <div className="mt-1.5 text-[13px] text-content">
+          Price mix not reported
+        </div>
       </div>
     );
   }
@@ -46,19 +50,31 @@ const RecapPriceMix = ({ state, short }: RecapPriceMixProps) => {
         className="flex gap-0.5 h-2 rounded overflow-hidden"
       >
         {shares.regular > 0 && (
-          <span className="bg-brand_navy" style={{ flex: `${shares.regular} 0 0` }} />
+          <span
+            className="bg-brand_navy"
+            style={{ flex: `${shares.regular} 0 0` }}
+          />
         )}
         {shares.promo > 0 && (
-          <span className="bg-brand_line_2" style={{ flex: `${shares.promo} 0 0` }} />
+          <span
+            className="bg-brand_line_2"
+            style={{ flex: `${shares.promo} 0 0` }}
+          />
         )}
       </div>
       <div className="flex flex-wrap justify-between gap-x-3 mt-1.5 text-[13px] text-content tabular-nums">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-brand_navy" aria-hidden="true" />
+          <span
+            className="h-2.5 w-2.5 rounded-sm bg-brand_navy"
+            aria-hidden="true"
+          />
           <span className="font-semibold">{money0(state.mix.regular)}</span> reg
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-brand_line_2" aria-hidden="true" />
+          <span
+            className="h-2.5 w-2.5 rounded-sm bg-brand_line_2"
+            aria-hidden="true"
+          />
           <span className="font-semibold">{money0(state.mix.promo)}</span> sale
         </span>
       </div>

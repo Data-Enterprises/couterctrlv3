@@ -48,7 +48,10 @@ export const useWeekExceptions = (
     loadWeekExceptions(url, token, storeId, storeNumber, startDate, endDate)
       .then((lines) => {
         dispatch(
-          cacheRecapExceptions({ key, byDay: Object.fromEntries(exceptionsByDay(lines)) }),
+          cacheRecapExceptions({
+            key,
+            byDay: Object.fromEntries(exceptionsByDay(lines)),
+          }),
         );
       })
       .catch(() => setFailedKey(key))
@@ -56,7 +59,17 @@ export const useWeekExceptions = (
         inFlight.delete(key);
         setPending((n) => n + 1);
       });
-  }, [key, byDay, url, token, storeId, storeNumber, startDate, endDate, dispatch]);
+  }, [
+    key,
+    byDay,
+    url,
+    token,
+    storeId,
+    storeNumber,
+    startDate,
+    endDate,
+    dispatch,
+  ]);
 
   if (byDay) return { status: "ready", byDay };
   if (failedKey === key) return { status: "error" };

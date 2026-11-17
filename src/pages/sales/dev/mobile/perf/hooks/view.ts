@@ -71,7 +71,12 @@ export const usePerfStores = (storeFilter: string) => {
     );
     // Unsorted is a real state, not a missing default — see `storeSort`.
     return perf.storeSort
-      ? sortPairs(built, perf.storeSort.key, storeNumberOf, perf.storeSort.reversed)
+      ? sortPairs(
+          built,
+          perf.storeSort.key,
+          storeNumberOf,
+          perf.storeSort.reversed,
+        )
       : built;
   }, [
     perf.weekTy,
@@ -88,7 +93,8 @@ export const usePerfStores = (storeFilter: string) => {
     const q = storeFilter.trim().toLowerCase();
     if (!q) return storePairs;
     return storePairs.filter(
-      (p) => p.label.toLowerCase().includes(q) || p.key.toLowerCase().includes(q),
+      (p) =>
+        p.label.toLowerCase().includes(q) || p.key.toLowerCase().includes(q),
     );
   }, [storePairs, storeFilter]);
 
@@ -97,7 +103,14 @@ export const usePerfStores = (storeFilter: string) => {
     0,
   );
 
-  return { nameOf, shownGroupDay, shownDay, storePairs, visibleStores, listMax };
+  return {
+    nameOf,
+    shownGroupDay,
+    shownDay,
+    storePairs,
+    visibleStores,
+    listMax,
+  };
 };
 
 /**
@@ -112,9 +125,7 @@ export const usePerfSelection = (
   const perf = useSalesPerfState();
   const { isStore, searchValue } = usePerfScope();
 
-  const openKey = isStore
-    ? (storePairs[0]?.key ?? null)
-    : perf.selectedStore;
+  const openKey = isStore ? (storePairs[0]?.key ?? null) : perf.selectedStore;
 
   /** The group card is a card in the same accordion, so "which is open" stays
    *  one question. */
@@ -138,7 +149,8 @@ export const usePerfSelection = (
       ? (perf.storeData[openKey] ?? emptyBundle())
       : emptyBundle();
 
-  const bundleLoading = openKey !== null && !isStore && !perf.storeData[openKey];
+  const bundleLoading =
+    openKey !== null && !isStore && !perf.storeData[openKey];
 
   /** Items belong to one store, so the endpoint is asked for that store and
    *  the rows are narrowed to its number when an id carries two. */
@@ -147,21 +159,22 @@ export const usePerfSelection = (
     : groupOpen
       ? null
       : (() => {
-        const row = openKey
-          ? perf.weekTy.find((r) => storeKeyOf(r) === openKey)
-          : undefined;
-        if (!row) return null;
-        // Only narrow by number when this id really carries two stores — the
-        // endpoints don't promise to format store_number the same way.
-        const shared = perf.weekTy.some(
-          (r) => r.storeid === row.storeid && r.store_number !== row.store_number,
-        );
-        return {
-          key: storeKeyOf(row),
-          storeid: row.storeid,
-          storeNumber: shared ? row.store_number : null,
-        };
-      })();
+          const row = openKey
+            ? perf.weekTy.find((r) => storeKeyOf(r) === openKey)
+            : undefined;
+          if (!row) return null;
+          // Only narrow by number when this id really carries two stores — the
+          // endpoints don't promise to format store_number the same way.
+          const shared = perf.weekTy.some(
+            (r) =>
+              r.storeid === row.storeid && r.store_number !== row.store_number,
+          );
+          return {
+            key: storeKeyOf(row),
+            storeid: row.storeid,
+            storeNumber: shared ? row.store_number : null,
+          };
+        })();
 
   const itemKey =
     itemScope && perf.openSubDept
@@ -208,7 +221,15 @@ export const usePerfFigures = (sel: ReturnType<typeof usePerfSelection>) => {
         perf.weekLw,
         pick,
       ),
-    [perf.weekTy, perf.weekLy, perf.weekLw, active, cardDay, scopeKey, perf.measure],
+    [
+      perf.weekTy,
+      perf.weekLy,
+      perf.weekLw,
+      active,
+      cardDay,
+      scopeKey,
+      perf.measure,
+    ],
   );
 
   /** The whole week's day matching for the open card's store. */
@@ -227,7 +248,16 @@ export const usePerfFigures = (sel: ReturnType<typeof usePerfSelection>) => {
    *  the number above it. */
   const groupTotals = useMemo(
     () =>
-      buildTotals(perf.weekTy, perf.weekLy, [], [], null, null, perf.weekLw, pick),
+      buildTotals(
+        perf.weekTy,
+        perf.weekLy,
+        [],
+        [],
+        null,
+        null,
+        perf.weekLw,
+        pick,
+      ),
     [perf.weekTy, perf.weekLy, perf.weekLw, perf.measure],
   );
   const groupMatch = useMemo(
@@ -241,12 +271,30 @@ export const usePerfFigures = (sel: ReturnType<typeof usePerfSelection>) => {
     const rows =
       perf.drill === "subs"
         ? mergeLastWeek(
-            buildSubPairs(active.subsTy, active.subsLy, cardDay, weekMatch, pick),
-            buildSubPairs(active.subsTy, active.subsLw ?? [], cardDay, weekMatchLw, pick),
+            buildSubPairs(
+              active.subsTy,
+              active.subsLy,
+              cardDay,
+              weekMatch,
+              pick,
+            ),
+            buildSubPairs(
+              active.subsTy,
+              active.subsLw ?? [],
+              cardDay,
+              weekMatchLw,
+              pick,
+            ),
           )
         : perf.drill === "hours"
           ? mergeLastWeek(
-              buildHourPairs(active.hourlyTy, active.hourlyLy, cardDay, weekMatch, pick),
+              buildHourPairs(
+                active.hourlyTy,
+                active.hourlyLy,
+                cardDay,
+                weekMatch,
+                pick,
+              ),
               buildHourPairs(
                 active.hourlyTy,
                 active.hourlyLw ?? [],
@@ -261,14 +309,24 @@ export const usePerfFigures = (sel: ReturnType<typeof usePerfSelection>) => {
     return drillSort
       ? sortPairs(rows, drillSort.key, undefined, drillSort.reversed)
       : rows;
-  }, [perf.drill, drillSort, cardDay, active, weekMatch, weekMatchLw, perf.measure]);
+  }, [
+    perf.drill,
+    drillSort,
+    cardDay,
+    active,
+    weekMatch,
+    weekMatchLw,
+    perf.measure,
+  ]);
 
   const itemMatch = useMemo(
-    () => (itemScope ? scopeMatch(perf.weekTy, perf.weekLy, scopeKey) : undefined),
+    () =>
+      itemScope ? scopeMatch(perf.weekTy, perf.weekLy, scopeKey) : undefined,
     [perf.weekTy, perf.weekLy, scopeKey, itemScope?.key],
   );
   const itemMatchLw = useMemo(
-    () => (itemScope ? scopeMatch(perf.weekTy, perf.weekLw, scopeKey) : undefined),
+    () =>
+      itemScope ? scopeMatch(perf.weekTy, perf.weekLw, scopeKey) : undefined,
     [perf.weekTy, perf.weekLw, scopeKey, itemScope?.key],
   );
 
@@ -276,7 +334,13 @@ export const usePerfFigures = (sel: ReturnType<typeof usePerfSelection>) => {
     if (!openItems) return [];
     const rows = mergeLastWeek(
       buildItemPairs(openItems.ty, openItems.ly, cardDay, itemMatch, pick),
-      buildItemPairs(openItems.ty, openItems.lw ?? [], cardDay, itemMatchLw, pick),
+      buildItemPairs(
+        openItems.ty,
+        openItems.lw ?? [],
+        cardDay,
+        itemMatchLw,
+        pick,
+      ),
     );
     return perf.itemSort
       ? sortPairs(rows, perf.itemSort.key, undefined, perf.itemSort.reversed)

@@ -21,11 +21,14 @@ import type { RecapMoney } from "../interfaces/index";
  * on both the item row and its discount row), so any coupon total would be
  * counted twice or wrong.
  */
-export const moneyForDates = (subs: SubSale[], dates: string[], net: number): RecapMoney => {
+export const moneyForDates = (
+  subs: SubSale[],
+  dates: string[],
+  net: number,
+): RecapMoney => {
   const wanted = new Set(dates);
-  const tax = countedRows(subs.filter((s) => wanted.has(s.sale_date.split("T")[0]))).reduce(
-    (t, s) => t + (s.total_tax || 0),
-    0,
-  );
+  const tax = countedRows(
+    subs.filter((s) => wanted.has(s.sale_date.split("T")[0])),
+  ).reduce((t, s) => t + (s.total_tax || 0), 0);
   return { withTax: net + tax, tax, net };
 };

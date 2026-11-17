@@ -25,7 +25,9 @@ export const weekRanges = (date: string) => {
   const lwEnd = shiftIso(twEnd, -7);
   const lwStart = shiftIso(twEnd, -13);
   const twWeekDates = Array.from({ length: 7 }, (_, i) => shiftIso(twStart, i));
-  const lyWeekDates = twWeekDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  const lyWeekDates = twWeekDates
+    .map((d) => sameWeekDayLastYear(d).date)
+    .sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   return { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd };
@@ -87,7 +89,10 @@ export const filterLedgerRows = (
  * percentages keeps a group weighted by size: twenty stores where the big one
  * has full LY history and the small ones have none should read as the big one.
  */
-export const ledgerHeadline = (rows: LedgerRowData[], metric: GradingMetric) => {
+export const ledgerHeadline = (
+  rows: LedgerRowData[],
+  metric: GradingMetric,
+) => {
   const sum = (pick: (r: LedgerRowData) => number) =>
     rows.reduce((acc, r) => acc + pick(r), 0);
   const isQty = metric === "qty";

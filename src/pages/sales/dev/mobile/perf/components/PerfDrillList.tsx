@@ -87,10 +87,7 @@ const PerfDrillList = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
-        <span
-          className="cc-spinner"
-          style={{ borderTopColor: TY_COLOR }}
-        />
+        <span className="cc-spinner" style={{ borderTopColor: TY_COLOR }} />
         Loading {storeName}...
       </div>
     );
@@ -175,10 +172,7 @@ const PerfDrillList = ({
 
         {items.loading ? (
           <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
-            <span
-              className="cc-spinner"
-              style={{ borderTopColor: TY_COLOR }}
-            />
+            <span className="cc-spinner" style={{ borderTopColor: TY_COLOR }} />
             Loading items...
           </div>
         ) : items.pairs.length === 0 ? (
@@ -191,31 +185,33 @@ const PerfDrillList = ({
           // One scale for the whole item list, computed once rather than per
           // row — see `scaleOf`.
           ((itemMax) =>
-          items.pairs.map((p) => {
-            // The department's own sales, folded into one row
-            // (`foldDepartmentRings`). It has no UPC, so the line where one
-            // would sit says what it is instead.
-            const deptRing = p.key === DEPT_RING_KEY;
-            return (
-              <div
-                key={p.key}
-                className="border-t border-brand_line px-3.5 py-3 first:border-t-0"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                    {p.label}
-                  </span>
-                  <span className="flex-none text-[12px] font-semibold text-content/95">
-                    <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
-                  </span>
+            items.pairs.map((p) => {
+              // The department's own sales, folded into one row
+              // (`foldDepartmentRings`). It has no UPC, so the line where one
+              // would sit says what it is instead.
+              const deptRing = p.key === DEPT_RING_KEY;
+              return (
+                <div
+                  key={p.key}
+                  className="border-t border-brand_line px-3.5 py-3 first:border-t-0"
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                      {p.label}
+                    </span>
+                    <span className="flex-none text-[12px] font-semibold text-content/95">
+                      <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
+                    </span>
+                  </div>
+                  <div className="font-mono text-[10px] tracking-wider text-content/95">
+                    {deptRing
+                      ? "No item scanned: rung on the department key"
+                      : p.key}
+                  </div>
+                  <Bars p={p} max={itemMax} fmt={fmt} />
                 </div>
-                <div className="font-mono text-[10px] tracking-wider text-content/95">
-                  {deptRing ? "No item scanned: rung on the department key" : p.key}
-                </div>
-                <Bars p={p} max={itemMax} fmt={fmt} />
-              </div>
-            );
-          }))(scaleOf(items.pairs))
+              );
+            }))(scaleOf(items.pairs))
         )}
       </div>
     );
@@ -252,40 +248,40 @@ const PerfDrillList = ({
         </div>
       ) : (
         ((listMax) =>
-        pairs.map((p) => {
-          const Row = opensItems ? "button" : "div";
-          return (
-            <Row
-              key={p.key}
-              {...(opensItems
-                ? {
-                    type: "button" as const,
-                    onClick: () =>
-                      onOpenSubDept({ key: p.key, label: p.label }),
-                  }
-                : {})}
-              className={`block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 ${
-                opensItems ? "active:bg-bkg" : ""
-              }`}
-            >
-              <div className="flex items-baseline gap-2">
-                <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                  {p.label}
-                </span>
-                {/* The figure the Change sort orders on, so that order can be
+          pairs.map((p) => {
+            const Row = opensItems ? "button" : "div";
+            return (
+              <Row
+                key={p.key}
+                {...(opensItems
+                  ? {
+                      type: "button" as const,
+                      onClick: () =>
+                        onOpenSubDept({ key: p.key, label: p.label }),
+                    }
+                  : {})}
+                className={`block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 ${
+                  opensItems ? "active:bg-bkg" : ""
+                }`}
+              >
+                <div className="flex items-baseline gap-2">
+                  <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                    {p.label}
+                  </span>
+                  {/* The figure the Change sort orders on, so that order can be
                     read off the rows. Neutral: no grading on mobile. A dash
                     when last year sold nothing. */}
-                <span className="flex-none text-[12px] font-semibold text-content/95">
-                  <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
-                </span>
-                {opensItems && (
-                  <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
-                )}
-              </div>
-              <Bars p={p} max={listMax} fmt={fmt} />
-            </Row>
-          );
-        }))(scaleOf(pairs))
+                  <span className="flex-none text-[12px] font-semibold text-content/95">
+                    <PerfChange pct={gradedChangePct(p)} format={fmtChange} />
+                  </span>
+                  {opensItems && (
+                    <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
+                  )}
+                </div>
+                <Bars p={p} max={listMax} fmt={fmt} />
+              </Row>
+            );
+          }))(scaleOf(pairs))
       )}
     </div>
   );

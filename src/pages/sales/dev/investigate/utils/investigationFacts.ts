@@ -7,7 +7,15 @@ import { codeOf, dayOf } from ".";
 // Interfaces
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type { SubDeptMargin } from "../../../../../interfaces";
-import type { Cause, ItemVerdict, InvestigationInput, CauseTotal, Summary, Decomposition, Tile } from "../interfaces";
+import type {
+  Cause,
+  ItemVerdict,
+  InvestigationInput,
+  CauseTotal,
+  Summary,
+  Decomposition,
+  Tile,
+} from "../interfaces";
 
 /** `total_sales - total_tax`, the basis the whole Sales page is on — see the
  *  note in PopupSubDeptList for why it is not `net_sales`. */
@@ -84,7 +92,9 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
   }, {});
 
   // The newest order day per item, and what was ordered on it.
-  const lastOrder = input.orders.reduce<Record<string, { day: string; qty: number }>>((acc, o) => {
+  const lastOrder = input.orders.reduce<
+    Record<string, { day: string; qty: number }>
+  >((acc, o) => {
     const c = codeOf(o.product_code);
     const day = dayOf(o.order_date);
     const at = acc[c];
@@ -95,37 +105,47 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
 
   // Receipts are nested one level down: the endpoint pages by RECEIVER, and
   // each carries the lines that matched.
-  const receivedBy = input.receivers.reduce<Record<string, number>>((acc, r) => {
-    r.lines.forEach((l) => {
-      // `qty`, not `units`. On this endpoint's lines `qty` is the selling-unit
-      // count and `cases` is how many cases they came in -- which is why Item
-      // Actions derives its case size as qty / cases. `units` carries a
-      // different thing depending on how the vendor billed, and on a
-      // case-billed invoice it comes back 0, which read here as a delivery
-      // that never arrived.
-      const c = codeOf(l.product_code);
-      acc[c] = (acc[c] ?? 0) + l.qty;
-    });
-    return acc;
-  }, {});
+  const receivedBy = input.receivers.reduce<Record<string, number>>(
+    (acc, r) => {
+      r.lines.forEach((l) => {
+        // `qty`, not `units`. On this endpoint's lines `qty` is the selling-unit
+        // count and `cases` is how many cases they came in -- which is why Item
+        // Actions derives its case size as qty / cases. `units` carries a
+        // different thing depending on how the vendor billed, and on a
+        // case-billed invoice it comes back 0, which read here as a delivery
+        // that never arrived.
+        const c = codeOf(l.product_code);
+        acc[c] = (acc[c] ?? 0) + l.qty;
+      });
+      return acc;
+    },
+    {},
+  );
 
   // Only receivers on or after the newest order can be for that order.
-  const sinceOrder = input.receivers.reduce<Record<string, number>>((acc, r) => {
-    const day = dayOf(r.invoice_date);
-    r.lines.forEach((l) => {
-      const c = codeOf(l.product_code);
-      const ordered = lastOrder[c];
-      if (ordered && day >= ordered.day) acc[c] = (acc[c] ?? 0) + l.qty;
-    });
-    return acc;
-  }, {});
+  const sinceOrder = input.receivers.reduce<Record<string, number>>(
+    (acc, r) => {
+      const day = dayOf(r.invoice_date);
+      r.lines.forEach((l) => {
+        const c = codeOf(l.product_code);
+        const ordered = lastOrder[c];
+        if (ordered && day >= ordered.day) acc[c] = (acc[c] ?? 0) + l.qty;
+      });
+      return acc;
+    },
+    {},
+  );
 
   // Every product either store touched in any period. An item one of them
   // does not carry at all is the finding, not a row to drop.
   const codes = [
     ...new Set([
-      ...Object.keys(mTw), ...Object.keys(mLw), ...Object.keys(mLy),
-      ...Object.keys(tTw), ...Object.keys(tLw), ...Object.keys(tLy),
+      ...Object.keys(mTw),
+      ...Object.keys(mLw),
+      ...Object.keys(mLy),
+      ...Object.keys(tTw),
+      ...Object.keys(tLw),
+      ...Object.keys(tLy),
     ]),
   ];
 
@@ -141,11 +161,17 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
         {
           productCode: c,
           description:
-            mTw[c]?.description ?? tTw[c]?.description ??
-            mLy[c]?.description ?? tLy[c]?.description ?? c,
+            mTw[c]?.description ??
+            tTw[c]?.description ??
+            mLy[c]?.description ??
+            tLy[c]?.description ??
+            c,
           vendorName:
-            mTw[c]?.vendorName ?? tTw[c]?.vendorName ??
-            mLy[c]?.vendorName ?? tLy[c]?.vendorName ?? "",
+            mTw[c]?.vendorName ??
+            tTw[c]?.vendorName ??
+            mLy[c]?.vendorName ??
+            tLy[c]?.vendorName ??
+            "",
           mineTy: at(mTw, c, "money"),
           theirsTy: at(tTw, c, "money"),
           mineLw: at(mLw, c, "money"),
@@ -201,7 +227,10 @@ export const summarise = (items: ItemVerdict[]): Summary => {
     causes.set(i.cause, t);
   });
 
-  const vendors = new Map<string, { dollars: number; items: number; by: Map<Cause, number> }>();
+  const vendors = new Map<
+    string,
+    { dollars: number; items: number; by: Map<Cause, number> }
+  >();
   items
     .filter((i) => i.gap < 0)
     .forEach((i) => {
@@ -229,8 +258,6 @@ export const summarise = (items: ItemVerdict[]): Summary => {
       .sort((a, b) => a.dollars - b.dollars),
   };
 };
-
-
 
 /* ------------------------------------------------------------------ */
 /* The gap, decomposed                                                 */
@@ -293,7 +320,10 @@ export const tilesAt = (items: ItemVerdict[], path: string[]): Tile[] => {
     labelOf: (i: ItemVerdict) => string,
     deeper: boolean,
   ): Tile[] => {
-    const m = new Map<string, { label: string; value: number; items: number }>();
+    const m = new Map<
+      string,
+      { label: string; value: number; items: number }
+    >();
     rows.forEach((i) => {
       const k = keyOf(i);
       const t = m.get(k) ?? { label: labelOf(i), value: 0, items: 0 };
@@ -302,7 +332,13 @@ export const tilesAt = (items: ItemVerdict[], path: string[]): Tile[] => {
       m.set(k, t);
     });
     return [...m.entries()]
-      .map(([key, t]) => ({ key, label: t.label, value: t.value, items: t.items, deeper }))
+      .map(([key, t]) => ({
+        key,
+        label: t.label,
+        value: t.value,
+        items: t.items,
+        deeper,
+      }))
       .sort((a, b) => b.value - a.value);
   };
 

@@ -47,7 +47,8 @@ export const useItemFilters = (items: ItemVerdict[]) => {
   const [upcDraft, setUpcDraft] = useState(upcQ);
   const setOnly = (cause: Cause | null) =>
     dispatch(setInvestigationGrid({ cause }));
-  const setVendorQ = (v: string) => dispatch(setInvestigationGrid({ vendorQ: v }));
+  const setVendorQ = (v: string) =>
+    dispatch(setInvestigationGrid({ vendorQ: v }));
 
   /** Every vendor in the department, so the vendor filter is a list to pick
    *  from rather than a spelling to guess at. */
@@ -305,7 +306,9 @@ const NO_ORDERS: OrdersWave = {
 };
 const NO_RECEIPTS: ReceiptsWave = { ok: true, mine: [], theirs: [] };
 
-export const useDeptInvestigation = (args: InvestigationArgs): Investigation => {
+export const useDeptInvestigation = (
+  args: InvestigationArgs,
+): Investigation => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => ({
     url: state.app.url,
@@ -321,10 +324,13 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
   // Primitives in the dependency list, because a Scope object rebuilt every
   // render would restart the whole cascade on every keystroke elsewhere.
   const {
-    metric, enabled,
+    metric,
+    enabled,
     mine: { storeid: mineId, storeNumber: mineNo, subDept: mineDept },
     theirs: { storeid: theirsId, storeNumber: theirsNo, subDept: theirsDept },
-    tw, lw, ly,
+    tw,
+    lw,
+    ly,
   } = args;
 
   const mineName = args.mine.name;
@@ -332,7 +338,8 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
 
   const scope = useMemo<Scope>(
     () => ({
-      url, token,
+      url,
+      token,
       mine: {
         storeid: mineId,
         storeNumber: mineNo,
@@ -351,9 +358,22 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
     }),
     [
       // No `metric`: it is applied over the rows, not asked for — see Scope.
-      url, token, mineDept, theirsDept,
-      mineId, mineNo, mineName, theirsId, theirsNo, theirsName,
-      tw.start, tw.end, lw.start, lw.end, ly.start, ly.end,
+      url,
+      token,
+      mineDept,
+      theirsDept,
+      mineId,
+      mineNo,
+      mineName,
+      theirsId,
+      theirsNo,
+      theirsName,
+      tw.start,
+      tw.end,
+      lw.start,
+      lw.end,
+      ly.start,
+      ly.end,
     ],
   );
 
@@ -428,7 +448,11 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
       dispatch(
         rememberInvestigation({
           key,
-          value: { sales: salesWave, orders: ordersWave, receipts: receiptsWave },
+          value: {
+            sales: salesWave,
+            orders: ordersWave,
+            receipts: receiptsWave,
+          },
         }),
       );
     })();

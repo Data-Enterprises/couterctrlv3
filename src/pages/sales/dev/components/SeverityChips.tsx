@@ -13,7 +13,12 @@ interface SeverityChipsProps {
 }
 
 /** The Critical / Watch / Healthy filter chips with their counts; clicking the active chip clears the filter. */
-const SeverityChips = ({ value, onChange, counts, large }: SeverityChipsProps) => (
+const SeverityChips = ({
+  value,
+  onChange,
+  counts,
+  large,
+}: SeverityChipsProps) => (
   <>
     {CHIPS.map((c) => (
       <button

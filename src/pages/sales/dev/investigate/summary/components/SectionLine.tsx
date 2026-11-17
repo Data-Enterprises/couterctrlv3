@@ -11,9 +11,20 @@ interface SectionLineProps {
 
 /** The line that starts a section of a list: what it is, how many items and
  *  what they come to. Clicking it folds the section. */
-const SectionLine = ({ label, count, amount, tone, open, onToggle }: SectionLineProps) => {
+const SectionLine = ({
+  label,
+  count,
+  amount,
+  tone,
+  open,
+  onToggle,
+}: SectionLineProps) => {
   const rule =
-    tone === "behind" ? "bg-red-500/50" : tone === "ahead" ? "bg-emerald-500/50" : "bg-ungraded/60";
+    tone === "behind"
+      ? "bg-red-500/50"
+      : tone === "ahead"
+        ? "bg-emerald-500/50"
+        : "bg-ungraded/60";
   return (
     <button
       type="button"
@@ -34,7 +45,8 @@ const SectionLine = ({ label, count, amount, tone, open, onToggle }: SectionLine
         <span className="text-[10px]">{open ? "▾" : "▸"}</span>
         <span>{label}</span>
         <span className="font-semibold normal-case tracking-normal tabular-nums">
-          | {count.toLocaleString("en-US")} {count === 1 ? "item" : "items"} | {amount}
+          | {count.toLocaleString("en-US")} {count === 1 ? "item" : "items"} |{" "}
+          {amount}
         </span>
       </span>
       <span className={`h-px flex-1 ${rule}`} />

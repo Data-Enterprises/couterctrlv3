@@ -76,10 +76,7 @@ const ItemCost = ({
         <span className="text-[12.5px] text-content truncate">
           Selling at
           {mix && mix.adPct >= 50 && (
-            <span className="text-[11px] text-content/95">
-              {" "}
-              (on ad)
-            </span>
+            <span className="text-[11px] text-content/95"> (on ad)</span>
           )}
         </span>
         <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
@@ -204,8 +201,8 @@ const ItemCost = ({
       </div>
       {grossProfit(selected.ty) === null && (
         <p className="text-[13px] text-content/95 mt-1 leading-snug">
-          Too few lines carried a cost to work out a margin worth
-          trusting, so the profit is withheld rather than guessed.
+          Too few lines carried a cost to work out a margin worth trusting, so
+          the profit is withheld rather than guessed.
         </p>
       )}
     </div>

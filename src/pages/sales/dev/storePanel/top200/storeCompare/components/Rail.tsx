@@ -2,7 +2,10 @@
 import { useState } from "react";
 
 // Utils
-import { CTA_SEVERITY_CLASSES, severityDotClass } from "../../../../../../../utils/severity";
+import {
+  CTA_SEVERITY_CLASSES,
+  severityDotClass,
+} from "../../../../../../../utils/severity";
 import { avgPrice } from "../../utils/topItems";
 import {
   amountTextOf,
@@ -81,10 +84,8 @@ const Rail = ({
       </span>
     </>
   );
-  const missingName =
-    row.only === "mine" ? compareStoreName : openStoreName;
+  const missingName = row.only === "mine" ? compareStoreName : openStoreName;
   const sold = absent?.stores?.[0] ?? null;
-
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -114,9 +115,13 @@ const Rail = ({
             {row.description}
           </span>
           {open ? (
-            <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+            <ChevronUpIcon
+              className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`}
+            />
           ) : (
-            <ChevronDownIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+            <ChevronDownIcon
+              className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`}
+            />
           )}
         </button>
 
@@ -153,9 +158,11 @@ const Rail = ({
                   </>
                 )}
                 {!absentLoading && absent && !sold && (
-                  <> — and they sold <b>none of it this week</b>.</>
-                )}
-                {" "}
+                  <>
+                    {" "}
+                    — and they sold <b>none of it this week</b>.
+                  </>
+                )}{" "}
                 A sales answer, not a shelf one: a slow mover can be stocked and
                 ring nothing in a week.
               </p>
@@ -164,8 +171,8 @@ const Rail = ({
             {row.unitsDisagree && (
               <p className={`text-[12.5px] leading-snug mt-1.5 ${cta.text}`}>
                 <b>These stores ring this code differently</b> — one on the
-                scale, one as a pack. The amounts are not comparable; sales
-                and share still are.
+                scale, one as a pack. The amounts are not comparable; sales and
+                share still are.
               </p>
             )}
           </div>
@@ -186,7 +193,9 @@ const Rail = ({
               Comparison
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
+              <span
+                className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`}
+              />
               <span className="truncate">{openStoreName}</span>
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
@@ -239,7 +248,9 @@ const Rail = ({
                 Price
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
+                <span
+                  className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`}
+                />
                 <span className="truncate">{openStoreName}</span>
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">

@@ -72,7 +72,14 @@ const PopupSubDeptList = ({
   }, [selectedSubDeptKey]);
 
   const { rows, coverage } = useMemo(
-    () => buildDeptRows(subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric),
+    () =>
+      buildDeptRows(
+        subSales,
+        subSalesWk2,
+        subSalesWk3,
+        threshold,
+        gradingMetric,
+      ),
     [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric],
   );
 

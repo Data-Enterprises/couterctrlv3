@@ -33,12 +33,23 @@ interface HandoffTabProps {
 /** The investigation's "who fixes it" tab: one list per person rather than one
  *  card per cause. The left card says how much has an owner and picks a
  *  person; the right card is that person's whole list, with its actions. */
-const HandoffTab = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: HandoffTabProps) => {
+const HandoffTab = ({
+  desks,
+  us,
+  them,
+  fmt,
+  onShow,
+  onExport,
+  onPickItem,
+}: HandoffTabProps) => {
   const lists = handoffOf(desks);
   const owners = lists.map((l) => l.owner);
   /** The list on show: the first person's until another is picked. */
   const [picked, setPicked] = useState<HandoffOwner | undefined>(undefined);
-  const selected = picked !== undefined && owners.includes(picked) ? picked : (owners[0] ?? null);
+  const selected =
+    picked !== undefined && owners.includes(picked)
+      ? picked
+      : (owners[0] ?? null);
 
   if (lists.length === 0)
     return (
@@ -56,7 +67,12 @@ const HandoffTab = ({ desks, us, them, fmt, onShow, onExport, onPickItem }: Hand
         style={{ gridTemplateColumns: "minmax(0,0.76fr) minmax(0,1fr)" }}
       >
         <div className="min-w-0 min-h-0 overflow-y-auto thin-scrollbar -m-1 p-1">
-          <HandoffFinding lists={lists} fmt={fmt} selected={selected} onSelect={setPicked} />
+          <HandoffFinding
+            lists={lists}
+            fmt={fmt}
+            selected={selected}
+            onSelect={setPicked}
+          />
         </div>
 
         <Carousel

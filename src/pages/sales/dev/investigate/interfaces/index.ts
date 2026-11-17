@@ -1,5 +1,9 @@
 // Interfaces
-import type { AllOrder, ReceiverItemSearchReceiver, SubDeptMargin } from "../../../../../interfaces";
+import type {
+  AllOrder,
+  ReceiverItemSearchReceiver,
+  SubDeptMargin,
+} from "../../../../../interfaces";
 import type { ReactNode } from "react";
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type {
@@ -71,7 +75,8 @@ export interface HandoffList {
 }
 
 /** The Supply tab's rows: which store, and orders or receipts. */
-export type SupplyKind = "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
+export type SupplyKind =
+  "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
 
 /** One Supply row and the documents its slide lists. */
 export interface SupplyRow {

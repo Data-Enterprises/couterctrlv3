@@ -265,10 +265,8 @@ export const metricSigned = (
  * this. Honest to sort on, not honest to print without the `≥` the caller
  * adds.
  */
-export const metricSize = (
-  r: ComparedTopItem,
-  metric: CompareMetric,
-): number => Math.abs(metricSigned(r, metric));
+export const metricSize = (r: ComparedTopItem, metric: CompareMetric): number =>
+  Math.abs(metricSigned(r, metric));
 
 /** The list's own order: furthest apart first, on whichever metric is shown.
  *  A column sort is a temporary lens over this, never a replacement. */
@@ -335,11 +333,18 @@ export const compareDeptOptions = (
  * `watch` is empty because this screen grades in two -- ahead or behind --
  * and an empty list is how the menu knows not to offer that line.
  */
-export const compareUpcs = (shown: ComparedTopItem[], metric: CompareMetric) => ({
+export const compareUpcs = (
+  shown: ComparedTopItem[],
+  metric: CompareMetric,
+) => ({
   all: shown.map((r) => r.code),
   bySeverity: {
-    critical: shown.filter((r) => metricSigned(r, metric) < 0).map((r) => r.code),
+    critical: shown
+      .filter((r) => metricSigned(r, metric) < 0)
+      .map((r) => r.code),
     watch: [],
-    healthy: shown.filter((r) => metricSigned(r, metric) >= 0).map((r) => r.code),
+    healthy: shown
+      .filter((r) => metricSigned(r, metric) >= 0)
+      .map((r) => r.code),
   },
 });

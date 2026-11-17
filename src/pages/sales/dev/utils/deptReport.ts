@@ -210,7 +210,11 @@ const FOCUS: Record<Finding, Focus> = {
 };
 
 const cash = (v: number) =>
-  "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "$" +
+  v.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 const whole = (v: number) => Math.round(v).toLocaleString("en-US");
 /**
  * A percentage, floored off 100 unless it really is everything.
@@ -262,7 +266,9 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
       name: "gap",
       state: d.mine >= d.theirs ? "pass" : "fail",
       label: "Sales gap",
-      value: (d.mine - d.theirs >= 0 ? "+" : "−") + cash(Math.abs(d.mine - d.theirs)),
+      value:
+        (d.mine - d.theirs >= 0 ? "+" : "−") +
+        cash(Math.abs(d.mine - d.theirs)),
     },
     {
       name: "sold",
@@ -295,9 +301,14 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
     // while these were a count in a footer — it is not, now that each one
     // gets a panel of its own to say it in.
     finding =
-      d.mine < d.theirs ? "a-little-less" : d.mine > d.theirs ? "ahead" : "level";
+      d.mine < d.theirs
+        ? "a-little-less"
+        : d.mine > d.theirs
+          ? "ahead"
+          : "level";
   } else if (soldOk) {
-    finding = rateGap !== null && rateGap <= -g.mix ? "different-mix" : "lower-price";
+    finding =
+      rateGap !== null && rateGap <= -g.mix ? "different-mix" : "lower-price";
   } else if (rateOk) {
     finding = "fewer-units";
   } else {
@@ -322,8 +333,11 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
         ? {
             lead: "Sold " + pct(unitGap ?? 0) + " fewer " + unit,
             tail:
-              ", " + whole(Math.abs(d.theirsUnits - d.mineUnits)) + " " +
-              unit + " behind.",
+              ", " +
+              whole(Math.abs(d.theirsUnits - d.mineUnits)) +
+              " " +
+              unit +
+              " behind.",
           }
         : finding === "lower-price"
           ? { lead: "Took " + cash(perUnit) + " less per " + one, tail: "." }
@@ -340,12 +354,12 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
                       ? ", on " + pct(unitGap) + " more " + unit + "."
                       : " on a higher take per " + one + ".",
                 }
-            : finding === "a-little-less"
-              ? {
-                  lead: "A little less of everything",
-                  tail: ", with nothing standing out.",
-                }
-              : { lead: "Level", tail: " with the other store." };
+              : finding === "a-little-less"
+                ? {
+                    lead: "A little less of everything",
+                    tail: ", with nothing standing out.",
+                  }
+                : { lead: "Level", tail: " with the other store." };
 
   const focus = FOCUS[finding];
   return { gates, finding, says, focus, cta: CTA[focus] };
@@ -459,9 +473,7 @@ export const buildReport = (
   const onlyMineTotal = onlyMine.reduce((t, r) => t + r.mine, 0);
   const onlyTheirsTotal = onlyTheirs.reduce((t, r) => t + r.theirs, 0);
 
-  const under = rows
-    .filter((r) => r.gap < 0)
-    .sort((a, b) => a.gap - b.gap);
+  const under = rows.filter((r) => r.gap < 0).sort((a, b) => a.gap - b.gap);
   const over = rows.filter((r) => r.gap >= 0).sort((a, b) => b.gap - a.gap);
 
   const underTotal = under.reduce((t, r) => t - r.gap, 0);

@@ -29,19 +29,21 @@ const TotalsStrip = ({
 }: TotalsStripProps) => (
   <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
     <div className="px-4 pt-2.5 pb-2 text-center">
-      <div className="text-[10px] cc-caps-strong">
-        Top 200 Sales
-      </div>
+      <div className="text-[10px] cc-caps-strong">Top 200 Sales</div>
       <div className="text-[10px] font-bold text-content mb-0.5">
-        {oneDay ? dayText(start) : <>{dayText(start)} &ndash; {dayText(end)}</>}
+        {oneDay ? (
+          dayText(start)
+        ) : (
+          <>
+            {dayText(start)} &ndash; {dayText(end)}
+          </>
+        )}
       </div>
       <div className="text-[14px] font-bold text-content tabular-nums">
         {moneyText(totals.ty)}
       </div>
       <div className="text-[11.5px] text-content/95 tabular-nums">
-        {share.ty === null
-          ? "—"
-          : `${share.ty.toFixed(1)}% of net sales`}
+        {share.ty === null ? "—" : `${share.ty.toFixed(1)}% of net sales`}
       </div>
     </div>
     {(
@@ -65,13 +67,17 @@ const TotalsStrip = ({
       ] as const
     ).map(([label, from, to, value, pct, gap]) => (
       <div key={label} className="px-4 pt-2.5 pb-2 text-center">
-        <div className="text-[10px] cc-caps-strong">
-          {label}
-        </div>
+        <div className="text-[10px] cc-caps-strong">{label}</div>
         {/* A picked day is one date, as Top 200 Sales shows it,
             not that date written as a range to itself. */}
         <div className="text-[10px] font-bold text-content mb-0.5">
-          {oneDay ? dayText(from) : <>{dayText(from)} &ndash; {dayText(to)}</>}
+          {oneDay ? (
+            dayText(from)
+          ) : (
+            <>
+              {dayText(from)} &ndash; {dayText(to)}
+            </>
+          )}
         </div>
         <div className="flex items-baseline justify-center gap-2">
           <span className="text-[14px] font-bold text-content tabular-nums">

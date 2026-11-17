@@ -47,10 +47,22 @@ export const weeksSay = (
   const change = now - was;
   const base =
     change > was * STEADY
-      ? { tone: "worse" as const, lead: "Getting worse.", rest: `${fmt(change)} further behind than last week` }
+      ? {
+          tone: "worse" as const,
+          lead: "Getting worse.",
+          rest: `${fmt(change)} further behind than last week`,
+        }
       : change < -was * STEADY
-        ? { tone: "better" as const, lead: "Getting better.", rest: `${fmt(-change)} less behind than last week` }
-        : { tone: "steady" as const, lead: "A standing difference.", rest: "About the same as last week" };
+        ? {
+            tone: "better" as const,
+            lead: "Getting better.",
+            rest: `${fmt(-change)} less behind than last week`,
+          }
+        : {
+            tone: "steady" as const,
+            lead: "A standing difference.",
+            rest: "About the same as last week",
+          };
 
   const r = ly < 0 ? now / Math.abs(ly) : null;
   const lastYear =

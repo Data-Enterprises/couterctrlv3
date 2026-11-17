@@ -39,7 +39,11 @@ interface ItemReportProps {
 /** The picked item's report, scrolling as one: who it is, how retail sold it,
  *  its cost, what it costs to buy, whether it is new to the list, whether it
  *  belongs on display, and the way into its invoices. */
-const ItemReport = ({ ranked, periodLabel, setInvoicesOpen }: ItemReportProps) => {
+const ItemReport = ({
+  ranked,
+  periodLabel,
+  setInvoicesOpen,
+}: ItemReportProps) => {
   const { topItemsLW, topItemsLY } = useSalesCtx();
   const { detail, detailLoading } = useTop200View();
   const { selected, points } = useSelectedItem(ranked);

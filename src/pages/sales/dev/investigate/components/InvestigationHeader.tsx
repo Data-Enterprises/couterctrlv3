@@ -96,9 +96,7 @@ const InvestigationHeader = ({
           onClick={onExport}
           disabled={empty}
           title={
-            empty
-              ? "Nothing to export yet"
-              : "Every filtered row, as a CSV"
+            empty ? "Nothing to export yet" : "Every filtered row, as a CSV"
           }
           aria-label="Export CSV"
           className="flex-shrink-0 text-custom-white hover:text-custom-white/80 disabled:opacity-40 disabled:hover:text-custom-white transition-colors rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"

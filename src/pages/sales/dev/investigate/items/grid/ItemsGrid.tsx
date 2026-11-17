@@ -85,9 +85,7 @@ const ItemsGrid = ({
               ))}
             </tbody>
 
-            {capped.length > 0 && (
-              <GridFoot shown={filters.shown} fmt={fmt} />
-            )}
+            {capped.length > 0 && <GridFoot shown={filters.shown} fmt={fmt} />}
           </table>
 
           {capped.length === 0 && stage !== "sales" && (

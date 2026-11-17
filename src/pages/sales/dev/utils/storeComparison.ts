@@ -235,9 +235,7 @@ export const verdictOf = (
 const medianOf = (sorted: number[]): number | null => {
   if (!sorted.length) return null;
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
 /**
@@ -305,62 +303,63 @@ export const compareStores = (
     order.forEach((g, i) => rankByStore.set(g.row.storeid, i + 1));
   }
 
-  const out: ComparisonRow[] = graded.map(({ row, basis, excluded, ty, ly, lw }) => {
-    const comparable = excluded === null && groupTy > 0;
+  const out: ComparisonRow[] = graded.map(
+    ({ row, basis, excluded, ty, ly, lw }) => {
+      const comparable = excluded === null && groupTy > 0;
 
-    const shareTy = comparable ? ty / groupTy : null;
-    const shareLy = comparable && groupLy > 0 ? ly / groupLy : null;
-    const shareLw = comparable && groupLw > 0 ? lw / groupLw : null;
-    // The share its own basis says it usually holds.
-    const usualShare = basis === "LY" ? shareLy : basis === "LW" ? shareLw : null;
+      const shareTy = comparable ? ty / groupTy : null;
+      const shareLy = comparable && groupLy > 0 ? ly / groupLy : null;
+      const shareLw = comparable && groupLw > 0 ? lw / groupLw : null;
+      // The share its own basis says it usually holds.
+      const usualShare =
+        basis === "LY" ? shareLy : basis === "LW" ? shareLw : null;
 
-    const expected = usualShare !== null ? groupTy * usualShare : null;
-    const gapValue = expected !== null ? ty - expected : null;
-    const gapPct =
-      expected !== null && expected > 0 && gapValue !== null
-        ? (gapValue / expected) * 100
-        : null;
+      const expected = usualShare !== null ? groupTy * usualShare : null;
+      const gapValue = expected !== null ? ty - expected : null;
+      const gapPct =
+        expected !== null && expected > 0 && gapValue !== null
+          ? (gapValue / expected) * 100
+          : null;
 
-    // Its own movement on the same basis — against last year, or last week
-    // when that is what it is being measured by.
-    const ownPct = basisPct(basis, row.vsLWPct, row.vsLYPct);
+      // Its own movement on the same basis — against last year, or last week
+      // when that is what it is being measured by.
+      const ownPct = basisPct(basis, row.vsLWPct, row.vsLYPct);
 
-    return {
-      storeid: row.storeid,
-      storeName: row.store_name,
-      storeNumber: row.store_number,
-      storeNumbersForId: row.storeNumbersForId,
-      ty,
-      lw,
-      ly,
-      shareTy,
-      shareLw,
-      shareLy,
-      usualShare,
-      basis,
-      expected,
-      gapValue,
-      gapPct,
-      ownPct,
-      ownLwPct: row.vsLWPct,
-      ownLyPct: row.vsLYPct,
-      hasLW: row.hasLW,
-      hasLY: row.hasLY,
-      dayCount: row.dayCount,
-      lwDayCount: row.lwDayCount,
-      lyDayCount: row.lyDayCount,
-      rank: rankByStore.get(row.storeid) ?? null,
-      verdict: verdictOf(gapPct, ownPct ?? 0, bands),
-      excluded,
-    };
-  });
+      return {
+        storeid: row.storeid,
+        storeName: row.store_name,
+        storeNumber: row.store_number,
+        storeNumbersForId: row.storeNumbersForId,
+        ty,
+        lw,
+        ly,
+        shareTy,
+        shareLw,
+        shareLy,
+        usualShare,
+        basis,
+        expected,
+        gapValue,
+        gapPct,
+        ownPct,
+        ownLwPct: row.vsLWPct,
+        ownLyPct: row.vsLYPct,
+        hasLW: row.hasLW,
+        hasLY: row.hasLY,
+        dayCount: row.dayCount,
+        lwDayCount: row.lwDayCount,
+        lyDayCount: row.lyDayCount,
+        rank: rankByStore.get(row.storeid) ?? null,
+        verdict: verdictOf(gapPct, ownPct ?? 0, bands),
+        excluded,
+      };
+    },
+  );
 
   const tys = counted.map((g) => g.ty).sort((a, b) => a - b);
   const verdicts = out.map((r) => r.verdict);
 
-  const shortfalls = out.filter(
-    (r) => r.gapValue !== null && r.gapValue < 0,
-  );
+  const shortfalls = out.filter((r) => r.gapValue !== null && r.gapValue < 0);
   const biggestShortfall = shortfalls.length
     ? shortfalls.reduce((worst, r) =>
         (r.gapValue as number) < (worst.gapValue as number) ? r : worst,
