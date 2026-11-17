@@ -2,6 +2,7 @@
 import { shallowEqual } from "react-redux";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
@@ -12,6 +13,9 @@ import {
   setItemReportActual,
   setItemReportInvoiceLines,
   setItemReportInvoiceError,
+  setPendingUpload,
+  setPendingUpcText,
+  addPendingUpcs,
 } from "../../../../features/dev/devItemReportSlice";
 
 // Utils
@@ -30,6 +34,7 @@ import {
 import { buildPriceEras } from "../utils/priceEras";
 import { buildReport, buildRollup } from "../utils/report";
 import { verdictFor } from "../utils/verdict";
+import { parseUpload } from "../utils/parseUpload";
 
 // Interfaces
 import type {
@@ -435,4 +440,78 @@ export const useItemRegisters = (
   };
 
   return { selectRow, selectedActual, openPrice };
+};
+
+/**
+ * The entry card's UPC list: a pasted box adds to the pending list (and says
+ * what it skipped), and a CSV replaces it with its codes and department
+ * column.
+ */
+export const useUpcEntry = () => {
+  const dispatch = useAppDispatch();
+  const toast = useToast();
+  const { pendingUpcText: upcText } = useItemReportCtx();
+
+  const handleParseText = () => {
+    const parsed = parseUpload(upcText);
+
+    // Both of these used to return in silence, which read as the button doing
+    // nothing at all. Commas are the separator the box advertises, so a paste
+    // that came in spaces or semicolons is the likely cause of either.
+    if (parsed.upcs.length === 0) {
+      toast.warn("No UPCs found — separate codes with commas");
+      return;
+    }
+    if (parsed.skippedLines > 0) {
+      const n = parsed.skippedLines;
+      toast.warn(
+        `Added ${parsed.upcs.length}, skipped ${n} line${n === 1 ? "" : "s"} — separate codes with commas`,
+      );
+    }
+    if (parsed.tooShort.length > 0) {
+      const shown = parsed.tooShort.slice(0, 5).join(", ");
+      const more =
+        parsed.tooShort.length > 5
+          ? ` and ${parsed.tooShort.length - 5} more`
+          : "";
+      toast.warn(
+        `Added ${parsed.upcs.length}; left out ${shown}${more} — too short to be a UPC`,
+      );
+    }
+
+    dispatch(addPendingUpcs(parsed.upcs));
+    dispatch(setPendingUpcText(""));
+  };
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const parsed = parseUpload(String(ev.target?.result ?? ""));
+      // A file that yields nothing is worth saying out loud — silence here
+      // looks like the upload itself failed. Skipped lines aren't reported for
+      // a file: an exported report is mostly headers and totals rows, so a
+      // count of them would be noise rather than a problem.
+      if (parsed.upcs.length === 0) {
+        toast.warn(`No UPCs found in ${file.name}`);
+        return;
+      }
+      // A CSV replaces rather than merges: it carries the department column that
+      // narrows the fan-out, and merging two files' departments would widen the
+      // read back out without saying so.
+      dispatch(
+        setPendingUpload({
+          upcs: parsed.upcs,
+          departments: parsed.departments,
+          fileName: file.name,
+        }),
+      );
+    };
+    reader.readAsText(file);
+    // Cleared so re-picking the same file still fires.
+    e.target.value = "";
+  };
+
+  return { handleParseText, handleCsvUpload };
 };
