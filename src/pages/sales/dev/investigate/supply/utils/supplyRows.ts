@@ -1,9 +1,9 @@
 // Utils
-import { onDay } from ".";
+import { onDay } from "../../utils";
 
 // Interfaces
-import type { SupplyKind, SupplyRow } from "../interfaces";
-import type { Supply } from "./investigationSteps";
+import type { SupplyKind, SupplyRow } from "../../interfaces";
+import type { Supply } from "../../utils/investigationSteps";
 
 /** The Supply tab's rows, in the order they are listed. */
 export const SUPPLY_ORDER: SupplyKind[] = [

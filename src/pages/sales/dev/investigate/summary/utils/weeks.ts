@@ -1,5 +1,5 @@
 // Interfaces
-import type { WeeksVerdict } from "../interfaces";
+import type { WeeksVerdict } from "../../interfaces";
 
 /** How many times as wide, in words where words read better. */
 const times = (r: number) =>
