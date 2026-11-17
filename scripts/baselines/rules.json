@@ -638,8 +638,7 @@
     "shape-named-export": 1
   },
   "src/pages/exportBuilder/dev/components/SourcePicker.tsx": {
-    "labels": 1,
-    "selector-outside-hook": 1
+    "labels": 1
   },
   "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
     "labels": 1

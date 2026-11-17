@@ -1,5 +1,6 @@
 import { useRef, type KeyboardEvent } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useSearchSource } from "../hooks";
 import { setSearchSource } from "../../../../features/dev/devExportBuilderSlice";
 import { SOURCES } from "../utils/sources";
 
@@ -22,7 +23,7 @@ import { SOURCES } from "../utils/sources";
  */
 const SourcePicker = () => {
   const dispatch = useAppDispatch();
-  const picked = useAppSelector((s) => s.dev.exportBuilder.searchSource);
+  const picked = useSearchSource();
   const rows = useRef<(HTMLButtonElement | null)[]>([]);
 
   const pick = (index: number) => {

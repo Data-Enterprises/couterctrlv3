@@ -1092,3 +1092,8 @@ export const useExportBuilderCtx = () => {
     build,
   };
 };
+
+/** The table the search card is set to, read on its own so the picker does not
+ *  run the whole page context. */
+export const useSearchSource = () =>
+  useAppSelector((s) => s.dev.exportBuilder.searchSource);
