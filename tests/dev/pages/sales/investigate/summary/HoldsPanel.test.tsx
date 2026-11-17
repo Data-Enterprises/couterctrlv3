@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import HoldsPanel from "@/pages/sales/dev/investigate/components/HoldsPanel";
+import HoldsPanel from "@/pages/sales/dev/investigate/summary/HoldsPanel";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { rowsOf } from "@/pages/sales/dev/investigate/utils/holdsRows";
 import { summarise } from "@/pages/sales/dev/investigate/utils/investigationFacts";
