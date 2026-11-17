@@ -2,7 +2,7 @@
 import { AGG_OPTIONS, ITEM_METRICS } from "../utils";
 
 // Interfaces
-import type { AggFn } from "../../../../../utils/csvExport";
+import type { AggFn } from "../../../../../../utils/csvExport";
 import type { MetricSelection } from "../interfaces";
 
 interface MetricsPickerProps {

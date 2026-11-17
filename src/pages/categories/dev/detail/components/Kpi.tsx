@@ -1,5 +1,5 @@
 // Utils
-import { comparisonPillClass, formatPct } from "../../../../utils/severity";
+import { comparisonPillClass, formatPct } from "../../../../../utils/severity";
 
 interface KpiProps {
   title: string;

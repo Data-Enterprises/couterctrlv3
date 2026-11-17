@@ -2,7 +2,7 @@
 import { memo, useCallback } from "react";
 
 // Utils
-import { PCT_COL_W } from "../../../../utils/severity";
+import { PCT_COL_W } from "../../../../../utils/severity";
 
 interface CategoryRowProps {
   category: number;

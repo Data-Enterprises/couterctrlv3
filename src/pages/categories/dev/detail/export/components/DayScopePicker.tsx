@@ -1,5 +1,5 @@
 // Utils
-import { fmtDayLabel } from "../../../../../utils/dateLabels";
+import { fmtDayLabel } from "../../../../../../utils/dateLabels";
 
 interface DayScopePickerProps {
   weekDates: string[];

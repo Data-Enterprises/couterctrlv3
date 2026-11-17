@@ -5,7 +5,7 @@ import { useCategoryExport } from "./hooks";
 import type { CategoryExportProps } from "./interfaces";
 
 // Components
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
 import ExportModalHeader from "./components/ExportModalHeader";
 import DayScopePicker from "./components/DayScopePicker";
 import PresetOption from "./components/PresetOption";

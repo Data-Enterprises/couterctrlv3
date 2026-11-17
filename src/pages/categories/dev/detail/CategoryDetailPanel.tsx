@@ -47,10 +47,10 @@ import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import DayCardStrip from "../../../../components-dev/DayCardStrip";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import CategoryExportModal from "../export/CategoryExportModal";
-import CategoryItemsTable from "./CategoryItemsTable";
-import Kpi from "./Kpi";
-import Stat from "./Stat";
+import CategoryExportModal from "./export/CategoryExportModal";
+import CategoryItemsTable from "./components/CategoryItemsTable";
+import Kpi from "./components/Kpi";
+import Stat from "./components/Stat";
 
 interface CategoryDetailPanelProps {
   onLoadHourly: () => void;

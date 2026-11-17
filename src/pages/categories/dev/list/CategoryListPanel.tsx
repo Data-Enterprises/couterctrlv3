@@ -56,7 +56,7 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import SortHeader from "../../../../components-dev/SortHeader";
-import CategoryRow from "./CategoryRow";
+import CategoryRow from "./components/CategoryRow";
 
 interface CategoryListPanelProps {
   onSearchOpen: () => void;

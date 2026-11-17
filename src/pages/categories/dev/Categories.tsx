@@ -9,8 +9,8 @@ import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
 import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
 import SearchPopup from "../../../components-dev/SearchPopup";
-import CategoryListPanel from "./components/CategoryListPanel";
-import CategoryDetailPanel from "./components/CategoryDetailPanel";
+import CategoryListPanel from "./list/CategoryListPanel";
+import CategoryDetailPanel from "./detail/CategoryDetailPanel";
 
 /**
  * Categories — Performance.
