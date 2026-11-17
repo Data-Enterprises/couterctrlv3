@@ -6,11 +6,11 @@ import type { CategoryExportProps } from "./interfaces";
 
 // Components
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import ExportModalHeader from "./components/ExportModalHeader";
+import ExportModalHeader from "../../../../../components-dev/modals/ExportModalHeader";
 import DayScopePicker from "./components/DayScopePicker";
 import PresetOption from "./components/PresetOption";
 import GradedItemsOption from "./components/GradedItemsOption";
-import ExportFooter from "./components/ExportFooter";
+import ExportFooter from "../../../../../components-dev/modals/ExportFooter";
 import SourcePicker from "./components/SourcePicker";
 import GroupByPicker from "./components/GroupByPicker";
 import MetricsPicker from "./components/MetricsPicker";
@@ -37,8 +37,7 @@ const CategoryExportModal = (props: CategoryExportProps) => {
       defaultHeight={960}
     >
       <ExportModalHeader
-        categoryName={categoryName}
-        storeName={storeName}
+        subtitle={`${categoryName} · ${storeName}`}
         mode={x.mode}
         onMode={x.setMode}
         onClose={onClose}
@@ -91,7 +90,7 @@ const CategoryExportModal = (props: CategoryExportProps) => {
             onCancel={onClose}
             onDownload={x.handlePresetDownload}
             disabled={x.selected.size === 0}
-            className="mt-2"
+            spaced
           />
         </>
       )}

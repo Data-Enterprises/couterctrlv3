@@ -19,11 +19,11 @@ import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
 
 // Components
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import ExportModalHeader from "./components/ExportModalHeader";
+import ExportModalHeader from "../../../../components-dev/modals/ExportModalHeader";
 import PresetChoices from "./components/PresetChoices";
 import CustomConfig from "./components/CustomConfig";
 import AggPreview from "./components/AggPreview";
-import ExportFooter from "./components/ExportFooter";
+import ExportFooter from "../../../../components-dev/modals/ExportFooter";
 
 interface CashiersExportModalProps {
   onClose: () => void;
@@ -123,7 +123,7 @@ const CashiersExportModal = ({
       <ExportModalHeader
         subtitle={`${scopeLabel} — ${exception} · ${dateRange}`}
         mode={mode}
-        setMode={setMode}
+        onMode={setMode}
         onClose={onClose}
       />
 
@@ -152,7 +152,7 @@ const CashiersExportModal = ({
           />
           <ExportFooter
             spaced
-            canDownload={selected.size > 0}
+            disabled={selected.size === 0}
             onCancel={onClose}
             onDownload={handlePresetDownload}
           />
@@ -173,7 +173,7 @@ const CashiersExportModal = ({
             <AggPreview columns={columns} rows={aggRows} />
           </div>
           <ExportFooter
-            canDownload={columns.length > 0}
+            disabled={columns.length === 0}
             onCancel={onClose}
             onDownload={handleCustomDownload}
           />

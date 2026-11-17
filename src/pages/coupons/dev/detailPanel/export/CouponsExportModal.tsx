@@ -12,12 +12,12 @@ import type { CouponItem } from "../../../../../interfaces";
 
 // Components
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import ExportModalHeader from "./components/ExportModalHeader";
+import ExportModalHeader from "../../../../../components-dev/modals/ExportModalHeader";
 import StoreFilter from "./components/StoreFilter";
 import RecordsChoice from "./components/RecordsChoice";
 import CustomFields from "./components/CustomFields";
 import AggPreview from "./components/AggPreview";
-import ExportFooter from "./components/ExportFooter";
+import ExportFooter from "../../../../../components-dev/modals/ExportFooter";
 
 interface CouponsExportModalProps {
   onClose: () => void;
@@ -91,7 +91,7 @@ const CouponsExportModal = ({
       <ExportModalHeader
         subtitle={subtitle}
         mode={mode}
-        setMode={setMode}
+        onMode={setMode}
         onClose={onClose}
       />
 
@@ -110,7 +110,7 @@ const CouponsExportModal = ({
           </div>
           <ExportFooter
             spaced
-            canDownload={filteredRows.length > 0}
+            disabled={filteredRows.length === 0}
             onCancel={onClose}
             onDownload={handlePresetDownload}
           />
@@ -139,7 +139,7 @@ const CouponsExportModal = ({
             <AggPreview columns={columns} rows={aggRows} />
           </div>
           <ExportFooter
-            canDownload={columns.length > 0 && aggRows.length > 0}
+            disabled={!columns.length || !aggRows.length}
             onCancel={onClose}
             onDownload={handleCustomDownload}
           />

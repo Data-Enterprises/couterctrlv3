@@ -37,13 +37,13 @@ import type { ExportDataset, ItemSev, ModalMode } from "./interfaces/index";
 
 // Components
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
-import ExportModalHeader from "./components/ExportModalHeader";
+import ExportModalHeader from "../../../../../components-dev/modals/ExportModalHeader";
 import PresetOption from "./components/PresetOption";
 import ItemsSoldDates from "./components/ItemsSoldDates";
 import FinancialsOptions from "./components/FinancialsOptions";
 import FinancialsStorePicker from "./components/FinancialsStorePicker";
 import SubDeptItemsOption from "./components/SubDeptItemsOption";
-import ExportFooter from "./components/ExportFooter";
+import ExportFooter from "../../../../../components-dev/modals/ExportFooter";
 import DataSourcePicker from "./components/DataSourcePicker";
 import GroupByPicker from "./components/GroupByPicker";
 import MetricsPicker from "./components/MetricsPicker";
@@ -367,9 +367,9 @@ const SalesExportModal = ({
     >
       {/* Header */}
       <ExportModalHeader
-        storeName={storeName}
+        subtitle={storeName}
         mode={mode}
-        onModeChange={setMode}
+        onMode={setMode}
         onClose={onClose}
       />
 
@@ -516,7 +516,6 @@ const SalesExportModal = ({
             onCancel={onClose}
             onDownload={handleCustomDownload}
             disabled={!canCustomDownload}
-            label="Download CSV"
           />
         </>
       )}

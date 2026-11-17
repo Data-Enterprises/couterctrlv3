@@ -1,35 +1,40 @@
 // Interfaces
-import type { ModalMode } from "../../../interfaces";
+import type { ExportMode } from "../interfaces";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
 
 interface ExportModalHeaderProps {
+  /** What is being exported, in a line. */
   subtitle: string;
-  mode: ModalMode;
-  setMode: (mode: ModalMode) => void;
+  mode: ExportMode;
+  onMode: (mode: ExportMode) => void;
   onClose: () => void;
 }
 
-/** The export pop-up's title bar: what is being exported, Presets or Custom,
- *  and close. */
+/** An export pop-up's navy title bar: what is being exported, the Presets /
+ *  Custom switch and close. */
 const ExportModalHeader = ({
   subtitle,
   mode,
-  setMode,
+  onMode,
   onClose,
 }: ExportModalHeaderProps) => (
   <div className="cc-phone-header">
-    <div>
+    <div className="min-w-0">
       <p className="cc-navy-title text-[13px]">Export CSV</p>
-      <p className="text-custom-white/95 text-[10px] mt-0.5">{subtitle}</p>
+      <p className="text-custom-white text-[10px] mt-0.5 truncate">
+        {subtitle}
+      </p>
     </div>
     <div className="cc-segment-navy">
-      {(["presets", "custom"] as ModalMode[]).map((m) => (
+      {(["presets", "custom"] as ExportMode[]).map((m) => (
         <button
           key={m}
-          onClick={() => setMode(m)}
-          className={`cc-chip-btn text-[11px] ${mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/95 hover:text-custom-white"}`}
+          onClick={() => onMode(m)}
+          className={`cc-chip-btn text-[11px] ${
+            mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
+          }`}
         >
           {m === "presets" ? "Presets" : "Custom"}
         </button>

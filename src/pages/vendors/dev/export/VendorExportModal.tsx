@@ -6,7 +6,7 @@ import type { VendorExportProps } from "./interfaces";
 
 // Components
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import ExportModalHeader from "./components/ExportModalHeader";
+import ExportModalHeader from "../../../../components-dev/modals/ExportModalHeader";
 import DayPills from "./components/DayPills";
 import PresetOption from "./components/PresetOption";
 import GradedOption from "./components/GradedOption";
@@ -15,7 +15,7 @@ import SourcePicker from "./components/SourcePicker";
 import GroupByPicker from "./components/GroupByPicker";
 import MetricsPicker from "./components/MetricsPicker";
 import CustomPreview from "./components/CustomPreview";
-import ExportFooter from "./components/ExportFooter";
+import ExportFooter from "../../../../components-dev/modals/ExportFooter";
 
 /**
  * CSV export for Vendors.
@@ -46,8 +46,7 @@ const VendorExportModal = (props: VendorExportProps) => {
       defaultHeight={960}
     >
       <ExportModalHeader
-        vendorName={vendorName}
-        storeName={storeName}
+        subtitle={`${vendorName} · ${storeName}`}
         mode={x.mode}
         onMode={x.setMode}
         onClose={onClose}
@@ -131,7 +130,7 @@ const VendorExportModal = (props: VendorExportProps) => {
             onCancel={onClose}
             onDownload={x.handlePresetDownload}
             disabled={x.selected.size === 0}
-            className="mt-2"
+            spaced
           />
         </>
       )}

@@ -82,3 +82,6 @@ export interface SeverityUpcs {
   watch: string[];
   healthy: string[];
 }
+
+/** An export pop-up's two modes: ready-made datasets, or a grouping of the user's own. */
+export type ExportMode = "presets" | "custom";
