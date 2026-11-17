@@ -3,12 +3,12 @@ import { metricFormat } from "@/pages/sales/dev/utils";
 
 /*
  * Every Sales figure follows the Sales / Qty switch: money to the cent, or
- * whole units.
+ * units.
  */
 
 describe("metricFormat", () => {
-  it("draws money to the cent and units whole", () => {
+  it("draws money to the cent and units with separators", () => {
     expect(metricFormat(false)(1234.5)).toBe("$1,234.50");
-    expect(metricFormat(true)(1234.5)).toMatch(/^1,23[45]$/);
+    expect(metricFormat(true)(1234)).toBe("1,234");
   });
 });

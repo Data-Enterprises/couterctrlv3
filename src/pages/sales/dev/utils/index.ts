@@ -31,7 +31,7 @@ const NEUTRAL_CTA = {
 export const ctaClasses = (sev: Severity | null) =>
   sev ? CTA_SEVERITY_CLASSES[sev] : NEUTRAL_CTA;
 
-/** A figure in the page's metric: whole units, or money to the cent. */
+/** A figure in the page's metric: units, or money to the cent. */
 export const metricFormat = (isQty: boolean) => (v: number) =>
   isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
 
