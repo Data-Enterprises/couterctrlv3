@@ -15,7 +15,7 @@ import { dayDiff, MAX_RANGE_DAYS } from "./utils";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import CashiersExportModal from "./components/CashiersExportModal";
+import CashiersExportModal from "./exportModal/CashiersExportModal";
 import CashiersHeader from "./components/CashiersHeader";
 import ExplorerKpiStrip from "./components/ExplorerKpiStrip";
 import ExplorerSearch from "./components/ExplorerSearch";
