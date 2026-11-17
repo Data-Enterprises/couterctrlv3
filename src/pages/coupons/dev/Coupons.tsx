@@ -2,6 +2,12 @@
 import { useState } from "react";
 import { useCouponContext, useCouponSearch } from "./hooks";
 
+// Redux
+import {
+  setCouponSelectedKey,
+  setCouponSortMetric,
+} from "../../../features/dev/devCouponSlice";
+
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -14,10 +20,13 @@ import CouponDetailPanel from "./detailPanel/CouponDetailPanel";
  *  beside the detail panel. Phones get the mobile screens instead. */
 const Coupons = () => {
   const context = useCouponContext();
-  const [selectedKey, setSelectedKey] = useState<string>("");
-  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
   const [searchModalOpen, setSearchModalOpen] = useState<boolean>(false);
   const { runSearch } = useCouponSearch(context);
+
+  // The picked store and the sort live in the slice, so coming back to the
+  // page lands where it was left; a new search starts from all stores.
+  const setSelectedKey = (key: string) =>
+    context.dispatch(setCouponSelectedKey(key));
 
   const getData = () => {
     setSelectedKey("");
@@ -77,13 +86,16 @@ const Coupons = () => {
         </SearchPopup>
       )}
       <CouponListPanel
-        selectedKey={selectedKey}
+        selectedKey={context.selectedKey}
         onSelect={setSelectedKey}
-        sortMetric={sortMetric}
-        onSortMetric={setSortMetric}
+        sortMetric={context.sortMetric}
+        onSortMetric={(m) => context.dispatch(setCouponSortMetric(m))}
         onOpenSearch={() => setSearchModalOpen(true)}
       />
-      <CouponDetailPanel selectedKey={selectedKey} sortMetric={sortMetric} />
+      <CouponDetailPanel
+        selectedKey={context.selectedKey}
+        sortMetric={context.sortMetric}
+      />
     </div>
   );
 };

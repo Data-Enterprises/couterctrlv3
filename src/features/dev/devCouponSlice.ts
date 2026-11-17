@@ -20,6 +20,28 @@ export interface CouponGridFilters {
 
 const noGridFilters: CouponGridFilters = { upc: "", product: "", subDept: "", amount: null };
 
+/** What the coupon lists sort by, desktop and phone alike. */
+export type CouponSortMetric = "amount" | "qty";
+
+/** Where the phone is: its screen, the store picked (null is every store in a
+ *  group), the grouping tab and the section open. */
+export interface CouponMobilePlace {
+  screen: "entry" | "stores" | "overview" | "detail";
+  storeId: number | null;
+  /** Co-located stores share a storeid; the number picks the location. */
+  storeNumber: string | null;
+  tab: "subdept" | "date" | "cashier";
+  section: { key: string; label: string } | null;
+}
+
+const mobileStart: CouponMobilePlace = {
+  screen: "entry",
+  storeId: null,
+  storeNumber: null,
+  tab: "subdept",
+  section: null,
+};
+
 export type FilterType =
   | "Store"
   | "CpnAmount"
@@ -61,6 +83,10 @@ interface CouponState {
   receiptLines: TransactionListItem[];
   /** Kept when the page is left; a new search clears them. */
   gridFilters: CouponGridFilters;
+  /** The desktop list's picked store, `storeid__store_number`; "" is all. */
+  selectedKey: string;
+  sortMetric: CouponSortMetric;
+  mobile: CouponMobilePlace;
 }
 
 const initialState: CouponState = {
@@ -86,6 +112,9 @@ const initialState: CouponState = {
   showSubsMobileFilter: false,
   receiptLines: [],
   gridFilters: noGridFilters,
+  selectedKey: "",
+  sortMetric: "amount",
+  mobile: mobileStart,
 };
 
 const couponSlice = createSlice({
@@ -275,6 +304,21 @@ const couponSlice = createSlice({
     setShowSubsMobileFilter: (state, action: PayloadAction<boolean>) => {
       state.showSubsMobileFilter = action.payload;
     },
+    setCouponSelectedKey: (state, action: PayloadAction<string>) => {
+      state.selectedKey = action.payload;
+    },
+    setCouponSortMetric: (state, action: PayloadAction<CouponSortMetric>) => {
+      state.sortMetric = action.payload;
+    },
+    setCouponMobilePlace: (
+      state,
+      action: PayloadAction<Partial<CouponMobilePlace>>,
+    ) => {
+      state.mobile = { ...state.mobile, ...action.payload };
+    },
+    resetCouponMobilePlace: (state) => {
+      state.mobile = mobileStart;
+    },
     resetCouponsSlice: () => initialState,
   },
 });
@@ -293,6 +337,10 @@ export const {
   setThresh,
   setNoCouponsFound,
   resetCouponsSlice,
+  setCouponSelectedKey,
+  setCouponSortMetric,
+  setCouponMobilePlace,
+  resetCouponMobilePlace,
   setCouponMobileStage,
   setUniqueCpnDates,
   setUniqueSubDepts,

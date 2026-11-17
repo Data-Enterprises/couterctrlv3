@@ -1,10 +1,16 @@
 // Hooks
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppDispatch, useSearchPick } from "../../../../hooks";
 import { useCouponContext, useCouponActions, useCouponSearch } from "../hooks";
 
 // Redux
 import { isGroupSearch } from "../../../../features/searchSlice";
+import {
+  resetCouponMobilePlace,
+  setCouponMobilePlace,
+  setCouponSortMetric,
+  type CouponMobilePlace,
+} from "../../../../features/dev/devCouponSlice";
 
 // Utils
 import { resolveStoreName } from "../../../../utils";
@@ -35,19 +41,22 @@ const CouponsMobile = () => {
     selectedGroupStores: groupStores,
   } = ctx;
 
-  const [screen, setScreen] = useState<Screen>("entry");
-  // null in group mode means "All stores" — the whole group, unscoped.
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
-  // Co-located stores share a storeid — the number is what picks the location.
-  const [selectedStoreNumber, setSelectedStoreNumber] = useState<string | null>(
-    null,
-  );
-  const [selectedTab, setSelectedTab] = useState<GroupTab>("subdept");
-  const [selectedSection, setSelectedSection] = useState<{
-    key: string;
-    label: string;
-  } | null>(null);
-  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
+  // Where the phone is lives in the slice, so leaving the page and coming back
+  // lands on the same screen. With nothing loaded it is always the search card.
+  const {
+    storeId: selectedStoreId,
+    storeNumber: selectedStoreNumber,
+    tab: selectedTab,
+    section: selectedSection,
+  } = ctx.mobile;
+  const screen: Screen = ctx.coupons.length === 0 ? "entry" : ctx.mobile.screen;
+  const place = (p: Partial<CouponMobilePlace>) =>
+    dispatch(setCouponMobilePlace(p));
+  const setScreen = (next: Screen) => place({ screen: next });
+  const setSelectedTab = (tab: GroupTab) => place({ tab });
+  const sortMetric = ctx.sortMetric;
+  const setSortMetric = (m: "amount" | "qty") =>
+    dispatch(setCouponSortMetric(m));
   const { runSearch } = useCouponSearch(ctx);
 
   useEffect(() => {
@@ -69,11 +78,7 @@ const CouponsMobile = () => {
 
   const handleReset = () => {
     dispatch(actions.resetCoupons());
-    setScreen("entry");
-    setSelectedStoreId(null);
-    setSelectedStoreNumber(null);
-    setSelectedSection(null);
-    setSelectedTab("subdept");
+    dispatch(resetCouponMobilePlace());
   };
 
   const filteredCoupons = useMemo<CouponItem[]>(() => {
@@ -150,11 +155,9 @@ const CouponsMobile = () => {
         dateRangeLabel={dateRangeLabel}
         sortMetric={sortMetric}
         onSortMetric={setSortMetric}
-        onSelect={(storeId, storeNumber) => {
-          setSelectedStoreId(storeId);
-          setSelectedStoreNumber(storeNumber);
-          setScreen("overview");
-        }}
+        onSelect={(storeId, storeNumber) =>
+          place({ storeId, storeNumber, screen: "overview" })
+        }
         onSearch={handleReset}
       />
     );
@@ -171,16 +174,12 @@ const CouponsMobile = () => {
         onSortMetric={setSortMetric}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
-        onSectionSelect={(key, label) => {
-          setSelectedSection({ key, label });
-          setScreen("detail");
-        }}
+        onSectionSelect={(key, label) =>
+          place({ section: { key, label }, screen: "detail" })
+        }
         onBack={
           isGroup
-            ? () => {
-                setSelectedStoreId(null);
-                setScreen("stores");
-              }
+            ? () => place({ storeId: null, screen: "stores" })
             : handleReset
         }
       />

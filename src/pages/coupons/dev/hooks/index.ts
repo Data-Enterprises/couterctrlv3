@@ -33,8 +33,16 @@ import type { MetricSelection } from "../interfaces";
 /** Coupons' flat context: the slice, the search and the app values every part reads. */
 export const useCouponContext = () => {
   const dispatch = useAppDispatch();
-  const { coupons, isFetching, noCouponsFound, receiptLines, gridFilters } =
-    useAppSelector((state) => state.dev.coupons);
+  const {
+    coupons,
+    isFetching,
+    noCouponsFound,
+    receiptLines,
+    gridFilters,
+    selectedKey,
+    sortMetric,
+    mobile,
+  } = useAppSelector((state) => state.dev.coupons);
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
     useAppSelector((state) => state.search);
   const { selectedGroupStores, assignedStores, userid } = useAppSelector(
@@ -57,6 +65,9 @@ export const useCouponContext = () => {
     isMobile,
     receiptLines,
     gridFilters,
+    selectedKey,
+    sortMetric,
+    mobile,
     selectedGroup,
     selectedGroupStores,
     assignedStores,
