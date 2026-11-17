@@ -1,6 +1,5 @@
 // Hooks
 import { useMemo } from "react";
-import { useOrganizationCtx } from "../../../../../hooks";
 
 // Interfaces
 import type { AccessPicks } from "../../../../interfaces";
@@ -9,27 +8,24 @@ import type { AccessPicks } from "../../../../interfaces";
 import Checkbox from "../../../../../../../../components-dev/Checkbox";
 
 interface CompanyColumnProps {
+  /** The companies this user may hand out, by id and name. */
+  companies: { id: number; name: string }[];
   picks: AccessPicks;
   activeCompany: number | null;
   selectCompany: (id: number) => void;
   toggleCompanyPick: (id: number) => void;
 }
 
-/**
- * This is the companies section of the access panel with it's logic
- */
+/** The companies column: each company with its pick box and how many of its
+ *  stores are picked; clicking a name shows its base groups beside it. */
 const CompanyColumn = ({
+  companies,
   picks,
   selectCompany,
   activeCompany,
   toggleCompanyPick,
 }: CompanyColumnProps) => {
-  const ctx = useOrganizationCtx();
   const selectedStores = picks.stores;
-
-  const companyList = ctx.isProgrammer
-    ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
-    : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Per-company badge — how many picked stores belong to each company, so
   // switching away from one does not hide that it already has picks.
@@ -50,7 +46,7 @@ const CompanyColumn = ({
         <span className="text-[9px] cc-caps-strong">Companies</span>
       </div>
       <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
-        {companyList.map((c) => {
+        {companies.map((c) => {
           const isActive = activeCompany === c.id;
           const count = companyCounts[c.id] ?? 0;
           return (

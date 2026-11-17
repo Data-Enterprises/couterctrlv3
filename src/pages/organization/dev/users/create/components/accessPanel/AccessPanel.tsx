@@ -46,14 +46,30 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
+  /** Locks the person to one store in total. The single-store role can't
+   *  hold a whole group (the server refuses), so this never sees `all`. */
   singleStoreOnly?: boolean;
+  /**
+   * Each group's full roster, lifted so a caller can count what `all` adds up
+   * to (that grant names no stores), and so Review doesn't fetch it again.
+   */
   groupStores: Record<number, Store[]>;
   onGroupStoresChange: (
     updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
   ) => void;
+  /**
+   * A fourth column inside the same card: Edit user puts the effective store
+   * list there, beside the picks it adds up from.
+   */
   rightColumn?: ReactNode;
+  /** Hide the built-in summary strip, for a caller supplying its own footer
+   *  with the Save button in it. */
   hideFooter?: boolean;
+  /** Hide the empty-picks notice, for a caller placing its own higher up the
+   *  screen where a warning is read before the thing it warns about. */
   hideEmptyNotice?: boolean;
+  /** Edit: the groups the person already holds, so the summary can name them
+   *  before their company is opened ("#66 (all)" otherwise). */
   heldGroups?: BaseGroup[];
 }
 
@@ -338,6 +354,7 @@ const AccessPanel = ({
       <div className="flex-1 min-h-0 flex border border-line_hair rounded-lg overflow-hidden">
         {/* Companies */}
         <CompanyColumn
+          companies={companyList}
           picks={picks}
           activeCompany={activeCompany}
           selectCompany={selectCompany}
