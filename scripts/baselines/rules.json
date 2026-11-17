@@ -611,9 +611,6 @@
     "commented-code": 2,
     "labels": 2
   },
-  "src/pages/admin/Admin.tsx": {
-    "labels": 1
-  },
   "src/pages/cashiers/Cashiers.tsx": {
     "labels": 1
   },
