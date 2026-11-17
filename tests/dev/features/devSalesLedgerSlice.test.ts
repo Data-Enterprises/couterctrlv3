@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
   EMPTY_INVESTIGATION_GRID,
+  EMPTY_TOP200_VIEW,
   setInvestigation,
   setInvestigationGrid,
+  setTop200View,
   type InvestigationTarget,
 } from "@/features/dev/devSalesLedgerSlice";
 
@@ -37,5 +39,13 @@ describe("the investigation grid", () => {
     expect(reducer(again, setInvestigation(null)).investigationGrid).toEqual(
       EMPTY_INVESTIGATION_GRID,
     );
+  });
+});
+
+describe("the Top 200 view", () => {
+  it("merges what it is given, and the empty view clears it", () => {
+    const s = reducer(start, setTop200View({ search: "rc", selectedCode: "A" }));
+    expect(s.top200View).toEqual({ ...EMPTY_TOP200_VIEW, search: "rc", selectedCode: "A" });
+    expect(reducer(s, setTop200View(EMPTY_TOP200_VIEW)).top200View).toEqual(EMPTY_TOP200_VIEW);
   });
 });

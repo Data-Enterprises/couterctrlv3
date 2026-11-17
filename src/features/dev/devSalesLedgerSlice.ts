@@ -18,6 +18,7 @@ import {
 // Interfaces
 import type { FinancialsRow } from "../../api/financials";
 import type {
+  ItemDetailResponse,
   TopItemRow,
   TopItemPricePoint,
 } from "../../api/topItems";
@@ -38,6 +39,10 @@ import type {
   Col,
 } from "../../pages/sales/dev/investigate/interfaces";
 import type { SortState } from "../../utils/useTriStateSort";
+import {
+  DEFAULT_TOP_ITEM_SORT,
+  type TopItemSort,
+} from "../../pages/sales/dev/storePanel/top200/utils/topItems";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -187,6 +192,26 @@ export const EMPTY_INVESTIGATION_GRID: InvestigationGrid = {
   supplyUpcs: "",
 };
 
+/** The Top 200 tab's list and open item. Cleared when the tab closes, as it
+ *  was when this was the tab's own state. */
+export interface Top200View {
+  search: string;
+  sort: TopItemSort;
+  dept: string;
+  selectedCode: string | null;
+  detail: ItemDetailResponse | null;
+  detailLoading: boolean;
+}
+
+export const EMPTY_TOP200_VIEW: Top200View = {
+  search: "",
+  sort: DEFAULT_TOP_ITEM_SORT,
+  dept: "",
+  selectedCode: null,
+  detail: null,
+  detailLoading: false,
+};
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
@@ -310,6 +335,7 @@ interface SalesLedgerState {
    * single-store visit answers it perfectly — and only writes here.
    */
   topItemsTyCache: Record<string, { rows: TopItemRow[]; points: TopItemPricePoint[] }>;
+  top200View: Top200View;
   topItemsTyOrder: string[];
 
   // Raw API data (shared desktop + mobile)
@@ -392,6 +418,7 @@ const initialState: SalesLedgerState = {
   topItemsCache: {},
   topItemsCacheOrder: [],
   topItemsTyCache: {},
+  top200View: EMPTY_TOP200_VIEW,
   topItemsTyOrder: [],
   financials: [],
   financialsWindow: null,
@@ -478,6 +505,9 @@ const salesLedgerSlice = createSlice({
       action: PayloadAction<Partial<InvestigationGrid>>,
     ) => {
       state.investigationGrid = { ...state.investigationGrid, ...action.payload };
+    },
+    setTop200View: (state, action: PayloadAction<Partial<Top200View>>) => {
+      state.top200View = { ...state.top200View, ...action.payload };
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -807,6 +837,7 @@ export const {
   setCounterpart,
   setInvestigation,
   setInvestigationGrid,
+  setTop200View,
   setLedgerSelectedDate,
   setLedgerLoading,
   setFinancials,

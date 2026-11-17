@@ -7,6 +7,7 @@ import { setCouponSalesHasSearched } from "../features/couponSalesSlice";
 import {
   setInvestigationGrid,
   setThreshold as devSetLedgerThreshold,
+  setTop200View,
 } from "../features/dev/devSalesLedgerSlice";
 
 /**
@@ -26,6 +27,7 @@ describe("sign-out", () => {
     store.dispatch(setCouponSalesHasSearched(true));
     store.dispatch(devSetLedgerThreshold({ amount: 42, op: "gt" }));
     store.dispatch(setInvestigationGrid({ page: 4, vendorQ: "Acme" }));
+    store.dispatch(setTop200View({ search: "rc", selectedCode: "A" }));
 
     store.dispatch(resetAppSlice());
 
@@ -44,6 +46,9 @@ describe("sign-out", () => {
     );
     expect(s.dev.salesLedger.investigationGrid).toEqual(
       pristine.dev.salesLedger.investigationGrid,
+    );
+    expect(s.dev.salesLedger.top200View).toEqual(
+      pristine.dev.salesLedger.top200View,
     );
   });
 
