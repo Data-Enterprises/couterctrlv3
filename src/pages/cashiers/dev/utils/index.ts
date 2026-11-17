@@ -619,7 +619,7 @@ export const TXN_COLUMNS: {
   label: string;
   align: string;
 }[] = [
-  { col: "date", label: "Date � time", align: "" },
+  { col: "date", label: "Date · time", align: "" },
   { col: "transaction", label: "Transaction", align: "" },
   { col: null, label: "Cashier", align: "" },
   { col: null, label: "Lines", align: "" },
