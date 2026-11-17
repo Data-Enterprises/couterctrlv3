@@ -1,7 +1,7 @@
 // Hooks
 import { useMemo, useRef } from "react";
 import { useSalesCtx } from "../../hooks";
-import { useItemsGrid, useRowSelection } from "../hooks";
+import { useItemsGrid } from "../hooks";
 
 // Utils
 import { formatCurrency2, formatBigNumber } from "../../../../../utils";
@@ -20,13 +20,9 @@ import type {
 // Components
 import CauseChips from "./components/CauseChips";
 import EvidenceRail from "./components/EvidenceRail";
-import GridBody from "./components/GridBody";
-import GridContextMenu from "./components/GridContextMenu";
-import GridFoot from "./components/GridFoot";
-import GridHead from "./components/GridHead";
-import GridPager from "./components/GridPager";
 import SupplyWindowNote from "./components/SupplyWindowNote";
 import ItemEvidence from "./evidence/ItemEvidence";
+import ItemsGrid from "./grid/ItemsGrid";
 
 interface ItemsTabProps {
   /** On screen: the Items tab is open and sales are in. */
@@ -44,8 +40,8 @@ interface ItemsTabProps {
   onOpenSupply: (upcs: string) => void;
 }
 
-/** The Items tab: the cause chips, the item grid with its pager, and the
- *  evidence rail for the open item. It stays mounted behind `hidden`, so the
+/** The Items tab: the cause chips, the item grid, and the evidence rail for
+ *  the open item. It stays mounted behind `hidden`, so the
  *  grid keeps its scroll when another tab is open. */
 const ItemsTab = ({
   open,
@@ -61,10 +57,8 @@ const ItemsTab = ({
 }: ItemsTabProps) => {
   const { gradingMetric, investigation: target } = useSalesCtx();
   const grid = useItemsGrid(items);
-  const { filters, sorted, capped, picked, setPicked, show, at } = grid;
-  const { only, setOnly, shown } = filters;
-  const selection = useRowSelection(sorted, picked, setPicked, show);
-  const { chosen, ctx, setCtx } = selection;
+  const { filters, sorted, picked, setPicked, at } = grid;
+  const { only, setOnly } = filters;
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) =>
@@ -134,48 +128,13 @@ const ItemsTab = ({
               rail is the other. Left as siblings of the rail the pager
               became a SECOND column — the grid shrank to its own width and
               the pager floated in the middle of the space beside it. */}
-          <div
-            data-help="grid"
-            className="flex-1 min-w-0 flex flex-col overflow-hidden"
-          >
-            <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-              <table className="border-collapse font-mono text-[11px] w-max">
-                <GridHead
-                  target={target}
-                  filters={filters}
-                  byCause={byCause}
-                  sort={grid.sort}
-                  onSort={grid.handleSort}
-                />
-                <GridBody
-                  rows={capped}
-                  selection={selection}
-                  allIn={allIn}
-                  fmt={fmt}
-                />
-
-                {capped.length > 0 && <GridFoot shown={shown} fmt={fmt} />}
-              </table>
-
-              {capped.length === 0 && stage !== "sales" && (
-                <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
-                  Nothing in this department to compare.
-                </div>
-              )}
-            </div>
-
-            {sorted.length > 0 && (
-              <GridPager
-                sorted={sorted}
-                items={items}
-                chosen={chosen}
-                from={grid.from}
-                page={grid.at_}
-                pages={grid.pages}
-                setPage={grid.setPage}
-              />
-            )}
-          </div>
+          <ItemsGrid
+            items={items}
+            stage={stage}
+            allIn={allIn}
+            byCause={byCause}
+            onOpenSupply={onOpenSupply}
+          />
 
           <EvidenceRail open={!!pickedItem}>
             {evidence && target && (
@@ -204,16 +163,6 @@ const ItemsTab = ({
           </EvidenceRail>
         </div>
       </div>
-
-      {ctx && (
-        <GridContextMenu
-          ctx={ctx}
-          shown={shown}
-          chosen={chosen}
-          onFind={onOpenSupply}
-          onClose={() => setCtx(null)}
-        />
-      )}
     </>
   );
 };
