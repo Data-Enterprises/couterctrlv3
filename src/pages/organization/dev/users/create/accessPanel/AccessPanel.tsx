@@ -91,6 +91,36 @@ const AccessPanel = ({
   /** The groups the editor holds: below level 9 (and DCR support), the only
    *  ones they may hand out. Null until read, so nothing is changeable yet. */
   const [editorHeld, setEditorHeld] = useState<Set<number> | null>(null);
+  const [activeCompany, setActiveCompany] = useState<number | null>(null);
+  // Groups opened in the middle column; each gets a section of stores.
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+  const [groupSearch, setGroupSearch] = useState<string>("");
+
+  /** A programmer may give any company, everyone else only their own. The two
+   *  lists name the id differently (`id`, `company`). */
+  const companyList = useMemo(
+    () =>
+      ctx.isProgrammer
+        ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
+        : ctx.companies.map((c) => ({ id: c.company, name: c.name })),
+    [ctx.isProgrammer, ctx.allCompanies, ctx.companies],
+  );
+  /** Groups the person already holds, listed even when not the editor's. */
+  const personHeld = useMemo(
+    () => new Set(heldGroups.map((g) => g.id)),
+    [heldGroups],
+  );
+  const groupsById = useMemo(() => {
+    const map: Record<number, CompanyBaseGroup> = {};
+    Object.values(companyGroups)
+      .flat()
+      .forEach((g) => {
+        map[g.id] = g;
+      });
+    return map;
+  }, [companyGroups]);
+
+  // The editor's own groups; a level 9 or DCR support editor may give any.
   useEffect(() => {
     if (scope.canSeeAllCompanies) return;
     getBaseGroupsAssignedToUser(ctx.url, ctx.token, scope.userid)
@@ -106,20 +136,28 @@ const AccessPanel = ({
         toast.error("Error fetching your base groups " + err.message),
       );
   }, [scope.canSeeAllCompanies, scope.userid, ctx.url, ctx.token]);
+
+  // Opens on the first company.
+  useEffect(() => {
+    if (companyList.length > 0 && activeCompany === null) {
+      selectCompany(companyList[0].id);
+    }
+  }, [companyList.length]);
+
+  // Every roster as soon as its company opens, so the middle column can show
+  // "X of Y" before a group is opened.
+  useEffect(() => {
+    if (!activeCompany) return;
+    const groups = companyGroups[activeCompany];
+    if (!groups) return;
+    groups.forEach((g) => {
+      if (!groupStores[g.id]) fetchStoresForGroup(g.id);
+    });
+  }, [activeCompany, companyGroups]);
+
   const mine = editorHeld ?? new Set<number>();
-  /** Groups the person already holds, listed even when not the editor's. */
-  const personHeld = useMemo(
-    () => new Set(heldGroups.map((g) => g.id)),
-    [heldGroups],
-  );
   const mayChange = (id: number) =>
     mayChangeGroup(id, scope.canSeeAllCompanies, mine);
-
-  /** A programmer may give any company, everyone else only their own. The two
-   *  lists name the id differently (`id`, `company`). */
-  const companyList = ctx.isProgrammer
-    ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
-    : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Ticked groups plus any a ticked store implies: what Create saves.
   const held = heldGroupIds(picks);
@@ -142,27 +180,6 @@ const AccessPanel = ({
         : [];
     onPicksChange(toggleGroup(picks, id, roster));
   };
-
-  const [activeCompany, setActiveCompany] = useState<number | null>(null);
-  // Groups opened in the middle column; each gets a section of stores.
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
-  const [groupSearch, setGroupSearch] = useState<string>("");
-
-  useEffect(() => {
-    if (companyList.length > 0 && activeCompany === null) {
-      selectCompany(companyList[0].id);
-    }
-  }, [companyList.length]);
-
-  const groupsById = useMemo(() => {
-    const map: Record<number, CompanyBaseGroup> = {};
-    Object.values(companyGroups)
-      .flat()
-      .forEach((g) => {
-        map[g.id] = g;
-      });
-    return map;
-  }, [companyGroups]);
 
   const companyName = (id: number) =>
     companyList.find((c) => c.id === id)?.name ?? "";
@@ -204,17 +221,6 @@ const AccessPanel = ({
         return [];
       });
   };
-
-  // Every roster as soon as its company opens, so the middle column can show
-  // "X of Y" before a group is opened.
-  useEffect(() => {
-    if (!activeCompany) return;
-    const groups = companyGroups[activeCompany];
-    if (!groups) return;
-    groups.forEach((g) => {
-      if (!groupStores[g.id]) fetchStoresForGroup(g.id);
-    });
-  }, [activeCompany, companyGroups]);
 
   const toggleGroupExpand = (group: CompanyBaseGroup) => {
     setExpandedGroups((prev) => {
