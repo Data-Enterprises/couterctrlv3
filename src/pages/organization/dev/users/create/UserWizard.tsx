@@ -64,7 +64,7 @@ import type {
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import UserFields from "./components/UserFields";
-import AccessPanel from "./components/accessPanel/AccessPanel";
+import AccessPanel from "./accessPanel/AccessPanel";
 import EffectiveStoresPanel from "./components/EffectiveStoresPanel";
 import Stepper from "./components/Stepper";
 import StepAccessType from "./components/StepAccessType";

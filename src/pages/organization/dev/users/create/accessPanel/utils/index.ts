@@ -1,5 +1,5 @@
 // Interfaces
-import type { CompanyBaseGroup } from "../../../../../../../../interfaces";
+import type { CompanyBaseGroup } from "../../../../../../../interfaces";
 
 /**
  * A company or group ticked in its own right, not inferred from a store, so

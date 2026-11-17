@@ -1,40 +1,40 @@
 // Hooks
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useToast } from "../../../../../../../components/toasts/hooks/useToast";
-import { useOrganizationCtx, useBaseGroupsCtx } from "../../../../hooks";
+import { useToast } from "../../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx, useBaseGroupsCtx } from "../../../hooks";
 
 // API
 import {
   getBaseGroups,
   getAllStoresInBaseGroup,
-} from "../../../../../../../api/baseGroups";
-import { getBaseGroupsAssignedToUser } from "../../../../../../../api/team";
+} from "../../../../../../api/baseGroups";
+import { getBaseGroupsAssignedToUser } from "../../../../../../api/team";
 
 // Utils
 import {
   heldGroupIds as editorHeldGroupIds,
   mayChangeGroup,
   wizardGroups,
-} from "../../../../utils";
-import { NO_PICKS, heldGroupIds, toggleGroup } from "../../../utils";
-import { reasonOf } from "../../../../../../../utils/serverError";
+} from "../../../utils";
+import { NO_PICKS, heldGroupIds, toggleGroup } from "../../utils";
+import { reasonOf } from "../../../../../../utils/serverError";
 import { filterGroupsBySearch, filterOpenGroups, toggleIn } from "./utils";
 
 // Interfaces
-import type { AccessPicks, SelectableStore } from "../../../interfaces";
+import type { AccessPicks, SelectableStore } from "../../interfaces";
 import type {
   BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
-} from "../../../../../../../interfaces";
+} from "../../../../../../interfaces";
 
 // Components
-import TextFilter from "../../../../../../../components-dev/filters/TextFilter";
-import SelectFilter from "../../../../../../../components-dev/filters/SelectFilter";
-import Checkbox from "../../../../../../../components-dev/Checkbox";
-import GrantModeChip from "../GrantModeChip";
-import EmptyPicksNotice from "../EmptyPicksNotice";
+import TextFilter from "../../../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../../../components-dev/filters/SelectFilter";
+import Checkbox from "../../../../../../components-dev/Checkbox";
+import GrantModeChip from "../components/GrantModeChip";
+import EmptyPicksNotice from "./components/EmptyPicksNotice";
 import CompanyColumn from "./components/CompanyColumn";
 
 interface AccessPanelProps {

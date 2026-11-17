@@ -2,10 +2,10 @@
 import { useMemo } from "react";
 
 // Interfaces
-import type { AccessPicks } from "../../../../interfaces";
+import type { AccessPicks } from "../../../interfaces";
 
 // Components
-import Checkbox from "../../../../../../../../components-dev/Checkbox";
+import Checkbox from "../../../../../../../components-dev/Checkbox";
 
 interface CompanyColumnProps {
   /** The companies this user may hand out, by id and name. */
