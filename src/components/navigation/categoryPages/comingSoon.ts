@@ -17,7 +17,7 @@ import {
   DocumentArrowUpIcon,
   TicketIcon,
   // DocumentArrowDownIcon, (Markdowns, below)
-  QrCodeIcon,
+  // QrCodeIcon, (Upc Scanner, below)
 } from "@heroicons/react/16/solid";
 
 export const comingSoonPages: Navigation[] = [
@@ -62,21 +62,23 @@ export const comingSoonPages: Navigation[] = [
     isHovering: false,
     isVisible: true,
   },
-  {
-    name: "Upc Scanner",
-    href: "upc-scanner",
-    icon: QrCodeIcon,
-    // The first mobile-only page in here. Scanning needs a scanner, so the
-    // desktop route renders a notice rather than a second build of it.
-    mobile: true,
-    children: [],
-    childOpen: false,
-    // Level 9 while the file format is open: a send writes a real file a
-    // client's tag printer picks up. Same reasoning as Data Export.
-    userLevels: PROGRAMMER_ONLY_LEVELS,
-    isHovering: false,
-    isVisible: true,
-  },
+  // Not listed for now: its `scanner/lookup` endpoint is on no deployed API yet.
+  // Restore this entry and the QrCodeIcon import together; the route stays.
+  // {
+  //   name: "Upc Scanner",
+  //   href: "upc-scanner",
+  //   icon: QrCodeIcon,
+  //   // The first mobile-only page in here. Scanning needs a scanner, so the
+  //   // desktop route renders a notice rather than a second build of it.
+  //   mobile: true,
+  //   children: [],
+  //   childOpen: false,
+  //   // Level 9 while the file format is open: a send writes a real file a
+  //   // client's tag printer picks up. Same reasoning as Data Export.
+  //   userLevels: PROGRAMMER_ONLY_LEVELS,
+  //   isHovering: false,
+  //   isVisible: true,
+  // },
   {
     name: "Sales Tracker",
     href: "sales-tracker",
