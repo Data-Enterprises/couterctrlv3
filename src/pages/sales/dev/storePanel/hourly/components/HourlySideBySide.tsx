@@ -1,23 +1,16 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useSalesCtx, useSalesState } from "../../../hooks";
-
-// API
-import { getHourly } from "../../../../../../api/sales";
+import { useCounterpartHours } from "../hooks";
 
 // Utils
-import { shiftIso } from "../../../../../../utils/grading";
-import { formatCurrency2, formatBigNumber, sameWeekDayLastYear } from "../../../../../../utils";
-import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
-import { byHour, day, hourLabel, HOUR_COLS, MINUS } from "../utils";
-
-// Interfaces
-import type { HourlySale } from "../../../../../../interfaces";
-import type { Row } from "../interfaces";
+import { formatCurrency2, formatBigNumber } from "../../../../../../utils";
+import { compareHourRows, hourBars, hourLabel, HOUR_COLS } from "../utils";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
 import CompareHourRow from "./CompareHourRow";
+import HourStat from "./HourStat";
 
 interface HourlySideBySideProps {
   openStoreName: string;
@@ -76,151 +69,57 @@ const HourlySideBySide = ({
   lyWeekDates,
   onBack,
 }: HourlySideBySideProps) => {
-  // A day picked in the strip above narrows both sides to that day.
-  const { selectedDate, gradingMetric, url, token } = useSalesCtx();
+  const { gradingMetric } = useSalesCtx();
   // The open store's three weeks are already here — the panel fetched them
   // for its own Hourly tab, which is why only the counterpart is asked for.
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
     useSalesState();
+  const { theirs, failed } = useCounterpartHours({
+    compareStoreId,
+    compareStoreNumber,
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    lyStart,
+    lyEnd,
+    lwWeekDates,
+    lyWeekDates,
+  });
 
-  const [theirs, setTheirs] = useState<{
-    tw: HourlySale[];
-    lw: HourlySale[];
-    ly: HourlySale[];
-  } | null>(null);
-  const [failed, setFailed] = useState(false);
   const [mode, setMode] = useState<"money" | "mix">("money");
   const [picked, setPicked] = useState<number | null>(null);
+  // A new counterpart or window starts on the first hour again.
+  useEffect(() => {
+    if (theirs === null) setPicked(null);
+  }, [theirs]);
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
 
-  const lwKey = lwWeekDates.join(",");
-  const lyKey = lyWeekDates.join(",");
+  const rows = useMemo(
+    () =>
+      theirs
+        ? compareHourRows(
+            {
+              tw: hourlySales,
+              lw: hourlySalesLastWeek,
+              ly: hourlySalesLastYear,
+            },
+            theirs,
+            gradingMetric,
+          )
+        : [],
+    [theirs, hourlySales, hourlySalesLastWeek, hourlySalesLastYear, gradingMetric],
+  );
 
-  useEffect(() => {
-    let live = true;
-    setTheirs(null);
-    setFailed(false);
-    setPicked(null);
-
-    const ask = (from: string, to: string) =>
-      getHourly(url, token, from, to, 0, compareStoreId, 1);
-
-    Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
-      .then(([tw, lw, ly]) => {
-        if (!live) return;
-        // The house convention: a 200 carrying `error`, so `error === 0` is
-        // the success test. Scoped by store NUMBER, because co-located stores
-        // share an id.
-        const take = (resp: { data: { error: number; subs: HourlySale[] } }) =>
-          resp.data.error === 0
-            ? scopeToStoreNumber(resp.data.subs ?? [], compareStoreNumber)
-            : [];
-
-        // Narrowed exactly as the open store's were on the way in.
-        const lwSet = new Set(lwWeekDates);
-        const lySet = new Set(lyWeekDates);
-        const lwDay = selectedDate
-          ? shiftIso(selectedDate, -7)
-          : null;
-        const lyDay = selectedDate ? sameWeekDayLastYear(selectedDate).date : null;
-
-        setTheirs({
-          tw: selectedDate
-            ? take(tw).filter((h) => day(h.sale_date) === selectedDate)
-            : take(tw),
-          lw: take(lw).filter((h) =>
-            lwDay ? day(h.sale_date) === lwDay : lwSet.has(day(h.sale_date)),
-          ),
-          ly: take(ly).filter((h) =>
-            lyDay ? day(h.sale_date) === lyDay : lySet.has(day(h.sale_date)),
-          ),
-        });
-      })
-      .catch(() => live && setFailed(true));
-
-    return () => {
-      live = false;
-    };
-  }, [
-    url, token,
-    twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
-    compareStoreId, compareStoreNumber,
-    lwKey, lyKey, selectedDate,
-    lwWeekDates, lyWeekDates,
-  ]);
-
-  const rows = useMemo<Row[]>(() => {
-    if (!theirs) return [];
-    const mineTw = byHour(hourlySales, gradingMetric);
-    const mineLw = byHour(hourlySalesLastWeek, gradingMetric);
-    const mineLy = byHour(hourlySalesLastYear, gradingMetric);
-    const theirTw = byHour(theirs.tw, gradingMetric);
-    const theirLw = byHour(theirs.lw, gradingMetric);
-    const theirLy = byHour(theirs.ly, gradingMetric);
-
-    // Every hour either store traded in any period. An hour one of them is
-    // shut for is a finding, not a row to drop.
-    const hours = [
-      ...new Set(
-        [mineTw, mineLw, mineLy, theirTw, theirLw, theirLy]
-          .flatMap((m) => Object.keys(m))
-          .map(Number),
-      ),
-    ].sort((x, y) => x - y);
-
-    return hours.map((h) => {
-      const a = mineTw[h] ?? 0;
-      const b = theirTw[h] ?? 0;
-      return {
-        hour: h,
-        label: hourLabel(h),
-        a,
-        b,
-        tyDiff: a - b,
-        lwDiff: (mineLw[h] ?? 0) - (theirLw[h] ?? 0),
-        lyDiff: (mineLy[h] ?? 0) - (theirLy[h] ?? 0),
-      };
-    });
-  }, [theirs, hourlySales, hourlySalesLastWeek, hourlySalesLastYear, gradingMetric]);
-
-  const mineTotal = rows.reduce((t, r) => t + r.a, 0);
-  const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
-  const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
-  const shareTheirs = (r: Row) => (theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0);
-
-  const barMax =
-    mode === "money"
-      ? Math.max(1, ...rows.flatMap((r) => [r.a, r.b]))
-      : Math.max(1, ...rows.flatMap((r) => [shareMine(r), shareTheirs(r)]));
-
-  const widthOf = (v: number) => Math.min(100, (v / barMax) * 100) + "%";
-  const gapOf = (r: Row) =>
-    mode === "money" ? r.tyDiff : shareMine(r) - shareTheirs(r);
-  const gapText = (r: Row) => {
-    const g = gapOf(r);
-    const sign = g >= 0 ? "+" : MINUS;
-    return mode === "money"
-      ? sign + fmt(Math.abs(g))
-      : sign + Math.abs(g).toFixed(1) + " pts";
-  };
+  const { shareMine, shareTheirs, widthOf, gapOf, gapText } = hourBars(
+    rows,
+    mode,
+    fmt,
+  );
 
   const focus = rows.find((r) => r.hour === picked) ?? rows[0] ?? null;
-
-  const stat = (key: string, v: number) => (
-    <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
-      <span className="text-[11.5px] text-content/95 w-[52px] flex-shrink-0">{key}</span>
-      <span
-        className={`ml-auto tabular-nums text-[13.5px] font-bold ${
-          v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
-        }`}
-      >
-        {v >= 0 ? "+" : MINUS}
-        {fmt(Math.abs(v))}
-      </span>
-    </div>
-  );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -335,9 +234,9 @@ const HourlySideBySide = ({
               </div>
 
               <div className="grid gap-px bg-brand_navy/15 rounded-md overflow-hidden">
-                {stat("vs TY", focus.tyDiff)}
-                {stat("vs LW", focus.lwDiff)}
-                {stat("vs LY", focus.lyDiff)}
+                <HourStat label="vs TY" value={focus.tyDiff} fmt={fmt} />
+                <HourStat label="vs LW" value={focus.lwDiff} fmt={fmt} />
+                <HourStat label="vs LY" value={focus.lyDiff} fmt={fmt} />
               </div>
 
               <p className="text-[11.5px] text-content/95 leading-relaxed">
