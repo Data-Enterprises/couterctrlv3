@@ -9,6 +9,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 // Interfaces
 import type { CouponItem, ThresholdValue, TransactionListItem } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+import type { Group } from "../groupSlice";
 
 /** The detail grid's applied column filters. */
 export interface CouponGridFilters {
@@ -19,6 +21,17 @@ export interface CouponGridFilters {
 }
 
 const noGridFilters: CouponGridFilters = { upc: "", product: "", subDept: "", amount: null };
+
+/** The search the loaded coupons answer, kept with them so the labels name
+ *  it rather than whatever the shared picker has moved to since. */
+export interface CouponSearchedScope {
+  type: SEARCH_TYPE;
+  startDate: string;
+  endDate: string;
+  lastStore: number;
+  lastGroup: number;
+  selectedGroup: Group;
+}
 
 /** What the coupon lists sort by, desktop and phone alike. */
 export type CouponSortMetric = "amount" | "qty";
@@ -87,6 +100,8 @@ interface CouponState {
   selectedKey: string;
   sortMetric: CouponSortMetric;
   mobile: CouponMobilePlace;
+  /** Null until the first search. */
+  searched: CouponSearchedScope | null;
 }
 
 const initialState: CouponState = {
@@ -115,6 +130,7 @@ const initialState: CouponState = {
   selectedKey: "",
   sortMetric: "amount",
   mobile: mobileStart,
+  searched: null,
 };
 
 const couponSlice = createSlice({
@@ -319,6 +335,9 @@ const couponSlice = createSlice({
     resetCouponMobilePlace: (state) => {
       state.mobile = mobileStart;
     },
+    setCouponSearched: (state, action: PayloadAction<CouponSearchedScope>) => {
+      state.searched = action.payload;
+    },
     resetCouponsSlice: () => initialState,
   },
 });
@@ -341,6 +360,7 @@ export const {
   setCouponSortMetric,
   setCouponMobilePlace,
   resetCouponMobilePlace,
+  setCouponSearched,
   setCouponMobileStage,
   setUniqueCpnDates,
   setUniqueSubDepts,

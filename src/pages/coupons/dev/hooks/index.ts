@@ -42,9 +42,13 @@ export const useCouponContext = () => {
     selectedKey,
     sortMetric,
     mobile,
+    searched,
   } = useAppSelector((state) => state.dev.coupons);
+  const liveSearch = useAppSelector((state) => state.search);
+  // The search the loaded coupons answer, so the labels don't follow the
+  // shared picker once it moves. Before the first search, the live one.
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
-    useAppSelector((state) => state.search);
+    searched ?? liveSearch;
   const { selectedGroupStores, assignedStores, userid } = useAppSelector(
     (state) => state.user,
   );
@@ -72,6 +76,8 @@ export const useCouponContext = () => {
     selectedGroupStores,
     assignedStores,
     userid,
+    /** The shared search card as it stands, for running a new search. */
+    liveSearch,
   };
 };
 
@@ -89,6 +95,17 @@ export const useCouponSearch = (ctx: ReturnType<typeof useCouponContext>) => {
   const { dispatch } = ctx;
 
   const runSearch = (onLoaded?: () => void) => {
+    const search = ctx.liveSearch;
+    dispatch(
+      couponActions.setCouponSearched({
+        type: search.type,
+        startDate: search.startDate,
+        endDate: search.endDate,
+        lastStore: search.lastStore,
+        lastGroup: search.lastGroup,
+        selectedGroup: search.selectedGroup,
+      }),
+    );
     dispatch(couponActions.setCoupons([]));
     dispatch(couponActions.setIsFetching(true));
     // Cleared on every search: leaving it set means a later failure shows
@@ -96,12 +113,12 @@ export const useCouponSearch = (ctx: ReturnType<typeof useCouponContext>) => {
     dispatch(couponActions.setNoCouponsFound(false));
     // A group search can return stores this user isn't assigned to; loading
     // them here lets those rows' store names resolve.
-    if (isGroupSearch(ctx.type)) {
+    if (isGroupSearch(search.type)) {
       getStoresAssignedToUserGroup(
         ctx.url,
         ctx.token,
         ctx.userid,
-        ctx.lastGroup,
+        search.lastGroup,
       )
         .then((resp) => {
           if (resp.data.error === 0) {
@@ -116,11 +133,13 @@ export const useCouponSearch = (ctx: ReturnType<typeof useCouponContext>) => {
         })
         .catch(() => {});
     }
-    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
-    const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
-    const start = formatGoliathDate(ctx.startDate);
-    const end = formatGoliathDate(ctx.endDate);
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
+    const singleStore = search.type === "Store" ? 1 : 0;
+    const searchValue = isGroupSearch(search.type)
+      ? search.lastGroup
+      : search.lastStore;
+    const start = formatGoliathDate(search.startDate);
+    const end = formatGoliathDate(search.endDate);
 
     getCoupons(
       ctx.url,

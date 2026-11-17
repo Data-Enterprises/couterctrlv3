@@ -3,6 +3,7 @@ import reducer, {
   resetCouponMobilePlace,
   setCouponGridFilter,
   setCouponMobilePlace,
+  setCouponSearched,
   setCouponSelectedKey,
   setCouponSortMetric,
   setIsFetching,
@@ -101,5 +102,32 @@ describe("Coupons' place on the page", () => {
     expect(c.selectedKey).toBe("");
     expect(c.sortMetric).toBe("amount");
     expect(c.mobile).toEqual(home);
+  });
+});
+
+describe("The search the loaded coupons answer", () => {
+  const scope = {
+    type: "Group" as const,
+    startDate: "11/03/2026",
+    endDate: "11/09/2026",
+    lastStore: 0,
+    lastGroup: 12,
+    selectedGroup: { id: 12, group_name: "North" } as never,
+  };
+
+  it("is empty before the first search", () => {
+    expect(fresh().searched).toBeNull();
+  });
+
+  it("is kept as searched, whatever the picker does after", () => {
+    const s = reducer(fresh(), setCouponSearched(scope));
+    expect(s.searched).toEqual(scope);
+  });
+
+  it("is cleared on sign-out", () => {
+    const store = setupStore();
+    store.dispatch(setCouponSearched(scope));
+    store.dispatch(resetAppSlice());
+    expect(store.getState().dev.coupons.searched).toBeNull();
   });
 });
