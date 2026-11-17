@@ -20,7 +20,7 @@ import SearchPopup from "../../../../components-dev/SearchPopup";
 import LookupDesktopEntry from "./components/LookupDesktopEntry";
 import LookupQueuePanel from "./components/LookupQueuePanel";
 import LookupReportPanel from "./components/LookupReportPanel";
-import LookupExportModal from "./components/LookupExportModal";
+import LookupExportModal from "./export/LookupExportModal";
 
 /** The desktop Item lookup page: the search card first, then the item queue beside the selected item's report,
  *  with the search and export pop-ups. */
