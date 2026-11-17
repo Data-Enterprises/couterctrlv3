@@ -2,7 +2,10 @@
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useActualPricePoints, type ActualFetchState } from "../../../hooks/useActualPricePoints";
+import {
+  useActualPricePoints,
+  type ActualFetchState,
+} from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useReceivingWalk, useItemReportCtx } from "./hooks";
 
@@ -235,10 +238,14 @@ const ItemReport = () => {
                 (rows) => ({ rows, pricePoints: [] as SubsPricePoint[] }),
               ),
         narrowed
-          ? fetchItemRowsForCodes(next, lwWindow(next), upcs).then((r) => r.rows)
+          ? fetchItemRowsForCodes(next, lwWindow(next), upcs).then(
+              (r) => r.rows,
+            )
           : fetchAllItemRows(next, lwWindow(next)),
         narrowed
-          ? fetchItemRowsForCodes(next, lyWindow(next), upcs).then((r) => r.rows)
+          ? fetchItemRowsForCodes(next, lyWindow(next), upcs).then(
+              (r) => r.rows,
+            )
           : fetchAllItemRows(next, lyWindow(next)),
       ]);
 
@@ -616,7 +623,9 @@ const ItemReport = () => {
           load this expensive to change one field is what that pattern
           prevents. */}
       {state.searchOpen && (
-        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>{entry}</SearchPopup>
+        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>
+          {entry}
+        </SearchPopup>
       )}
 
       {openInvoice && (

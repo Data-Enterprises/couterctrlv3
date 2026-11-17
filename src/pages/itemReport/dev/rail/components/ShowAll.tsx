@@ -1,5 +1,3 @@
-
-
 interface ShowAllProps {
   total: number;
   expanded: boolean;

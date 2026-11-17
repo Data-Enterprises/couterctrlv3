@@ -17,14 +17,17 @@ import { formatCurrencyCompact } from "../../../../utils";
 import { ACTION_TONE } from "../utils/actionTone";
 import { ACTION_LABEL, ACTION_RANK } from "../utils/verdict";
 import { daysSince } from "../utils/metrics";
-import type { ActionKind, ReportItem, ReceiptLine, SheetRow } from "../interfaces";
+import type {
+  ActionKind,
+  ReportItem,
+  ReceiptLine,
+  SheetRow,
+} from "../interfaces";
 import { COLS, ORDER } from "../utils";
 
 // Components
 import BackButton from "../../../../components-dev/BackButton";
-import {
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ColFilter from "../../../../components-dev/filters/ColFilter";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
@@ -181,7 +184,10 @@ const ItemReportSheet = ({
             <span className="cc-navy-title text-[13px] justify-self-center truncate">
               {centreLabel}
             </span>
-            <div data-help="export" className="flex items-center gap-2 justify-self-end">
+            <div
+              data-help="export"
+              className="flex items-center gap-2 justify-self-end"
+            >
               <span className="text-[14px] cc-navy-title tabular-nums">
                 {rows.length} items
               </span>
@@ -303,7 +309,9 @@ const ItemReportSheet = ({
               {/* Reorder can still fire for these, from sales stopping
                   mid-week (T-Bone, in the review). The banner used to say it
                   couldn't, beside a row that had (finding M). */}
-              {" — Call vendor can't be judged for those, and Reorder only from sales stopping. Price and trend are unaffected."}
+              {
+                " — Call vendor can't be judged for those, and Reorder only from sales stopping. Price and trend are unaffected."
+              }
               <span className="underline ml-1">
                 {noReceiverOpen ? "Hide" : "Show them"}
               </span>
@@ -378,10 +386,16 @@ const ItemReportSheet = ({
           {/* Units, not dollars: Top 200's "vs LW" is sales, and the same
               label meaning two things read as two answers for one item
               (finding Q). */}
-          <span className="text-right" title="Change in units sold against last week">
+          <span
+            className="text-right"
+            title="Change in units sold against last week"
+          >
             Units vs LW
           </span>
-          <span className="text-right" title="Change in units sold against the same week last year">
+          <span
+            className="text-right"
+            title="Change in units sold against the same week last year"
+          >
             Units vs LY
           </span>
           <span
@@ -418,7 +432,9 @@ const ItemReportSheet = ({
                 key={item.productCode}
                 onClick={() => onSelect({ item, verdict })}
                 className={`w-full text-left border-b border-l-2 transition-colors ${
-                  isSel ? "cc-row-selected" : "border-line_hair even:bg-row_stripe hover:bg-fill_soft"
+                  isSel
+                    ? "cc-row-selected"
+                    : "border-line_hair even:bg-row_stripe hover:bg-fill_soft"
                 } ${tone.rule}`}
               >
                 <div
@@ -452,7 +468,9 @@ const ItemReportSheet = ({
                       which is what lets the three be read across the row. */}
                   <span
                     className={`text-right text-[13px] font-semibold tabular-nums ${
-                      item.ty.units > 0 ? "text-content" : "text-severity_critical_text"
+                      item.ty.units > 0
+                        ? "text-content"
+                        : "text-severity_critical_text"
                     }`}
                   >
                     {item.ty.units % 1 === 0

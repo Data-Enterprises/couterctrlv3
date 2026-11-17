@@ -6,8 +6,20 @@ import { normalizeProductCode } from "../../../../utils/productCode";
 import { MOVEMENT_DAYS, round2, round1, pctMove, daySpan } from "./metrics";
 
 // Interfaces
-import type { SubsPricePoint, SubDeptMargin, ActionKind } from "../../../../interfaces";
-import type { DayPoint, PeriodTotals, StockMovement, SinceDelivery, ReportItem, Verdict, ReceiptLine } from "../interfaces";
+import type {
+  SubsPricePoint,
+  SubDeptMargin,
+  ActionKind,
+} from "../../../../interfaces";
+import type {
+  DayPoint,
+  PeriodTotals,
+  StockMovement,
+  SinceDelivery,
+  ReportItem,
+  Verdict,
+  ReceiptLine,
+} from "../interfaces";
 
 const totalsOf = (rows: SubDeptMargin[]): PeriodTotals => ({
   sales: rows.reduce((s, r) => s + r.net_sales, 0),

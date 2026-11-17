@@ -1,5 +1,8 @@
 // API
-import { getReceiversList, getReceiverDetails } from "../../../../api/receivers";
+import {
+  getReceiversList,
+  getReceiverDetails,
+} from "../../../../api/receivers";
 import {
   getItemActions,
   getSubMarginsWithPricePoints,
@@ -234,18 +237,22 @@ export const fetchItemRowsWithPricePoints = async (
       return b.subs ?? [];
     };
 
-    const rows = await fetchAllPages(body, [...(body.subs ?? [])], async (page) => {
-      try {
-        return await askFor(page);
-      } catch {
+    const rows = await fetchAllPages(
+      body,
+      [...(body.subs ?? [])],
+      async (page) => {
         try {
           return await askFor(page);
         } catch {
-          missed += 1;
-          return [];
+          try {
+            return await askFor(page);
+          } catch {
+            missed += 1;
+            return [];
+          }
         }
-      }
-    });
+      },
+    );
 
     if (missed > 0) {
       const total = body.total_pages ?? 1;

@@ -21,7 +21,12 @@ import { MOVEMENT_FALLBACK, TXN_COLS, fmtUnits } from "./utils";
 // Interfaces
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
 import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
-import type { ActionKind, ReportItem, ReceiptLine, PeriodLabels } from "../interfaces";
+import type {
+  ActionKind,
+  ReportItem,
+  ReceiptLine,
+  PeriodLabels,
+} from "../interfaces";
 
 // Components
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
@@ -282,7 +287,11 @@ const ItemReportRail = ({
                     avgGap === null ? "" : ` · usually every ${avgGap}`
                   }`
             }
-            noteTone={(lastDays ?? 0) > 21 ? "text-severity_critical_text" : "text-content"}
+            noteTone={
+              (lastDays ?? 0) > 21
+                ? "text-severity_critical_text"
+                : "text-content"
+            }
           >
             {receipts.length === 0 ? (
               <div className="text-[12px] text-content">

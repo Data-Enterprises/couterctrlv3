@@ -90,7 +90,10 @@ const ItemReportEntry = ({
     }
     if (parsed.tooShort.length > 0) {
       const shown = parsed.tooShort.slice(0, 5).join(", ");
-      const more = parsed.tooShort.length > 5 ? ` and ${parsed.tooShort.length - 5} more` : "";
+      const more =
+        parsed.tooShort.length > 5
+          ? ` and ${parsed.tooShort.length - 5} more`
+          : "";
       toast.warn(
         `Added ${parsed.upcs.length}; left out ${shown}${more} — too short to be a UPC`,
       );
@@ -216,7 +219,8 @@ const ItemReportEntry = ({
                 : " · no department column, so every department is read"}
               {carried && (
                 <span className="block mt-0.5 font-medium text-content">
-                  Includes the list from your last build. Clear all to start a new one.
+                  Includes the list from your last build. Clear all to start a
+                  new one.
                 </span>
               )}
             </div>

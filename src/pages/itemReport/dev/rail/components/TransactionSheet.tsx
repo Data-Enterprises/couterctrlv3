@@ -103,7 +103,9 @@ const TransactionSheet = ({
         if (cancelled) return;
         setError(
           serverDetail(e) ??
-            (e instanceof Error ? e.message : "Could not load that transaction"),
+            (e instanceof Error
+              ? e.message
+              : "Could not load that transaction"),
         );
         setLoading(false);
       });
@@ -244,7 +246,8 @@ const TransactionSheet = ({
     // Kept in the order the register rang them, so it still reads like the
     // receipt it represents.
     return [...byCode.values()].sort((a, b) => a.firstLine - b.firstLine);
-  }, [basket]);
+  }, [basket]);
+
   const itemRowCount = grouped.filter((g) => !g.discount).length;
   const discountRowCount = grouped.length - itemRowCount;
 
