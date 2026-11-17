@@ -229,3 +229,10 @@ export const defaultsFor = (src: Preset) =>
 /** A date as a short label, e.g. Nov 9. */
 export const fmtRangeDate = (d: Date) =>
   d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+/** Custom mode's names for the three data sources. */
+export const SOURCE_LABELS: Record<Preset, string> = {
+  batch: "Batch summary",
+  daily: "Current item (daily)",
+  saleTypes: "By sale type",
+};
