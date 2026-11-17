@@ -62,9 +62,13 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
 
   const [mode, setMode] = useState<Mode>("presets");
   const [scope, setScope] = useState<Scope>("store");
-  const [presets, setPresets] = useState<Set<CouponPreset>>(new Set(["stores"]));
+  const [presets, setPresets] = useState<Set<CouponPreset>>(
+    new Set(["stores"]),
+  );
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
-  const [metrics, setMetrics] = useState<Map<string, { fn: AggFn; enabled: boolean }>>(
+  const [metrics, setMetrics] = useState<
+    Map<string, { fn: AggFn; enabled: boolean }>
+  >(
     new Map([
       ["coupon_amount", { fn: "sum", enabled: true }],
       ["qty", { fn: "sum", enabled: false }],
@@ -87,11 +91,19 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
           : baselineCoupons.filter((c) =>
               storeCoupons.some(
                 (sc) =>
-                  sc.storeid === c.storeid && sc.store_number === c.store_number,
+                  sc.storeid === c.storeid &&
+                  sc.store_number === c.store_number,
               ),
             ),
     }),
-    [metric, threshold, rawTrendThreshold, baselineCoupons, scope, storeCoupons],
+    [
+      metric,
+      threshold,
+      rawTrendThreshold,
+      baselineCoupons,
+      scope,
+      storeCoupons,
+    ],
   );
 
   const close = () => dispatch(setCouponExportOpen(false));
@@ -221,263 +233,267 @@ const CpnSalesExportModal = ({ storeCoupons }: CpnSalesExportModalProps) => {
       defaultHeight={960}
       closeOnBackdrop={false}
     >
-        {/* Header */}
-        <div className="cc-phone-header">
-          <div>
-            <p className="cc-navy-title text-[13px]">Export CSV</p>
-            <p className="text-custom-white text-[10px] mt-0.5">
-              {scope === "all" ? "All stores in search" : "Selected store"}
-            </p>
-          </div>
-          {/* Mode tabs */}
-          <div className="cc-segment-navy">
-            {(["presets", "custom"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`cc-chip-btn text-[11px] ${
-                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
-                }`}
-              >
-                {m === "presets" ? "Presets" : "Custom"}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={close}
-            aria-label="Close"
-            className="cc-navy-link justify-self-end"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
+      {/* Header */}
+      <div className="cc-phone-header">
+        <div>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
+          <p className="text-custom-white text-[10px] mt-0.5">
+            {scope === "all" ? "All stores in search" : "Selected store"}
+          </p>
         </div>
+        {/* Mode tabs */}
+        <div className="cc-segment-navy">
+          {(["presets", "custom"] as Mode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`cc-chip-btn text-[11px] ${
+                mode === m
+                  ? "bg-custom-white text-brand_navy"
+                  : "text-custom-white"
+              }`}
+            >
+              {m === "presets" ? "Presets" : "Custom"}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={close}
+          aria-label="Close"
+          className="cc-navy-link justify-self-end"
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* PRESETS MODE */}
-        {mode === "presets" && (
-          <div className="px-4 pt-4 pb-2 space-y-3 cc-scroll">
-            <div>
-              <p className="text-[11px] text-content uppercase tracking-wide font-medium mb-1.5">
-                Scope
-              </p>
-              <div className="flex gap-1.5">
-                {([
+      {/* PRESETS MODE */}
+      {mode === "presets" && (
+        <div className="px-4 pt-4 pb-2 space-y-3 cc-scroll">
+          <div>
+            <p className="text-[11px] text-content uppercase tracking-wide font-medium mb-1.5">
+              Scope
+            </p>
+            <div className="flex gap-1.5">
+              {(
+                [
                   { key: "store", label: "Selected store" },
                   { key: "all", label: "All stores in search" },
-                ] as { key: Scope; label: string }[]).map((sc) => (
-                  <button
+                ] as { key: Scope; label: string }[]
+              ).map((sc) => (
+                <button
+                  key={sc.key}
+                  onClick={() => setScope(sc.key)}
+                  className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
+                    scope === sc.key
+                      ? "border-brand_navy bg-row_selected text-content"
+                      : "border-line_field text-content hover:border-line_strong"
+                  }`}
+                >
+                  {sc.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium">
+            Select data to include
+          </p>
+          {PRESET_OPTIONS.map((pr) => (
+            <label
+              key={pr.key}
+              className="flex items-start gap-3 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={presets.has(pr.key)}
+                onChange={() => togglePreset(pr.key)}
+                className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
+              />
+              <div>
+                <p className="text-[13px] cc-row-title">{pr.label}</p>
+                <p className="text-[11px] text-content/95 mt-0.5">{pr.desc}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {/* CUSTOM MODE */}
+      {mode === "custom" && (
+        <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair flex-1 min-h-0">
+          {/* Left: config */}
+          <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
+            <div>
+              <p className="text-[10px] cc-caps mb-2">Scope</p>
+              <div className="flex flex-col gap-1.5">
+                {(
+                  [
+                    { key: "store", label: "Selected store" },
+                    { key: "all", label: "All stores in search" },
+                  ] as { key: Scope; label: string }[]
+                ).map((sc) => (
+                  <label
                     key={sc.key}
-                    onClick={() => setScope(sc.key)}
-                    className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
-                      scope === sc.key
-                        ? "border-brand_navy bg-row_selected text-content"
-                        : "border-line_field text-content hover:border-line_strong"
-                    }`}
+                    className="flex items-center gap-2 cursor-pointer"
                   >
-                    {sc.label}
-                  </button>
+                    <input
+                      type="radio"
+                      checked={scope === sc.key}
+                      onChange={() => setScope(sc.key)}
+                      className="accent-brand_navy h-3.5 w-3.5"
+                    />
+                    <span className="text-[12px] text-content">{sc.label}</span>
+                  </label>
                 ))}
               </div>
             </div>
 
-            <p className="text-[11px] text-content/95 uppercase tracking-wide font-medium">
-              Select data to include
-            </p>
-            {PRESET_OPTIONS.map((pr) => (
-              <label key={pr.key} className="flex items-start gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={presets.has(pr.key)}
-                  onChange={() => togglePreset(pr.key)}
-                  className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
-                />
-                <div>
-                  <p className="text-[13px] cc-row-title">
-                    {pr.label}
-                  </p>
-                  <p className="text-[11px] text-content/95 mt-0.5">{pr.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        )}
-
-        {/* CUSTOM MODE */}
-        {mode === "custom" && (
-          <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair flex-1 min-h-0">
-            {/* Left: config */}
-            <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
-              <div>
-                <p className="text-[10px] cc-caps mb-2">
-                  Scope
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  {([
-                  { key: "store", label: "Selected store" },
-                  { key: "all", label: "All stores in search" },
-                ] as { key: Scope; label: string }[]).map((sc) => (
-                    <label key={sc.key} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={scope === sc.key}
-                        onChange={() => setScope(sc.key)}
-                        className="accent-brand_navy h-3.5 w-3.5"
-                      />
-                      <span className="text-[12px] text-content">{sc.label}</span>
-                    </label>
-                  ))}
-                </div>
+            <div>
+              <p className="text-[10px] cc-caps mb-2">Group By</p>
+              <div className="space-y-1.5">
+                {CPN_SALES_DIMS.map((d) => (
+                  <label
+                    key={d.key}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={groupBy.has(d.key)}
+                      onChange={() => toggleDim(d.key)}
+                      className="cc-checkbox flex-shrink-0"
+                    />
+                    <span className="text-[12px] text-content">{d.label}</span>
+                  </label>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <p className="text-[10px] cc-caps mb-2">
-                  Group By
-                </p>
-                <div className="space-y-1.5">
-                  {CPN_SALES_DIMS.map((d) => (
-                    <label key={d.key} className="flex items-center gap-2 cursor-pointer">
+            <div>
+              <p className="text-[10px] cc-caps mb-2">Metrics</p>
+              <div className="space-y-2">
+                {CPN_SALES_METRICS.map((m) => {
+                  const sel = metrics.get(m.key)!;
+                  return (
+                    <div key={m.key} className="flex items-center gap-1.5">
                       <input
                         type="checkbox"
-                        checked={groupBy.has(d.key)}
-                        onChange={() => toggleDim(d.key)}
+                        checked={sel.enabled}
+                        onChange={() =>
+                          setMetrics((prev) => {
+                            const next = new Map(prev);
+                            next.set(m.key, { ...sel, enabled: !sel.enabled });
+                            return next;
+                          })
+                        }
                         className="cc-checkbox flex-shrink-0"
                       />
-                      <span className="text-[12px] text-content">{d.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[10px] cc-caps mb-2">
-                  Metrics
-                </p>
-                <div className="space-y-2">
-                  {CPN_SALES_METRICS.map((m) => {
-                    const sel = metrics.get(m.key)!;
-                    return (
-                      <div key={m.key} className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          checked={sel.enabled}
-                          onChange={() =>
-                            setMetrics((prev) => {
-                              const next = new Map(prev);
-                              next.set(m.key, { ...sel, enabled: !sel.enabled });
-                              return next;
-                            })
-                          }
-                          className="cc-checkbox flex-shrink-0"
-                        />
-                        <span
-                          className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
-                        >
-                          {m.label}
-                        </span>
-                        <select
-                          value={sel.fn}
-                          disabled={!sel.enabled}
-                          onChange={(e) =>
-                            setMetrics((prev) => {
-                              const next = new Map(prev);
-                              next.set(m.key, { ...sel, fn: e.target.value as AggFn });
-                              return next;
-                            })
-                          }
-                          className="text-[10px] cc-field-sm disabled:opacity-30"
-                          style={{ minWidth: 52 }}
-                        >
-                          {AGG_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
+                      <span
+                        className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
+                      >
+                        {m.label}
+                      </span>
+                      <select
+                        value={sel.fn}
+                        disabled={!sel.enabled}
+                        onChange={(e) =>
+                          setMetrics((prev) => {
+                            const next = new Map(prev);
+                            next.set(m.key, {
+                              ...sel,
+                              fn: e.target.value as AggFn,
+                            });
+                            return next;
+                          })
+                        }
+                        className="text-[10px] cc-field-sm disabled:opacity-30"
+                        style={{ minWidth: 52 }}
+                      >
+                        {AGG_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          </div>
 
-            {/* Right: preview */}
-            <div className="flex flex-col min-w-0">
-              <div className="cc-bar-header flex-shrink-0">
-                <p className="text-[11px] cc-caps">
-                  Preview
+          {/* Right: preview */}
+          <div className="flex flex-col min-w-0">
+            <div className="cc-bar-header flex-shrink-0">
+              <p className="text-[11px] cc-caps">Preview</p>
+              <span className="text-[10px] text-content/95">
+                {previewRows.length === 0
+                  ? "No data — select at least one group or metric"
+                  : `Showing ${Math.min(PREVIEW_ROWS, previewRows.length)} of ${previewRows.length} rows`}
+              </span>
+            </div>
+
+            {previewColumns.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-6 text-center">
+                <p className="text-[12px] text-content/95 leading-relaxed">
+                  Select at least one group-by dimension
+                  <br />
+                  or metric to see a preview.
                 </p>
-                <span className="text-[10px] text-content/95">
-                  {previewRows.length === 0
-                    ? "No data — select at least one group or metric"
-                    : `Showing ${Math.min(PREVIEW_ROWS, previewRows.length)} of ${previewRows.length} rows`}
-                </span>
               </div>
-
-              {previewColumns.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center p-6 text-center">
-                  <p className="text-[12px] text-content/95 leading-relaxed">
-                    Select at least one group-by dimension
-                    <br />
-                    or metric to see a preview.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-auto thin-scrollbar">
-                  <table className="min-w-full text-[11px] border-collapse">
-                    <thead className="sticky top-0 bg-fill_soft z-10">
-                      <tr>
+            ) : (
+              <div className="flex-1 overflow-auto thin-scrollbar">
+                <table className="min-w-full text-[11px] border-collapse">
+                  <thead className="sticky top-0 bg-fill_soft z-10">
+                    <tr>
+                      {previewColumns.map((c) => (
+                        <th key={c.key} className="cc-th text-content/95">
+                          {c.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewRows.slice(0, PREVIEW_ROWS).map((r, idx) => (
+                      <tr
+                        key={idx}
+                        className={
+                          idx % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"
+                        }
+                      >
                         {previewColumns.map((c) => (
-                          <th
-                            key={c.key}
-                            className="cc-th text-content/95"
-                          >
-                            {c.label}
-                          </th>
+                          <td key={c.key} className="cc-td text-content/95">
+                            {r[c.key] ?? "—"}
+                          </td>
                         ))}
                       </tr>
-                    </thead>
-                    <tbody>
-                      {previewRows.slice(0, PREVIEW_ROWS).map((r, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}>
-                          {previewColumns.map((c) => (
-                            <td
-                              key={c.key}
-                              className="cc-td text-content/95"
-                            >
-                              {r[c.key] ?? "—"}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="cc-bar-footer">
-          <button
-            onClick={close}
-            className="text-[12px] cc-muted-link"
-          >
-            Cancel
-          </button>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-content">
-              {source.length.toLocaleString()} coupon lines
-            </span>
-            <button
-              onClick={handleExport}
-              disabled={!canExport}
-              className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              Download CSV
-            </button>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
+      )}
+
+      {/* Footer */}
+      <div className="cc-bar-footer">
+        <button onClick={close} className="text-[12px] cc-muted-link">
+          Cancel
+        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-content">
+            {source.length.toLocaleString()} coupon lines
+          </span>
+          <button
+            onClick={handleExport}
+            disabled={!canExport}
+            className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            Download CSV
+          </button>
+        </div>
+      </div>
     </ResizableModalShell>
   );
 };

@@ -70,8 +70,15 @@ const CpnSalesDetailPanel = ({
 }: CpnSalesDetailPanelProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token, receiptLines: txLines, breakdown, selectedSectionKey, selectedStoreKey, sectionFilter } =
-    useCouponSalesCtx();
+  const {
+    url,
+    token,
+    receiptLines: txLines,
+    breakdown,
+    selectedSectionKey,
+    selectedStoreKey,
+    sectionFilter,
+  } = useCouponSalesCtx();
 
   // Which transaction the right pane is showing, if any. Local like dev
   // Coupons' own selectedSaleId — it's view state for one pane, not something
@@ -144,7 +151,8 @@ const CpnSalesDetailPanel = ({
 
   // Local like LP's cashier filter — it's a view control on one column, not
   // page state worth persisting across selections.
-  const [sectionTierFilter, setSectionTierFilter] = useState<CouponTierFilter>("all");
+  const [sectionTierFilter, setSectionTierFilter] =
+    useState<CouponTierFilter>("all");
   const sectionSort = useTriStateSort<SectionSortCol>();
   const txSort = useTriStateSort<TxSortCol>();
 
@@ -225,9 +233,8 @@ const CpnSalesDetailPanel = ({
 
   const transactions = useMemo(
     () =>
-      txSort.applySort(
-        buildTransactions(scopedCoupons, threshold),
-        (r, col) => (col === "amount" ? r.amount : r.lines),
+      txSort.applySort(buildTransactions(scopedCoupons, threshold), (r, col) =>
+        col === "amount" ? r.amount : r.lines,
       ),
     [scopedCoupons, threshold, txSort.sort],
   );
@@ -236,7 +243,11 @@ const CpnSalesDetailPanel = ({
 
   return (
     <div className="cc-panel min-w-0 h-full shadow-sm">
-      <DetailTitleBar storeTier={storeTier} storeLabel={storeLabel} rangeLabel={rangeLabel} />
+      <DetailTitleBar
+        storeTier={storeTier}
+        storeLabel={storeLabel}
+        rangeLabel={rangeLabel}
+      />
 
       <DetailKpiStrip totals={totals} baselineTotals={baselineTotals} />
 
@@ -275,7 +286,10 @@ const CpnSalesDetailPanel = ({
             has the coupon lines, so it can't show what was discounted. */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {openSaleId ? (
-            <ReceiptPane onBack={handleBackFromTransaction} onExport={exportTransaction} />
+            <ReceiptPane
+              onBack={handleBackFromTransaction}
+              onExport={exportTransaction}
+            />
           ) : (
             <TransactionsPane
               selectedSection={selectedSection}

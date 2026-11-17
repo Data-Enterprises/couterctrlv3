@@ -243,9 +243,7 @@ const CouponSales = () => {
           return result;
         }}
         helpPage="coupon-sales"
-        loadReceipt={async (saleId) =>
-          couponReceipt(mobileLines, saleId)
-        }
+        loadReceipt={async (saleId) => couponReceipt(mobileLines, saleId)}
       />
     );
   }

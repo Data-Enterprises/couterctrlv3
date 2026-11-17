@@ -18,7 +18,11 @@ import {
 } from "../../../../features/dev/devCouponSalesSlice";
 
 // Utils
-import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  formatCurrencyCompact,
+} from "../../../../utils";
 import {
   couponDotClass,
   couponPillClass,
@@ -48,7 +52,12 @@ interface CpnSalesStorePanelProps {
 /** Coupon Sales' left panel: the week's totals, a Trend / Avg $ switch with its threshold,
  *  tier chips, a store filter and the graded store list (sortable by amount, trans and
  *  count). Clicking a store selects it. */
-const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSalesStorePanelProps) => {
+const CpnSalesStorePanel = ({
+  rows,
+  totals,
+  rangeLabel,
+  onOpenSearch,
+}: CpnSalesStorePanelProps) => {
   const dispatch = useAppDispatch();
   const {
     threshold: rawThreshold,
@@ -184,7 +193,9 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
                 )
               }
               fallback={
-                isTrend ? COUPON_TREND_THRESHOLD_DEFAULT : COUPON_THRESHOLD_DEFAULT
+                isTrend
+                  ? COUPON_TREND_THRESHOLD_DEFAULT
+                  : COUPON_THRESHOLD_DEFAULT
               }
               min={isTrend ? 5 : 1}
               max={isTrend ? 100 : 20}
@@ -242,16 +253,16 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
           {/* Avg $ is a two-tier question — over the line or not — so Watch
               has nothing to count under it. */}
           {isTrend && (
-          <button
-            onClick={() => toggleTier("watch")}
-            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-              tierFilter === "watch"
-                ? "ring-2 ring-severity_watch_text/40 shadow-sm"
-                : ""
-            }`}
-          >
-            Watch ({watchCount})
-          </button>
+            <button
+              onClick={() => toggleTier("watch")}
+              className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                tierFilter === "watch"
+                  ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                  : ""
+              }`}
+            >
+              Watch ({watchCount})
+            </button>
           )}
           <button
             onClick={() => toggleTier("ok")}
@@ -276,9 +287,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       {/* ── Column headers ─────────────────────────────────────────────── */}
       <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-line_hair flex-shrink-0">
         <span className="w-2.5 flex-shrink-0" />
-        <span className="flex-1 text-[10px] cc-caps-strong">
-          Store
-        </span>
+        <span className="flex-1 text-[10px] cc-caps-strong">Store</span>
         <div data-help="sort" className="flex items-center gap-[14px]">
           <SortHeader
             col="amount"
@@ -301,7 +310,10 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
             onSort={handleSort}
             className="text-[10px] cc-caps-strong justify-end w-[46px] flex-shrink-0 hover:underline"
           />
-          <span className="text-[10px] cc-caps-strong text-center" style={{ width: 58 }}>
+          <span
+            className="text-[10px] cc-caps-strong text-center"
+            style={{ width: 58 }}
+          >
             Avg
           </span>
           {isTrend && (
@@ -317,7 +329,10 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
       </div>
 
       {/* ── Rows ───────────────────────────────────────────────────────── */}
-      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-line_hair rounded-b-xl">
+      <div
+        data-help="store-list"
+        className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-line_hair rounded-b-xl"
+      >
         {visible.length === 0 ? (
           <div className="flex items-center justify-center h-24 text-[12px] text-content/95">
             No stores match
@@ -382,25 +397,25 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: CpnSales
                   {/* Movement against this store's own prior two weeks. Up is
                       the bad direction — larger coupons than its own norm. */}
                   {isTrend && (
-                  <span
-                    className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
-                      row.trendPct === null
-                        ? "text-content/95"
-                        : row.trendPct > 0
-                          ? "text-severity_critical_text"
-                          : "text-severity_healthy_text"
-                    }`}
-                    style={{ width: 62 }}
-                    title={
-                      row.avgBaseline === null
-                        ? "No coupons in the baseline weeks"
-                        : `Baseline avg ${formatCurrency2(row.avgBaseline)}`
-                    }
-                  >
-                    {row.trendPct === null
-                      ? "—"
-                      : `${row.trendPct > 0 ? "+" : ""}${row.trendPct.toFixed(1)}%`}
-                  </span>
+                    <span
+                      className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
+                        row.trendPct === null
+                          ? "text-content/95"
+                          : row.trendPct > 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
+                      }`}
+                      style={{ width: 62 }}
+                      title={
+                        row.avgBaseline === null
+                          ? "No coupons in the baseline weeks"
+                          : `Baseline avg ${formatCurrency2(row.avgBaseline)}`
+                      }
+                    >
+                      {row.trendPct === null
+                        ? "—"
+                        : `${row.trendPct > 0 ? "+" : ""}${row.trendPct.toFixed(1)}%`}
+                    </span>
                   )}
                 </div>
               </button>
