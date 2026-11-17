@@ -16,7 +16,12 @@ import {
   pctChange,
   tierOfDelta,
 } from "../../../../../utils/grading";
-import { getVendorTier, marginPct, type VendorMetric, type VendorRow } from "../../utils";
+import {
+  getVendorTier,
+  marginPct,
+  type VendorMetric,
+  type VendorRow,
+} from "../../utils";
 
 // Interfaces
 import type { SubDeptMargin } from "../../../../../interfaces";
@@ -101,16 +106,21 @@ export const buildVendorsCsv = (
       const twLW: Pair = { net: 0, cogs: 0 };
       const lySum: Pair = { net: 0, cogs: 0 };
       const twLY: Pair = { net: 0, cogs: 0 };
-      let lwSeen = false, lySeen = false;
+      let lwSeen = false,
+        lySeen = false;
       for (const d of sel) {
         if (d.lwNet !== null) {
-          lwSum.net += d.lwNet; lwSum.cogs += d.lwCogs ?? 0;
-          twLW.net += d.twNet; twLW.cogs += d.twCogs;
+          lwSum.net += d.lwNet;
+          lwSum.cogs += d.lwCogs ?? 0;
+          twLW.net += d.twNet;
+          twLW.cogs += d.twCogs;
           lwSeen = true;
         }
         if (d.lyNet !== null) {
-          lySum.net += d.lyNet; lySum.cogs += d.lyCogs ?? 0;
-          twLY.net += d.twNet; twLY.cogs += d.twCogs;
+          lySum.net += d.lyNet;
+          lySum.cogs += d.lyCogs ?? 0;
+          twLY.net += d.twNet;
+          twLY.cogs += d.twCogs;
           lySeen = true;
         }
       }
@@ -265,7 +275,6 @@ export const buildItemsGradedCsv = (
  * own export would produce.
  */
 
-
 export const buildAllVendorsCsv = (items: GradedItem[]) => {
   const headers = [
     "Vendor ID",
@@ -372,10 +381,26 @@ export const fmtDate = (d: string) =>
     year: "numeric",
   });
 
-export const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
-  { sev: "critical", label: "Critical", activeClass: "bg-brand_danger border-brand_danger text-custom-white" },
-  { sev: "watch", label: "Watch", activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
-  { sev: "healthy", label: "Healthy", activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
+export const SEV_CHIP: {
+  sev: GradedSev;
+  label: string;
+  activeClass: string;
+}[] = [
+  {
+    sev: "critical",
+    label: "Critical",
+    activeClass: "bg-brand_danger border-brand_danger text-custom-white",
+  },
+  {
+    sev: "watch",
+    label: "Watch",
+    activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+  },
+  {
+    sev: "healthy",
+    label: "Healthy",
+    activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+  },
 ];
 
 export const SOURCE_LABEL: Record<CustomSource, string> = {

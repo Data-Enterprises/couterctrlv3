@@ -57,11 +57,7 @@ const Vendors = () => {
   // row carries both dimensions, so this is a grouping choice, not a page.
   if (context.isMobile)
     return (
-      <ItemPerfMobile
-        dimension="vendor"
-        title="Vendors"
-        listLabel="Vendors"
-      />
+      <ItemPerfMobile dimension="vendor" title="Vendors" listLabel="Vendors" />
     );
 
   if (vend.loading) {

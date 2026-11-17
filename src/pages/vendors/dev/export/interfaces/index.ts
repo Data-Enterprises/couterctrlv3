@@ -4,11 +4,7 @@ import type { SubDeptMargin } from "../../../../../interfaces";
 import type { VendorMetric, VendorRow } from "../../utils";
 
 export type ExportPreset =
-  | "vendors"
-  | "items"
-  | "items_graded"
-  | "all_vendors"
-  | "upc_list";
+  "vendors" | "items" | "items_graded" | "all_vendors" | "upc_list";
 export type ModalMode = "presets" | "custom";
 export type CustomSource = "tw" | "lw" | "ly";
 

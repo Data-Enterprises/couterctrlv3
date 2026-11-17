@@ -77,7 +77,8 @@ export const useVendorExport = ({
     () => new Set(selectedDay ? [selectedDay] : []),
   );
 
-  const gradingMetric: ItemGradingMetric = metric === "margin" ? "margin" : "sales";
+  const gradingMetric: ItemGradingMetric =
+    metric === "margin" ? "margin" : "sales";
 
   /** Items narrowed to the chosen days — TW to those dates, LW/LY to the same
    *  dates shifted, exactly as the Items tab narrows them. */
@@ -182,7 +183,10 @@ export const useVendorExport = ({
 
   const { aggRows, columns } = useMemo(() => {
     const activeDims = ITEM_DIMS.filter((d) => groupBy.has(d.key));
-    const activeMetrics = ITEM_METRICS.map((m) => ({ ...m, sel: metrics.get(m.key) }))
+    const activeMetrics = ITEM_METRICS.map((m) => ({
+      ...m,
+      sel: metrics.get(m.key),
+    }))
       .filter((m) => m.sel?.enabled)
       .map((m) => ({ key: m.key, fn: m.sel!.fn, label: m.label }));
 
@@ -196,7 +200,8 @@ export const useVendorExport = ({
       const out: Record<string, string> = {};
       for (const d of activeDims) {
         const raw = row[d.key];
-        out[d.key] = d.key === "sale_date" ? fmtDate(String(raw)) : String(raw ?? "");
+        out[d.key] =
+          d.key === "sale_date" ? fmtDate(String(raw)) : String(raw ?? "");
       }
       for (const m of activeMetrics) {
         const colKey = `${m.fn}__${m.key}`;
@@ -317,7 +322,6 @@ export const useVendorExport = ({
     onClose();
   };
 
-
   const togglePreset = (id: ExportPreset) =>
     setSelected((prev) => {
       const n = new Set(prev);
@@ -345,9 +349,12 @@ export const useVendorExport = ({
     });
   };
   const ALL: GradedSev[] = ["critical", "watch", "healthy"];
-  const toggleItemsGraded = () => toggleGraded("items_graded", itemSevs, setItemSevs, ALL);
-  const toggleAllVendors = () => toggleGraded("all_vendors", allSevs, setAllSevs, ALL);
-  const toggleUpcList = () => toggleGraded("upc_list", upcSevs, setUpcSevs, ["critical"]);
+  const toggleItemsGraded = () =>
+    toggleGraded("items_graded", itemSevs, setItemSevs, ALL);
+  const toggleAllVendors = () =>
+    toggleGraded("all_vendors", allSevs, setAllSevs, ALL);
+  const toggleUpcList = () =>
+    toggleGraded("upc_list", upcSevs, setUpcSevs, ["critical"]);
 
   const switchSource = (s: CustomSource) => {
     setSource(s);

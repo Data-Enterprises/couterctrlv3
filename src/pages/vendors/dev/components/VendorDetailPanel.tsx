@@ -332,7 +332,9 @@ const VendorDetailPanel = () => {
             onClick={() => setExportOpen(true)}
             disabled={vend.itemsLoading || !!vend.itemsError}
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
-            title={vend.itemsLoading ? "Export — items still loading" : "Export"}
+            title={
+              vend.itemsLoading ? "Export — items still loading" : "Export"
+            }
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
           </button>
@@ -379,7 +381,9 @@ const VendorDetailPanel = () => {
       <DayCardStrip
         days={dayCards}
         weekValue={fmt(valueOf(row.twNet, row.twCogs))}
-        weekDelta={basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null}
+        weekDelta={
+          basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null
+        }
         weekDeltaBasis={basis ?? undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
@@ -399,15 +403,15 @@ const VendorDetailPanel = () => {
           </span>
         </div>
       ) : (
-      <ItemMarginsTable
-        coverage={row.coverage}
-        items={vendorRaw}
-        gradingMetric={isMargin ? "margin" : "sales"}
-        threshold={itemThreshold}
-        thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
-        onThresholdChange={(v) => dispatch(setItemThreshold(v))}
-        selectedDay={selectedDay}
-      />
+        <ItemMarginsTable
+          coverage={row.coverage}
+          items={vendorRaw}
+          gradingMetric={isMargin ? "margin" : "sales"}
+          threshold={itemThreshold}
+          thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
+          onThresholdChange={(v) => dispatch(setItemThreshold(v))}
+          selectedDay={selectedDay}
+        />
       )}
     </div>
   );

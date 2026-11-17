@@ -68,11 +68,15 @@ interface VendorListPanelProps {
 
 /** The Vendors list panel: header with the store's week total and its change, location tabs, threshold and text filters,
  *  a no-supplier line, and vendor rows sortable by TY, vs LW and vs LY. */
-const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelProps) => {
+const VendorListPanel = ({
+  onSearchOpen,
+  onStoreNumberChange,
+}: VendorListPanelProps) => {
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const vend = useVendorsCtx();
-  const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
+  const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } =
+    vend;
 
   /**
    * The name says which location is on screen.
@@ -84,11 +88,15 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
    * label these stores identically.
    */
   const locationName = vend.selectedStoreNumber
-    ? applyStoreNumberToName(vend.storeName, vend.selectedStoreNumber, vend.availableStoreNumbers)
-    // No location picked is the combined tab, which is both of them. Falling
-    // through to the stored name put one store's number over a figure that is
-    // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
-    : combinedStoreName(vend.storeName, vend.availableStoreNumbers);
+    ? applyStoreNumberToName(
+        vend.storeName,
+        vend.selectedStoreNumber,
+        vend.availableStoreNumbers,
+      )
+    : // No location picked is the combined tab, which is both of them. Falling
+      // through to the stored name put one store's number over a figure that is
+      // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
+      combinedStoreName(vend.storeName, vend.availableStoreNumbers);
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
@@ -167,7 +175,11 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
   );
 
   // Store-level, so every vendor row carries the same coverage.
-  const headerCov = rows[0]?.coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 };
+  const headerCov = rows[0]?.coverage ?? {
+    dayCount: 0,
+    lwDayCount: 0,
+    lyDayCount: 0,
+  };
 
   const counts = useMemo(() => {
     const c = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };
@@ -224,26 +236,24 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
       // Dept Margins came to disagree by 0.03 points on an identical week.
       // The sales delta stays as it is: it is a total, not a rate, so the
       // grouping does not change it.
-      lwPct:
-        isMargin
-          ? storeMarginDelta(
-              countedRows(vend.raw.tw),
-              countedRows(vend.raw.lw),
-              "lw",
-            )
-          : lwNet > 0
-            ? pctChange(twNetLW, lwNet)
-            : null,
-      lyPct:
-        isMargin
-          ? storeMarginDelta(
-              countedRows(vend.raw.tw),
-              countedRows(vend.raw.ly),
-              "ly",
-            )
-          : lyNet > 0
-            ? pctChange(twNetLY, lyNet)
-            : null,
+      lwPct: isMargin
+        ? storeMarginDelta(
+            countedRows(vend.raw.tw),
+            countedRows(vend.raw.lw),
+            "lw",
+          )
+        : lwNet > 0
+          ? pctChange(twNetLW, lwNet)
+          : null,
+      lyPct: isMargin
+        ? storeMarginDelta(
+            countedRows(vend.raw.tw),
+            countedRows(vend.raw.ly),
+            "ly",
+          )
+        : lyNet > 0
+          ? pctChange(twNetLY, lyNet)
+          : null,
     };
   }, [graded, metric, vend.raw]);
 
@@ -314,24 +324,62 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
               </span>
               {totals.lwPct !== null && (
                 <span
-                  title={headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").title}
+                  title={
+                    headerDeltaPill(
+                      totals.lwPct,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).title
+                  }
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").cls
+                    headerDeltaPill(
+                      totals.lwPct,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).cls
                   }`}
                 >
                   LW {fmtDelta(totals.lwPct, metric === "margin")}
-                  {headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").note}
+                  {
+                    headerDeltaPill(
+                      totals.lwPct,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).note
+                  }
                 </span>
               )}
               {totals.lyPct !== null && (
                 <span
-                  title={headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").title}
+                  title={
+                    headerDeltaPill(
+                      totals.lyPct,
+                      headerCov.lyDayCount,
+                      headerCov.dayCount,
+                      "last year",
+                    ).title
+                  }
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").cls
+                    headerDeltaPill(
+                      totals.lyPct,
+                      headerCov.lyDayCount,
+                      headerCov.dayCount,
+                      "last year",
+                    ).cls
                   }`}
                 >
                   LY {fmtDelta(totals.lyPct, metric === "margin")}
-                  {headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").note}
+                  {
+                    headerDeltaPill(
+                      totals.lyPct,
+                      headerCov.lyDayCount,
+                      headerCov.dayCount,
+                      "last year",
+                    ).note
+                  }
                 </span>
               )}
             </>
@@ -360,7 +408,9 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
                 className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
                 style={{
                   background:
-                    metric === key ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)",
+                    metric === key
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(255,255,255,0.07)",
                 }}
               >
                 {label}
@@ -372,8 +422,13 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
 
           {/* Threshold. The label stays generic so the Performance headers read
               identically — the page already says what is being graded. */}
-          <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[11px] text-custom-white font-medium">Threshold</span>
+          <div
+            data-help="threshold"
+            className="flex items-center gap-1.5 flex-shrink-0"
+          >
+            <span className="text-[11px] text-custom-white font-medium">
+              Threshold
+            </span>
             <ThresholdFilter
               value={threshValue}
               onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
@@ -400,7 +455,10 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
 
       {/* Filter row */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair">
-        <div data-help="severity-chips" className="flex items-center gap-1.5 flex-wrap">
+        <div
+          data-help="severity-chips"
+          className="flex items-center gap-1.5 flex-wrap"
+        >
           {chip("critical", "Crit", counts.critical)}
           {chip("watch", "Watch", counts.watch)}
           {chip("healthy", "OK", counts.healthy)}
@@ -416,9 +474,12 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
 
       {noVendor.count > 0 && (
         <div className="px-4 py-1.5 bg-custom-white border-x border-b border-line_hair text-[11px] text-content/95 flex-shrink-0">
-          <span className="font-medium text-content">{fmt(noVendor.value)}</span> booked
-          without a vendor — coupon lines and anything else the POS records with no
-          supplier. Counted in the store total so the vendors below still add up.
+          <span className="font-medium text-content">
+            {fmt(noVendor.value)}
+          </span>{" "}
+          booked without a vendor — coupon lines and anything else the POS
+          records with no supplier. Counted in the store total so the vendors
+          below still add up.
         </div>
       )}
 
@@ -426,9 +487,7 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: VendorListPanelP
         {/* Column headers */}
         <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
-          <span className="text-[11.5px] cc-caps flex-1">
-            Vendor
-          </span>
+          <span className="text-[11.5px] cc-caps flex-1">Vendor</span>
           <div data-help="sort" className="flex items-center gap-[14px]">
             <SortHeader
               col="ty"

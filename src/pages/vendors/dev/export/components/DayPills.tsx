@@ -9,7 +9,12 @@ interface DayPillsProps {
 }
 
 /** All week, or any of its days: the one scope every dataset follows. */
-const DayPills = ({ weekDates, exportDays, onAll, onToggle }: DayPillsProps) => {
+const DayPills = ({
+  weekDates,
+  exportDays,
+  onAll,
+  onToggle,
+}: DayPillsProps) => {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <button

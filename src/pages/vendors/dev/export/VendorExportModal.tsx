@@ -26,7 +26,8 @@ import ExportFooter from "../../../../components-dev/modals/ExportFooter";
  * selection.
  */
 const VendorExportModal = (props: VendorExportProps) => {
-  const { onClose, storeName, vendorName, rows, weekDates, itemThreshold } = props;
+  const { onClose, storeName, vendorName, rows, weekDates, itemThreshold } =
+    props;
   const x = useVendorExport(props);
   const basis = `${x.gradingMetric} at ${itemThreshold}%`;
   const days = (
@@ -62,7 +63,9 @@ const VendorExportModal = (props: VendorExportProps) => {
             {/* Scope. Above the datasets because it changes what every one of
                 them contains; All week is the cleared state. */}
             {days}
-            <span className="block text-[10px] text-content">{x.scopeNote}</span>
+            <span className="block text-[10px] text-content">
+              {x.scopeNote}
+            </span>
 
             {x.presetDatasets.map(({ id, label, description, disabled }) => (
               <PresetOption
@@ -90,7 +93,11 @@ const VendorExportModal = (props: VendorExportProps) => {
             />
 
             {/* Scope for both store-wide datasets below; it governs the pair. */}
-            <VendorPick rows={rows} value={x.vendorPick} onChange={x.setVendorPick} />
+            <VendorPick
+              rows={rows}
+              value={x.vendorPick}
+              onChange={x.setVendorPick}
+            />
 
             {/* The only datasets not scoped to the open vendor. Free: the
                 search already holds every vendor's rows. */}
@@ -139,7 +146,11 @@ const VendorExportModal = (props: VendorExportProps) => {
         <>
           <div className="grid grid-cols-[200px_1fr] divide-x divide-line_hair min-h-[360px] max-h-[calc(100vh-220px)]">
             <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
-              <SourcePicker source={x.source} onSource={x.switchSource} vendorName={vendorName} />
+              <SourcePicker
+                source={x.source}
+                onSource={x.switchSource}
+                vendorName={vendorName}
+              />
 
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
