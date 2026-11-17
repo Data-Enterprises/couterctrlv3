@@ -9,7 +9,7 @@ import { getHourly } from "../../../../../../api/sales";
 import { shiftIso } from "../../../../../../utils/grading";
 import { formatCurrency2, formatBigNumber, sameWeekDayLastYear } from "../../../../../../utils";
 import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
-import { byHour, day, hourLabel, MINUS } from "../utils";
+import { byHour, day, hourLabel, HOUR_COLS, MINUS } from "../utils";
 
 // Interfaces
 import type { HourlySale } from "../../../../../../interfaces";
@@ -17,6 +17,7 @@ import type { Row } from "../interfaces";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+import CompareHourRow from "./CompareHourRow";
 
 interface HourlySideBySideProps {
   openStoreName: string;
@@ -206,7 +207,6 @@ const HourlySideBySide = ({
   };
 
   const focus = rows.find((r) => r.hour === picked) ?? rows[0] ?? null;
-  const COLS = "70px minmax(90px,2fr) 104px";
 
   const stat = (key: string, v: number) => (
     <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
@@ -268,7 +268,7 @@ const HourlySideBySide = ({
           <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
             <div
               className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] cc-caps"
-              style={{ gridTemplateColumns: COLS }}
+              style={{ gridTemplateColumns: HOUR_COLS }}
             >
               <span>Hour</span>
               <span>
@@ -278,62 +278,18 @@ const HourlySideBySide = ({
             </div>
 
             <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-              {rows.map((r) => {
-                const g = gapOf(r);
-                const on = focus?.hour === r.hour;
-                return (
-                  <button
-                    key={r.hour}
-                    onClick={() => setPicked(r.hour)}
-                    className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b transition-colors ${
-                      on
-                        ? "cc-row-selected"
-                        : "border-brand_navy/15 hover:bg-fill_soft"
-                    }`}
-                    style={{ gridTemplateColumns: COLS }}
-                  >
-                    <span className="tabular-nums text-[12.5px] font-medium text-content">
-                      {r.label}
-                    </span>
-
-                    <span className="grid gap-[3px] min-w-0">
-                      <span className="block h-2 rounded-sm bg-bkg">
-                        <span
-                          className="block h-2 rounded-sm bg-store_open"
-                          style={{ width: widthOf(mode === "money" ? r.a : shareMine(r)) }}
-                        />
-                      </span>
-                      {/* An hour they were shut gets a hatched full track, not
-                          a zero-width bar nobody can see. */}
-                      <span className="block h-2 rounded-sm bg-bkg">
-                        <span
-                          className="block h-2 rounded-sm"
-                          style={
-                            r.b === 0
-                              ? {
-                                  width: "100%",
-                                  background:
-                                    "repeating-linear-gradient(45deg, rgb(var(--color-severity-watch-bg)) 0 4px, transparent 4px 8px)",
-                                }
-                              : {
-                                  width: widthOf(mode === "money" ? r.b : shareTheirs(r)),
-                                  background: "rgb(var(--color-store-compare))",
-                                }
-                          }
-                        />
-                      </span>
-                    </span>
-
-                    <span
-                      className={`text-right tabular-nums text-[12px] font-semibold ${
-                        g >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
-                      }`}
-                    >
-                      {gapText(r)}
-                    </span>
-                  </button>
-                );
-              })}
+              {rows.map((r) => (
+                <CompareHourRow
+                  key={r.hour}
+                  row={r}
+                  on={focus?.hour === r.hour}
+                  mineWidth={widthOf(mode === "money" ? r.a : shareMine(r))}
+                  theirsWidth={widthOf(mode === "money" ? r.b : shareTheirs(r))}
+                  gap={gapOf(r)}
+                  gapText={gapText(r)}
+                  onPick={() => setPicked(r.hour)}
+                />
+              ))}
 
               {rows.length === 0 && (
                 <div className="px-3 py-6 text-center text-[12.5px] text-content/95">

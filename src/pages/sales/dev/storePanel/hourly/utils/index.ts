@@ -308,6 +308,9 @@ export const basket = (net: number, trans: number) => (trans > 0 ? net / trans :
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
 export const MINUS = "−";
 
+/** The store-against-store hour list's columns: hour, the two bars, the gap. */
+export const HOUR_COLS = "70px minmax(90px,2fr) 104px";
+
 /** An hour as a short clock label, e.g. 9a or 12p. */
 export const hourLabel = (h: number) => {
   const suffix = h < 12 ? "a" : "p";
