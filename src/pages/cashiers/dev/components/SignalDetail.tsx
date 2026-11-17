@@ -38,9 +38,10 @@ const SignalDetail = ({
   transactionLengths,
 }: SignalDetailProps) => {
   const [openTransaction, setOpenTransaction] = useState<string | null>(null);
-  const [sort, setSort] = useState<{ col: SortCol; dir: "desc" | "asc" } | null>(
-    null,
-  );
+  const [sort, setSort] = useState<{
+    col: SortCol;
+    dir: "desc" | "asc";
+  } | null>(null);
 
   const finding = describeSignal(signal, lens);
   const isBehaviour = signal.spread === "single" || signal.spread === "narrow";
@@ -138,7 +139,9 @@ const SignalDetail = ({
           >
             <p
               className={`text-[11.5px] leading-relaxed ${
-                isBehaviour ? "text-severity_critical_text" : "text-severity_watch_text"
+                isBehaviour
+                  ? "text-severity_critical_text"
+                  : "text-severity_watch_text"
               }`}
             >
               {finding}
@@ -155,7 +158,11 @@ const SignalDetail = ({
                 { col: null, label: "Cashier", align: "" },
                 { col: null, label: "Lines", align: "" },
                 { col: "qty", label: "Qty", align: "justify-end text-right" },
-                { col: "amount", label: "Amount", align: "justify-end text-right" },
+                {
+                  col: "amount",
+                  label: "Amount",
+                  align: "justify-end text-right",
+                },
               ] as { col: SortCol | null; label: string; align: string }[]
             ).map(({ col, label, align }) =>
               col ? (
@@ -196,7 +203,11 @@ const SignalDetail = ({
                 <div className="truncate">
                   {t.cashierName || `#${t.cashierNumber}`}
                 </div>
-                <div className={t.hasLastLine ? "text-delta_negative_text font-medium" : ""}>
+                <div
+                  className={
+                    t.hasLastLine ? "text-delta_negative_text font-medium" : ""
+                  }
+                >
                   {t.lineCount} of {t.totalLines}
                   {t.hasLastLine ? " · last" : ""}
                 </div>

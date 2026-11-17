@@ -27,7 +27,11 @@ import {
 } from "../../../api/lossPrevention";
 
 // Utils
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
+import {
+  formatGoliathDate,
+  formatCurrency2,
+  getStoreName,
+} from "../../../utils";
 import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
 import { reasonOf } from "../../../utils/serverError";
 
@@ -36,9 +40,7 @@ import type { JsonError, TransactionListItem } from "../../../interfaces";
 
 // Components
 import BackButton from "../../../components-dev/BackButton";
-import {
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import CashiersExportModal from "./components/CashiersExportModal";
 import ExplorerSearch from "./components/ExplorerSearch";
@@ -300,7 +302,10 @@ const Cashiers = () => {
           </button>
         </div>
 
-        <div data-help="kpis" className="grid grid-cols-6 border-b border-line_hair flex-shrink-0">
+        <div
+          data-help="kpis"
+          className="grid grid-cols-6 border-b border-line_hair flex-shrink-0"
+        >
           {[
             {
               label: "Exception lines",

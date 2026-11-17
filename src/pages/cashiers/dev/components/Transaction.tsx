@@ -162,7 +162,9 @@ const Transaction = ({ trans }: TransactionProps) => {
         if (resp.data.error === 0)
           toast.success("Transaction emailed successfully");
       })
-      .catch((err) => toast.error(serverDetail(err) ?? "Error emailing transaction"));
+      .catch((err) =>
+        toast.error(serverDetail(err) ?? "Error emailing transaction"),
+      );
   };
 
   return (
@@ -240,7 +242,9 @@ const Transaction = ({ trans }: TransactionProps) => {
             <div
               key={i}
               className="grid gap-2 py-1.5 border-b border-line_faint items-center"
-              style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
+              style={{
+                gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px",
+              }}
             >
               <div className="text-[9px] text-content/95 truncate">
                 {item.product_code || "—"}

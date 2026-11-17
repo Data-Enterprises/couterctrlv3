@@ -99,10 +99,11 @@ const SignalListMobile = ({
                     ["Items", totals.items.toLocaleString()],
                   ] as [string, string][]
                 ).map(([k, v]) => (
-                  <div key={k} className="flex flex-col items-center text-center">
-                    <span className="cc-caps-mono text-[9.5px]">
-                      {k}
-                    </span>
+                  <div
+                    key={k}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <span className="cc-caps-mono text-[9.5px]">{k}</span>
                     <span className="font-display text-[15px] font-bold text-content">
                       {v}
                     </span>
@@ -200,7 +201,9 @@ const SignalListMobile = ({
               <button
                 key={t}
                 type="button"
-                aria-current={t === explorerFetchedException ? "true" : undefined}
+                aria-current={
+                  t === explorerFetchedException ? "true" : undefined
+                }
                 onClick={() => {
                   onExceptionChange(t);
                   setTypePickerOpen(false);

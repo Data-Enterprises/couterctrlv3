@@ -34,7 +34,9 @@ interface SignalTransactionsMobileProps {
  * The band under the header is `describeSignal()`, the explorer's reading of
  * what the signal means.
  */
-const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => {
+const SignalTransactionsMobile = ({
+  onBack,
+}: SignalTransactionsMobileProps) => {
   const {
     explorerSignalKey,
     explorerLens,
@@ -98,9 +100,7 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
               ] as [string, string][]
             ).map(([k, v]) => (
               <div key={k} className="flex flex-col items-center text-center">
-                <span className="cc-caps-mono text-[9.5px]">
-                  {k}
-                </span>
+                <span className="cc-caps-mono text-[9.5px]">{k}</span>
                 <span className="font-display text-[15px] font-bold tabular-nums text-content">
                   {v}
                 </span>
@@ -156,7 +156,11 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
         >
           {/* saleType is passed so the receipt doesn't read Loss
               Prevention's own selected type. */}
-          <Transaction trans={receipt} saleType={explorerFetchedException} compact />
+          <Transaction
+            trans={receipt}
+            saleType={explorerFetchedException}
+            compact
+          />
         </BottomSheet>
       )}
     </>

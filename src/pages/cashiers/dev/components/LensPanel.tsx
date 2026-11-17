@@ -31,7 +31,10 @@ const LensPanel = ({
 }: LensPanelProps) => {
   return (
     <div className="w-[42%] flex-shrink-0 flex flex-col min-h-0 border-r border-line_hair">
-      <div data-help="grouping" className="flex gap-1 p-2 border-b border-line_hair flex-shrink-0">
+      <div
+        data-help="grouping"
+        className="flex gap-1 p-2 border-b border-line_hair flex-shrink-0"
+      >
         {LENSES.map((l) => (
           <button
             key={l.key}
@@ -73,11 +76,16 @@ const LensPanel = ({
               key={s.key}
               onClick={() => onSelect(s.key)}
               className={`w-full text-left px-3 py-2 transition-colors ${
-                isSelected ? "cc-row-selected" : "even:bg-row_stripe hover:bg-fill_soft"
+                isSelected
+                  ? "cc-row-selected"
+                  : "even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={
                 isSelected
-                  ? { boxShadow: "inset 2px 0 0 rgb(var(--color-row-selected-border))" }
+                  ? {
+                      boxShadow:
+                        "inset 2px 0 0 rgb(var(--color-row-selected-border))",
+                    }
                   : undefined
               }
             >

@@ -1,12 +1,25 @@
 // Utils
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
-import { fmtNum, rowsToCsv, type AggFn, type AggRow } from "../../../../utils/csvExport";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
+import {
+  fmtNum,
+  rowsToCsv,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
 
 // Interfaces
-import type { ExplorerTotals, Signal, SignalTransaction, SpreadKind, StoreNameResolver } from "../interfaces";
+import type {
+  ExplorerTotals,
+  Signal,
+  SignalTransaction,
+  SpreadKind,
+  StoreNameResolver,
+} from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-
 
 export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "store", label: "Store" },
@@ -94,8 +107,10 @@ export const cashierKeyOf = (r: TransactionListItem) =>
 export const terminalKeyOf = (r: TransactionListItem) =>
   `${storeKeyOf(r)}__${r.terminal || ""}`;
 
-const distinct = <T>(rows: TransactionListItem[], pick: (r: TransactionListItem) => T) =>
-  new Set(rows.map(pick)).size;
+const distinct = <T>(
+  rows: TransactionListItem[],
+  pick: (r: TransactionListItem) => T,
+) => new Set(rows.map(pick)).size;
 
 const topItemOf = (rows: TransactionListItem[]) => {
   const counts = new Map<string, { label: string; count: number }>();
@@ -137,7 +152,10 @@ const spreadFor = (
   return { spread: "wide", spreadLabel: label };
 };
 
-const groupKeyFor = (lens: ExplorerLens, row: TransactionListItem): string | null => {
+const groupKeyFor = (
+  lens: ExplorerLens,
+  row: TransactionListItem,
+): string | null => {
   switch (lens) {
     case "store":
       return storeKeyOf(row);
@@ -165,7 +183,10 @@ const labelsFor = (
     case "store":
       return {
         label: applyStoreNumberToName(
-          resolveStoreName(row.storeid, row.store_name || `Store ${row.storeid}`),
+          resolveStoreName(
+            row.storeid,
+            row.store_name || `Store ${row.storeid}`,
+          ),
           row.store_number,
           numbersForStoreId,
         ),
@@ -219,7 +240,13 @@ export const buildSignals = (
     const { spread, spreadLabel } = spreadFor(lens, rows, cashiers);
     signals.push({
       key,
-      ...labelsFor(lens, rows[0], key, resolveStoreName, numbersById[rows[0].storeid] ?? []),
+      ...labelsFor(
+        lens,
+        rows[0],
+        key,
+        resolveStoreName,
+        numbersById[rows[0].storeid] ?? [],
+      ),
       count: rows.length,
       amount: rows.reduce((sum, r) => sum + (r.total_sales ?? 0), 0),
       transactions: distinct(rows, (r) => r.sale_id),
@@ -555,8 +582,7 @@ export const formatQty = (qty: number) =>
   Number.isInteger(qty) ? String(qty) : qty.toFixed(2);
 
 /** The signal detail table's columns. */
-export const GRID_COLS =
-  "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
+export const GRID_COLS = "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
 
 /** The sunken navy fill of a transaction's chips. */
 export const chipStyle = {

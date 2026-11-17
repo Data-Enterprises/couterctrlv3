@@ -4,11 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../../../hooks";
 
 // Utils
 import { getStoreName } from "../../../../utils";
-import {
-  buildTransactionLengths,
-  buildSignals,
-  buildTotals,
-} from "../utils";
+import { buildTransactionLengths, buildSignals, buildTotals } from "../utils";
 
 export const useCashierCtx = () => {
   const dispatch = useAppDispatch();
