@@ -1,6 +1,5 @@
 // Hooks
-import { useMemo, useRef } from "react";
-import { useAppDispatch } from "../../../../hooks";
+import { useMemo } from "react";
 import { useCouponSalesCtx } from "../hooks";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
@@ -13,8 +12,6 @@ import {
   setCouponTierFilter,
   setCouponStoreFilter,
   COUPON_THRESHOLD_DEFAULT,
-  COUPON_TREND_THRESHOLD_DEFAULT,
-  type CouponTierFilter,
 } from "../../../../features/dev/devCouponSalesSlice";
 
 // Utils
@@ -23,24 +20,18 @@ import {
   formatBigNumber,
   formatCurrencyCompact,
 } from "../../../../utils";
-import {
-  couponDotClass,
-  couponPillClass,
-  type CouponRow,
-  type CouponTotals,
-  METRIC_OPTS,
-} from "../utils";
+import { type CouponRow, type CouponTotals } from "../utils";
 
 // Interfaces
 import type { StoreSortCol } from "../interfaces";
 
 // Components
-import BackButton from "../../../../components-dev/BackButton";
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
-import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
-import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import SortHeader from "../../../../components-dev/SortHeader";
+import HeaderFigure from "./components/HeaderFigure";
+import StoreControlsRow from "./components/StoreControlsRow";
+import TierChip from "./components/TierChip";
+import StoreColumnHead from "./components/StoreColumnHead";
+import StoreRow from "./components/StoreRow";
 
 interface CpnSalesStorePanelProps {
   rows: CouponRow[];
@@ -58,8 +49,8 @@ const CpnSalesStorePanel = ({
   rangeLabel,
   onOpenSearch,
 }: CpnSalesStorePanelProps) => {
-  const dispatch = useAppDispatch();
   const {
+    dispatch,
     threshold: rawThreshold,
     trendThreshold: rawTrendThreshold,
     metric,
@@ -67,28 +58,9 @@ const CpnSalesStorePanel = ({
     storeFilter,
     selectedStoreKey,
   } = useCouponSalesCtx();
+  const { sort, handleSort, applySort } = useTriStateSort<StoreSortCol>();
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
   const isTrend = metric === "trend";
-  const activeRaw = isTrend ? rawTrendThreshold : rawThreshold;
-
-  // Mirrors the dollar threshold's ref: hold the last valid amount while the
-  // input is empty so clearing it never reshuffles the list mid-edit.
-  const lastValidTrendRef = useRef(
-    rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
-  );
-  if (rawTrendThreshold !== null) lastValidTrendRef.current = rawTrendThreshold;
-
-  // Clearing the numeric input dispatches null; grading deliberately holds the
-  // last valid amount so rows don't reshuffle mid-edit. The slider has to sit
-  // at that same number or it would show a value nothing is graded against.
-  const lastValidRef = useRef<number>(rawThreshold ?? COUPON_THRESHOLD_DEFAULT);
-  if (rawThreshold != null) lastValidRef.current = rawThreshold;
-
-  const criticalCount = rows.filter((r) => r.tier === "critical").length;
-  const watchCount = rows.filter((r) => r.tier === "watch").length;
-  const okCount = rows.filter((r) => r.tier === "ok").length;
-
-  const { sort, handleSort, applySort } = useTriStateSort<StoreSortCol>();
 
   const visible = useMemo(() => {
     const byTier =
@@ -103,8 +75,20 @@ const CpnSalesStorePanel = ({
     );
   }, [rows, tierFilter, storeFilter, sort]);
 
-  const toggleTier = (tier: Exclude<CouponTierFilter, "all">) =>
-    dispatch(setCouponTierFilter(tierFilter === tier ? "all" : tier));
+  const countOf = (tier: CouponRow["tier"]) =>
+    rows.filter((r) => r.tier === tier).length;
+
+  const chip = (tier: "critical" | "watch" | "ok", label: string) => (
+    <TierChip
+      tier={tier}
+      label={label}
+      count={countOf(tier)}
+      active={tierFilter === tier}
+      onClick={() =>
+        dispatch(setCouponTierFilter(tierFilter === tier ? "all" : tier))
+      }
+    />
+  );
 
   return (
     <div className="flex flex-col min-w-0 h-full shadow-lg">
@@ -117,163 +101,42 @@ const CpnSalesStorePanel = ({
           </span>
           <div className="flex-1" />
           <div className="flex items-center gap-3 text-custom-white">
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
-              Amount{" "}
-              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
-                {formatCurrencyCompact(totals.amount)}
-              </span>
-            </span>
+            <HeaderFigure
+              label="Amount"
+              value={formatCurrencyCompact(totals.amount)}
+            />
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
-              Coupons{" "}
-              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
-                {formatBigNumber(totals.lines, 0)}
-              </span>
-            </span>
+            <HeaderFigure
+              label="Coupons"
+              value={formatBigNumber(totals.lines, 0)}
+            />
             <span className="w-px h-3.5 bg-custom-white/20" />
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/95">
-              Avg{" "}
-              <span className="text-[13px] cc-navy-title normal-case tracking-normal">
-                {formatCurrency2(totals.avgAmount)}
-              </span>
-            </span>
+            <HeaderFigure
+              label="Avg"
+              value={formatCurrency2(totals.avgAmount)}
+            />
           </div>
         </div>
 
-        {/* Row 2: search | threshold */}
-        <div className="flex items-center gap-2 cc-navy-header-row">
-          <BackButton onClick={onOpenSearch} helpAnchor="search" />
-
-          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
-
-          {/* Trend / Avg $ — which question the page grades on. The threshold
-              control below follows the mode, because the two modes measure in
-              different units: a percentage move against the baseline, or a
-              flat dollar line with no baseline in play. */}
-          <div
-            data-help="metric"
-            className="flex items-center flex-shrink-0 rounded overflow-hidden"
-            style={{ height: 22 }}
-          >
-            {METRIC_OPTS.map(({ key, label }) => {
-              const active = metric === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => dispatch(setCouponMetric(key))}
-                  className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
-                  style={{
-                    background: active
-                      ? "rgba(255,255,255,0.2)"
-                      : "rgba(255,255,255,0.07)",
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="flex-1" />
-
-          {/* The slider and the numeric input write the same value; the slider
-              covers the range that actually separates stores, the input takes
-              anything. */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[11px] text-custom-white font-medium">
-              {isTrend ? "Trend Threshold" : "Avg Threshold"}
-            </span>
-            <ThresholdSlider
-              value={isTrend ? lastValidTrendRef.current : lastValidRef.current}
-              onChange={(amount) =>
-                dispatch(
-                  isTrend
-                    ? setCouponTrendThreshold(amount)
-                    : setCouponThreshold(amount),
-                )
-              }
-              fallback={
-                isTrend
-                  ? COUPON_TREND_THRESHOLD_DEFAULT
-                  : COUPON_THRESHOLD_DEFAULT
-              }
-              min={isTrend ? 5 : 1}
-              max={isTrend ? 100 : 20}
-              variant="dark"
-              ariaLabel={
-                isTrend
-                  ? "Coupon trend threshold, percent"
-                  : "Coupon grading threshold, dollars"
-              }
-            />
-            <ThresholdFilter
-              value={
-                activeRaw === null
-                  ? null
-                  : { op: "gt" as const, amount: activeRaw }
-              }
-              onChange={(v) =>
-                dispatch(
-                  isTrend
-                    ? setCouponTrendThreshold(v?.amount ?? null)
-                    : setCouponThreshold(v?.amount ?? null),
-                )
-              }
-              prefix={isTrend ? undefined : "$"}
-              suffix={isTrend ? "%" : undefined}
-              showOp={false}
-              inputWidth={44}
-              variant="dark"
-            />
-          </div>
-
-          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
-
-          {/* About this view — sits after the threshold, matching Sales and
-              Sub Dept Margins. */}
-          <div className="relative flex-shrink-0">
-            <PageInfoButton page="coupon-sales" />
-          </div>
-        </div>
+        <StoreControlsRow
+          metric={metric}
+          onMetric={(key) => dispatch(setCouponMetric(key))}
+          threshold={rawThreshold}
+          trendThreshold={rawTrendThreshold}
+          onThreshold={(v) => dispatch(setCouponThreshold(v))}
+          onTrendThreshold={(v) => dispatch(setCouponTrendThreshold(v))}
+          onOpenSearch={onOpenSearch}
+        />
       </div>
 
       {/* ── Tier chips + text filter ───────────────────────────────────── */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair flex-shrink-0">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
-          <button
-            onClick={() => toggleTier("critical")}
-            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-              tierFilter === "critical"
-                ? "ring-2 ring-severity_critical_text/40 shadow-sm"
-                : ""
-            }`}
-          >
-            Crit ({criticalCount})
-          </button>
+          {chip("critical", "Crit")}
           {/* Avg $ is a two-tier question — over the line or not — so Watch
               has nothing to count under it. */}
-          {isTrend && (
-            <button
-              onClick={() => toggleTier("watch")}
-              className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-                tierFilter === "watch"
-                  ? "ring-2 ring-severity_watch_text/40 shadow-sm"
-                  : ""
-              }`}
-            >
-              Watch ({watchCount})
-            </button>
-          )}
-          <button
-            onClick={() => toggleTier("ok")}
-            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-              tierFilter === "ok"
-                ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
-                : ""
-            }`}
-          >
-            OK ({okCount})
-          </button>
+          {isTrend && chip("watch", "Watch")}
+          {chip("ok", "OK")}
         </div>
         <div className="flex-shrink-0">
           <TextFilter
@@ -284,49 +147,7 @@ const CpnSalesStorePanel = ({
         </div>
       </div>
 
-      {/* ── Column headers ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2.5 px-3 py-1.5 bg-custom-white border-x border-b border-line_hair flex-shrink-0">
-        <span className="w-2.5 flex-shrink-0" />
-        <span className="flex-1 text-[10px] cc-caps-strong">Store</span>
-        <div data-help="sort" className="flex items-center gap-[14px]">
-          <SortHeader
-            col="amount"
-            label="Amount"
-            sort={sort}
-            onSort={handleSort}
-            className="text-[10px] cc-caps-strong justify-end w-[64px] flex-shrink-0 hover:underline"
-          />
-          <SortHeader
-            col="trans"
-            label="Trans"
-            sort={sort}
-            onSort={handleSort}
-            className="text-[10px] cc-caps-strong justify-end w-[46px] flex-shrink-0 hover:underline"
-          />
-          <SortHeader
-            col="count"
-            label="Count"
-            sort={sort}
-            onSort={handleSort}
-            className="text-[10px] cc-caps-strong justify-end w-[46px] flex-shrink-0 hover:underline"
-          />
-          <span
-            className="text-[10px] cc-caps-strong text-center"
-            style={{ width: 58 }}
-          >
-            Avg
-          </span>
-          {isTrend && (
-            <span
-              className="text-[10px] cc-caps-strong text-center"
-              style={{ width: 62 }}
-              title="Change in average coupon versus this store's own prior two weeks"
-            >
-              vs Baseline
-            </span>
-          )}
-        </div>
-      </div>
+      <StoreColumnHead sort={sort} onSort={handleSort} isTrend={isTrend} />
 
       {/* ── Rows ───────────────────────────────────────────────────────── */}
       <div
@@ -338,89 +159,16 @@ const CpnSalesStorePanel = ({
             No stores match
           </div>
         ) : (
-          visible.map((row) => {
-            const isSel = selectedStoreKey === row.key;
-            return (
-              <button
-                key={row.key}
-                onClick={() => dispatch(setSelectedCouponStore(row.key))}
-                className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-                  isSel
-                    ? "cc-row-selected"
-                    : "border-transparent hover:bg-fill_soft"
-                }`}
-              >
-                <span
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${couponDotClass[row.tier]}`}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium text-content truncate flex items-center gap-1.5">
-                    <span className="truncate">{row.label}</span>
-                    {/* The flat-dollar outlier flag, independent of the trend
-                        grade — a store can be steady (ok) and still be running
-                        unusually large coupons. */}
-                    {isTrend && row.isOutlier && (
-                      <span
-                        title={`Average coupon over the $${activeThreshold} threshold`}
-                        className="text-[9px] font-bold px-1 py-0.5 rounded bg-severity_critical_bg text-severity_critical_text flex-shrink-0"
-                      >
-                        ${activeThreshold}+
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-[14px]">
-                  <span
-                    className="text-[13px] font-semibold text-content flex-shrink-0 text-right"
-                    style={{ width: 64 }}
-                  >
-                    {formatCurrency2(row.amount)}
-                  </span>
-                  <span
-                    className="text-[13px] font-medium text-content flex-shrink-0 text-right"
-                    style={{ width: 46 }}
-                  >
-                    {formatBigNumber(row.transactions, 0)}
-                  </span>
-                  <span
-                    className="text-[13px] font-medium text-content flex-shrink-0 text-right"
-                    style={{ width: 46 }}
-                  >
-                    {formatBigNumber(row.lines, 0)}
-                  </span>
-                  <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${couponPillClass[row.tier]}`}
-                    style={{ minWidth: 58 }}
-                  >
-                    {formatCurrency2(row.avgAmount)}
-                  </span>
-                  {/* Movement against this store's own prior two weeks. Up is
-                      the bad direction — larger coupons than its own norm. */}
-                  {isTrend && (
-                    <span
-                      className={`text-[12px] font-semibold text-right flex-shrink-0 tabular-nums ${
-                        row.trendPct === null
-                          ? "text-content/95"
-                          : row.trendPct > 0
-                            ? "text-severity_critical_text"
-                            : "text-severity_healthy_text"
-                      }`}
-                      style={{ width: 62 }}
-                      title={
-                        row.avgBaseline === null
-                          ? "No coupons in the baseline weeks"
-                          : `Baseline avg ${formatCurrency2(row.avgBaseline)}`
-                      }
-                    >
-                      {row.trendPct === null
-                        ? "—"
-                        : `${row.trendPct > 0 ? "+" : ""}${row.trendPct.toFixed(1)}%`}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })
+          visible.map((row) => (
+            <StoreRow
+              key={row.key}
+              row={row}
+              isSelected={selectedStoreKey === row.key}
+              isTrend={isTrend}
+              activeThreshold={activeThreshold}
+              onSelect={() => dispatch(setSelectedCouponStore(row.key))}
+            />
+          ))
         )}
       </div>
     </div>
