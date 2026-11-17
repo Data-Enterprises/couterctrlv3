@@ -614,9 +614,6 @@
   "src/pages/couponSales/CouponSales.tsx": {
     "labels": 1
   },
-  "src/pages/coupons/Coupons.tsx": {
-    "labels": 1
-  },
   "src/pages/exportBuilder/dev/preview/components/CsvTable.tsx": {
     "commented-code": 2
   },

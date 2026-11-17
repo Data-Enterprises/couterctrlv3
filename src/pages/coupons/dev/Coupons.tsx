@@ -1,27 +1,6 @@
 // Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useCouponContext } from "./hooks";
-
-// Redux
-import { setSelectedGroupStores } from "../../../features/userSlice";
-import {
-  setIsFetching,
-  setNoCouponsFound,
-  setCoupons,
-} from "../../../features/dev/devCouponSlice";
-import { isGroupSearch } from "../../../features/searchSlice";
-
-// API
-import { getCoupons } from "../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-
-// Utils
-import { formatGoliathDate } from "../../../utils";
-
-// Interfaces
-import type { CouponsResponse, JsonError } from "../../../interfaces";
+import { useCouponContext, useCouponSearch } from "./hooks";
 
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
@@ -34,66 +13,15 @@ import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
 /** The Coupons page: a search card to load coupon activity for a store or group and date range, then a store list
  *  beside the detail panel. Phones get the mobile screens instead. */
 const Coupons = () => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
   const context = useCouponContext();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { userid } = useAppSelector((s) => s.user);
-  const [selectedKey, setSelectedKey] = useState("");
+  const [selectedKey, setSelectedKey] = useState<string>("");
   const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState<boolean>(false);
+  const { runSearch } = useCouponSearch(context);
 
   const getData = () => {
     setSelectedKey("");
-    dispatch(setCoupons([]));
-    if (isGroupSearch(context.type)) {
-      getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(
-              setSelectedGroupStores(
-                resp.data.stores.filter((s: any) => s.active),
-              ),
-            );
-          } else {
-            toast.warn(resp.data.msg);
-          }
-        })
-        .catch(() => {});
-    }
-    dispatch(setIsFetching(true));
-    // Cleared on every search: leaving it set means a later failure shows
-    // this notice describing the *previous* search alongside the error toast.
-    dispatch(setNoCouponsFound(false));
-    const useGroups = isGroupSearch(context.type) ? 1 : 0;
-    const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(context.type)
-      ? context.lastGroup
-      : context.lastStore;
-    const start = formatGoliathDate(context.startDate);
-    const end = formatGoliathDate(context.endDate);
-
-    getCoupons(
-      context.url,
-      context.token,
-      start,
-      end,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(setCoupons(j.records));
-        } else {
-          dispatch(setNoCouponsFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetching(false)));
+    runSearch();
   };
 
   // This page only ever rendered with devMode on, so phones already got the

@@ -1,30 +1,20 @@
 // Hooks
 import { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useSearchPick } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useCouponContext, useCouponActions } from "../hooks";
+import { useCouponContext, useCouponActions, useCouponSearch } from "../hooks";
 
 // Redux
-import { setSelectedGroupStores } from "../../../../features/userSlice";
 import { isGroupSearch } from "../../../../features/searchSlice";
 
-// API
-import { getCoupons } from "../../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
-
 // Utils
-import { formatGoliathDate, resolveStoreName } from "../../../../utils";
+import { resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { fmtSearchDate } from "./utils";
 
 // Interfaces
 import type { GroupTab } from "../interfaces";
 import type { Screen } from "./interfaces";
-import type {
-  CouponsResponse,
-  CouponItem,
-  JsonError,
-} from "../../../../interfaces";
+import type { CouponItem } from "../../../../interfaces";
 
 // Components
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
@@ -40,10 +30,8 @@ const CouponsMobile = () => {
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
-  const toast = useToast();
   const {
     selectedGroup,
-    userid,
     assignedStores,
     selectedGroupStores: groupStores,
   } = ctx;
@@ -61,6 +49,7 @@ const CouponsMobile = () => {
     label: string;
   } | null>(null);
   const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
+  const { runSearch } = useCouponSearch(ctx);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -76,56 +65,8 @@ const CouponsMobile = () => {
       ? `${fmtSearchDate(ctx.startDate)} – ${fmtSearchDate(ctx.endDate)}, ${ctx.endDate.split("/")[2]}`
       : "";
 
-  const getData = () => {
-    dispatch(actions.setCoupons([]));
-    dispatch(actions.setIsFetching(true));
-    dispatch(actions.setNoCouponsFound(false));
-    // A group search can return stores this user isn't assigned to; loading
-    // them here lets those rows' store names resolve.
-    if (isGroupSearch(ctx.type)) {
-      getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(
-              setSelectedGroupStores(
-                resp.data.stores.filter((s: { active: boolean }) => s.active),
-              ),
-            );
-          } else {
-            toast.warn(resp.data.msg);
-          }
-        })
-        .catch(() => {});
-    }
-    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
-    const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
-    const start = formatGoliathDate(ctx.startDate);
-    const end = formatGoliathDate(ctx.endDate);
-
-    getCoupons(
-      ctx.url,
-      ctx.token,
-      start,
-      end,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(actions.setCoupons(j.records));
-          setScreen(isGroup ? "stores" : "overview");
-        } else {
-          dispatch(actions.setNoCouponsFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(actions.setIsFetching(false)));
-  };
+  const getData = () =>
+    runSearch(() => setScreen(isGroup ? "stores" : "overview"));
 
   const handleReset = () => {
     dispatch(actions.resetCoupons());
