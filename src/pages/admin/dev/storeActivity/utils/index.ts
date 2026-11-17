@@ -1,6 +1,9 @@
 // Interfaces
 import type { StoreWithActivity } from "../../../../../interfaces";
 
+/** The activity table's columns: ID, store name, total, active, missing. */
+export const ACTIVITY_GRID = "grid-cols-[0.6fr_2fr_1fr_1fr_1fr]";
+
 /** Quotes a CSV cell when it holds a comma, a quote or a line break. */
 export const escCsv = (val: string | number | null | undefined) => {
   const s = String(val ?? "");

@@ -1,6 +1,9 @@
 // Hooks
 import { useAdminPageCtx } from "../../hooks";
 
+// Utils
+import { ACTIVITY_GRID } from "../utils";
+
 /** The Store Activity rows: store number, name, total days, active days and missing days, with missing days
  *  in red when there are any. */
 const StoreRows = () => {
@@ -10,7 +13,7 @@ const StoreRows = () => {
       {filteredStoresActivity.map((s) => (
         <div
           key={s.storeid}
-          className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 text-[12px] text-content even:bg-row_stripe hover:bg-fill_soft"
+          className={`grid ${ACTIVITY_GRID} px-4 py-2 text-[12px] text-content even:bg-row_stripe hover:bg-fill_soft`}
         >
           <div>{s.storeid}</div>
           <div className="truncate">{s.store_name}</div>
