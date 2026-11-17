@@ -1,7 +1,8 @@
 // Hooks
 import { useCallback, useRef } from "react";
+import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
 
 // Redux
 import {
@@ -59,13 +60,14 @@ const MAX_CONCURRENT = 15;
 export const useLookupQueue = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
   const {
+    url,
+    token,
     lookupQueue: queue,
     lookupSelectedUpc: selectedUpc,
     availableStoreNumbers,
     selectedStoreNumber,
-  } = useAppSelector((s) => s.dev.item);
+  } = useLookupCtx();
   // Ref so the async batch callbacks below scope against the live value.
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;
