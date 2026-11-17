@@ -26,6 +26,7 @@ import {
 import { getStoreName, formatGoliathDate } from "../../../../../utils";
 import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
 import { reasonOf } from "../../../../../utils/serverError";
+import { fetchAllPages } from "../../utils";
 
 // Interfaces
 import type { ExplorerOutcome } from "../interfaces";
@@ -41,19 +42,6 @@ import type { TransactionListItem } from "../../../../../interfaces";
 /** Receipts are fetched by id; past this the request gets unwieldy and the page
  *  reports how many were dropped rather than hanging. */
 const MAX_TRANSACTIONS = 400;
-
-const fetchAllPages = async <T>(
-  firstPage: { total_pages?: number },
-  rows: T[],
-  fetchPage: (page: number) => Promise<T[]>,
-) => {
-  const total = firstPage.total_pages ?? 1;
-  if (total <= 1) return rows;
-  const rest = await Promise.all(
-    Array.from({ length: total - 1 }, (_, i) => fetchPage(i + 2)),
-  );
-  return [...rows, ...rest.flat()];
-};
 
 export const useCashierExplorer = () => {
   const dispatch = useAppDispatch();

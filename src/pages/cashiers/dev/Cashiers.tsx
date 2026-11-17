@@ -1,48 +1,23 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useCashierCtx, useCashierSignals } from "./hooks";
+import { useCashierCtx, useCashierSignals, useDesktopExplorer } from "./hooks";
 
 // Redux
 import {
-  setExplorerSaleTypes,
   setExplorerException,
   setExplorerLens,
   setExplorerSignalKey,
-  setExplorerLoading,
-  setExplorerMessage,
-  setExplorerScopeLabel,
-  setExplorerRows,
-  setSelectedSaleType,
   type ExplorerLens,
 } from "../../../features/dev/devCashiersSlice";
-import { isGroupSearch } from "../../../features/searchSlice";
-
-// API
-import {
-  getSaleTypes,
-  getCashierTable,
-  getTransactionList,
-} from "../../../api/lossPrevention";
 
 // Utils
-import {
-  formatGoliathDate,
-  formatCurrency2,
-  getStoreName,
-} from "../../../utils";
-import { dayDiff, MAX_RANGE_DAYS, MAX_TRANSACTIONS } from "./utils";
-import { reasonOf } from "../../../utils/serverError";
-
-// Interfaces
-import type { JsonError, TransactionListItem } from "../../../interfaces";
+import { dayDiff, MAX_RANGE_DAYS } from "./utils";
 
 // Components
-import BackButton from "../../../components-dev/BackButton";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import CashiersExportModal from "./components/CashiersExportModal";
+import CashiersHeader from "./components/CashiersHeader";
+import ExplorerKpiStrip from "./components/ExplorerKpiStrip";
 import ExplorerSearch from "./components/ExplorerSearch";
 import LensPanel from "./components/LensPanel";
 import SignalDetail from "./components/SignalDetail";
@@ -51,194 +26,11 @@ import CashiersMobile from "./mobile/CashiersMobile";
 /** The Cashiers page: the exception explorer entry card, then the loaded exceptions with a KPI strip,
  *  a lens list of signals (by cashier, store, item and so on) and the transactions behind the picked one, with CSV export. */
 const Cashiers = () => {
-  const toast = useToast();
   const ctx = useCashierCtx();
-  const assignedStores = useAppSelector((state) => state.user.assignedStores);
-  const selectedGroup = useAppSelector((state) => state.search.selectedGroup);
-  const {
-    explorerSaleTypes,
-    explorerException,
-    explorerFetchedException,
-    explorerAllRows,
-    explorerLens,
-    explorerSignalKey,
-    explorerLoading,
-    explorerMessage,
-    explorerScopeLabel,
-    explorerSearched,
-  } = useAppSelector((state) => state.dev.cashier);
-
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [signalSearch, setSignalSearch] = useState("");
-  const [truncated, setTruncated] = useState(0);
-  // Distinguishes "preflight ran and found nothing" from "preflight hasn't run
-  // yet" — both leave explorerSaleTypes empty.
-  const [preflightRan, setPreflightRan] = useState(false);
-
-  const rangeDays = dayDiff(ctx.startDate, ctx.endDate);
-
-  const scopeArgs = () => ({
-    start: formatGoliathDate(ctx.startDate),
-    end: formatGoliathDate(ctx.endDate),
-    useGroups: isGroupSearch(ctx.type) ? 1 : 0,
-    singleStore: ctx.type === "Store" ? 1 : 0,
-    searchValue: isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore,
-  });
-
-  const scopeLabel = () =>
-    isGroupSearch(ctx.type)
-      ? selectedGroup?.group_name || "Group"
-      : getStoreName(assignedStores, ctx.lastStore, `Store ${ctx.lastStore}`);
-
-  // Stage one — the exception list has to come from preflight because which
-  // exceptions even occurred depends on the scope and dates just chosen.
-  const runPreflight = () => {
-    const { start, end, useGroups, searchValue, singleStore } = scopeArgs();
-    ctx.dispatch(setExplorerLoading(true));
-    ctx.dispatch(setExplorerMessage("Finding exceptions…"));
-    ctx.dispatch(setExplorerSaleTypes([]));
-    ctx.dispatch(setExplorerException(""));
-
-    getSaleTypes(
-      ctx.url,
-      ctx.token,
-      start,
-      end,
-      useGroups,
-      searchValue,
-      singleStore,
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          // Tender isn't an exception — LP filters it out of its own list too.
-          const types = (j.sale_types as { sale_type: string }[])
-            .map((t) => t.sale_type)
-            .filter((t) => t !== "Tender");
-          ctx.dispatch(setExplorerSaleTypes(types));
-          setPreflightRan(true);
-        } else {
-          toast.warn(j.msg);
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching exceptions: " + reasonOf(err)),
-      )
-      .finally(() => {
-        ctx.dispatch(setExplorerLoading(false));
-        ctx.dispatch(setExplorerMessage(""));
-      });
-  };
-
-  const fetchAllPages = async <T,>(
-    firstPage: { total_pages?: number },
-    rows: T[],
-    fetchPage: (page: number) => Promise<T[]>,
-  ) => {
-    const total = firstPage.total_pages ?? 1;
-    if (total <= 1) return rows;
-    const rest = await Promise.all(
-      Array.from({ length: total - 1 }, (_, i) => fetchPage(i + 2)),
-    );
-    return [...rows, ...rest.flat()];
-  };
-
-  // Stage two: walk every page of cashier_table for the chosen exception, then
-  // pull those transactions' full receipts (transaction_list returns every
-  // line, which gives "line 12 of 12" and the inline receipt).
-  const runExplore = async () => {
-    const { start, end, useGroups, searchValue, singleStore } = scopeArgs();
-    const exception = explorerException;
-    setTruncated(0);
-    ctx.dispatch(setExplorerLoading(true));
-    ctx.dispatch(setExplorerMessage("Loading transactions…"));
-    // The shared Transaction receipt reads selectedSaleType to total voids vs
-    // refunds, so it is set here for the drill-down receipts.
-    ctx.dispatch(setSelectedSaleType(exception));
-    setSearchOpen(false);
-
-    try {
-      const firstResp = await getCashierTable(
-        ctx.url,
-        ctx.token,
-        start,
-        end,
-        useGroups,
-        searchValue,
-        singleStore,
-        [exception],
-        1,
-      );
-      const first = firstResp.data;
-      if (first.error !== 0) {
-        toast.warn(first.msg || "Could not load transactions");
-        ctx.dispatch(setExplorerRows({ rows: [], exception }));
-        return;
-      }
-
-      const transactions = await fetchAllPages(
-        first,
-        first.transactions as { sale_id: string }[],
-        (page) =>
-          getCashierTable(
-            ctx.url,
-            ctx.token,
-            start,
-            end,
-            useGroups,
-            searchValue,
-            singleStore,
-            [exception],
-            page,
-          ).then((r) => (r.data.error === 0 ? r.data.transactions : [])),
-      );
-
-      let saleIds = Array.from(new Set(transactions.map((t) => t.sale_id)));
-      if (saleIds.length > MAX_TRANSACTIONS) {
-        setTruncated(saleIds.length - MAX_TRANSACTIONS);
-        saleIds = saleIds.slice(0, MAX_TRANSACTIONS);
-      }
-      if (saleIds.length === 0) {
-        ctx.dispatch(setExplorerRows({ rows: [], exception }));
-        return;
-      }
-
-      ctx.dispatch(setExplorerMessage("Loading receipts…"));
-      const listResp = await getTransactionList(
-        ctx.url,
-        ctx.token,
-        saleIds,
-        1,
-        exception,
-      );
-      const list = listResp.data;
-      if (list.error !== 0) {
-        toast.warn(list.msg || "Could not load transactions");
-        ctx.dispatch(setExplorerRows({ rows: [], exception }));
-        return;
-      }
-
-      const rows = await fetchAllPages(
-        list,
-        list.transactions as TransactionListItem[],
-        (page) =>
-          getTransactionList(ctx.url, ctx.token, saleIds, page, exception).then(
-            (r) => (r.data.error === 0 ? r.data.transactions : []),
-          ),
-      );
-
-      ctx.dispatch(setExplorerScopeLabel(scopeLabel()));
-      ctx.dispatch(setExplorerRows({ rows, exception }));
-    } catch (err) {
-      toast.error("Error loading transactions: " + reasonOf(err));
-      ctx.dispatch(setExplorerRows({ rows: [], exception }));
-    } finally {
-      ctx.dispatch(setExplorerLoading(false));
-      ctx.dispatch(setExplorerMessage(""));
-    }
-  };
-
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [exportOpen, setExportOpen] = useState<boolean>(false);
+  const [signalSearch, setSignalSearch] = useState<string>("");
+  const { runPreflight, runExplore, preflightRan } = useDesktopExplorer(ctx);
   const { exceptionRows, transactionLengths, totals, signals } =
     useCashierSignals();
 
@@ -252,105 +44,66 @@ const Cashiers = () => {
     );
   }, [signals, signalSearch]);
 
-  const selected = signals.find((s) => s.key === explorerSignalKey) ?? null;
+  const rangeDays = dayDiff(ctx.startDate, ctx.endDate);
+  const selected = signals.find((s) => s.key === ctx.explorerSignalKey) ?? null;
+
+  // The entry card and the re-search pop-up are the same card.
+  const searchProps = {
+    saleTypes: ctx.explorerSaleTypes,
+    exception: ctx.explorerException,
+    onExceptionChange: (v: string) => ctx.dispatch(setExplorerException(v)),
+    onFindExceptions: runPreflight,
+    onExplore: () => {
+      setSearchOpen(false);
+      runExplore();
+    },
+    loading: ctx.explorerLoading,
+    message: ctx.explorerMessage,
+    rangeDays,
+    maxRangeDays: MAX_RANGE_DAYS,
+    noExceptionsFound: preflightRan && ctx.explorerSaleTypes.length === 0,
+  };
 
   if (ctx.isMobile) return <CashiersMobile />;
 
   // Stay on the entry card until an explore has returned; progress shows on
   // the card's own button.
-  if (!explorerSearched) {
-    return (
-      <ExplorerSearch
-        saleTypes={explorerSaleTypes}
-        exception={explorerException}
-        onExceptionChange={(v) => ctx.dispatch(setExplorerException(v))}
-        onFindExceptions={runPreflight}
-        onExplore={runExplore}
-        loading={explorerLoading}
-        message={explorerMessage}
-        rangeDays={rangeDays}
-        maxRangeDays={MAX_RANGE_DAYS}
-        noExceptionsFound={preflightRan && explorerSaleTypes.length === 0}
-      />
-    );
-  }
+  if (!ctx.explorerSearched) return <ExplorerSearch {...searchProps} />;
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4">
       <div className="h-full cc-panel shadow-lg">
-        <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="cc-navy-title text-[13px] flex-shrink-0">
-            Cashiers
-          </span>
-          <span className="text-custom-white/95 text-[12px] truncate">
-            {explorerScopeLabel} · {ctx.startDate} – {ctx.endDate} ·{" "}
-            {explorerFetchedException}
-          </span>
-          <div className="flex-1" />
-          {truncated > 0 && (
-            <span className="text-custom-white/95 text-[10.5px] flex-shrink-0">
-              capped — {truncated} older transactions not loaded
-            </span>
-          )}
-          <BackButton onClick={() => setSearchOpen(true)} helpAnchor="search" />
-          <button
-            onClick={() => setExportOpen(true)}
-            title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 flex-shrink-0"
-          >
-            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <CashiersHeader
+          scopeLabel={ctx.explorerScopeLabel}
+          startDate={ctx.startDate}
+          endDate={ctx.endDate}
+          exception={ctx.explorerFetchedException}
+          truncated={ctx.explorerTruncated}
+          onBack={() => setSearchOpen(true)}
+          onExport={() => setExportOpen(true)}
+        />
 
-        <div
-          data-help="kpis"
-          className="grid grid-cols-6 border-b border-line_hair flex-shrink-0"
-        >
-          {[
-            {
-              label: "Exception lines",
-              value: totals.exceptions.toLocaleString(),
-            },
-            {
-              label: "Transactions",
-              value: totals.transactions.toLocaleString(),
-            },
-            { label: "Amount", value: formatCurrency2(totals.amount) },
-            { label: "Stores", value: totals.stores.toLocaleString() },
-            { label: "Cashiers", value: totals.cashiers.toLocaleString() },
-            { label: "Items", value: totals.items.toLocaleString() },
-          ].map((kpi) => (
-            <div
-              key={kpi.label}
-              className="px-3 py-2 border-r border-line_hair last:border-r-0"
-            >
-              <div className="text-[11px] text-content/95">{kpi.label}</div>
-              <div className="text-[16px] font-medium text-content">
-                {kpi.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        <ExplorerKpiStrip totals={totals} />
 
-        {explorerLoading ? (
+        {ctx.explorerLoading ? (
           <div className="flex-1 relative">
-            <LoadingIndicator message={explorerMessage || "Loading…"} />
+            <LoadingIndicator message={ctx.explorerMessage || "Loading…"} />
           </div>
         ) : exceptionRows.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/95">
-            No {explorerFetchedException.toLowerCase()} transactions in this
+            No {ctx.explorerFetchedException.toLowerCase()} transactions in this
             range
           </div>
         ) : (
           <div className="flex-1 min-h-0 flex">
             <LensPanel
-              lens={explorerLens}
+              lens={ctx.explorerLens}
               onLensChange={(l: ExplorerLens) => {
                 ctx.dispatch(setExplorerLens(l));
                 setSignalSearch("");
               }}
               signals={visibleSignals}
-              selectedKey={explorerSignalKey}
+              selectedKey={ctx.explorerSignalKey}
               onSelect={(key) => ctx.dispatch(setExplorerSignalKey(key))}
               search={signalSearch}
               onSearchChange={setSignalSearch}
@@ -359,10 +112,10 @@ const Cashiers = () => {
               // Keyed so picking another signal remounts the panel and drops
               // any open receipt from the previous signal.
               <SignalDetail
-                key={`${explorerLens}-${selected.key}`}
+                key={`${ctx.explorerLens}-${selected.key}`}
                 signal={selected}
-                lens={explorerLens}
-                allRows={explorerAllRows}
+                lens={ctx.explorerLens}
+                allRows={ctx.explorerAllRows}
                 transactionLengths={transactionLengths}
               />
             ) : (
@@ -377,10 +130,10 @@ const Cashiers = () => {
       {exportOpen && (
         <CashiersExportModal
           onClose={() => setExportOpen(false)}
-          scopeLabel={explorerScopeLabel}
-          exception={explorerFetchedException}
+          scopeLabel={ctx.explorerScopeLabel}
+          exception={ctx.explorerFetchedException}
           dateRange={`${ctx.startDate} – ${ctx.endDate}`}
-          lens={explorerLens}
+          lens={ctx.explorerLens}
           signals={visibleSignals}
           exceptionRows={exceptionRows}
           transactionLengths={transactionLengths}
@@ -390,16 +143,7 @@ const Cashiers = () => {
       {searchOpen && (
         <div className="cc-modal-backdrop z-50">
           <ExplorerSearch
-            saleTypes={explorerSaleTypes}
-            exception={explorerException}
-            onExceptionChange={(v) => ctx.dispatch(setExplorerException(v))}
-            onFindExceptions={runPreflight}
-            onExplore={runExplore}
-            loading={explorerLoading}
-            message={explorerMessage}
-            rangeDays={rangeDays}
-            maxRangeDays={MAX_RANGE_DAYS}
-            noExceptionsFound={preflightRan && explorerSaleTypes.length === 0}
+            {...searchProps}
             onBack={() => setSearchOpen(false)}
           />
         </div>

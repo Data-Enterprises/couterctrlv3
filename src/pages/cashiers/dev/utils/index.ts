@@ -391,6 +391,21 @@ export const dayDiff = (start: string, end: string) => {
   return Math.round(Math.abs(b - a) / 86400000) + 1;
 };
 
+/** Every page of a paged endpoint: the first page's rows, then the rest
+ *  fetched together. */
+export const fetchAllPages = async <T>(
+  firstPage: { total_pages?: number },
+  rows: T[],
+  fetchPage: (page: number) => Promise<T[]>,
+) => {
+  const total = firstPage.total_pages ?? 1;
+  if (total <= 1) return rows;
+  const rest = await Promise.all(
+    Array.from({ length: total - 1 }, (_, i) => fetchPage(i + 2)),
+  );
+  return [...rows, ...rest.flat()];
+};
+
 /** How a custom export combines a figure. */
 export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
   { value: "sum", label: "Sum" },

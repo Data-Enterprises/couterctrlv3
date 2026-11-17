@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../hooks";
+
+// Components
 import ProdCashiers from "./prod/Cashiers";
 import DevCashiers from "./dev/Cashiers";
 
