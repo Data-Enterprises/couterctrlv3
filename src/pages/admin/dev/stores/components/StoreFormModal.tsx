@@ -7,7 +7,8 @@ import type { StoreForm } from "../interfaces";
 
 // Components
 import Input from "../../../../../components-dev/inputs/Input";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import NewStoreFields from "./NewStoreFields";
+import StoreFacts from "./StoreFacts";
 
 interface StoreFormModalProps {
   initial: Store | null;
@@ -31,12 +32,14 @@ const StoreFormModal = ({
   onClose,
 }: StoreFormModalProps) => {
   const isCreate = !initial;
-  const [storeId, setStoreId] = useState(
+  const [storeId, setStoreId] = useState<string>(
     initial ? String(initial.storeid) : "",
   );
-  const [storeNumber, setStoreNumber] = useState(initial?.store_number ?? "");
-  const [storeName, setStoreName] = useState(initial?.store_name ?? "");
-  const [company, setCompany] = useState(
+  const [storeNumber, setStoreNumber] = useState<string>(
+    initial?.store_number ?? "",
+  );
+  const [storeName, setStoreName] = useState<string>(initial?.store_name ?? "");
+  const [company, setCompany] = useState<string>(
     initial ? String(initial.company) : "",
   );
 
@@ -83,87 +86,23 @@ const StoreFormModal = ({
         </div>
 
         {isCreate ? (
-          <div className="grid gap-3 mb-4">
-            <div>
-              <Input
-                label="Store ID"
-                value={storeId}
-                setValue={setStoreId}
-                className="py-1.5 text-[13px]"
-              />
-              {idInvalid && (
-                <div className="text-[12px] text-brand_danger mt-1 leading-snug">
-                  Store ID must be a whole number.
-                </div>
-              )}
-              {idTaken && (
-                <div className="text-[12px] text-brand_danger mt-1 leading-snug">
-                  Store ID {trimmedId} is already in use.
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Input
-                label="Store number"
-                value={storeNumber}
-                setValue={setStoreNumber}
-                className="py-1.5 text-[13px]"
-              />
-              {numberTaken && (
-                <div className="text-[12px] text-brand_danger mt-1 leading-snug">
-                  {trimmedNumber} is already in use. Store numbers scope sales,
-                  orders and receiving — two stores cannot share one.
-                </div>
-              )}
-            </div>
-
-            <Input
-              label="Store name"
-              value={storeName}
-              setValue={setStoreName}
-              className="py-1.5 text-[13px]"
-            />
-
-            {/* Input draws its own label, so this matches it rather than
-                introducing a second label treatment in one column. */}
-            <div>
-              <div className="flex justify-between text-[11px] md:text-[13px] items-end pr-1.5 leading-tight">
-                <label className="font-medium pl-0.5">Company</label>
-              </div>
-              <SelectFilter
-                options={companies}
-                value={company}
-                onChange={setCompany}
-                placeholder="Pick a company"
-                className="w-full"
-              />
-            </div>
-          </div>
+          <NewStoreFields
+            storeId={storeId}
+            setStoreId={setStoreId}
+            idInvalid={idInvalid}
+            idTaken={idTaken}
+            storeNumber={storeNumber}
+            setStoreNumber={setStoreNumber}
+            numberTaken={numberTaken}
+            storeName={storeName}
+            setStoreName={setStoreName}
+            companies={companies}
+            company={company}
+            setCompany={setCompany}
+          />
         ) : (
           <div className="grid gap-3 mb-4">
-            {/* Context, not fields: the backend offers no way to change
-                either, and an input that cannot be saved is worse than text. */}
-            <div className="rounded-md bg-bkg px-3 py-2 flex items-baseline gap-3">
-              <span className="text-[12px] text-content/95">
-                ID{" "}
-                <span className="font-semibold text-content">
-                  {initial.storeid}
-                </span>
-              </span>
-              <span className="text-[12px] text-content/95">
-                Number{" "}
-                <span className="font-semibold text-content">
-                  {initial.store_number}
-                </span>
-              </span>
-              <span className="text-[12px] text-content/95 truncate">
-                Company{" "}
-                <span className="font-semibold text-content">
-                  {initial.company_name}
-                </span>
-              </span>
-            </div>
+            <StoreFacts store={initial} />
 
             <Input
               label="Store name"
