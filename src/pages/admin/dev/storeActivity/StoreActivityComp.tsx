@@ -132,7 +132,6 @@ const StoreActivityComp = ({
         <CompanyPicker
           helpAnchor="company"
           companies={context.companies}
-          mode="select"
           selectedId={context.companyForm.id}
           onSelect={handleCompanySelect}
         />
