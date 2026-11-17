@@ -6,18 +6,22 @@ import type { SubDeptEntry } from "../../interfaces";
 import type { SubDeptGrade } from "../../../../../features/dev/devSubMarginSlice";
 
 export type ExportPreset =
-  | "items"
-  | "items_vs_ly"
-  | "cost"
-  | "nocost"
-  | "all_depts"
-  | "upc_list";
+  "items" | "items_vs_ly" | "cost" | "nocost" | "all_depts" | "upc_list";
 export type ModalMode = "presets" | "custom";
 export type CustomSource = "ty" | "ly";
 
-export interface DimDef { key: string; label: string }
-export interface MetricDef { key: string; label: string }
-export interface MetricSelection { fn: AggFn; enabled: boolean }
+export interface DimDef {
+  key: string;
+  label: string;
+}
+export interface MetricDef {
+  key: string;
+  label: string;
+}
+export interface MetricSelection {
+  fn: AggFn;
+  enabled: boolean;
+}
 
 export interface MarginPerfExportModalProps {
   onClose: () => void;

@@ -6,7 +6,11 @@ import {
   useStoreName,
 } from "../../../../hooks";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../hooks";
+import {
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+} from "../hooks";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
@@ -20,11 +24,7 @@ import {
 } from "../../../../utils/severity";
 import { isCompleteCoverage, shiftIso } from "../../../../utils/grading";
 import { formatDate } from "../utils/gridColumns";
-import {
-  matchedCounterpartRows,
-  matchedTyRows,
-  getTier,
-} from "../utils";
+import { matchedCounterpartRows, matchedTyRows, getTier } from "../utils";
 import { collectGradedItems } from "../utils/gradedItems";
 
 // Interfaces
@@ -60,9 +60,9 @@ const MarginPerfRightPanel = () => {
     selectedStoreNumber,
     gradingThreshold: rawGradingThreshold,
   } = useSubMarginState();
-      const subDeptName =
+  const subDeptName =
     ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey)?.desc ?? "";
-      // Matches the left panel: for co-located stores the resolved name embeds the
+  // Matches the left panel: for co-located stores the resolved name embeds the
   // sibling's number, so rewrite it to the location currently on screen.
   const resolvedStoreName = useStoreName(ctx.searchValue);
   const storeName = selectedStoreNumber
@@ -76,7 +76,7 @@ const MarginPerfRightPanel = () => {
   // Grading should never move rows around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so
   // severity/sort stays exactly where it was until a new number is typed.
-    const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
+  const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
   if (rawGradingThreshold != null)
     gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
@@ -93,11 +93,17 @@ const MarginPerfRightPanel = () => {
   const lwComplete =
     !selectedGrade ||
     !!ctx.selectedWeekDay ||
-    isCompleteCoverage(selectedGrade.coverage.lwDayCount, selectedGrade.coverage.dayCount);
+    isCompleteCoverage(
+      selectedGrade.coverage.lwDayCount,
+      selectedGrade.coverage.dayCount,
+    );
   const lyComplete =
     !selectedGrade ||
     !!ctx.selectedWeekDay ||
-    isCompleteCoverage(selectedGrade.coverage.lyDayCount, selectedGrade.coverage.dayCount);
+    isCompleteCoverage(
+      selectedGrade.coverage.lyDayCount,
+      selectedGrade.coverage.dayCount,
+    );
 
   const periodEnd = ctx.weekDate
     ? formatDate(setDates(new Date(ctx.weekDate), 0))
@@ -108,9 +114,7 @@ const MarginPerfRightPanel = () => {
   const dateRange =
     periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
-  const lyPeriodEnd = ctx.weekDate
-    ? formatDate(getLYDate(ctx.weekDate))
-    : "";
+  const lyPeriodEnd = ctx.weekDate ? formatDate(getLYDate(ctx.weekDate)) : "";
   const lyPeriodStart = ctx.weekDate
     ? formatDate(getLYDate(setDates(new Date(ctx.weekDate), 6)))
     : "";
@@ -214,14 +218,18 @@ const MarginPerfRightPanel = () => {
     () =>
       selectedLwDate
         ? tyKpis
-        : computeKpis(matchedTyRows(ctx.weekOneMargins, ctx.weekTwoMargins, "lw")),
+        : computeKpis(
+            matchedTyRows(ctx.weekOneMargins, ctx.weekTwoMargins, "lw"),
+          ),
     [selectedLwDate, tyKpis, ctx.weekOneMargins, ctx.weekTwoMargins],
   );
   const tyForLyKpis = useMemo(
     () =>
       selectedLyDate
         ? tyKpis
-        : computeKpis(matchedTyRows(ctx.weekOneMargins, ctx.weekOneMarginsLY, "ly")),
+        : computeKpis(
+            matchedTyRows(ctx.weekOneMargins, ctx.weekOneMarginsLY, "ly"),
+          ),
     [selectedLyDate, tyKpis, ctx.weekOneMargins, ctx.weekOneMarginsLY],
   );
 
@@ -498,9 +506,7 @@ const MarginPerfRightPanel = () => {
 
           {/* vs LW */}
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] cc-caps-strong">
-              vs Last Week
-            </div>
+            <div className="text-[10px] cc-caps-strong">vs Last Week</div>
             <div className="text-[10px] font-bold text-content mb-0.5">
               {kpiLwLabel}
             </div>
@@ -534,16 +540,15 @@ const MarginPerfRightPanel = () => {
             </div>
             {!lwComplete && lwKpis && selectedGrade && (
               <div className="text-[10px] font-semibold text-content pt-0.5">
-                {selectedGrade.coverage.lwDayCount} of {selectedGrade.coverage.dayCount} days matched
+                {selectedGrade.coverage.lwDayCount} of{" "}
+                {selectedGrade.coverage.dayCount} days matched
               </div>
             )}
           </div>
 
           {/* vs LY */}
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] cc-caps-strong">
-              vs Last Year
-            </div>
+            <div className="text-[10px] cc-caps-strong">vs Last Year</div>
             <div className="text-[10px] font-bold text-content mb-0.5">
               {kpiLyLabel}
             </div>
@@ -577,7 +582,8 @@ const MarginPerfRightPanel = () => {
             </div>
             {!lyComplete && lyKpis && selectedGrade && (
               <div className="text-[10px] font-semibold text-content pt-0.5">
-                {selectedGrade.coverage.lyDayCount} of {selectedGrade.coverage.dayCount} days matched
+                {selectedGrade.coverage.lyDayCount} of{" "}
+                {selectedGrade.coverage.dayCount} days matched
               </div>
             )}
           </div>

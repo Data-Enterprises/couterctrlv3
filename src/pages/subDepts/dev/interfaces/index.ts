@@ -14,7 +14,8 @@ export type SdSortCol = "ty" | "lw" | "ly";
 export type Operator = ">" | "<" | "=";
 
 /** The cost grid's sortable columns. */
-export type SortCol = "description" | "upc" | "unitCost" | "caseCost" | "qty" | "cogs";
+export type SortCol =
+  "description" | "upc" | "unitCost" | "caseCost" | "qty" | "cogs";
 
 /**
  * The three item reads for one search, unscoped.

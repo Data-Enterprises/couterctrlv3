@@ -23,7 +23,14 @@ interface ItemListRowProps {
 }
 
 /** One item in the list: its grade, name and UPC, and TY / LW / LY. */
-const ItemListRow = ({ item, sev, isSel, activeMetric, onSelect, onMenu }: ItemListRowProps) => {
+const ItemListRow = ({
+  item,
+  sev,
+  isSel,
+  activeMetric,
+  onSelect,
+  onMenu,
+}: ItemListRowProps) => {
   const metric = getRowMetric(item, activeMetric);
   return (
     <button
@@ -33,9 +40,7 @@ const ItemListRow = ({ item, sev, isSel, activeMetric, onSelect, onMenu }: ItemL
         onMenu(e);
       }}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSel
-          ? "cc-row-selected"
-          : "border-transparent hover:bg-fill_soft"
+        isSel ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <ItemSeverityBadge severity={sev} />

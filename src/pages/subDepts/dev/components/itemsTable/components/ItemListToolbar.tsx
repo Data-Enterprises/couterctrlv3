@@ -1,5 +1,11 @@
 // Hooks
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 // Utils
 import { chipClass } from "../../../../../../utils/severity";
@@ -78,9 +84,7 @@ const ItemListToolbar = ({
         Crit ({sevCounts.critical})
       </button>
       <button
-        onClick={() =>
-          setSevFilter((f) => (f === "watch" ? "all" : "watch"))
-        }
+        onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
         className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
           sevFilter === "watch"
             ? "ring-2 ring-severity_watch_text/40 shadow-sm"
@@ -111,10 +115,7 @@ const ItemListToolbar = ({
           Thresh
         </button>
         {threshOpen && (
-          <div
-            ref={threshPopRef}
-            className="cc-dropdown left-0 p-1.5 z-20"
-          >
+          <div ref={threshPopRef} className="cc-dropdown left-0 p-1.5 z-20">
             <ThresholdFilter
               value={thresholdValue}
               onChange={setThresholdValue}

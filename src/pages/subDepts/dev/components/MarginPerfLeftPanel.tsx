@@ -64,7 +64,10 @@ interface MarginPerfLeftPanelProps {
 /** The left panel of Sub Dept Margins: the store's TY, vs LW and vs LY figures, a location tab for co-located
  *  stores, Critical, Watch and Healthy filter cards, a sub dept search box, and the sortable sub dept list
  *  with sparklines. Also holds the grading threshold and the Search button. */
-const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLeftPanelProps) => {
+const MarginPerfLeftPanel = ({
+  onSearchOpen,
+  onStoreNumberChange,
+}: MarginPerfLeftPanelProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const { sort, handleSort, applySort } = useTriStateSort<SdSortCol>();
@@ -80,33 +83,47 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
     availableStoreNumbers,
     selectedStoreNumber,
   } = useSubMarginState();
-    
+
   // Grading should never move sub depts around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so tier
   // placement stays exactly where it was until a new number is typed.
   const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
-  if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
+  if (rawGradingThreshold != null)
+    gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
-    
-      // Co-located stores (one storeid, two locations) resolve to a single
+
+  // Co-located stores (one storeid, two locations) resolve to a single
   // assignedStores record, so the name embeds only one of the two numbers —
   // rewrite it to whichever location is on screen. Same helper Sales uses, so
   // both pages label these stores identically.
-  const rawStoreName = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
+  const rawStoreName =
+    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ??
+    "";
   const storeName = selectedStoreNumber
-    ? applyStoreNumberToName(rawStoreName, selectedStoreNumber, availableStoreNumbers)
-    // The combined tab is both locations, so it says both. The stored name
-    // carries one of the two numbers and would otherwise head the pair's
-    // total with one store's number.
-    : combinedStoreName(rawStoreName, availableStoreNumbers);
+    ? applyStoreNumberToName(
+        rawStoreName,
+        selectedStoreNumber,
+        availableStoreNumbers,
+      )
+    : // The combined tab is both locations, so it says both. The stored name
+      // carries one of the two numbers and would otherwise head the pair's
+      // total with one store's number.
+      combinedStoreName(rawStoreName, availableStoreNumbers);
 
-  const periodEnd = ctx.weekDate ? formatDate(setDates(new Date(ctx.weekDate), 0)) : "";
-  const periodStart = ctx.weekDate ? formatDate(setDates(new Date(ctx.weekDate), 6)) : "";
-  const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
+  const periodEnd = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 0))
+    : "";
+  const periodStart = ctx.weekDate
+    ? formatDate(setDates(new Date(ctx.weekDate), 6))
+    : "";
+  const dateRange =
+    periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
   // Oldest → newest, so the sparkline reads left-to-right chronologically.
   const weekDates = ctx.weekDate
-    ? Array.from({ length: 7 }, (_, i) => setDates(new Date(ctx.weekDate!), 6 - i))
+    ? Array.from({ length: 7 }, (_, i) =>
+        setDates(new Date(ctx.weekDate!), 6 - i),
+      )
     : [];
 
   // Each grade already carries its own week's raw line items (tyWeekOneMargins)
@@ -129,7 +146,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
   }));
 
   // Store-level, so every department grade carries the same coverage.
-  const headerCov = grades[0]?.grade.coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 };
+  const headerCov = grades[0]?.grade.coverage ?? {
+    dayCount: 0,
+    lwDayCount: 0,
+    lyDayCount: 0,
+  };
 
   const criticalCount = grades.filter((g) => g.tier === "critical").length;
   const watchCount = grades.filter((g) => g.tier === "watch").length;
@@ -190,14 +211,21 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
   const vsLYSalesPct =
     storeSalesTotals && storeSalesTotals.lySales > 0
       ? storeSalesTotals.vsLYSalesPct
-      : totalLySales > 0 ? ((totalTySales - totalLySales) / totalLySales) * 100 : null;
+      : totalLySales > 0
+        ? ((totalTySales - totalLySales) / totalLySales) * 100
+        : null;
   const vsLWSalesPct =
     storeSalesTotals && storeSalesTotals.lwSales > 0
       ? storeSalesTotals.vsLWSalesPct
-      : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
+      : totalLwSales > 0
+        ? ((totalTySales - totalLwSales) / totalLwSales) * 100
+        : null;
   const storeLwDelta = storeMarginDelta(storeRows.tw, storeRows.lw, "lw");
 
-  const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
+  const threshValue =
+    rawGradingThreshold === null
+      ? null
+      : { op: "gt" as const, amount: rawGradingThreshold };
 
   const handleSubDeptClick = (key: string) => {
     if (key === ctx.selectedSubDeptKey) return;
@@ -211,8 +239,15 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       return { id: sd.id, key, grade, tier, name: sd.desc };
     })
     .filter(
-      (r): r is { id: number; key: string; grade: SubDeptGrade; tier: MarginTier; name: string } =>
-        r !== null,
+      (
+        r,
+      ): r is {
+        id: number;
+        key: string;
+        grade: SubDeptGrade;
+        tier: MarginTier;
+        name: string;
+      } => r !== null,
     );
 
   const sevFilteredRows =
@@ -260,10 +295,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
     >
       {/* Navy header — 2-row canonical pattern */}
       <div className="cc-navy-panel-header flex flex-col gap-0">
-
         {/* Row 1: date range | primary value + vs LW/LY pills */}
         <div className="flex items-center gap-2 min-h-[26px]">
-          <span className="cc-navy-title text-[13px] flex-shrink-0">{dateRange}</span>
+          <span className="cc-navy-title text-[13px] flex-shrink-0">
+            {dateRange}
+          </span>
           <div className="flex-1" />
           {grades.length > 0 && (
             <>
@@ -274,34 +310,87 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                     : "—"
                   : formatCurrencyCompact(totalTySales)}
               </span>
-              {(gradingMetric === "margin" ? storeLwDelta : vsLWSalesPct) !== null && (
+              {(gradingMetric === "margin" ? storeLwDelta : vsLWSalesPct) !==
+                null && (
                 <span
-                  title={headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").title}
+                  title={
+                    headerDeltaPill(
+                      gradingMetric === "margin"
+                        ? storeLwDelta!
+                        : vsLWSalesPct!,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).title
+                  }
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").cls
+                    headerDeltaPill(
+                      gradingMetric === "margin"
+                        ? storeLwDelta!
+                        : vsLWSalesPct!,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).cls
                   }`}
                 >
                   LW{" "}
                   {gradingMetric === "margin"
                     ? `${storeLwDelta! >= 0 ? "+" : ""}${storeLwDelta!.toFixed(2)} pts`
                     : `${vsLWSalesPct! >= 0 ? "+" : ""}${vsLWSalesPct!.toFixed(2)}%`}
-                  {headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").note}
+                  {
+                    headerDeltaPill(
+                      gradingMetric === "margin"
+                        ? storeLwDelta!
+                        : vsLWSalesPct!,
+                      headerCov.lwDayCount,
+                      headerCov.dayCount,
+                      "last week",
+                    ).note
+                  }
                 </span>
               )}
-              {totalLySales > 0 && (gradingMetric === "margin" ? storeLyDelta : vsLYSalesPct) !== null && (
-                <span
-                  title={headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").title}
-                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").cls
-                  }`}
-                >
-                  LY{" "}
-                  {gradingMetric === "margin"
-                    ? `${storeLyDelta! >= 0 ? "+" : ""}${storeLyDelta!.toFixed(2)} pts`
-                    : `${vsLYSalesPct! >= 0 ? "+" : ""}${vsLYSalesPct!.toFixed(2)}%`}
-                  {headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").note}
-                </span>
-              )}
+              {totalLySales > 0 &&
+                (gradingMetric === "margin" ? storeLyDelta : vsLYSalesPct) !==
+                  null && (
+                  <span
+                    title={
+                      headerDeltaPill(
+                        gradingMetric === "margin"
+                          ? storeLyDelta!
+                          : vsLYSalesPct!,
+                        headerCov.lyDayCount,
+                        headerCov.dayCount,
+                        "last year",
+                      ).title
+                    }
+                    className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
+                      headerDeltaPill(
+                        gradingMetric === "margin"
+                          ? storeLyDelta!
+                          : vsLYSalesPct!,
+                        headerCov.lyDayCount,
+                        headerCov.dayCount,
+                        "last year",
+                      ).cls
+                    }`}
+                  >
+                    LY{" "}
+                    {gradingMetric === "margin"
+                      ? `${storeLyDelta! >= 0 ? "+" : ""}${storeLyDelta!.toFixed(2)} pts`
+                      : `${vsLYSalesPct! >= 0 ? "+" : ""}${vsLYSalesPct!.toFixed(2)}%`}
+                    {
+                      headerDeltaPill(
+                        gradingMetric === "margin"
+                          ? storeLyDelta!
+                          : vsLYSalesPct!,
+                        headerCov.lyDayCount,
+                        headerCov.dayCount,
+                        "last year",
+                      ).note
+                    }
+                  </span>
+                )}
             </>
           )}
         </div>
@@ -310,12 +399,18 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
         <div className="flex items-center gap-2 cc-navy-header-row">
           <BackButton onClick={onSearchOpen} helpAnchor="search" />
 
-          <span className="text-[11px] font-medium text-custom-white truncate min-w-0">{storeName}</span>
+          <span className="text-[11px] font-medium text-custom-white truncate min-w-0">
+            {storeName}
+          </span>
 
           <div className="flex-1" />
 
           {/* Margin / Sales grading toggle */}
-          <div data-help="metric" className="flex items-center flex-shrink-0 rounded overflow-hidden" style={{ height: 22 }}>
+          <div
+            data-help="metric"
+            className="flex items-center flex-shrink-0 rounded overflow-hidden"
+            style={{ height: 22 }}
+          >
             {TOGGLE_OPTS.map(({ key, label }) => {
               const active = gradingMetric === key;
               return (
@@ -324,7 +419,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                   onClick={() => dispatch(setGradingMetric(key))}
                   className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
                   style={{
-                    background: active ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)",
+                    background: active
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(255,255,255,0.07)",
                   }}
                 >
                   {label}
@@ -336,8 +433,13 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
           {/* Threshold input */}
-          <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[11px] text-custom-white font-medium">Threshold</span>
+          <div
+            data-help="threshold"
+            className="flex items-center gap-1.5 flex-shrink-0"
+          >
+            <span className="text-[11px] text-custom-white font-medium">
+              Threshold
+            </span>
             <ThresholdFilter
               value={threshValue}
               onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? null))}
@@ -364,25 +466,37 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-line_hair">
         <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
-            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+              sevFilter === "critical"
+                ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                : ""
             }`}
           >
             Crit ({criticalCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+              sevFilter === "watch"
+                ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                : ""
             }`}
           >
             Watch ({watchCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+            }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+              sevFilter === "healthy"
+                ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                : ""
             }`}
           >
             OK ({healthyCount})
@@ -401,15 +515,15 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
         {loadingGrades && grades.length === 0 ? (
           <div className="flex-1 flex items-center justify-center gap-2">
             <div className="cc-spinner border-t-brand_navy" />
-            <span className="text-[11px] text-content">Grading sub departments…</span>
+            <span className="text-[11px] text-content">
+              Grading sub departments…
+            </span>
           </div>
         ) : (
           <>
             <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-line_hair flex-shrink-0">
               <span className="w-2.5 flex-shrink-0" />
-              <span className="text-[11.5px] cc-caps flex-1">
-                Sub Dept
-              </span>
+              <span className="text-[11.5px] cc-caps flex-1">Sub Dept</span>
               <div data-help="sort" className="flex items-center gap-[14px]">
                 <span
                   className="text-[11.5px] cc-caps flex-shrink-0 text-center"
@@ -444,7 +558,10 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
               </div>
             </div>
 
-            <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
+            <div
+              data-help="list"
+              className="flex-1 overflow-y-auto thin-scrollbar"
+            >
               {visibleRows.length === 0 ? (
                 <div className="flex items-center justify-center h-24 text-[11px] text-content/95">
                   None this week
@@ -452,15 +569,22 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
               ) : (
                 visibleRows.map(({ key, grade, tier, name }) => {
                   const isSel = ctx.selectedSubDeptKey === key;
-                  const hasLY = (grade.lyMarginPct ?? 0) > 0 || grade.lySales > 0;
+                  const hasLY =
+                    (grade.lyMarginPct ?? 0) > 0 || grade.lySales > 0;
                   const hasLW = grade.lwSales > 0;
 
                   const tyValue =
                     gradingMetric === "margin"
                       ? `${grade.tyMarginPct.toFixed(2)}%`
                       : formatCurrency2(grade.tySales);
-                  const lwPct = gradingMetric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
-                  const lyPct = gradingMetric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
+                  const lwPct =
+                    gradingMetric === "margin"
+                      ? grade.lwPtsDelta
+                      : grade.vsLWSalesPct;
+                  const lyPct =
+                    gradingMetric === "margin"
+                      ? grade.ptsDelta
+                      : grade.vsLYSalesPct;
                   // Null is a department the week cannot be compared for, so
                   // it reads as a dash rather than a number nobody can act on.
                   const fmtDelta = (v: number | null) =>
@@ -484,7 +608,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                     >
                       <span
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                          tier === "ungraded" ? "bg-ungraded" : severityDotClass[tier]
+                          tier === "ungraded"
+                            ? "bg-ungraded"
+                            : severityDotClass[tier]
                         }`}
                         title={
                           tier === "ungraded"
@@ -496,7 +622,10 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                         {name}
                       </span>
                       <div className="flex items-center gap-[14px]">
-                        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48 }}>
+                        <div
+                          className="flex-shrink-0 flex items-center justify-center"
+                          style={{ width: 48 }}
+                        >
                           <Sparkline
                             values={
                               grade.tyDaily
@@ -517,7 +646,10 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                             hasLW
                               ? comparisonPillClass(
                                   lwPct,
-                                  isCompleteCoverage(grade.coverage.lwDayCount, grade.coverage.dayCount),
+                                  isCompleteCoverage(
+                                    grade.coverage.lwDayCount,
+                                    grade.coverage.dayCount,
+                                  ),
                                   gradingThreshold,
                                 )
                               : "bg-row_stripe text-brand_slate"
@@ -531,7 +663,10 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: MarginPerfLe
                             hasLY
                               ? comparisonPillClass(
                                   lyPct,
-                                  isCompleteCoverage(grade.coverage.lyDayCount, grade.coverage.dayCount),
+                                  isCompleteCoverage(
+                                    grade.coverage.lyDayCount,
+                                    grade.coverage.dayCount,
+                                  ),
                                   gradingThreshold,
                                 )
                               : "bg-row_stripe text-brand_slate"

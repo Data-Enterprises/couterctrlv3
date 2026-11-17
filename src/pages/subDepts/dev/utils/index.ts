@@ -15,11 +15,12 @@ import {
 import { subDeptKey } from "../../../../utils/subDeptKey";
 
 // Interfaces
-import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
 import type {
-  SubDeptMargin,
-  SubMarginsJsonResp,
-} from "../../../../interfaces";
+  MarginTier,
+  SubDeptGrade,
+  GradingMetric,
+} from "../../../../features/dev/devSubMarginSlice";
+import type { SubDeptMargin, SubMarginsJsonResp } from "../../../../interfaces";
 import type { RawSearch, SubDeptEntry } from "../interfaces";
 
 /** The figure a sub department is graded and ranked on: last year when it
@@ -82,7 +83,8 @@ export const buildDayComparisons = (
     rows.reduce((s, m) => s + (m.total_sales - m.total_tax), 0);
   const cogs = (rows: SubDeptMargin[]) =>
     rows.reduce(
-      (s, m) => s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+      (s, m) =>
+        s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
       0,
     );
   const pct = (n: number, c: number) => (n > 0 ? ((n - c) / n) * 100 : 0);
@@ -105,7 +107,11 @@ export const buildDayComparisons = (
   });
 };
 
-export const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
+export const getTier = (
+  grade: SubDeptGrade,
+  threshold: number,
+  metric: GradingMetric,
+): MarginTier => {
   const delta = getGradeDelta(grade, metric);
   if (delta === null) return "ungraded";
   if (delta >= 0) return "healthy";
@@ -136,7 +142,13 @@ const bucketByDay = (rows: MarginRow[]): Record<string, DayBucket> => {
       bucket.cogs += m.cogs;
     } else {
       bucket.net += m.total_sales - m.total_tax;
-      bucket.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+      bucket.cogs += calculateCogs(
+        m.net_cost,
+        m.cost,
+        m.case_size,
+        m.qty,
+        m.weight,
+      );
     }
     out[key] = bucket;
   }
@@ -162,7 +174,10 @@ export const storeMarginPctOf = (dollars: MarginDollars[]): number | null => {
   if (dollars.length === 0) return null;
   const net = dollars.reduce((acc, d) => acc + d.net, 0);
   if (net <= 0) return null;
-  return marginPct(net, dollars.reduce((acc, d) => acc + d.cogs, 0));
+  return marginPct(
+    net,
+    dollars.reduce((acc, d) => acc + d.cogs, 0),
+  );
 };
 
 /**
@@ -191,8 +206,7 @@ export const storeMarginDeltaOf = (
 export type SubDeptSalesTotals = { net: number; qty: number };
 
 type NetRow =
-  | { sale_date: string; total_sales: number; total_tax: number }
-  | RollupRow;
+  { sale_date: string; total_sales: number; total_tax: number } | RollupRow;
 
 export const netByDay = (rows: NetRow[]): Record<string, number> => {
   const out: Record<string, number> = {};
@@ -342,7 +356,10 @@ export const computeMarginDayMatched = (
     counterpart: Record<string, DayBucket>,
     mapDate: (d: string) => string,
   ) => {
-    let tyNet = 0, tyCogs = 0, refNet = 0, refCogs = 0;
+    let tyNet = 0,
+      tyCogs = 0,
+      refNet = 0,
+      refCogs = 0;
     for (const d of tyDates) {
       const match = counterpart[mapDate(d)];
       if (!match) continue;
@@ -392,17 +409,17 @@ export const computeMarginDayMatched = (
       ? ((lyMatch.tyNet - lyMatch.refNet) / lyMatch.refNet) * 100
       : 0,
     /**
-      * Margin percentages are rates, so both sides are scoped to the matched
-      * days — comparing a 3-day TY rate against a 7-day LW rate is the same
-      * category of error as doing it with totals.
-      *
-      * And both sides need sales, because a rate needs something to be a rate
-      * OF. The matched days can leave THIS week's side empty while the prior
-      * one has something: a department selling on different days each week
-      * matches on a day it did not sell, `marginPct` answers 0 for that, and
-      * the delta reads as a collapse nobody can find. Null says there is no
-      * comparison, and grades ungraded — see the Vendors fix, same shape.
-      */
+     * Margin percentages are rates, so both sides are scoped to the matched
+     * days — comparing a 3-day TY rate against a 7-day LW rate is the same
+     * category of error as doing it with totals.
+     *
+     * And both sides need sales, because a rate needs something to be a rate
+     * OF. The matched days can leave THIS week's side empty while the prior
+     * one has something: a department selling on different days each week
+     * matches on a day it did not sell, `marginPct` answers 0 for that, and
+     * the delta reads as a collapse nobody can find. Null says there is no
+     * comparison, and grades ungraded — see the Vendors fix, same shape.
+     */
     ptsDelta:
       hasLY && lyMatch.tyNet > 0
         ? marginPct(lyMatch.tyNet, lyMatch.tyCogs) -
@@ -417,8 +434,10 @@ export const computeMarginDayMatched = (
 };
 
 /** A signed percent to two places, and a signed point change. */
-export const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-export const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
+export const fmtPct = (pct: number) =>
+  `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+export const fmtPts = (pts: number) =>
+  `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
 
 /** Net sales and margin % over margin rows. */
 export const agg = (rows: SubDeptMargin[]) => {
@@ -436,7 +455,12 @@ export const byDate = (src: SubDeptMargin[], dateStr: string) =>
   src.filter((m) => m.sale_date.split("T")[0] === dateStr);
 
 /** Worst-first order of the margin tiers. */
-export const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
+export const SEV_RANK: Record<MarginTier, number> = {
+  critical: 0,
+  watch: 1,
+  healthy: 2,
+  ungraded: 3,
+};
 
 /** The list's Margin / Sales toggle. */
 export const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [

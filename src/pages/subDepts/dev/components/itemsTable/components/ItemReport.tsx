@@ -54,7 +54,10 @@ const ItemReport = ({
             insightOpen={insightOpen}
             setInsightOpen={setInsightOpen}
           />
-          <ItemMetricCards reportRows={reportRows} thresholdAmt={thresholdAmt} />
+          <ItemMetricCards
+            reportRows={reportRows}
+            thresholdAmt={thresholdAmt}
+          />
           <ItemDayTrend
             selectedDetail={selectedDetail}
             thresholdAmt={thresholdAmt}

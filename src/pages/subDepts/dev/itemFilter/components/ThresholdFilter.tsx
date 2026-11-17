@@ -4,7 +4,10 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { useSubMarginActions, useSubMarginState } from "../../hooks";
 
 // Interfaces
-import type { ItemFilterType, ThreshOperator } from "../../../../../features/dev/devSubMarginSlice";
+import type {
+  ItemFilterType,
+  ThreshOperator,
+} from "../../../../../features/dev/devSubMarginSlice";
 
 // Components
 import CheckBox from "../../../../../components-dev/inputs/CheckBox";
@@ -18,7 +21,11 @@ interface ThresholdFilterProps {
 
 /** The number filter form: pick Greater Than, Equal To or Less Than, type an amount, then Submit or Cancel.
  *  Warns if the amount isn't a number or no operator is chosen. */
-const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilterProps) => {
+const ThresholdFilter = ({
+  label,
+  type,
+  handleClose,
+}: ThresholdFilterProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();

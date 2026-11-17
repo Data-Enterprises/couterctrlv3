@@ -2,7 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useSubMarginCtx, useSubMarginActions, useSubMarginState, useParams } from "./hooks";
+import {
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+  useParams,
+} from "./hooks";
 
 // Redux
 import {
@@ -112,7 +117,6 @@ const SubDeptMargins = () => {
     }
   };
 
-  
   // The ungraded rebuild, shared with Vendors — same fetch and screen, a
   // different list open first. mobile/devMobile is still on disk to compare.
   if (ctx.isMobile)
@@ -430,7 +434,10 @@ const SubDeptMargins = () => {
     dispatch(actions.setSelectedWeekDay(""));
     // The grade object changes once, when the item rows replace the totals
     // grade, and the open department's items have to follow.
-  }, [ctx.selectedSubDeptKey, subDeptGrades[ctx.selectedSubDeptKey ?? ""]?.tyWeekOneMargins]);
+  }, [
+    ctx.selectedSubDeptKey,
+    subDeptGrades[ctx.selectedSubDeptKey ?? ""]?.tyWeekOneMargins,
+  ]);
 
   useEffect(() => {
     dispatch(actions.resetFilters());

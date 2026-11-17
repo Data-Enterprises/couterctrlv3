@@ -1,7 +1,11 @@
 // Hooks
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
-import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../hooks";
+import {
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+} from "../hooks";
 
 // Utils
 import { getLYDate } from "../../../../utils/dates";
@@ -51,18 +55,29 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
     const lyDates = new Set(ctx.weekOneMarginsLY.map(day));
     const lwWanted = new Set(tyDates.map(lwOf));
     const lyWanted = new Set(tyDates.map((d) => getLYDate(d)));
-    const twLw = agg(ctx.weekOneMargins.filter((m) => lwDates.has(lwOf(day(m)))));
-    const twLy = agg(ctx.weekOneMargins.filter((m) => lyDates.has(getLYDate(day(m)))));
+    const twLw = agg(
+      ctx.weekOneMargins.filter((m) => lwDates.has(lwOf(day(m)))),
+    );
+    const twLy = agg(
+      ctx.weekOneMargins.filter((m) => lyDates.has(getLYDate(day(m)))),
+    );
     const lw = agg(ctx.weekTwoMargins.filter((m) => lwWanted.has(day(m))));
     const ly = agg(ctx.weekOneMarginsLY.filter((m) => lyWanted.has(day(m))));
     return { twLw, twLy, lw, ly };
   }, [ctx.weekOneMargins, ctx.weekTwoMargins, ctx.weekOneMarginsLY, tyDates]);
 
   const primaryValue = (a: { sales: number; marginPct: number }) =>
-    gradingMetric === "margin" ? `${a.marginPct.toFixed(2)}%` : formatCurrency2(a.sales);
+    gradingMetric === "margin"
+      ? `${a.marginPct.toFixed(2)}%`
+      : formatCurrency2(a.sales);
 
-  const cmp = (tw: { sales: number; marginPct: number }, ref: { sales: number; marginPct: number }) =>
-    unit === "pts" ? tw.marginPct - ref.marginPct : ((tw.sales - ref.sales) / ref.sales) * 100;
+  const cmp = (
+    tw: { sales: number; marginPct: number },
+    ref: { sales: number; marginPct: number },
+  ) =>
+    unit === "pts"
+      ? tw.marginPct - ref.marginPct
+      : ((tw.sales - ref.sales) / ref.sales) * 100;
   const weekSuffix = gradeBasis(
     { hasLY: week.ly.sales > 0, hasLW: week.lw.sales > 0 },
     coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 },
@@ -101,11 +116,13 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] cc-caps-strong">
-            All Week
+          <div className="text-[9px] cc-caps-strong">All Week</div>
+          <div className="text-[12px] font-bold text-content leading-none">
+            {weekRange}
           </div>
-          <div className="text-[12px] font-bold text-content leading-none">{weekRange}</div>
-          <div className="text-[12px] font-bold text-content mt-1">{primaryValue(weekTw)}</div>
+          <div className="text-[12px] font-bold text-content mt-1">
+            {primaryValue(weekTw)}
+          </div>
           <div
             className={`text-[11px] font-semibold ${
               weekDelta === null
@@ -164,17 +181,12 @@ const MarginPerfDaySidebar = ({ coverage }: MarginPerfDaySidebarProps) => {
             }`}
           >
             {holidayName && (
-              <span
-                title={holidayName}
-                className="absolute top-1 right-1 z-10"
-              >
+              <span title={holidayName} className="absolute top-1 right-1 z-10">
                 <StarIcon className="w-2.5 h-2.5 text-amber-500" />
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] cc-caps-strong">
-                {dayName}
-              </div>
+              <div className="text-[9px] cc-caps-strong">{dayName}</div>
               <div className="text-[12px] font-bold text-content leading-none">
                 {dateNum}
               </div>
