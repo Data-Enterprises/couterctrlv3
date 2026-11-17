@@ -61,6 +61,8 @@ import type {
 } from "../../../../../interfaces";
 
 // Components
+import WizardFooter from "./components/WizardFooter";
+import SaveFailureNote from "./components/SaveFailureNote";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import ConfirmModal from "../../../../../components-dev/ConfirmModal";
 import UserFields from "./components/UserFields";
@@ -587,19 +589,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         </div>
       )}
 
-      {failure && (
-        <div className="mb-3 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
-          <div className="text-[12.5px] font-semibold text-content">
-            Access didn’t finish saving.
-          </div>
-          <div className="text-[11.5px] text-content/95">
-            {outcomeSentence(failure)}
-            {failure.reason ? ` ${failure.reason}` : ""} What did save has been
-            re-read, and your changes are still on screen. Press Save changes to
-            send the rest.
-          </div>
-        </div>
-      )}
+      {failure && <SaveFailureNote failure={failure} />}
 
       {singleNote && (
         <div
@@ -695,52 +685,19 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
         )}
       </div>
 
-      {/* Sticky, because the assignments step is taller than the panel and
-          the way forward should not be below the fold of a scroll area. */}
-      <div className="sticky bottom-0 cc-bar-footer flex-wrap gap-3 -mx-4 mt-3 bg-custom-white flex-shrink-0">
-        <button
-          onClick={leave}
-          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-fill_soft"
-        >
-          Cancel
-        </button>
-        <div className="flex items-center gap-2.5">
-          {blockReason && (
-            <span
-              className="text-[11.5px] font-semibold text-content"
-              role="status"
-            >
-              {blockReason}
-            </span>
-          )}
-          <span className="text-[11.5px] text-content/95">
-            {editing && !isLast && (identityDirty || accessDirty)
-              ? "Unsaved changes · "
-              : ""}
-            Step {at + 1} of {STEP_ORDER.length}
-          </span>
-          {at > 0 && (
-            <button
-              onClick={back}
-              disabled={saving}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-fill_soft"
-            >
-              Back
-            </button>
-          )}
-          <button
-            onClick={isLast ? (editing ? handleSave : handleCreate) : advance}
-            disabled={!primaryEnabled}
-            className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
-              primaryEnabled
-                ? "bg-brand_navy hover:bg-brand_navy_hover"
-                : "bg-fill_track_strong cursor-not-allowed"
-            }`}
-          >
-            {isLast ? primaryLabel : "Continue"}
-          </button>
-        </div>
-      </div>
+      <WizardFooter
+        onCancel={leave}
+        blockReason={blockReason}
+        showUnsaved={editing && !isLast && (identityDirty || accessDirty)}
+        at={at}
+        stepCount={STEP_ORDER.length}
+        saving={saving}
+        onBack={back}
+        isLast={isLast}
+        primaryEnabled={primaryEnabled}
+        primaryLabel={primaryLabel}
+        onPrimary={isLast ? (editing ? handleSave : handleCreate) : advance}
+      />
     </div>
   );
 };
