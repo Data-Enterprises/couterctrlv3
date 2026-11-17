@@ -1,5 +1,5 @@
 // Utils
-import { savedOn } from "../utils";
+import { savedOn } from "../../utils";
 
 // Interfaces
 import type { SavedQuery } from "../../../../../api/savedQueries";

@@ -66,3 +66,11 @@ export const buildsFailed = (source: ExportTableKey, message: string) =>
  */
 export const answerFailed = (j: { error?: number; success?: boolean }) =>
   j.error !== 0 || j.success === false;
+
+/** A saved query's date, short. */
+export const savedOn = (iso: string) => {
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime())
+    ? ""
+    : at.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};
