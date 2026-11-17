@@ -200,58 +200,6 @@ const SalesPerfMobile = () => {
     ? scopeName
     : (storePairs.find((p) => p.key === openKey)?.label ?? "this store");
 
-  /** Sales or units, in the page's own card: the group card on a group
-   *  search, the store's card on a single-store one. */
-  const measureSwitch = (
-    <MeasureSwitch
-      value={perf.measure}
-      onChange={(m) => dispatch(setPerfMeasure(m))}
-    />
-  );
-
-  const drillList = perf.drill ? (
-    <PerfDrillList
-      drill={perf.drill}
-      pairs={drillPairs}
-      sort={drillSort?.key ?? null}
-      sortDir={drillSort ? dirOf(drillSort.key, drillSort.reversed) : null}
-      onSort={(key) =>
-        dispatch(setPerfSort({ dimension: drillDim, sort: key }))
-      }
-      listPartial={listPartial}
-      listNote={matchedNote(weekMatch)}
-      shownDay={cardDay}
-      loading={bundleLoading}
-      allowItems={itemScope !== null}
-      storeName={openStoreName}
-      openSubDept={perf.openSubDept}
-      onOpenSubDept={(v) => dispatch(openPerfSubDept(v))}
-      fmt={fmt}
-      sizeLabel={sizeLabel}
-      items={{
-        pairs: itemPairs,
-        total: allItemPairs.length,
-        loading: itemsLoading,
-        sort: perf.itemSort?.key ?? null,
-        sortDir: perf.itemSort
-          ? dirOf(perf.itemSort.key, perf.itemSort.reversed)
-          : null,
-        onSort: (key) => dispatch(setPerfItemSort(key)),
-        query: perf.itemQuery,
-        onQuery: (q) => dispatch(setPerfItemQuery(q)),
-        partial: itemMatch ? isPartialMatch(itemMatch) : false,
-        note: itemMatch ? matchedNote(itemMatch) : "",
-        // Nothing sold this week, but the department is in the list because
-        // last year's rows put it there. The pairs still render — every one
-        // at $0.00 against its last-year figure — so the list needs to say
-        // why rather than leave the reader to infer it from a column of
-        // zeroes.
-        noTy:
-          !!openItems && openItems.ty.length === 0 && openItems.ly.length > 0,
-      }}
-    />
-  ) : null;
-
   // hasSearched false means "show me the search card" — either the first visit
   // or a deliberate return via the range chip. The second clause covers a
   // search that came back empty.
@@ -273,7 +221,48 @@ const SalesPerfMobile = () => {
         onBack={() => dispatch(openPerfDetail(false))}
         levelKey={`${perf.drill}|${perf.openSubDept?.key ?? ""}`}
       >
-        {drillList}
+        <PerfDrillList
+          drill={perf.drill}
+          pairs={drillPairs}
+          sort={drillSort?.key ?? null}
+          sortDir={drillSort ? dirOf(drillSort.key, drillSort.reversed) : null}
+          onSort={(key) =>
+            dispatch(setPerfSort({ dimension: drillDim, sort: key }))
+          }
+          listPartial={listPartial}
+          listNote={matchedNote(weekMatch)}
+          shownDay={cardDay}
+          loading={bundleLoading}
+          allowItems={itemScope !== null}
+          storeName={openStoreName}
+          openSubDept={perf.openSubDept}
+          onOpenSubDept={(v) => dispatch(openPerfSubDept(v))}
+          fmt={fmt}
+          sizeLabel={sizeLabel}
+          items={{
+            pairs: itemPairs,
+            total: allItemPairs.length,
+            loading: itemsLoading,
+            sort: perf.itemSort?.key ?? null,
+            sortDir: perf.itemSort
+              ? dirOf(perf.itemSort.key, perf.itemSort.reversed)
+              : null,
+            onSort: (key) => dispatch(setPerfItemSort(key)),
+            query: perf.itemQuery,
+            onQuery: (q) => dispatch(setPerfItemQuery(q)),
+            partial: itemMatch ? isPartialMatch(itemMatch) : false,
+            note: itemMatch ? matchedNote(itemMatch) : "",
+            // Nothing sold this week, but the department is in the list because
+            // last year's rows put it there. The pairs still render — every one
+            // at $0.00 against its last-year figure — so the list needs to say
+            // why rather than leave the reader to infer it from a column of
+            // zeroes.
+            noTy:
+              !!openItems &&
+              openItems.ty.length === 0 &&
+              openItems.ly.length > 0,
+          }}
+        />
       </MobilePerfDetail>
     );
   }
@@ -315,7 +304,14 @@ const SalesPerfMobile = () => {
                 onInfo={() => dispatch(setPerfInfoOpen(true))}
                 onToggle={() => dispatch(togglePerfStore(GROUP_KEY))}
                 open={groupOpen}
-                actions={measureSwitch}
+                actions={
+                  // Sales or units: on the group card for a group search, on
+                  // the store's card for a single-store one.
+                  <MeasureSwitch
+                    value={perf.measure}
+                    onChange={(m) => dispatch(setPerfMeasure(m))}
+                  />
+                }
               />
 
               {/* Collapsed, it is the whole-group answer — and it stays on screen
@@ -448,7 +444,14 @@ const SalesPerfMobile = () => {
                         ? () => dispatch(setPerfInfoOpen(true))
                         : undefined
                     }
-                    actions={isStore ? measureSwitch : undefined}
+                    actions={
+                      isStore ? (
+                        <MeasureSwitch
+                          value={perf.measure}
+                          onChange={(m) => dispatch(setPerfMeasure(m))}
+                        />
+                      ) : undefined
+                    }
                   >
                     {isOpen && (
                       <PerfStoreReport
