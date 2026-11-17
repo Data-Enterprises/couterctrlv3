@@ -16,7 +16,7 @@ import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
 import { fetchAllPages, inBatches } from "../../../../utils/paging";
 import { LW_OFFSET, shiftIso } from "../../../../utils/grading";
 import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../../utils/dates";
-import { formatDate } from "../../../../utils";
+import { formatDate, formatDateSimple } from "../../../../utils";
 
 // Interfaces
 import type { ActionKind, ReceiptLine, ReportScope } from "../interfaces";
@@ -498,3 +498,35 @@ export const dayCount = (start: string, end: string) =>
         86400000,
     ) + 1,
   );
+
+/** The three weeks the strip names, each as a date range: "vs last year"
+ *  means nothing without saying which week that was. */
+export const reportPeriods = (scope: { start: string; end: string }) => {
+  const range = (w: { start: string; end: string }) =>
+    `${formatDateSimple(w.start)} – ${formatDateSimple(w.end)}`;
+  return {
+    tw: range(scope),
+    lw: range(lwWindow(scope)),
+    ly: range(lyWindow(scope)),
+  };
+};
+
+/**
+ * Off until something reads them.
+ *
+ * `include_price_points` re-runs the whole inner query and aggregates it a
+ * second time, so it is not free — but it is what the suggestions are built
+ * on now. Every price signal used to be derived by dividing a day's revenue
+ * by its units, which on a day carrying two prices produces one the register
+ * never charged: a promotion starting read as a price cut, a promotion
+ * ending as a rise, and reprice actions fired on both.
+ *
+ * Only page 1 asks for it — `getSubMarginsWithPricePoints` derives that from
+ * the page number, since the payload is identical on every page.
+ */
+export const SUBS_PRICE_POINTS = true;
+
+/** Hard ceiling on invoices opened. Reached only at very busy stores; when it
+ *  is, the page reports the remainder rather than presenting a partial walk as
+ *  a complete one. */
+export const MAX_INVOICES = 600;

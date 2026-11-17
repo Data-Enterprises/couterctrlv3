@@ -1,6 +1,6 @@
 // Hooks
 import { shallowEqual } from "react-redux";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 
 // Redux
@@ -8,6 +8,10 @@ import {
   startReceivingWalk,
   setReceivingProgress,
   setReceivingError,
+  setItemReportSelected,
+  setItemReportActual,
+  setItemReportInvoiceLines,
+  setItemReportInvoiceError,
 } from "../../../../features/dev/devItemReportSlice";
 
 // Utils
@@ -15,15 +19,39 @@ import {
   fetchReceiversByItem,
   toReceiptLineFromSearch,
 } from "../../../../utils/receivers";
-import { fetchInvoices, RECEIVING_LOOKBACK_DAYS } from "../utils";
-import type { ReportScope, ReceiptLine } from "../interfaces";
+import { normalizeProductCode } from "../../../../utils/productCode";
+import {
+  dayCount,
+  fetchInvoiceById,
+  fetchInvoices,
+  MAX_INVOICES,
+  RECEIVING_LOOKBACK_DAYS,
+} from "../utils";
+import { buildPriceEras } from "../utils/priceEras";
+import { buildReport, buildRollup } from "../utils/report";
+import { verdictFor } from "../utils/verdict";
 
-/** The page's slice and the API connection, read where they are used instead of passed down. */
+// Interfaces
+import type {
+  LoadForItem,
+  ReportScope,
+  ReceiptLine,
+  SheetRow,
+} from "../interfaces";
+import type { SubsPricePoint } from "../../../../interfaces";
+import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
+
+/** The page's slice, the API connection, the picked date and the user's
+ *  stores, read where they are used instead of passed down. */
 export const useItemReportCtx = () => {
   const report = useAppSelector((s) => s.dev.itemReport, shallowEqual);
   const { url, token } = useAppSelector((s) => s.app);
-  return { ...report, url, token };
+  const { singleDate } = useAppSelector((s) => s.search);
+  const { assignedStores } = useAppSelector((s) => s.user);
+  return { ...report, url, token, singleDate, assignedStores };
 };
+
+export type ItemReportCtx = ReturnType<typeof useItemReportCtx>;
 
 /**
  * The receiving half of Item Actions.
@@ -45,12 +73,6 @@ export const useItemReportCtx = () => {
  * The hook keeps only a run token, to settle races between a search and the
  * one that replaced it.
  */
-
-/** Hard ceiling on invoices opened. Reached only at very busy stores; when it
- *  is, the page reports the remainder rather than presenting a partial walk as
- *  a complete one. */
-const MAX_INVOICES = 600;
-
 export const useReceivingWalk = () => {
   const dispatch = useAppDispatch();
   /** The most recent walk. A response whose token no longer matches belongs to
@@ -149,4 +171,268 @@ export const useReceivingWalk = () => {
   }, []);
 
   return { startWalk: start, cancelWalk: cancel };
+};
+
+/**
+ * The full order behind one delivery, fetched on demand.
+ *
+ * The walk discards every line that isn't on the report's list, so this is a
+ * refetch rather than something already in hand — one call, and cached by
+ * invoice id because people compare two deliveries back and forth.
+ */
+export const useInvoiceLines = (state: ItemReportCtx) => {
+  const dispatch = useAppDispatch();
+  const { url, token, openInvoice } = state;
+  useEffect(() => {
+    if (!openInvoice || !state.scope) return;
+    const key = String(openInvoice.invoiceId);
+    if (state.invoiceLines[key]) return;
+    let cancelled = false;
+    fetchInvoiceById(
+      {
+        url,
+        token,
+        storeid: state.scope.storeid,
+        start: state.scope.start,
+        end: state.scope.end,
+      },
+      openInvoice.invoiceId,
+      openInvoice.date,
+    )
+      .then((lines) => {
+        if (cancelled) return;
+        dispatch(
+          setItemReportInvoiceLines({
+            invoiceId: openInvoice.invoiceId,
+            lines,
+          }),
+        );
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        dispatch(
+          setItemReportInvoiceError(
+            e instanceof Error ? e.message : "Could not load that invoice",
+          ),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Keyed on the open invoice alone — the scope can't change while a modal
+    // over the report is open.
+  }, [openInvoice]);
+};
+
+/**
+ * The report's rows: each uploaded item with its verdict, the action counts,
+ * the items with no receiver, and the selected row.
+ */
+export const useItemReportSheet = (state: ItemReportCtx) => {
+  const windowDays = state.scope
+    ? dayCount(state.scope.start, state.scope.end)
+    : 30;
+
+  /** Points keyed by product code, normalised the same way the rows are —
+   *  `subs/subs` sends codes as numbers on some rows and with a trailing `.0`
+   *  on others, so an unnormalised key silently matches nothing. */
+  const pointsByUpc = useMemo(() => {
+    const map: Record<string, SubsPricePoint[]> = {};
+    for (const pp of state.pricePoints) {
+      const code = normalizeProductCode(pp.product_code);
+      (map[code] ??= []).push(pp);
+    }
+    return map;
+  }, [state.pricePoints]);
+
+  const items = useMemo(
+    () =>
+      state.scope
+        ? buildReport(
+            state.upcs,
+            state.tyRows,
+            state.lwRows,
+            state.lyRows,
+            state.receipts,
+            pointsByUpc,
+            state.scope.start,
+            state.scope.end,
+          )
+        : [],
+    [
+      pointsByUpc,
+      state.scope,
+      state.upcs,
+      state.tyRows,
+      state.lwRows,
+      state.lyRows,
+      state.receipts,
+    ],
+  );
+
+  /**
+   * The two populations, and the counts the toggle shows.
+   *
+   * Both are derived from one `buildReport` pass, so flipping scope costs a
+   * filter rather than a rebuild — and the counts stay honest while the walk is
+   * still running, since "all found" climbs as receipts land.
+   */
+  const scopedItems = items;
+
+  /**
+   * Whether this store has any receiving at all in the lookback.
+   *
+   * A finished walk that opened zero invoices is `receivers/` answering
+   * `record_count: 0` — the store keeps no received orders in the data, which
+   * is a different thing from an item never appearing on one. Only meaningful
+   * once the walk is done; while it runs the rows are "pending" anyway.
+   */
+  const receivingAvailable = !(
+    state.receivingComplete && state.invoicesTotal === 0
+  );
+
+  /**
+   * How many items have no invoice behind them — the number that replaced an
+   * action.
+   *
+   * "Check receiving" used to be a verdict, and on a store whose orders arrive
+   * electronically it swallowed every row: 522 items in one bucket, reading
+   * `Reprice 0` because the chain returned before the pricing tests ran. The
+   * absence is one fact about the data, so it is counted once and said once,
+   * and the rows carry whatever their sales actually show.
+   */
+  const noReceiverItems = useMemo(
+    () =>
+      items.filter((i) => (state.receipts[i.productCode] ?? []).length === 0),
+    [items, state.receipts],
+  );
+
+  const sheetRows: SheetRow[] = useMemo(
+    () =>
+      scopedItems.map((item) => {
+        const receipts = state.receipts[item.productCode] ?? [];
+        return {
+          item,
+          verdict: verdictFor(
+            item,
+            receipts,
+            buildPriceEras(item, receipts),
+            windowDays,
+            state.scope?.end ?? "",
+            RECEIVING_LOOKBACK_DAYS,
+            state.receivingComplete,
+          ),
+        };
+      }),
+    [
+      scopedItems,
+      state.receipts,
+      state.receivingComplete,
+      state.scope?.end,
+      windowDays,
+    ],
+  );
+
+  const counts = useMemo(
+    () => buildRollup(sheetRows.map((r) => r.verdict)),
+    [sheetRows],
+  );
+
+  const selected = sheetRows.find(
+    (r) => r.item.productCode === state.selectedUpc,
+  );
+
+  return {
+    items,
+    receivingAvailable,
+    noReceiverItems,
+    sheetRows,
+    counts,
+    selected,
+  };
+};
+
+/**
+ * The selected row's registers: the price table loads on selection, the
+ * receipts only once a price is opened, and fetched receipts are kept in the
+ * slice so a return to the page shows them.
+ */
+export const useItemRegisters = (
+  state: ItemReportCtx,
+  actual: ActualFetchState,
+  loadActual: LoadForItem,
+  resetActual: () => void,
+  loadPrices: LoadForItem,
+) => {
+  const dispatch = useAppDispatch();
+
+  /**
+   * Registers load on selection. Two calls for one item, never across the
+   * sheet — and no verdict depends on them, so a reader who clicks nothing
+   * loses nothing.
+   */
+  const selectRow = (row: SheetRow) => {
+    if (!state.scope) return;
+    const code = row.item.productCode;
+    dispatch(setItemReportSelected(code));
+    // Already fetched this search? Two calls saved, and the panel paints from
+    // the cache immediately instead of spinning.
+    const { storeid, start, end } = state.scope;
+    loadPrices(code, storeid, start, end);
+    // Receipts are the expensive half and most rows never open one. Cached
+    // from an earlier look, they are already here; otherwise they wait.
+    if (state.actualByUpc[code]) {
+      resetActual();
+      return;
+    }
+  };
+
+  /**
+   * Fetched lines go to Redux the moment they land.
+   *
+   * The hook is shared with Inventory's two panels, so its internals stay as
+   * they are — Item Actions keeps its own copy in its own slice rather than
+   * moving component state that three pages depend on.
+   */
+  useEffect(() => {
+    if (actual.loading || actual.error || !actual.upc) return;
+    if (state.actualByUpc[actual.upc]) return;
+    dispatch(
+      setItemReportActual({
+        upc: actual.upc,
+        lines: actual.lines,
+        truncated: actual.truncated,
+      }),
+    );
+  }, [actual, state.actualByUpc, dispatch]);
+
+  /**
+   * What the rail reads: the live fetch while one is in flight, the cache
+   * otherwise. Without this a return to the page shows an empty panel beside a
+   * still-selected row.
+   */
+  const selectedActual: ActualFetchState = useMemo(() => {
+    const code = state.selectedUpc;
+    if (!code) return actual;
+    if (actual.upc === code && (actual.loading || actual.error)) return actual;
+    const cached = state.actualByUpc[code];
+    if (cached)
+      return {
+        lines: cached.lines,
+        upc: code,
+        loading: false,
+        error: null,
+        truncated: cached.truncated,
+      };
+    return actual;
+  }, [actual, state.actualByUpc, state.selectedUpc]);
+
+  /** Opening a price reads its receipts, unless they are already cached. */
+  const openPrice = () => {
+    const code = state.selectedUpc;
+    if (!state.scope || !code || state.actualByUpc[code]) return;
+    loadActual(code, state.scope.storeid, state.scope.start, state.scope.end);
+  };
+
+  return { selectRow, selectedActual, openPrice };
 };
