@@ -5,7 +5,7 @@ import {
   noReceiptsNote,
   supplySlideSays,
   supplyTab,
-} from "../../utils/supplyRows";
+} from "../utils/supplyRows";
 
 // Interfaces
 import type {

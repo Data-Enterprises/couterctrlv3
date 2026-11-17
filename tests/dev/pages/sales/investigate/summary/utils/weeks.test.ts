@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { weeksSay } from "@/pages/sales/dev/investigate/utils/weeks";
+import { weeksSay } from "@/pages/sales/dev/investigate/summary/utils/weeks";
 
 const money = (v: number) =>
   "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

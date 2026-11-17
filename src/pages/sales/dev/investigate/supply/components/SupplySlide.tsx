@@ -1,5 +1,5 @@
 // Utils
-import { DOC_COLS } from "../../utils/supplyRows";
+import { DOC_COLS } from "../utils/supplyRows";
 
 // Interfaces
 import type { DocLine, SupplyRow } from "../../interfaces";

@@ -1,5 +1,5 @@
 // Utils
-import { weeksSay } from "../../utils/weeks";
+import { weeksSay } from "../utils/weeks";
 
 // Interfaces
 import type { Vitals as VitalsShape } from "../../utils/investigationSteps";

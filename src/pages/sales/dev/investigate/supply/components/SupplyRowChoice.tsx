@@ -1,5 +1,5 @@
 // Utils
-import { supplyLabel } from "../../utils/supplyRows";
+import { supplyLabel } from "../utils/supplyRows";
 
 // Interfaces
 import type { SupplyRow } from "../../interfaces";

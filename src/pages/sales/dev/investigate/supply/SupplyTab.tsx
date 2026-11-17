@@ -3,7 +3,7 @@ import { useState } from "react";
 
 // Utils
 import { shortStore } from "../utils";
-import { supplyRowsOf } from "../utils/supplyRows";
+import { supplyRowsOf } from "./utils/supplyRows";
 
 // Interfaces
 import type { OrdersWave, ReceiptsWave } from "../utils/investigationData";

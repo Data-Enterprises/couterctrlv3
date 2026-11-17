@@ -6,7 +6,7 @@ import {
   supplyRowsOf,
   supplySlideSays,
   supplyTab,
-} from "@/pages/sales/dev/investigate/utils/supplyRows";
+} from "@/pages/sales/dev/investigate/supply/utils/supplyRows";
 import type { ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 
 const order = (id: number, code: string, qty: number, order_date = "2026-10-20", status = "OPEN") => ({
