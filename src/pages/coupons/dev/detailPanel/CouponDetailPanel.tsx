@@ -2,35 +2,26 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useStoreName } from "../../../../hooks";
 import { useCouponContext } from "../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useCouponReceipt, useGridFilters } from "./hooks";
 
 // Redux
-import {
-  setCouponGridFilter,
-  setCouponReceiptLines,
-} from "../../../../features/dev/devCouponSlice";
+import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
 import { isGroupSearch } from "../../../../features/searchSlice";
-
-// API
-import { getCashierTransaction } from "../../../../api/lossPrevention";
 
 // Utils
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { sumCouponAmount } from "../../../../utils/couponValue";
+import { fmtDateRange } from "../utils";
 import {
-  couponValueOf,
-  sumCouponAmount,
-} from "../../../../utils/couponValue";
-import { reasonOf } from "../../../../utils/serverError";
-import { buildSaleId, fmtDateRange, receiptTotals } from "../utils";
+  aggregateGridCoupons,
+  buildAllSections,
+  filterGridRows,
+  scopeFigures,
+} from "./utils";
 
 // Interfaces
 import type { GroupTab } from "../interfaces";
-import type { AggRow, GridFilters, GroupedSection } from "./interfaces";
-import type {
-  CouponItem,
-  ThresholdValue,
-  TransactionListItem,
-} from "../../../../interfaces";
+import type { GridFilters } from "./interfaces";
 
 // Components
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -54,39 +45,26 @@ const CouponDetailPanel = ({
   selectedKey,
   sortMetric,
 }: CouponDetailPanelProps) => {
-  const toast = useToast();
   const ctx = useCouponContext();
   const { dispatch, selectedGroup } = ctx;
   const isGroup = isGroupSearch(ctx.type);
   const storeName = useStoreName(Number(ctx.lastStore));
   const assignedStores = ctx.assignedStores;
 
-  const [exportOpen, setExportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState<boolean>(false);
   const [groupTab, setGroupTab] = useState<GroupTab>("subdept");
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [selectedSaleId, setSelectedSaleId] = useState("");
-
-  // Applied column filters live in Redux, so they survive leaving the page;
-  // what is typed before Apply starts from them and stays local.
-  const applied = ctx.gridFilters;
-  const appliedProduct = applied.product;
-  const appliedUpc = applied.upc;
-  const appliedSubDept = applied.subDept;
-  const appliedAmount = applied.amount;
-  const setAppliedProduct = (v: string) =>
-    dispatch(setCouponGridFilter({ product: v }));
-  const setAppliedUpc = (v: string) =>
-    dispatch(setCouponGridFilter({ upc: v }));
-  const setAppliedSubDept = (v: string) =>
-    dispatch(setCouponGridFilter({ subDept: v }));
-  const setAppliedAmount = (v: ThresholdValue | null) =>
-    dispatch(setCouponGridFilter({ amount: v }));
-  const [draftProduct, setDraftProduct] = useState(appliedProduct);
-  const [draftUpc, setDraftUpc] = useState(appliedUpc);
-  const [draftSubDept, setDraftSubDept] = useState(appliedSubDept);
-  const [draftAmount, setDraftAmount] = useState<ThresholdValue | null>(
-    appliedAmount,
-  );
+  const {
+    selectedSaleId,
+    setSelectedSaleId,
+    txLines,
+    txMeta,
+    totals: { txCoupons, txTax, txNet, txTotal },
+    handleRowClick,
+    handleBack,
+    exportTransaction,
+  } = useCouponReceipt(ctx);
+  const { bundle, applied, clear: clearFilters } = useGridFilters(ctx);
   const [expandedCoupons, setExpandedCoupons] = useState<Set<string>>(
     new Set(),
   );
@@ -135,76 +113,17 @@ const CouponDetailPanel = ({
   const lastSection = useRef(selectedSection);
   useEffect(() => {
     setSelectedSaleId("");
-    if (lastSection.current !== selectedSection) {
-      setDraftProduct("");
-      setAppliedProduct("");
-      setDraftUpc("");
-      setAppliedUpc("");
-      setDraftSubDept("");
-      setAppliedSubDept("");
-      setDraftAmount(null);
-      setAppliedAmount(null);
-    }
+    if (lastSection.current !== selectedSection) clearFilters();
     lastSection.current = selectedSection;
     setExpandedCoupons(new Set());
     dispatch(setCouponReceiptLines([]));
   }, [selectedSection]);
 
   // Pre-compute all groupings so tab switching is instant
-  const allSections = useMemo(() => {
-    const build = (
-      rows: CouponItem[],
-      getKey: (r: CouponItem) => string,
-      getLabel: (r: CouponItem) => string,
-      chronological = false,
-    ): GroupedSection[] => {
-      const map = new Map<string, { label: string; rows: CouponItem[] }>();
-      rows.forEach((r) => {
-        const k = getKey(r);
-        if (!map.has(k)) map.set(k, { label: getLabel(r), rows: [] });
-        map.get(k)!.rows.push(r);
-      });
-      const sections = Array.from(map.entries()).map(
-        ([key, { label, rows: rs }]) => ({
-          key,
-          label,
-          count: rs.length,
-          total: sumCouponAmount(rs),
-          rows: rs,
-        }),
-      );
-      if (chronological)
-        return sections.sort((a, b) => a.key.localeCompare(b.key));
-      return sections.sort(
-        sortMetric === "qty"
-          ? (a, b) => b.count - a.count
-          : (a, b) => b.total - a.total,
-      );
-    };
-
-    return {
-      subdept: build(
-        visibleRows,
-        (r) => r.sub_department_description,
-        (r) => r.sub_department_description,
-      ),
-      date: build(
-        visibleRows,
-        (r) => r.sale_date.split("T")[0],
-        (r) =>
-          new Date(r.sale_date.split("T")[0] + "T12:00:00").toLocaleDateString(
-            "en-US",
-            { weekday: "short", month: "numeric", day: "numeric" },
-          ),
-        true,
-      ),
-      cashier: build(
-        visibleRows,
-        (r) => r.cashier_name || "unknown",
-        (r) => r.cashier_name || "Unknown cashier",
-      ),
-    };
-  }, [visibleRows, sortMetric]);
+  const allSections = useMemo(
+    () => buildAllSections(visibleRows, sortMetric),
+    [visibleRows, sortMetric],
+  );
 
   const groupedSections = allSections[groupTab];
 
@@ -223,81 +142,16 @@ const CouponDetailPanel = ({
   }, [gridRows]);
 
   // Column-filtered rows for the grid
-  const filteredGridRows = useMemo(() => {
-    return gridRows.filter((r) => {
-      if (
-        appliedProduct &&
-        !r.product_description
-          .toLowerCase()
-          .includes(appliedProduct.toLowerCase())
-      )
-        return false;
-      if (
-        appliedUpc &&
-        !String(
-          r.product_code != null ? Math.round(Number(r.product_code)) : "",
-        ).includes(appliedUpc)
-      )
-        return false;
-      if (appliedSubDept && r.sub_department_description !== appliedSubDept)
-        return false;
-      if (appliedAmount) {
-        const amt = couponValueOf(r);
-        if (appliedAmount.op === "gt" && !(amt > appliedAmount.amount))
-          return false;
-        if (appliedAmount.op === "lt" && !(amt < appliedAmount.amount))
-          return false;
-        if (appliedAmount.op === "eq" && amt !== appliedAmount.amount)
-          return false;
-      }
-      return true;
-    });
-  }, [gridRows, appliedProduct, appliedUpc, appliedSubDept, appliedAmount]);
+  const filteredGridRows = useMemo(
+    () => filterGridRows(gridRows, applied),
+    [gridRows, applied.product, applied.upc, applied.subDept, applied.amount],
+  );
 
   // Aggregated coupon rows for the grid (grouped by UPC/product)
-  const aggCouponRows = useMemo(() => {
-    const map = new Map<string, AggRow>();
-    filteredGridRows.forEach((r) => {
-      const key =
-        r.product_code != null
-          ? String(Math.round(Number(r.product_code)))
-          : r.product_description;
-      if (!map.has(key)) {
-        map.set(key, {
-          product_code: key,
-          product_description: r.product_description,
-          sub_department_description: r.sub_department_description,
-          count: 0,
-          total: 0,
-          uses: [],
-        });
-      }
-      const agg = map.get(key)!;
-      agg.count++;
-      agg.total += couponValueOf(r);
-      const existing = agg.uses.find((u) => u.sale_id === r.sale_id);
-      if (existing) {
-        existing.count++;
-        existing.amount += couponValueOf(r);
-      } else {
-        agg.uses.push({
-          sale_id: r.sale_id,
-          sale_date: r.sale_date,
-          cashier_name: r.cashier_name,
-          storeid: r.storeid,
-          store_number: r.store_number,
-          terminal: r.terminal,
-          count: 1,
-          amount: couponValueOf(r),
-          row: r,
-        });
-      }
-    });
-    const rows = Array.from(map.values());
-    return sortMetric === "qty"
-      ? rows.sort((a, b) => b.count - a.count)
-      : rows.sort((a, b) => b.total - a.total);
-  }, [filteredGridRows, sortMetric]);
+  const aggCouponRows = useMemo(
+    () => aggregateGridCoupons(filteredGridRows, sortMetric),
+    [filteredGridRows, sortMetric],
+  );
 
   const toggleCoupon = (key: string) => {
     setExpandedCoupons((prev) => {
@@ -309,14 +163,14 @@ const CouponDetailPanel = ({
   };
 
   // Top KPI strip — scoped to selected store (or all stores if none selected)
-  const totalCoupons = visibleRows.length;
-  const totalAmount = sumCouponAmount(visibleRows);
-  const avgPerCoupon = totalCoupons > 0 ? totalAmount / totalCoupons : 0;
-  const uniqueProducts = new Set(visibleRows.map((c) => c.product_code)).size;
-  const uniqueSubDepts = new Set(
-    visibleRows.map((c) => c.sub_department_description),
-  ).size;
-  const vendorCount = visibleRows.filter((c) => c.vendor_coupon === 1).length;
+  const {
+    totalCoupons,
+    totalAmount,
+    avgPerCoupon,
+    uniqueProducts,
+    uniqueSubDepts,
+    vendorCount,
+  } = scopeFigures(visibleRows);
 
   // Inner KPI strip — scoped to the selected section's rows
   const secCoupons = gridRows.length;
@@ -337,74 +191,6 @@ const CouponDetailPanel = ({
       ? "— All Stores"
       : "— All Coupons";
 
-  const handleRowClick = (row: CouponItem) => {
-    const saleId = buildSaleId(row);
-    if (saleId === selectedSaleId) return;
-    setSelectedSaleId(saleId);
-    dispatch(setCouponReceiptLines([]));
-    getCashierTransaction(
-      ctx.url,
-      ctx.token,
-      row.sale_date,
-      saleId,
-      row.storeid,
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const transactions = [...j.transaction].map((item) => ({
-            ...item,
-            transaction_id: item.sale_id.split("-")[1],
-            qty: item.qty ?? 0,
-          }));
-          dispatch(setCouponReceiptLines(transactions));
-        }
-      })
-      .catch((err) => toast.error(reasonOf(err)));
-  };
-
-  const handleBack = () => {
-    setSelectedSaleId("");
-    dispatch(setCouponReceiptLines([]));
-  };
-
-  const exportTransaction = () => {
-    if (!txLines.length) return;
-    const headers = [
-      "Line",
-      "Description",
-      "Qty",
-      "Sale Type",
-      "Total",
-      "Coupon Amount",
-    ];
-    const rows = txLines.map((item) => [
-      item.line_number,
-      `"${(item.product_description ?? "").replace(/"/g, '""')}"`,
-      item.qty ?? "",
-      item.sale_type ?? "",
-      item.is_coupon === 1 ? "" : (item.total_sales ?? ""),
-      item.is_coupon === 1 ? couponValueOf(item) : "",
-    ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const txId =
-      txMeta?.transaction_id ?? txMeta?.sale_id?.split("-")[1] ?? "tx";
-    const store = txMeta?.store_name?.replace(/\s+/g, "_") ?? "store";
-    const date = txMeta?.sale_date?.split("T")[0] ?? "";
-    a.href = url;
-    a.download = `transaction_${store}_${date}_${txId}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Transaction data
-  const txLines: TransactionListItem[] = ctx.receiptLines;
-  const txMeta = txLines[0] ?? null;
-  const { txCoupons, txTax, txNet, txTotal } = receiptTotals(txLines);
-
   // Export
   const exportTitle = selectedKey
     ? isGroup
@@ -414,25 +200,7 @@ const CouponDetailPanel = ({
   const exportSubtitle = `${isGroup ? groupName : storeName} · ${dateRangeLabel}`;
 
   // The grid's column filters, handed down as one bundle.
-  const filters: GridFilters = {
-    draftUpc,
-    setDraftUpc,
-    appliedUpc,
-    setAppliedUpc,
-    draftProduct,
-    setDraftProduct,
-    appliedProduct,
-    setAppliedProduct,
-    draftSubDept,
-    setDraftSubDept,
-    appliedSubDept,
-    setAppliedSubDept,
-    draftAmount,
-    setDraftAmount,
-    appliedAmount,
-    setAppliedAmount,
-    uniqueSubDeptOptions,
-  };
+  const filters: GridFilters = { ...bundle, uniqueSubDeptOptions };
 
   return (
     <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
