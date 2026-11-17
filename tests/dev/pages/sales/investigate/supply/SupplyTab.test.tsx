@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import SupplyPanel from "@/pages/sales/dev/investigate/supply/SupplyTab";
+import SupplyTab from "@/pages/sales/dev/investigate/supply/SupplyTab";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { supplyOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
 import type { ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
@@ -69,7 +69,7 @@ const theirReceipts = [inv(88214, 520, 1402.1, "2026-10-31")];
 
 const panel = (receiptsOk = true) =>
   render(
-    <SupplyPanel
+    <SupplyTab
       supply={supplyOf(
         { mine: mineOrders, theirs: theirOrders },
         { mine: [], theirs: receiptsOk ? theirReceipts : [] },

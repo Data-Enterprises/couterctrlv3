@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import ActPanel from "@/pages/sales/dev/investigate/handoff/HandoffTab";
+import HandoffTab from "@/pages/sales/dev/investigate/handoff/HandoffTab";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { desksOf } from "@/pages/sales/dev/investigate/utils/investigationSteps";
 import type {
@@ -69,7 +69,7 @@ const desks = desksOf([
 
 const panel = (onExport = vi.fn(), onShow = vi.fn()) =>
   render(
-    <ActPanel
+    <HandoffTab
       desks={desks}
       us="018"
       them="003"

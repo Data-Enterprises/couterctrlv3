@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import HoldsPanel from "@/pages/sales/dev/investigate/summary/SummaryTab";
+import SummaryTab from "@/pages/sales/dev/investigate/summary/SummaryTab";
 import { judge } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
 import { rowsOf } from "@/pages/sales/dev/investigate/utils/holdsRows";
 import { summarise } from "@/pages/sales/dev/investigate/utils/investigationFacts";
@@ -74,7 +74,7 @@ const money = (v: number) => "$" + v.toFixed(2);
 
 const panel = (onFindInSupply = vi.fn()) =>
   render(
-    <HoldsPanel
+    <SummaryTab
       holds={holdsUp(items, "price", "018", "003")}
       rows={rowsOf(items)}
       spread={spreadOf(items)}
@@ -165,7 +165,7 @@ describe("Investigation Summary rows", () => {
       }),
     );
     render(
-      <HoldsPanel
+      <SummaryTab
         holds={holdsUp(many, "price", "018", "003")}
         rows={rowsOf(many)}
         spread={spreadOf(many)}
