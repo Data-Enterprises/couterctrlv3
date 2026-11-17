@@ -96,7 +96,10 @@ const SourcePicker = () => {
               <span className="text-[12.5px] font-semibold text-content flex-shrink-0">
                 {source.label}
               </span>
-              <span className="text-[11px] text-content/95 truncate" title={source.blurb}>
+              <span
+                className="text-[11px] text-content/95 truncate"
+                title={source.blurb}
+              >
                 {source.blurb}
               </span>
             </span>

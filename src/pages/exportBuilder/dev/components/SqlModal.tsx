@@ -41,7 +41,9 @@ const SqlModal = () => {
     >
       <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3">
-          <h2 className="text-[15px] font-semibold">The query this would run</h2>
+          <h2 className="text-[15px] font-semibold">
+            The query this would run
+          </h2>
           <span className="text-[11.5px] text-content/95">
             dry run · nothing was written
           </span>
