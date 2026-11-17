@@ -643,9 +643,6 @@
   "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
     "labels": 1
   },
-  "src/pages/exportBuilder/dev/config/ConfigPanel.tsx": {
-    "file-length": 1
-  },
   "src/pages/exportBuilder/dev/downloads/DownloadsModal.tsx": {
     "labels": 1,
     "shape-extra-code": 2
