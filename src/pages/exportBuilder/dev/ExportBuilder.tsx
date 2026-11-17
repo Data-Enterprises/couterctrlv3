@@ -1,4 +1,18 @@
+// Hooks
 import { useEffect, useState } from "react";
+import { useExportBuilderCtx } from "./hooks/index";
+
+// Redux
+import {
+  clearSavedNotes,
+  setOrderBy,
+  setSearchSource,
+} from "../../../features/dev/devExportBuilderSlice";
+
+// Utils
+import { keepSortable } from "./utils/sortRows";
+
+// Components
 import SearchCard from "../../../components-dev/SearchCard";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import ConfigPanel from "./config/ConfigPanel";
@@ -10,13 +24,6 @@ import QueryPanel from "./queryPanel/QueryPanel";
 import DownloadsModal from "./downloads/DownloadsModal";
 import SavedExportsModal from "./saved/SavedExportsModal";
 import SourcePicker from "./components/SourcePicker";
-import { useExportBuilderCtx } from "./hooks/index";
-import { keepSortable } from "./utils/sortRows";
-import {
-  clearSavedNotes,
-  setOrderBy,
-  setSearchSource,
-} from "../../../features/dev/devExportBuilderSlice";
 
 /**
  * Data Export — pick a table and a scope, narrow what goes in the file,

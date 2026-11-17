@@ -1,3 +1,4 @@
+// Interfaces
 import type { AggregateFn, ExportColumn } from "../../../../api/salesExport";
 
 export type { AggregateFn };

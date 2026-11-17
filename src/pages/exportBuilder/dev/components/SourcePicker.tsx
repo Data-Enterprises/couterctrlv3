@@ -1,7 +1,12 @@
+// Hooks
 import { useRef, type KeyboardEvent } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { useSearchSource } from "../hooks";
+
+// Redux
 import { setSearchSource } from "../../../../features/dev/devExportBuilderSlice";
+
+// Utils
 import { SOURCES } from "../utils/sources";
 
 /**

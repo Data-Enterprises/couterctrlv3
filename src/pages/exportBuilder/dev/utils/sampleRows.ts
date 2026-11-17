@@ -1,6 +1,9 @@
+// Utils
+import { normalizeProductCode } from "./productCodes";
+
+// Interfaces
 import type { ExportRow } from "../../../../api/salesExport";
 import type { ExportBuilderState } from "../../../../features/dev/devExportBuilderSlice";
-import { normalizeProductCode } from "./productCodes";
 import type { ExportSource, ListMatch } from "./sources";
 
 /**

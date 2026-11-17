@@ -1,7 +1,10 @@
+// Utils
+import { sketchExpr } from "./sketchExpr";
+
+// Interfaces
 import type { ExportBuilderState } from "../../../../../features/dev/devExportBuilderSlice";
 import type { ExportParams } from "../../../../../api/salesExport";
 import type { MeasureItem } from "./evalQuery";
-import { sketchExpr } from "./sketchExpr";
 import type { ExportSource } from "../sources";
 
 /**

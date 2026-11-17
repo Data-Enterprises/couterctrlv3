@@ -1,5 +1,8 @@
-import type { ExportColumn, ExportRow, ExportSort } from "../../../../api/salesExport";
+// Utils
 import { isNumericType } from "./aggregates";
+
+// Interfaces
+import type { ExportColumn, ExportRow, ExportSort } from "../../../../api/salesExport";
 
 /**
  * The preview, in the order the file will be written.

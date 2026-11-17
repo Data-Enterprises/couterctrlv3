@@ -1,5 +1,5 @@
-import type { ExportColumn, ExportRow } from "../../../../../api/salesExport";
-import { isNumericType } from "../aggregates";
+// Utils
+import { aliasFor, isNumericType } from "../aggregates";
 import { rollupSampleRows } from "../rollup";
 import {
   aggLeaves,
@@ -11,7 +11,9 @@ import {
   type Query,
   type ValueExpr,
 } from "./parseQuery";
-import { aliasFor } from "../aggregates";
+
+// Interfaces
+import type { ExportColumn, ExportRow } from "../../../../../api/salesExport";
 
 export interface QueryResult {
   columns: string[];

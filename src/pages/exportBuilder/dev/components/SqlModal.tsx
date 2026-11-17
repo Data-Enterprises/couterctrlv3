@@ -1,7 +1,12 @@
+// Hooks
 import { useState } from "react";
-import Modal from "../../../../components-dev/Modal";
 import { useExportBuilderCtx } from "../hooks/index";
+
+// Redux
 import { closeSql } from "../../../../features/dev/devExportBuilderSlice";
+
+// Components
+import Modal from "../../../../components-dev/Modal";
 
 /**
  * The statement this configuration would run.

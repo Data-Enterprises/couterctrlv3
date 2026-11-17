@@ -1,9 +1,4 @@
-import type { UnknownAction } from "@reduxjs/toolkit";
-import type { ExportExpr } from "../../../../api/salesExport";
-import type { SavedConfigPayload } from "../../../../api/savedConfigs";
-import { aliasFor } from "./aggregates";
-import type { ExportSource } from "./sources";
-
+// Redux
 import {
   setAggregates,
   setComputed,
@@ -19,6 +14,15 @@ import {
   setSelectedStoreIds,
   type ExportBuilderState,
 } from "../../../../features/dev/devExportBuilderSlice";
+
+// Utils
+import { aliasFor } from "./aggregates";
+
+// Interfaces
+import type { UnknownAction } from "@reduxjs/toolkit";
+import type { ExportExpr } from "../../../../api/salesExport";
+import type { SavedConfigPayload } from "../../../../api/savedConfigs";
+import type { ExportSource } from "./sources";
 
 /** Every column an expression reaches, aggregated or not. */
 const columnsUnder = (expr: ExportExpr): string[] => {

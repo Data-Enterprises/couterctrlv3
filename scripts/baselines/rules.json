@@ -626,63 +626,11 @@
   "src/pages/coupons/Coupons.tsx": {
     "labels": 1
   },
-  "src/pages/exportBuilder/ExportBuilder.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/ExportBuilder.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/components/SourcePicker.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/components/SqlModal.tsx": {
-    "labels": 1
-  },
   "src/pages/exportBuilder/dev/preview/components/CsvTable.tsx": {
     "commented-code": 2
   },
   "src/pages/exportBuilder/dev/preview/components/SummaryTable.tsx": {
     "commented-code": 3
-  },
-  "src/pages/exportBuilder/dev/preview/hooks/index.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/preview/utils/dateFormats.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/aggregates.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/query/applyQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/query/configToQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/query/evalQuery.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
-  "src/pages/exportBuilder/dev/utils/query/parseQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/query/sketchExpr.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/rollup.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/sampleRows.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/savedExports.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/sortRows.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/utils/sources.ts": {
-    "labels": 1
   },
   "src/pages/forecast/Forecasting.tsx": {
     "labels": 1

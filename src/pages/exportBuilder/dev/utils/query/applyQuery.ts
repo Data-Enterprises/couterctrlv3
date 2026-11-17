@@ -1,4 +1,4 @@
-import type { UnknownAction } from "@reduxjs/toolkit";
+// Redux
 import {
   setAggregates,
   setComputed,
@@ -14,6 +14,8 @@ import {
   setSelectedStoreIds,
   type ExportBuilderState,
 } from "../../../../../features/dev/devExportBuilderSlice";
+
+// Utils
 import { capitalize, type ExportSource } from "../sources";
 import {
   aggLeaves,
@@ -22,6 +24,9 @@ import {
   type Query,
   type SelectItem,
 } from "./parseQuery";
+
+// Interfaces
+import type { UnknownAction } from "@reduxjs/toolkit";
 
 /** An alias the endpoint will take: an identifier, and its own. */
 const USABLE_ALIAS = /^[A-Za-z_][A-Za-z0-9_]{0,62}$/;

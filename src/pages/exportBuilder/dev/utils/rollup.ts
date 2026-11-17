@@ -1,9 +1,12 @@
+// Utils
+import { aliasFor, isNumericType } from "./aggregates";
+
+// Interfaces
 import type {
   ExportAggregate,
   ExportColumn,
   ExportRow,
 } from "../../../../api/salesExport";
-import { aliasFor, isNumericType } from "./aggregates";
 
 /** One measure: a column (or `*`) and what to do with it. */
 export type Measure = ExportAggregate;
