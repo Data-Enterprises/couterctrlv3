@@ -41,7 +41,11 @@ const MarkdownsExportModal = ({ onClose }: MarkdownsExportModalProps) => {
     const columns = MARKDOWN_COLUMNS.filter((c) => chosen.has(c.key));
     downloadCsv(
       buildMarkdownsCsv(rows, columns),
-      markdownsFileName(ctx.shown.scope, ctx.shown.startDate, ctx.shown.endDate),
+      markdownsFileName(
+        ctx.shown.scope,
+        ctx.shown.startDate,
+        ctx.shown.endDate,
+      ),
     );
     onClose();
   };
@@ -62,13 +66,16 @@ const MarkdownsExportModal = ({ onClose }: MarkdownsExportModalProps) => {
           </p>
           <p className="text-[13px] font-medium text-content">Markdown lines</p>
           <p className="text-[11px] text-content/95">
-            {rows.length.toLocaleString()} rows, as filtered and sorted on screen
+            {rows.length.toLocaleString()} rows, as filtered and sorted on
+            screen
           </p>
         </div>
         <ColumnPicker
           chosen={chosen}
           onToggle={toggle}
-          onAll={(all) => setChosen(new Set(all ? MARKDOWN_COLUMNS.map((c) => c.key) : []))}
+          onAll={(all) =>
+            setChosen(new Set(all ? MARKDOWN_COLUMNS.map((c) => c.key) : []))
+          }
         />
       </div>
 

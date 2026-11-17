@@ -1,5 +1,9 @@
 // Interfaces
-import type { MarkdownFilters, MarkdownItem, MarkdownSortKey } from "../../../../interfaces/markdowns";
+import type {
+  MarkdownFilters,
+  MarkdownItem,
+  MarkdownSortKey,
+} from "../../../../interfaces/markdowns";
 
 /** One column of the Markdowns grid and its export. */
 export interface MarkdownColumn {

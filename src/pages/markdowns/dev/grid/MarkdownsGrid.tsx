@@ -37,10 +37,7 @@ const MarkdownsGrid = ({ onExport }: MarkdownsGridProps) => {
   useEffect(() => setPage(0), [visible, pageSize]);
 
   return (
-    <div
-      className="cc-panel shadow-lg"
-      style={{ flex: 1, minWidth: 0 }}
-    >
+    <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
       <GridNavyHeader onExport={onExport} />
       <GridKpiStrip rows={visible} />
 

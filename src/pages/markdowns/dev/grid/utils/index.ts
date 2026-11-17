@@ -3,7 +3,10 @@ import { MARKDOWN_COLUMNS } from "../../utils";
 
 // Interfaces
 import type { SortState } from "../../../../../utils/useTriStateSort";
-import type { MarkdownItem, MarkdownSortKey } from "../../../../../interfaces/markdowns";
+import type {
+  MarkdownItem,
+  MarkdownSortKey,
+} from "../../../../../interfaces/markdowns";
 import type { MarkdownTotals } from "../interfaces";
 
 /** The pager's page sizes, as Orders offers them. */
@@ -23,10 +26,16 @@ export const sortLabel = (sort: SortState<MarkdownSortKey>) => {
   if (!col) return "In date order";
   const desc = sort.dir === "desc";
   const dir = DATE_COLUMNS.includes(col.key)
-    ? desc ? "newest first" : "oldest first"
+    ? desc
+      ? "newest first"
+      : "oldest first"
     : col.align === "right"
-      ? desc ? "high to low" : "low to high"
-      : desc ? "Z to A" : "A to Z";
+      ? desc
+        ? "high to low"
+        : "low to high"
+      : desc
+        ? "Z to A"
+        : "A to Z";
   return `Sorted by ${col.label}, ${dir}`;
 };
 
