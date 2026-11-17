@@ -1,29 +1,19 @@
 // Hooks
-import { useRef } from "react";
-import { useAppDispatch, useSearchPick } from "../../../../hooks";
+import { useSearchPick } from "../../../../hooks";
 import { useForecastCtx } from "../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
-import {
-  addUpcs,
-  setUpcText,
-  removeUpc,
-  clearUpcs,
-  setUploadedAdList,
-} from "../../../../features/dev/devForecastDevSlice";
 import { isGroupSearch } from "../../../../features/searchSlice";
 
 // Utils
 import { getStoreName } from "../../../../utils";
-import { isAdListFile, parseAdListWorkbook } from "../utils/adListParse";
-import { parseUpcs, PILL } from "../utils";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../../components-dev/storePicker/StorePicker";
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 import EntryCardLoading from "../../../../components-dev/loading/EntryCardLoading";
+import UpcField from "./components/UpcField";
 
 interface ForecastEntryProps {
   onSearch: () => void;
@@ -50,68 +40,10 @@ const ForecastEntry = ({
   onClose,
   notice,
 }: ForecastEntryProps) => {
-  const dispatch = useAppDispatch();
-  const toast = useToast();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const adRef = useRef<HTMLInputElement>(null);
   const { nothingPicked, pickLabel } = useSearchPick();
   // Dev's own list — see the note in forecastDevSlice. Nothing loaded here
   // reaches the legacy page or the UPC List page.
-  const { search, assignedStores, upcs, upcText, adListRows, adListFileName } =
-    useForecastCtx();
-
-  const handleParseText = () => {
-    const parsed = parseUpcs(upcText);
-    if (!parsed.length) {
-      toast.warn("No valid UPCs found");
-      return;
-    }
-    dispatch(addUpcs(parsed));
-    dispatch(setUpcText(""));
-  };
-
-  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const parsed = parseUpcs(ev.target?.result as string);
-      if (parsed.length) {
-        dispatch(addUpcs(parsed));
-        toast.success(`Added ${parsed.length} UPCs from file`);
-      } else {
-        toast.warn("No valid UPCs found in file");
-      }
-    };
-    reader.readAsText(file);
-    // Cleared so picking the same file twice still fires a change event.
-    e.target.value = "";
-  };
-
-  const handleAdUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    if (!isAdListFile(file.name)) {
-      toast.warn("Please select an Excel (.xlsx) file");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const rows = parseAdListWorkbook(ev.target!.result as ArrayBuffer);
-        if (!rows.length) {
-          toast.warn("No UPCs found in that AD list");
-          return;
-        }
-        dispatch(setUploadedAdList({ rows, fileName: file.name }));
-        toast.success(`Added ${rows.length} UPCs from the AD list`);
-      } catch {
-        toast.error("Failed to parse AD list file");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
+  const { search, assignedStores, upcs } = useForecastCtx();
 
   // Echoed under the spinner, same derivation SearchCard uses.
   const searchLabel = [
@@ -174,92 +106,7 @@ const ForecastEntry = ({
             <SingleDatePicker />
 
             {/* UPC input */}
-            <div>
-              <div className="flex items-baseline justify-between gap-2">
-                <label className="text-[11px] font-medium text-content/95 ml-0.5">
-                  UPCs
-                </label>
-                <span className="text-[10.5px] text-content/95">
-                  Separate by comma or new lines
-                </span>
-              </div>
-              <textarea
-                value={upcText}
-                onChange={(e) => dispatch(setUpcText(e.target.value))}
-                placeholder="Paste UPCs, comma or newline separated…"
-                rows={4}
-                className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
-                style={{ outline: "none", boxShadow: "none" }}
-              />
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <button onClick={handleParseText} className={PILL}>
-                  Add
-                </button>
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className={PILL}
-                >
-                  Upload CSV
-                </button>
-                <button onClick={() => adRef.current?.click()} className={PILL}>
-                  Upload AD list
-                </button>
-                {upcs.length > 0 && (
-                  <button
-                    onClick={() => dispatch(clearUpcs())}
-                    className="px-3 py-1 text-[11px] font-medium rounded border border-brand_danger_line text-brand_danger hover:bg-brand_danger_bg transition-colors"
-                  >
-                    Clear all
-                  </button>
-                )}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".csv,.txt"
-                  className="hidden"
-                  onChange={handleCsvUpload}
-                />
-                <input
-                  ref={adRef}
-                  type="file"
-                  accept=".xlsx,.xls"
-                  className="hidden"
-                  onChange={handleAdUpload}
-                />
-              </div>
-
-              {upcs.length > 0 && (
-                <div
-                  data-help="upc-input"
-                  className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar"
-                >
-                  {upcs.map((upc) => (
-                    <span
-                      key={upc}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
-                    >
-                      {upc}
-                      {adListRows[upc] && (
-                        <span className="text-[9px] font-semibold">AD</span>
-                      )}
-                      <button
-                        onClick={() => dispatch(removeUpc(upc))}
-                        className="text-brand_navy/95 hover:text-brand_navy transition-colors leading-none"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {adListFileName && (
-                <p className="text-[10.5px] text-content/95 mt-1.5">
-                  Ad prices from {adListFileName} will be used as the forecast
-                  price for those items
-                </p>
-              )}
-            </div>
+            <UpcField />
 
             {/* run */}
             <button
