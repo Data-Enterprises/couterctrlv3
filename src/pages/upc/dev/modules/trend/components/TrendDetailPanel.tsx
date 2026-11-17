@@ -1,7 +1,11 @@
 // Utils
 import { accelerationFactor, impactUnits } from "../trendStats";
 import { getTrendPhrase, getTrendInsight } from "../utils";
-import { activeRatePct, isWeakBaseline, isSmallSample } from "../utils/trendWindow";
+import {
+  activeRatePct,
+  isWeakBaseline,
+  isSmallSample,
+} from "../utils/trendWindow";
 
 // Interfaces
 import type { TrendStatus } from "../interfaces";
@@ -35,7 +39,8 @@ const TrendDetailPanel = ({
 }: TrendDetailPanelProps) => {
   const phrase = getTrendPhrase(status);
   const insight = getTrendInsight(t, status, fixes, window);
-  const factor = status === "accelerating" ? accelerationFactor(t, fixes) : null;
+  const factor =
+    status === "accelerating" ? accelerationFactor(t, fixes) : null;
   const impact = Math.round(impactUnits(t, fixes, window));
   const noBaseline = status === "new";
 
@@ -43,10 +48,16 @@ const TrendDetailPanel = ({
   const afterWindowDays = window?.afterDays ?? 0;
   // "8/1", for the window's own label. Trend runs from the start date to
   // date whatever the search's end date says; the tile says so.
-  const pivotShort = window ? window.pivot.split("/").slice(0, 2).join("/") : "";
+  const pivotShort = window
+    ? window.pivot.split("/").slice(0, 2).join("/")
+    : "";
 
-  const activeRateBefore = beforeWindowDays ? activeRatePct(t.active_days_before, beforeWindowDays) : 0;
-  const activeRateAfter = afterWindowDays ? activeRatePct(t.active_days_after, afterWindowDays) : 0;
+  const activeRateBefore = beforeWindowDays
+    ? activeRatePct(t.active_days_before, beforeWindowDays)
+    : 0;
+  const activeRateAfter = afterWindowDays
+    ? activeRatePct(t.active_days_after, afterWindowDays)
+    : 0;
   const r2BeforePct = Math.round(t["r2-before"] * 100);
   const r2AfterPct = Math.round(t["r2-after"] * 100);
   const weakBaseline = isWeakBaseline(t["r2-before"]);
@@ -61,9 +72,18 @@ const TrendDetailPanel = ({
       sub: noBaseline ? "no prior history" : undefined,
       variant: noBaseline ? undefined : impact < 0 ? "down" : "up",
     },
-    { label: "Daily rate", value: `${t.mean_before.toFixed(1)} → ${t.mean_after.toFixed(1)}` },
+    {
+      label: "Daily rate",
+      value: `${t.mean_before.toFixed(1)} → ${t.mean_after.toFixed(1)}`,
+    },
     ...(factor !== null
-      ? [{ label: "Acceleration", value: `${factor.toFixed(1)}× faster`, variant: "down" as const }]
+      ? [
+          {
+            label: "Acceleration",
+            value: `${factor.toFixed(1)}× faster`,
+            variant: "down" as const,
+          },
+        ]
       : []),
     { label: "Confidence", value: `${r2AfterPct}%` },
     {
@@ -75,13 +95,19 @@ const TrendDetailPanel = ({
 
   return (
     <div className="flex-1 min-w-0 overflow-y-auto thin-scrollbar">
-      <CtaInsightStrip title={t.product_description} insight={insight} tone={phrase.tone} />
+      <CtaInsightStrip
+        title={t.product_description}
+        insight={insight}
+        tone={phrase.tone}
+      />
       <KpiTileGrid items={kpis} />
 
       <div className="px-4 pb-3.5">
         <div className="mb-5">
           <div className="flex items-center justify-between bg-fill_track px-2 py-1.5 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-content">Status</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-content">
+              Status
+            </span>
             <BeforeAfterLegend />
           </div>
 
@@ -122,7 +148,11 @@ const TrendDetailPanel = ({
               before={t.volatility_before.toFixed(1)}
               after={t.volatility_after.toFixed(1)}
             />
-            <TrendBeforeAfterTile label="Slope" before={t.slope_before.toFixed(2)} after={t.slope_after.toFixed(2)} />
+            <TrendBeforeAfterTile
+              label="Slope"
+              before={t.slope_before.toFixed(2)}
+              after={t.slope_after.toFixed(2)}
+            />
           </div>
         </div>
       </div>

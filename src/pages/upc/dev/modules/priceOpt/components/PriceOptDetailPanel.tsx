@@ -19,7 +19,10 @@ interface PriceOptDetailPanelProps {
 
 /** The Price Opt tab's right side for one item: an insight strip, KPI tiles (best price,
  *  best revenue, elasticity, price points tested) and the price points table. */
-const PriceOptDetailPanel = ({ summary: r, fixes }: PriceOptDetailPanelProps) => {
+const PriceOptDetailPanel = ({
+  summary: r,
+  fixes,
+}: PriceOptDetailPanelProps) => {
   const phrase = getPriceOptPhrase(r.points, r.elasticity);
   const insight = getPriceOptInsight(r.points, r.elasticity);
 
@@ -41,7 +44,10 @@ const PriceOptDetailPanel = ({ summary: r, fixes }: PriceOptDetailPanelProps) =>
           },
         ]
       : []),
-    { label: "Elasticity", value: r.elasticity !== null ? r.elasticity.toFixed(1) : "—" },
+    {
+      label: "Elasticity",
+      value: r.elasticity !== null ? r.elasticity.toFixed(1) : "—",
+    },
     { label: "Price points tested", value: String(r.points.length) },
   ];
 

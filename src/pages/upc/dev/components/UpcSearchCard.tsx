@@ -33,7 +33,11 @@ interface UpcSearchCardProps {
 
 /** The UPC List search card: landing tab, store or group, dates, and UPCs typed, pasted or
  *  uploaded from a CSV, then the Search button. Also used as the re-search overlay. */
-const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) => {
+const UpcSearchCard = ({
+  onSearch,
+  onClose,
+  busy = false,
+}: UpcSearchCardProps) => {
   const ctx = useUpcDevCtx();
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
@@ -77,7 +81,6 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
       }
     >
       <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-2">
-
         {/* title */}
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -143,7 +146,10 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
             className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
             style={{ outline: "none", boxShadow: "none" }}
           />
-          <div data-help="upc-input" className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div
+            data-help="upc-input"
+            className="flex items-center gap-2 mt-1.5 flex-wrap"
+          >
             <button
               onClick={handleParseText}
               className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 cc-muted-link hover:border-content/35"
@@ -201,7 +207,6 @@ const UpcSearchCard = ({ onSearch, onClose, busy = false }: UpcSearchCardProps) 
         >
           {nothingPicked ? pickLabel : busy ? "Searching…" : "Search"}
         </button>
-
       </div>
     </div>
   );

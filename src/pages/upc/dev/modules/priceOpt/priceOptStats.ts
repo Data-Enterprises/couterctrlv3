@@ -7,7 +7,10 @@ import type { UpcPriceOpt } from "../../../../../interfaces";
 
 // One row per unique price: the API can repeat a price across periods, so
 // qty/weight/revenue are summed per price.
-export function pricePoints(bestPrices: UpcPriceOpt[], code: string): PricePoint[] {
+export function pricePoints(
+  bestPrices: UpcPriceOpt[],
+  code: string,
+): PricePoint[] {
   const byPrice = new Map<number, PricePoint>();
   for (const p of bestPrices) {
     if (p.product_code !== code) continue;

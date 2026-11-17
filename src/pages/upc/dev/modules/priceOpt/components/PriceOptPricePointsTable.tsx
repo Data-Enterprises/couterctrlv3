@@ -15,7 +15,11 @@ interface PriceOptPricePointsTableProps {
 /** Price Opt's version of Sales Comp's day-of-week grid: a variable-length list of price
  *  points with qty (or lb) and revenue. No profit column and no "current" row; the
  *  best-by-revenue row is tinted. */
-const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPricePointsTableProps) => {
+const PriceOptPricePointsTable = ({
+  points,
+  bestPrice,
+  weighted,
+}: PriceOptPricePointsTableProps) => {
   const sorted = [...points].sort((a, b) => b.revenue - a.revenue);
   const cols = "1fr 70px 90px";
 
@@ -24,7 +28,10 @@ const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPrice
       <div className="text-[11px] font-semibold uppercase tracking-wide text-content bg-fill_track/75 px-2 py-1.5 mb-1">
         Price points tested
       </div>
-      <div className="grid gap-1 px-2 text-[10px] cc-caps" style={{ gridTemplateColumns: cols }}>
+      <div
+        className="grid gap-1 px-2 text-[10px] cc-caps"
+        style={{ gridTemplateColumns: cols }}
+      >
         <span>Price</span>
         {/* One item per table, so the header names its unit outright. */}
         <span className="text-right">{weighted ? "Lb" : "Qty"}</span>
@@ -40,12 +47,20 @@ const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: PriceOptPrice
           >
             <span className="text-[13px] font-semibold text-content">
               {formatCurrency2(p.price)}
-              {isBest && <span className="ml-1.5 text-[10px] font-semibold text-severity_healthy_text">best</span>}
+              {isBest && (
+                <span className="ml-1.5 text-[10px] font-semibold text-severity_healthy_text">
+                  best
+                </span>
+              )}
             </span>
             <span className="text-right text-[13px] tabular-nums text-content">
-              {weighted ? formatPricedUnitsShort(p.qty, p.weight) : p.qty.toLocaleString()}
+              {weighted
+                ? formatPricedUnitsShort(p.qty, p.weight)
+                : p.qty.toLocaleString()}
             </span>
-            <span className="text-right text-[13px] tabular-nums text-content">{formatCurrency2(p.revenue)}</span>
+            <span className="text-right text-[13px] tabular-nums text-content">
+              {formatCurrency2(p.revenue)}
+            </span>
           </div>
         );
       })}

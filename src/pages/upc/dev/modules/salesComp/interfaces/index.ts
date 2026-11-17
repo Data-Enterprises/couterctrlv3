@@ -5,7 +5,12 @@ import type { UpcSalesComp } from "../../../../../../interfaces";
  * The dates a Sales Comp answer covers: the search's, and last year's. Any of
  * the app's date forms (m/d/yyyy, or ISO with or without a time).
  */
-export type SalesCompRange = { start: string; end: string; lyStart: string; lyEnd: string };
+export type SalesCompRange = {
+  start: string;
+  end: string;
+  lyStart: string;
+  lyEnd: string;
+};
 
 export type UpcSalesCompStats = {
   code: string;

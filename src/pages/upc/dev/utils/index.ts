@@ -23,7 +23,10 @@ export const failureReason = (err: unknown): string => {
 };
 
 /** Each insight tone's fill, hover fill, text and border classes. */
-export const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: string; border: string }> = {
+export const TONE_CLASSES: Record<
+  CtaTone,
+  { bg: string; hoverBg: string; text: string; border: string }
+> = {
   up: {
     bg: "bg-severity_healthy_bg",
     hoverBg: "hover:bg-severity_healthy_text/10",
@@ -66,7 +69,13 @@ export const buildScopeKey = (
   groupId: number | string | undefined,
   startDate: string,
   endDate: string,
-) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
+) =>
+  [
+    type,
+    type === "Store" ? (storeid ?? "") : (groupId ?? ""),
+    startDate,
+    endDate,
+  ].join("|");
 
 /** Whether two comma-joined store lists hold the same stores, in any order. */
 export const sameStores = (a: string, b: string) => {

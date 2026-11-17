@@ -9,7 +9,8 @@ export const isDecline = (s: TrendStatus) =>
   s === "declining" || s === "accelerating" || s === "stopped";
 
 /** Sold before the pivot and not on a single day since. */
-export const hasStopped = (t: UpcTrend) => hasBaseline(t) && t.active_days_after === 0;
+export const hasStopped = (t: UpcTrend) =>
+  hasBaseline(t) && t.active_days_after === 0;
 
 /** Units per calendar day in each window: the total over the window's
  *  length, selling days or not. `mean_*` is per selling day. */
@@ -24,7 +25,10 @@ export const calendarRates = (t: UpcTrend, window: UpcTrendWindow) => ({
  * per-selling-day rate held or rose while units per calendar day fell). Needs
  * the windows.
  */
-export const hasReducedAvailability = (t: UpcTrend, window: UpcTrendWindow | null) => {
+export const hasReducedAvailability = (
+  t: UpcTrend,
+  window: UpcTrendWindow | null,
+) => {
   if (!window || !hasBaseline(t) || t.active_days_after === 0) return false;
   if (t.pct_change_mean < 0) return false;
   const rate = calendarRates(t, window);
@@ -55,7 +59,9 @@ export function impactUnits(
   // lost is its old per-calendar-day pace times the after window. Needs the
   // windows.
   if (t.active_days_after === 0) {
-    return window ? -(t.total_before / window.beforeDays) * window.afterDays : 0;
+    return window
+      ? -(t.total_before / window.beforeDays) * window.afterDays
+      : 0;
   }
   // Its rate per selling day held, so the formula below reads as a gain. What
   // it lost is the drop in units per calendar day, over the days since.

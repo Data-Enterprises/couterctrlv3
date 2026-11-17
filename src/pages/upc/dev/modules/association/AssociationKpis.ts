@@ -27,15 +27,24 @@ export function getAssociationKpis(
   const totalRevenue = getTotalRevenue(items);
   const totalUnits = getTotalUnits(items);
   const topRevenueItem = active ? getTopRevenueItem(items) : undefined;
-  const queryDepartments = active ? getQueryDepartments(active.items) : new Set<number>();
+  const queryDepartments = active
+    ? getQueryDepartments(active.items)
+    : new Set<number>();
   const crossDeptCount = getCrossDeptCount(items, queryDepartments);
   const deptBreakdown = getDepartmentBreakdown(items);
-  const { cross: crossDeptBreakdown } = splitDeptBreakdown(deptBreakdown, queryDepartments);
+  const { cross: crossDeptBreakdown } = splitDeptBreakdown(
+    deptBreakdown,
+    queryDepartments,
+  );
 
   const topDept = deptBreakdown[0];
 
   return [
-    { label: "Total revenue", value: active ? formatCurrency2(totalRevenue) : "—", sub: "companions" },
+    {
+      label: "Total revenue",
+      value: active ? formatCurrency2(totalRevenue) : "—",
+      sub: "companions",
+    },
     {
       label: "Top revenue",
       value: topRevenueItem?.product_description ?? "—",

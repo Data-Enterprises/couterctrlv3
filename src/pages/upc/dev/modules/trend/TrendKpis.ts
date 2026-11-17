@@ -48,7 +48,10 @@ export function getTrendKpis(
     {
       label: "Declining items",
       value: `${decliningCount} of ${filtered.length}`,
-      sub: stoppedCount > 0 ? `incl. ${stoppedCount} stopped selling` : "vs period avg",
+      sub:
+        stoppedCount > 0
+          ? `incl. ${stoppedCount} stopped selling`
+          : "vs period avg",
       variant: decliningCount > 0 ? "down" : undefined,
     },
     {
@@ -61,10 +64,25 @@ export function getTrendKpis(
     // Only shown once something is actually new — five tiles is the strip's
     // width, and a permanent "0 of n" would push a real number out.
     ...(fixes && newCount > 0
-      ? [{ label: "New since pivot", value: `${newCount} of ${filtered.length}`, sub: "no prior history" }]
+      ? [
+          {
+            label: "New since pivot",
+            value: `${newCount} of ${filtered.length}`,
+            sub: "no prior history",
+          },
+        ]
       : []),
-    { label: "Reduced availability", value: `${reducedAvailabilityCount} of ${filtered.length}`, sub: "fewer active days, not less demand" },
-    { label: "Accelerating", value: `${acceleratingCount} of ${filtered.length}`, sub: "slope worsening", variant: acceleratingCount > 0 ? "down" : undefined },
+    {
+      label: "Reduced availability",
+      value: `${reducedAvailabilityCount} of ${filtered.length}`,
+      sub: "fewer active days, not less demand",
+    },
+    {
+      label: "Accelerating",
+      value: `${acceleratingCount} of ${filtered.length}`,
+      sub: "slope worsening",
+      variant: acceleratingCount > 0 ? "down" : undefined,
+    },
     {
       label: "Most impacted",
       value: mostImpacted ? mostImpacted.desc : "—",

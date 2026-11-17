@@ -1,6 +1,13 @@
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
-import { computeUpcSalesCompStats, salesCompCodes, weekdayCounts, weeksIn, DAYS, DAY_SHORT } from "./salesCompStats";
+import {
+  computeUpcSalesCompStats,
+  salesCompCodes,
+  weekdayCounts,
+  weeksIn,
+  DAYS,
+  DAY_SHORT,
+} from "./salesCompStats";
 
 // Interfaces
 import type { SalesCompRange } from "./interfaces";
@@ -43,7 +50,10 @@ export function getSalesCompKpis(
   const stats = computeUpcSalesCompStats(upcCodes, filtered, filteredLY, range);
 
   const totalSales = stats.reduce((acc, s) => acc + s.periodTotal, 0);
-  const totalSalesLY = stats.reduce((acc, s) => acc + (s.hasLY ? s.lyPeriodTotal : 0), 0);
+  const totalSalesLY = stats.reduce(
+    (acc, s) => acc + (s.hasLY ? s.lyPeriodTotal : 0),
+    0,
+  );
   // vs LY is like for like: only items that sold in both years. Others keep
   // their own figures; the strip says how many it compared.
   const both = stats.filter((s) => s.periodTotal > 0 && s.lyPeriodTotal > 0);
@@ -56,13 +66,17 @@ export function getSalesCompKpis(
   // Per occurrence of the weekday, as the item rows do.
   const dayCounts = weekdayCounts(range.start, range.end);
   const daySums = DAYS.map(
-    (d, i) => filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0) / (dayCounts[i] || 1),
+    (d, i) =>
+      filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0) / (dayCounts[i] || 1),
   );
   const activeDays = activeDayCount(filtered);
-  const avgDaily = tyUpcCount > 0 && activeDays > 0 ? totalSales / activeDays / tyUpcCount : 0;
+  const avgDaily =
+    tyUpcCount > 0 && activeDays > 0 ? totalSales / activeDays / tyUpcCount : 0;
   const activeDaysLY = activeDayCount(filteredLY);
   const avgDailyLY =
-    hasLY && lyUpcCount > 0 && activeDaysLY > 0 ? totalSalesLY / activeDaysLY / lyUpcCount : null;
+    hasLY && lyUpcCount > 0 && activeDaysLY > 0
+      ? totalSalesLY / activeDaysLY / lyUpcCount
+      : null;
 
   const dollarPeakIdx = daySums.indexOf(Math.max(...daySums));
   const modePeakCounts = new Array(7).fill(0);
@@ -94,7 +108,10 @@ export function getSalesCompKpis(
     },
     {
       label: "vs LY",
-      value: vsLYPct === null ? "—" : `${vsLYPct >= 0 ? "▲" : "▼"} ${Math.abs(vsLYPct).toFixed(2)}%`,
+      value:
+        vsLYPct === null
+          ? "—"
+          : `${vsLYPct >= 0 ? "▲" : "▼"} ${Math.abs(vsLYPct).toFixed(2)}%`,
       sub: !hasLY
         ? "no LY data"
         : both.length < upcCount
@@ -105,19 +122,26 @@ export function getSalesCompKpis(
     {
       label: "Peak day",
       value: upcCount > 0 ? DAY_SHORT[dollarPeakIdx] : "—",
-      sub: upcCount === 0 ? undefined : peakDayDiverges
-        ? `most UPCs peak ${DAY_SHORT[modePeakIdx]}`
-        : `${modePeakCount} of ${upcCount} UPCs peak here`,
+      sub:
+        upcCount === 0
+          ? undefined
+          : peakDayDiverges
+            ? `most UPCs peak ${DAY_SHORT[modePeakIdx]}`
+            : `${modePeakCount} of ${upcCount} UPCs peak here`,
       variant: peakDayDiverges ? "down" : undefined,
     },
     {
       label: "Avg daily / UPC",
       value: formatCurrency2(avgDaily),
-      sub: avgDailyLY !== null ? `${formatCurrency2(avgDailyLY)} LY` : undefined,
+      sub:
+        avgDailyLY !== null ? `${formatCurrency2(avgDailyLY)} LY` : undefined,
     },
     {
       label: "WoW trend",
-      value: trendCounted === 0 ? "—" : `${trendingUp}↑ · ${trendingFlat}→ · ${trendingDown}↓`,
+      value:
+        trendCounted === 0
+          ? "—"
+          : `${trendingUp}↑ · ${trendingFlat}→ · ${trendingDown}↓`,
       sub: "vs complete-wk avg",
     },
   ];

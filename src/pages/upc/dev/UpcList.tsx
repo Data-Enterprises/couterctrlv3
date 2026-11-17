@@ -116,7 +116,12 @@ const UpcList = () => {
     // A search that only removed UPCs is a subset of what's loaded, so it is
     // answered by pruning rows (keyed on product_code) instead of re-fetching.
     // Only when the store/group and dates are the same and nothing was added.
-    if (ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && removed.length && !added.length) {
+    if (
+      ctx.dataLoaded &&
+      scopeKey === ctx.searchedScopeKey &&
+      removed.length &&
+      !added.length
+    ) {
       // Anything still loading is fetching the old UPC set and would put the
       // removed UPC back; aborting leaves it unloaded, and removeDevUpcs's
       // version bump re-asks for the reduced set on the next visit.
@@ -157,7 +162,9 @@ const UpcList = () => {
     // A group can hold different stores than last time, so the stores just
     // looked up are compared too, not only the group in the scope key.
     const incremental =
-      ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && sameStores(storeids, ctx.storeids);
+      ctx.dataLoaded &&
+      scopeKey === ctx.searchedScopeKey &&
+      sameStores(storeids, ctx.storeids);
     if (incremental) {
       if (removed.length) dispatch(removeDevUpcs(removed));
     } else {

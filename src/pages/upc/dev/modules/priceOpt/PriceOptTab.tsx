@@ -55,7 +55,15 @@ const PriceOptTab = () => {
       let abandoned = false;
       try {
         const res = await upcQueue.enqueue(`priceOpt:${missingKey}`, (signal) =>
-          getPriceOpt(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingKey, signal),
+          getPriceOpt(
+            ctx.url,
+            ctx.token,
+            ctx.storeids,
+            ctx.startDate,
+            ctx.endDate,
+            missingKey,
+            signal,
+          ),
         );
         // Superseded by a newer search: return before any dispatch, so a late
         // response can't repopulate the left panel; looked at again once
@@ -78,14 +86,17 @@ const PriceOptTab = () => {
         const byUpc: UpcPriceOpt[] = ok ? j.best_prices_by_upc : [];
         // best_prices can be absent even on a good answer; mergeRows spreads
         // it, so undefined here throws rather than merging nothing.
-        const bestPrices: UpcPriceOpt[] = ok ? j.best_prices ?? [] : [];
+        const bestPrices: UpcPriceOpt[] = ok ? (j.best_prices ?? []) : [];
 
         // Codes are what was asked for, not what answered — a UPC with no
         // price history still counts as covered.
         dispatch(mergeDevPriceOpt({ bestPrices, byUpc, codes: missing }));
         dispatch(
           setDevUpcItems(
-            byUpc.map((i) => ({ product_code: i.product_code, description: i.product_description })),
+            byUpc.map((i) => ({
+              product_code: i.product_code,
+              description: i.product_description,
+            })),
           ),
         );
       } catch {
@@ -100,11 +111,16 @@ const PriceOptTab = () => {
   }, [ctx.activeTab, missingKey, retryTick]);
 
   const rows = useMemo(() => {
-    const src = ctx.selectedUpcs.length > 0
-      ? ctx.optBestPricesByUpc.filter((o) => ctx.selectedUpcs.includes(o.product_code))
-      : ctx.optBestPricesByUpc;
+    const src =
+      ctx.selectedUpcs.length > 0
+        ? ctx.optBestPricesByUpc.filter((o) =>
+            ctx.selectedUpcs.includes(o.product_code),
+          )
+        : ctx.optBestPricesByUpc;
 
-    return src.map((row) => computePriceOptRowSummary(row, ctx.optBestPrices, ctx.fixes));
+    return src.map((row) =>
+      computePriceOptRowSummary(row, ctx.optBestPrices, ctx.fixes),
+    );
   }, [ctx.optBestPricesByUpc, ctx.optBestPrices, ctx.selectedUpcs, ctx.fixes]);
 
   // Keep the detail panel on a valid item: the first row by default, re-picked
@@ -139,7 +155,11 @@ const PriceOptTab = () => {
 
   return (
     <div className="flex-1 overflow-hidden flex min-h-0">
-      <PriceOptLeftList rows={rows} selectedCode={selectedCode} onSelect={setSelectedCode} />
+      <PriceOptLeftList
+        rows={rows}
+        selectedCode={selectedCode}
+        onSelect={setSelectedCode}
+      />
       {selectedSummary && (
         <PriceOptDetailPanel summary={selectedSummary} fixes={ctx.fixes} />
       )}

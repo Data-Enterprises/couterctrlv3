@@ -25,8 +25,15 @@ interface AssociationItemsTableProps {
  *  attach rate. Click a row to re-root on it, right-click for the UPC menu. Shaped like
  *  PriceOptPricePointsTable, with the app's column-header sort and filter conventions;
  *  Sub Dept and Attach stay plain columns. */
-const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationItemsTableProps) => {
-  const [colSort, setColSort] = useState<{ col: SortCol; dir: "desc" | "asc" } | null>(null);
+const AssociationItemsTable = ({
+  items,
+  onReroot,
+  onContextMenu,
+}: AssociationItemsTableProps) => {
+  const [colSort, setColSort] = useState<{
+    col: SortCol;
+    dir: "desc" | "asc";
+  } | null>(null);
   const [draftDesc, setDraftDesc] = useState("");
   const [appliedDesc, setAppliedDesc] = useState("");
 
@@ -40,12 +47,18 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
 
   const sorted = useMemo(() => {
     const filtered = appliedDesc
-      ? items.filter((i) => i.product_description.toLowerCase().includes(appliedDesc.toLowerCase()))
+      ? items.filter((i) =>
+          i.product_description
+            .toLowerCase()
+            .includes(appliedDesc.toLowerCase()),
+        )
       : items;
     if (!colSort) return sortByAttachRateDesc(filtered);
     const { col, dir } = colSort;
     return [...filtered].sort((a, b) =>
-      dir === "desc" ? getSortValue(b, col) - getSortValue(a, col) : getSortValue(a, col) - getSortValue(b, col),
+      dir === "desc"
+        ? getSortValue(b, col) - getSortValue(a, col)
+        : getSortValue(a, col) - getSortValue(b, col),
     );
   }, [items, appliedDesc, colSort]);
 
@@ -142,7 +155,9 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: AssociationIt
         </div>
       ))}
       {sorted.length === 0 && (
-        <div className="text-[12px] text-content/95 italic py-3 text-center">No matching products.</div>
+        <div className="text-[12px] text-content/95 italic py-3 text-center">
+          No matching products.
+        </div>
       )}
     </div>
   );

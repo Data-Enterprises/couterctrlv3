@@ -17,7 +17,8 @@ export const exportWaitReason = (p: ExportWaitInput): string | null => {
   const selected = new Set(p.selectedUpcs);
   const nothingSelected = p.selectedUpcs.length === 0;
   // The UPCs the file would hold: every searched UPC, or the ticked ones.
-  const inFile = (all: boolean) => p.searchedUpcs.filter((u) => all || selected.has(u));
+  const inFile = (all: boolean) =>
+    p.searchedUpcs.filter((u) => all || selected.has(u));
   const unloaded = (codes: string[], coverage: string[], what: string) => {
     const n = missingFrom(codes, coverage).length;
     return n ? `${what} hasn't loaded for ${upcCount(n)} yet.${READY}` : null;
@@ -25,25 +26,40 @@ export const exportWaitReason = (p: ExportWaitInput): string | null => {
 
   switch (p.tab) {
     case "salesComp": {
-      const waiting = unloaded(inFile(p.preset === "all"), p.salesCompCoverage, "Sales Comp");
+      const waiting = unloaded(
+        inFile(p.preset === "all"),
+        p.salesCompCoverage,
+        "Sales Comp",
+      );
       if (waiting) return waiting;
       // Last year can fail and leave the summary on this year alone, as the
       // screen does; it only has to have finished.
-      if (p.shape === "summary" && p.salesCompLYLoading) return `Last year is still loading.${READY}`;
+      if (p.shape === "summary" && p.salesCompLYLoading)
+        return `Last year is still loading.${READY}`;
       return null;
     }
     case "priceOpt":
-      return unloaded(inFile(p.preset === "all"), p.priceOptCoverage, "Price Opt");
+      return unloaded(
+        inFile(p.preset === "all"),
+        p.priceOptCoverage,
+        "Price Opt",
+      );
     case "movement":
-      return unloaded(inFile(p.preset === "all"), p.movementCoverage, "Movement");
+      return unloaded(
+        inFile(p.preset === "all"),
+        p.movementCoverage,
+        "Movement",
+      );
     case "trend":
       // Every Trend preset is a filter over the ticked UPCs.
       if (nothingSelected) return "No UPCs selected.";
       return unloaded(inFile(false), p.trendCoverage, "Trend");
     case "association":
       if (nothingSelected) return "No UPCs selected.";
-      if (p.associationSeedError) return `Associations didn't load: ${p.associationSeedError}.`;
-      if (!p.associationSeedReady) return `Associations are still loading.${READY}`;
+      if (p.associationSeedError)
+        return `Associations didn't load: ${p.associationSeedError}.`;
+      if (!p.associationSeedReady)
+        return `Associations are still loading.${READY}`;
       if (p.associationRerootUpc && !p.associationRerootLoaded) {
         return `Associations for ${p.associationRerootUpc} are still loading.${READY}`;
       }

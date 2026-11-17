@@ -34,9 +34,7 @@ const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[12px] cc-navy-title">
-              UPC Upload
-            </div>
+            <div className="text-[12px] cc-navy-title">UPC Upload</div>
           </div>
           <div className="text-right">
             {dateRange && (
@@ -55,12 +53,8 @@ const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
             {locationLabel}
           </span>
 
-          <PageInfoButton
-            page="upc-list"
-            className="flex-shrink-0"
-          />
+          <PageInfoButton page="upc-list" className="flex-shrink-0" />
         </div>
-
       </div>
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">

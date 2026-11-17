@@ -36,7 +36,10 @@ export function getTrendPhrase(status: TrendStatus): TrendPhrase {
 // independently of status. Compared as shares of each window's days, not
 // counts (the windows differ in length): flags when the share since is under
 // half the share before.
-export function hasAvailabilityFlag(t: UpcTrend, window: UpcTrendWindow | null): boolean {
+export function hasAvailabilityFlag(
+  t: UpcTrend,
+  window: UpcTrendWindow | null,
+): boolean {
   if (!window || t.active_days_before <= 0) return false;
   const before = t.active_days_before / window.beforeDays;
   const after = t.active_days_after / window.afterDays;
@@ -52,13 +55,15 @@ export function getTrendInsight(
   window: UpcTrendWindow | null = null,
 ): string {
   const confidencePct = Math.round(t["r2-after"] * 100);
-  const reliability = t["r2-after"] >= 0.5 ? "fairly consistent" : "not very consistent";
+  const reliability =
+    t["r2-after"] >= 0.5 ? "fairly consistent" : "not very consistent";
   const meanAfter = t.mean_after.toFixed(2);
   const meanBefore = t.mean_before.toFixed(2);
   const impact = Math.round(impactUnits(t, fixes, window));
-  const availabilityNote = window && hasAvailabilityFlag(t, window)
-    ? ` It also sold on far fewer days (${activeRatePct(t.active_days_after, window.afterDays)}% of days since, down from ${activeRatePct(t.active_days_before, window.beforeDays)}% before), which may be an availability issue layered on top of the demand decline.`
-    : "";
+  const availabilityNote =
+    window && hasAvailabilityFlag(t, window)
+      ? ` It also sold on far fewer days (${activeRatePct(t.active_days_after, window.afterDays)}% of days since, down from ${activeRatePct(t.active_days_before, window.beforeDays)}% before), which may be an availability issue layered on top of the demand decline.`
+      : "";
 
   switch (status) {
     case "accelerating": {
@@ -68,8 +73,13 @@ export function getTrendInsight(
       } and is ${reliability} (${confidencePct}% confidence).${availabilityNote}`;
     }
     case "stopped": {
-      const since = window ? ` since ${window.pivot.split("/").slice(0, 2).join("/")}` : " since";
-      const lost = impact < 0 ? ` At its old pace that's about ${Math.abs(impact).toLocaleString()} units not sold.` : "";
+      const since = window
+        ? ` since ${window.pivot.split("/").slice(0, 2).join("/")}`
+        : " since";
+      const lost =
+        impact < 0
+          ? ` At its old pace that's about ${Math.abs(impact).toLocaleString()} units not sold.`
+          : "";
       return `Sold ${meanBefore} units a day on ${t.active_days_before} selling days before, and nothing${since}.${lost}`;
     }
     case "declining":
@@ -81,7 +91,8 @@ export function getTrendInsight(
       const days = window
         ? `it sold on ${activeRatePct(t.active_days_after, window.afterDays)}% of days since, down from ${activeRatePct(t.active_days_before, window.beforeDays)}% before`
         : "it sold on fewer days";
-      const lost = impact < 0 ? `, about ${Math.abs(impact).toLocaleString()} units` : "";
+      const lost =
+        impact < 0 ? `, about ${Math.abs(impact).toLocaleString()} units` : "";
       return `Sales per selling day held steady or improved (${rate}), but ${days}, so total volume fell${lost}. This looks like a stocking or availability issue, not weaker demand.`;
     }
     // No baseline to measure against, so the sentence reports what the item

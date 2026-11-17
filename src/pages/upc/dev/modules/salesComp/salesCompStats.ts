@@ -5,8 +5,24 @@ import { addDays, sameWeekDayLastYear } from "../../../../../utils";
 import type { SalesCompRange, UpcSalesCompStats } from "./interfaces";
 import type { UpcSalesComp } from "../../../../../interfaces";
 
-export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
-export const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+export const DAY_SHORT = [
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+  "Sun",
+] as const;
 
 function rowTotal(row: UpcSalesComp): number {
   return DAYS.reduce((acc, d) => acc + (row[d] ?? 0), 0);
@@ -29,7 +45,8 @@ export function combineSalesCompRows(rows: UpcSalesComp[]): UpcSalesComp[] {
     for (const d of DAYS) {
       // Null only when neither side had a figure, so "no data" still reads
       // as no data rather than a zero.
-      acc[d] = acc[d] === null && r[d] === null ? null : (acc[d] ?? 0) + (r[d] ?? 0);
+      acc[d] =
+        acc[d] === null && r[d] === null ? null : (acc[d] ?? 0) + (r[d] ?? 0);
     }
     if (!acc.description && r.description) acc.description = r.description;
   }
@@ -39,14 +56,24 @@ export function combineSalesCompRows(rows: UpcSalesComp[]): UpcSalesComp[] {
 export function fmtWeekRange(weekStart: string): string {
   const start = new Date(weekStart);
   const end = addDays(weekStart, 6);
-  const startStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const endStr = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const startStr = start.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const endStr = end.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
   return `${startStr} - ${endStr}`;
 }
 
 /** The range for a search, with last year's dates worked out the same way the
  *  tab's last-year call works them out. */
-export function salesCompRange(startDate: string, endDate: string): SalesCompRange {
+export function salesCompRange(
+  startDate: string,
+  endDate: string,
+): SalesCompRange {
   return {
     start: startDate,
     end: endDate,
@@ -64,7 +91,8 @@ export function dayOf(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
-const plusDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const plusDays = (d: Date, n: number) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
 /**
  * Whether a week's seven days all fall inside the searched range, at both
@@ -81,7 +109,8 @@ export function makeIsWeekComplete(startDate: string, endDate: string) {
 }
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
-const isoDay = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const isoDay = (d: Date) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
 /**
  * Every week the range touches, by its Monday, in the endpoint's own form
@@ -92,7 +121,11 @@ export function weeksIn(startDate: string, endDate: string): string[] {
   const end = dayOf(endDate);
   const start = dayOf(startDate);
   const weeks: string[] = [];
-  for (let monday = plusDays(start, -((start.getDay() + 6) % 7)); monday <= end; monday = plusDays(monday, 7)) {
+  for (
+    let monday = plusDays(start, -((start.getDay() + 6) % 7));
+    monday <= end;
+    monday = plusDays(monday, 7)
+  ) {
     weeks.push(`${isoDay(monday)}T00:00:00`);
   }
   return weeks;
@@ -106,7 +139,8 @@ export function weeksIn(startDate: string, endDate: string): string[] {
 export function weekdayCounts(startDate: string, endDate: string): number[] {
   const counts = DAYS.map(() => 0);
   const end = dayOf(endDate);
-  for (let d = dayOf(startDate); d <= end; d = plusDays(d, 1)) counts[(d.getDay() + 6) % 7]++;
+  for (let d = dayOf(startDate); d <= end; d = plusDays(d, 1))
+    counts[(d.getDay() + 6) % 7]++;
   return counts;
 }
 
@@ -114,12 +148,24 @@ export function weekdayCounts(startDate: string, endDate: string): number[] {
  * Every UPC with sales in either year, this year's first, so an item that
  * stopped selling still shows (at -100%).
  */
-export function salesCompCodes(tyRows: UpcSalesComp[], lyRows: UpcSalesComp[]): string[] {
-  return [...new Set([...tyRows.map((r) => r.product_code), ...lyRows.map((r) => r.product_code)])];
+export function salesCompCodes(
+  tyRows: UpcSalesComp[],
+  lyRows: UpcSalesComp[],
+): string[] {
+  return [
+    ...new Set([
+      ...tyRows.map((r) => r.product_code),
+      ...lyRows.map((r) => r.product_code),
+    ]),
+  ];
 }
 
 /** A week with no sales, for the week table: every day blank. */
-const emptyWeek = (code: string, description: string, week: string): UpcSalesComp => ({
+const emptyWeek = (
+  code: string,
+  description: string,
+  week: string,
+): UpcSalesComp => ({
   product_code: code,
   description,
   week,
@@ -162,12 +208,14 @@ export function computeUpcSalesCompStats(
 
     // Per occurrence of that weekday in the range: see weekdayCounts.
     const dayAvgs = DAYS.map(
-      (d, i) => rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (tyDays[i] || 1),
+      (d, i) =>
+        rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (tyDays[i] || 1),
     );
     const periodTotal = rows.reduce((acc, r) => acc + rowTotal(r), 0);
     // No peak without sales: -1, shown as a dash. indexOf(max) of seven zeros
     // would otherwise name Monday.
-    const peakIdx = periodTotal > 0 ? dayAvgs.indexOf(Math.max(...dayAvgs)) : -1;
+    const peakIdx =
+      periodTotal > 0 ? dayAvgs.indexOf(Math.max(...dayAvgs)) : -1;
 
     const weekRows = sortedWeeks.map((day) => {
       const row = byWeek.get(day);
@@ -183,21 +231,35 @@ export function computeUpcSalesCompStats(
     let wowPct: number | null = null;
     if (completeTotals.length >= 2) {
       const lw = completeTotals[completeTotals.length - 1];
-      const avg = completeTotals.reduce((a, b) => a + b, 0) / completeTotals.length;
+      const avg =
+        completeTotals.reduce((a, b) => a + b, 0) / completeTotals.length;
       wowPct = avg === 0 ? null : ((lw - avg) / avg) * 100;
     }
 
     const hasLY = lyRowsForCode.length > 0;
     const lyDayAvgs = DAYS.map(
-      (d, i) => lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyDays[i] || 1),
+      (d, i) =>
+        lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) /
+        (lyDays[i] || 1),
     );
-    const lyPeriodTotal = lyRowsForCode.reduce((acc, r) => acc + rowTotal(r), 0);
-    const lyPeakIdx = hasLY && lyPeriodTotal > 0 ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
-    const vsLYPct = hasLY && lyPeriodTotal > 0 ? ((periodTotal - lyPeriodTotal) / lyPeriodTotal) * 100 : null;
+    const lyPeriodTotal = lyRowsForCode.reduce(
+      (acc, r) => acc + rowTotal(r),
+      0,
+    );
+    const lyPeakIdx =
+      hasLY && lyPeriodTotal > 0
+        ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs))
+        : -1;
+    const vsLYPct =
+      hasLY && lyPeriodTotal > 0
+        ? ((periodTotal - lyPeriodTotal) / lyPeriodTotal) * 100
+        : null;
     const peakShifted = peakIdx >= 0 && lyPeakIdx >= 0 && lyPeakIdx !== peakIdx;
 
     const dayDeltaPcts = DAYS.map((_, di) =>
-      hasLY && lyDayAvgs[di] > 0 ? ((dayAvgs[di] - lyDayAvgs[di]) / lyDayAvgs[di]) * 100 : null,
+      hasLY && lyDayAvgs[di] > 0
+        ? ((dayAvgs[di] - lyDayAvgs[di]) / lyDayAvgs[di]) * 100
+        : null,
     );
     const rowMax = Math.max(...dayAvgs, 1);
 
@@ -208,9 +270,23 @@ export function computeUpcSalesCompStats(
     const avgDaily = activeDayCount > 0 ? periodTotal / activeDayCount : 0;
 
     return {
-      code, desc, dayAvgs, peakIdx, periodTotal, weekTotals, weekRows, wowPct,
-      hasLY, lyDayAvgs, lyPeakIdx, lyPeriodTotal, vsLYPct, peakShifted,
-      dayDeltaPcts, rowMax, avgDaily,
+      code,
+      desc,
+      dayAvgs,
+      peakIdx,
+      periodTotal,
+      weekTotals,
+      weekRows,
+      wowPct,
+      hasLY,
+      lyDayAvgs,
+      lyPeakIdx,
+      lyPeriodTotal,
+      vsLYPct,
+      peakShifted,
+      dayDeltaPcts,
+      rowMax,
+      avgDaily,
     };
   });
 }

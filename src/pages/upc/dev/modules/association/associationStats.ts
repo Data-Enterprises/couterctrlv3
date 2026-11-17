@@ -1,6 +1,9 @@
 // Interfaces
 import type { DepartmentCount } from "./interfaces";
-import type { AssociationItem, AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
+import type {
+  AssociationItem,
+  AssociationResult,
+} from "../../../../../features/dev/devUpcDevSlice";
 
 /** A seed set as one string: the UPCs sorted and joined, so the same set ticked
  *  in a different order is the same key. */
@@ -19,7 +22,10 @@ export const seedDataFor = (
 
 // Seed items are dropped from their own results (already in the Seed UPCs
 // panel), and excludeUpc drops the re-root target.
-export function getDisplayItems(items: AssociationItem[], excludeUpc?: string | null): AssociationItem[] {
+export function getDisplayItems(
+  items: AssociationItem[],
+  excludeUpc?: string | null,
+): AssociationItem[] {
   return items.filter((i) => !i.is_seed && i.product_code !== excludeUpc);
 }
 
@@ -31,8 +37,13 @@ export function getQueryDepartments(items: AssociationItem[]): Set<number> {
 
 // Companions per sub department, with revenue, by count. Shared by the
 // "Top Sub Dept" KPI and the CTA breakdown so they agree.
-export function getDepartmentBreakdown(items: AssociationItem[]): DepartmentCount[] {
-  const counts = new Map<number, { label: string; count: number; revenue: number }>();
+export function getDepartmentBreakdown(
+  items: AssociationItem[],
+): DepartmentCount[] {
+  const counts = new Map<
+    number,
+    { label: string; count: number; revenue: number }
+  >();
   for (const item of items) {
     const existing = counts.get(item.sub_department);
     if (existing) {
@@ -47,7 +58,12 @@ export function getDepartmentBreakdown(items: AssociationItem[]): DepartmentCoun
     }
   }
   return [...counts.entries()]
-    .map(([deptId, { label, count, revenue }]) => ({ deptId, label, count, revenue }))
+    .map(([deptId, { label, count, revenue }]) => ({
+      deptId,
+      label,
+      count,
+      revenue,
+    }))
     .sort((a, b) => b.count - a.count);
 }
 
@@ -79,25 +95,37 @@ export function getTotalUnits(items: AssociationItem[]): number {
 
 // A mean across qualifying baskets, not per-basket, so any label built from
 // it must read as an average.
-export function getAvgRevenuePerBasket(totalRevenue: number, totalBaskets: number): number {
+export function getAvgRevenuePerBasket(
+  totalRevenue: number,
+  totalBaskets: number,
+): number {
   return totalBaskets > 0 ? totalRevenue / totalBaskets : 0;
 }
 
-export function getTopRevenueItem(items: AssociationItem[]): AssociationItem | undefined {
+export function getTopRevenueItem(
+  items: AssociationItem[],
+): AssociationItem | undefined {
   return [...items].sort((a, b) => b.revenue - a.revenue)[0];
 }
 
 // Attach rate descending: the grid's default sort and the "strongest
 // pairing" pick, shared so they agree.
-export function sortByAttachRateDesc(items: AssociationItem[]): AssociationItem[] {
+export function sortByAttachRateDesc(
+  items: AssociationItem[],
+): AssociationItem[] {
   return [...items].sort((a, b) => b.attach_rate - a.attach_rate);
 }
 
-export function getTopCompanion(items: AssociationItem[]): AssociationItem | undefined {
+export function getTopCompanion(
+  items: AssociationItem[],
+): AssociationItem | undefined {
   return sortByAttachRateDesc(items)[0];
 }
 
-export function getCrossDeptCount(items: AssociationItem[], queryDepartments: Set<number>): number {
+export function getCrossDeptCount(
+  items: AssociationItem[],
+  queryDepartments: Set<number>,
+): number {
   return items.filter((i) => !queryDepartments.has(i.sub_department)).length;
 }
 
@@ -106,6 +134,9 @@ export function getCrossDeptCount(items: AssociationItem[], queryDepartments: Se
 export function getWeightedAvgAttachRate(items: AssociationItem[]): number {
   const totalBaskets = items.reduce((sum, i) => sum + i.basket_count, 0);
   if (totalBaskets === 0) return 0;
-  const weightedSum = items.reduce((sum, i) => sum + i.attach_rate * i.basket_count, 0);
+  const weightedSum = items.reduce(
+    (sum, i) => sum + i.attach_rate * i.basket_count,
+    0,
+  );
   return weightedSum / totalBaskets;
 }

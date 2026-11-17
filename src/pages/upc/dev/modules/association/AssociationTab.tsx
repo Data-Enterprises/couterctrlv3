@@ -48,18 +48,24 @@ const AssociationTab = () => {
    *  to. Cleared by the next re-root or Dismiss. */
   const [rerootNote, setRerootNote] = useState<string | null>(null);
 
-  const storeidsArr = useMemo(() => ctx.storeids.split(",").map(Number).filter(Boolean), [ctx.storeids]);
+  const storeidsArr = useMemo(
+    () => ctx.storeids.split(",").map(Number).filter(Boolean),
+    [ctx.storeids],
+  );
 
   // Local-only description lookup, never dispatched into ctx.upcItems:
   // companions are basket-discovered, and writing them there would leak them
   // into the left panel's UPC list. Covers naming the re-root target.
   const upcItemsMap = useMemo(() => {
-    const map = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
+    const map = new Map(
+      ctx.upcItems.map((i) => [i.product_code, i.description]),
+    );
     for (const item of ctx.associationSeedData?.items ?? []) {
       map.set(item.product_code, item.product_description);
     }
     for (const cached of Object.values(ctx.associationRerootCache)) {
-      for (const item of cached.items) map.set(item.product_code, item.product_description);
+      for (const item of cached.items)
+        map.set(item.product_code, item.product_description);
     }
     return map;
   }, [ctx.upcItems, ctx.associationSeedData, ctx.associationRerootCache]);
@@ -81,11 +87,20 @@ const AssociationTab = () => {
     const key = buildSeedKey(upcsToQuery);
     dispatch(setDevAssociationSeedLoading(true));
     try {
-      const res = await upcQueue.enqueue(`assoc:seed:${buildSeedKey(upcsToQuery)}`, (signal) =>
-        getItemAssociation(
-          ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
-          storeidsArr, upcsToQuery, LIMIT, "top", signal,
-        ),
+      const res = await upcQueue.enqueue(
+        `assoc:seed:${buildSeedKey(upcsToQuery)}`,
+        (signal) =>
+          getItemAssociation(
+            ctx.url,
+            ctx.token,
+            fmtDate(ctx.startDate),
+            fmtDate(ctx.endDate),
+            storeidsArr,
+            upcsToQuery,
+            LIMIT,
+            "top",
+            signal,
+          ),
       );
       // Superseded by a newer search: marked unloaded (not left loaded from
       // the previous seed) and looked at again against the current search.
@@ -107,7 +122,13 @@ const AssociationTab = () => {
       // The result settles loading and loaded itself, and only for the seed
       // set on screen: an answer for a set since left is dropped.
     } catch (err) {
-      dispatch(setDevAssociationSeedResult({ key, result: null, error: failureReason(err) }));
+      dispatch(
+        setDevAssociationSeedResult({
+          key,
+          result: null,
+          error: failureReason(err),
+        }),
+      );
     }
   };
 
@@ -141,7 +162,14 @@ const AssociationTab = () => {
     // seedKey, not the count: swapping one UPC for another keeps the count.
     // ctx.activeTab: waits for an actual visit (see PriceOptTab).
     // ctx.searchVersion: forces a refetch on a same-UPC re-search.
-  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion, retryTick]);
+  }, [
+    ctx.activeTab,
+    hasSelection,
+    seedKey,
+    ctx.storeids,
+    ctx.searchVersion,
+    retryTick,
+  ]);
 
   const rerootTo = async (upc: string) => {
     setRerootNote(null);
@@ -151,13 +179,22 @@ const AssociationTab = () => {
     // A re-root that can't load goes back to the seed view and says why.
     const fail = (why: string) => {
       dispatch(dropDevAssociationReroot(upc));
-      setRerootNote(`Couldn't load associations for ${upcItemsMap.get(upc) ?? upc}: ${why}.`);
+      setRerootNote(
+        `Couldn't load associations for ${upcItemsMap.get(upc) ?? upc}: ${why}.`,
+      );
     };
     try {
       const res = await upcQueue.enqueue(`assoc:reroot:${upc}`, (signal) =>
         getItemAssociation(
-          ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
-          storeidsArr, [upc], LIMIT, "top", signal,
+          ctx.url,
+          ctx.token,
+          fmtDate(ctx.startDate),
+          fmtDate(ctx.endDate),
+          storeidsArr,
+          [upc],
+          LIMIT,
+          "top",
+          signal,
         ),
       );
       // Superseded by a newer search: back to the seed view quietly, since
@@ -168,7 +205,10 @@ const AssociationTab = () => {
       }
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
-        const result: AssociationResult = { totalBaskets: res.data.total_baskets, items };
+        const result: AssociationResult = {
+          totalBaskets: res.data.total_baskets,
+          items,
+        };
         dispatch(setDevAssociationRerootCacheEntry({ upc, result }));
       } else {
         fail(res.data.msg || "the association lookup failed");
@@ -236,7 +276,9 @@ const AssociationTab = () => {
   const rerootUpc = ctx.associationRerootUpc;
   const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
 
-  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : seedData;
+  const activeResult: AssociationResult | null = rerootUpc
+    ? rerootResult
+    : seedData;
 
   const allVisibleUpcs = [
     ...ctx.searchedUpcs,
@@ -250,7 +292,9 @@ const AssociationTab = () => {
         upcItemsMap={upcItemsMap}
         seedItemsMap={seedItemsMap}
         rerootUpc={rerootUpc}
-        rerootDescription={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : ""}
+        rerootDescription={
+          rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : ""
+        }
         onBackToSeed={backToSeed}
       />
 
@@ -276,7 +320,11 @@ const AssociationTab = () => {
         ) : activeResult ? (
           <AssociationDetailPanel
             result={activeResult}
-            title={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : `${seedUpcs.length} seed items`}
+            title={
+              rerootUpc
+                ? (upcItemsMap.get(rerootUpc) ?? rerootUpc)
+                : `${seedUpcs.length} seed items`
+            }
             isReroot={Boolean(rerootUpc)}
             rerootUpc={rerootUpc}
             prevTotalBaskets={rerootUpc ? seedData.totalBaskets : undefined}
@@ -284,7 +332,9 @@ const AssociationTab = () => {
             onContextMenu={openContextMenu}
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">No associations found</div>
+          <div className="flex-1 flex items-center justify-center text-[11px] text-content/95">
+            No associations found
+          </div>
         )}
       </div>
 
@@ -294,7 +344,12 @@ const AssociationTab = () => {
           y={contextMenu.y}
           upc={contextMenu.upc}
           allUpcs={allVisibleUpcs}
-          extraActions={[{ label: "Look up associations", onClick: () => rerootTo(contextMenu.upc) }]}
+          extraActions={[
+            {
+              label: "Look up associations",
+              onClick: () => rerootTo(contextMenu.upc),
+            },
+          ]}
           onClose={() => setContextMenu(null)}
         />
       )}

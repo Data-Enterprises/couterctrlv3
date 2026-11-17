@@ -15,7 +15,16 @@ interface BeforeAfterBarProps {
 /** A before/after pair of bars against a fixed 0-100 scale, so fill length is the literal
  *  percentage, with an optional amber flag and note. Only for metrics bounded 0-100
  *  (Confidence, Active rate); others use TrendBeforeAfterTile. */
-const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay, afterDisplay, flagged, note }: BeforeAfterBarProps) => {
+const BeforeAfterBar = ({
+  label,
+  descriptor,
+  beforePct,
+  afterPct,
+  beforeDisplay,
+  afterDisplay,
+  flagged,
+  note,
+}: BeforeAfterBarProps) => {
   return (
     <div className="bg-fill_track/60 rounded px-2.5 py-2 mb-2 last:mb-0">
       <div className="flex items-start justify-between mb-1.5">

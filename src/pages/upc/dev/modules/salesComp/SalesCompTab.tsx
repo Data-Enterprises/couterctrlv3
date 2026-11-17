@@ -64,8 +64,18 @@ const SalesCompTab = () => {
       dispatch(setDevSalesCompLoading(true));
       let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`salesComp:ty:${missingTyKey}`, (signal) =>
-          getSalesComp(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingTyKey, signal),
+        const res = await upcQueue.enqueue(
+          `salesComp:ty:${missingTyKey}`,
+          (signal) =>
+            getSalesComp(
+              ctx.url,
+              ctx.token,
+              ctx.storeids,
+              ctx.startDate,
+              ctx.endDate,
+              missingTyKey,
+              signal,
+            ),
         );
         // Superseded by a newer search — that run owns this state now. Looked
         // at again once loading clears, against the search as it is then.
@@ -86,7 +96,9 @@ const SalesCompTab = () => {
         // Combined on the way in, so the table, KPI strip and export all see
         // one row per UPC per week — see combineSalesCompRows.
         const rows: UpcSalesComp[] =
-          answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
+          answer === "ok" && j.daily?.length > 0
+            ? combineSalesCompRows(j.daily)
+            : [];
         // Merged against the UPCs asked for, not those that answered: a UPC with
         // no sales returns nothing and still counts as covered.
         dispatch(mergeDevSalesComp({ rows, codes: missingTy }));
@@ -94,7 +106,10 @@ const SalesCompTab = () => {
         // only at search time.
         dispatch(
           setDevUpcItems(
-            rows.map((r) => ({ product_code: r.product_code, description: r.description })),
+            rows.map((r) => ({
+              product_code: r.product_code,
+              description: r.description,
+            })),
           ),
         );
       } catch {
@@ -119,16 +134,18 @@ const SalesCompTab = () => {
       dispatch(setDevSalesCompLYLoading(true));
       let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`salesComp:ly:${missingLyKey}`, (signal) =>
-          getSalesComp(
-            ctx.url,
-            ctx.token,
-            ctx.storeids,
-            isoToMdy(sameWeekDayLastYear(ctx.startDate).date),
-            isoToMdy(sameWeekDayLastYear(ctx.endDate).date),
-            missingLyKey,
-            signal,
-          ),
+        const res = await upcQueue.enqueue(
+          `salesComp:ly:${missingLyKey}`,
+          (signal) =>
+            getSalesComp(
+              ctx.url,
+              ctx.token,
+              ctx.storeids,
+              isoToMdy(sameWeekDayLastYear(ctx.startDate).date),
+              isoToMdy(sameWeekDayLastYear(ctx.endDate).date),
+              missingLyKey,
+              signal,
+            ),
         );
         if (!res) {
           abandoned = true;
@@ -141,7 +158,9 @@ const SalesCompTab = () => {
         // missing last year. A new item's empty answer covers it.
         if (ctx.fixes && answer === "failed") return;
         const rows: UpcSalesComp[] =
-          answer === "ok" && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
+          answer === "ok" && j.daily?.length > 0
+            ? combineSalesCompRows(j.daily)
+            : [];
         dispatch(mergeDevSalesCompLY({ rows, codes: missingLy }));
       } catch {
         /* supplementary — the tab is already usable on TY alone */
@@ -166,7 +185,10 @@ const SalesCompTab = () => {
       : ctx.salesCompLY;
   }, [ctx.salesCompLY, ctx.selectedUpcs]);
 
-  const upcCodes = useMemo(() => salesCompCodes(filtered, filteredLY), [filtered, filteredLY]);
+  const upcCodes = useMemo(
+    () => salesCompCodes(filtered, filteredLY),
+    [filtered, filteredLY],
+  );
 
   const range = useMemo(
     () => salesCompRange(ctx.startDate, ctx.endDate),
@@ -192,7 +214,9 @@ const SalesCompTab = () => {
   if (!upcCodes.length) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/95">
-        {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}
+        {ctx.salesCompLoading
+          ? "Loading sales comparison…"
+          : "No sales comparison data"}
       </div>
     );
   }
