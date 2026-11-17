@@ -22,12 +22,11 @@ import {
 
 // Utils
 import {
-  accessLabel,
   filterUsers,
   NO_COMPANY_VALUE,
   sortUsers,
 } from "../../utils/userFilters";
-import { accessModeOf, formatDate } from "../utils";
+import { accessModeOf } from "../utils";
 import { roles } from "../utils/roles";
 
 // Interfaces
@@ -42,22 +41,18 @@ import type {
 
 // Components
 import {
-  PencilIcon,
-  TrashIcon,
   PlusIcon,
-  ArrowPathIcon,
-  KeyIcon,
-  DocumentDuplicateIcon,
   UserMinusIcon,
   UserPlusIcon,
 } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
-import IconButton from "../../../../../components-dev/IconButton";
-import Checkbox from "../../../../../components-dev/Checkbox";
 import ColFilter from "../../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../../components-dev/filters/colFilterStyles";
 import SetActiveModal from "./SetActiveModal";
+import SortHead from "./SortHead";
+import SelectionBar from "./SelectionBar";
+import UserRow from "./UserRow";
 import SecurityTab from "./SecurityTab";
 
 interface UserGridProps {
@@ -147,20 +142,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           ? null
           : { key, desc: true },
     );
-  const SortHead = ({ label, k }: { label: string; k: UserSortKey }) => (
-    <button
-      type="button"
-      onClick={() => toggleSort(k)}
-      aria-label={`Sort by ${label.toLowerCase()}`}
-      className="flex items-center gap-1 text-left uppercase tracking-wide font-semibold hover:text-brand_navy"
-    >
-      {label}
-      {sort?.key === k && (
-        <span aria-hidden="true">{sort.desc ? "↓" : "↑"}</span>
-      )}
-    </button>
-  );
-
   const filtered = useMemo(
     () =>
       sortUsers(
@@ -439,49 +420,20 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       {/* Shown from the moment picking starts, between the filters and the
           grid, so the count sits next to the rows it counts. */}
       {selecting && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
-          <span className="text-[12.5px] font-semibold text-brand_navy">
-            {showInactive
-              ? "Choose who to reactivate"
-              : "Choose who to deactivate"}
-          </span>
-          <span className="text-[12px] tabular-nums text-content/95">
-            {selectedShown.length} of {selectableShown.length} picked
-          </span>
-          {selectableShown.length > 0 && (
-            <button
-              onClick={toggleAllShown}
-              className="text-[11.5px] font-semibold text-brand_navy underline underline-offset-2"
-            >
-              {allShownSelected
-                ? "Clear selection"
-                : `Select all ${selectableShown.length} shown`}
-            </button>
-          )}
-          <span className="flex-1" />
-          <button
-            onClick={stopSelecting}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-brand_line_2 bg-custom-white text-content hover:border-brand_slate"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() =>
-              setSettingActive({
-                users: selectedShown,
-                active: showInactive ? 1 : 0,
-              })
-            }
-            disabled={selectedShown.length === 0}
-            className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white disabled:cursor-not-allowed disabled:opacity-40 ${
-              showInactive
-                ? "bg-brand_navy hover:bg-brand_navy_hover"
-                : "bg-brand_danger hover:bg-brand_danger/85"
-            }`}
-          >
-            {showInactive ? "Reactivate" : "Deactivate"} {selectedShown.length}
-          </button>
-        </div>
+        <SelectionBar
+          showInactive={showInactive}
+          pickedCount={selectedShown.length}
+          pickableCount={selectableShown.length}
+          allPicked={allShownSelected}
+          onToggleAll={toggleAllShown}
+          onCancel={stopSelecting}
+          onConfirm={() =>
+            setSettingActive({
+              users: selectedShown,
+              active: showInactive ? 1 : 0,
+            })
+          }
+        />
       )}
 
       <div className="border border-line_hair rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
@@ -515,8 +467,18 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftUsernameFilter(e.target.value)}
               />
             </ColFilter>
-            <SortHead label="First name" k="first" />
-            <SortHead label="Last name" k="last" />
+            <SortHead
+              label="First name"
+              k="first"
+              sort={sort}
+              onSort={toggleSort}
+            />
+            <SortHead
+              label="Last name"
+              k="last"
+              sort={sort}
+              onSort={toggleSort}
+            />
             <ColFilter
               label="Email"
               active={!!emailFilter}
@@ -535,12 +497,22 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 onChange={(e) => setDraftEmailFilter(e.target.value)}
               />
             </ColFilter>
-            <SortHead label="Role" k="role" />
-            <SortHead label="Level" k="level" />
+            <SortHead label="Role" k="role" sort={sort} onSort={toggleSort} />
+            <SortHead label="Level" k="level" sort={sort} onSort={toggleSort} />
             {/* By group or by store, rolled up by the users list itself so the
                 column costs no call per row. */}
-            <SortHead label="Access" k="access" />
-            <SortHead label="Last visited" k="visited" />
+            <SortHead
+              label="Access"
+              k="access"
+              sort={sort}
+              onSort={toggleSort}
+            />
+            <SortHead
+              label="Last visited"
+              k="visited"
+              sort={sort}
+              onSort={toggleSort}
+            />
             <div></div>
           </div>
           <div
@@ -548,111 +520,31 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             className="cc-scroll divide-y divide-brand_navy/15"
           >
             {filtered.map((u) => {
-              const outranked = isOutranked(u.user_level);
               // While picking, the whole row is the target, not just the box.
               const pickable = selecting && selectable(u);
-              const picked = pickable && selected.has(u.id);
               return (
-                <div
+                <UserRow
                   key={u.id}
-                  onClick={pickable ? () => toggleOne(u.id) : undefined}
-                  className={`grid ${
-                    selecting
-                      ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] border-l-2"
-                      : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
-                  } px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${
-                    picked
-                      ? "bg-row_selected border-l-row_selected_border text-content"
-                      : outranked
-                        ? "bg-fill_soft text-content/95 border-l-transparent"
-                        : "text-content even:bg-row_stripe hover:bg-fill_soft border-l-transparent"
-                  } ${pickable ? "cursor-pointer" : ""}`}
-                >
-                  {selecting && (
-                    // The box toggles through the row's own click, so its
-                    // change must not reach the row as a second one.
-                    <div
-                      className="flex items-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {pickable && (
-                        <Checkbox
-                          checked={picked}
-                          onChange={() => toggleOne(u.id)}
-                          ariaLabel={`Select ${u.username}`}
-                        />
-                      )}
-                    </div>
-                  )}
-                  <div className="truncate">{u.username}</div>
-                  <div className="truncate">{u.first_name || "—"}</div>
-                  <div className="truncate">{u.last_name || "—"}</div>
-                  <div className="truncate">{u.email}</div>
-                  <div className="truncate">{renderRoleText(u.role)}</div>
-                  <div className="truncate">{renderLvlText(u.user_level)}</div>
-                  <div
-                    className="truncate"
-                    title={
-                      u.access_mode === "mixed"
-                        ? "Their base groups disagree — some by group, some by store. Editing them and saving sets one access type."
-                        : undefined
-                    }
-                  >
-                    {accessLabel(u.access_mode)}
-                  </div>
-                  <div className="truncate">{formatDate(u.last_visit)}</div>
-                  <div className="flex items-center justify-end gap-1">
-                    {/* While picking, a click on a row only ticks it: nothing
-                        here that would open or change somebody instead. */}
-                    {selecting ? null : outranked ? (
-                      <span className="text-[10px] italic text-content/95">
-                        Unauthorized
-                      </span>
-                    ) : showInactive ? (
-                      <IconButton
-                        icon={ArrowPathIcon}
-                        title="Reactivate"
-                        onClick={() =>
-                          setSettingActive({ users: [u], active: 1 })
-                        }
-                      />
-                    ) : (
-                      <>
-                        <IconButton
-                          icon={PencilIcon}
-                          title="Edit"
-                          onClick={() => handleEdit(u)}
-                        />
-                        <IconButton
-                          icon={DocumentDuplicateIcon}
-                          title="Duplicate"
-                          onClick={() => handleDuplicate(u)}
-                        />
-                        {/* The backend refuses a password or security reset
-                            for anyone above your level. */}
-                        {!isOutranked(u.user_level) && (
-                          <IconButton
-                            icon={KeyIcon}
-                            title="Password & security"
-                            onClick={() => setSecurityUser(u)}
-                          />
-                        )}
-                        {/* Deactivate (reversible from Inactive). Hidden on
-                            your own row: the server refuses it. */}
-                        {u.id !== ctx.userid && (
-                          <IconButton
-                            icon={TrashIcon}
-                            title="Deactivate"
-                            variant="danger"
-                            onClick={() =>
-                              setSettingActive({ users: [u], active: 0 })
-                            }
-                          />
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
+                  user={u}
+                  roleText={renderRoleText(u.role)}
+                  levelText={renderLvlText(u.user_level)}
+                  selecting={selecting}
+                  pickable={pickable}
+                  picked={pickable && selected.has(u.id)}
+                  outranked={isOutranked(u.user_level)}
+                  isSelf={u.id === ctx.userid}
+                  showInactive={showInactive}
+                  onToggle={() => toggleOne(u.id)}
+                  onEdit={() => handleEdit(u)}
+                  onDuplicate={() => handleDuplicate(u)}
+                  onSecurity={() => setSecurityUser(u)}
+                  onReactivate={() =>
+                    setSettingActive({ users: [u], active: 1 })
+                  }
+                  onDeactivate={() =>
+                    setSettingActive({ users: [u], active: 0 })
+                  }
+                />
               );
             })}
             {filtered.length === 0 && (
