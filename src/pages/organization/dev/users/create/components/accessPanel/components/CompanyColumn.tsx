@@ -7,7 +7,7 @@ import type { AccessPicks } from "../../../../interfaces";
 // Components
 import Checkbox from "../../../../../../../../components-dev/Checkbox";
 
-interface ApCompaniesProps {
+interface CompanyColumnProps {
   picks: AccessPicks;
   activeCompany: number | null;
   companyCounts: Record<number, number>;
@@ -18,13 +18,13 @@ interface ApCompaniesProps {
 /**
  * This is the companies section of the access panel with it's logic
  */
-const ApCompanies = ({
+const CompanyColumn = ({
   picks,
   selectCompany,
   activeCompany,
   companyCounts,
   toggleCompanyPick,
-}: ApCompaniesProps) => {
+}: CompanyColumnProps) => {
   const ctx = useOrganizationCtx();
 
   const companyList = ctx.isProgrammer
@@ -82,4 +82,4 @@ const ApCompanies = ({
   );
 };
 
-export default ApCompanies;
+export default CompanyColumn;
