@@ -1,23 +1,15 @@
 // Hooks
 import { useMemo, useState } from "react";
 
-// Utils
-import { treeMoney } from "../utils";
-
 // Interfaces
 import type { TreeGroup, ProductSummary } from "../interfaces";
 import type { HelpPage } from "../../../../constants/helpPages";
 
 // Components
-import BackButton from "../../../../components-dev/BackButton";
-import {
-  ChevronRightIcon,
-  ChevronDownIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
-import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
+import TreePanelHeader from "./TreePanelHeader";
+import GroupRow from "./GroupRow";
+import ProductRow from "./ProductRow";
 
 interface InventoryTreePanelProps {
   title: string;
@@ -97,26 +89,14 @@ const InventoryTreePanel = ({
        the second level. */
     <div className="flex-shrink-0 shadow-lg" style={{ width: "26%" }}>
       <div className="cc-panel shadow-sm h-full">
-        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
-          <div className="min-w-0">
-            <div className="text-[14px] cc-navy-title leading-tight truncate">
-              {title}
-            </div>
-            <div className="text-[11px] mt-0.5 text-custom-white truncate">
-              {storeName} · {dateLabel}
-            </div>
-          </div>
-          <div
-            data-help="scope"
-            className="flex items-center gap-1.5 flex-shrink-0"
-          >
-            <PageInfoButton page={helpPage} />
-            <HeaderIconButton onClick={onExportOpen} title="Export CSV">
-              <ArrowDownTrayIcon className="h-3 w-3" />
-            </HeaderIconButton>
-            <BackButton onClick={onSearchOpen} />
-          </div>
-        </div>
+        <TreePanelHeader
+          title={title}
+          helpPage={helpPage}
+          storeName={storeName}
+          dateLabel={dateLabel}
+          onSearchOpen={onSearchOpen}
+          onExportOpen={onExportOpen}
+        />
 
         <div className="px-3 py-2 border-b border-line_hair flex-shrink-0">
           <TextFilter
@@ -131,31 +111,11 @@ const InventoryTreePanel = ({
             const isOpen = g.id === openGroup;
             return (
               <div key={g.id}>
-                <button
-                  onClick={() => onToggleGroup(g.id)}
-                  className={`w-full flex items-center gap-1.5 px-3 py-2 text-left transition-colors ${
-                    isOpen ? "bg-fill_soft" : "hover:bg-fill_soft"
-                  }`}
-                >
-                  {isOpen ? (
-                    <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
-                  ) : (
-                    <ChevronRightIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
-                  )}
-                  <span
-                    className={`flex-1 min-w-0 truncate text-[13px] ${isOpen ? "font-semibold text-content" : "text-content"}`}
-                  >
-                    {g.label}
-                  </span>
-                  {g.itemCount !== null && (
-                    <span className="text-[11px] text-content/95 tabular-nums flex-shrink-0">
-                      {g.itemCount}
-                    </span>
-                  )}
-                  <span className="text-[11px] text-content/95 tabular-nums flex-shrink-0">
-                    {treeMoney(g.sales)}
-                  </span>
-                </button>
+                <GroupRow
+                  group={g}
+                  isOpen={isOpen}
+                  onToggle={() => onToggleGroup(g.id)}
+                />
 
                 {isOpen && (
                   <div className="pb-1">
@@ -169,37 +129,14 @@ const InventoryTreePanel = ({
                         No items matched
                       </div>
                     )}
-                    {visibleProducts.map((p) => {
-                      const isSel = p.productCode === selectedUpc;
-                      return (
-                        <button
-                          key={p.productCode}
-                          onClick={() => onSelectProduct(p)}
-                          className={`w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-left border-l-2 transition-colors ${
-                            isSel
-                              ? "cc-row-selected"
-                              : "border-transparent hover:bg-fill_soft"
-                          }`}
-                        >
-                          <span
-                            className={`flex-1 min-w-0 truncate text-[12.5px] ${
-                              isSel
-                                ? "text-content font-medium"
-                                : "text-content"
-                            }`}
-                          >
-                            {p.description}
-                          </span>
-                          <span
-                            className={`text-[11px] tabular-nums flex-shrink-0 ${
-                              isSel ? "text-content" : "text-content/95"
-                            }`}
-                          >
-                            {treeMoney(p.sales)}
-                          </span>
-                        </button>
-                      );
-                    })}
+                    {visibleProducts.map((p) => (
+                      <ProductRow
+                        key={p.productCode}
+                        product={p}
+                        isSelected={p.productCode === selectedUpc}
+                        onSelect={() => onSelectProduct(p)}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
