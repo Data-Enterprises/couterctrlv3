@@ -617,9 +617,6 @@
   "src/pages/exportBuilder/dev/preview/components/SummaryTable.tsx": {
     "commented-code": 3
   },
-  "src/pages/forecast/Forecasting.tsx": {
-    "labels": 1
-  },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
   },
