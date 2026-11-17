@@ -28,7 +28,12 @@ interface EditStoresModalProps {
  * A tech corrects which stores a ticket is about (the stores decide which
  * managers see it). The options are the server's, so the save never refuses one.
  */
-const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalProps) => {
+const EditStoresModal = ({
+  ticket,
+  onSave,
+  onClose,
+  working,
+}: EditStoresModalProps) => {
   const { url, token } = useDevApi();
   const [options, setOptions] = useState<TicketStoreOption[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -103,7 +108,10 @@ const EditStoresModal = ({ ticket, onSave, onClose, working }: EditStoresModalPr
 
       <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
         {saveError && (
-          <p role="alert" className="m-0 mr-auto text-[11.5px] text-brand_danger">
+          <p
+            role="alert"
+            className="m-0 mr-auto text-[11.5px] text-brand_danger"
+          >
             {saveError}
           </p>
         )}

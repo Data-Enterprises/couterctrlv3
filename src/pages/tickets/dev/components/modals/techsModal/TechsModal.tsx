@@ -37,7 +37,11 @@ interface TechsModalProps {
  * everyone else on the desk gets the same list read-only. Rows lead with the
  * username, which is unique; the display name is the second line.
  */
-const TechsModal = ({ canManageTechs, onClose, onChanged }: TechsModalProps) => {
+const TechsModal = ({
+  canManageTechs,
+  onClose,
+  onChanged,
+}: TechsModalProps) => {
   const { url, token } = useDevApi();
   const toast = useToast();
 

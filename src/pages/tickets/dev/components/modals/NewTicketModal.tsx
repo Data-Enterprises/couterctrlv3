@@ -72,7 +72,9 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
     : null;
   // A page with its own store picker is about its own store, not the last one
   // searched on Sales; everything below reads `search`.
-  const { shared, assignedStores, own } = useTicketScope(origin ? origin.href : null);
+  const { shared, assignedStores, own } = useTicketScope(
+    origin ? origin.href : null,
+  );
   const search = useMemo(
     () => searchForPage(shared, own, assignedStores),
     [shared, own, assignedStores],
@@ -466,7 +468,10 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
           Cancel
         </button>
         {sendError && (
-          <p role="alert" className="mr-auto text-[11.5px] text-brand_danger m-0">
+          <p
+            role="alert"
+            className="mr-auto text-[11.5px] text-brand_danger m-0"
+          >
             {sendError}
           </p>
         )}

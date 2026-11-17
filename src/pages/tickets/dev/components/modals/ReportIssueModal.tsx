@@ -25,10 +25,7 @@ const ReportIssueModal = () => {
   if (!from) return null;
 
   return (
-    <NewTicketModal
-      from={from}
-      onClose={() => dispatch(closeReportIssue())}
-    />
+    <NewTicketModal from={from} onClose={() => dispatch(closeReportIssue())} />
   );
 };
 

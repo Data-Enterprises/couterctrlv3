@@ -58,7 +58,9 @@ export const SCOPE_HEADING: Record<TicketScope, string> = {
 const byNumber = (a: { store_number: string }, b: { store_number: string }) => {
   const na = a.store_number ?? "";
   const nb = b.store_number ?? "";
-  return (parseInt(na, 10) || 0) - (parseInt(nb, 10) || 0) || na.localeCompare(nb);
+  return (
+    (parseInt(na, 10) || 0) - (parseInt(nb, 10) || 0) || na.localeCompare(nb)
+  );
 };
 
 /**
@@ -109,19 +111,22 @@ export const groupByCompany = (
     g.stores.push(o);
     groups.set(o.company, g);
   }
-  return [...groups.values()]
-    .map((g) => ({
-      ...g,
-      stores: [...g.stores].sort(
-        (a, b) => Number(a.deactivated) - Number(b.deactivated) || byNumber(a, b),
-      ),
-    }))
-    // Stores with no company go last, as the server orders them.
-    .sort(
-      (a, b) =>
-        Number(!a.company_name) - Number(!b.company_name) ||
-        a.company_name.localeCompare(b.company_name),
-    );
+  return (
+    [...groups.values()]
+      .map((g) => ({
+        ...g,
+        stores: [...g.stores].sort(
+          (a, b) =>
+            Number(a.deactivated) - Number(b.deactivated) || byNumber(a, b),
+        ),
+      }))
+      // Stores with no company go last, as the server orders them.
+      .sort(
+        (a, b) =>
+          Number(!a.company_name) - Number(!b.company_name) ||
+          a.company_name.localeCompare(b.company_name),
+      )
+  );
 };
 
 /** Whether a store answers what was typed in the picker's search box. */
