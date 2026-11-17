@@ -21,7 +21,11 @@ import {
 } from "../../../features/dev/devSalesTrackerSlice";
 
 // Utils
-import { formatGoliathDate, formatCurrency2, getStoreName } from "../../../utils";
+import {
+  formatGoliathDate,
+  formatCurrency2,
+  getStoreName,
+} from "../../../utils";
 import { fetchLySubSales, fetchTrackerWindow } from "./utils/trackerData";
 import {
   basisWord,
@@ -223,7 +227,11 @@ const SalesTracker = () => {
           formatGoliathDate(search.endDate),
           "LW",
         );
-        const lwRows = await fetchLySubSales(scope, lwPlan.lyStart, lwPlan.lyEnd);
+        const lwRows = await fetchLySubSales(
+          scope,
+          lwPlan.lyStart,
+          lwPlan.lyEnd,
+        );
         if (lwRows.length > 0) {
           lyRows = lwRows;
           used = "LW";
@@ -240,9 +248,7 @@ const SalesTracker = () => {
       toast.error(
         err instanceof Error ? err.message : "Could not load the tracker",
       );
-      dispatch(
-        setRows({ ty: [], ly: [], from: plan.tyStart, basis: "LY" }),
-      );
+      dispatch(setRows({ ty: [], ly: [], from: plan.tyStart, basis: "LY" }));
     } finally {
       dispatch(setLoading(false));
     }
@@ -429,7 +435,7 @@ const SalesTracker = () => {
                     {orDash(groupTotal.ats, formatCurrency2)}
                   </span>
                   <VsLy
-                  basis={basis}
+                    basis={basis}
                     dollarChange={groupTotal.dollarChange}
                     pctChange={groupTotal.pctChange}
                   />

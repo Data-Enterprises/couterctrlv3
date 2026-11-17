@@ -4,7 +4,10 @@ import { useAppDispatch } from "../../../../hooks";
 import { useSalesTrackerCtx } from "../hooks";
 
 // Redux
-import { toggleWeek, setAllWeeksOpen } from "../../../../features/dev/devSalesTrackerSlice";
+import {
+  toggleWeek,
+  setAllWeeksOpen,
+} from "../../../../features/dev/devSalesTrackerSlice";
 
 // Utils
 import { formatCurrency2 } from "../../../../utils";
@@ -56,7 +59,10 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           By week · oldest first
         </span>
-        <div data-help="export" className="flex items-center gap-3 justify-self-end">
+        <div
+          data-help="export"
+          className="flex items-center gap-3 justify-self-end"
+        >
           <button
             onClick={() => exportTracker({ row, scopeLabel, plan })}
             title="Export CSV"
@@ -70,9 +76,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
       {/* KPI strip — the window totals for this department */}
       <div className="grid grid-cols-5 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] cc-caps-strong">
-            TY Sales
-          </div>
+          <div className="text-[10px] cc-caps-strong">TY Sales</div>
           <div className="text-[10px] font-bold text-content mb-0.5">
             {md(plan.tyStart)} – {md(plan.tyEnd)}
           </div>
@@ -82,9 +86,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] cc-caps-strong">
-            {basis} Sales
-          </div>
+          <div className="text-[10px] cc-caps-strong">{basis} Sales</div>
           <div className="text-[10px] font-bold text-content mb-0.5">
             {md(plan.lyStart)} – {shortYear(plan.lyEnd)}
           </div>
@@ -94,9 +96,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] cc-caps-strong">
-            ATS Sales
-          </div>
+          <div className="text-[10px] cc-caps-strong">ATS Sales</div>
           {/* Always the transaction count, roll-up included (summed as
               legacy does). */}
           <div className="text-[10px] font-bold text-content mb-0.5">
@@ -108,9 +108,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] cc-caps-strong">
-            $ vs {basis}
-          </div>
+          <div className="text-[10px] cc-caps-strong">$ vs {basis}</div>
           <div className="text-[10px] font-bold text-content mb-0.5">
             {plan.weeks.length} weeks
           </div>
@@ -122,9 +120,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         </div>
 
         <div className="px-3 pt-2.5 pb-2 text-center">
-          <div className="text-[10px] cc-caps-strong">
-            % vs {basis}
-          </div>
+          <div className="text-[10px] cc-caps-strong">% vs {basis}</div>
           {/* How many weeks the comparison rests on: weeks with no last-year
               partner sit out of both sides. */}
           <div className="text-[10px] font-bold text-content mb-0.5">

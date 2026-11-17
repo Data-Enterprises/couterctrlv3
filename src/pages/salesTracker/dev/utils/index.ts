@@ -2,7 +2,12 @@
 import { sameWeekDayLastYear } from "../../../../utils";
 
 // Interfaces
-import type { DayPair, TrackerBasis, WeekBucket, WindowPlan } from "../interfaces";
+import type {
+  DayPair,
+  TrackerBasis,
+  WeekBucket,
+  WindowPlan,
+} from "../interfaces";
 
 /**
  * Week bucketing for the tracker, and the TY-to-LY day pairing under it. Two

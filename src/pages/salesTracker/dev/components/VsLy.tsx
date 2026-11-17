@@ -54,9 +54,7 @@ const VsLy = ({
       <span
         className={`inline-flex items-baseline gap-1.5 px-2 py-0.5 rounded-full bg-fill_muted ml-auto ${NUM}`}
       >
-        <span className="text-[10px] cc-caps-strong">
-          {basis}
-        </span>
+        <span className="text-[10px] cc-caps-strong">{basis}</span>
         <span className={`${big} font-semibold text-content`}>—</span>
       </span>
     ) : (

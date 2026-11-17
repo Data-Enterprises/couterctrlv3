@@ -126,16 +126,16 @@ export const fetchTrackerWindow = async (
       jobs.map((job) => {
         const own = new Set(job.dates);
         const call = trackerQueue.enqueue(job.key, () =>
-          fetchSubSales(scope, job.dates[0], job.dates[job.dates.length - 1]).then(
-            (rows) => rows.filter((r) => own.has(dayOf(r))),
-          ),
+          fetchSubSales(
+            scope,
+            job.dates[0],
+            job.dates[job.dates.length - 1],
+          ).then((rows) => rows.filter((r) => own.has(dayOf(r)))),
         );
         // An empty last-year batch is a store with no last year; a this-year
         // failure still fails.
         const leg =
-          job.period === "ly"
-            ? call.catch((): SubSale[] => [])
-            : call;
+          job.period === "ly" ? call.catch((): SubSale[] => []) : call;
         return leg.then((rows) => {
           done += 1;
           onProgress?.(done, jobs.length);

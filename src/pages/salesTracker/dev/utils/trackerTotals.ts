@@ -2,7 +2,12 @@
 import { subDeptKey } from "../../../../utils/subDeptKey";
 
 // Interfaces
-import type { DayTotal, SubDeptTotal, WeekTotal, WindowPlan } from "../interfaces";
+import type {
+  DayTotal,
+  SubDeptTotal,
+  WeekTotal,
+  WindowPlan,
+} from "../interfaces";
 import type { SubSale } from "../../../../interfaces";
 
 /**
