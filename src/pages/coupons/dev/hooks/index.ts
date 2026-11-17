@@ -7,20 +7,8 @@ import * as couponActions from "../../../../features/dev/devCouponSlice";
 /** Coupons' flat context: the slice, the search and the app values every part reads. */
 export const useCouponContext = () => {
   const dispatch = useAppDispatch();
-  const {
-    coupons,
-    isFetching,
-    gridCoupons,
-    noCouponsFound,
-    couponMobileStage,
-    uniqueCpnDates,
-    uniqueSubDepts,
-    subDeptMobileFilter,
-    uniqueDateMobileFilter,
-    showSubsMobileFilter,
-    receiptLines,
-    gridFilters,
-  } = useAppSelector((state) => state.dev.coupons);
+  const { coupons, isFetching, noCouponsFound, receiptLines, gridFilters } =
+    useAppSelector((state) => state.dev.coupons);
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup } =
     useAppSelector((state) => state.search);
   const { selectedGroupStores, assignedStores, userid } = useAppSelector(
@@ -39,15 +27,8 @@ export const useCouponContext = () => {
     lastStore,
     lastGroup,
     isFetching,
-    gridCoupons,
     noCouponsFound,
     isMobile,
-    couponMobileStage,
-    uniqueCpnDates,
-    uniqueSubDepts,
-    subDeptMobileFilter,
-    uniqueDateMobileFilter,
-    showSubsMobileFilter,
     receiptLines,
     gridFilters,
     selectedGroup,
