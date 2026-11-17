@@ -66,7 +66,6 @@ const OrderReportPanel = ({
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
-
   const visible = rows;
 
   const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
@@ -107,7 +106,6 @@ const OrderReportPanel = ({
     };
   }, [visible, assignedStores, selectedGroupStores]);
 
-
   /** Right-aligned and sortable, on the shared tri-state header. */
   const numHead = (key: SortKey, label: string, width: number) => (
     <th className="px-3 py-2" style={{ width }}>
@@ -131,10 +129,7 @@ const OrderReportPanel = ({
   );
 
   return (
-    <div
-      className="cc-panel shadow-lg"
-      style={{ flex: 1, minWidth: 0 }}
-    >
+    <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0 flex items-center gap-3">
         {/* Browse narrows every line in the range; Edit scopes to one order,
             because the save takes one store and one date and nothing else. */}
@@ -157,7 +152,8 @@ const OrderReportPanel = ({
         </span>
         <div className="flex-1" />
         {!loading && visible.length > 0 && (
-          <button data-help="export"
+          <button
+            data-help="export"
             onClick={onExport}
             title="Export CSV"
             className="cc-navy-link flex-shrink-0"
@@ -182,13 +178,21 @@ const OrderReportPanel = ({
             <GridKpi label="Lines" value={visible.length.toLocaleString()} />
             <GridKpi label="Orders" value={totals.orders.toLocaleString()} />
             <StoresKpi stores={totals.storeNames} />
-            <GridKpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+            <GridKpi
+              label="Weight"
+              value={totals.weight.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })}
+            />
             <GridKpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
             <GridKpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
           </div>
 
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
-            <table data-help="lines" className="w-full border-collapse text-[12px]">
+            <table
+              data-help="lines"
+              className="w-full border-collapse text-[12px]"
+            >
               <thead>
                 <tr className="cc-thead">
                   {/* Narrow and unlabelled: a line can carry two flags at
@@ -250,9 +254,7 @@ const OrderReportPanel = ({
                     <td className="cc-num font-semibold text-content/95">
                       {o.order_id}
                     </td>
-                    <td className="cc-num text-content/95">
-                      {o.line_number}
-                    </td>
+                    <td className="cc-num text-content/95">{o.line_number}</td>
                     <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.product_code}
                     </td>
@@ -265,11 +267,11 @@ const OrderReportPanel = ({
                     <td className="px-3 py-2 tabular-nums text-content/95 whitespace-nowrap">
                       {o.storenumber}
                     </td>
+                    <td className="cc-num text-content/95">{o.qty}</td>
                     <td className="cc-num text-content/95">
-                      {o.qty}
-                    </td>
-                    <td className="cc-num text-content/95">
-                      {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
+                      {o.casesize > 0
+                        ? formatCurrency2(o.base_cost / o.casesize)
+                        : "—"}
                     </td>
                     <td className="cc-num text-content/95">
                       {formatCurrency2(o.cogs)}

@@ -24,7 +24,8 @@ export const storeVendors = (
   const seen = new Map<string, string>();
   for (const o of allOrders) {
     if (o.storeid !== draft.doc.storeid || !o.vendor_id) continue;
-    if (!seen.has(o.vendor_id)) seen.set(o.vendor_id, o.vendor_name ?? o.vendor_id);
+    if (!seen.has(o.vendor_id))
+      seen.set(o.vendor_id, o.vendor_name ?? o.vendor_id);
   }
   // By name, which is what the column and the picker show — an id is how
   // the row stores a vendor, not how anybody looks one up.

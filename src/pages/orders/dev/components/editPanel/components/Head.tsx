@@ -1,5 +1,3 @@
-
-
 interface HeadProps {
   label: string;
   width: number;

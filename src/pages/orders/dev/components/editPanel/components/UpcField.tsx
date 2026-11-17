@@ -17,7 +17,13 @@ interface UpcFieldProps {
  * most of the time. It fires on blur and on Enter rather than per keystroke,
  * because a 12-digit code would otherwise be eleven failed lookups.
  */
-const UpcField = ({ lineNumber, value, busy, onType, onLookup }: UpcFieldProps) => {
+const UpcField = ({
+  lineNumber,
+  value,
+  busy,
+  onType,
+  onLookup,
+}: UpcFieldProps) => {
   // What was last sent to the lookup, so leaving the field twice does not ask
   // the same question twice.
   const asked = useRef("");

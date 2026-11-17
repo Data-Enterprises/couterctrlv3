@@ -6,7 +6,13 @@ import { formatCurrency2 } from "../../../../../../utils";
 import { EDITABLE, isAdded, isBlank, isEdited } from "../../../utils/orderEdit";
 
 // Interfaces
-import type { SubDeptOption, VendorOption, DraftLine, EditableField, LinePatch } from "../../../interfaces";
+import type {
+  SubDeptOption,
+  VendorOption,
+  DraftLine,
+  EditableField,
+  LinePatch,
+} from "../../../interfaces";
 
 // Components
 import {
@@ -111,9 +117,7 @@ const Row = ({
           {fresh && !locked && (
             <button
               onClick={() => onDropLine(line.line_number)}
-              title={
-                composing ? "Discard this line" : "Remove this added line"
-              }
+              title={composing ? "Discard this line" : "Remove this added line"}
               className="text-brand_green_darker transition-colors hover:text-brand_danger"
             >
               <XMarkIcon className="w-3.5 h-3.5" />
@@ -149,7 +153,9 @@ const Row = ({
             lineNumber={line.line_number}
             value={line.product_code}
             busy={lookingUp}
-            onType={(product_code) => onPatch(line.line_number, { product_code })}
+            onType={(product_code) =>
+              onPatch(line.line_number, { product_code })
+            }
             onLookup={onLookup}
           />
         ) : (

@@ -38,7 +38,8 @@ export const ORDER_EXPORT_COLUMNS: OrderExportColumn[] = [
 ];
 
 /** Text made safe for a file name: runs of other characters become one underscore. */
-export const slug = (s: string) => s.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+export const slug = (s: string) =>
+  s.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
 
 /** A value as a CSV cell, quoted when it holds a comma, quote or line break. */
 export const csvCell = (v: unknown) => {

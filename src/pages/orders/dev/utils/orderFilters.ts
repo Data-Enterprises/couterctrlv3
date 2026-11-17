@@ -25,7 +25,11 @@ const passes = (
   f: OrdersFilterState,
   skip: FilterKey,
 ): boolean => {
-  if (skip !== "orderTypes" && f.orderTypes.length && !f.orderTypes.includes(o.order_type))
+  if (
+    skip !== "orderTypes" &&
+    f.orderTypes.length &&
+    !f.orderTypes.includes(o.order_type)
+  )
     return false;
   if (
     skip !== "storeNumbers" &&
@@ -35,7 +39,11 @@ const passes = (
     return false;
   if (skip !== "dates" && f.dates.length && !f.dates.includes(o.order_date))
     return false;
-  if (skip !== "subIds" && f.subIds.length && !f.subIds.includes(o.sub_department))
+  if (
+    skip !== "subIds" &&
+    f.subIds.length &&
+    !f.subIds.includes(o.sub_department)
+  )
     return false;
   if (
     skip !== "productCodes" &&
@@ -43,7 +51,11 @@ const passes = (
     !f.productCodes.includes(String(o.product_code))
   )
     return false;
-  if (skip !== "orderIds" && f.orderIds.length && !f.orderIds.includes(o.order_id))
+  if (
+    skip !== "orderIds" &&
+    f.orderIds.length &&
+    !f.orderIds.includes(o.order_id)
+  )
     return false;
   return true;
 };

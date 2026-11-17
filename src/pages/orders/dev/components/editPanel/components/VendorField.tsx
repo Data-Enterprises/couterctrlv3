@@ -16,22 +16,22 @@ interface VendorFieldProps {
  * the POS does not know is worse than no line at all.
  */
 const VendorField = ({ value, vendors, onChange }: VendorFieldProps) => (
-    <select
-      value={value}
-      aria-label="Vendor for the added line"
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-[142px] rounded-[5px] border bg-custom-white px-1 py-0.5 text-[11px] text-content ${
-        value ? "border-brand_green" : "border-brand_line_2"
-      }`}
-      style={{ outline: "none" }}
-    >
-      <option value="">Vendor…</option>
-      {vendors.map((v) => (
-        <option key={v.id} value={v.id} title={v.id}>
-          {v.name}
-        </option>
-      ))}
-    </select>
+  <select
+    value={value}
+    aria-label="Vendor for the added line"
+    onChange={(e) => onChange(e.target.value)}
+    className={`w-[142px] rounded-[5px] border bg-custom-white px-1 py-0.5 text-[11px] text-content ${
+      value ? "border-brand_green" : "border-brand_line_2"
+    }`}
+    style={{ outline: "none" }}
+  >
+    <option value="">Vendor…</option>
+    {vendors.map((v) => (
+      <option key={v.id} value={v.id} title={v.id}>
+        {v.name}
+      </option>
+    ))}
+  </select>
 );
 
 export default VendorField;

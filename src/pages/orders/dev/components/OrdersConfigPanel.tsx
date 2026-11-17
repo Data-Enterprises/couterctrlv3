@@ -212,10 +212,7 @@ const OrdersConfigPanel = ({
     values.map((v) => Number(v));
 
   return (
-    <div
-      className="cc-panel shadow-lg flex-shrink-0"
-      style={{ width: 300 }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: 300 }}>
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">

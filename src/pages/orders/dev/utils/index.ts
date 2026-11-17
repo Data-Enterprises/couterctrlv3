@@ -75,7 +75,8 @@ export const fmtOrderDate = (iso: string) => {
 };
 
 /** A margin to one decimal with %, or a dash when unknown. */
-export const pct = (m: number | null) => (m === null ? "—" : `${m.toFixed(1)}%`);
+export const pct = (m: number | null) =>
+  m === null ? "—" : `${m.toFixed(1)}%`;
 
 /** The order the list works in: the cause, its usual symptom, then the one
  *  that is often fine. */

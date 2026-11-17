@@ -97,9 +97,10 @@ const SubmitReceipt = ({
           {!receipt.logged && (
             <>
               {" "}
-              This one came back <span className="font-mono">logged: false</span>{" "}
-              — the audit insert failed, which is independent of the drop. The
-              file still landed.
+              This one came back{" "}
+              <span className="font-mono">logged: false</span> — the audit
+              insert failed, which is independent of the drop. The file still
+              landed.
             </>
           )}
         </p>

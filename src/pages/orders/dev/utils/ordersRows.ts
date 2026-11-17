@@ -1,6 +1,9 @@
 // Utils
 import { resolveStoreName } from "../../../../utils";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { SortKey } from "../interfaces";
@@ -24,7 +27,10 @@ import type {
  * typed figure straight through. Flagged so somebody looks, not because it is
  * necessarily wrong.
  */
-export const lineFlags = (o: AllOrder, marginOver: number | null): OrderFlag[] => {
+export const lineFlags = (
+  o: AllOrder,
+  marginOver: number | null,
+): OrderFlag[] => {
   const flags: OrderFlag[] = [];
   if (!o.base_cost) flags.push("missingCost");
   if (!o.casesize || o.casesize <= 0) flags.push("noCaseSize");
@@ -43,7 +49,10 @@ export const lineFlags = (o: AllOrder, marginOver: number | null): OrderFlag[] =
  * Empty means all, per filter — the same convention the controls use, so an
  * untouched panel produces the whole set rather than nothing.
  */
-export const applyFilters = (lines: AllOrder[], f: OrdersFilters): AllOrder[] => {
+export const applyFilters = (
+  lines: AllOrder[],
+  f: OrdersFilters,
+): AllOrder[] => {
   const types = new Set(f.orderTypes);
   const stores = new Set(f.storeNumbers);
   const dates = new Set(f.dates);
@@ -123,13 +132,25 @@ export const storeNamesIn = (
   assignedStores: Store[],
   groupStores: Store[],
 ): string[] => {
-  const numbers = numbersByStoreId(rows, (r) => r.storeid, (r) => r.storenumber);
+  const numbers = numbersByStoreId(
+    rows,
+    (r) => r.storeid,
+    (r) => r.storenumber,
+  );
   const seen = new Map<string, string>();
   for (const r of rows) {
     const key = `${r.storeid}|${r.storenumber}`;
     if (seen.has(key)) continue;
-    const name = resolveStoreName(assignedStores, groupStores, r.storeid, `Store ${r.storenumber}`);
-    seen.set(key, applyStoreNumberToName(name, r.storenumber, numbers[r.storeid] ?? []));
+    const name = resolveStoreName(
+      assignedStores,
+      groupStores,
+      r.storeid,
+      `Store ${r.storenumber}`,
+    );
+    seen.set(
+      key,
+      applyStoreNumberToName(name, r.storenumber, numbers[r.storeid] ?? []),
+    );
   }
   return [...seen.values()].sort((a, b) => a.localeCompare(b));
 };

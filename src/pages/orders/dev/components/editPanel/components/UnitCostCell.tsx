@@ -22,14 +22,18 @@ interface UnitCostCellProps {
  * A line with no case size has nothing to divide by, so unit and case are the
  * same number — it is still typable, it just writes the same value through.
  */
-const UnitCostCell = ({ line, tint, resetNonce, disabled, onUnitCost }: UnitCostCellProps) => {
+const UnitCostCell = ({
+  line,
+  tint,
+  resetNonce,
+  disabled,
+  onUnitCost,
+}: UnitCostCellProps) => {
   const original = line.original;
   const changed = original !== null && line.base_cost !== original.base_cost;
   const value = unitCostOf(line).toFixed(2);
   const wasUnit =
-    original === null
-      ? null
-      : (original.base_cost ?? 0) / perCase(line);
+    original === null ? null : (original.base_cost ?? 0) / perCase(line);
 
   return (
     <td

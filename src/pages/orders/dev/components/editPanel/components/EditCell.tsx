@@ -20,10 +20,18 @@ interface EditCellProps {
  * untouched — it is what keeps the row from changing height the moment an
  * edit puts a "was" under the number.
  */
-const EditCell = ({ field, line, tint, resetNonce, disabled, onField }: EditCellProps) => {
+const EditCell = ({
+  field,
+  line,
+  tint,
+  resetNonce,
+  disabled,
+  onField,
+}: EditCellProps) => {
   const original = line.original;
   const changed = original !== null && line[field] !== original[field];
-  const value = field === "qty" ? String(line.qty) : Number(line[field]).toFixed(2);
+  const value =
+    field === "qty" ? String(line.qty) : Number(line[field]).toFixed(2);
 
   return (
     <td

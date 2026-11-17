@@ -1,8 +1,14 @@
 // Interfaces
 import type { AggFn } from "../../../../../utils/csvExport";
 
-export interface DimDef { key: string; label: string }
-export interface MetricDef { key: string; label: string }
+export interface DimDef {
+  key: string;
+  label: string;
+}
+export interface MetricDef {
+  key: string;
+  label: string;
+}
 
 export type OrderSelection = {
   storeid: number;

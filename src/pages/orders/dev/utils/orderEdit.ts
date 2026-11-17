@@ -3,7 +3,16 @@ import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
 import { getCogs, getERet } from ".";
 
 // Interfaces
-import type { EditableField, OrderDoc, DraftLine, OrderDraft, OrderPick, LinePatch, Check, StagePreview } from "../interfaces";
+import type {
+  EditableField,
+  OrderDoc,
+  DraftLine,
+  OrderDraft,
+  OrderPick,
+  LinePatch,
+  Check,
+  StagePreview,
+} from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 
 /**
@@ -103,7 +112,11 @@ export const docKey = (
   o: Pick<AllOrder, "storeid" | "storenumber" | "order_id" | "order_date">,
 ) => `${o.storeid}|${o.storenumber}|${o.order_id}|${o.order_date}`;
 
-export const NO_PICK: OrderPick = { storeNumber: "", orderDate: "", orderType: "" };
+export const NO_PICK: OrderPick = {
+  storeNumber: "",
+  orderDate: "",
+  orderType: "",
+};
 
 /**
  * Whether an order passes the left panel's filters.
@@ -119,7 +132,11 @@ export const matchesPick = (
   pick: OrderPick,
   skip: "store" | "date" | "type" | null = null,
 ) => {
-  if (skip !== "store" && pick.storeNumber && d.storenumber !== pick.storeNumber)
+  if (
+    skip !== "store" &&
+    pick.storeNumber &&
+    d.storenumber !== pick.storeNumber
+  )
     return false;
   if (skip !== "date" && pick.orderDate && d.order_date !== pick.orderDate)
     return false;
@@ -279,7 +296,10 @@ export const applyUnitCost = (
     recompute({ ...l, base_cost: unit * perCase(l) }),
   );
 
-export const revertLine = (draft: OrderDraft, lineNumber: number): OrderDraft => ({
+export const revertLine = (
+  draft: OrderDraft,
+  lineNumber: number,
+): OrderDraft => ({
   ...mapLine(draft, lineNumber, (l) =>
     l.original === null ? l : recompute({ ...l, ...l.original }),
   ),
@@ -362,10 +382,7 @@ export const blankLine = (draft: OrderDraft): DraftLine | null => {
 };
 
 /** The filled-in line, onto the end of the order. */
-export const appendLine = (
-  draft: OrderDraft,
-  line: DraftLine,
-): OrderDraft => ({
+export const appendLine = (draft: OrderDraft, line: DraftLine): OrderDraft => ({
   ...draft,
   lines: [
     ...draft.lines,
@@ -392,7 +409,10 @@ export const patchLine = (
 });
 
 /** An added line can go, because it never existed. An existing one cannot. */
-export const dropLine = (draft: OrderDraft, lineNumber: number): OrderDraft => ({
+export const dropLine = (
+  draft: OrderDraft,
+  lineNumber: number,
+): OrderDraft => ({
   ...draft,
   lines: draft.lines.filter(
     (l) => !(isAdded(l) && l.line_number === lineNumber),
@@ -492,7 +512,8 @@ export const visibleLines = (
     .filter((l) => {
       if (isAdded(l)) return true;
       if (code && !String(l.product_code).includes(code)) return false;
-      if (desc && !(l.description ?? "").toLowerCase().includes(desc)) return false;
+      if (desc && !(l.description ?? "").toLowerCase().includes(desc))
+        return false;
       if (opts.onlyChanged && !isChanged(l)) return false;
       return true;
     })

@@ -25,14 +25,21 @@ import { getAllOrders, getAvailableOrders } from "../../../../api/orders";
 import { getStoresAssignedToUserGroup } from "../../../../api/groups";
 
 // Utils
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
 import { formatGoliathDate, resolveStoreName } from "../../../../utils";
 import { getCogs, getERet } from "../utils";
 import { fmtExportDate } from "./utils";
 import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { AllOrderResp, AvailableOrderResp, Store } from "../../../../interfaces";
+import type {
+  AllOrderResp,
+  AvailableOrderResp,
+  Store,
+} from "../../../../interfaces";
 import type { MobileStep } from "./interfaces";
 
 // Components
@@ -54,12 +61,19 @@ const OrdersMobile = () => {
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   const handleSearch = () => {
     if (isGroupSearch(ctx.type)) {
-      getStoresAssignedToUserGroup(ctx.url, ctx.token, ctx.userid, ctx.lastGroup)
+      getStoresAssignedToUserGroup(
+        ctx.url,
+        ctx.token,
+        ctx.userid,
+        ctx.lastGroup,
+      )
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -107,20 +121,37 @@ const OrdersMobile = () => {
 
           // Keyed on storeid + storenumber — see Orders.tsx and
           // utils/storeIdentity for why the id alone isn't a location.
-          const numbersById = numbersByStoreId(j.orders, (o) => o.storeid, (o) => o.storenumber);
+          const numbersById = numbersByStoreId(
+            j.orders,
+            (o) => o.storeid,
+            (o) => o.storenumber,
+          );
           const typeMap = new Map<
             string,
-            Map<string, Map<string, { storeid: number; storenumber: string; frequency: number }>>
+            Map<
+              string,
+              Map<
+                string,
+                { storeid: number; storenumber: string; frequency: number }
+              >
+            >
           >();
           for (const o of j.orders) {
-            if (!typeMap.has(o.order_type)) typeMap.set(o.order_type, new Map());
+            if (!typeMap.has(o.order_type))
+              typeMap.set(o.order_type, new Map());
             const dateMap = typeMap.get(o.order_type)!;
-            if (!dateMap.has(o.order_date)) dateMap.set(o.order_date, new Map());
+            if (!dateMap.has(o.order_date))
+              dateMap.set(o.order_date, new Map());
             const storeMap = dateMap.get(o.order_date)!;
             const key = `${o.storeid}__${o.storenumber}`;
             const entry = storeMap.get(key);
             if (entry) entry.frequency += 1;
-            else storeMap.set(key, { storeid: o.storeid, storenumber: o.storenumber, frequency: 1 });
+            else
+              storeMap.set(key, {
+                storeid: o.storeid,
+                storenumber: o.storenumber,
+                frequency: 1,
+              });
           }
 
           const cards: GroupedOrderCard[] = Array.from(typeMap.entries())
@@ -131,19 +162,23 @@ const OrdersMobile = () => {
                 .sort(([a], [b]) => b.localeCompare(a))
                 .map(([order_date, storeMap]) => ({
                   order_date,
-                  stores: Array.from(storeMap.values()).map(({ storeid, storenumber, frequency }) => {
-                    const assigned = ctx.assignedStores.find((s) => s.storeid === storeid);
-                    return {
-                      storeid,
-                      storenumber,
-                      store_name: applyStoreNumberToName(
-                        assigned?.store_name ?? String(storeid),
+                  stores: Array.from(storeMap.values()).map(
+                    ({ storeid, storenumber, frequency }) => {
+                      const assigned = ctx.assignedStores.find(
+                        (s) => s.storeid === storeid,
+                      );
+                      return {
+                        storeid,
                         storenumber,
-                        numbersById[storeid] ?? [],
-                      ),
-                      frequency,
-                    };
-                  }),
+                        store_name: applyStoreNumberToName(
+                          assigned?.store_name ?? String(storeid),
+                          storenumber,
+                          numbersById[storeid] ?? [],
+                        ),
+                        frequency,
+                      };
+                    },
+                  ),
                 })),
             }));
 
@@ -154,8 +189,22 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
-  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[], storenumbers: string[] | null = null) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids, storenumbers }));
+  const fetchOrderDetails = (
+    start_date: string,
+    end_date: string,
+    order_type: string,
+    storeids: number[],
+    storenumbers: string[] | null = null,
+  ) => {
+    ctx.dispatch(
+      setSelectedOrderKey({
+        order_date: start_date,
+        order_date_end: end_date,
+        order_type,
+        storeids,
+        storenumbers,
+      }),
+    );
     ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
@@ -182,10 +231,30 @@ const OrdersMobile = () => {
             const net_cost = o.net_cost ?? 0;
             const weight = o.weight ?? 0;
             const casesize = o.casesize ?? 0;
-            const e_ret = getERet(o.qty, weight, o.active_retail_price, o.scalable);
-            const cogs = getCogs(base_cost, o.qty, o.scalable, weight, casesize);
+            const e_ret = getERet(
+              o.qty,
+              weight,
+              o.active_retail_price,
+              o.scalable,
+            );
+            const cogs = getCogs(
+              base_cost,
+              o.qty,
+              o.scalable,
+              weight,
+              casesize,
+            );
             const rev = e_ret - cogs;
-            return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev };
+            return {
+              ...o,
+              e_ret,
+              base_cost,
+              net_cost,
+              weight,
+              casesize,
+              cogs,
+              rev,
+            };
           });
 
           const uniqueSubs = ordersWERet.reduce((acc: UniqueSub[], o) => {
@@ -193,7 +262,9 @@ const OrdersMobile = () => {
               acc.push({
                 desc: o.sub_department_description ?? "null",
                 subId: o.sub_department,
-                count: ordersWERet.filter((f) => f.sub_department === o.sub_department).length,
+                count: ordersWERet.filter(
+                  (f) => f.sub_department === o.sub_department,
+                ).length,
               });
             }
             return acc;
@@ -206,12 +277,21 @@ const OrdersMobile = () => {
           // immediately. Keyed on storeid + storenumber + order_id, matching
           // OrderReportPanel — the same order_id can exist at two stores, and
           // counting by id alone would call that one order and skip the list.
-          const filtered = ordersWERet.filter((o) => o.order_type === order_type);
-          const keys = new Map<string, { storeid: number; storenumber: string; orderId: number }>();
+          const filtered = ordersWERet.filter(
+            (o) => o.order_type === order_type,
+          );
+          const keys = new Map<
+            string,
+            { storeid: number; storenumber: string; orderId: number }
+          >();
           filtered.forEach((o) => {
             const key = `${o.storeid}__${o.storenumber}:${o.order_id}`;
             if (!keys.has(key))
-              keys.set(key, { storeid: o.storeid, storenumber: o.storenumber, orderId: o.order_id });
+              keys.set(key, {
+                storeid: o.storeid,
+                storenumber: o.storenumber,
+                orderId: o.order_id,
+              });
           });
           if (keys.size === 1) {
             ctx.dispatch(setSelectedOrder([...keys.values()][0]));
@@ -225,16 +305,36 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  const handleSelectStore = (order_date: string, order_type: string, storeid: number, storenumber: string) => {
-    fetchOrderDetails(order_date, order_date, order_type, [storeid], [storenumber]);
+  const handleSelectStore = (
+    order_date: string,
+    order_type: string,
+    storeid: number,
+    storenumber: string,
+  ) => {
+    fetchOrderDetails(
+      order_date,
+      order_date,
+      order_type,
+      [storeid],
+      [storenumber],
+    );
   };
 
   // No date filter selected → span the whole search range instead of one day.
-  const handleSelectAllStores = (order_date: string, order_type: string, storeids: number[]) => {
+  const handleSelectAllStores = (
+    order_date: string,
+    order_type: string,
+    storeids: number[],
+  ) => {
     if (order_date) {
       fetchOrderDetails(order_date, order_date, order_type, storeids);
     } else {
-      fetchOrderDetails(formatGoliathDate(ctx.startDate), formatGoliathDate(ctx.endDate), order_type, storeids);
+      fetchOrderDetails(
+        formatGoliathDate(ctx.startDate),
+        formatGoliathDate(ctx.endDate),
+        order_type,
+        storeids,
+      );
     }
   };
 
@@ -266,7 +366,12 @@ const OrdersMobile = () => {
   // ── Export sheet data — mirrors desktop's OrderReportPanel.tsx computations ──
   const storeNames = ctx.selectedOrderKey
     ? ctx.selectedOrderKey.storeids.map((id) =>
-        resolveStoreName(ctx.assignedStores, ctx.selectedGroupStores, id, `Store ${id}`),
+        resolveStoreName(
+          ctx.assignedStores,
+          ctx.selectedGroupStores,
+          id,
+          `Store ${id}`,
+        ),
       )
     : [];
 
@@ -277,19 +382,22 @@ const OrdersMobile = () => {
     : "";
 
   const filteredOrders = ctx.selectedOrderKey
-    ? ctx.allOrders.filter((o) => o.order_type === ctx.selectedOrderKey!.order_type)
+    ? ctx.allOrders.filter(
+        (o) => o.order_type === ctx.selectedOrderKey!.order_type,
+      )
     : ctx.allOrders;
 
   // storenumber included — see OrderReportPanel's orderItems. Without it a
   // co-located storeid exports both locations' lines as one order.
-  const selectedOrderItems = ctx.selectedOrder !== null
-    ? filteredOrders.filter(
-        (o) =>
-          o.order_id === ctx.selectedOrder!.orderId &&
-          o.storeid === ctx.selectedOrder!.storeid &&
-          o.storenumber === ctx.selectedOrder!.storenumber,
-      )
-    : [];
+  const selectedOrderItems =
+    ctx.selectedOrder !== null
+      ? filteredOrders.filter(
+          (o) =>
+            o.order_id === ctx.selectedOrder!.orderId &&
+            o.storeid === ctx.selectedOrder!.storeid &&
+            o.storenumber === ctx.selectedOrder!.storenumber,
+        )
+      : [];
 
   return (
     <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
@@ -349,7 +457,12 @@ const OrdersMobile = () => {
       )}
 
       {sheetOpen && ctx.selectedOrderKey && ctx.selectedOrder !== null && (
-        <BottomSheet onClose={() => { setSheetOpen(false); ctx.dispatch(setSelectedOrder(null)); }}>
+        <BottomSheet
+          onClose={() => {
+            setSheetOpen(false);
+            ctx.dispatch(setSelectedOrder(null));
+          }}
+        >
           <OrdersLineItemsScreen
             orders={ctx.allOrders}
             selectedKey={ctx.selectedOrderKey}

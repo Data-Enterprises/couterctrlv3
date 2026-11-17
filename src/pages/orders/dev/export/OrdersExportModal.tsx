@@ -92,11 +92,16 @@ const OrdersExportModal = ({
     const ids = new Set<number>();
     for (const o of lines) {
       if (o.order_type) types.add(o.order_type);
-      if (o.storenumber) stores.set(o.storenumber, o.storename ?? o.storenumber);
+      if (o.storenumber)
+        stores.set(o.storenumber, o.storename ?? o.storenumber);
       if (o.order_date) dates.add(o.order_date);
       if (o.sub_department != null)
-        subs.set(o.sub_department, o.sub_department_description ?? "No department");
-      if (o.product_code) codes.set(String(o.product_code), o.description ?? "");
+        subs.set(
+          o.sub_department,
+          o.sub_department_description ?? "No department",
+        );
+      if (o.product_code)
+        codes.set(String(o.product_code), o.description ?? "");
       if (o.order_id != null) ids.add(o.order_id);
     }
     const d = (iso: string) => {
@@ -108,14 +113,18 @@ const OrdersExportModal = ({
       stores: [...stores.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([n, nm]) => ({ value: n, label: `${n} — ${nm}` })),
-      dates: [...dates].sort((a, b) => b.localeCompare(a)).map((v) => ({ value: v, label: d(v) })),
+      dates: [...dates]
+        .sort((a, b) => b.localeCompare(a))
+        .map((v) => ({ value: v, label: d(v) })),
       subs: [...subs.entries()]
         .sort(([, a], [, b]) => a.localeCompare(b))
         .map(([id, desc]) => ({ value: String(id), label: desc })),
       codes: [...codes.entries()]
         .sort(([, a], [, b]) => a.localeCompare(b))
         .map(([c, desc]) => ({ value: c, label: desc ? `${c} — ${desc}` : c })),
-      ids: [...ids].sort((a, b) => a - b).map((v) => ({ value: String(v), label: `#${v}` })),
+      ids: [...ids]
+        .sort((a, b) => a - b)
+        .map((v) => ({ value: String(v), label: `#${v}` })),
     };
   }, [lines]);
 
@@ -134,7 +143,9 @@ const OrdersExportModal = ({
 
     const header = chosen.map((c) => csvCell(c.headerName)).join(",");
     const body = rows
-      .map((r) => chosen.map((c) => csvCell(r[c.field as keyof AllOrder])).join(","))
+      .map((r) =>
+        chosen.map((c) => csvCell(r[c.field as keyof AllOrder])).join(","),
+      )
       .join("\n");
 
     const blob = new Blob([`${header}\n${body}`], {
@@ -150,10 +161,7 @@ const OrdersExportModal = ({
   };
 
   return (
-    <div
-      className="cc-modal-backdrop z-50"
-      onClick={onClose}
-    >
+    <div className="cc-modal-backdrop z-50" onClick={onClose}>
       <div
         className="cc-panel max-h-[88vh] w-[560px] max-w-[94vw] shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -162,20 +170,14 @@ const OrdersExportModal = ({
           <span className="flex-1 text-[13px] font-medium text-custom-white">
             Export order lines
           </span>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="cc-navy-link"
-          >
+          <button onClick={onClose} aria-label="Close" className="cc-navy-link">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
           <div>
-            <span className="mb-1 block text-[10px] cc-caps">
-              File name
-            </span>
+            <span className="mb-1 block text-[10px] cc-caps">File name</span>
             <div className="flex items-center rounded border border-brand_navy/75 bg-custom-white px-2">
               <input
                 autoFocus
@@ -185,14 +187,14 @@ const OrdersExportModal = ({
                 className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] text-content"
                 style={{ outline: "none", boxShadow: "none" }}
               />
-              <span className="flex-shrink-0 text-[12px] text-content/95">.csv</span>
+              <span className="flex-shrink-0 text-[12px] text-content/95">
+                .csv
+              </span>
             </div>
           </div>
 
           <div>
-            <span className="mb-1 block text-[10px] cc-caps">
-              Columns
-            </span>
+            <span className="mb-1 block text-[10px] cc-caps">Columns</span>
             <MultiSelectFilter
               options={ORDER_EXPORT_COLUMNS.map((c) => ({
                 value: c.field,
@@ -207,9 +209,7 @@ const OrdersExportModal = ({
 
           <div>
             <div className="mb-2 flex items-baseline gap-2">
-              <span className="text-[10px] cc-caps">
-                Filters
-              </span>
+              <span className="text-[10px] cc-caps">Filters</span>
               <span className="text-[11px] text-content/95">
                 opened on what the panel has selected
               </span>

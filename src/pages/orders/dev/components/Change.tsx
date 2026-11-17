@@ -21,7 +21,9 @@ const Change = ({ now, after, pick, unchanged = false }: ChangeProps) => (
       <>
         <span className="text-content/95">{pick(now)}</span>
         <span className="text-content/95"> → </span>
-        <span className="font-bold text-severity_watch_text">{pick(after)}</span>
+        <span className="font-bold text-severity_watch_text">
+          {pick(after)}
+        </span>
       </>
     ) : (
       <>

@@ -101,8 +101,7 @@ const OrderEditPanel = ({
     submitted,
   } = useOpenDraft();
   const rows = useMemo(
-    () =>
-      draft ? visibleLines(draft, search) : [],
+    () => (draft ? visibleLines(draft, search) : []),
     [draft, search],
   );
 
@@ -133,15 +132,13 @@ const OrderEditPanel = ({
 
   /** Edited lines the search is hiding still go in the file, so say so. */
   const hiddenChanged = draft
-    ? changed.filter((l) => !rows.some((r) => r.line_number === l.line_number)).length
+    ? changed.filter((l) => !rows.some((r) => r.line_number === l.line_number))
+        .length
     : 0;
 
   if (!draft) {
     return (
-      <div
-        className="cc-panel shadow-lg"
-        style={{ flex: 1, minWidth: 0 }}
-      >
+      <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
         <Band onLeaveEdit={onLeaveEdit}>
           <span className="text-custom-white font-medium text-[13px]">
             Edit an order
@@ -150,13 +147,13 @@ const OrderEditPanel = ({
             pick one on the left
           </span>
           <div className="flex-1" />
-        <button
-          onClick={onFixCost}
-          title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
-          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
-        >
-          Fix cost
-        </button>
+          <button
+            onClick={onFixCost}
+            title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
+            className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+          >
+            Fix cost
+          </button>
           {stagedCount > 0 && (
             <button
               onClick={onSubmit}
@@ -165,12 +162,12 @@ const OrderEditPanel = ({
               className="flex-shrink-0 rounded-md bg-custom-white px-3 py-1 text-[11.5px] font-bold text-brand_navy transition-opacity hover:opacity-90 disabled:opacity-45"
             >
               {submitting
-            ? "Submitting…"
-            : submitted
-              ? "Submitted"
-              : stagedCount > 1
-                ? `Submit ${stagedCount} orders`
-                : "Submit order update"}
+                ? "Submitting…"
+                : submitted
+                  ? "Submitted"
+                  : stagedCount > 1
+                    ? `Submit ${stagedCount} orders`
+                    : "Submit order update"}
             </button>
           )}
         </Band>
@@ -193,10 +190,7 @@ const OrderEditPanel = ({
   }
 
   return (
-    <div
-      className="cc-panel shadow-lg"
-      style={{ flex: 1, minWidth: 0 }}
-    >
+    <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
       <Band onLeaveEdit={onLeaveEdit}>
         <span className="w-2.5 h-2.5 rounded-full bg-store_open flex-shrink-0" />
         <span className="text-custom-white font-medium text-[13px] truncate">
@@ -279,7 +273,9 @@ const OrderEditPanel = ({
         />
 
         <button
-          onClick={() => onSearch({ ...search, onlyChanged: !search.onlyChanged })}
+          onClick={() =>
+            onSearch({ ...search, onlyChanged: !search.onlyChanged })
+          }
           aria-pressed={search.onlyChanged}
           className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors ${
             search.onlyChanged
@@ -311,13 +307,16 @@ const OrderEditPanel = ({
 
         {hiddenChanged > 0 && (
           <span className="rounded bg-severity_watch_bg px-2 py-0.5 text-[11px] font-semibold text-severity_watch_text">
-            {hiddenChanged} changed line{hiddenChanged === 1 ? "" : "s"} hidden by
-            this search — still sent
+            {hiddenChanged} changed line{hiddenChanged === 1 ? "" : "s"} hidden
+            by this search — still sent
           </span>
         )}
       </div>
 
-      <div ref={scroller} className="flex-1 overflow-auto thin-scrollbar min-h-0">
+      <div
+        ref={scroller}
+        className="flex-1 overflow-auto thin-scrollbar min-h-0"
+      >
         <table className="w-full text-[11px] border-collapse font-mono">
           <thead className="sticky top-0 z-10 bg-custom-white">
             <tr className="border-b border-b-brand_line_2">
@@ -402,7 +401,9 @@ const OrderEditPanel = ({
         <span className="text-[11px] text-content">
           Showing{" "}
           <span className="font-semibold tabular-nums">{rows.length}</span> of{" "}
-          <span className="font-semibold tabular-nums">{draft.lines.length}</span>{" "}
+          <span className="font-semibold tabular-nums">
+            {draft.lines.length}
+          </span>{" "}
           lines ·{" "}
           {changed.length === 0
             ? "nothing changed yet"
@@ -412,11 +413,18 @@ const OrderEditPanel = ({
         {swing && Math.abs(swing.gap) > 0.004 && (
           <span className="text-[11px] text-content tabular-nums">
             Ext cost{" "}
-            <span className="font-semibold">{formatCurrency2(swing.before)}</span> →{" "}
-            <span className="font-semibold">{formatCurrency2(swing.after)}</span>{" "}
+            <span className="font-semibold">
+              {formatCurrency2(swing.before)}
+            </span>{" "}
+            →{" "}
+            <span className="font-semibold">
+              {formatCurrency2(swing.after)}
+            </span>{" "}
             <span
               className={`font-bold ${
-                swing.gap > 0 ? "text-delta_negative_text" : "text-delta_positive_text"
+                swing.gap > 0
+                  ? "text-delta_negative_text"
+                  : "text-delta_positive_text"
               }`}
             >
               {swing.gap > 0 ? "+" : "−"}

@@ -53,7 +53,10 @@ const ProblemList = ({
   const [query, setQuery] = useState("");
   const [only, setOnly] = useState<Set<OrderFlag>>(new Set());
 
-  const flagged = useMemo(() => items.filter((i) => i.flags.length > 0), [items]);
+  const flagged = useMemo(
+    () => items.filter((i) => i.flags.length > 0),
+    [items],
+  );
 
   /** How many items carry each flag — items, not lines, since an item is
    *  what gets fixed. */
@@ -71,7 +74,9 @@ const ProblemList = ({
     const q = query.trim().toLowerCase();
     const pool = q
       ? items.filter(
-          (i) => i.code.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q),
+          (i) =>
+            i.code.toLowerCase().includes(q) ||
+            i.desc.toLowerCase().includes(q),
         )
       : only.size === 0
         ? flagged
@@ -79,7 +84,9 @@ const ProblemList = ({
     return workingOrder(pool, skipped);
   }, [items, flagged, query, only, skipped]);
 
-  const toDo = flagged.filter((i) => i.staged === 0 && !skipped.has(i.code)).length;
+  const toDo = flagged.filter(
+    (i) => i.staged === 0 && !skipped.has(i.code),
+  ).length;
 
   const toggle = (f: OrderFlag) =>
     setOnly((prev) => {
@@ -117,11 +124,15 @@ const ProblemList = ({
                   on
                     ? `${FLAG_ON[f]} font-semibold`
                     : `border-transparent text-content ${
-                        empty ? "cursor-default" : "cursor-pointer hover:border-brand_line hover:bg-row_selected"
+                        empty
+                          ? "cursor-default"
+                          : "cursor-pointer hover:border-brand_line hover:bg-row_selected"
                       }`
                 }`}
               >
-                <span className={`h-2 w-2 flex-shrink-0 rounded-[2px] ${FLAG_DOT[f]}`} />
+                <span
+                  className={`h-2 w-2 flex-shrink-0 rounded-[2px] ${FLAG_DOT[f]}`}
+                />
                 <span className={empty && !on ? "text-content/95" : ""}>
                   {f === "highMargin" ? "High margin over" : FLAG_LABEL[f]}
                 </span>
@@ -137,7 +148,9 @@ const ProblemList = ({
                           ? null
                           : { op: "gt", amount: marginOver }
                       }
-                      onChange={(v) => onMarginOver(v === null ? null : v.amount)}
+                      onChange={(v) =>
+                        onMarginOver(v === null ? null : v.amount)
+                      }
                       showOp={false}
                       suffix="%"
                       placeholder="—"

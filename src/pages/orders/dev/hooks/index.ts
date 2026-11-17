@@ -16,9 +16,15 @@ import type { OrderDraft } from "../interfaces";
 export const useOrdersCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token, isMobile } = useAppSelector((state) => state.app);
-  const { startDate, endDate, type, lastStore, lastGroup, selectedGroup, selectedStore } = useAppSelector(
-    (state) => state.search,
-  );
+  const {
+    startDate,
+    endDate,
+    type,
+    lastStore,
+    lastGroup,
+    selectedGroup,
+    selectedStore,
+  } = useAppSelector((state) => state.search);
   const { assignedStores, userid, selectedGroupStores, userLevel, companies } =
     useAppSelector((state) => state.user);
   const ordersState = useAppSelector((state) => state.dev.orders);
