@@ -24,6 +24,10 @@ export const pct = (n: number | null) => (n === null ? "" : n.toFixed(2));
 export const num = (n: number) =>
   Number.isInteger(n) ? String(n) : n.toFixed(2);
 
+/** A column's heading: the Name column takes the page's own noun. */
+export const colLabel = (c: Col, groupNoun: string) =>
+  c.key === "name" ? groupNoun : c.label;
+
 /** The Groups export's columns. */
 export const GROUP_COLS: Col[] = [
   { key: "name", label: "Name", defaultOn: true },
