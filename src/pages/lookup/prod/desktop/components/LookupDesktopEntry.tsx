@@ -1,26 +1,26 @@
+// Hooks
 import { useState } from "react";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useStoreName,
-} from "../../../../hooks";
-import SingleSelect from "../../../../components/SingleSelect";
-import { setSelectedStore } from "../../../../features/itemLookupSlice";
+import { useAppDispatch, useStoreName } from "../../../../../hooks";
+import { useLookupCtx } from "../../hooks";
+
+// Redux
+import { setSelectedStore } from "../../../../../features/itemLookupSlice";
+
+// Utils
+import { parseUpcs } from "../utils";
+
+// Components
+import SingleSelect from "../../../../../components/SingleSelect";
 
 interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;
 }
 
-const parseUpcs = (raw: string): string[] =>
-  raw
-    .split(/[\n,]/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0);
-
+/** The desktop Item lookup search card: a store picker and a box for one or more UPCs (comma or Shift+Enter between them).
+ *  Enter or the button runs the lookup once a store and a UPC are entered. */
 const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.prod.item);
+  const { assignedStores, selectedStore } = useLookupCtx();
   const storeName = useStoreName(selectedStore, "");
   const [rawUpcs, setRawUpcs] = useState("");
 
@@ -40,7 +40,7 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
     <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
       <div>
         <h2 className="text-base font-semibold text-content">Item lookup</h2>
-        <p className="text-[12px] text-content/50 mt-1">
+        <p className="text-[12px] text-content/95 mt-1">
           Search for an item by UPC, or paste several to look them up at once.
         </p>
       </div>
@@ -58,16 +58,24 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
 
       <div>
         <div className="flex items-baseline justify-between gap-2">
-          <label className="text-[11px] font-medium text-content/60 ml-0.5">
+          <label className="text-[11px] font-medium text-content/95 ml-0.5">
             UPCs
           </label>
-          <span className="text-[10.5px] text-content/60">
-            Separate by comma or new lines
+          <span className="text-[10.5px] text-content/95">
+            Comma or Shift+Enter between UPCs
           </span>
         </div>
         <textarea
           value={rawUpcs}
           onChange={(e) => setRawUpcs(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter looks up, so a scanner's digits-then-Enter gets a result;
+            // Shift+Enter adds a line for typing several by hand.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
           placeholder="Paste one or more UPCs"
           rows={4}
           className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"

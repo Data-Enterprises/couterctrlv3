@@ -1,21 +1,22 @@
-import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+// Hooks
+import { useLookupCtx } from "../../hooks";
+
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+import { marginColor } from "../utils";
 
 interface RecentLookupsStripProps {
   onSelect: (productCode: string) => void;
   variant?: "cards" | "list";
 }
 
-const marginColor = (marginPct: number | null) => {
-  if (marginPct === null) return "text-content/85";
-  return marginPct < 0 ? "text-red-700" : "text-emerald-700";
-};
-
+/** The phone Item lookup's recent lookups: a row of margin cards, or as a list a table of item, qty, amount, unit cost
+ *  and margin. Tapping one looks that item up again; nothing shows when there are none. */
 const RecentLookupsStrip = ({
   onSelect,
   variant = "cards",
 }: RecentLookupsStripProps) => {
-  const { recentLookups } = useAppSelector((s) => s.prod.item);
+  const { recentLookups } = useLookupCtx();
   if (!recentLookups.length) return null;
 
   if (variant === "list") {
@@ -28,21 +29,11 @@ const RecentLookupsStrip = ({
           className="grid gap-2 items-baseline pb-1.5 border-b border-brand_navy/15"
           style={{ gridTemplateColumns: COLS }}
         >
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide">
-            Item
-          </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
-            Qty
-          </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
-            Amount
-          </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
-            U cost
-          </span>
-          <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
-            Margin
-          </span>
+          <span className="text-[10px] cc-caps">Item</span>
+          <span className="text-[10px] cc-caps text-right">Qty</span>
+          <span className="text-[10px] cc-caps text-right">Amount</span>
+          <span className="text-[10px] cc-caps text-right">U cost</span>
+          <span className="text-[10px] cc-caps text-right">Margin</span>
         </div>
         <div className="max-h-[168px] overflow-y-auto thin-scrollbar">
           {recentLookups.map((r) => (
@@ -55,13 +46,13 @@ const RecentLookupsStrip = ({
               <span className="text-[12px] font-medium text-content truncate">
                 {r.description}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {r.qty.toLocaleString()}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {formatCurrency2(r.revenue)}
               </span>
-              <span className="text-[11px] text-content/85 tabular-nums text-right">
+              <span className="text-[11px] text-content/95 tabular-nums text-right">
                 {formatCurrency2(r.unitCost)}
               </span>
               <span
@@ -78,9 +69,7 @@ const RecentLookupsStrip = ({
 
   return (
     <div>
-      <div className="text-[10px] font-semibold text-content/85 uppercase tracking-wide mb-2">
-        Recent lookups
-      </div>
+      <div className="text-[10px] cc-caps mb-2">Recent lookups</div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {recentLookups.map((r) => (
           <button

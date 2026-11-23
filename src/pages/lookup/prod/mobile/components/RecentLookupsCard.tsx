@@ -1,8 +1,11 @@
-import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
-import { formatUnits } from "./lookupMetrics";
+// Hooks
+import { useLookupCtx } from "../../hooks";
 
-interface Props {
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+import { formatUnits } from "../../utils";
+
+interface RecentLookupsCardProps {
   onSelect: (productCode: string) => void;
   /** Inside the result screen's bottom sheet the card shell is already there,
    *  so the list drops its own border and heading. */
@@ -10,23 +13,14 @@ interface Props {
 }
 
 /**
- * Recent lookups, dev only — see `lookupDevView.ts`.
- *
- * The five-column list this replaces gave the item description whatever was
- * left of a 375px screen after four fixed columns and four gaps: 75px, about
- * ten characters. "Picadeli Salad Bar" arrived as "Picadeli S…", so the one
- * column you choose a row by was the one that could not be read.
- *
- * Two lines instead, the same row `PerfDrillList` and the day list use — the
- * name gets the width, and the unit travels with the item rather than living
- * in a header two hundred pixels away.
- *
- * A scale item shows pounds. It rings `qty: 0`, so the old Qty column read
- * zero for everything sold by weight, and there was no weight on the entry to
- * fall back to until `units` was added to `RecentLookup`.
+ * Recent lookups, dev only: two lines per row (as `PerfDrillList`) so the name
+ * gets the width. A scale item shows pounds (it rings `qty: 0`).
  */
-const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
-  const { recentLookups } = useAppSelector((s) => s.prod.item);
+const RecentLookupsCard = ({
+  onSelect,
+  bare = false,
+}: RecentLookupsCardProps) => {
+  const { recentLookups } = useLookupCtx();
   if (!recentLookups.length) return null;
 
   const rows = (
@@ -41,7 +35,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
             key={r.productCode}
             type="button"
             onClick={() => onSelect(r.productCode)}
-            className={`block w-full border-t border-gray-100 px-3.5 py-2.5 text-left active:bg-bkg ${
+            className={`block w-full border-t border-line_hair px-3.5 py-2.5 text-left active:bg-bkg ${
               i === 0 ? "border-t-0" : ""
             } ${i % 2 === 1 ? "bg-row_stripe" : ""}`}
           >
@@ -53,7 +47,7 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
                 {formatCurrency2(r.revenue)}
               </span>
             </div>
-            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/85">
+            <div className="mt-0.5 flex items-baseline gap-3 text-[11px] text-content/95">
               <span className="font-semibold">{r.productCode}</span>
               {units > 0 && (
                 <span className="font-semibold text-content">
@@ -65,7 +59,9 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
               {r.costMissing ? (
                 <span>no cost</span>
               ) : (
-                r.marginPct !== null && <span>{r.marginPct.toFixed(1)}% mgn</span>
+                r.marginPct !== null && (
+                  <span>{r.marginPct.toFixed(1)}% mgn</span>
+                )
               )}
             </div>
           </button>
@@ -77,12 +73,12 @@ const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
   if (bare) return rows;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+    <section className="cc-card-phone">
       <div className="flex items-baseline justify-between gap-2 px-3.5 pb-1.5 pt-2.5">
         <span className="font-display text-[13.5px] font-semibold text-content">
           Recent lookups
         </span>
-        <span className="text-[12px] text-content/85">
+        <span className="text-[12px] text-content/95">
           {recentLookups.length}
         </span>
       </div>

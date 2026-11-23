@@ -1,13 +1,14 @@
-import InfoButton from "../../../../components/InfoButton";
-import { useState } from "react";
-import {
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
-import type { QueueItem } from "../../../../features/itemLookupSlice";
-import LocationTabs from "../../../../components/filters/LocationTabs";
-import InfoPopover from "../../../../components/InfoPopover";
-import { LOOKUP_INFO } from "../lookupInfo";
+// Utils
+import { fmtRangeDate } from "../utils";
+
+// Interfaces
+import type { QueueItem } from "../../../../../features/itemLookupSlice";
+
+// Components
+import BackButton from "../../../../../components/BackButton";
+import { ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import PageInfoButton from "../../../../../components/PageInfoButton";
+import LocationTabs from "../../../../../components/filters/LocationTabs";
 
 interface LookupQueuePanelProps {
   storeName: string;
@@ -20,9 +21,8 @@ interface LookupQueuePanelProps {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-const fmtRangeDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
+/** The Item lookup's left panel: a navy header with the 14-day range and loaded count, the store-location tabs,
+ *  and the list of looked-up items showing margin, an error, or a queued/loading state. */
 const LookupQueuePanel = ({
   storeName,
   queue,
@@ -33,14 +33,12 @@ const LookupQueuePanel = ({
   selectedStoreNumber,
   onStoreNumberChange,
 }: LookupQueuePanelProps) => {
-  const [infoOpen, setInfoOpen] = useState(false);
   const loadedCount = queue.filter(
     (q) => q.status === "loaded" || q.status === "error",
   ).length;
 
-  // The lookup endpoint's 14-day window ends yesterday, not today (today's
-  // sales aren't final yet), and it takes no date param — so this label has
-  // to mirror that same offset rather than just showing "today."
+  // The lookup's 14-day window ends yesterday (today isn't final) and takes no
+  // date, so the label mirrors that offset.
   const end = new Date();
   end.setDate(end.getDate() - 1);
   const start = new Date(end);
@@ -48,16 +46,13 @@ const LookupQueuePanel = ({
   const dateRangeLabel = `${fmtRangeDate(start)} – ${fmtRangeDate(end)}`;
 
   return (
-    <div
-      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0"
-      style={{ width: "25%" }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: "25%" }}>
       <div
         className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
         style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
+          <span className="text-[13px] cc-navy-title flex-shrink-0">
             Item lookup
           </span>
           <span className="text-custom-white text-[10px] flex-shrink-0">
@@ -73,28 +68,14 @@ const LookupQueuePanel = ({
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button
-            onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            aria-label="New search"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex items-center gap-2 cc-navy-header-row">
+          <BackButton onClick={onOpenSearch} helpAnchor="search" />
           <span className="text-[11px] font-medium text-custom-white truncate">
             {storeName}
           </span>
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={LOOKUP_INFO.title}
-                purpose={LOOKUP_INFO.purpose}
-                glossary={LOOKUP_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="item-lookup" />
           </div>
         </div>
       </div>
@@ -105,7 +86,10 @@ const LookupQueuePanel = ({
         onChange={onStoreNumberChange}
       />
 
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
+      <div
+        data-help="item-list"
+        className="flex-1 overflow-y-auto thin-scrollbar"
+      >
         {queue.map((item) => {
           if (item.status === "loaded") {
             const isSelected = item.upc === selectedUpc;
@@ -117,8 +101,8 @@ const LookupQueuePanel = ({
               <button
                 key={item.upc}
                 onClick={() => onSelect(item.upc)}
-                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
-                  isSelected ? "bg-custom-white" : "hover:bg-gray-50"
+                className={`w-full text-left px-3 py-2.5 border-b border-line_hair transition-colors ${
+                  isSelected ? "bg-custom-white" : "hover:bg-fill_soft"
                 }`}
                 style={
                   isSelected
@@ -150,17 +134,18 @@ const LookupQueuePanel = ({
             return (
               <div
                 key={item.upc}
-                className="w-full px-3 py-2.5 border-b border-gray-100"
+                className="w-full px-3 py-2.5 border-b border-line_hair"
               >
                 <div className="flex items-center gap-1.5">
-                  <ExclamationTriangleIcon className="w-3 h-3 text-red-600 flex-shrink-0" />
+                  <ExclamationTriangleIcon className="w-3 h-3 text-brand_danger flex-shrink-0" />
                   <span className="text-[12px] font-medium text-content">
                     {item.upc}
                   </span>
                 </div>
                 <div className="pl-[18px] mt-0.5">
-                  <span className="text-[10.5px] text-red-600">
-                    {item.errorMessage ?? "There was an issue finding this item"}
+                  <span className="text-[10.5px] text-brand_danger">
+                    {item.errorMessage ??
+                      "There was an issue finding this item"}
                   </span>
                 </div>
               </div>
@@ -170,18 +155,18 @@ const LookupQueuePanel = ({
           return (
             <div
               key={item.upc}
-              className="w-full flex items-center gap-2 px-3 py-2.5 border-b border-gray-100"
+              className="w-full flex items-center gap-2 px-3 py-2.5 border-b border-line_hair"
             >
               <div
                 className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                   item.status === "loading"
-                    ? "border-gray-200 border-t-brand_navy animate-spin"
-                    : "border-gray-100"
+                    ? "border-line_field border-t-brand_navy animate-spin"
+                    : "border-line_hair"
                 }`}
               />
               <div>
                 <div className="text-[11.5px] text-content">{item.upc}</div>
-                <div className="text-[9.5px] text-gray-400">
+                <div className="text-[9.5px] text-brand_slate">
                   {item.status === "loading" ? "Loading…" : "Queued"}
                 </div>
               </div>

@@ -246,9 +246,6 @@
     "labels": 1,
     "one-line-per-source": 1
   },
-  "src/features/itemLookupSlice.ts": {
-    "labels": 1
-  },
   "src/features/itemReportSlice.ts": {
     "labels": 1
   },

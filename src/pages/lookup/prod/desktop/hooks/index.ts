@@ -1,7 +1,10 @@
+// Hooks
 import { useCallback, useRef } from "react";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { getItemLookupSingleStore } from "../../../../api/itemLookup";
+import { useAppDispatch } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useLookupCtx } from "../../hooks";
+
+// Redux
 import {
   addRecentLookup,
   setLookupQueue,
@@ -9,25 +12,33 @@ import {
   setLookupSelectedUpc,
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
-} from "../../../../features/itemLookupSlice";
-import { computeMargin, itemDescription } from "../lookupMetrics";
-import { isSaleRow } from "../../../../utils/saleType";
+  type ItemLookupHistory,
+} from "../../../../../features/itemLookupSlice";
+
+// API
+import { getItemLookupSingleStore } from "../../../../../api/itemLookup";
+
+// Utils
+import { isSaleRow } from "../../../../../utils/saleType";
 import {
   scopeToStoreNumber,
   storeNumbersIn,
-} from "../../../../utils/storeIdentity";
-import type { ItemLookupHistory } from "../../../../features/itemLookupSlice";
+} from "../../../../../utils/storeIdentity";
+import { computeMargin, itemDescription, lookupFailureText } from "../../utils";
+import { serverDetail } from "../../../../../utils/serverError";
 
-// The lookup is fetched by storeid, so a co-located storeid returns both
-// locations' line items in one history. Every headline figure is derived from
-// those rows, so scoping the rows re-derives all of them — no refetch needed.
-// Takes every line type: the breakdown counts them all, while everything else
-// is derived from Sale rows only.
+// Interfaces
+
+// The lookup is by storeid, so a co-located storeid returns both locations;
+// scoping the rows re-derives every figure without a refetch. Takes every line
+// type: the breakdown counts them all, the rest counts Sale rows only.
 const deriveTotals = (
   allHistory: ItemLookupHistory[],
   storeNumber: string | null,
 ) => {
-  const scoped = storeNumber ? scopeToStoreNumber(allHistory, storeNumber) : allHistory;
+  const scoped = storeNumber
+    ? scopeToStoreNumber(allHistory, storeNumber)
+    : allHistory;
   const rows = scoped.filter(isSaleRow);
   const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
   const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
@@ -49,13 +60,14 @@ const MAX_CONCURRENT = 15;
 export const useLookupQueue = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
   const {
+    url,
+    token,
     lookupQueue: queue,
     lookupSelectedUpc: selectedUpc,
     availableStoreNumbers,
     selectedStoreNumber,
-  } = useAppSelector((s) => s.prod.item);
+  } = useLookupCtx();
   // Ref so the async batch callbacks below scope against the live value.
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;
@@ -153,19 +165,21 @@ export const useLookupQueue = () => {
                 upc,
                 patch: {
                   status: "error",
-                  errorMessage: "There was an issue finding this item",
+                  errorMessage: lookupFailureText(j.msg),
                 },
               }),
             );
           }
-        } catch {
-          // Network or parse failure — the store was never asked.
+        } catch (err) {
+          // A refusal (store not assigned to you) carries its reason; otherwise
+          // a network or parse failure, and the store was never asked.
           dispatch(
             updateLookupQueueItem({
               upc,
               patch: {
                 status: "error",
-                errorMessage: "There was an issue finding this item",
+                errorMessage:
+                  serverDetail(err) ?? "There was an issue finding this item",
               },
             }),
           );

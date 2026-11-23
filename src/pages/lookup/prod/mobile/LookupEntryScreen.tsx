@@ -1,11 +1,19 @@
+// Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useLookupCtx } from "../hooks";
+import { useScanGun } from "../../../../components/scanner/useScanGun";
+
+// Redux
+import { setSelectedStore } from "../../../../features/itemLookupSlice";
+import { setError } from "../../../../features/itemScanSlice";
+
+// Components
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
-import { setSelectedStore } from "../../../features/itemLookupSlice";
-import DevUpcScanner from "./DevUpcScanner";
-import RecentLookupsStrip from "./RecentLookupsStrip";
-import RecentLookupsCard from "./RecentLookupsCard";
+import SingleStoreSearchCard from "../../../../components/SingleStoreSearchCard";
+import ScannerView from "../../../../components/scanner/ScannerView";
+import RecentLookupsStrip from "./components/RecentLookupsStrip";
+import RecentLookupsCard from "./components/RecentLookupsCard";
 
 interface LookupEntryScreenProps {
   onSearch: (upc: string) => void;
@@ -13,32 +21,23 @@ interface LookupEntryScreenProps {
 }
 
 /**
- * Item Lookup's landing screen.
- *
- * Built on the same `SingleStoreSearchCard` every other mobile page opens with,
- * so the first thing a user sees is the card they already know rather than a
- * page-specific form. No navy header: nothing has been searched yet, so there
- * is no store, week or result for a header to name.
- *
- * What is specific to this page — the scanner, the manual UPC field and the
- * recent list — rides in the card's `children` slot beneath its search button.
- * The card's own date picker is omitted; a lookup takes a code, not a date.
+ * Item Lookup's landing screen, on the same `SingleStoreSearchCard` every
+ * mobile page opens with, without a date picker (a lookup takes a code). The
+ * scanner, the UPC field and the recent list ride in its `children` slot.
  */
 const LookupEntryScreen = ({
   onSearch,
   onSelectRecent,
 }: LookupEntryScreenProps) => {
   const dispatch = useAppDispatch();
-  const { error } = useAppSelector((s) => s.itemScan);
-  const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.prod.item);
+  const { scanError: error, assignedStores, selectedStore } = useLookupCtx();
   const [manualUpc, setManualUpc] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);
 
   const hasStore = selectedStore > 0;
-  // Option A's recents card: on in the dev tree, off in prod until promoted.
-  const devView = false;
+  // Option A's recents card: on in the prod tree, off in prod until promoted.
+  const devView = true;
 
   const handleManualSearch = () => {
     if (!manualUpc.trim() || !hasStore) return;
@@ -50,12 +49,20 @@ const LookupEntryScreen = ({
     onSearch(upc);
   };
 
+  // A scan-gun read is already normalised, so it searches at once; with no
+  // store picked it waits in the field until a store is chosen.
+  const gun = useScanGun((upc) => {
+    if (!hasStore) {
+      setManualUpc(upc);
+      return;
+    }
+    setManualUpc("");
+    handleScan(upc);
+  });
+
   return (
-    // pb-14 clears the fixed bottom tab bar — 56px, outside document flow, so
-    // nothing reserves space for it and the last recent row sits underneath it.
-    // Same fix and value as SalesPerfMobile and the dev result screen. Gated
-    // only because this screen is shared with prod, which is meant to stay
-    // exactly as it is; the bug is there too and this would fix it.
+    // pb-14 clears the fixed 56px bottom tab bar. Gated because this screen is
+    // shared with prod, which stays as it is (the bug is there too).
     <div
       className={`h-[calc(100dvh-3rem)] overflow-y-auto ${devView ? "pb-14" : ""}`}
     >
@@ -71,7 +78,7 @@ const LookupEntryScreen = ({
         >
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-content/15" />
-            <span className="text-[10.5px] text-content/85">
+            <span className="text-[10.5px] text-content/95">
               or scan the barcode
             </span>
             <div className="flex-1 h-px bg-content/15" />
@@ -79,6 +86,8 @@ const LookupEntryScreen = ({
 
           <input
             type="text"
+            ref={gun.ref}
+            inputMode={gun.inputMode}
             value={manualUpc}
             onChange={(e) => setManualUpc(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleManualSearch()}
@@ -89,26 +98,33 @@ const LookupEntryScreen = ({
           <div className="relative">
             {cameraOpen ? (
               <>
-                <DevUpcScanner handleScan={handleScan} retryKey={retryKey} />
+                {/* The shared camera: stops on the read, and `onError` keeps the
+                    message in this screen's own error panel. */}
+                <ScannerView
+                  onDetected={handleScan}
+                  stopOnRead
+                  retryKey={retryKey}
+                  onError={(message) => dispatch(setError(message))}
+                />
                 <button
-                  className="mt-1.5 text-[11.5px] text-content/85 underline"
+                  className="mt-1.5 text-[11.5px] text-content/95 underline"
                   onClick={() => setCameraOpen(false)}
                 >
                   Close camera
                 </button>
                 {error.length > 0 && (
-                  <div className="absolute left-2 right-2 bottom-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  <div className="absolute left-2 right-2 bottom-2 bg-brand_danger_bg border border-brand_danger_line rounded-lg px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <ExclamationTriangleIcon className="w-3.5 h-3.5 text-red-700" />
-                      <span className="text-[12px] font-medium text-red-800">
+                      <ExclamationTriangleIcon className="w-3.5 h-3.5 text-brand_danger" />
+                      <span className="text-[12px] font-medium text-brand_danger">
                         Couldn't read that clearly
                       </span>
                     </div>
-                    <p className="text-[11px] text-red-700 mt-0.5 mb-2">
+                    <p className="text-[11px] text-brand_danger mt-0.5 mb-2">
                       Hold steady and try again, or enter the code above.
                     </p>
                     <button
-                      className="w-full bg-brand_navy text-custom-white text-[11.5px] rounded-md py-1.5"
+                      className="w-full bg-brand_navy active:bg-brand_navy_hover text-custom-white text-[11.5px] rounded-md py-1.5"
                       onClick={() => setRetryKey((k) => k + 1)}
                     >
                       Try scanning again

@@ -1,6 +1,9 @@
-import type { SaleTypeSummary } from "../../../features/itemLookupSlice";
-import { formatCurrency2 } from "../../../utils";
-import { formatUnits, hasSaleTypeBreakdown } from "./lookupMetrics";
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+import { formatUnits, hasSaleTypeBreakdown } from "../../utils";
+
+// Interfaces
+import type { SaleTypeSummary } from "../../../../../features/itemLookupSlice";
 
 interface SaleTypeBreakdownProps {
   saleTypes: SaleTypeSummary[];
@@ -14,16 +17,10 @@ interface SaleTypeBreakdownProps {
 }
 
 /**
- * The window split by register line type — Sale, then Backup (restored
- * transactions), Cancelled and Voided by dollars.
- *
- * Every other figure on the screen counts Sale only, which is how the
- * endpoint's own totals count. This is where the rest show up, each against
- * Sale dollars so a $0.85 cancellation reads as the rounding error it is and a
- * $90 one doesn't.
- *
- * Each row is a button: picking a type swaps the daily breakdown to that
- * type's timeline. Picking it again, or picking Sale, goes back.
+ * The window split by register line type: Sale, then Backup (restored
+ * transactions), Cancelled and Voided, by dollars, each against Sale dollars.
+ * Every other figure counts Sale only. Picking a row swaps the daily
+ * breakdown to that type; picking it again, or Sale, goes back.
  */
 const SaleTypeBreakdown = ({
   saleTypes,
@@ -47,7 +44,7 @@ const SaleTypeBreakdown = ({
   return (
     <div>
       <div
-        className={`${grid} ${px} py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100`}
+        className={`${grid} ${px} py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-line_hair`}
         style={gridStyle}
       >
         <span>Sale type</span>
@@ -65,16 +62,18 @@ const SaleTypeBreakdown = ({
             key={s.saleType}
             type="button"
             aria-pressed={isSelected}
-            onClick={() => onSelect(isSelected && !isSale ? "Sale" : s.saleType)}
+            onClick={() =>
+              onSelect(isSelected && !isSale ? "Sale" : s.saleType)
+            }
             title={
               isSelected && !isSale
                 ? "Back to the sales timeline"
                 : `Show the ${s.saleType.toLowerCase()} timeline`
             }
-            className={`${grid} ${px} w-full py-2 text-left text-[12px] tabular-nums border-b border-gray-50 border-l-2 transition-colors ${
+            className={`${grid} ${px} w-full py-2 text-left text-[12px] tabular-nums border-b border-line_faint border-l-2 transition-colors ${
               isSelected
                 ? "bg-row_selected border-l-brand_navy font-semibold text-content"
-                : "border-l-transparent text-content hover:bg-gray-50"
+                : "border-l-transparent text-content hover:bg-fill_soft"
             }`}
             style={gridStyle}
           >
@@ -85,7 +84,7 @@ const SaleTypeBreakdown = ({
             {weighed && (
               <span className="text-right">{formatUnits(s.units, true)}</span>
             )}
-            <span className="text-right text-content/85">
+            <span className="text-right text-content/95">
               {isSale || saleDollars <= 0
                 ? "—"
                 : `${((s.sales / saleDollars) * 100).toFixed(2)}%`}
