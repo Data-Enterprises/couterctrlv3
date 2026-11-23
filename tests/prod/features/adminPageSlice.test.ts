@@ -56,7 +56,7 @@ describe("Admin's Sub dept exclusions state", () => {
       setSubExclCatalog({ rows: [], loadedFor: "1201|120" }),
     );
     store.dispatch(resetAppSlice());
-    const s = store.getState().dev.adminPage;
+    const s = store.getState().prod.adminPage;
     expect(s.subExclCompanyId).toBe("");
     expect(s.subExclSearch).toBe("");
     expect(s.subExclHashOnly).toBe(false);
