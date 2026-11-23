@@ -102,6 +102,9 @@ interface CashiersState {
   // exception explorer (dev desktop) — kept separate from the transList
   // fields above, which the mobile view and its own drill-down still own.
   explorerSaleTypes: string[];
+  // The scope and dates explorerSaleTypes was found for; once the search
+  // moves off them, the list is stale and the card asks to find again.
+  explorerPreflightScope: string;
   explorerException: string;
   // What the loaded rows were actually fetched for. Kept apart from
   // explorerException (the dropdown) so changing the dropdown in the re-search
@@ -185,6 +188,7 @@ const initialState: CashiersState = {
   filteredTransOverviews: [],
   transactionLoadingMessage: "",
   explorerSaleTypes: [],
+  explorerPreflightScope: "",
   explorerException: "",
   explorerFetchedException: "",
   explorerAllRows: [],
@@ -429,6 +433,9 @@ const cashiersSlice = createSlice({
     setExplorerSaleTypes: (state, action: PayloadAction<string[]>) => {
       state.explorerSaleTypes = action.payload;
     },
+    setExplorerPreflightScope: (state, action: PayloadAction<string>) => {
+      state.explorerPreflightScope = action.payload;
+    },
     setExplorerException: (state, action: PayloadAction<string>) => {
       state.explorerException = action.payload;
     },
@@ -556,6 +563,7 @@ export const {
   setFilteredTransOverviews,
   setTransactionLoadingMessage,
   setExplorerSaleTypes,
+  setExplorerPreflightScope,
   setExplorerException,
   setExplorerLens,
   setExplorerSignalKey,

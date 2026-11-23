@@ -1,11 +1,12 @@
 // Hooks
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Redux
 import {
   setExplorerSaleTypes,
+  setExplorerPreflightScope,
   setExplorerException,
   setExplorerLoading,
   setExplorerMessage,
@@ -107,9 +108,6 @@ export const useCashierSignals = () => {
  */
 export const useDesktopExplorer = (ctx: ReturnType<typeof useCashierCtx>) => {
   const toast = useToast();
-  // Distinguishes "preflight ran and found nothing" from "preflight hasn't run
-  // yet" — both leave explorerSaleTypes empty.
-  const [preflightRan, setPreflightRan] = useState<boolean>(false);
 
   const scopeArgs = () => ({
     start: formatGoliathDate(ctx.startDate),
@@ -118,6 +116,20 @@ export const useDesktopExplorer = (ctx: ReturnType<typeof useCashierCtx>) => {
     singleStore: ctx.type === "Store" ? 1 : 0,
     searchValue: isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore,
   });
+
+  /** The store or group and dates a preflight answers for. */
+  const scopeKey = () => {
+    const { start, end, searchValue } = scopeArgs();
+    return `${ctx.type}|${searchValue}|${start}|${end}`;
+  };
+
+  // The exception list only answers for the scope and dates it was found for.
+  // Once the search moves off them it is stale, so the card shows Find
+  // exceptions again. Also tells "ran and found nothing" from "hasn't run".
+  const preflightRan =
+    ctx.explorerPreflightScope !== "" &&
+    ctx.explorerPreflightScope === scopeKey();
+  const saleTypes = preflightRan ? ctx.explorerSaleTypes : [];
 
   const scopeLabel = () =>
     isGroupSearch(ctx.type)
@@ -132,9 +144,11 @@ export const useDesktopExplorer = (ctx: ReturnType<typeof useCashierCtx>) => {
   // exceptions even occurred depends on the scope and dates just chosen.
   const runPreflight = () => {
     const { start, end, useGroups, searchValue, singleStore } = scopeArgs();
+    const scope = scopeKey();
     ctx.dispatch(setExplorerLoading(true));
     ctx.dispatch(setExplorerMessage("Finding exceptions…"));
     ctx.dispatch(setExplorerSaleTypes([]));
+    ctx.dispatch(setExplorerPreflightScope(""));
     ctx.dispatch(setExplorerException(""));
 
     getSaleTypes(
@@ -154,7 +168,7 @@ export const useDesktopExplorer = (ctx: ReturnType<typeof useCashierCtx>) => {
             .map((t) => t.sale_type)
             .filter((t) => t !== "Tender");
           ctx.dispatch(setExplorerSaleTypes(types));
-          setPreflightRan(true);
+          ctx.dispatch(setExplorerPreflightScope(scope));
         } else {
           toast.warn(j.msg);
         }
@@ -263,5 +277,5 @@ export const useDesktopExplorer = (ctx: ReturnType<typeof useCashierCtx>) => {
     }
   };
 
-  return { runPreflight, runExplore, preflightRan };
+  return { runPreflight, runExplore, preflightRan, saleTypes };
 };

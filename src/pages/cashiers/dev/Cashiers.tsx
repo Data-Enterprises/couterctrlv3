@@ -30,7 +30,8 @@ const Cashiers = () => {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [exportOpen, setExportOpen] = useState<boolean>(false);
   const [signalSearch, setSignalSearch] = useState<string>("");
-  const { runPreflight, runExplore, preflightRan } = useDesktopExplorer(ctx);
+  const { runPreflight, runExplore, preflightRan, saleTypes } =
+    useDesktopExplorer(ctx);
   const { exceptionRows, transactionLengths, totals, signals } =
     useCashierSignals();
 
@@ -49,7 +50,7 @@ const Cashiers = () => {
 
   // The entry card and the re-search pop-up are the same card.
   const searchProps = {
-    saleTypes: ctx.explorerSaleTypes,
+    saleTypes,
     exception: ctx.explorerException,
     onExceptionChange: (v: string) => ctx.dispatch(setExplorerException(v)),
     onFindExceptions: runPreflight,
@@ -61,7 +62,7 @@ const Cashiers = () => {
     message: ctx.explorerMessage,
     rangeDays,
     maxRangeDays: MAX_RANGE_DAYS,
-    noExceptionsFound: preflightRan && ctx.explorerSaleTypes.length === 0,
+    noExceptionsFound: preflightRan && saleTypes.length === 0,
   };
 
   if (ctx.isMobile) return <CashiersMobile />;
