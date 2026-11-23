@@ -147,7 +147,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto p-4">
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto p-4">
         {store === null ? (
           <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select a store

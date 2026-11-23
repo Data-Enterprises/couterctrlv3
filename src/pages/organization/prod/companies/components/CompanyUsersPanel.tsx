@@ -209,7 +209,7 @@ const CompanyUsersPanel = ({
   });
 
   return (
-    <div className="w-full" data-help="companies">
+    <div className="w-full flex-1 min-h-0 flex flex-col" data-help="companies">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div>
           <span className="text-[15px] font-semibold text-content">
@@ -243,6 +243,7 @@ const CompanyUsersPanel = ({
       )}
 
       <AssignPanel
+        fill
         leftTitle="Not in this company"
         rightTitle="In this company"
         leftItems={unassigned.map(toItem)}

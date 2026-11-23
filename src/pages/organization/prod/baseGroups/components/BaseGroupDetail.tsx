@@ -205,7 +205,7 @@ const BaseGroupDetail = ({
   const unassigned = stores?.unassigned ?? [];
 
   return (
-    <div>
+    <div className="flex-1 min-h-0 flex flex-col">
       <div className="flex items-center gap-1">
         {editing ? (
           <input
@@ -272,7 +272,7 @@ const BaseGroupDetail = ({
         (!stores ? (
           <div className="text-[11.5px] text-content/95">Loading…</div>
         ) : (
-          <div data-help="assign" className="w-full">
+          <div data-help="assign" className="w-full flex-1 min-h-0 flex flex-col">
             {/* One call per store, and each reaches every user holding this
                 group, so say it is working. */}
             <div className="h-4 mb-1">
@@ -296,6 +296,7 @@ const BaseGroupDetail = ({
               onAssign={handleAssign}
               onUnassign={handleUnassign}
               moving={moving}
+              fill
               confirmBulk={(direction, ids) =>
                 groupStoresConfirm({
                   direction,
