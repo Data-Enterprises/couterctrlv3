@@ -87,5 +87,6 @@ export const promoteTestImports = (src, page) => {
       .replaceAll(`@/pages/${page}/dev"`, `@/pages/${page}/prod"`);
   return out
     .replace(/@\/components-dev\//g, "@/components/")
-    .replace(/@\/features\/dev\/dev(\w)(\w*Slice)/g, (m, c, rest) => `@/features/${c.toLowerCase()}${rest}`);
+    .replace(/@\/features\/dev\/dev(\w)(\w*Slice)/g, (m, c, rest) => `@/features/${c.toLowerCase()}${rest}`)
+    .replace(/getState\(\)\.dev\./g, "getState().prod.");
 };
