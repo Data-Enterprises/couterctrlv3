@@ -1,13 +1,11 @@
+// Hooks
 import { useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { isSupportUser } from "../../../utils/supportUsers";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 
-/** The only level that may create, rename or delete a company. That changes the
- *  tenancy itself, not what someone is looking at, so it stays here alone. */
-export const PROGRAMMER_LEVEL = 9;
-
-/** Below this, Admin is not theirs to open at all. */
-export const ADMIN_MIN_LEVEL = 5;
+// Utils
+import { isSupportUser } from "../../../../utils/supportUsers";
+import { PROGRAMMER_LEVEL } from "../../../../utils/userLevels";
+import { ADMIN_MIN_LEVEL } from "../utils";
 
 /**
  * Admin's flat context, scoped to the signed-in user.
@@ -25,6 +23,7 @@ export const ADMIN_MIN_LEVEL = 5;
 export const useAdminPageCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const {
     userid,
     userLevel,
@@ -41,6 +40,18 @@ export const useAdminPageCtx = () => {
     filteredStoresActivity,
     isLoadingStoreActivity,
     storeNameFilter,
+    storeRecords,
+    storeSearch,
+    storeCompanyFilter,
+    storeStatusFilter,
+    subExclStores,
+    subExclCompanyId,
+    subExclStoreKey,
+    subExclSearch,
+    subExclHashOnly,
+    subExclCatalog,
+    subExclExclusions,
+    subExclLoadedFor,
   } = useAppSelector((state) => state.prod.adminPage);
 
   /**
@@ -98,8 +109,14 @@ export const useAdminPageCtx = () => {
     dispatch,
     url,
     token,
+    /** The search dates Store activity runs on. */
+    startDate,
+    endDate,
     userid,
     userLevel,
+    /** The companies the signed-in person holds, as the login response gave
+     *  them. `.company` is the company id; `.id` is the assignment row. */
+    userCompanies,
     isProgrammer,
     canSeeAllStores,
     canOpenAdmin,
@@ -112,5 +129,17 @@ export const useAdminPageCtx = () => {
     filteredStoresActivity: scopedFiltered,
     isLoadingStoreActivity,
     storeNameFilter,
+    storeRecords,
+    storeSearch,
+    storeCompanyFilter,
+    storeStatusFilter,
+    subExclStores,
+    subExclCompanyId,
+    subExclStoreKey,
+    subExclSearch,
+    subExclHashOnly,
+    subExclCatalog,
+    subExclExclusions,
+    subExclLoadedFor,
   };
 };

@@ -200,9 +200,6 @@
   "src/content/releaseNotes.ts": {
     "labels": 1
   },
-  "src/features/adminPageSlice.ts": {
-    "labels": 1
-  },
   "src/features/appSlice.ts": {
     "labels": 1
   },

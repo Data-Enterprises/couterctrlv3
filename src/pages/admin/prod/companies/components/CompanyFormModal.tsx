@@ -1,33 +1,45 @@
+// Hooks
 import { useState } from "react";
-import Input from "../../../components/inputs/Input";
-import type { Company } from "../../../interfaces";
+
+// Utils
+import { membersOf, parentChoices, blankCompany, canSubmit } from "../utils";
+
+// Interfaces
+import type { Company } from "../../../../../interfaces";
+import type { CompanyRecord } from "../interfaces";
+
+// Components
+import Input from "../../../../../components/inputs/Input";
+import CompanyFamilyField from "./CompanyFamilyField";
 
 interface CompanyFormModalProps {
-  initial: Company | null;
+  initial: CompanyRecord | null;
   existingNames: string[];
-  onSave: (form: Company) => void;
+  /** Every company the current user manages. */
+  companies: CompanyRecord[];
+  /** `parent` is the chosen parent's id, or null to stand alone. */
+  onSave: (form: Company, parent: number | null) => void;
   onClose: () => void;
 }
 
-const blank: Company = {
-  id: 0,
-  address: "",
-  city: "",
-  contact_email: "",
-  name: "",
-  phone: "",
-  state: "",
-  zip: 0,
-};
-
+/** The pop-up form to add or edit a company: name, address, phone, contact email and an optional parent
+ *  company (or none, to stand alone). */
 const CompanyFormModal = ({
   initial,
   existingNames,
+  companies,
   onSave,
   onClose,
 }: CompanyFormModalProps) => {
-  const [form, setForm] = useState<Company>(initial ?? blank);
+  const [form, setForm] = useState<Company>(initial ?? blankCompany);
   const isCreate = !initial;
+  const [parent, setParent] = useState<number | null>(
+    initial?.parent_company_id ?? null,
+  );
+
+  const parentOptions = parentChoices(companies, initial?.id);
+  const members = membersOf(companies, initial?.id);
+  const isParent = members.length > 0;
 
   const set = (key: keyof Company) => (val: string) =>
     setForm((prev) => ({ ...prev, [key]: key === "zip" ? Number(val) : val }));
@@ -37,18 +49,10 @@ const CompanyFormModal = ({
     form.name.trim() !== "" &&
     existingNames.some((n) => n.toLowerCase() === form.name.toLowerCase());
 
-  const canSubmit =
-    form.name !== "" &&
-    form.address !== "" &&
-    form.city !== "" &&
-    form.contact_email !== "" &&
-    form.state !== "" &&
-    form.zip !== 0 &&
-    form.phone !== "" &&
-    !alreadyExists;
+  const ok = canSubmit(form) && !alreadyExists;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div className="cc-modal-backdrop z-50">
       <div className="bg-custom-white rounded-xl p-5 w-[440px] shadow-2xl">
         <div className="text-[14px] font-medium text-content mb-3">
           {isCreate ? "New company" : `Edit ${initial.name}`}
@@ -63,7 +67,7 @@ const CompanyFormModal = ({
               className="py-1.5 text-[13px]"
             />
             {alreadyExists && (
-              <div className="text-[10px] text-red-600 mt-1">
+              <div className="text-[10px] text-brand_danger mt-1">
                 Company name already exists
               </div>
             )}
@@ -106,22 +110,29 @@ const CompanyFormModal = ({
               className="py-1.5 text-[13px]"
             />
           </div>
+
+          <CompanyFamilyField
+            members={members}
+            parentOptions={parentOptions}
+            parent={parent}
+            setParent={setParent}
+          />
         </div>
 
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-gray-200 text-content"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-line_field text-content"
           >
             Cancel
           </button>
           <button
-            onClick={() => onSave(form)}
-            disabled={!canSubmit}
+            onClick={() => onSave(form, isParent ? null : parent)}
+            disabled={!ok}
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
-              canSubmit
-                ? "bg-brand_navy hover:bg-brand_navy/85"
-                : "bg-gray-300 cursor-not-allowed"
+              ok
+                ? "bg-brand_navy hover:bg-brand_navy_hover"
+                : "bg-fill_track_strong cursor-not-allowed"
             }`}
           >
             {isCreate ? "Create company" : "Save changes"}

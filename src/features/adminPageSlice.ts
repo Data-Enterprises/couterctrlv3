@@ -1,5 +1,10 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Company, StoreWithActivity } from "../interfaces";
+
+// Interfaces
+import type { Company, Store, StoreWithActivity } from "../interfaces";
+import type { SubDeptCatalogRow, SubDeptExclusionRow } from "../api/subDeptExclusions";
 
 export const defaultComp: Company = {
   id: 0,
@@ -12,7 +17,17 @@ export const defaultComp: Company = {
   zip: 0,
 };
 
-export type AdminForm = "companies" | "store_activity" | "new_store_name";
+export type AdminForm =
+  | "companies"
+  | "store_activity"
+  | "store_records"
+  | "sub_exclusions";
+
+/** The Stores tab's status choice. */
+export type StatusFilter = "all" | "open" | "closed";
+
+/** The Sub dept exclusions tab's "every store" choice; matches `ALL_STORES` in its utils. */
+export const SUB_EXCL_ALL_STORES = "__all__";
 
 interface AdminPageState {
   companies: Company[];
@@ -23,6 +38,23 @@ interface AdminPageState {
   isLoadingStoreActivity: boolean;
   storeNameFilter: string;
   adminForm: AdminForm;
+  // The Stores tab: its list (null until loaded) and its three filters.
+  storeRecords: Store[] | null;
+  storeSearch: string;
+  storeCompanyFilter: string;
+  storeStatusFilter: StatusFilter;
+  // The Sub dept exclusions tab: its store list (null until loaded), its
+  // filters, and the catalogue and exclusions read for `subExclLoadedFor`.
+  subExclStores: Store[] | null;
+  subExclCompanyId: string;
+  subExclStoreKey: string;
+  subExclSearch: string;
+  subExclHashOnly: boolean;
+  subExclCatalog: SubDeptCatalogRow[] | null;
+  subExclExclusions: SubDeptExclusionRow[];
+  /** The scope and window the catalogue was read for (`storeids|days`), so a
+   *  return to the tab reuses it instead of reading every store again. */
+  subExclLoadedFor: string | null;
 }
 
 const initialState: AdminPageState = {
@@ -34,6 +66,18 @@ const initialState: AdminPageState = {
   isLoadingStoreActivity: false,
   storeNameFilter: "",
   adminForm: "companies",
+  storeRecords: null,
+  storeSearch: "",
+  storeCompanyFilter: "",
+  storeStatusFilter: "all",
+  subExclStores: null,
+  subExclCompanyId: "",
+  subExclStoreKey: SUB_EXCL_ALL_STORES,
+  subExclSearch: "",
+  subExclHashOnly: false,
+  subExclCatalog: null,
+  subExclExclusions: [],
+  subExclLoadedFor: null,
 };
 
 const adminPageSlice = createSlice({
@@ -84,6 +128,46 @@ const adminPageSlice = createSlice({
     setStoreNameFilter: (state, action: PayloadAction<string>) => {
       state.storeNameFilter = action.payload;
     },
+    setStoreRecords: (state, action: PayloadAction<Store[] | null>) => {
+      state.storeRecords = action.payload;
+    },
+    setStoreSearch: (state, action: PayloadAction<string>) => {
+      state.storeSearch = action.payload;
+    },
+    setStoreCompanyFilter: (state, action: PayloadAction<string>) => {
+      state.storeCompanyFilter = action.payload;
+    },
+    setStoreStatusFilter: (state, action: PayloadAction<StatusFilter>) => {
+      state.storeStatusFilter = action.payload;
+    },
+    setSubExclStores: (state, action: PayloadAction<Store[] | null>) => {
+      state.subExclStores = action.payload;
+    },
+    /** A new company also goes back to every store: a store from the last
+     *  company is not a store in this one. */
+    setSubExclCompanyId: (state, action: PayloadAction<string>) => {
+      state.subExclCompanyId = action.payload;
+      state.subExclStoreKey = SUB_EXCL_ALL_STORES;
+    },
+    setSubExclStoreKey: (state, action: PayloadAction<string>) => {
+      state.subExclStoreKey = action.payload;
+    },
+    setSubExclSearch: (state, action: PayloadAction<string>) => {
+      state.subExclSearch = action.payload;
+    },
+    setSubExclHashOnly: (state, action: PayloadAction<boolean>) => {
+      state.subExclHashOnly = action.payload;
+    },
+    setSubExclCatalog: (
+      state,
+      action: PayloadAction<{ rows: SubDeptCatalogRow[] | null; loadedFor: string | null }>,
+    ) => {
+      state.subExclCatalog = action.payload.rows;
+      state.subExclLoadedFor = action.payload.loadedFor;
+    },
+    setSubExclExclusions: (state, action: PayloadAction<SubDeptExclusionRow[]>) => {
+      state.subExclExclusions = action.payload;
+    },
     resetAdminPageState: () => initialState,
   },
 });
@@ -99,6 +183,17 @@ export const {
   setFilteredCompanyStoresActivity,
   setIsLoadingStoreActivity,
   setStoreNameFilter,
+  setStoreRecords,
+  setStoreSearch,
+  setStoreCompanyFilter,
+  setStoreStatusFilter,
+  setSubExclStores,
+  setSubExclCompanyId,
+  setSubExclStoreKey,
+  setSubExclSearch,
+  setSubExclHashOnly,
+  setSubExclCatalog,
+  setSubExclExclusions,
   resetAdminPageState,
 } = adminPageSlice.actions;
 export default adminPageSlice.reducer;
