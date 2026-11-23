@@ -1,11 +1,22 @@
-import type { CouponItem, Store } from "../../../../interfaces";
+// Utils
 import { formatDateSimple } from "../../../../utils";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
+import {
+  couponValueOf,
+  usesFallbackValue,
+  sumCouponAmount,
+} from "../../../../utils/couponValue";
+
+// Interfaces
+import type { CouponItem, Store } from "../../../../interfaces";
 import type {
   CouponTier,
   CouponBreakdown,
   CouponMetric,
 } from "../../../../features/couponSalesSlice";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 
 /**
  * Coupon Sales asks two questions about the average value of a single coupon,
@@ -39,11 +50,6 @@ export const avgCouponAmount = (amount: number, lines: number): number =>
 // Coupon value + null-fallback handling lives in utils/couponValue — the
 // Coupons page needs the identical rule, and the two must not drift.
 // Re-exported so this module stays the single import for grading callers.
-import {
-  couponValueOf,
-  usesFallbackValue,
-  sumCouponAmount,
-} from "../../../../utils/couponValue";
 export { couponValueOf, usesFallbackValue, sumCouponAmount };
 
 /** Percentage move of this week's average against the baseline average.
@@ -96,14 +102,14 @@ export const couponDotClass: Record<CouponTier, string> = {
   critical: "bg-red-500",
   watch: "bg-amber-500",
   ok: "bg-emerald-500",
-  ungraded: "bg-gray-300",
+  ungraded: "bg-fill_track_strong",
 };
 
 /** Solid header tint for the detail panel, mirroring severityHeaderBgClass —
  *  LP and Sales both announce the selected row's grade in the panel header
  *  rather than leaving it flat navy. */
 export const couponHeaderBgClass: Record<CouponTier, string> = {
-  critical: "bg-red-600",
+  critical: "bg-brand_danger",
   watch: "bg-amber-500",
   ok: "bg-emerald-600",
   ungraded: "bg-brand_navy",
@@ -113,7 +119,7 @@ export const couponPillClass: Record<CouponTier, string> = {
   critical: "bg-severity_critical_bg text-severity_critical_text",
   watch: "bg-severity_watch_bg text-severity_watch_text",
   ok: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-gray-400",
+  ungraded: "bg-fill_muted text-brand_slate",
 };
 
 /** One graded row, whatever it's grouped by. Stores, sub departments, dates
@@ -225,7 +231,10 @@ const buildRows = (
    *  row's own key, and only differs where baselineKeyOf does. */
   lookupKeyOf: (c: CouponItem) => string = keyOf,
 ): CouponRow[] => {
-  const groups = new Map<string, { label: string; rows: CouponItem[]; sample: CouponItem }>();
+  const groups = new Map<
+    string,
+    { label: string; rows: CouponItem[]; sample: CouponItem }
+  >();
   for (const c of coupons) {
     const key = keyOf(c);
     const existing = groups.get(key);
@@ -347,8 +356,11 @@ export const cashierKeyOf = (c: CouponItem): string =>
   c.cashier_name || "unknown";
 
 export const buildCashierRows = (coupons: CouponItem[], opts: GradingOptions) =>
-  buildRows(coupons, opts, cashierKeyOf, (c) =>
-    c.cashier_name || "Unknown cashier",
+  buildRows(
+    coupons,
+    opts,
+    cashierKeyOf,
+    (c) => c.cashier_name || "Unknown cashier",
   );
 
 // Keyed on the product code, NOT the description — unlike sub dept and cashier
@@ -365,8 +377,11 @@ export const itemKeyOf = (c: CouponItem): string =>
     : c.product_description;
 
 export const buildItemRows = (coupons: CouponItem[], opts: GradingOptions) =>
-  buildRows(coupons, opts, itemKeyOf, (c) =>
-    c.product_description || c.product_code || "Unknown item",
+  buildRows(
+    coupons,
+    opts,
+    itemKeyOf,
+    (c) => c.product_description || c.product_code || "Unknown item",
   );
 
 export const buildBreakdownRows = (
@@ -442,7 +457,9 @@ export const buildTransactions = (
         qty: t.qty,
         lines: t.lines,
         avgAmount: t.avgAmount,
-        tier: (isCouponOutlier(t.avgAmount, threshold) ? "critical" : "ok") as CouponTier,
+        tier: (isCouponOutlier(t.avgAmount, threshold)
+          ? "critical"
+          : "ok") as CouponTier,
         items: [...items].sort((a, b) => a.line_number - b.line_number),
       };
     })
@@ -450,4 +467,34 @@ export const buildTransactions = (
       (a, b) =>
         TIER_RANK[a.tier] - TIER_RANK[b.tier] || b.avgAmount - a.avgAmount,
     );
+};
+
+/** A coupon row's sale day as yyyy-mm-dd, and a day's weekday number. */
+export const isoOf = (c: CouponItem) => c.sale_date.split("T")[0];
+export const weekdayOf = (iso: string) => new Date(iso + "T12:00:00").getDay();
+
+/** The average coupon amount over rows, or null with none. */
+export const avgOf = (rows: CouponItem[]): number | null =>
+  rows.length === 0
+    ? null
+    : avgCouponAmount(sumCouponAmount(rows), rows.length);
+
+/** The store list's Trend / Avg $ toggle. */
+export const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
+  { key: "trend", label: "Trend" },
+  { key: "avg", label: "Avg $" },
+];
+
+/** One week-ending date (MM/DD/YYYY) drives both windows, matching LP: the
+ *  week is end-6..end and the baseline the two weeks before it, end-20..end-7. */
+export const weekWindow = (singleDate: string) => {
+  const [m, d, y] = singleDate.split("/").map(Number);
+  const pad = (dt: Date) =>
+    `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  return {
+    weekEnd: pad(new Date(y, m - 1, d)),
+    weekStart: pad(new Date(y, m - 1, d - 6)),
+    baseEnd: pad(new Date(y, m - 1, d - 7)),
+    baseStart: pad(new Date(y, m - 1, d - 20)),
+  };
 };

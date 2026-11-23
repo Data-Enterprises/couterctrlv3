@@ -213,9 +213,6 @@
   "src/features/companySlice.ts": {
     "labels": 1
   },
-  "src/features/couponSalesSlice.ts": {
-    "labels": 1
-  },
   "src/features/ctxMenuSlice.ts": {
     "labels": 1
   },

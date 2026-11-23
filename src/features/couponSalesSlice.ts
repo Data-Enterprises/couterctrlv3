@@ -1,4 +1,8 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type { CouponItem, TransactionListItem } from "../interfaces";
 
 /** Coupon Sales grades on a dollar amount, not a percentage change, and there
@@ -44,6 +48,9 @@ interface CouponSalesState {
   baselineCoupons: CouponItem[];
   isFetching: boolean;
   hasSearched: boolean;
+  /** The search date (MM/DD/YYYY) the coupons were fetched for; the range
+   *  label reads it, not the live picker, which other pages move. */
+  searchedDate: string | null;
   noCouponsFound: boolean;
 
   /** null while the numeric input is being cleared; the page keeps grading
@@ -67,6 +74,17 @@ interface CouponSalesState {
   /** Lines of the receipt open in the detail panel; empty when none is. Was
    *  parked in LP's slice (transactionDrillDown) — Coupon Sales keeps its own. */
   receiptLines: TransactionListItem[];
+  /**
+   * The phone layout's week of coupon lines, every line of every sale, so
+   * opening a receipt is a filter, not a fetch.
+   *
+   * In the store rather than in the module: the sales they belong to live in
+   * the eventPerf slice and survive leaving the page, so the lines have to as
+   * well, or every receipt read "No lines came back" on the way back in. A
+   * module variable did that but also outlived sign-out, which left the last
+   * user's lines in memory. Here sign-out clears them with everything else.
+   */
+  mobileLines: CouponItem[];
 }
 
 const initialState: CouponSalesState = {
@@ -74,6 +92,7 @@ const initialState: CouponSalesState = {
   baselineCoupons: [],
   isFetching: false,
   hasSearched: false,
+  searchedDate: null,
   noCouponsFound: false,
   threshold: COUPON_THRESHOLD_DEFAULT,
   trendThreshold: COUPON_TREND_THRESHOLD_DEFAULT,
@@ -86,6 +105,7 @@ const initialState: CouponSalesState = {
   sectionFilter: "",
   exportOpen: false,
   receiptLines: [],
+  mobileLines: [],
 };
 
 const couponSalesSlice = createSlice({
@@ -100,6 +120,9 @@ const couponSalesSlice = createSlice({
     },
     setCouponSalesFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
+    },
+    setCouponSalesSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
     },
     setCouponSalesHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
@@ -149,6 +172,9 @@ const couponSalesSlice = createSlice({
     setCouponReceiptLines: (state, action: PayloadAction<TransactionListItem[]>) => {
       state.receiptLines = action.payload;
     },
+    setCouponMobileLines: (state, action: PayloadAction<CouponItem[]>) => {
+      state.mobileLines = action.payload;
+    },
     reQueryCouponSales: (state) => {
       state.coupons = [];
       state.noCouponsFound = false;
@@ -169,6 +195,7 @@ export const {
   setCouponBaseline,
   setCouponSalesFetching,
   setCouponSalesHasSearched,
+  setCouponSalesSearchedDate,
   setNoCouponSalesFound,
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -181,6 +208,7 @@ export const {
   setCouponSectionFilter,
   setCouponExportOpen,
   setCouponReceiptLines,
+  setCouponMobileLines,
   reQueryCouponSales,
   resetCouponSalesState,
 } = couponSalesSlice.actions;

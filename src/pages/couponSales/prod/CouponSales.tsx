@@ -1,196 +1,70 @@
-import { useMemo, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getCoupons } from "../../../api/coupons";
-import type { CouponItem } from "../../../interfaces";
+// Hooks
+import { useState } from "react";
+import {
+  useCouponSalesCtx,
+  useCouponSalesGrading,
+  useCouponSalesSearch,
+} from "./hooks";
 import { useApiContext } from "../../../hooks/useApiContext";
-import EventPerfMobile from "../../shared/eventPerf/prod/EventPerfMobile";
+
+// Redux
+import { setCouponMobileLines } from "../../../features/couponSalesSlice";
+
+// API
 import {
   couponReceipt,
   fetchCouponEvents,
 } from "../../../api/eventPerf/couponAdapter";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Utils
 import { formatDateSimple } from "../../../utils";
-import { setSelectedGroupStores } from "../../../features/userSlice";
-import {
-  setCouponSalesData,
-  setCouponSalesFetching,
-  setCouponSalesHasSearched,
-  setNoCouponSalesFound,
-  reQueryCouponSales,
-  COUPON_THRESHOLD_DEFAULT,
-  COUPON_TREND_THRESHOLD_DEFAULT,
-  setCouponBaseline,
-} from "../../../features/couponSalesSlice";
-import type { CouponsResponse, JsonError } from "../../../interfaces";
+import { weekWindow } from "./utils";
+
+// Components
 import SearchCard from "../../../components/SearchCard";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components/EmptyPrompt";
-import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
-import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
-import CpnSalesExportModal from "./components/CpnSalesExportModal";
-import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
-import { isGroupSearch } from "../../../features/searchSlice";
-import { COUPON_SALES_MOBILE_INFO } from "./couponSalesInfo";
+import EventPerfMobile from "../../../components/eventPerf/EventPerfMobile";
+import SearchPopup from "../../../components/SearchPopup";
+import CpnSalesStorePanel from "./storePanel/CpnSalesStorePanel";
+import CpnSalesDetailPanel from "./detail/CpnSalesDetailPanel";
+import CpnSalesExportModal from "./export/CpnSalesExportModal";
 
+/** The Coupon Sales page: loads a week's coupons plus the two-week baseline for a store or
+ *  group, then shows the graded store list on the left and the picked store's breakdown on
+ *  the right. Phones get the shared event-performance screens instead. */
 const CouponSales = () => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
-  const { url, token, isMobile } = useAppSelector((s) => s.app);
+  const ctx = useCouponSalesCtx();
   const api = useApiContext();
-  /** The week's coupon lines, kept for the mobile receipt sheet — every line
-   *  of every sale is already in hand, so opening one is a filter not a fetch. */
-  const mobileLines = useRef<CouponItem[]>([]);
-  const { userid, assignedStores, selectedGroupStores } = useAppSelector(
-    (s) => s.user,
-  );
-  const { singleDate, type, lastStore, lastGroup } = useAppSelector(
-    (s) => s.search,
-  );
-
-  // One week-ending date drives both windows, matching LP: the searched week
-  // is end-6..end and the baseline is the two weeks before it, end-20..end-7.
-  const { weekStart, weekEnd, baseStart, baseEnd } = useMemo(() => {
-    const [m, d, y] = singleDate.split("/").map(Number);
-    const pad = (dt: Date) =>
-      `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-    return {
-      weekEnd: pad(new Date(y, m - 1, d)),
-      weekStart: pad(new Date(y, m - 1, d - 6)),
-      baseEnd: pad(new Date(y, m - 1, d - 7)),
-      baseStart: pad(new Date(y, m - 1, d - 20)),
-    };
-  }, [singleDate]);
+  const [searchModalOpen, setSearchModalOpen] = useState<boolean>(false);
+  const { getData } = useCouponSalesSearch(ctx);
   const {
+    activeThreshold,
+    storeRows,
+    totals,
+    storeCoupons,
+    selectedStore,
+    storeGrading,
+  } = useCouponSalesGrading(ctx);
+  const {
+    dispatch,
+    isMobile,
     coupons,
-    baselineCoupons,
     isFetching,
     hasSearched,
     noCouponsFound,
-    threshold,
-    trendThreshold,
-    metric,
-    selectedStoreKey,
     exportOpen,
-  } = useAppSelector((s) => s.prod.couponSales);
-
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-
-  // Grading holds the last valid amount while the numeric input is empty, so
-  // clearing it never reshuffles the list out from under the user.
-  const activeThreshold = threshold ?? COUPON_THRESHOLD_DEFAULT;
-  const activeTrendThreshold = trendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT;
-
-  // One object so every builder grades identically — see couponGrading.
-  const grading = useMemo(
-    () => ({
-      metric,
-      threshold: activeThreshold,
-      trendThreshold: activeTrendThreshold,
-      baseline: baselineCoupons,
-    }),
-    [metric, activeThreshold, activeTrendThreshold, baselineCoupons],
-  );
-
-  const getData = () => {
-    dispatch(reQueryCouponSales());
-    dispatch(setCouponSalesHasSearched(true));
-    dispatch(setCouponSalesFetching(true));
-
-    if (isGroupSearch(type)) {
-      getStoresAssignedToUserGroup(url, token, userid, lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(
-              setSelectedGroupStores(
-                resp.data.stores.filter((s: { active: boolean }) => s.active),
-              ),
-            );
-          }
-        })
-        .catch(() => {});
-    }
-
-    const useGroups = isGroupSearch(type) ? 1 : 0;
-    const singleStore = type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(type) ? lastGroup : lastStore;
-
-    getCoupons(
-      url,
-      token,
-      weekStart,
-      weekEnd,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(setCouponSalesData(j.records));
-        } else {
-          dispatch(setNoCouponSalesFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setCouponSalesFetching(false)));
-
-    // Baseline. Deliberately not awaited alongside the week — the page is
-    // usable the moment the week lands, and rows simply grade as ungraded
-    // until this arrives. A baseline failure is non-fatal for the same reason.
-    dispatch(setCouponBaseline([]));
-    getCoupons(
-      url,
-      token,
-      baseStart,
-      baseEnd,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error === 0) dispatch(setCouponBaseline(j.records));
-      })
-      .catch(() => {});
-  };
-
-  const storeRows = useMemo(
-    () => buildStoreRows(coupons, grading, assignedStores, selectedGroupStores),
-    [coupons, grading, assignedStores, selectedGroupStores],
-  );
-
-  const totals = useMemo(() => totalsFor(coupons), [coupons]);
-
-  const storeCoupons = useMemo(
-    () =>
-      selectedStoreKey === null
-        ? []
-        : coupons.filter((c) => storeKeyOf(c) === selectedStoreKey),
-    [coupons, selectedStoreKey],
-  );
-
-  const selectedStore = storeRows.find((r) => r.key === selectedStoreKey);
-
-  // The detail panel grades sub depts, cashiers and dates WITHIN one store, so
-  // its baseline has to be that store's slice of the baseline window — the
-  // whole-search baseline would compare one store against every store.
-  const storeGrading = useMemo(
-    () => ({
-      ...grading,
-      baseline:
-        selectedStoreKey === null
-          ? []
-          : baselineCoupons.filter((c) => storeKeyOf(c) === selectedStoreKey),
-    }),
-    [grading, baselineCoupons, selectedStoreKey],
-  );
+    mobileLines,
+    searchedDate,
+    singleDate,
+    assignedStores,
+    groupStores,
+  } = ctx;
 
   // MM/DD/YYYY, zero-padded — normalised through the same value sent to the
   // API so the label can't drift from what was actually queried.
-  const rangeLabel = `${formatDateSimple(weekStart)} – ${formatDateSimple(weekEnd)}`;
+  const shown = weekWindow(searchedDate ?? singleDate);
+  const rangeLabel = `${formatDateSimple(shown.weekStart)} – ${formatDateSimple(shown.weekEnd)}`;
 
   // Mobile gets its own three-screen stack rather than a squeezed two-panel
   // layout. Fetching, the baseline and every grading input stay here so the
@@ -222,20 +96,32 @@ const CouponSales = () => {
               searchValue: api.searchValue,
               singleStore: api.singleStore,
               assignedStores,
-              groupStores: selectedGroupStores,
+              groupStores,
             },
             onProgress,
           );
-          mobileLines.current = result.items;
+          // The week's every line, for the receipt sheet. Kept beside the
+          // rest of this page's state so it lasts exactly as long: through
+          // leaving the page and back, and not past sign-out.
+          dispatch(setCouponMobileLines(result.items));
           return result;
         }}
-        info={COUPON_SALES_MOBILE_INFO}
-        loadReceipt={async (saleId) =>
-          couponReceipt(mobileLines.current, saleId)
-        }
+        helpPage="coupon-sales"
+        loadReceipt={async (saleId) => couponReceipt(mobileLines, saleId)}
       />
     );
   }
+
+  // The entry card and the re-search pop-up are the same card.
+  const searchCardProps = {
+    title: "Coupon Sales",
+    description:
+      "Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks.",
+    singleDate: true,
+    buttonLabel: "Load Coupon Sales",
+    loading: isFetching,
+    loadingMessage: "Finding coupon sales...",
+  };
 
   if (isFetching) {
     return (
@@ -249,13 +135,8 @@ const CouponSales = () => {
     return (
       <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
         <SearchCard
-          title="Coupon Sales"
-          description="Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks."
-          singleDate
-          buttonLabel="Load Coupon Sales"
+          {...searchCardProps}
           onSearch={getData}
-          loading={isFetching}
-          loadingMessage="Finding coupon sales..."
           notice={
             hasSearched && noCouponsFound
               ? "No coupons came back for this search."
@@ -271,28 +152,15 @@ const CouponSales = () => {
       {exportOpen && <CpnSalesExportModal storeCoupons={storeCoupons} />}
 
       {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SearchCard
-              title="Coupon Sales"
-              description="Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks."
-              singleDate
-              buttonLabel="Load Coupon Sales"
-              onSearch={() => {
-                setSearchModalOpen(false);
-                getData();
-              }}
-              loading={isFetching}
-              loadingMessage="Finding coupon sales..."
-            />
-          </div>
-        </div>
+        <SearchPopup onClose={() => setSearchModalOpen(false)}>
+          <SearchCard
+            {...searchCardProps}
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getData();
+            }}
+          />
+        </SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
