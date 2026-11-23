@@ -42,7 +42,9 @@ export const makePromoter = (resolve) => {
       const next = specFor(to, toProd(r.target), r.suffix);
       return next === spec ? m : `${head}${q}${next}${q}`;
     });
-    for (const p of selectorParams(out)) out = out.replace(new RegExp(`(?<![.\\w])${p}\\.dev\\.`, "g"), `${p}.prod.`);
+    // `s.dev.x` and `...s.dev.x`, but not a property `a.s.dev.x`.
+    for (const p of selectorParams(out))
+      out = out.replace(new RegExp(`(?<![\\w$])(?<!(?<!\\.\\.)\\.)${p}\\.dev\\.`, "g"), `${p}.prod.`);
     out = out.replace(/getState\(\)\.dev\./g, "getState().prod.");
     return out.replace(/\bThe dev tree\b/g, "The prod tree").replace(/\bdev tree\b/g, "prod tree");
   };
