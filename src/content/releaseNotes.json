@@ -2,58 +2,298 @@
   {
     "date": "2026-11-23",
     "items": [
-      { "kind": "new", "page": "Every page", "hrefs": [], "text": "The ? button opens help beside the page and points to the part it explains." },
-      { "kind": "new", "page": "Every page", "hrefs": [], "text": "If a teammate shares a group of stores with you, pick it under Shared in the store search." },
-      { "kind": "improvement", "page": "Every page", "hrefs": [], "text": "Hovering over a button or label shows a clear tip beside your mouse." },
-      { "kind": "improvement", "page": "Every page", "hrefs": [], "text": "Date pickers show the day of the week." },
-      { "kind": "improvement", "page": "Every page", "hrefs": [], "text": "The button that takes you back to your results now says Back." },
-      { "kind": "improvement", "page": "Every page", "hrefs": [], "text": "Pop-up windows soften the page behind them instead of darkening it." },
+      {
+        "kind": "new",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "The ? button opens help beside the page and points to the part it explains."
+      },
+      {
+        "kind": "new",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "If a teammate shares a group of stores with you, pick it under Shared in the store search."
+      },
+      {
+        "kind": "improvement",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "Hovering over a button or label shows a clear tip beside your mouse."
+      },
+      {
+        "kind": "improvement",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "Date pickers show the day of the week."
+      },
+      {
+        "kind": "improvement",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "The button that takes you back to your results now says Back."
+      },
+      {
+        "kind": "improvement",
+        "page": "Every page",
+        "hrefs": [],
+        "text": "Pop-up windows soften the page behind them instead of darkening it."
+      },
 
-      { "kind": "new", "page": "Sales", "hrefs": ["sales"], "text": "Each store opens on Summary, a one-page recap of its week or any single day." },
-      { "kind": "new", "page": "Sales", "hrefs": ["sales"], "text": "Compare a store with any other store in your group from the Compare tab." },
-      { "kind": "new", "page": "Sales", "hrefs": ["sales"], "text": "Investigate a department that's behind another store to see which items are causing it." },
-      { "kind": "improvement", "page": "Sales", "hrefs": ["sales"], "text": "Top 200 ranks a store's best sellers by sales dollars, and can compare two stores." },
-      { "kind": "improvement", "page": "Sales", "hrefs": ["sales"], "text": "Sub depts can compare two stores, department by department." },
-      { "kind": "improvement", "page": "Sales", "hrefs": ["sales"], "text": "Download Summary's item list for one day or up to 31 days." },
-      { "kind": "fix", "page": "Sales", "hrefs": ["sales"], "text": "Last week's figures line up correctly after the clocks change." },
+      {
+        "kind": "new",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Each store opens on Summary, a one-page recap of its week or any single day."
+      },
+      {
+        "kind": "new",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Compare a store with any other store in your group from the Compare tab."
+      },
+      {
+        "kind": "new",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Investigate a department that's behind another store to see which items are causing it."
+      },
+      {
+        "kind": "improvement",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Top 200 ranks a store's best sellers by sales dollars, and can compare two stores."
+      },
+      {
+        "kind": "improvement",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Sub depts can compare two stores, department by department."
+      },
+      {
+        "kind": "improvement",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Download Summary's item list for one day or up to 31 days."
+      },
+      {
+        "kind": "fix",
+        "page": "Sales",
+        "hrefs": ["sales"],
+        "text": "Last week's figures line up correctly after the clocks change."
+      },
 
-      { "kind": "fix", "page": "Performance pages", "hrefs": ["sales", "loss-prevention", "sub-dept-margins", "coupon-sales"], "text": "The page keeps the week, store and group you searched when you come back to it." },
-      { "kind": "improvement", "page": "Performance on a phone", "hrefs": ["sales", "loss-prevention", "sub-dept-margins", "categories", "vendors", "coupon-sales"], "text": "Each row shows this week, last week and last year side by side, with a Sales / Units switch." },
-      { "kind": "improvement", "page": "Performance on a phone", "hrefs": ["sales", "loss-prevention", "sub-dept-margins", "categories", "vendors", "coupon-sales"], "text": "Bars are green when you're ahead and red when you're behind, and each card shows the dollar difference." },
-      { "kind": "fix", "page": "Performance on a phone", "hrefs": ["sub-dept-margins", "categories", "vendors"], "text": "Sub Dept Margins, Vendors and Categories open on the store you were already looking at." },
+      {
+        "kind": "fix",
+        "page": "Performance pages",
+        "hrefs": [
+          "sales",
+          "loss-prevention",
+          "sub-dept-margins",
+          "coupon-sales"
+        ],
+        "text": "The page keeps the week, store and group you searched when you come back to it."
+      },
+      {
+        "kind": "improvement",
+        "page": "Performance on a phone",
+        "hrefs": [
+          "sales",
+          "loss-prevention",
+          "sub-dept-margins",
+          "categories",
+          "vendors",
+          "coupon-sales"
+        ],
+        "text": "Each row shows this week, last week and last year side by side, with a Sales / Units switch."
+      },
+      {
+        "kind": "improvement",
+        "page": "Performance on a phone",
+        "hrefs": [
+          "sales",
+          "loss-prevention",
+          "sub-dept-margins",
+          "categories",
+          "vendors",
+          "coupon-sales"
+        ],
+        "text": "Bars are green when you're ahead and red when you're behind, and each card shows the dollar difference."
+      },
+      {
+        "kind": "fix",
+        "page": "Performance on a phone",
+        "hrefs": ["sub-dept-margins", "categories", "vendors"],
+        "text": "Sub Dept Margins, Vendors and Categories open on the store you were already looking at."
+      },
 
-      { "kind": "fix", "page": "Sub Dept Margins", "hrefs": ["sub-dept-margins"], "text": "Items that sold the same as last week are no longer flagged red." },
-      { "kind": "fix", "page": "Sub Dept Margins and Vendors", "hrefs": ["sub-dept-margins", "vendors"], "text": "Both pages show the same margin for the same store and week." },
-      { "kind": "fix", "page": "Sub Dept Margins, Categories and Vendors", "hrefs": ["sub-dept-margins", "categories", "vendors"], "text": "Store totals leave out fuel, lottery and cash, matching the figures beside them." },
-      { "kind": "fix", "page": "Coupon Sales", "hrefs": ["coupon-sales"], "text": "A coupon sale's lines still show after you leave the page and come back." },
+      {
+        "kind": "fix",
+        "page": "Sub Dept Margins",
+        "hrefs": ["sub-dept-margins"],
+        "text": "Items that sold the same as last week are no longer flagged red."
+      },
+      {
+        "kind": "fix",
+        "page": "Sub Dept Margins and Vendors",
+        "hrefs": ["sub-dept-margins", "vendors"],
+        "text": "Both pages show the same margin for the same store and week."
+      },
+      {
+        "kind": "fix",
+        "page": "Sub Dept Margins, Categories and Vendors",
+        "hrefs": ["sub-dept-margins", "categories", "vendors"],
+        "text": "Store totals leave out fuel, lottery and cash, matching the figures beside them."
+      },
+      {
+        "kind": "fix",
+        "page": "Coupon Sales",
+        "hrefs": ["coupon-sales"],
+        "text": "A coupon sale's lines still show after you leave the page and come back."
+      },
 
-      { "kind": "improvement", "page": "Item Lookup", "hrefs": ["item-lookup"], "text": "A looked-up item opens as a report with a 14-day chart and a row for each day." },
-      { "kind": "improvement", "page": "Item Lookup", "hrefs": ["item-lookup"], "text": "The phone camera waits for a clean read before it takes a barcode." },
-      { "kind": "fix", "page": "Item Lookup", "hrefs": ["item-lookup"], "text": "Pressing Enter searches, and an item with no sales says so." },
+      {
+        "kind": "improvement",
+        "page": "Item Lookup",
+        "hrefs": ["item-lookup"],
+        "text": "A looked-up item opens as a report with a 14-day chart and a row for each day."
+      },
+      {
+        "kind": "improvement",
+        "page": "Item Lookup",
+        "hrefs": ["item-lookup"],
+        "text": "The phone camera waits for a clean read before it takes a barcode."
+      },
+      {
+        "kind": "fix",
+        "page": "Item Lookup",
+        "hrefs": ["item-lookup"],
+        "text": "Pressing Enter searches, and an item with no sales says so."
+      },
 
-      { "kind": "new", "page": "Upc List", "hrefs": ["upc-upload"], "text": "A new Movement tab shows how much of an item each store moved, week by week." },
-      { "kind": "fix", "page": "Upc List", "hrefs": ["upc-upload"], "text": "Week over week and Trend compare fairly: whole weeks only, against the 90 days before your dates." },
-      { "kind": "fix", "page": "Upc List", "hrefs": ["upc-upload"], "text": "An item that stopped selling is labelled Stopped selling." },
-      { "kind": "fix", "page": "Upc List", "hrefs": ["upc-upload"], "text": "Download waits until your data has loaded." },
+      {
+        "kind": "new",
+        "page": "Upc List",
+        "hrefs": ["upc-upload"],
+        "text": "A new Movement tab shows how much of an item each store moved, week by week."
+      },
+      {
+        "kind": "fix",
+        "page": "Upc List",
+        "hrefs": ["upc-upload"],
+        "text": "Week over week and Trend compare fairly: whole weeks only, against the 90 days before your dates."
+      },
+      {
+        "kind": "fix",
+        "page": "Upc List",
+        "hrefs": ["upc-upload"],
+        "text": "An item that stopped selling is labelled Stopped selling."
+      },
+      {
+        "kind": "fix",
+        "page": "Upc List",
+        "hrefs": ["upc-upload"],
+        "text": "Download waits until your data has loaded."
+      },
 
-      { "kind": "fix", "page": "Receivers", "hrefs": ["receivers"], "text": "Received quantities are counted in cases." },
+      {
+        "kind": "fix",
+        "page": "Receivers",
+        "hrefs": ["receivers"],
+        "text": "Received quantities are counted in cases."
+      },
 
-      { "kind": "improvement", "page": "Coupons", "hrefs": ["coupons"], "text": "On a phone, Coupons uses the same sort buttons and totals card as the other pages." },
-      { "kind": "fix", "page": "Coupons", "hrefs": ["coupons"], "text": "Column filters stay in place when you leave the page and come back." },
+      {
+        "kind": "improvement",
+        "page": "Coupons",
+        "hrefs": ["coupons"],
+        "text": "On a phone, Coupons uses the same sort buttons and totals card as the other pages."
+      },
+      {
+        "kind": "fix",
+        "page": "Coupons",
+        "hrefs": ["coupons"],
+        "text": "Column filters stay in place when you leave the page and come back."
+      },
 
-      { "kind": "new", "page": "Groups", "hrefs": ["groups"], "minLevel": 7, "text": "Share a group of stores with your team from the new Shared Groups tab." },
+      {
+        "kind": "new",
+        "page": "Groups",
+        "hrefs": ["groups"],
+        "minLevel": 7,
+        "text": "Share a group of stores with your team from the new Shared Groups tab."
+      },
 
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "Choose whether each person follows their groups automatically or sees only the stores you pick." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "Editing a user uses the same steps as adding one." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "Deactivate or reactivate several users at once." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "A new Access column shows how each person gets their stores, with a filter for it." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "Assign all shows who it will move, and only moves the people your search shows." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 7, "text": "A base group's download can include its users as well as its stores." },
-      { "kind": "improvement", "page": "User Management", "hrefs": ["user-management"], "minLevel": 7, "text": "A new base group offers to add itself to you, so you can fill it straight away." },
-      { "kind": "fix", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "Add user no longer fills in your own login." },
-      { "kind": "fix", "page": "User Management", "hrefs": ["user-management"], "minLevel": 5, "text": "The user list sorts by any column, and the page asks before you lose unsaved changes." },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "Choose whether each person follows their groups automatically or sees only the stores you pick."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "Editing a user uses the same steps as adding one."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "Deactivate or reactivate several users at once."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "A new Access column shows how each person gets their stores, with a filter for it."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "Assign all shows who it will move, and only moves the people your search shows."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 7,
+        "text": "A base group's download can include its users as well as its stores."
+      },
+      {
+        "kind": "improvement",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 7,
+        "text": "A new base group offers to add itself to you, so you can fill it straight away."
+      },
+      {
+        "kind": "fix",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "Add user no longer fills in your own login."
+      },
+      {
+        "kind": "fix",
+        "page": "User Management",
+        "hrefs": ["user-management"],
+        "minLevel": 5,
+        "text": "The user list sorts by any column, and the page asks before you lose unsaved changes."
+      },
 
-      { "kind": "new", "page": "Admin", "hrefs": ["admin"], "minLevel": 7, "text": "Choose which sub departments, like lottery and money orders, don't count toward a store's net sales." }
+      {
+        "kind": "new",
+        "page": "Admin",
+        "hrefs": ["admin"],
+        "minLevel": 7,
+        "text": "Choose which sub departments, like lottery and money orders, don't count toward a store's net sales."
+      }
     ]
   }
 ]

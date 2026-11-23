@@ -17,7 +17,12 @@ describe("parseReleases", () => {
       {
         date: "2026-11-11",
         items: [
-          { kind: "new", page: "Sales", hrefs: ["sales"], text: "Summary tab." },
+          {
+            kind: "new",
+            page: "Sales",
+            hrefs: ["sales"],
+            text: "Summary tab.",
+          },
           { kind: "shiny", page: "Sales", hrefs: ["sales"], text: "x" },
           { kind: "fix", page: "", hrefs: [], text: "x" },
           { kind: "fix", page: "Orders", hrefs: ["orders"], text: " " },
@@ -56,7 +61,12 @@ describe("finding the page you are on", () => {
       date: "2026-11-11",
       items: [
         { kind: "new", page: "Sales", hrefs: ["sales"], text: "a" },
-        { kind: "fix", page: "Performance on a phone", hrefs: ["sales", "vendors"], text: "b" },
+        {
+          kind: "fix",
+          page: "Performance on a phone",
+          hrefs: ["sales", "vendors"],
+          text: "b",
+        },
         { kind: "fix", page: "Vendors", hrefs: ["vendors"], text: "c" },
       ],
       smallerFixes: [{ page: "Sales", hrefs: ["sales"], count: 4 }],
@@ -74,10 +84,15 @@ describe("finding the page you are on", () => {
   });
 
   it("finds the newest release that touched a page, smaller fixes included", () => {
-    const n = (page: string, href: string) => [{ kind: "fix", page, hrefs: [href], text: "x" }];
+    const n = (page: string, href: string) => [
+      { kind: "fix", page, hrefs: [href], text: "x" },
+    ];
     const older = parseReleases([
       { date: "2026-12-01", items: n("Orders", "orders") },
-      { date: "2026-11-20", smallerFixes: [{ page: "Coupons", hrefs: ["coupons"], count: 1 }] },
+      {
+        date: "2026-11-20",
+        smallerFixes: [{ page: "Coupons", hrefs: ["coupons"], count: 1 }],
+      },
       { date: "2026-11-02", items: n("Sales", "sales") },
     ]);
     expect(lastChangedRelease(older, "sales")?.date).toBe("2026-11-02");
@@ -92,26 +107,55 @@ describe("releasesForLevel", () => {
       date: "2026-11-23",
       items: [
         { kind: "new", page: "Sales", hrefs: ["sales"], text: "Summary tab." },
-        { kind: "new", page: "User Management", hrefs: ["user-management"], minLevel: 5, text: "Access column." },
-        { kind: "new", page: "Admin", hrefs: ["admin"], minLevel: 7, text: "Net sales exclusions." },
+        {
+          kind: "new",
+          page: "User Management",
+          hrefs: ["user-management"],
+          minLevel: 5,
+          text: "Access column.",
+        },
+        {
+          kind: "new",
+          page: "Admin",
+          hrefs: ["admin"],
+          minLevel: 7,
+          text: "Net sales exclusions.",
+        },
       ],
     },
     {
       date: "2026-12-01",
-      items: [{ kind: "new", page: "Admin", hrefs: ["admin"], minLevel: 7, text: "Admin only." }],
+      items: [
+        {
+          kind: "new",
+          page: "Admin",
+          hrefs: ["admin"],
+          minLevel: 7,
+          text: "Admin only.",
+        },
+      ],
     },
   ]);
   const texts = (level: number) =>
-    releasesForLevel(releases, level).flatMap((r) => r.items.map((n) => n.text));
+    releasesForLevel(releases, level).flatMap((r) =>
+      r.items.map((n) => n.text),
+    );
 
   it("shows a level only the notes it can use", () => {
     expect(texts(1)).toEqual(["Summary tab."]);
     expect(texts(5)).toEqual(["Summary tab.", "Access column."]);
-    expect(texts(7)).toEqual(["Summary tab.", "Access column.", "Net sales exclusions.", "Admin only."]);
+    expect(texts(7)).toEqual([
+      "Summary tab.",
+      "Access column.",
+      "Net sales exclusions.",
+      "Admin only.",
+    ]);
   });
 
   it("drops a release that has nothing left for the level", () => {
-    expect(releasesForLevel(releases, 5).map((r) => r.date)).toEqual(["2026-11-23"]);
+    expect(releasesForLevel(releases, 5).map((r) => r.date)).toEqual([
+      "2026-11-23",
+    ]);
   });
 });
 

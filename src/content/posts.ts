@@ -55,7 +55,9 @@ const heroUrl = (im: string | undefined): string | null => {
   if (/^https?:\/\//i.test(im)) return im;
   const file = im.split("/").pop();
   if (!file) return null;
-  const match = Object.entries(HEROES).find(([path]) => path.endsWith(`/${file}`));
+  const match = Object.entries(HEROES).find(([path]) =>
+    path.endsWith(`/${file}`),
+  );
   return match ? match[1] : null;
 };
 
@@ -72,7 +74,8 @@ const ENTITIES: Record<string, string> = {
   "&#39;": "'",
 };
 
-const decode = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m]);
+const decode = (s: string) =>
+  s.replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m]);
 
 const expand = (p: RawPost): Post => ({
   slug: p.s,
@@ -92,7 +95,10 @@ export const POSTS: Post[] = (raw as RawPost[]).map(expand);
 const isRawPost = (v: unknown): v is RawPost => {
   const p = v as RawPost;
   return (
-    !!p && typeof p.s === "string" && typeof p.t === "string" && Array.isArray(p.b)
+    !!p &&
+    typeof p.s === "string" &&
+    typeof p.t === "string" &&
+    Array.isArray(p.b)
   );
 };
 

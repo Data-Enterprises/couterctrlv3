@@ -84,8 +84,18 @@ export const dateText = (date: string): string => {
   const [y, m, d] = date.split("-");
   if (!y || !m || !d) return date;
   const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const name = MONTHS[Number(m) - 1];
   return name ? `${name} ${Number(d)}, ${y}` : date;
@@ -114,7 +124,9 @@ const notes = (v: unknown): ReleaseNote[] =>
         text: text(o.text),
       };
     })
-    .filter((n): n is ReleaseNote => !!n.kind && n.page !== "" && n.text !== "");
+    .filter(
+      (n): n is ReleaseNote => !!n.kind && n.page !== "" && n.text !== "",
+    );
 
 const smaller = (v: unknown): SmallerFixes[] =>
   (Array.isArray(v) ? v : [])
@@ -159,7 +171,10 @@ export const RELEASES: Release[] = parseReleases(raw);
  * The releases as one user level reads them: notes above that level left out,
  * and a release left with nothing in it dropped.
  */
-export const releasesForLevel = (releases: Release[], level: number): Release[] =>
+export const releasesForLevel = (
+  releases: Release[],
+  level: number,
+): Release[] =>
   releases
     .map((r) => ({
       ...r,
@@ -182,6 +197,4 @@ export const lastChangedRelease = (
   releases: Release[],
   href: string,
 ): Release | undefined =>
-  releases.find(
-    (r) => notesFor(r, href).length > 0 || smallerFor(r, href) > 0,
-  );
+  releases.find((r) => notesFor(r, href).length > 0 || smallerFor(r, href) > 0);
