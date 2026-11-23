@@ -24,8 +24,6 @@ import KindSection from "./components/KindSection";
 
 interface ReleaseNotesPanelProps {
   releases: Release[];
-  /** Made-up notes for trying the panel out, and the panel says so. */
-  sample: boolean;
   /** The route of the page it was opened from, without the leading slash. */
   href: string;
   /** That page's name, for "Nothing new on Sales this release". Null for a
@@ -43,12 +41,10 @@ interface ReleaseNotesPanelProps {
  * it New, Improvements and Fixes are folded to their counts, and a chip shows
  * one kind alone, opened.
  *
- * Dev tree for now. It moves to prod with the dev-to-prod migration, and the
- * real notes go in then.
+ * The title bar hands it the releases for the reader's level.
  */
 const ReleaseNotesPanel = ({
   releases,
-  sample,
   href,
   pageName,
   onClose,
@@ -115,7 +111,6 @@ const ReleaseNotesPanel = ({
         filter={filter}
         onFilter={setFilter}
         counts={filterCounts(release)}
-        sample={sample}
         onClose={close}
       />
 

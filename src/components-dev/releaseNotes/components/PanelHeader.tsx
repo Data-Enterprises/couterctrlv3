@@ -16,7 +16,6 @@ interface PanelHeaderProps {
   onFilter: (filter: Filter) => void;
   /** Each chip's count for the release showing. */
   counts: Record<Filter, number>;
-  sample: boolean;
   onClose: () => void;
 }
 
@@ -28,7 +27,6 @@ const PanelHeader = ({
   filter,
   onFilter,
   counts,
-  sample,
   onClose,
 }: PanelHeaderProps) => (
   <div className="flex flex-shrink-0 flex-col gap-2.5 border-b border-brand_line bg-custom-white px-5 pb-3 pt-4">
@@ -41,11 +39,6 @@ const PanelHeader = ({
           Release notes
         </h2>
       </div>
-      {sample ? (
-        <span className="mt-1 rounded-md border border-severity_watch_text/20 bg-severity_watch_bg px-2 py-0.5 text-[11px] font-medium text-severity_watch_text">
-          Sample notes, for trying the panel
-        </span>
-      ) : null}
       <button
         type="button"
         onClick={onClose}

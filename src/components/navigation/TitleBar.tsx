@@ -7,7 +7,7 @@ import { useNavCtx } from "./hooks";
 import { setUserPrefs } from "../../api/user";
 
 // Utils
-import { SAMPLE_RELEASES } from "../../content/releaseNotes";
+import { RELEASES, releasesForLevel } from "../../content/releaseNotes";
 
 // Interfaces
 import type { JsonError } from "../../interfaces";
@@ -97,8 +97,7 @@ const TitleBar = () => {
 
       {releaseNotesOpen && (
         <ReleaseNotesPanel
-          releases={SAMPLE_RELEASES}
-          sample
+          releases={releasesForLevel(RELEASES, user.userLevel)}
           href={currentPath}
           pageName={currentPage?.name ?? null}
           onClose={() => setReleaseNotesOpen(false)}
