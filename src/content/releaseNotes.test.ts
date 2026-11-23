@@ -116,6 +116,14 @@ describe("releasesForLevel", () => {
 });
 
 describe("the notes shipped with the app", () => {
+  it("ships the first official release, and no sample notes", () => {
+    expect(RELEASES.map((r) => r.date)).toEqual(["2026-11-23"]);
+  });
+
+  it("gives every level something to read", () => {
+    expect(releasesForLevel(RELEASES, 1)[0]?.items.length).toBeGreaterThan(0);
+  });
+
   it("uses only the kinds the panel draws", () => {
     for (const n of RELEASES.flatMap((r) => r.items))
       expect(NOTE_KINDS).toContain(n.kind);
