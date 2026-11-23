@@ -1,26 +1,15 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
-import { useSubMarginCtx } from "./hooks";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useSubMarginActions } from "./hooks/useSubMarginActions";
-import { useSubMarginState } from "./hooks/useSubMarginState";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSubMargins } from "../../../api/subMargins";
-import { useParams } from "./hooks";
-import { setDates, getLYDate } from "../../../utils/dates";
-import { hasNoUsableCost } from "../../../utils/cogs";
 import {
-  computeMarginDayMatched,
-  computeStoreDayMatched,
-  storeCoverage,
-} from ".";
-import type { Coverage } from "../../../utils/grading";
-import type {
-  JsonError,
-  SubDept,
-  SubMarginsJsonResp,
-  SubDeptMargin,
-} from "../../../interfaces";
-import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+  useParams,
+} from "./hooks";
+
+// Redux
 import {
   setSubDeptGrade,
   setLoadingGrades,
@@ -30,229 +19,54 @@ import {
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
   resetSubDeptGrades,
-  type SubDeptGrade,
 } from "../../../features/subMarginSlice";
 
-import MarginPerfLeftPanel from "./display/perf/MarginPerfLeftPanel";
-import MarginPerfRightPanel from "./display/perf/MarginPerfRightPanel";
-import SmDevSearchOverlay from "./display/perf/SmDevSearchOverlay";
-import ItemPerfMobile from "../../shared/itemPerf/prod/ItemPerfMobile";
-import SmDevEntryCard from "./display/perf/SmDevEntryCard";
-import ItemFilterModal from "./display/modals/ItemFilterModal";
+// API
+import { type RollupRow } from "../../../api/rollup";
+
+// Utils
+import { setDates, getLYDate } from "../../../utils/dates";
+import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+import {
+  ALL_SUB_DEPTS,
+  computeStoreDayMatched,
+  computeSubDeptGrade,
+  computeTotalsGrade,
+  deriveSubDepts,
+  emptyRaw,
+  fetchAllPages,
+  fetchSafe,
+  fetchTotals,
+  groupBySubDept,
+  groupTotalsBySubDept,
+  inRange,
+  storeCoverage,
+} from "./utils";
+import { costCols, itemCols } from "./utils/gridColumns";
+
+// Interfaces
+import type { JsonError } from "../../../interfaces";
+import type { RawSearch, SubDeptEntry } from "./interfaces";
+
+// Components
 import ExportModal from "../../../components/modals/ExportModal";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { costCols, itemCols } from "./display/widgets";
+import ItemPerfMobile from "../../../components/itemPerf/ItemPerfMobile";
+import MarginPerfLeftPanel from "./components/MarginPerfLeftPanel";
+import MarginPerfRightPanel from "./components/MarginPerfRightPanel";
+import SmDevSearchOverlay from "./components/SmDevSearchOverlay";
+import SmDevEntryCard from "./components/SmDevEntryCard";
+import ItemFilterModal from "./itemFilter/ItemFilterModal";
 
-const fetchSafe = (
-  url: string,
-  token: string,
-  subDeptId: number,
-  start: string,
-  end: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
-): Promise<SubDeptMargin[]> =>
-  fetchAllPages(
-    url,
-    token,
-    subDeptId,
-    start,
-    end,
-    useGroups,
-    searchValue,
-    singleStore,
-  ).catch(() => []);
-
-const fetchAllPages = async (
-  url: string,
-  token: string,
-  subDeptId: number,
-  start: string,
-  end: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
-): Promise<SubDeptMargin[]> => {
-  const resp = await getSubMargins(
-    url,
-    token,
-    subDeptId,
-    start,
-    end,
-    useGroups,
-    searchValue,
-    singleStore,
-  );
-  const j: SubMarginsJsonResp = resp.data;
-  if (j.error !== 0) throw new Error(j.msg ?? "Failed to load margins");
-
-  // Pages 2..N go out together. Sequential paging was tried and measured
-  // slower in practice, so the parallel form stands regardless of how many
-  // workers the API runs.
-  let data: SubDeptMargin[] = j.subs;
-  if (j.total_pages > 1) {
-    const extras = await Promise.all(
-      Array.from({ length: j.total_pages - 1 }, (_, i) =>
-        getSubMargins(
-          url,
-          token,
-          subDeptId,
-          start,
-          end,
-          useGroups,
-          searchValue,
-          singleStore,
-          i + 2,
-        ),
-      ),
-    );
-    for (const r of extras) {
-      const pj: SubMarginsJsonResp = r.data;
-      if (pj.error === 0) data = [...data, ...pj.subs];
-    }
-  }
-  return data;
-};
-
-/**
- * The `subDeptId` value that asks `subs/subs` for every department at once.
- *
- * Named rather than a bare 0 at the call site, because 0 is also a real
- * department number in the response — `deriveSubDepts` deliberately keeps rows
- * whose `sub_department` is 0. As a *request* argument it means "all"; as a
- * *row value* it means that department. Conflating the two is easy and this
- * name is here to stop it.
- *
- * It also removes a fault in the shape this replaced: that version asked for
- * each department in turn, so on a store that has a department 0 the request
- * for it came back with every item in the store, and department 0 was then
- * graded against all of them.
- */
-const ALL_SUB_DEPTS = 0;
-
-/**
- * Rows falling inside a date window, bounds inclusive.
- *
- * Dates are `yyyy-mm-dd`, so a string compare is a date compare — no parsing,
- * and no timezone to get wrong.
- */
-const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
-  rows.filter((r) => {
-    const d = r.sale_date.split("T")[0];
-    return d >= start && d <= end;
-  });
-
-/** Item rows keyed by the department each row says it belongs to. */
-const groupBySubDept = (rows: SubDeptMargin[]) => {
-  const by = new Map<number, SubDeptMargin[]>();
-  for (const row of rows) {
-    const found = by.get(row.sub_department);
-    if (found) found.push(row);
-    else by.set(row.sub_department, [row]);
-  }
-  return by;
-};
-
-/**
- * The three item reads for one search, unscoped.
- *
- * One source for the whole page now. `subs/subs` carries store number, sale
- * date, department, sales, tax, quantity and cost on every row, which is
- * everything the store header, the department list, the Sales-metric totals
- * and the margin grades were previously taking from three endpoints between
- * them.
- *
- * Held unscoped so switching between co-located locations re-derives without
- * touching the network.
- */
-type RawSearch = {
-  items: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
-};
-
-const emptyRaw = (): RawSearch => ({
-  items: { ty: [], lw: [], ly: [] },
-});
-
-// No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
-// every row), so dropping it here made this page show one fewer sub department
-// and a lower total than Sales.
-const deriveSubDepts = (
-  rows: { sub_department: number; sub_department_description: string }[],
-): SubDept[] =>
-  rows
-    .reduce((acc: SubDept[], curr) => {
-      if (!acc.some((s) => s.id === curr.sub_department)) {
-        acc.push({
-          id: curr.sub_department,
-          desc: curr.sub_department_description,
-        });
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => a.id - b.id);
-
-const computeSubDeptGrade = (
-  tyMargins: SubDeptMargin[],
-  lyMargins: SubDeptMargin[],
-  lwMargins: SubDeptMargin[],
-  coverage: Coverage,
-): SubDeptGrade => {
-  // Each metric reads the endpoint that's authoritative for it — getTier and
-  // the panels already branch on gradingMetric, so this lands in the right
-  // place without any UI change:
-  //
-  //  Sales metric  -> sub_sales. It has the correct item_ring_type filter
-  //                   ('ITEM','SUBD'); subs/subs only matches 'ITEM' and so
-  //                   runs short. Same endpoint and formula as the Sales page,
-  //                   including its whole-range comparison, so the two agree
-  //                   exactly.
-  //  Margin metric -> subs/subs, the only source carrying cost. Stays
-  //                   day-matched (computeMarginDayMatched) since there's no
-  //                   Sales figure it has to line up with.
-  const m = computeMarginDayMatched(tyMargins, lwMargins, lyMargins);
-  // Sales figures day-matched too, exactly as the store header above them is.
-  // They used to be whole-range sums — full week against whatever last year
-  // returned — which is the comparison that flipped Wic Grocery from -42% to
-  // +49% on the Sales page.
-  const sales = computeStoreDayMatched(tyMargins, lwMargins, lyMargins);
-
-  const seen = new Set<string>();
-  let noCostCount = 0;
-  for (const row of tyMargins) {
-    if (!seen.has(row.product_code)) {
-      seen.add(row.product_code);
-      if (hasNoUsableCost(row)) noCostCount++;
-    }
-  }
-
-  return {
-    tyMarginPct: m.tyMarginPct,
-    lyMarginPct: m.lyMarginPct,
-    ptsDelta: m.ptsDelta,
-    lwMarginPct: m.lwMarginPct,
-    lwPtsDelta: m.lwPtsDelta,
-    noCostCount,
-    dollars: m.dollars,
-    tySales: sales.tySales,
-    lySales: sales.lySales,
-    lwSales: sales.lwSales,
-    vsLYSalesPct: sales.vsLYSalesPct,
-    vsLWSalesPct: sales.vsLWSalesPct,
-    tyWeekOneMargins: tyMargins,
-    lyWeekOneMargins: lyMargins,
-    lwWeekOneMargins: lwMargins,
-    coverage,
-  };
-};
-
+/** The Sub Dept Margins page: the store and week search card, a loading state, then the sub dept list on the
+ *  left and the selected sub dept's margin panel on the right, with the export and item filter pop-ups. */
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const sm = useSubMarginState();
   const toast = useToast();
-  const params = useParams();
+  const paramsFor = useParams();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
@@ -260,9 +74,9 @@ const SubDeptMargins = () => {
   // presented as. Refs, not state: the async fetch callbacks below need the
   // live values, and nothing renders off them directly.
   const rawRef = useRef<RawSearch>(emptyRaw());
-  const selectedStoreNumber = useAppSelector(
-    (s) => s.prod.subMargin.selectedStoreNumber,
-  );
+  /** The latest search; answers for an older one are dropped. */
+  const searchRef = useRef(0);
+  const { selectedStoreNumber, subDeptGrades } = useSubMarginState();
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;
 
@@ -303,8 +117,6 @@ const SubDeptMargins = () => {
     }
   };
 
-  const subDeptGrades = useAppSelector((s) => s.prod.subMargin.subDeptGrades);
-
   // The ungraded rebuild, shared with Vendors — same fetch and screen, a
   // different list open first. mobile/devMobile is still on disk to compare.
   if (ctx.isMobile)
@@ -326,14 +138,60 @@ const SubDeptMargins = () => {
     // it while Redux still holds the results. Deriving from an empty cache would
     // overwrite Redux with an empty list and strand the user on the entry card,
     // so refetch instead — keeping the location just picked.
-    if (rawRef.current.items.ty.length === 0) {
+    if (rawRef.current.totals.ty.length === 0) {
       handleSearch(storeNumber);
       return;
     }
     // The previously selected sub dept may not trade at this location.
-    dispatch(actions.setSelectedSubDeptId(null));
+    dispatch(actions.setSelectedSubDeptKey(null));
     dispatch(resetSubDeptGrades());
-    deriveFromItems();
+    if (rawRef.current.itemsReady) deriveFromItems();
+    else deriveFromTotals();
+  };
+
+  /**
+   * The list from the department totals, before the item rows land.
+   *
+   * The same steps as `deriveFromItems`, on the rollup: the store header, the
+   * coverage, the department list and every grade. The figures agree with the
+   * item rows' by construction; only the items themselves are missing, and
+   * `deriveFromItems` fills them in when they arrive.
+   */
+  const deriveFromTotals = () => {
+    const raw = rawRef.current;
+    const ty = scoped(raw.totals.ty);
+    const lw = scoped(raw.totals.lw);
+    const ly = scoped(raw.totals.ly);
+
+    dispatch(setStoreSalesTotals(computeStoreDayMatched(ty, lw, ly)));
+    const coverage = storeCoverage(ty, lw, ly);
+
+    const tyBy = groupTotalsBySubDept(ty);
+    const lwBy = groupTotalsBySubDept(lw);
+    const lyBy = groupTotalsBySubDept(ly);
+
+    const subDepts: SubDeptEntry[] = [...tyBy.entries()]
+      .map(([key, rows]) => ({
+        id: Number(rows[0].key),
+        key,
+        desc: rows.find((r) => r.name)?.name ?? "",
+      }))
+      .sort((a, b) => a.id - b.id || a.desc.localeCompare(b.desc));
+    dispatch(actions.setSubDepts(subDepts));
+
+    for (const sd of subDepts) {
+      dispatch(
+        setSubDeptGrade({
+          key: sd.key,
+          grade: computeTotalsGrade(
+            tyBy.get(sd.key) ?? [],
+            lyBy.get(sd.key) ?? [],
+            lwBy.get(sd.key) ?? [],
+            coverage,
+          ),
+        }),
+      );
+    }
   };
 
   /**
@@ -363,15 +221,18 @@ const SubDeptMargins = () => {
 
     const subDepts = deriveSubDepts(ty);
     dispatch(actions.setSubDepts(subDepts));
+    // The totals phase keyed a merged department-0 row (the rollup groups by
+    // number only); clear it so it isn't counted beside the split rows.
+    dispatch(resetSubDeptGrades());
 
     for (const sd of subDepts) {
       dispatch(
         setSubDeptGrade({
-          id: sd.id,
+          key: sd.key,
           grade: computeSubDeptGrade(
-            tyBy.get(sd.id) ?? [],
-            lyBy.get(sd.id) ?? [],
-            lwBy.get(sd.id) ?? [],
+            tyBy.get(sd.key) ?? [],
+            lyBy.get(sd.key) ?? [],
+            lwBy.get(sd.key) ?? [],
             coverage,
           ),
         }),
@@ -388,6 +249,13 @@ const SubDeptMargins = () => {
     rawRef.current = emptyRaw();
     scopeRef.current = null;
     discoveredRef.current = false;
+    // A search started after this one makes every answer below stale.
+    const search = ++searchRef.current;
+    // A new search takes the picker's date and records it; a location refetch
+    // stays on the searched week.
+    const fresh = preferredNumber === undefined;
+    if (fresh) dispatch(actions.setSearchedDate(ctx.singleDate));
+    const params = paramsFor(fresh ? ctx.singleDate : ctx.weekDate);
     // Shift the whole selected window back 7 days. The old end-13 → end-7 form
     // ignored params.start, so any range that wasn't exactly 7 days fetched a
     // mismatched LW span.
@@ -412,6 +280,58 @@ const SubDeptMargins = () => {
      * rows already.
      */
     dispatch(setLoadingGrades(true));
+
+    /**
+     * The list first, from `subs/rollup`.
+     *
+     * The same two spans, summed per department per location per day on the
+     * server: ~40 KB rather than every item row, so the list, the grades and
+     * the store header draw at once. The item reads below are unchanged and
+     * run alongside; when they land they replace these grades with the full
+     * ones (same figures, plus the items and the no-cost counts), and
+     * `loadingGrades` stays on until then so the right panel and the export
+     * say so.
+     */
+    let itemsDone = false;
+    Promise.all([
+      fetchTotals(
+        ctx.url,
+        ctx.token,
+        lwStart,
+        params.end,
+        params.useGroups,
+        params.searchValue,
+        params.singleStore,
+      ),
+      fetchTotals(
+        ctx.url,
+        ctx.token,
+        getLYDate(params.start),
+        getLYDate(params.end),
+        params.useGroups,
+        params.searchValue,
+        params.singleStore,
+      ),
+    ])
+      .then(([span, ly]) => {
+        // The items won the race; they already drew everything.
+        if (itemsDone || search !== searchRef.current) return;
+        const within = (rows: RollupRow[], start: string, end: string) =>
+          rows.filter((r) => r.sale_date >= start && r.sale_date <= end);
+        const ty = within(span, params.start, params.end);
+        rawRef.current.totals = {
+          ty,
+          lw: within(span, lwStart, lwEnd),
+          ly,
+        };
+        if (ty.length === 0) return;
+        discoverLocations(ty, preferredNumber);
+        deriveFromTotals();
+        dispatch(actions.setLoadingSubDepts(false));
+      })
+      .catch(() => {
+        // Not fatal: the item reads still draw the page, as they always did.
+      });
 
     Promise.all([
       // This year and last week in one read. Last week is the same window
@@ -445,11 +365,14 @@ const SubDeptMargins = () => {
       ),
     ])
       .then(([span, ly]) => {
+        if (search !== searchRef.current) return;
+        itemsDone = true;
         // A row in the overlap belongs to both sets, which is what two separate
         // reads produced — the filters are independent, not a partition.
         const ty = inRange(span, params.start, params.end);
         const lw = inRange(span, lwStart, lwEnd);
         rawRef.current.items = { ty, lw, ly };
+        rawRef.current.itemsReady = true;
 
         if (ty.length === 0) {
           setNotice("No sub departments came back for this search.");
@@ -463,10 +386,17 @@ const SubDeptMargins = () => {
         deriveFromItems();
       })
       .catch((err: JsonError) => {
+        if (search !== searchRef.current) return;
+        // With the totals on screen the list stands; only the items failed.
+        if (rawRef.current.totals.ty.length > 0) {
+          toast.error("Couldn't load the item rows. Search again to retry.");
+          return;
+        }
         dispatch(setStoreSalesTotals(null));
         toast.error(err.message ?? "Could not load sub department margins");
       })
       .finally(() => {
+        if (search !== searchRef.current) return;
         dispatch(actions.setLoadingSubDepts(false));
         dispatch(setLoadingGrades(false));
       });
@@ -491,8 +421,8 @@ const SubDeptMargins = () => {
    * those fetches refiring on remount, and there is nothing left to refire.
    */
   useEffect(() => {
-    if (ctx.selectedSubDeptId == null) return;
-    const grade = subDeptGrades[ctx.selectedSubDeptId];
+    if (ctx.selectedSubDeptKey == null) return;
+    const grade = subDeptGrades[ctx.selectedSubDeptKey];
     if (!grade) return;
 
     dispatch(setWeekTrendMargins({ data: grade.tyWeekOneMargins, week: 1 }));
@@ -502,7 +432,12 @@ const SubDeptMargins = () => {
     dispatch(setWeekTrendMargins({ data: grade.lwWeekOneMargins, week: 2 }));
     dispatch(actions.setSelectedWeek(1));
     dispatch(actions.setSelectedWeekDay(""));
-  }, [ctx.selectedSubDeptId]);
+    // The grade object changes once, when the item rows replace the totals
+    // grade, and the open department's items have to follow.
+  }, [
+    ctx.selectedSubDeptKey,
+    subDeptGrades[ctx.selectedSubDeptKey ?? ""]?.tyWeekOneMargins,
+  ]);
 
   useEffect(() => {
     dispatch(actions.resetFilters());

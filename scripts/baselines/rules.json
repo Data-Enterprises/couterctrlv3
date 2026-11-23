@@ -265,10 +265,6 @@
   "src/features/storeSlice.ts": {
     "labels": 1
   },
-  "src/features/subMarginSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/features/suggestedSlice.ts": {
     "labels": 1
   },
