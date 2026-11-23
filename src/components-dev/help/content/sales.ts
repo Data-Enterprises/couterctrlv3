@@ -73,6 +73,70 @@ export const SALES_HELP: HelpContent = {
       ],
     },
     {
+      id: "sub-dept-compare",
+      title: "Copy or compare a filtered item list",
+      desc: "Copy the UPCs a filter leaves, or put two lists side by side",
+      steps: [
+        {
+          title: "Narrow the items",
+          pre: "With a department open on the Sub dept tab, pick a grade, search, or choose Active or Inactive.",
+          see: "A row under the filters with Copy and Compare. It only shows while something is narrowing the list.",
+        },
+        {
+          title: "Copy the UPCs shown",
+          pre: "Click the copy button, which counts them, as in",
+          chip: "Copy 7 UPCs",
+          post: ". Or right-click the list and choose Copy shown UPCs.",
+          see: "The UPCs of the items listed, in their order, separated by commas.",
+          anchor: "copy-shown",
+        },
+        {
+          title: "Keep this list as A",
+          pre: "Click",
+          chip: "Compare",
+          post: ". The list stays under the filters as A; the × drops it.",
+          anchor: "compare",
+        },
+        {
+          title: "Make the second list",
+          pre: "Change the filters, for example search coke where A searched pepsi, then click",
+          chip: "Compare with A",
+          post: ".",
+          anchor: "compare-pinned",
+        },
+        {
+          title: "Read the comparison",
+          pre: "A panel slides over the report tabs, under the KPIs and day cards. On the left, one sheet sets the two lists' columns side by side: sales, with this week's change in red or green; the items selling more, selling less, new this week and stopped this week, with their change against last week; and the items sold only last year.",
+          see: "The bucket behind each list's verdict is tinted. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
+        },
+        {
+          title: "Copy a bucket's UPCs",
+          pre: "Over the carousel's list, click",
+          chip: "Copy UPCs",
+          post: "to copy the open bucket's UPCs from both lists.",
+          anchor: "compare-items",
+        },
+        {
+          title: "Take it with you",
+          pre: "Click",
+          chip: "Export CSV",
+          post: "in the panel's header for both lists in one file.",
+          see: "Every item with where it stands, then a total for each list. The changes are on the grading measure, which the headings name.",
+          anchor: "compare-export",
+        },
+      ],
+      issues: [
+        {
+          q: "A changed when I moved the threshold",
+          a: "A keeps its filters, not a copy of its items, so it regrades with the threshold the same way the list does.",
+        },
+        {
+          q: "A disappeared",
+          a: "It goes with the department. Picking another department, or leaving the page, starts clean.",
+        },
+      ],
+    },
+    {
       id: "top-items",
       title: "See which items earned the week",
       desc: "The 200 biggest sellers, and what each one cost you",

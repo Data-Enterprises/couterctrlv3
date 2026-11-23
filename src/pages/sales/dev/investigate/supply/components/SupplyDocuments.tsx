@@ -14,7 +14,7 @@ import type { Supply } from "../../utils/investigationSteps";
 import type { SupplyKind, SupplyRow } from "../../interfaces";
 
 // Components
-import Carousel from "../../components/Carousel";
+import Carousel from "../../../components/Carousel";
 import SupplySlide from "./SupplySlide";
 import UpcFilter from "./UpcFilter";
 

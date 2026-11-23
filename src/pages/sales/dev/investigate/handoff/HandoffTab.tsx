@@ -9,7 +9,7 @@ import type { Cause, HandoffList, HandoffOwner } from "../interfaces";
 import type { Desk } from "../utils/investigationSteps";
 
 // Components
-import Carousel from "../components/Carousel";
+import Carousel from "../../components/Carousel";
 import HandoffFinding from "./components/HandoffFinding";
 import HandoffSlide from "./components/HandoffSlide";
 

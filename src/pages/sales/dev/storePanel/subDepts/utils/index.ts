@@ -14,7 +14,7 @@ import {
 // Interfaces
 import type { GradingMetric } from "../../../../../../features/dev/devSalesLedgerSlice";
 import type { SubSale } from "../../../../../../interfaces";
-import type { Severity } from "../../../../../../utils/severity";
+import type { Severity, SevFilter } from "../../../../../../utils/severity";
 import type {
   DeptCta,
   DeptRow,
@@ -23,6 +23,8 @@ import type {
   GradedItem,
   ItemSortColumn,
   ItemSortState,
+  ListFilter,
+  Side,
 } from "../interfaces";
 import type { CtaTone } from "../../../../../../components-dev/interfaces";
 import type { Finding } from "../../../utils/deptReport";
@@ -440,6 +442,63 @@ export const searchItems = (items: GradedItem[], text: string) => {
       )
     : items;
 };
+
+/** A compared list's colour: navy for A, blue for B (bars and badges). */
+export const SIDE_FILL: Record<Side, string> = { A: "bg-brand_navy", B: "bg-compare_b" };
+
+/** A small outline button in the row under the item filters. */
+export const LIST_ACTION_BTN =
+  "cc-btn-outline rounded-md px-2.5 py-0.5 text-[11px] text-content bg-custom-white disabled:text-content/40 disabled:cursor-not-allowed";
+
+/** True when a grade, a search or the active picker is narrowing the items. */
+export const isNarrowed = (sev: string, text: string, active: string) =>
+  sev !== "all" || text.trim() !== "" || active !== "";
+
+/** Active items, inactive items, or both, as the active picker says. */
+export const pickItems = (active: GradedItem[], inactive: GradedItem[], picker: string) =>
+  picker === "inactive" ? inactive : picker === "active" ? active : [...active, ...inactive];
+
+/** The items a list's filters leave, from the graded active and inactive items. */
+export const listItems = (active: GradedItem[], inactive: GradedItem[], f: ListFilter) => {
+  const base = pickItems(active, inactive, f.active);
+  return searchItems(f.sev === "all" ? base : base.filter((i) => i.sev === f.sev), f.text);
+};
+
+/** A grade's short name, as its chip says it. */
+export const SEV_SHORT: Record<SevFilter, string | null> = {
+  all: null,
+  critical: "Crit",
+  watch: "Watch",
+  healthy: "OK",
+};
+
+/** A list named by its filters: "Crit | pepsi", or "All items" with none. */
+export const listLabel = (f: ListFilter) => {
+  const picker = f.active === "active" ? "Active" : f.active === "inactive" ? "Inactive" : null;
+  const parts = [SEV_SHORT[f.sev], f.text.trim() || null, picker].filter(Boolean);
+  return parts.length ? parts.join(" | ") : "All items";
+};
+
+/** Two lists named by what tells them apart: Crit + pepsi against Crit + coke
+ *  is "pepsi" and "coke"; a list whose filters are all shared keeps its own
+ *  name ("Crit" against "Crit pepsi"). */
+export const listNames = (a: ListFilter, b: ListFilter): [string, string] => {
+  const parts = (f: ListFilter) => [
+    SEV_SHORT[f.sev],
+    f.text.trim() || null,
+    f.active === "active" ? "Active" : f.active === "inactive" ? "Inactive" : null,
+  ];
+  const pa = parts(a);
+  const pb = parts(b);
+  const differs = (i: number) => (pa[i] ?? "").toLowerCase() !== (pb[i] ?? "").toLowerCase();
+  const name = (p: (string | null)[], f: ListFilter) =>
+    p.filter((v, i) => v && differs(i)).join(" ") || listLabel(f).replace(/ \| /g, " ");
+  return [name(pa, a), name(pb, b)];
+};
+
+/** True when two lists have the same filters. */
+export const sameFilter = (a: ListFilter, b: ListFilter) =>
+  a.sev === b.sev && a.text.trim().toLowerCase() === b.text.trim().toLowerCase() && a.active === b.active;
 
 /** Small counts as words, and the word for a count. */
 export const WORDS = [

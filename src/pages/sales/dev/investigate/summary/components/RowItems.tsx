@@ -5,7 +5,7 @@ import { ROW_ORDER, rowTab } from "../../utils/holdsRows";
 import type { HoldsRow, RowKind } from "../../interfaces";
 
 // Components
-import Carousel from "../../components/Carousel";
+import Carousel from "../../../components/Carousel";
 import RowSlide from "./RowSlide";
 
 interface RowItemsProps {
