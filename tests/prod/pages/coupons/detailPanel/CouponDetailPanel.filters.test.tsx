@@ -175,6 +175,6 @@ describe("Coupons detail grid: applied column filters", () => {
     applyFilter("UPC", "Search UPC…", "2222");
     expect(screen.queryByText("APPLE JUICE COUPON")).toBeNull();
     fireEvent.click(screen.getAllByText("DAIRY")[0]);
-    expect(store.getState().dev.coupons.gridFilters.upc).toBe("");
+    expect(store.getState().prod.coupons.gridFilters.upc).toBe("");
   });
 });

@@ -41,7 +41,7 @@ describe("Coupons' applied grid filters", () => {
     const store = setupStore();
     store.dispatch(setCouponGridFilter({ subDept: "DAIRY" }));
     store.dispatch(resetAppSlice());
-    expect(store.getState().dev.coupons.gridFilters).toEqual(none);
+    expect(store.getState().prod.coupons.gridFilters).toEqual(none);
   });
 });
 
@@ -98,7 +98,7 @@ describe("Coupons' place on the page", () => {
     store.dispatch(setCouponSortMetric("qty"));
     store.dispatch(setCouponMobilePlace({ screen: "detail", tab: "date" }));
     store.dispatch(resetAppSlice());
-    const c = store.getState().dev.coupons;
+    const c = store.getState().prod.coupons;
     expect(c.selectedKey).toBe("");
     expect(c.sortMetric).toBe("amount");
     expect(c.mobile).toEqual(home);
@@ -128,6 +128,6 @@ describe("The search the loaded coupons answer", () => {
     const store = setupStore();
     store.dispatch(setCouponSearched(scope));
     store.dispatch(resetAppSlice());
-    expect(store.getState().dev.coupons.searched).toBeNull();
+    expect(store.getState().prod.coupons.searched).toBeNull();
   });
 });
