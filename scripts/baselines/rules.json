@@ -291,10 +291,6 @@
   "src/features/userSlice.ts": {
     "labels": 1
   },
-  "src/features/vendorsSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/hooks/index.ts": {
     "labels": 1
   },

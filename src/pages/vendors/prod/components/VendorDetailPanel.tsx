@@ -1,17 +1,20 @@
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+// Hooks
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { useCriticalReport } from "../../../../components/hooks/index";
+import { useAppDispatch, useCanSeeComingSoon } from "../../../../hooks";
+import { useVendorsCtx } from "../hooks";
+
+// Redux
 import {
-  useAppSelector,
-  useAppDispatch,
-} from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
-import {
-  comparisonPillClass,
-  formatPct,
-  severityHeaderBgClass,
-  type Severity,
-} from "../../../utils/severity";
+  setSelectedDay,
+  setItemThreshold,
+  VENDOR_THRESHOLD_DEFAULT,
+  VENDOR_ITEM_THRESHOLD_DEFAULT,
+} from "../../../../features/vendorsSlice";
+
+// Utils
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { formatCurrency2 } from "../../../../utils";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -19,78 +22,39 @@ import {
   pctChange,
   gradeBasis,
   isCompleteCoverage,
-  type Tier,
-} from "../../../utils/grading";
-import { fmtDayLabel, fmtRangeLabel } from "../../../utils/dateLabels";
-import DayCardStrip, { type DayCardEntry } from "../../../components/DayCardStrip";
-import ItemMarginsTable from "../../../components/ItemMarginsTable";
-import VendorExportModal from "./VendorExportModal";
+} from "../../../../utils/grading";
+import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
+import { collectGradedItems } from "../utils/vendorGradedItems";
 import {
-  setSelectedDay,
-  setItemThreshold,
-  VENDOR_THRESHOLD_DEFAULT,
-  VENDOR_ITEM_THRESHOLD_DEFAULT,
-} from "../../../features/vendorsSlice";
-import { getVendorTier, rowsForVendor, marginPct, scopePeriods } from "./vendorsUtils";
+  getVendorTier,
+  rowsForVendor,
+  marginPct,
+  scopePeriods,
+  headerBg,
+} from "../utils";
 
-/** Ungraded has no severity colour of its own, so the header falls back to the
- *  navy every other panel uses rather than borrowing a verdict colour. */
-const headerBg = (tier: Tier) =>
-  tier === "ungraded"
-    ? "bg-brand_navy"
-    : severityHeaderBgClass[tier as Severity];
+// Interfaces
+import type { ItemGradingMetric } from "../../../../utils/itemMargins";
+import type { DayCardEntry } from "../../../../components/interfaces";
 
-/** One KPI cell, matching the Sales strip. The date line is load-bearing: the
- *  figure means something different once a day is selected. */
-const Kpi = ({
-  title,
-  dateLabel,
-  value,
-  pct,
-  threshold,
-  complete = true,
-  coverageNote,
-}: {
-  title: string;
-  dateLabel: string;
-  value: string;
-  pct?: number | null;
-  threshold: number;
-  /** False when the comparison is missing days: grey, and it doesn't grade. */
-  complete?: boolean;
-  /** "3 of 7 days matched", shown under a partial comparison. */
-  coverageNote?: string;
-}) => (
-  <div className="px-4 pt-2.5 pb-2 text-center">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {title}
-    </div>
-    <div className="text-[10px] font-bold text-content mb-0.5">{dateLabel}</div>
-    {pct === undefined ? (
-      <div className="text-[14px] font-bold text-content">{value}</div>
-    ) : (
-      <div className="flex items-baseline justify-center gap-2">
-        <span className="text-[14px] font-bold text-content">{value}</span>
-        {pct !== null && (
-          <span
-            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(pct, complete, threshold)}`}
-          >
-            {formatPct(pct)}
-          </span>
-        )}
-      </div>
-    )}
-    {coverageNote && (
-      <div className="text-[10px] font-semibold text-content pt-0.5">{coverageNote}</div>
-    )}
-  </div>
-);
+// Components
+import {
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/24/outline";
+import DayCardStrip from "../../../../components/DayCardStrip";
+import ItemMarginsTable from "../../../../components/ItemMarginsTable";
+import VendorExportModal from "../export/VendorExportModal";
+import Kpi from "./Kpi";
 
+/** The Vendors detail panel for the selected vendor: the header with its report and export buttons, KPI figures,
+ *  the week's day cards and the item margins table. Follows the Margin/Sales toggle and the chosen store location. */
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
-  const vend = useAppSelector((s) => s.prod.vendors);
+  const vend = useVendorsCtx();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
   const {
     rows,
     raw: rawAll,
@@ -116,6 +80,7 @@ const VendorDetailPanel = () => {
   );
 
   const [exportOpen, setExportOpen] = useState(false);
+  const openCriticalReport = useCriticalReport();
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
   const isMargin = metric === "margin";
@@ -123,10 +88,12 @@ const VendorDetailPanel = () => {
   /** A net/COGS pair reduced to whichever number the toggle is showing, and the
    *  string for it. Margin is a percentage, sales are dollars — they never
    *  share a formatter. */
-  const valueOf = (net: number, cogs: number) =>
-    isMargin ? marginPct(net, cogs) : net;
-  const fmt = (v: number) =>
-    isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
+  const valueOf = (net: number, cogs: number): number | null =>
+    isMargin ? (net > 0 ? marginPct(net, cogs) : null) : net;
+  /** Null prints as a dash: a day with no sales has no margin, and 0.00%
+   *  reads as a day sold at cost. In sales mode zero is a real figure. */
+  const fmt = (v: number | null) =>
+    v === null ? "—" : isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
 
   /** Points in margin mode, percent in sales mode — the same contract
    *  vendorDelta has, and the reason the two can't share a formatter either. */
@@ -137,7 +104,12 @@ const VendorDetailPanel = () => {
     baseCogs: number,
   ) =>
     isMargin
-      ? marginPct(twNet, twCogs) - marginPct(baseNet, baseCogs)
+      ? // Both sides need sales. The matched days can leave this week's side
+        // empty — a vendor selling on different days each week — and taking a
+        // margin on nothing gave 0%, which read as a collapse.
+        twNet > 0 && baseNet > 0
+        ? marginPct(twNet, twCogs) - marginPct(baseNet, baseCogs)
+        : null
       : pctChange(twNet, baseNet);
 
   const row = useMemo(
@@ -160,10 +132,35 @@ const VendorDetailPanel = () => {
     [raw, selectedVendor],
   );
 
+  /** Item grading uses its own threshold and follows the Margin/Sales toggle —
+   *  the same pair the export modal derives, so the button and the file agree. */
+  const activeItemThreshold = itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT;
+  const itemGradingMetric: ItemGradingMetric = isMargin ? "margin" : "sales";
+
+  /**
+   * This vendor's critical items, selected by the same collector the UPC List
+   * export uses. Each carries the sub department it sells under, which is what
+   * lets a multi-department vendor narrow the report's fan-out instead of
+   * forcing it to read the whole store.
+   */
+  const criticalItems = useMemo(
+    () =>
+      row
+        ? collectGradedItems(
+            [row],
+            raw,
+            activeItemThreshold,
+            itemGradingMetric,
+            new Set(["critical"] as const),
+          ).map((g) => ({ productCode: g.r.productCode, dept: g.dept }))
+        : [],
+    [row, raw, activeItemThreshold, itemGradingMetric],
+  );
+
   if (!row) {
     return (
       <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl flex items-center justify-center">
-        <span className="text-[11px] text-content/40">
+        <span className="text-[11px] text-content/95">
           Select a vendor to see its week
         </span>
       </div>
@@ -264,7 +261,7 @@ const VendorDetailPanel = () => {
       : null;
 
   return (
-    <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl overflow-hidden flex flex-col">
+    <div className="flex-1 min-w-0 shadow-lg cc-panel">
       {exportOpen && (
         <VendorExportModal
           onClose={() => setExportOpen(false)}
@@ -302,10 +299,42 @@ const VendorDetailPanel = () => {
           Vendor Performance · {twLabel}
         </span>
         <div className="justify-self-end flex items-center gap-1.5">
+          {/* A vendor's range routinely spans several sub departments, so the
+              handed-over items carry their own — that set is what narrows the
+              fan-out on the report side instead of reading every department. */}
+          {canSeeComingSoon && criticalItems.length > 0 && (
+            <button
+              onClick={() =>
+                openCriticalReport({
+                  storeId: vend.storeid,
+                  items: criticalItems,
+                  window: { start: vend.twStart, end: vend.twEnd },
+                  // The vendor's rows for all three periods are already in
+                  // hand — handing them over is both faster and the only way
+                  // the report is guaranteed to show what this panel showed.
+                  rows: {
+                    ty: vendorRaw.tw,
+                    lw: vendorRaw.lw,
+                    ly: vendorRaw.ly,
+                  },
+                  sourceLabel: row.vendorName,
+                  basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
+                })
+              }
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40"
+              title={`See item actions (${criticalItems.length})`}
+            >
+              <ClipboardDocumentListIcon className="h-4 w-4" />
+            </button>
+          )}
+          {/* The export is mostly item rows, which land after the list. */}
           <button
             onClick={() => setExportOpen(true)}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            title="Export"
+            disabled={vend.itemsLoading || !!vend.itemsError}
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 cc-navy-link hover:border-custom-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
+            title={
+              vend.itemsLoading ? "Export — items still loading" : "Export"
+            }
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
           </button>
@@ -313,7 +342,7 @@ const VendorDetailPanel = () => {
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}
-      <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-3 divide-x divide-line_hair border-b border-line_hair bg-fill_soft flex-shrink-0">
         <Kpi
           title={isMargin ? "TY Margin" : "TY Net Sales"}
           dateLabel={twLabel}
@@ -352,7 +381,9 @@ const VendorDetailPanel = () => {
       <DayCardStrip
         days={dayCards}
         weekValue={fmt(valueOf(row.twNet, row.twCogs))}
-        weekDelta={basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null}
+        weekDelta={
+          basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null
+        }
         weekDeltaBasis={basis ?? undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
@@ -362,15 +393,26 @@ const VendorDetailPanel = () => {
       {/* Items are the only report here — the table brings its own toolbar,
           so a one-tab strip above it would be decoration. Sub-department
           breakdowns live on Sub Dept Margins, not repeated per vendor. */}
-      <ItemMarginsTable
-        coverage={row.coverage}
-        items={vendorRaw}
-        gradingMetric={isMargin ? "margin" : "sales"}
-        threshold={itemThreshold}
-        thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
-        onThresholdChange={(v) => dispatch(setItemThreshold(v))}
-        selectedDay={selectedDay}
-      />
+      {/* The list came from the vendor totals; the item rows follow them. Said
+          in place of the table, so an empty table never reads as a vendor
+          with no items. */}
+      {vend.itemsLoading || vend.itemsError ? (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <span className="text-[11.5px] text-content/95">
+            {vend.itemsError ?? "Loading this week's items…"}
+          </span>
+        </div>
+      ) : (
+        <ItemMarginsTable
+          coverage={row.coverage}
+          items={vendorRaw}
+          gradingMetric={isMargin ? "margin" : "sales"}
+          threshold={itemThreshold}
+          thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
+          onThresholdChange={(v) => dispatch(setItemThreshold(v))}
+          selectedDay={selectedDay}
+        />
+      )}
     </div>
   );
 };

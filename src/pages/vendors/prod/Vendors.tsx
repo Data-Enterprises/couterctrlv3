@@ -1,12 +1,16 @@
+// Hooks
 import { useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useVendorSearch, useVendorsCtx } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
-import { useVendorSearch } from "./useVendorSearch";
-import VendorListPanel from "./VendorListPanel";
-import VendorDetailPanel from "./VendorDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/prod/ItemPerfMobile";
+import ItemPerfMobile from "../../../components/itemPerf/ItemPerfMobile";
+import SearchPopup from "../../../components/SearchPopup";
+import VendorListPanel from "./components/VendorListPanel";
+import VendorDetailPanel from "./components/VendorDetailPanel";
 
 /**
  * Vendors — Performance.
@@ -23,7 +27,7 @@ const Vendors = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const vend = useAppSelector((s) => s.prod.vendors);
+  const vend = useVendorsCtx();
   const { runSearch, applyLocation } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -53,11 +57,7 @@ const Vendors = () => {
   // row carries both dimensions, so this is a grouping choice, not a page.
   if (context.isMobile)
     return (
-      <ItemPerfMobile
-        dimension="vendor"
-        title="Vendors"
-        listLabel="Vendors"
-      />
+      <ItemPerfMobile dimension="vendor" title="Vendors" listLabel="Vendors" />
     );
 
   if (vend.loading) {
@@ -84,12 +84,7 @@ const Vendors = () => {
           the loaded week to change one field is the thing that pattern exists
           to prevent. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">

@@ -1,15 +1,9 @@
+// Hooks
 import { memo, useCallback } from "react";
-import { PCT_COL_W } from "../../../utils/severity";
 
-/**
- * One row in the vendor list.
- *
- * Memoized on primitives only — including the already-resolved pill and dot
- * class names — so dragging the threshold slider re-renders the handful of rows
- * whose grade actually crossed it rather than the whole list. Passing the row
- * object would defeat the memo, since the parent builds a new one each pass.
- * Same reasoning as CategoryRow.
- */
+// Utils
+import { PCT_COL_W } from "../../../../utils/severity";
+
 interface VendorRowProps {
   vendorId: string;
   label: string;
@@ -28,6 +22,15 @@ interface VendorRowProps {
   onSelect: (vendorId: string, isSelected: boolean) => void;
 }
 
+/**
+ * One row in the vendor list.
+ *
+ * Memoized on primitives only — including the already-resolved pill and dot
+ * class names — so dragging the threshold slider re-renders the handful of rows
+ * whose grade actually crossed it rather than the whole list. Passing the row
+ * object would defeat the memo, since the parent builds a new one each pass.
+ * Same reasoning as CategoryRow.
+ */
 const VendorRow = ({
   vendorId,
   label,
@@ -51,15 +54,15 @@ const VendorRow = ({
     <button
       onClick={handleClick}
       className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSelected
-          ? "bg-row_selected border-row_selected_border"
-          : "border-transparent hover:bg-gray-50"
+        isSelected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-content truncate">{label}</div>
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[13px] font-medium text-content truncate">
+          {label}
+        </div>
+        <div className="text-[12px] text-content/95 truncate">
           LW <span className="font-semibold">{lwText}</span> · LY{" "}
           <span className="font-semibold">{lyText}</span>
         </div>

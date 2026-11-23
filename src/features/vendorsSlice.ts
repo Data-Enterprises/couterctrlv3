@@ -1,6 +1,10 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin } from "../interfaces";
-import type { VendorMetric, VendorRow, VendorTier } from "../interfaces";
+
+// Interfaces
+import type { SubDeptMargin, VendorMetric, VendorRow, VendorTier } from "../interfaces";
+import type { RollupRow } from "../api/rollup";
 
 /** Vendors (Performance).
  *
@@ -25,6 +29,13 @@ interface VendorsState {
   rows: VendorRow[];
   /** Item rows for all three periods, the source for both right-panel tabs. */
   raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
+  /** The vendor totals the list is built from (`subs/rollup`). Kept unscoped,
+   *  like `raw`, so switching location rebuilds the list without a call. */
+  rollup: { tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] };
+  /** The item rows arrive after the list. True from the search until they
+   *  land, so the detail panel can say so rather than show an empty table. */
+  itemsLoading: boolean;
+  itemsError: string | null;
   loading: boolean;
   /** Named rather than a bare spinner — this page walks every sub department
    *  three times, so an unexplained wait reads as a stall. */
@@ -57,6 +68,9 @@ interface VendorsState {
 const initialState: VendorsState = {
   rows: [],
   raw: { tw: [], lw: [], ly: [] },
+  rollup: { tw: [], lw: [], ly: [] },
+  itemsLoading: false,
+  itemsError: null,
   loading: false,
   loadingMessage: "",
   storeid: 0,
@@ -90,6 +104,20 @@ const vendorsSlice = createSlice({
       }>,
     ) => {
       state.raw = action.payload;
+    },
+    setRollup: (
+      state,
+      action: PayloadAction<{ tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] }>,
+    ) => {
+      state.rollup = action.payload;
+    },
+    setItemsLoading: (state, action: PayloadAction<boolean>) => {
+      state.itemsLoading = action.payload;
+      if (action.payload) state.itemsError = null;
+    },
+    setItemsError: (state, action: PayloadAction<string | null>) => {
+      state.itemsError = action.payload;
+      state.itemsLoading = false;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -138,6 +166,9 @@ const vendorsSlice = createSlice({
     reQuery: (state) => {
       state.rows = [];
       state.raw = { tw: [], lw: [], ly: [] };
+      state.rollup = { tw: [], lw: [], ly: [] };
+      state.itemsLoading = false;
+      state.itemsError = null;
       state.availableStoreNumbers = [];
       state.selectedStoreNumber = null;
       state.selectedVendor = null;
@@ -151,6 +182,9 @@ const vendorsSlice = createSlice({
 export const {
   setRows,
   setRaw,
+  setRollup,
+  setItemsLoading,
+  setItemsError,
   setLoading,
   setLoadingMessage,
   setStore,

@@ -1,6 +1,13 @@
-import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../utils/grading";
-import type { SubDeptMargin } from "../../../interfaces";
+// API
+import { getRollup, type RollupRow } from "../../../../api/rollup";
+
+// Utils
+import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../../utils/grading";
+
+// Interfaces
+import type { PeriodRange, VendorScope } from "../interfaces";
+import type { SubDeptMargin } from "../../../../interfaces";
 
 /**
  * Fetching for the Vendors page.
@@ -23,6 +30,12 @@ import type { SubDeptMargin } from "../../../interfaces";
  * and one range covers both — on a 28-day window that is 35 days of rows rather
  * than 56, fewer calls and a smaller download at once.
  *
+ * The list itself comes first and from `subs/rollup` (`fetchVendorRollup`),
+ * the same item rows summed by vendor per day on the server: ~40 KB, so the
+ * list paints in a moment. The item rows still come down whole behind it.
+ * The detail panel and the export read them, and keeping every field the
+ * endpoint returns leaves room for the page to grow.
+ *
  * Two flags are fixed and never exposed: `useGroups: 0`, `singleStore: 1`.
  * Vendors is examined one store at a time, like Sub Dept Margins and
  * Categories.
@@ -38,17 +51,6 @@ const SINGLE_STORE = 1;
  * request argument it means "all", as a row value it means that department.
  */
 const ALL_SUB_DEPTS = 0;
-
-export interface VendorScope {
-  url: string;
-  token: string;
-  storeid: number;
-}
-
-export interface PeriodRange {
-  start: string;
-  end: string;
-}
 
 /** The three ranges, derived from this week's. Offsets are shared so the fetch
  *  and the day-alignment can't drift apart. */
@@ -83,14 +85,7 @@ const fetchRange = (scope: VendorScope, range: PeriodRange) =>
     SINGLE_STORE,
   );
 
-/**
- * The whole search.
- *
- * `subDeptIds` still comes from this week only. A department that sold last
- * year and not this one contributes nothing to a this-week-rooted comparison,
- * and the callers use this list to decide whether the search found anything at
- * all.
- */
+/** The whole search: this week, last week and last year's item rows. */
 export const fetchVendorPeriods = async (
   scope: VendorScope,
   twStart: string,
@@ -109,9 +104,42 @@ export const fetchVendorPeriods = async (
   const tw = inRange(span, ranges.tw.start, ranges.tw.end);
   const lw = inRange(span, ranges.lw.start, ranges.lw.end);
 
-  const subDeptIds = [...new Set(tw.map((r) => r.sub_department))].sort(
-    (a, b) => a - b,
-  );
+  return { tw, lw, ly };
+};
 
-  return { tw, lw, ly, subDeptIds };
+/** One rollup read, unpaged. Throws on a failed answer, as the item reads do
+ *  through their safe wrapper's caller. */
+const fetchRollupRange = async (scope: VendorScope, range: PeriodRange) => {
+  const resp = await getRollup(scope.url, scope.token, {
+    by: "vendor",
+    startDate: range.start,
+    endDate: range.end,
+    useGroups: USE_GROUPS,
+    singleStore: SINGLE_STORE,
+    searchValue: scope.storeid,
+  });
+  if (resp.data.error !== 0) {
+    throw new Error(resp.data.msg ?? "Could not read the vendor totals");
+  }
+  return resp.data.rows ?? [];
+};
+
+/**
+ * The vendor list's totals for the search: the same three periods as
+ * `fetchVendorPeriods`, read the same way (one span for this week and last,
+ * one for last year), summed per vendor per location per day.
+ */
+export const fetchVendorRollup = async (
+  scope: VendorScope,
+  twStart: string,
+  twEnd: string,
+): Promise<{ tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] }> => {
+  const ranges = periodRanges(twStart, twEnd);
+  const [span, ly] = await Promise.all([
+    fetchRollupRange(scope, { start: ranges.lw.start, end: ranges.tw.end }),
+    fetchRollupRange(scope, ranges.ly),
+  ]);
+  const within = (rows: RollupRow[], r: PeriodRange) =>
+    rows.filter((x) => x.sale_date >= r.start && x.sale_date <= r.end);
+  return { tw: within(span, ranges.tw), lw: within(span, ranges.lw), ly };
 };

@@ -1,8 +1,8 @@
-import { onlyStoreNumber } from "../../../utils/storeIdentity";
-import { marginPct } from "../../../utils/grading";
-import type { SubDeptMargin } from "../../../interfaces";
-import { calculateCogs } from "../../../utils/cogs";
+// Utils
+import { onlyStoreNumber } from "../../../../utils/storeIdentity";
 import {
+  marginPct,
+  type Tier,
   LW_OFFSET,
   LY_OFFSET,
   isoOf,
@@ -11,10 +11,32 @@ import {
   tierOfDelta,
   coverageOf,
   gradeBasis,
-} from "../../../utils/grading";
-import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
+} from "../../../../utils/grading";
+import { calculateCogs } from "../../../../utils/cogs";
+import {
+  formatPct,
+  type Severity,
+  severityDotClass,
+  severityHeaderBgClass,
+} from "../../../../utils/severity";
+
+// Interfaces
+import type {
+  SubDeptMargin,
+  VendorMetric,
+  VendorRow,
+  VendorDay,
+  VendorTier,
+} from "../../../../interfaces";
+import type { RollupRow } from "../../../../api/rollup";
+
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
-export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
+export type {
+  VendorMetric,
+  VendorRow,
+  VendorDay,
+  VendorTier,
+} from "../../../../interfaces";
 
 /** Margin percentage from a net/COGS pair. Re-exported rather than defined:
  *  this page and Sub Dept Margins read the same rows, and the one definition
@@ -50,8 +72,8 @@ const netOf = (m: SubDeptMargin) => m.total_sales - m.total_tax;
  *  Strict, not `scopeToStoreNumber`: a location can have a period the other
  *  one did not trade in, and the guarded form would hand those rows over
  *  rather than reporting no comparison. */
-export const scopePeriods = (
-  raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
+export const scopePeriods = <T extends { store_number: string }>(
+  raw: { tw: T[]; lw: T[]; ly: T[] },
   storeNumber: string | null,
 ) =>
   storeNumber === null
@@ -79,20 +101,49 @@ interface VendorAgg {
  *  on coupon lines, so anything reading them has to coerce before it trims —
  *  `(0).trim()` is a TypeError, and TypeScript can't warn about it because the
  *  interface says otherwise. */
-const asText = (v: unknown) => (v === null || v === undefined ? "" : String(v)).trim();
+const asText = (v: unknown) =>
+  (v === null || v === undefined ? "" : String(v)).trim();
 
 /** Empty, or all zeros — `0`, `"0"`, `"00000"`. A real id like `"00050"` is
  *  numerically 50, so it never lands here. */
 const isNoVendor = (id: string) => id === "" || /^0+$/.test(id);
 
-const collect = (rows: SubDeptMargin[]) => {
+/**
+ * What the vendor list reads off one row: whose, which day, and the three sums.
+ *
+ * Two kinds of row carry it. Item rows from `subs/subs`, which the detail
+ * panel and the export need, and `subs/rollup` rows, which are those same item
+ * rows summed by vendor per location per day on the server. The list is built
+ * from the rollup so it paints from ~40 KB while the item rows are still
+ * coming, and it comes out the same either way: the rollup's ids are the item
+ * rows' `vendor_id` as trimmed text, and its cogs is `calculateCogs` applied
+ * per item row.
+ */
+type VendorSource = SubDeptMargin | RollupRow;
+
+const factOf = (m: VendorSource) =>
+  "key" in m
+    ? { rawId: m.key, name: m.name, net: m.net_sales, qty: m.qty, cogs: m.cogs }
+    : {
+        rawId: asText(m.vendor_id),
+        name: asText(m.vendor_name),
+        net: netOf(m),
+        qty: m.qty,
+        // The canonical helper — net_cost before cost, weight before qty.
+        // Costing a promoted item at list, or a scale item by scan count, is
+        // what it exists to prevent; see the note on calculateCogs.
+        cogs: calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+      };
+
+const collect = (rows: VendorSource[]) => {
   const map = new Map<string, VendorAgg>();
   for (const m of rows) {
-    const rawId = asText(m.vendor_id);
+    const f = factOf(m);
+    const rawId = asText(f.rawId);
     const id = isNoVendor(rawId) ? NO_VENDOR_ID : rawId;
     let v = map.get(id);
     if (!v) {
-      const name = asText(m.vendor_name);
+      const name = asText(f.name);
       v = {
         name:
           id === NO_VENDOR_ID
@@ -106,12 +157,9 @@ const collect = (rows: SubDeptMargin[]) => {
     }
     const d = isoOf(m.sale_date);
     const b = v.byDate.get(d) ?? empty();
-    b.net += netOf(m);
-    b.qty += m.qty;
-    // The canonical helper — net_cost before cost, weight before qty. Costing a
-    // promoted item at list, or a scale item by scan count, is what it exists
-    // to prevent; see the note on calculateCogs.
-    b.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+    b.net += f.net;
+    b.qty += f.qty;
+    b.cogs += f.cogs;
     v.byDate.set(d, b);
   }
   return map;
@@ -126,9 +174,9 @@ const collect = (rows: SubDeptMargin[]) => {
  * week is part of what the panel shows.
  */
 export const buildVendorRows = (
-  tw: SubDeptMargin[],
-  lw: SubDeptMargin[],
-  ly: SubDeptMargin[],
+  tw: VendorSource[],
+  lw: VendorSource[],
+  ly: VendorSource[],
   twDates: string[],
 ): VendorRow[] => {
   const twMap = collect(tw);
@@ -171,12 +219,23 @@ export const buildVendorRows = (
       };
     });
 
-    let twNet = 0, twQty = 0, twCogs = 0;
-    let lwNet = 0, lwQty = 0, lwCogs = 0;
-    let twNetForLW = 0, twQtyForLW = 0, twCogsForLW = 0;
-    let lyNet = 0, lyQty = 0, lyCogs = 0;
-    let twNetForLY = 0, twQtyForLY = 0, twCogsForLY = 0;
-    let hasLW = false, hasLY = false;
+    let twNet = 0,
+      twQty = 0,
+      twCogs = 0;
+    let lwNet = 0,
+      lwQty = 0,
+      lwCogs = 0;
+    let twNetForLW = 0,
+      twQtyForLW = 0,
+      twCogsForLW = 0;
+    let lyNet = 0,
+      lyQty = 0,
+      lyCogs = 0;
+    let twNetForLY = 0,
+      twQtyForLY = 0,
+      twCogsForLY = 0;
+    let hasLW = false,
+      hasLY = false;
 
     for (const d of days) {
       twNet += d.twNet;
@@ -209,18 +268,48 @@ export const buildVendorRows = (
       vendorName: agg.name,
       noVendor: id === NO_VENDOR_ID,
       days,
-      twNet, twQty, twCogs,
-      lwNet, lwQty, lwCogs, twNetForLW, twQtyForLW, twCogsForLW,
-      lyNet, lyQty, lyCogs, twNetForLY, twQtyForLY, twCogsForLY,
-      hasLW, hasLY,
+      twNet,
+      twQty,
+      twCogs,
+      lwNet,
+      lwQty,
+      lwCogs,
+      twNetForLW,
+      twQtyForLW,
+      twCogsForLW,
+      lyNet,
+      lyQty,
+      lyCogs,
+      twNetForLY,
+      twQtyForLY,
+      twCogsForLY,
+      hasLW,
+      hasLY,
       coverage,
       tyMarginPct: marginPct(twNet, twCogs),
-      lwMarginPct: marginPct(lwNet, lwCogs),
-      lyMarginPct: marginPct(lyNet, lyCogs),
-      // Both sides of a points delta come from the SAME matched days, so a
-      // week still in progress isn't measured against a full prior one.
-      lwPtsDelta: marginPct(twNetForLW, twCogsForLW) - marginPct(lwNet, lwCogs),
-      lyPtsDelta: marginPct(twNetForLY, twCogsForLY) - marginPct(lyNet, lyCogs),
+      lwMarginPct: lwNet > 0 ? marginPct(lwNet, lwCogs) : null,
+      lyMarginPct: lyNet > 0 ? marginPct(lyNet, lyCogs) : null,
+      /**
+       * Both sides of a points delta come from the SAME matched days, so a
+       * week still in progress isn't measured against a full prior one — and
+       * both sides need sales, because a margin is a rate and a rate needs
+       * something to be a rate OF.
+       *
+       * The matched days can leave one side empty. A vendor who sold Tuesday
+       * and Saturday this week and only Friday last week matches on Friday,
+       * where this week sold nothing: `marginPct` answers 0 for that, and the
+       * delta then reads as a 24-point collapse when both weeks in fact ran at
+       * the same margin. Null is the honest answer — there is no comparison to
+       * make — and it grades as Ungraded rather than Critical.
+       */
+      lwPtsDelta:
+        twNetForLW > 0 && lwNet > 0
+          ? marginPct(twNetForLW, twCogsForLW) - marginPct(lwNet, lwCogs)
+          : null,
+      lyPtsDelta:
+        twNetForLY > 0 && lyNet > 0
+          ? marginPct(twNetForLY, twCogsForLY) - marginPct(lyNet, lyCogs)
+          : null,
     });
   }
 
@@ -266,5 +355,51 @@ export const rowsForVendor = (rows: SubDeptMargin[], vendorId: string) =>
   });
 
 /** Every TW date in the search, sorted — the spine day-matching aligns onto. */
-export const datesOf = (rows: SubDeptMargin[]): string[] =>
+export const datesOf = (rows: { sale_date: string }[]): string[] =>
   [...new Set(rows.map((m) => isoOf(m.sale_date)))].sort();
+
+/** Ungraded has no severity colour of its own, so the header falls back to the
+ *  navy every other panel uses rather than borrowing a verdict colour. */
+export const headerBg = (tier: Tier) =>
+  tier === "ungraded"
+    ? "bg-brand_navy"
+    : severityHeaderBgClass[tier as Severity];
+
+/** The list's Margin / Sales toggle. */
+export const TOGGLE_OPTS = [
+  { key: "margin" as const, label: "Margin" },
+  { key: "sales" as const, label: "Sales" },
+];
+
+/** Margin deltas are POINTS, sales deltas are PERCENT — never interchangeable,
+ *  so the suffix is part of the number. Same split Sub Dept Margins makes. */
+export const fmtDelta = (d: number | null, isMargin: boolean) =>
+  d === null
+    ? "—"
+    : isMargin
+      ? `${d >= 0 ? "+" : ""}${d.toFixed(2)} pts`
+      : formatPct(d);
+
+/** Ungraded has no severity equivalent, so it falls back to the neutral dot
+ *  rather than borrowing a colour that would imply a verdict. */
+export const dotFor = (tier: Tier) =>
+  tier === "ungraded"
+    ? "bg-fill_track_strong"
+    : severityDotClass[tier as Severity];
+
+/** Written out in full because Tailwind scans source text and never sees a
+ *  class assembled at runtime. */
+export const CHIP_BASE: Record<Tier, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  ungraded: "bg-fill_muted text-content/95",
+};
+
+/** The ring a tier chip wears while its filter is on. */
+export const CHIP_ON: Record<Tier, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+  ungraded: "ring-2 ring-ungraded/40 shadow-sm",
+};
