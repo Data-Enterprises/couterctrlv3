@@ -38,7 +38,8 @@
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { makeResolver, specFor, SPEC_RE, trashPath } from "./relocate.mjs";
+import { makeResolver, trashPath } from "./relocate.mjs";
+import { makePromoter, prodNameFromFile, promoteTestImports, LIB, DEVLIB } from "./promote-common.mjs";
 
 const P = path.posix;
 const args = process.argv.slice(2);
@@ -60,7 +61,6 @@ const DEV = `${PAGE}dev/`;
 for (const d of [PROD, DEV])
   if (!existsSync(d)) { console.error(`missing ${d} — has ${page} been split?`); process.exit(2); }
 
-const LIB = "src/components/", DEVLIB = "src/components-dev/";
 const files = execSync("git ls-files -co --exclude-standard src", { encoding: "utf8" })
   .trim().split("\n").filter((f) => existsSync(f) && statSync(f).isFile());
 const has = new Set(files);
@@ -68,63 +68,12 @@ const resolve = makeResolver(has);
 const isTest = (f) => /\.test\.tsx?$/.test(f);
 const lf = (s) => s.replace(/\r\n/g, "\n");
 
-// dev path -> prod path, for every kind of dev-only file.
-const toProd = (f) => {
-  if (f.startsWith(DEV)) return PROD + f.slice(DEV.length);
-  if (f.startsWith(DEVLIB)) return LIB + f.slice(DEVLIB.length);
-  const slice = f.match(/^src\/features\/dev\/dev(\w)(\w*Slice\.tsx?)$/);
-  if (slice) return `src/features/${slice[1].toLowerCase()}${slice[2]}`;
-  const unit = f.match(/^(src\/pages\/.+?)\/dev\/(.+)$/);
-  if (unit && existsSync(`${unit[1]}/prod`)) return `${unit[1]}/prod/${unit[2]}`;
-  return f;
-};
-
-// Rewrite a dev file's text for its prod location.
-const selectorParams = (src) => {
-  const ps = new Set();
-  for (const m of src.matchAll(/useAppSelector\(\s*\(?\s*(\w+)/g)) ps.add(m[1]);
-  for (const m of src.matchAll(/\b(\w+)\s*:\s*RootState\b/g)) ps.add(m[1]);
-  return ps;
-};
-const promoteText = (from, src) => {
-  const to = toProd(from);
-  let out = src.replace(SPEC_RE, (m, head, q, spec) => {
-    const r = resolve(from, spec);
-    if (!r) return m;
-    const next = specFor(to, toProd(r.target), r.suffix);
-    return next === spec ? m : `${head}${q}${next}${q}`;
-  });
-  for (const p of selectorParams(out)) out = out.replace(new RegExp(`(?<![.\\w])${p}\\.dev\\.`, "g"), `${p}.prod.`);
-  out = out.replace(/getState\(\)\.dev\./g, "getState().prod.");
-  return out.replace(/\bThe dev tree\b/g, "The prod tree").replace(/\bdev tree\b/g, "prod tree");
-};
-// A dev slice back to its prod form: no "Dev copy" header, the prod name.
-const promoteSlice = (from, src, prodName) => {
-  let out = promoteText(from, src);
-  out = out.replace(/^\/\*\*\r?\n \* Dev copy of [\s\S]*?\*\/\r?\n/, "");
-  out = out.replace(
-    /^([ \t]*)\/\/ Distinct from the prod slice's "\w+"[^\n]*\n[ \t]*\/\/ string alone[^\n]*\n[ \t]*name:\s*"\w+"/m,
-    (m, ind) => `${ind}name: "${prodName}"`,
-  );
-  out = out.replace(/(createSlice\(\{\s*(?:\/\/[^\n]*\n\s*)*name:\s*)"dev\w+"/, `$1"${prodName}"`);
-  return out;
-};
-// A slice's prod name from its prod file: features/salesCacheSlice.ts -> salesCache.
-const prodNameFromFile = (twin) => P.basename(twin).replace(/Slice\.tsx?$/, "");
+const { toProd, promoteText, promoteSlice, edgesOf } = makePromoter(resolve);
 
 // ── the page trees ────────────────────────────────────────────────────────
 const devFiles = files.filter((f) => f.startsWith(DEV) && !isTest(f));
 const prodFiles = files.filter((f) => f.startsWith(PROD) && !isTest(f));
 const writes = new Map(); // prod path -> text
-const edgesOf = (f) => {
-  if (!/\.tsx?$/.test(f)) return [];
-  const out = [];
-  for (const m of readFileSync(f, "utf8").matchAll(SPEC_RE)) {
-    const r = resolve(f, m[3]);
-    if (r) out.push(r.target);
-  }
-  return out;
-};
 for (const f of devFiles) {
   const to = toProd(f);
   const text = /\.tsx?$/.test(f) ? promoteText(f, readFileSync(f, "utf8")) : readFileSync(f, "utf8");
@@ -168,12 +117,7 @@ const testFiles = (dir) =>
   existsSync(dir)
     ? execSync(`git ls-files -co --exclude-standard ${dir}`, { encoding: "utf8" }).trim().split("\n").filter((f) => f && existsSync(f))
     : [];
-const promoteTest = (src) =>
-  src
-    .replaceAll(`@/pages/${page}/dev/`, `@/pages/${page}/prod/`)
-    .replaceAll(`@/pages/${page}/dev"`, `@/pages/${page}/prod"`)
-    .replace(/@\/components-dev\//g, "@/components/")
-    .replace(/@\/features\/dev\/dev(\w)(\w*Slice)/g, (m, c, rest) => `@/features/${c.toLowerCase()}${rest}`);
+const promoteTest = (src) => promoteTestImports(src, page);
 const testWrites = new Map();
 for (const f of testFiles(TDEV)) {
   const to = TPROD + f.slice(TDEV.length);
