@@ -59,11 +59,11 @@ const CouponRow = ({
       <>
         <tr className="bg-fill_muted/70 text-[11px]">
           <td className="pl-8 pr-3 py-1" />
-          <td className="px-3 py-1 cc-caps">Cashier</td>
-          <td className="px-3 py-1 cc-caps">Date</td>
-          <td className="px-3 py-1 cc-caps">Trans ID</td>
-          <td className="px-3 py-1 cc-caps text-right">Qty</td>
-          <td className="px-3 py-1 cc-caps text-right">Amount</td>
+          <td className="px-3 py-1 cc-caps whitespace-nowrap">Cashier</td>
+          <td className="px-3 py-1 cc-caps whitespace-nowrap">Date</td>
+          <td className="px-3 py-1 cc-caps whitespace-nowrap">Trans ID</td>
+          <td className="px-3 py-1 cc-caps whitespace-nowrap text-right">Qty</td>
+          <td className="px-3 py-1 cc-caps whitespace-nowrap text-right">Amount</td>
         </tr>
         {agg.uses.map((use) => (
           <tr
