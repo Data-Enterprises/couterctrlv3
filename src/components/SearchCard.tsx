@@ -1,12 +1,21 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+// Hooks
+import { useAppSelector } from "../hooks";
+
+// Redux
+import { isGroupSearch } from "../features/searchSlice";
+
+// Utils
+import { getStoreName } from "../utils";
+
+// Interfaces
+import type { ReactNode } from "react";
+
+// Components
 import StorePicker from "./storePicker/StorePicker";
 import SingleDatePicker from "./datePickers/SingleDatePicker";
 import DatePickers from "./datePickers/DatePickers";
 import EntryCardLoading from "./loading/EntryCardLoading";
-import { useAppSelector } from "../hooks";
-import { getStoreName } from "../utils";
-import type { ReactNode } from "react";
-import { isGroupSearch } from "../features/searchSlice";
+import SearchBackButton from "./SearchBackButton";
 
 interface SearchCardProps {
   title: string;
@@ -26,6 +35,13 @@ interface SearchCardProps {
   backLabel?: string;
   top?: boolean;
   notice?: string;
+  /**
+   * Why this search cannot run, in a sentence.
+   *
+   * Turns the button off and says so above it. Different from `notice`, which
+   * is something worth knowing about a search that can go ahead.
+   */
+  blocked?: string | null;
   /** Shown in the mask while loading. Worth naming what is being fetched —
    *  group searches can run long enough that a bare "Loading..." reads as a
    *  hang. */
@@ -35,8 +51,14 @@ interface SearchCardProps {
    *  window length, for one. Hidden by the loading mask with the rest of the
    *  form. */
   extraControls?: ReactNode;
+  /** Inputs above the store picker, for a choice the store and dates
+   *  depend on -- which table Data Export reads, for one. */
+  leadingControls?: ReactNode;
 }
 
+/** The page's search card: store or group picker, date pickers and a Search
+ *  button that reads "Select Store" or "Select Group" until something is
+ *  picked. A spinner with the search label replaces the form while it loads. */
 const SearchCard = ({
   title,
   description,
@@ -49,8 +71,10 @@ const SearchCard = ({
   backLabel = "Back to results",
   top = false,
   notice,
+  blocked = null,
   loadingMessage = "Loading...",
   extraControls,
+  leadingControls,
 }: SearchCardProps) => {
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
@@ -95,10 +119,17 @@ const SearchCard = ({
           : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"
       }
     >
-      <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
+      {/* The card's own help anchor. "search" is the magnifying glass that
+          reopens it, which is a different thing: a guide step about picking a
+          store pointed there while the card was closed and lit up the dark
+          header instead (dev board review, finding AD). */}
+      <div
+        data-help="search-card"
+        className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3"
+      >
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
-          <p className="text-[12px] text-content/50 mt-1">{description}</p>
+          <p className="text-[12px] text-content/95 mt-1">{description}</p>
         </div>
 
         {/* A disabled button alone reads as a frozen form on slow group
@@ -111,10 +142,12 @@ const SearchCard = ({
             style={loading ? { visibility: "hidden" } : undefined}
           >
             {notice && (
-              <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+              <div className="cc-notice text-[11.5px] leading-snug">
                 {notice}
               </div>
             )}
+
+            {leadingControls}
 
             <StorePicker />
 
@@ -123,9 +156,15 @@ const SearchCard = ({
 
             {extraControls}
 
+            {blocked && (
+              <div className="cc-notice border border-severity_watch_text/20 text-[11.5px] leading-snug">
+                {blocked}
+              </div>
+            )}
+
             <button
               onClick={onSearch}
-              disabled={loading || nothingPicked}
+              disabled={loading || nothingPicked || blocked !== null}
               className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               {/* The button says what it is waiting for rather than what it
@@ -139,18 +178,7 @@ const SearchCard = ({
                 : buttonLabel}
             </button>
 
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-                style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
-              >
-                <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
-                <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
-                  {backLabel}
-                </span>
-              </button>
-            )}
+            {onBack && <SearchBackButton label={backLabel} onClick={onBack} />}
           </div>
 
           {loading && (

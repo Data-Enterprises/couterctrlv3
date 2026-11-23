@@ -133,21 +133,9 @@
   "src/components-dev/modals/ExportModal.tsx": {
     "any-in-props": 1
   },
-  "src/components/BottomSheet.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
   "src/components/Carousel.tsx": {
     "doc-comment": 1,
     "labels": 1
-  },
-  "src/components/DayCardStrip.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1
-  },
-  "src/components/EmptyPrompt.tsx": {
-    "doc-comment": 1
   },
   "src/components/ErrorBoundary.tsx": {
     "doc-comment": 1,
@@ -155,67 +143,15 @@
     "shape-extra-type": 1,
     "shape-props-name": 1
   },
-  "src/components/HeaderIconButton.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/InfoButton.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 2
-  },
   "src/components/InfoPopover.tsx": {
     "doc-comment": 1,
     "labels": 1,
     "shape-extra-type": 1
   },
-  "src/components/ItemMarginsTable.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "one-line-per-source": 1,
-    "shape-extra-code": 2,
-    "shape-extra-component": 2,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/KpiTileGrid.tsx": {
-    "doc-comment": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/Modal.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SearchCard.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SeverityBadge.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "one-line-per-source": 1
-  },
-  "src/components/SingleStoreSearchCard.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SortHeader.tsx": {
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-named-export": 1
-  },
   "src/components/TextInput.tsx": {
     "commented-code": 1,
     "doc-comment": 1,
     "labels": 1
-  },
-  "src/components/UpcContextMenu.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-extra-type": 1
   },
   "src/components/UserDataLoader.tsx": {
     "commented-code": 1,
@@ -224,133 +160,15 @@
     "one-line-per-source": 1,
     "shape-extra-code": 1
   },
-  "src/components/datePickers/Calendar.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/datePickers/DatePickers.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/datePickers/EndDatePicker.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/datePickers/SingleDatePicker.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/datePickers/StartDatePicker.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/ColFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/ColFilterPopover.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/filters/FilterBar.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/LocationTabs.tsx": {
-    "doc-comment": 1
-  },
-  "src/components/filters/MultiSelectFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/filters/SelectFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1
-  },
-  "src/components/filters/ThresholdFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 2,
-    "shape-props-name": 1
-  },
-  "src/components/filters/ThresholdSlider.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/inputs/CheckBox.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/inputs/PasswordInput.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/loading/EntryCardLoading.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
   "src/components/mobile/MobileInfoSheet.tsx": {
     "labels": 1,
     "shape-props-name": 1
   },
-  "src/components/mobile/MobilePerfCard.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobilePerfDetail.tsx": {
-    "labels": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobilePerfHeader.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobileSortChips.tsx": {
-    "doc-comment": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PairedBars.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PerfCardHeader.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PerfDayChart.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
   "src/components/modals/ExportModal.tsx": {
-    "any-in-props": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/modals/ResizableModalShell.tsx": {
-    "doc-comment": 1,
-    "labels": 1
+    "any-in-props": 1
   },
   "src/components/navigation/TitleBar.tsx": {
     "prod-imports-dev": 2
-  },
-  "src/components/scanner/ScannerView.tsx": {
-    "labels": 1,
-    "shape-extra-code": 4,
-    "shape-props-name": 1
   },
   "src/components/toasts/Toast.tsx": {
     "doc-comment": 1,
@@ -375,12 +193,6 @@
   },
   "src/components/toasts/types/index.ts": {
     "types-folder": 1
-  },
-  "src/components/transactions/Transaction.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 3
   },
   "src/content/posts.ts": {
     "labels": 1
@@ -419,9 +231,6 @@
   "src/features/dev/devExportBuilderSlice.ts": {
     "file-length": 1
   },
-  "src/features/eventPerfSlice.ts": {
-    "labels": 1
-  },
   "src/features/forecastDevSlice.ts": {
     "labels": 1,
     "one-line-per-source": 1
@@ -438,9 +247,6 @@
     "one-line-per-source": 1
   },
   "src/features/itemLookupSlice.ts": {
-    "labels": 1
-  },
-  "src/features/itemPerfSlice.ts": {
     "labels": 1
   },
   "src/features/itemReportSlice.ts": {

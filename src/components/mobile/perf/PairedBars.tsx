@@ -1,7 +1,8 @@
+// Utils
 import { formatCurrency2 } from "../../../utils";
-import { LOSER_OPACITY, LY_COLOR, TY_COLOR } from "./perfColors";
+import { DOWN_COLOR, LW_COLOR, LY_COLOR, TY_COLOR, UP_COLOR } from "./perfColors";
 
-interface Props {
+interface PairedBarsProps {
   ty: number;
   ly: number;
   /** The largest figure anywhere in the list, so every row shares one scale.
@@ -13,7 +14,7 @@ interface Props {
   /** Row captions. Sales and Margins compare periods; Loss Prevention and
    *  Coupon Sales compare a week against its own baseline, which is the same
    *  picture with different words on it. */
-  labels?: [string, string];
+  labels?: [string, string] | [string, string, string];
   /** How the figures read. Counts are not money, and formatting an exception
    *  tally as $363.00 is the kind of wrong that survives review. */
   format?: (n: number) => string;
@@ -26,12 +27,21 @@ interface Props {
    * rise from nothing. Opt-in, so nothing that passes a genuine zero changes.
    */
   lyUnavailable?: boolean;
+  /**
+   * Last week, as a third bar under last year. Opt-in: absent, the pair draws
+   * exactly as before. The TY bar's colour still grades against last year,
+   * and against last week only when last year has nothing on file.
+   */
+  lw?: number;
+  lwUnavailable?: boolean;
 }
 
 /**
  * This year against last year, as two bars on a shared scale.
  *
- * The larger of the pair sits at full strength and the smaller steps back.
+ * The TY bar is green when it is at or above last year and red when it is
+ * below. The LY bar stays neutral: it is the thing being measured against, not
+ * a competitor, and colouring it too would put two verdicts on one row.
  *
  * Both the length and the dimming animate, so tapping a day or swiping a lens
  * redistributes the list in front of you instead of cutting to a new
@@ -40,9 +50,9 @@ interface Props {
  * product, so those nodes survive the change and have something to animate;
  * switching tabs replaces them outright and lands without motion, which is
  * right, because that is a new list rather than this one changing.
- * That is the only thing opacity encodes — which figure is bigger — and it is
- * deliberately NOT a judgment. A store ahead of last year and a store behind
- * it get the same treatment; only the position of the full-strength bar moves.
+ * Nothing is dimmed any more. The shorter bar used to step back to say which
+ * of the pair was smaller, which the two lengths already said; now that hue
+ * carries the comparison, both bars read at full strength.
  *
  * Replaces the half-donut the legacy Sales view used. That ring split its
  * circumference between the two years, which makes the whole ring TY + LY —
@@ -57,19 +67,31 @@ const PairedBars = ({
   labels = ["TY", "LY"],
   format = formatCurrency2,
   lyUnavailable = false,
-}: Props) => {
+  lw,
+  lwUnavailable = false,
+}: PairedBarsProps) => {
   const safeMax = max > 0 ? max : 1;
-  // Nothing to lose to, so this year is never the dimmed one.
-  const tyWins = lyUnavailable || ty >= ly;
+  // Graded against last year, falling back to last week when last year has
+  // nothing to compare: no history, or a zero. The zero case matters once a
+  // last-week bar is drawn: the change figure beside it already falls back
+  // (`gradedChangePct`), and a row that sold $1.69 last week and nothing this
+  // week read "-100%" in red over a green "not below last year's $0" bar.
+  // Without a last-week bar a zero last year is still a real reading (a rise
+  // from nothing), as it always was. No comparison at all is not a rise: with
+  // nothing to be above, the bar stays the neutral blue.
+  const lwUsable = lw !== undefined && !lwUnavailable;
+  const against =
+    !lyUnavailable && (ly > 0 || !lwUsable)
+      ? ly
+      : lwUsable
+        ? lw
+        : null;
+  const tyColour =
+    against === null ? TY_COLOR : ty >= against ? UP_COLOR : DOWN_COLOR;
 
-  const bar = (
-    label: string,
-    value: number,
-    colour: string,
-    dimmed: boolean,
-  ) => (
+  const bar = (label: string, value: number, colour: string) => (
     <div className="flex items-center gap-2">
-      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
+      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
         {label}
       </span>
       <span
@@ -91,34 +113,34 @@ const PairedBars = ({
           style={{
             transform: `scaleX(${Math.max(value / safeMax, 0.01)})`,
             background: colour,
-            opacity: dimmed ? LOSER_OPACITY : 1,
           }}
         />
       </span>
-      <span
-        className="min-w-[76px] flex-none text-right text-[12.5px] font-bold text-content"
-        style={{ opacity: dimmed ? LOSER_OPACITY : 1 }}
-      >
+      <span className="min-w-[76px] flex-none text-right text-[12.5px] font-bold text-content">
         {format(value)}
+      </span>
+    </div>
+  );
+
+  const missing = (label: string) => (
+    <div className="flex items-center gap-2">
+      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
+        {label}
+      </span>
+      <span className="flex-1 text-[11px] text-content/95">
+        no history on file
       </span>
     </div>
   );
 
   return (
     <div className="flex flex-col gap-1.5">
-      {bar(labels[0], ty, TY_COLOR, !tyWins)}
-      {lyUnavailable ? (
-        <div className="flex items-center gap-2">
-          <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
-            {labels[1]}
-          </span>
-          <span className="flex-1 text-[11px] text-content/85">
-            no history on file
-          </span>
-        </div>
-      ) : (
-        bar(labels[1], ly, LY_COLOR, tyWins)
-      )}
+      {bar(labels[0], ty, tyColour)}
+      {lyUnavailable ? missing(labels[1]) : bar(labels[1], ly, LY_COLOR)}
+      {lw !== undefined &&
+        (lwUnavailable
+          ? missing(labels[2] ?? "LW")
+          : bar(labels[2] ?? "LW", lw, LW_COLOR))}
     </div>
   );
 };

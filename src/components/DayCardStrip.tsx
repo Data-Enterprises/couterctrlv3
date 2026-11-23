@@ -1,6 +1,25 @@
-import { StarIcon } from "@heroicons/react/20/solid";
+// Utils
 import { getHolidayName } from "../utils/holidays";
 import { formatPct } from "../utils/severity";
+
+// Interfaces
+import type { DayCardEntry } from "./interfaces";
+
+// Components
+import { StarIcon } from "@heroicons/react/20/solid";
+
+interface DayCardStripProps {
+  days: DayCardEntry[];
+  /** The all-week figure shown on the leading card. */
+  weekValue: string;
+  weekDelta: number | null;
+  /** "" means all week. */
+  selected: string;
+  onSelect: (iso: string) => void;
+  /** Basis for the all-week card's delta, same contract as DayCardEntry. */
+  weekDeltaBasis?: string;
+  higherIsWorse?: boolean;
+}
 
 /**
  * The day-of-week card strip used across the Performance pages — an "All Week"
@@ -16,57 +35,6 @@ import { formatPct } from "../utils/severity";
  * Sales want a rise painted red, but the arrow should still point the way the
  * number actually moved.
  */
-export interface DayCardEntry {
-  /** YYYY-MM-DD. Also the selection value. */
-  iso: string;
-  /** Headline figure, already formatted. */
-  value: string;
-  /** Percentage move against the comparison period; null when ungraded. */
-  delta: number | null;
-  /** Hover text for the delta, e.g. the baseline value behind it. */
-  deltaTitle?: string;
-  /**
-   * Overrides for the card's own wording, all optional so every existing caller
-   * keeps the weekday-and-date default.
-   *
-   * Suggested Weight needs them because its cards are NOT that date's figure:
-   * they are the weekday's average, shown against the date it will be delivered
-   * against. Rendering "Saturday 9/12 — 1,151 lb" reads as a forecast for that
-   * Saturday, which the number is not. "Saturdays / covers 9/12 / 1,151 lb
-   * typical" says the same thing truthfully in the same space.
-   */
-  /** Replaces the weekday name on the top line. */
-  label?: string;
-  /** Replaces the m/d on the second line. */
-  subLabel?: string;
-  /** Small qualifier printed after the value, e.g. "typical". */
-  valueNote?: string;
-  /**
-   * Which baseline the delta is measured against — "LY" or "LW" — printed
-   * after the percentage so the card says what it is comparing to. Per-card
-   * rather than per-strip because a day can have a last-year figure while the
-   * day beside it only has last week.
-   *
-   * Left off by pages that grade against something else: LP and Coupon Sales
-   * compare each day to a rolling baseline of prior weeks, and labelling that
-   * "LY" would be false.
-   */
-  basis?: string;
-}
-
-interface DayCardStripProps {
-  days: DayCardEntry[];
-  /** The all-week figure shown on the leading card. */
-  weekValue: string;
-  weekDelta: number | null;
-  /** "" means all week. */
-  selected: string;
-  onSelect: (iso: string) => void;
-  /** Basis for the all-week card's delta, same contract as DayCardEntry. */
-  weekDeltaBasis?: string;
-  higherIsWorse?: boolean;
-}
-
 const DayCardStrip = ({
   days,
   weekValue,
@@ -96,18 +64,18 @@ const DayCardStrip = ({
   const weekRange = `${md(days[0].iso)} – ${md(days[days.length - 1].iso)}`;
 
   return (
-    <div className="flex-shrink-0 flex gap-1.5 p-1.5 border-b border-gray-100 bg-gray-50">
+    <div className="flex-shrink-0 flex gap-1.5 p-1.5 border-b border-line_hair bg-fill_soft">
       {/* All week card */}
       <button
         onClick={() => onSelect("")}
         className={`flex flex-col rounded-md overflow-hidden flex-[1.3] border transition-colors ${
           selected === ""
             ? "border-brand_navy ring-2 ring-brand_navy/30"
-            : "border-gray-200 hover:border-gray-300"
+            : "border-line_field hover:border-line_strong"
         }`}
       >
         <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-          <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+          <div className="text-[9px] cc-caps-strong">
             All Week
           </div>
           <div className="text-[12px] font-bold text-content leading-none">
@@ -131,7 +99,7 @@ const DayCardStrip = ({
             className={`relative flex flex-col rounded-md overflow-hidden flex-1 border transition-colors ${
               isSelected
                 ? "border-brand_navy ring-2 ring-brand_navy/30"
-                : "border-gray-200 hover:border-gray-300"
+                : "border-line_field hover:border-line_strong"
             }`}
           >
             {holidayName && (
@@ -140,7 +108,7 @@ const DayCardStrip = ({
               </span>
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
-              <div className="text-[9px] font-bold uppercase tracking-wide text-content">
+              <div className="text-[9px] cc-caps-strong">
                 {label ?? date.toLocaleDateString("en-US", { weekday: "long" })}
               </div>
               <div className="text-[12px] font-bold text-content leading-none">
@@ -149,7 +117,7 @@ const DayCardStrip = ({
               <div className="text-[12px] font-bold text-content mt-1">
                 {value}
                 {valueNote && (
-                  <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wide text-content/85">
+                  <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wide text-content/95">
                     {valueNote}
                   </span>
                 )}

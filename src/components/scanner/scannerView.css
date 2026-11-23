@@ -1,0 +1,15 @@
+/**
+ * The video Quagga injects into the viewfinder.
+ *
+ * Without this it sizes itself to the stream's own dimensions and spills out of
+ * the frame or letterboxes inside it — the class was on the element but no rule
+ * ever matched it, which is why this viewfinder looked worse than Item Lookup's
+ * for no reason anyone could point at. Height is 100% rather than a fixed pixel
+ * value so the frame's own height stays the one number that controls the size.
+ */
+.scanner-container video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,9 +1,10 @@
+// Utils
+import { OP_LABELS } from "./utils";
+
+// Interfaces
 import type { ThresholdValue } from "../../interfaces";
 
-// Defined in src/interfaces so slices can hold it without importing UI.
-export type { ThresholdValue };
-
-interface Props {
+interface ThresholdFilterProps {
   value: ThresholdValue | null;
   onChange: (v: ThresholdValue | null) => void;
   prefix?: string;
@@ -14,11 +15,18 @@ interface Props {
   inputWidth?: number;
   stretch?: boolean;
   variant?: "light" | "dark";
+  /**
+   * `sm` is the grid popover size it was built at. `md` is for a form where
+   * the amount is the thing being decided — a unit cost, say — and has to
+   * read at the size of the text around it.
+   */
+  size?: "sm" | "md";
+  ariaLabel?: string;
   className?: string;
 }
 
-const OP_LABELS: Record<ThresholdValue["op"], string> = { gt: ">", lt: "<", eq: "=" };
-
+/** Number filter with an optional greater / less / equal operator, an amount
+ *  field with prefix or suffix, and a clear button. */
 const ThresholdFilter = ({
   value,
   onChange,
@@ -30,20 +38,24 @@ const ThresholdFilter = ({
   inputWidth = 64,
   stretch = false,
   variant = "light",
+  size = "sm",
+  ariaLabel,
   className = "",
-}: Props) => {
+}: ThresholdFilterProps) => {
   const isDark = variant === "dark";
+  const md = size === "md";
+  const textSize = md ? 13 : 10;
 
   const colors = {
-    bg: isDark ? "rgba(255,255,255,0.12)" : "rgb(var(--color-brand-navy) / 0.06)",
-    bgInset: isDark ? "rgba(255,255,255,0.08)" : "rgb(var(--color-brand-navy) / 0.06)",
-    opBg: isDark ? "rgba(255,255,255,0.15)" : "rgb(var(--color-brand-navy) / 0.12)",
-    opColor: isDark ? "#fff" : "rgb(var(--color-brand-navy))",
-    divider: isDark ? "rgba(255,255,255,0.15)" : "rgb(var(--color-brand-navy) / 0.15)",
-    prefix: isDark ? "rgba(255,255,255,0.45)" : "rgb(var(--color-brand-navy) / 0.45)",
-    text: isDark ? "#fff" : "var(--color-text-primary)",
-    placeholder: isDark ? "rgba(255,255,255,0.3)" : undefined,
-    clear: isDark ? "rgba(255,255,255,0.4)" : "rgb(var(--color-brand-navy) / 0.35)",
+    bg: isDark ? "rgb(var(--color-custom-white) / 0.12)" : "rgb(var(--color-brand-navy) / 0.06)",
+    bgInset: isDark ? "rgb(var(--color-custom-white) / 0.08)" : "rgb(var(--color-brand-navy) / 0.06)",
+    opBg: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgb(var(--color-brand-navy) / 0.12)",
+    opColor: isDark ? "rgb(var(--color-custom-white))" : "rgb(var(--color-brand-navy))",
+    divider: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgb(var(--color-brand-navy) / 0.15)",
+    prefix: isDark ? "rgb(var(--color-custom-white) / 0.45)" : "rgb(var(--color-brand-navy) / 0.45)",
+    text: isDark ? "rgb(var(--color-custom-white))" : "rgb(var(--color-content))",
+    placeholder: isDark ? "rgb(var(--color-custom-white) / 0.3)" : undefined,
+    clear: isDark ? "rgb(var(--color-custom-white) / 0.4)" : "rgb(var(--color-brand-navy) / 0.35)",
     shadow: isDark ? "inset 0 1px 3px rgba(0,0,0,0.2)" : "inset 0 1px 3px rgb(var(--color-brand-navy) / 0.1)",
   };
 
@@ -55,7 +67,7 @@ const ThresholdFilter = ({
     boxShadow: "none",
     WebkitAppearance: "none",
     MozAppearance: "textfield",
-    fontSize: 10,
+    fontSize: textSize,
     color: colors.text,
     width: inputWidth,
     padding: `0 ${hasRight ? 20 : 6}px 0 ${prefix ? 2 : 6}px`,
@@ -65,7 +77,7 @@ const ThresholdFilter = ({
   return (
     <div
       className={`relative inline-flex items-center rounded flex-shrink-0 ${className}`}
-      style={{ height: 24, background: colors.bg, boxShadow: colors.shadow }}
+      style={{ height: md ? 32 : 24, background: colors.bg, boxShadow: colors.shadow }}
     >
       {/* Operator dropdown — hidden when showOp=false */}
       {showOp && (
@@ -104,13 +116,14 @@ const ThresholdFilter = ({
       {/* Input area */}
       <div style={{ position: "relative", display: "flex", alignItems: "center", height: "100%", background: colors.bgInset, ...(stretch ? { flex: 1 } : {}) }}>
         {prefix && (
-          <span style={{ fontSize: 10, color: colors.prefix, paddingLeft: 6, lineHeight: 1, flexShrink: 0 }}>{prefix}</span>
+          <span style={{ fontSize: textSize, color: colors.prefix, paddingLeft: md ? 9 : 6, lineHeight: 1, flexShrink: 0 }}>{prefix}</span>
         )}
         <input
           type="number"
           min={0}
           value={value?.amount ?? ""}
           placeholder={placeholder}
+          aria-label={ariaLabel}
           style={{ ...inputStyle, ...(stretch ? { width: "100%" } : {}) }}
           className="border-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           onChange={(e) => {
@@ -122,7 +135,7 @@ const ThresholdFilter = ({
           }}
         />
         {suffix && (
-          <span style={{ position: "absolute", right: 6, fontSize: 10, color: colors.prefix, lineHeight: 1, pointerEvents: "none" }}>
+          <span style={{ position: "absolute", right: md ? 9 : 6, fontSize: textSize, color: colors.prefix, lineHeight: 1, pointerEvents: "none" }}>
             {suffix}
           </span>
         )}
@@ -131,8 +144,8 @@ const ThresholdFilter = ({
             onClick={() => onChange(null)}
             style={{
               position: "absolute",
-              right: 5,
-              fontSize: 10,
+              right: md ? 8 : 5,
+              fontSize: textSize,
               lineHeight: 1,
               color: colors.clear,
               background: "none",

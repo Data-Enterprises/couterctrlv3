@@ -1,5 +1,9 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { cycleSort, type SortState } from "../utils/perfPairs";
+
+// Interfaces
 import type { SaleReceiptLine as ReceiptLine } from "../interfaces";
 
 /**
@@ -255,7 +259,7 @@ const claimed = (state: EventPerfState, owner: string): EventPerfState => ({
 });
 
 const eventPerfSlice = createSlice({
-  name: "eventPerf",
+  name: "undefined",
   initialState,
   reducers: {
     /**
