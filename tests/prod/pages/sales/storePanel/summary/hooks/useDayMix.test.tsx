@@ -146,7 +146,7 @@ describe("a day's mix", () => {
     });
     await waitFor(() => expect(result.current.stateOf(today).status).toBe("ready"));
     await waitFor(() => expect(result.current.stateOf("2026-10-28").status).toBe("ready"));
-    const held = store.getState().dev.salesLedger.recapItems;
+    const held = store.getState().prod.salesLedger.recapItems;
     expect(held[dayKey(685, "369", "2026-10-28")]?.map((i) => i.code)).toEqual(["a"]);
     expect(held[dayKey(685, "369", today)]).toBeUndefined();
   });
@@ -160,7 +160,7 @@ describe("a day's mix", () => {
     await waitFor(() => expect(result.current.itemsOf(today).status).toBe("ready"));
     const st = result.current.itemsOf(today);
     expect(st.status === "ready" && st.items.map((i) => i.code)).toEqual(["t"]);
-    expect(store.getState().dev.salesLedger.recapItems[dayKey(685, "369", today)]).toBeUndefined();
+    expect(store.getState().prod.salesLedger.recapItems[dayKey(685, "369", today)]).toBeUndefined();
   });
 
   it("reads a day again for its items when only its mix is held", async () => {
@@ -194,7 +194,7 @@ describe("the kept mixes", () => {
     const store = setupStore();
     const mix = { items: 1, codes: ["a"], refunds: { units: 0, net: 0 }, regular: 1, promo: 0, unknown: 0 };
     for (let i = 0; i <= RECAP_MIX_MAX; i++) store.dispatch(cacheRecapMix({ key: `k${i}`, mix }));
-    const { recapMix, recapMixOrder } = store.getState().dev.salesLedger;
+    const { recapMix, recapMixOrder } = store.getState().prod.salesLedger;
     expect(recapMixOrder).toHaveLength(RECAP_MIX_MAX);
     expect(recapMix.k0).toBeUndefined();
     expect(Object.keys(recapMix)).toHaveLength(RECAP_MIX_MAX);

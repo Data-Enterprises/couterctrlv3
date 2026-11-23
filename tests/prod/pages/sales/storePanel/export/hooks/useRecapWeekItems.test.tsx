@@ -72,7 +72,7 @@ describe("the export's week of items", () => {
     const today = localIsoToday();
     const { result, store } = setup();
     await read(result.current, ["2026-10-30", today]);
-    const held = store.getState().dev.salesLedger.recapItems;
+    const held = store.getState().prod.salesLedger.recapItems;
     expect(held[dayKey(685, "369", "2026-10-30")]).toBeDefined();
     expect(held[dayKey(685, "369", today)]).toBeUndefined();
     await read(result.current, [today]);
@@ -94,7 +94,7 @@ describe("the export's week of items", () => {
     for (let i = 0; i <= RECAP_ITEMS_MAX; i++) {
       store.dispatch(cacheRecapItems({ key: `k${i}`, items: [item(`i${i}`)] }));
     }
-    const { recapItems, recapItemsOrder } = store.getState().dev.salesLedger;
+    const { recapItems, recapItemsOrder } = store.getState().prod.salesLedger;
     expect(recapItemsOrder).toHaveLength(RECAP_ITEMS_MAX);
     expect(recapItems.k0).toBeUndefined();
     expect(recapItems[`k${RECAP_ITEMS_MAX}`]).toBeDefined();

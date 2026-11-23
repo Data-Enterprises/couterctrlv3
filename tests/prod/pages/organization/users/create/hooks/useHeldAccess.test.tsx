@@ -37,7 +37,7 @@ describe("what Edit starts from", () => {
     );
     renderHook(() => useHeldAccess(42), { wrapper });
     await waitFor(() =>
-      expect(store.getState().dev.users.userCompanyIds).toEqual([1, 3]),
+      expect(store.getState().prod.users.userCompanyIds).toEqual([1, 3]),
     );
   });
 });

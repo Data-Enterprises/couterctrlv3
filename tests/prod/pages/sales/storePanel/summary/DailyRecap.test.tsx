@@ -84,7 +84,7 @@ const setup = (selectedDate: string | null = null) => {
         storeNumber="942"
         dates={dates}
         days={[dot("2026-10-29", 500, 30), dot("2026-10-30", 1000, 60)]}
-        selectedDate={store.getState().dev.salesLedger.selectedDate}
+        selectedDate={store.getState().prod.salesLedger.selectedDate}
       />
     </Provider>
   );

@@ -19,7 +19,7 @@ describe("the phone receipt lines", () => {
     store.dispatch(
       setCouponMobileLines([line(7, "Cereal"), line(7, "Milk"), line(8, "Eggs")]),
     );
-    const held = store.getState().dev.couponSales.mobileLines;
+    const held = store.getState().prod.couponSales.mobileLines;
     expect(couponReceipt(held, "7").map((l) => l.description)).toEqual([
       "Cereal",
       "Milk",
@@ -32,6 +32,6 @@ describe("the phone receipt lines", () => {
     const store = setupStore();
     store.dispatch(setCouponMobileLines([line(7, "Cereal")]));
     store.dispatch(resetAppSlice());
-    expect(store.getState().dev.couponSales.mobileLines).toEqual([]);
+    expect(store.getState().prod.couponSales.mobileLines).toEqual([]);
   });
 });

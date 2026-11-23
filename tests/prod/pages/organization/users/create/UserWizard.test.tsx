@@ -38,7 +38,7 @@ describe("Add user after a Duplicate", () => {
     const store = setupStore();
     store.dispatch(setDuplicateSource(source));
     openAdd(store);
-    const users = store.getState().dev.users;
+    const users = store.getState().prod.users;
     expect(users.userInfo.role).toBe(2);
     expect(users.userInfo.user_level).toBe(5);
     // Cleared, so the next Add user opens blank.
@@ -47,7 +47,7 @@ describe("Add user after a Duplicate", () => {
 
   it("opens blank when nothing was duplicated", () => {
     const store = openAdd();
-    expect(store.getState().dev.users.userInfo.role).toBe(0);
+    expect(store.getState().prod.users.userInfo.role).toBe(0);
   });
 });
 
@@ -128,7 +128,7 @@ describe("leaving Add user", () => {
     const { onCancel, store } = open();
     const select = document.querySelector("select") as HTMLSelectElement;
     await userEvent.selectOptions(select, "2");
-    expect(store.getState().dev.organization.unsavedWizard).toBe("the new user");
+    expect(store.getState().prod.organization.unsavedWizard).toBe("the new user");
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(onCancel).not.toHaveBeenCalled();
     expect(screen.getByText(/Discard your changes to the new user/)).toBeTruthy();
