@@ -239,6 +239,9 @@ body {
        4.5:1 AA floor. The Aug 2026 revision replaced both with this single
        value. Do not reintroduce the lighter greys. */
     --color-brand-slate-2: 100 116 139;
+    /* List B in Sub depts' compare panel (A is brand navy). Dark enough for
+       its white letter to pass 4.5:1. */
+    --color-compare-b: 30 120 190;
     /* Input placeholders. Was #A3B0C2 at 2.2:1 — the worst offender. */
     --color-brand-placeholder: 110 127 150;
     --color-brand-line: 220 229 239;

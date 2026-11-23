@@ -1,6 +1,6 @@
 // Interfaces
 import type { ExportSubDeptItem } from "../../../../../../features/dev/devSalesLedgerSlice";
-import type { Severity } from "../../../../../../utils/severity";
+import type { Severity, SevFilter } from "../../../../../../utils/severity";
 
 /** One sub department in the left list: this week, last week, last year. */
 export type DeptRow = {
@@ -45,6 +45,13 @@ export type GradedItem = ExportSubDeptItem;
 
 /** The insight line under the open sub department's name. */
 export type DeptCta = { text: string; severity: Severity | null };
+
+/** The filters that make up a list of items: a grade, a search and the active
+ *  picker ("" = active and inactive together). */
+export type ListFilter = { sev: SevFilter; text: string; active: string };
+
+/** The two compared lists: A is the one pinned, B the filters showing now. */
+export type Side = "A" | "B";
 
 /** Where a right-click opened the UPC menu, and on which item ("" = none). */
 export type ItemMenu = { x: number; y: number; upc: string } | null;

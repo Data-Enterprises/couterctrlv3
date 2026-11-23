@@ -51,9 +51,7 @@ const UserDataLoader = () => {
       case "2":
         return "Group";
       case "Shared":
-        // Prod has no shared groups; there a saved "Shared" search is a Group
-        // search with nothing picked yet.
-        return context.apiEnv === "dev" ? "Shared" : "Group";
+        return "Shared";
       case "3":
         return "Store";
       default:
@@ -175,12 +173,7 @@ const UserDataLoader = () => {
           const selectedGroup = j.groups.find(
             (g: Group) => g.id === search.lastGroup,
           );
-          // Prod has no shared groups, so a saved shared group isn't restored
-          // there; the search asks for a group instead.
-          const usable =
-            selectedGroup &&
-            (!selectedGroup.is_shared || context.apiEnv === "dev");
-          if (usable) {
+          if (selectedGroup) {
             dispatch(setSelectedGroup(selectedGroup));
             // The stored last_search_type predates "Shared", so a user whose
             // last pick was a shared group comes back as plain "Group" and
@@ -189,16 +182,10 @@ const UserDataLoader = () => {
             if (selectedGroup.is_shared) dispatch(setType("Shared"));
           } else {
             /**
-             * Nothing to restore, so nothing stays selected.
-             *
-             * This used to move the TYPE back to Group and leave the group
-             * itself alone, which is how a shared group ended up showing
-             * under Group: prod's picker lists only `!is_shared`, so the
-             * selection was a name the list it sat above could not contain.
-             * Switching Mode makes that the normal case rather than an edge
-             * one — the search slice survives the switch, the group list is
-             * refetched from the other API, and a group that exists in one
-             * need not exist in the other at all.
+             * Nothing to restore, so nothing stays selected. Switching Mode
+             * makes this the normal case: the search slice survives the
+             * switch, the group list is refetched from the other API, and a
+             * group that exists in one need not exist in the other at all.
              */
             dispatch(setSelectedGroup(emptyGroup));
             if (search.type === "Shared") dispatch(setType("Group"));

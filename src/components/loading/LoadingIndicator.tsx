@@ -1,6 +1,7 @@
+// Components
 import LoadingIndicatorDev from "./LoadingIndicatorDev";
 
-interface Props {
+interface LoadingIndicatorProps {
   message?: string;
   className?: string;
 }
@@ -9,6 +10,6 @@ interface Props {
  * The loading screen. Always the current one — the legacy spinner went with
  * the devMode (Preview/Live) switch.
  */
-const LoadingIndicator = (props: Props) => <LoadingIndicatorDev {...props} />;
+const LoadingIndicator = (props: LoadingIndicatorProps) => <LoadingIndicatorDev {...props} />;
 
 export default LoadingIndicator;

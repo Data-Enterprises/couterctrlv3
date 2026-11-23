@@ -141,9 +141,6 @@
     "doc-comment": 1,
     "labels": 1
   },
-  "src/components/ConfirmModal.tsx": {
-    "doc-comment": 1
-  },
   "src/components/DayCardStrip.tsx": {
     "doc-comment": 1,
     "labels": 1,
@@ -162,9 +159,6 @@
     "doc-comment": 1,
     "labels": 1,
     "shape-props-name": 1
-  },
-  "src/components/IconButton.tsx": {
-    "doc-comment": 1
   },
   "src/components/InfoButton.tsx": {
     "doc-comment": 1,
@@ -194,9 +188,6 @@
     "doc-comment": 1,
     "labels": 1
   },
-  "src/components/ResizeHandle.tsx": {
-    "doc-comment": 1
-  },
   "src/components/SearchCard.tsx": {
     "doc-comment": 1,
     "labels": 1
@@ -205,10 +196,6 @@
     "doc-comment": 1,
     "labels": 1,
     "one-line-per-source": 1
-  },
-  "src/components/SingleSelect.tsx": {
-    "doc-comment": 1,
-    "labels": 1
   },
   "src/components/SingleStoreSearchCard.tsx": {
     "doc-comment": 1,
@@ -289,10 +276,6 @@
     "labels": 1,
     "shape-extra-type": 1
   },
-  "src/components/filters/TextFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
   "src/components/filters/ThresholdFilter.tsx": {
     "doc-comment": 1,
     "labels": 1,
@@ -308,24 +291,12 @@
     "labels": 1,
     "shape-props-name": 1
   },
-  "src/components/inputs/Input.tsx": {
-    "doc-comment": 1
-  },
   "src/components/inputs/PasswordInput.tsx": {
     "doc-comment": 1,
     "labels": 1,
     "shape-props-name": 1
   },
   "src/components/loading/EntryCardLoading.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/loading/LoadingIndicator.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/loading/LoadingIndicatorDev.tsx": {
-    "doc-comment": 1,
     "labels": 1,
     "shape-props-name": 1
   },
@@ -380,29 +351,6 @@
     "labels": 1,
     "shape-extra-code": 4,
     "shape-props-name": 1
-  },
-  "src/components/storePicker/SearchStore.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/SearchType.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/storePicker/SelectGroup.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/StorePicker.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/index.ts": {
-    "labels": 1
   },
   "src/components/toasts/Toast.tsx": {
     "doc-comment": 1,
@@ -483,9 +431,6 @@
     "labels": 1
   },
   "src/features/groupSlice.ts": {
-    "labels": 1
-  },
-  "src/features/groupsPageSlice.ts": {
     "labels": 1
   },
   "src/features/invoicesSlice.ts": {
