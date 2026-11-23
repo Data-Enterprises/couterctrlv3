@@ -67,6 +67,18 @@ const found = Object.entries(files).flatMap(([path, source]) =>
   ),
 );
 
+/**
+ * A promoted prod file is its dev twin with the prod swaps, so it carries the
+ * same variable for the same reason: `pages/<page>/prod/x` answers to
+ * `pages/<page>/dev/x`, and `components/x` to `components-dev/x`.
+ */
+const devTwinOf = (key: string) =>
+  key
+    .replace(/^(pages\/[^/]+)\/prod\//, "$1/dev/")
+    .replace(/^components\//, "components-dev/");
+
+const allowed = (key: string) => key in ALLOWED || devTwinOf(key) in ALLOWED;
+
 describe("module-level state", () => {
   it("reads the source it is meant to", () => {
     expect(Object.keys(files).length).toBeGreaterThan(200);
@@ -75,7 +87,7 @@ describe("module-level state", () => {
   it("has nothing new that would outlive a sign-out", () => {
     // A failure here names the variable. Move it into a slice, or add it to
     // ALLOWED with the reason it is safe for the next person to inherit.
-    expect(found.filter((key) => !(key in ALLOWED))).toEqual([]);
+    expect(found.filter((key) => !allowed(key))).toEqual([]);
   });
 
   it("lists nothing that is no longer there", () => {
