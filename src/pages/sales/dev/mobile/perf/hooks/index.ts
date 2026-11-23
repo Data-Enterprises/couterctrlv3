@@ -23,11 +23,11 @@ import {
 } from "../../../../../../features/dev/devSalesPerfSlice";
 
 // API
+import { getHourly } from "../../../../../../api/sales";
 import {
-  getHourly,
-  getDailySales,
-  getSubsDaily,
-} from "../../../../../../api/sales";
+  getStoreDailySales,
+  getSubDeptDailySales,
+} from "../../../../../../api/salesReads";
 
 // Utils
 import {
@@ -103,13 +103,15 @@ export const usePerfFetch = () => {
   ): Promise<PerfBundle> => {
     const { twStart, twEnd, lyDates, lwStart, lwEnd } = week;
     const args = [grouped, value, single] as const;
-    // Every page of subs/daily as one response. A group card gets one row per
-    // store, which can run past a 5,000-row page; a store card is one page.
+    // Every page of the daily sub-department read as one response. A group
+    // card gets one row per store, which can run past a 5,000-row page; a
+    // store card is one page.
     const allSubs = async (start: string, end: string) => {
       const ask = (page: number) =>
-        getSubsDaily(
+        getSubDeptDailySales(
           context.url,
           context.token,
+          context.apiEnv,
           start,
           end,
           grouped,
@@ -134,7 +136,8 @@ export const usePerfFetch = () => {
       return { ...first, data: { ...first.data, subs } };
     };
 
-    // Fetch all hourly and subs/daily data for the relevant periods in parallel
+    // Fetch all hourly and daily sub-department data for the relevant periods
+    // in parallel
     const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
       getHourly(context.url, context.token, twStart, twEnd, ...args),
       getHourly(context.url, context.token, lyDates[0], lyDates[6], ...args),
@@ -144,7 +147,8 @@ export const usePerfFetch = () => {
       allSubs(lwStart, lwEnd),
     ]);
 
-    // getHourly and subs/daily (allSubs) both answer on `.subs`, not `.sales`.
+    // getHourly and the sub-department read (allSubs) both answer on `.subs`,
+    // not `.sales`.
     const rows = (r: { data: { error: number; subs: unknown[] } }) =>
       r.data.error === 0 ? r.data.subs : [];
 
@@ -193,15 +197,30 @@ export const usePerfFetch = () => {
     try {
       const args = [useGroups, searchValue] as const;
       const [wTy, wLy, wLw, bundle] = await Promise.all([
-        getDailySales(context.url, context.token, twStart, twEnd, ...args),
-        getDailySales(
+        getStoreDailySales(
           context.url,
           context.token,
+          context.apiEnv,
+          twStart,
+          twEnd,
+          ...args,
+        ),
+        getStoreDailySales(
+          context.url,
+          context.token,
+          context.apiEnv,
           lyDates[0],
           lyDates[6],
           ...args,
         ),
-        getDailySales(context.url, context.token, lwStart, lwEnd, ...args),
+        getStoreDailySales(
+          context.url,
+          context.token,
+          context.apiEnv,
+          lwStart,
+          lwEnd,
+          ...args,
+        ),
         // A group search no longer loads a group-wide breakdown: there is
         // nowhere on screen to show one now that Subs and Hours live inside a
         // store card, and each card fetches its own on the way open. A single

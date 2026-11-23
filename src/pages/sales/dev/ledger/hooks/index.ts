@@ -27,7 +27,7 @@ import {
 import { isGroupSearch } from "../../../../../features/searchSlice";
 
 // API
-import { getDailySales } from "../../../../../api/sales";
+import { getLedgerDailySales } from "../../../../../api/salesReads";
 import { FINANCIALS_READY, getFinancials } from "../../../../../api/financials";
 
 // Utils
@@ -41,7 +41,7 @@ import { weekRanges } from "../utils";
 export const useLedgerSearch = (onStart: () => void) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token, search } = useSalesCtx();
+  const { url, token, apiEnv, userid, search } = useSalesCtx();
   const [fetchFailed, setFetchFailed] = useState(false);
 
   const fetchLedger = async () => {
@@ -105,13 +105,40 @@ export const useLedgerSearch = (onStart: () => void) => {
         .finally(() => dispatch(setFinancialsLoading(false)));
     }
 
-    // One request per period, store or group: `sales/daily` takes a whole
-    // group in one query.
+    // One request per period, store or group (prod reads a large group store
+    // by store; see getLedgerDailySales).
     try {
       const [twResp, lwResp, lyResp] = await Promise.all([
-        getDailySales(url, token, twStart, twEnd, useGroups, searchValue),
-        getDailySales(url, token, lwStart, lwEnd, useGroups, searchValue),
-        getDailySales(url, token, lyStart, lyEnd, useGroups, searchValue),
+        getLedgerDailySales(
+          url,
+          token,
+          apiEnv,
+          userid,
+          twStart,
+          twEnd,
+          useGroups,
+          searchValue,
+        ),
+        getLedgerDailySales(
+          url,
+          token,
+          apiEnv,
+          userid,
+          lwStart,
+          lwEnd,
+          useGroups,
+          searchValue,
+        ),
+        getLedgerDailySales(
+          url,
+          token,
+          apiEnv,
+          userid,
+          lyStart,
+          lyEnd,
+          useGroups,
+          searchValue,
+        ),
       ]);
       if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
       if (lwResp.data.error === 0)

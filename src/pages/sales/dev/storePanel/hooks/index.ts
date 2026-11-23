@@ -22,7 +22,8 @@ import {
 } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // API
-import { getHourly, getSubsDaily } from "../../../../../api/sales";
+import { getHourly } from "../../../../../api/sales";
+import { getSubDeptDailySales } from "../../../../../api/salesReads";
 
 // Utils
 import { shiftIso } from "../../../../../utils/grading";
@@ -123,25 +124,28 @@ export const useStorePanelFetch = (selection: StoreSelection) => {
           lwHourlyResp,
           lyHourlyResp,
         ] = await Promise.all([
-          getSubsDaily(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             twStart,
             twEnd,
             0,
             selection.storeId,
           ),
-          getSubsDaily(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             lwStart,
             lwEnd,
             0,
             selection.storeId,
           ),
-          getSubsDaily(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             lyStart,
             lyEnd,
             0,

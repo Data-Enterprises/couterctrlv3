@@ -81,6 +81,7 @@ export const useSalesCtx = () =>
       // The API connection, the search and the user's stores.
       url: s.app.url,
       token: s.app.token,
+      apiEnv: s.app.apiEnv,
       userid: s.user.userid,
       assignedStores: s.user.assignedStores,
       selectedGroupStores: s.user.selectedGroupStores,

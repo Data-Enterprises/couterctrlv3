@@ -12,7 +12,7 @@ import {
 import { rememberCounterpart } from "../../../../../../features/dev/devSalesCacheSlice";
 
 // API
-import { getSubsDaily } from "../../../../../../api/sales";
+import { getSubDeptDailySales } from "../../../../../../api/salesReads";
 
 // Utils
 import { shiftIso } from "../../../../../../utils/grading";
@@ -323,7 +323,7 @@ export const useCounterpartSubs = (args: {
   // A day picked in the strip above narrows both sides to that day. The open
   // store's departments arrive already narrowed; without this the counterpart
   // stayed a whole week, and one Friday was "behind" a week.
-  const { selectedDate, url, token } = useSalesCtx();
+  const { selectedDate, url, token, apiEnv } = useSalesCtx();
   const dispatch = useAppDispatch();
 
   const cacheKey = [
@@ -368,7 +368,7 @@ export const useCounterpartSubs = (args: {
     let live = true;
     setFailed(false);
     const ask = (from: string, to: string) =>
-      getSubsDaily(url, token, from, to, 0, compareStoreId);
+      getSubDeptDailySales(url, token, apiEnv, from, to, 0, compareStoreId);
 
     Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
       .then(([tw, lw, ly]) => {
@@ -394,6 +394,7 @@ export const useCounterpartSubs = (args: {
   }, [
     url,
     token,
+    apiEnv,
     twStart,
     twEnd,
     lwStart,
