@@ -1,4 +1,8 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   ActionKind,
   ReceivedLine as ReceiptLine,
@@ -234,7 +238,7 @@ const initialState: ItemReportState = {
 };
 
 const itemReportSlice = createSlice({
-  name: "itemReport",
+  name: "undefined",
   initialState,
   reducers: {
     setItemReportStoreId: (state, action: PayloadAction<number>) => {

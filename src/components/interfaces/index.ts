@@ -1,5 +1,7 @@
 // Interfaces
 import type { ItemSeverity } from "../../utils/itemMargins";
+import type { SubDeptMargin } from "../../interfaces";
+import type { ItemReportHandoff } from "../../features/itemReportSlice";
 
 /** One row an assign panel lists: an id, its label and an optional second line. */
 export interface AssignPanelItem {
@@ -85,3 +87,33 @@ export interface SeverityUpcs {
 
 /** An export pop-up's two modes: ready-made datasets, or a grouping of the user's own. */
 export type ExportMode = "presets" | "custom";
+
+/** The minimum an item has to carry to be handed over: what it is, and which
+ *  department it sells under. Both graded pages already tag their items with a
+ *  department — a vendor's items routinely span several, and that set is what
+ *  narrows the fan-out on the other side. */
+export interface HandoffItem {
+  productCode: string;
+  dept: string;
+}
+
+export interface CriticalHandoffInput {
+  storeId: number;
+  /** The finished list, when the caller already graded it. Omitted by callers
+   *  that pass `grade` instead and let the report resolve it after fetching. */
+  items?: HandoffItem[];
+  /** Defer grading to the report. See the note on `ItemReportHandoff.grade`. */
+  grade?: ItemReportHandoff["grade"];
+  /** The window the caller's data covers, as yyyy-mm-dd. */
+  window: { start: string; end: string };
+  /** The three periods' item rows, when the caller already holds them — which
+   *  it does whenever it graded the items itself. Skips a fan-out the report
+   *  would otherwise repeat call for call. */
+  rows?: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
+  /** What the list is of — "Soft Drinks", "Clark Beverage Group". */
+  sourceLabel: string;
+  /** How it was graded, so the report can say why these items and not others.
+   *  Without it the same department yields different lists on different days
+   *  and nothing on screen explains the change. */
+  basisLabel: string;
+}
