@@ -168,7 +168,7 @@
     "any-in-props": 1
   },
   "src/components/navigation/TitleBar.tsx": {
-    "prod-imports-dev": 2
+    "prod-imports-dev": 1
   },
   "src/components/toasts/Toast.tsx": {
     "doc-comment": 1,
