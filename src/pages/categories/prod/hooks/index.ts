@@ -42,7 +42,7 @@ import {
 export const useCategoriesCtx = () =>
   useAppSelector(
     (s) => ({
-      ...s.dev.categories,
+      ...s.prod.categories,
       url: s.app.url,
       token: s.app.token,
       isMobile: s.app.isMobile,
