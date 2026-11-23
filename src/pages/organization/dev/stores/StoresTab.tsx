@@ -131,9 +131,6 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
                     : "hover:bg-fill_soft text-content"
                 }`}
               >
-                <span className="text-[12px] font-semibold tabular-nums flex-shrink-0 w-[44px]">
-                  {s.store_number}
-                </span>
                 <span
                   className={`text-[12px] truncate ${
                     isSel ? "text-custom-white/95" : "text-content/95"
