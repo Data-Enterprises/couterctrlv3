@@ -1,22 +1,30 @@
+// Hooks
 import { useAppSelector } from "../../../../hooks";
 
 export const useUpcDevCtx = () => {
   const { url, token, apiEnv } = useAppSelector((s) => s.app);
   const { userid, assignedStores } = useAppSelector((s) => s.user);
-  const { startDate, endDate, selectedStore, selectedGroup, type: searchType } = useAppSelector((s) => s.search);
+  const live = useAppSelector((s) => s.search);
   const groups = useAppSelector((s) => s.group.groups);
   const dev = useAppSelector((s) => s.prod.upcDev);
+  // The search the loaded data answers, not the one being edited (the card
+  // writes app-wide dates and store as they're picked). Before the first
+  // search, the live search.
+  const searched = dev.searchedScope;
+  const startDate = searched?.startDate ?? live.startDate;
+  const endDate = searched?.endDate ?? live.endDate;
+  const selectedStore = searched?.selectedStore ?? live.selectedStore;
+  const selectedGroup = searched?.selectedGroup ?? live.selectedGroup;
+  const searchType = searched?.type ?? live.type;
 
   return {
     url,
     token,
     apiEnv,
     /** The endpoint corrections (Trend direction/window/impact, Price Opt by
-     *  weight, failed calls not recorded as empty). Off in the prod tree — this
-     *  is the page prod users have always had. On in the dev tree; promoting dev
-     *  turns them on here. Replaces upcFixes.ts, which keyed this off apiEnv
-     *  while both environments shared one tree. */
-    fixes: false,
+     *  weight, failed calls not recorded as empty): on in the prod tree, off in
+     *  prod until promoted. */
+    fixes: true,
     userid,
     assignedStores,
     startDate,
@@ -25,6 +33,8 @@ export const useUpcDevCtx = () => {
     selectedGroup,
     searchType,
     groups,
+    /** The search card as it is being edited, for running a new search. */
+    liveSearch: live,
     ...dev,
   };
 };

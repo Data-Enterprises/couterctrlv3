@@ -1,27 +1,26 @@
-import InfoButton from "../../../../components/InfoButton";
-import { useState } from "react";
-import {
-  MagnifyingGlassIcon,
-} from "@heroicons/react/16/solid";
-import { useAppSelector } from "../../../../hooks";
+// Hooks
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
-import UpcItemList from "./UpcItemList";
-import ModuleInfoPopover from "./ModuleInfoPopover";
 
-interface Props {
+// Components
+import BackButton from "../../../../components/BackButton";
+import PageInfoButton from "../../../../components/PageInfoButton";
+import UpcItemList from "./UpcItemList";
+
+interface UpcLeftPanelProps {
   onReSearch: () => void;
 }
 
-const UpcLeftPanel = ({ onReSearch }: Props) => {
+/** The UPC List's left panel: a navy header with the date range, the searched store or
+ *  group, a search-again button and help, above the UPC list. */
+const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
   const ctx = useUpcDevCtx();
-  const searchState = useAppSelector((s) => s.search);
-  const [infoOpen, setInfoOpen] = useState(false);
 
+  // What was searched, from ctx, not the search being edited in the re-search
+  // window: the header names the data underneath it.
   const locationLabel =
-    searchState.type === "Store"
-      ? searchState.selectedStore.store_name ||
-        `Store ${searchState.selectedStore.storeid}`
-      : searchState.selectedGroup.group_name || "Group";
+    ctx.searchType === "Store"
+      ? ctx.selectedStore.store_name || `Store ${ctx.selectedStore.storeid}`
+      : ctx.selectedGroup.group_name || "Group";
 
   const dateRange =
     ctx.startDate && ctx.endDate
@@ -35,9 +34,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[12px] font-semibold text-custom-white">
-              UPC Upload
-            </div>
+            <div className="text-[12px] cc-navy-title">UPC Upload</div>
           </div>
           <div className="text-right">
             {dateRange && (
@@ -50,23 +47,14 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
 
         {/* Row 2: search icon + location label + ? icon */}
         <div className="flex items-center gap-1.5 pt-1.5 mt-1 text-custom-white">
-          <button
-            onClick={onReSearch}
-            title="Search again"
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
-          >
-            <MagnifyingGlassIcon className="w-3 h-3" />
-          </button>
+          <BackButton onClick={onReSearch} helpAnchor="search" />
 
           <span className="flex-1 text-[11px] truncate text-custom-white">
             {locationLabel}
           </span>
 
-          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} className="flex-shrink-0" />
+          <PageInfoButton page="upc-list" className="flex-shrink-0" />
         </div>
-
-        {infoOpen && <ModuleInfoPopover tab={ctx.activeTab} onClose={() => setInfoOpen(false)} />}
       </div>
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">

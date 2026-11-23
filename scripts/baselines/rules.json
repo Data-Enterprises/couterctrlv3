@@ -287,9 +287,6 @@
   "src/features/ticketsMockData.ts": {
     "labels": 1
   },
-  "src/features/upcDevSlice.ts": {
-    "labels": 1
-  },
   "src/features/upcSlice.ts": {
     "labels": 1
   },

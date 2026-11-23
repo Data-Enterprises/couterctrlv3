@@ -1,7 +1,10 @@
+// Hooks
 import { useRef } from "react";
-import { XMarkIcon } from "@heroicons/react/20/solid";
-import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch, useSearchPick } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
+
+// Redux
 import {
   setDevUpcs,
   setDevUpcText,
@@ -10,28 +13,31 @@ import {
   setDevActiveTab,
   UPC_DEV_TABS,
 } from "../../../../features/upcDevSlice";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Utils
+import { parseUpcs } from "../utils";
+
+// Components
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../../components/storePicker/StorePicker";
 import DatePickers from "../../../../components/datePickers/DatePickers";
 
-interface Props {
+interface UpcSearchCardProps {
   onSearch: () => void;
-  /** Passed only when the card is a re-search overlay, not the full-page
-   *  landing state. Two effects: it shows a close button, and it drops the
-   *  card's own full-viewport centering — that centering is what made the
-   *  overlay untappable, since the wrapper covering the whole screen
-   *  swallowed every backdrop click. In overlay mode the backdrop centers. */
+  /** Only for the re-search overlay: shows a close button and drops the
+   *  card's own full-viewport centering (the backdrop centers instead). */
   onClose?: () => void;
+  /** The search is looking up the group's stores. */
+  busy?: boolean;
 }
 
-const parseUpcs = (text: string): string[] =>
-  text
-    .split(/[\n,;\r\t ]+/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0 && /^\d+$/.test(u));
-
-const UpcSearchCard = ({ onSearch, onClose }: Props) => {
+/** The UPC List search card: landing tab, store or group, dates, and UPCs typed, pasted or
+ *  uploaded from a CSV, then the Search button. Also used as the re-search overlay. */
+const UpcSearchCard = ({
+  onSearch,
+  onClose,
+  busy = false,
+}: UpcSearchCardProps) => {
   const ctx = useUpcDevCtx();
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
@@ -75,12 +81,11 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
       }
     >
       <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-2">
-
         {/* title */}
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="text-base font-semibold text-content">UPC List</h2>
-            <p className="text-[12px] text-content/85">
+            <p className="text-[12px] text-content/95">
               Sales comp · Forecast · Price opt · Trend · Association
             </p>
           </div>
@@ -88,7 +93,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-brand_navy/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded cc-muted-link hover:bg-brand_navy/10"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -105,10 +110,10 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
               <button
                 key={tab.id}
                 onClick={() => dispatch(setDevActiveTab(tab.id))}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
+                className={`cc-chip-btn text-[11px] border ${
                   ctx.activeTab === tab.id
                     ? "bg-brand_navy border-brand_navy text-custom-white"
-                    : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
+                    : "border-content/20 text-content/95 hover:text-content hover:border-content/35"
                 }`}
               >
                 {tab.label}
@@ -126,10 +131,10 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
         {/* UPC input */}
         <div>
           <div className="flex items-baseline justify-between gap-2">
-            <label className="text-[11px] font-medium text-content/85 ml-0.5">
+            <label className="text-[11px] font-medium text-content/95 ml-0.5">
               UPCs
             </label>
-            <span className="text-[10.5px] text-content/85">
+            <span className="text-[10.5px] text-content/95">
               Separate by comma or new lines
             </span>
           </div>
@@ -141,23 +146,26 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
             className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
             style={{ outline: "none", boxShadow: "none" }}
           />
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div
+            data-help="upc-input"
+            className="flex items-center gap-2 mt-1.5 flex-wrap"
+          >
             <button
               onClick={handleParseText}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 cc-muted-link hover:border-content/35"
             >
               Add
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 cc-muted-link hover:border-content/35"
             >
               Upload CSV
             </button>
             {ctx.upcs.length > 0 && (
               <button
                 onClick={() => dispatch(clearDevUpcs())}
-                className="px-3 py-1 text-[11px] font-medium rounded border border-red-200 text-red-400 hover:text-red-600 transition-colors"
+                className="px-3 py-1 text-[11px] font-medium rounded border border-brand_danger_line text-brand_danger transition-colors"
               >
                 Clear all
               </button>
@@ -181,7 +189,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
                   {upc}
                   <button
                     onClick={() => dispatch(removeDevUpc(upc))}
-                    className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
+                    className="text-brand_navy/95 hover:text-brand_navy transition-colors leading-none"
                   >
                     ×
                   </button>
@@ -195,11 +203,10 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
         <button
           onClick={onSearch}
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
-          disabled={!ctx.upcs.length || nothingPicked}
+          disabled={!ctx.upcs.length || nothingPicked || busy}
         >
-          {nothingPicked ? pickLabel : "Search"}
+          {nothingPicked ? pickLabel : busy ? "Searching…" : "Search"}
         </button>
-
       </div>
     </div>
   );
