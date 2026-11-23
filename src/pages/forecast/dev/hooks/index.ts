@@ -18,6 +18,7 @@ import {
   appendBatchResults,
   setStoreids,
 } from "../../../../features/dev/devForecastDevSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 // API
 import { getHistoryFromList } from "../../../../api/priceSim";
@@ -61,9 +62,10 @@ export const useForecastSearch = (
   /** The endpoint takes a list of stores, so a group is resolved first.
    *  Inactive stores are dropped (their history has stopped), and so are
    *  stores the user isn't assigned: sending one fails the whole request.
-   *  Null means the user has already been told why there is nothing to send. */
+   *  Null means the user has already been told why there is nothing to send.
+   *  A shared group resolves like a group: the server reads it as the caller. */
   const resolveStoreids = async (): Promise<string | null> => {
-    if (type !== "Group") return String(lastStore);
+    if (!isGroupSearch(type)) return String(lastStore);
     const resp = await getStoresAssignedToUserGroup(
       url,
       token,
