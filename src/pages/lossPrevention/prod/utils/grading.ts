@@ -1,14 +1,20 @@
+// Interfaces
+import type {
+  CashierSeverity,
+  CashierMetric,
+  CashierGrade,
+  PeerAverages,
+} from "../interfaces";
 import type {
   TransactionOverview,
   UniqueCashier,
   CashierDetails,
-} from "../../../interfaces";
-import type { Severity } from "../../../utils/severity";
+} from "../../../../interfaces";
+import type { Severity } from "../../../../utils/severity";
+
 // Re-exported so LP's existing imports keep working; the helper itself is
 // shared with Cashiers now. See utils/saleTypes.
-export { pickDefaultSaleType } from "../../../utils/saleTypes";
-
-export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
+export { pickDefaultSaleType } from "../../../../utils/saleTypes";
 
 // ── Week date range (LPStorePanel + LPTransactionPanel header/export) ──────
 // search.singleDate is the searched week-ending date ("m/d/yyyy") — the week
@@ -91,8 +97,10 @@ export const passFailChipClass = (isPass: boolean | null): string => {
   // white text this used to return was the only place in the app shouting a
   // pass/fail at full strength, and on a row of four chips it read as an alarm
   // rather than a grade.
-  if (isPass === null) return "bg-gray-100 text-gray-500";
-  return isPass ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800";
+  if (isPass === null) return "bg-row_stripe text-brand_slate";
+  return isPass
+    ? "bg-severity_healthy_bg text-severity_healthy_text"
+    : "bg-severity_critical_bg text-severity_critical_text";
 };
 
 // Trend pill for the KPI strips — the same soft fill and dark text
@@ -103,37 +111,9 @@ export const passFailChipClass = (isPass: boolean | null): string => {
 // Up is worse here: LP grades exceptions, where staying under the baseline is
 // the good outcome.
 export const trendPillClass = (pct: number): string =>
-  pct > 0 ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800";
-
-export interface CashierMetric {
-  value: number;
-  avg: number;
-  /** (value - avg) / avg * 100 — display only, not used for pass/fail */
-  pct: number;
-  /** true when value ≤ baseline (below = good for LP exceptions) */
-  isPass: boolean;
-}
-
-export interface CashierGrade {
-  cashier_number: number;
-  cashier_name: string;
-  store_number: string;
-  trans: CashierMetric;
-  qty: CashierMetric;
-  sales: CashierMetric;
-  avgTicket: CashierMetric;
-  passes: number;
-  severity: CashierSeverity;
-  /** false when cashier had no activity in the baseline period — grade is unreliable */
-  hasBaseline: boolean;
-}
-
-export interface PeerAverages {
-  trans: number;
-  qty: number;
-  sales: number;
-  avgTicket: number;
-}
+  pct > 0
+    ? "bg-delta_negative_bg text-delta_negative_text"
+    : "bg-delta_positive_bg text-delta_positive_text";
 
 // ── Step 1: aggregate transOverviews into per-cashier stats ─────────────────
 

@@ -1,17 +1,10 @@
+// Hooks
 import { useState, useEffect, useRef } from "react";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
-import { useApiContext } from "../../../../hooks/useApiContext";
-import { formatGoliathDate } from "../../../../utils";
-import { scopeToStoreNumber } from "../../../../utils/storeIdentity";
-import {
-  getCashierDetails,
-  getCashierTable,
-  getTransactionIds,
-  getAllTransactionList,
-  getCashierTransaction,
-} from "../../../../api/lossPrevention";
+import { useLossPreventionCtx } from ".";
+
+// Redux
 import {
   reQuery,
   setCashierDetails,
@@ -36,37 +29,50 @@ import {
   setTransactionDrillDown,
   setTransactionLoadingMessage,
   toggleNoTransMsg,
-  // setSearchString, // Description logic commented out
 } from "../../../../features/lossPreventionSlice";
+
+// API
+import {
+  getCashierDetails,
+  getCashierTable,
+  getTransactionIds,
+  getAllTransactionList,
+  getCashierTransaction,
+} from "../../../../api/lossPrevention";
+
+// Utils
+import { scopeToStoreNumber } from "../../../../utils/storeIdentity";
+import { reasonOf } from "../../../../utils/serverError";
+import { chunkSales, shiftDays } from "../utils";
+import { pickDefaultSaleType } from "../utils/grading";
+import {
+  baselineOverviewsOf,
+  overviewsOf,
+  sumByStore,
+  uniqueCashiersOf,
+  weekWindows,
+} from "../utils/desktop";
+
+// Interfaces
 import type {
   CashierDetails,
-  JsonError,
   TransactionIdsResp,
   TransactionListItem,
   TransactionOverview,
-  UniqueCashier,
 } from "../../../../interfaces";
-import { chunkSales } from "..";
-import { pickDefaultSaleType } from "../gradingUtils";
-import SearchCard from "../../../../components/SearchCard";
-// import DescModal from "../components/DescModal"; // Description logic commented out
-import LPStorePanel from "./LPStorePanel";
-import LPTransactionPanel from "./LPTransactionPanel";
 
-interface Props {
-  getSaleTypes: () => void;
-}
-
-const LPDesktop = ({ getSaleTypes }: Props) => {
+/**
+ * The desktop page's fetches: an exception type (and its baseline), a single
+ * day against the same weekday in the two weeks before, a store's
+ * transactions and their baseline, one transaction's lines, and the
+ * show-all view. The first exception type loads itself once the types land.
+ */
+export const useLPDesktop = () => {
   const toast = useToast();
-  const params = useApiContext();
-  const { apiEnv } = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const cashier = useAppSelector((s) => s.prod.lossPrevention);
+  const cashier = useLossPreventionCtx();
+  const { apiEnv, url, token, weekDate, params } = cashier;
   const [loading, setLoading] = useState(false);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useEffect(() => {
     const preferred = pickDefaultSaleType(cashier.saleTypes);
@@ -78,14 +84,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       handleSaleTypeSelect(preferred.sale_type);
     }
   }, [cashier.saleTypes]);
-  // const [descModalOpen, setDescModalOpen] = useState(false);
 
   const handleSaleTypeSelect = (saleType: string) => {
-    // Description exception logic commented out until further notice
-    // if (saleType === "Description") {
-    //   setDescModalOpen(true);
-    //   return;
-    // }
     const panels = cashier.saleTypes;
     dispatch(setSelectedStoreId(0));
     dispatch(setSelectedStoreNumber(""));
@@ -125,7 +125,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setLoading(false));
     getCashierDetails(
       params.url,
@@ -144,30 +144,6 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       .catch(() => {});
   };
 
-  // Description submit handler — commented out until further notice
-  // const handleDescriptionSubmit = (description: string) => {
-  //   setDescModalOpen(false);
-  //   const panels = cashier.saleTypes;
-  //   dispatch(resetCashierSlice());
-  //   dispatch(setSaleTypes(panels));
-  //   dispatch(setSearchString(description));
-  //   dispatch(setSelectedSaleType("Description"));
-  //   setLoading(true);
-  //   getCashierDetails(params.url, params.token, params.start, params.end, params.useGroups, params.searchValue, params.singleStore, ["description"], description)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0 && j.sales.length > 0) {
-  //         dispatch(toggleNoTransMsg(false));
-  //         dispatch(setCashierDetails(j.sales));
-  //         dispatch(setCashierTrends(j.trend));
-  //       } else {
-  //         dispatch(toggleNoTransMsg(true));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => toast.error(err.message))
-  //     .finally(() => setLoading(false));
-  // };
-
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(setTransactionLoadingMessage("Loading Transactions..."));
     getAllTransactionList(url, token, saleIds, saleType, cashier.searchString)
@@ -175,31 +151,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
         const j = resp.data;
         if (j.error === 0) {
           const newTrans = [...j.transactions];
-          const uniqueCashiers = newTrans.reduce(
-            (acc: UniqueCashier[], curr) => {
-              const found = acc.find(
-                (item) => item.cashier_number === curr.cashier_number,
-              );
-              if (!found) {
-                acc.push({
-                  cashier_name: curr.cashier_name,
-                  cashier_number: curr.cashier_number,
-                  total_sales: curr.total_sales,
-                  transaction_count: 1,
-                  store_number: curr.store_number,
-                  transaction_ids: [curr.sale_id],
-                });
-              } else {
-                if (!found.transaction_ids.includes(curr.sale_id)) {
-                  found.transaction_ids.push(curr.sale_id);
-                  found.transaction_count += 1;
-                }
-                found.total_sales += curr.total_sales;
-              }
-              return acc;
-            },
-            [],
-          );
+          const uniqueCashiers = uniqueCashiersOf(newTrans);
 
           dispatch(setCashiers(uniqueCashiers));
 
@@ -210,32 +162,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             qty: item.qty ?? 0,
           }));
 
-          const overviews: TransactionOverview[] = formatted.reduce(
-            (acc: TransactionOverview[], curr) => {
-              const found = acc.find(
-                (item) => item.transaction_id === curr.transaction_id,
-              );
-              if (!found) {
-                acc.push({
-                  transaction_id: curr.transaction_id,
-                  sale_date: curr.sale_date,
-                  sale_type: curr.sale_type,
-                  store_number: curr.store_number,
-                  cashier_name: curr.cashier_name,
-                  cashier_number: curr.cashier_number,
-                  qty: 1,
-                  total_sales: curr.total_sales,
-                  sale_id: curr.sale_id,
-                  storeid: curr.storeid,
-                });
-              } else {
-                found.qty += 1;
-                found.total_sales += curr.total_sales;
-              }
-              return acc;
-            },
-            [],
-          );
+          const overviews = overviewsOf(formatted);
 
           dispatch(setTransOverviews(overviews));
           dispatch(setTransList(formatted));
@@ -243,7 +170,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => {
         dispatch(setFetchingCashierTransactions(false));
         dispatch(setTransactionLoadingMessage(""));
@@ -264,39 +191,6 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const dayCache = useRef<
     Record<string, { details: CashierDetails[]; baseline: CashierDetails[] }>
   >({});
-
-  const shiftDays = (iso: string, delta: number) => {
-    const [y, m, d] = iso.split("-").map(Number);
-    const dt = new Date(y, m - 1, d + delta);
-    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-  };
-
-  const sumByStore = (rows: CashierDetails[]): CashierDetails[] => {
-    const map = new Map<string, CashierDetails>();
-    for (const r of rows) {
-      const key = `${r.storeid}__${r.store_number}`;
-      const cur = map.get(key);
-      if (!cur) {
-        map.set(key, { ...r });
-        continue;
-      }
-      cur.transaction_count += r.transaction_count;
-      cur.total_items += r.total_items;
-      cur.amount += r.amount;
-      cur.qty += r.qty;
-      cur.weight += r.weight;
-      cur.cashier_count = Math.max(cur.cashier_count, r.cashier_count);
-      // Averages are re-derived rather than added — adding two means is wrong.
-      cur.average_dollars =
-        cur.transaction_count > 0 ? cur.amount / cur.transaction_count : 0;
-      cur.average_qty =
-        cur.transaction_count > 0 ? cur.qty / cur.transaction_count : 0;
-      cur.avg_item_amount =
-        cur.total_items > 0 ? cur.amount / cur.total_items : 0;
-      cur.avg_item_qty = cur.total_items > 0 ? cur.qty / cur.total_items : 0;
-    }
-    return [...map.values()];
-  };
 
   const handleDaySelect = (day: string | null) => {
     dispatch(setSelectedDay(day));
@@ -364,24 +258,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     dispatch(setFetchingCashierTransactions(true));
     dispatch(setTransList([]));
 
-    // const saleType = cashier.selectedSaleType === "Description" ? "description" : cashier.selectedSaleType;
     const saleType = cashier.selectedSaleType;
-    const [sm, sd, sy] = search.singleDate.split("/").map(Number);
-    const endD = new Date(sy, sm - 1, sd);
-    const startD = new Date(endD);
-    startD.setDate(startD.getDate() - 6);
-    const baseEndD = new Date(endD);
-    baseEndD.setDate(baseEndD.getDate() - 7);
-    const baseStartD = new Date(endD);
-    baseStartD.setDate(baseStartD.getDate() - 20);
-    const fmt = (d: Date) =>
-      formatGoliathDate(
-        `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`,
-      );
-    const start = fmt(startD);
-    const end = fmt(endD);
-    const baseStart = fmt(baseStartD);
-    const baseEnd = fmt(baseEndD);
+    const { start, end, baseStart, baseEnd } = weekWindows(weekDate);
 
     // Off until `cashiers/transaction_ids` is deployed to the dev server — it
     // isn't yet, so dev falls through to the `cashier_table` walk prod uses.
@@ -415,7 +293,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
           dispatch(setSelectedSaleIds(saleIds));
           fetchTransactions(saleIds, saleType);
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
     } else
       getCashierTable(
         url,
@@ -471,7 +349,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
                       );
                     }
                   })
-                  .catch((err: JsonError) => toast.error(err.message))
+                  .catch((err) => toast.error(reasonOf(err)))
                   .finally(() => {
                     pages.find((p) => p.page === page)!.fetched = true;
                     if (pages.every((p) => p.fetched)) {
@@ -493,7 +371,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             toast.warn(j.msg);
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err) => toast.error(reasonOf(err)));
 
     // Baseline fetch — prior 2 weeks, used for cashier grading
     getCashierTable(
@@ -539,32 +417,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
               : [];
           Promise.all(fetchPages).then((pages) => {
             pages.forEach((p) => baseTrans.push(...p));
-            const overviews: TransactionOverview[] = baseTrans.reduce(
-              (acc: TransactionOverview[], curr: any) => {
-                const found = acc.find(
-                  (o) => o.transaction_id === curr.sale_id.split("-")[1],
-                );
-                if (!found) {
-                  acc.push({
-                    transaction_id: curr.sale_id.split("-")[1],
-                    sale_date: curr.sale_date.split("T")[0],
-                    sale_type: curr.sale_type,
-                    store_number: curr.store_number,
-                    cashier_name: curr.cashier_name,
-                    cashier_number: curr.cashier_number,
-                    qty: 1,
-                    total_sales: curr.total_sales,
-                    sale_id: curr.sale_id,
-                    storeid: curr.storeid,
-                  });
-                } else {
-                  found.qty += 1;
-                  found.total_sales += curr.total_sales;
-                }
-                return acc;
-              },
-              [],
-            );
+            const overviews = baselineOverviewsOf(baseTrans);
             dispatch(setBaselineOverviews(overviews));
           });
         } else {
@@ -601,9 +454,9 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
           toast.warn(j.msg);
         }
       })
-      .catch((err: JsonError) => {
+      .catch((err) => {
         dispatch(setTransModalOpen(false));
-        toast.error(err.message);
+        toast.error(reasonOf(err));
       });
   };
 
@@ -613,80 +466,12 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     dispatch(setTransModalOpen(true));
   };
 
-  // Checked before the entry card, matching Sales / Sub Dept Margins / Coupon
-  // Sales: the Performance pages drop the card entirely for a full-page
-  // indicator while their first fetch runs. On failure loadingSaleTypes goes
-  // false with saleTypes still empty, so this falls straight back to the card.
-  if (cashier.loadingSaleTypes) {
-    return (
-      <div className="w-full h-[calc(100vh-3rem)] relative">
-        <LoadingIndicator message="Loading exception types..." />
-      </div>
-    );
-  }
-
-  if (!cashier.saleTypes.length) {
-    return (
-      <div className="h-[calc(100vh-3rem)] overflow-hidden flex items-center justify-center bg-bkg">
-        <div className="w-full max-w-sm mx-4">
-          <SearchCard
-            title="Loss Prevention"
-            description="Select a store and date to find exception activity."
-            buttonLabel="Load exceptions"
-            singleDate={true}
-            onSearch={getSaleTypes}
-            loading={cashier.loadingSaleTypes}
-            loadingMessage="Finding exception types..."
-            notice={
-              cashier.noSaleTypesFound
-                ? "No sale types came back for this search."
-                : undefined
-            }
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
-      {/* <DescModal open={descModalOpen} onClose={() => setDescModalOpen(false)} handleSubmit={handleDescriptionSubmit} /> */}
-      <LPStorePanel
-        loading={loading}
-        onDaySelect={handleDaySelect}
-        onSaleTypeSelect={handleSaleTypeSelect}
-        onStoreSelect={handleStoreSelect}
-        onOpenSearch={() => setSearchModalOpen(true)}
-      />
-      <LPTransactionPanel
-        onTransactionClick={handleTransactionClick}
-        onShowAll={handleShowAll}
-      />
-      {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SearchCard
-              title="Loss Prevention"
-              description="Select a store and date to find exception activity."
-              buttonLabel="Load exceptions"
-              singleDate={true}
-              onSearch={() => {
-                setSearchModalOpen(false);
-                getSaleTypes();
-              }}
-              loading={false}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return {
+    loading,
+    handleSaleTypeSelect,
+    handleDaySelect,
+    handleStoreSelect,
+    handleTransactionClick,
+    handleShowAll,
+  };
 };
-
-export default LPDesktop;
