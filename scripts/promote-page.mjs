@@ -22,8 +22,8 @@
  *            in store/pageReducers.ts (so sign-out clears it), and taken off
  *            sliceIsolation.test.ts's dev-only list.
  *   TESTS    tests/dev/pages/<page> is copied to tests/prod/pages/<page> with
- *            the same swaps on its @/ imports; prod tests with no dev twin go
- *            to trash/.
+ *            the same swaps on its @/ imports; prod tests with no dev twin, and
+ *            tests left inside the prod tree, go to trash/.
  *   LIBRARY  a dev-library file the prod library doesn't have yet is copied
  *            in; nothing in prod uses it, so that is safe. A dev-library file
  *            that DIFFERS from its prod twin is a change to a component other
@@ -124,7 +124,12 @@ for (const f of testFiles(TDEV)) {
   const text = promoteTest(readFileSync(f, "utf8"));
   if (!existsSync(to) || lf(readFileSync(to, "utf8")) !== lf(text)) testWrites.set(to, text);
 }
-const testDrops = testFiles(TPROD).filter((f) => !existsSync(TDEV + f.slice(TPROD.length)));
+// Tests still inside the prod tree belong to the old prod tree: the promoted
+// tree's tests are the dev ones above, in tests/prod.
+const testDrops = [
+  ...testFiles(TPROD).filter((f) => !existsSync(TDEV + f.slice(TPROD.length))),
+  ...files.filter((f) => f.startsWith(PROD) && isTest(f)),
+];
 
 // Who in prod uses a changed library file — the blast radius of --lib.
 const prodUsersOf = (libFile) => {
