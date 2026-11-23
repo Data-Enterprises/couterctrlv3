@@ -206,10 +206,6 @@
   "src/features/baseGroupSlice.ts": {
     "labels": 1
   },
-  "src/features/categoriesSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/features/companySlice.ts": {
     "labels": 1
   },

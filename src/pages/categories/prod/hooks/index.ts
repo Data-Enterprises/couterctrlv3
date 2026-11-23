@@ -1,8 +1,10 @@
-import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+// Hooks
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../../utils";
+import { shallowEqual } from "react-redux";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+
+// Redux
 import {
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
@@ -18,13 +20,38 @@ import {
   setItems,
   setLoadingItems,
   reQuery,
-} from "../../../features/categoriesSlice";
+} from "../../../../features/categoriesSlice";
+
+// Utils
+import { storeNumbersIn } from "../../../../utils/storeIdentity";
+import { formatGoliathDate, getStoreName } from "../../../../utils";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,
   fetchHourlyPeriods,
-} from "./categoriesData";
-import { buildCategoryRows, scopePeriods } from "./categoriesUtils";
+} from "../utils/categoriesData";
+import {
+  buildCategoryRows,
+  countedCatRows,
+  scopePeriods,
+  scopeStoreNumber,
+} from "../utils";
+
+/** The Categories page's slice, with the connection, search and stores it
+ *  needs, read where it is used instead of passed down. */
+export const useCategoriesCtx = () =>
+  useAppSelector(
+    (s) => ({
+      ...s.dev.categories,
+      url: s.app.url,
+      token: s.app.token,
+      isMobile: s.app.isMobile,
+      singleDate: s.search.singleDate,
+      lastStore: s.search.lastStore,
+      assignedStores: s.user.assignedStores,
+    }),
+    shallowEqual,
+  );
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the
@@ -35,28 +62,10 @@ import { buildCategoryRows, scopePeriods } from "./categoriesUtils";
  * would fire every item fetch twice. The desktop container calls it and hands
  * the two functions to whichever layout renders.
  */
-/** One location's rows across all three periods, for the per-category drill
- *  loads. They are fetched by storeid, so a co-located pair arrives as both
- *  stores; the list beside them is showing one. */
-const scopeStoreNumber = <T extends { store_number: string }>(
-  rows: { tw: T[]; lw: T[]; ly: T[] },
-  storeNumber: string | null,
-) =>
-  storeNumber === null
-    ? rows
-    : {
-        tw: onlyStoreNumber(rows.tw, storeNumber),
-        lw: onlyStoreNumber(rows.lw, storeNumber),
-        ly: onlyStoreNumber(rows.ly, storeNumber),
-      };
-
 export const useCategoryData = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const context = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.prod.categories);
+  const cats = useCategoriesCtx();
 
   /** Resolves to the row count, so a caller can tell "found nothing" from
    *  "never ran" without reading state back on the next render. */
@@ -68,7 +77,7 @@ export const useCategoryData = () => {
 
     // The week runs backwards from the chosen date, matching every other
     // Performance page — the picker names the end of the week, not the start.
-    const end = formatGoliathDate(search.singleDate);
+    const end = formatGoliathDate(cats.singleDate);
     const [y, m, d] = end.split("-").map(Number);
     const startDt = new Date(Date.UTC(y, m - 1, d - 6));
     const start = startDt.toISOString().slice(0, 10);
@@ -80,13 +89,13 @@ export const useCategoryData = () => {
     dispatch(
       setStore({
         storeid: storeId,
-        storeName: getStoreName(user.assignedStores, storeId),
+        storeName: getStoreName(cats.assignedStores, storeId),
       }),
     );
 
     try {
       const { tw, lw, ly, twDates } = await fetchAllPeriods(
-        { url: context.url, token: context.token, storeid: storeId },
+        { url: cats.url, token: cats.token, storeid: storeId },
         start,
         end,
       );
@@ -104,7 +113,14 @@ export const useCategoryData = () => {
       // Raw stays whole, so switching location is a rebuild rather than
       // another ten pages per period.
       dispatch(setRaw({ raw: { tw, lw, ly }, twDates }));
-      const scoped = scopePeriods({ tw, lw, ly }, landing);
+      const scoped = scopePeriods(
+        {
+          tw: countedCatRows(tw),
+          lw: countedCatRows(lw),
+          ly: countedCatRows(ly),
+        },
+        landing,
+      );
       const rows = buildCategoryRows(scoped.tw, scoped.lw, scoped.ly, twDates);
       dispatch(setRows(rows));
 
@@ -129,7 +145,7 @@ export const useCategoryData = () => {
     dispatch(setLoadingHourly(true));
     try {
       const rows = await fetchHourlyPeriods(
-        { url: context.url, token: context.token, storeid: cats.storeid },
+        { url: cats.url, token: cats.token, storeid: cats.storeid },
         cats.twStart,
         cats.twEnd,
         cats.selectedCategory,
@@ -137,11 +153,7 @@ export const useCategoryData = () => {
       // Fetched by storeid like everything else here, so a co-located pair
       // comes back as both stores. Narrow it to the location the list is
       // showing, or the hours contradict the row that was clicked.
-      dispatch(
-        setHourly(
-          scopeStoreNumber(rows, cats.selectedStoreNumber),
-        ),
-      );
+      dispatch(setHourly(scopeStoreNumber(rows, cats.selectedStoreNumber)));
     } catch {
       toast.error("Couldn't load the hourly breakdown.");
     } finally {
@@ -158,16 +170,15 @@ export const useCategoryData = () => {
     const category = cats.selectedCategory;
     if (category === null || !cats.twStart || !cats.twEnd) return;
 
-    // Clicking down the list faster than the network responds would otherwise
-    // let an earlier, slower period land after a later one and render under the
-    // wrong category.
+    // Clicking down the list faster than the network responds could otherwise
+    // land an earlier, slower period after a later one, under the wrong category.
     let cancelled = false;
     dispatch(setLoadingItems(true));
 
     (async () => {
       try {
         const rows = await fetchCatItemPeriods(
-          { url: context.url, token: context.token, storeid: cats.storeid },
+          { url: cats.url, token: cats.token, storeid: cats.storeid },
           cats.twStart,
           cats.twEnd,
           category,
@@ -193,8 +204,8 @@ export const useCategoryData = () => {
     cats.twStart,
     cats.twEnd,
     cats.storeid,
-    context.url,
-    context.token,
+    cats.url,
+    cats.token,
   ]);
 
   /**

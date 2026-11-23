@@ -1,9 +1,15 @@
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import ItemMarginsTable from "../../../components/ItemMarginsTable";
+// Hooks
+import { useAppDispatch } from "../../../../../hooks";
+import { useCategoriesCtx } from "../../hooks";
+
+// Redux
 import {
   setItemThreshold,
   ITEM_THRESHOLD_DEFAULT,
-} from "../../../features/categoriesSlice";
+} from "../../../../../features/categoriesSlice";
+
+// Components
+import ItemMarginsTable from "../../../../../components/ItemMarginsTable";
 
 /** The open category's items, on the shared item report.
  *
@@ -16,7 +22,7 @@ import {
 const CategoryItemsTable = () => {
   const dispatch = useAppDispatch();
   const { items, metric, selectedDay, loadingItems, itemThreshold, rows } =
-    useAppSelector((s) => s.prod.categories);
+    useCategoriesCtx();
   // Store-level, so every category row carries the same coverage.
   const coverage = rows[0]?.coverage;
 

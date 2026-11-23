@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { scopePeriods } from "./categoriesUtils";
-import type { CatSalesDaily } from "../../../interfaces";
+import { scopePeriods } from "@/pages/categories/prod/utils";
+import type { CatSalesDaily } from "@/interfaces";
 
 /**
  * cat_sales is fetched by storeid, and a few storeids cover two physical

@@ -1,19 +1,9 @@
+// Hooks
 import { memo, useCallback } from "react";
-import { PCT_COL_W } from "../../../utils/severity";
 
-/**
- * One row in the category list.
- *
- * Split out and memoized because a store can return 1100+ categories, and
- * dragging the threshold slider re-renders the list on every tick. Every prop
- * here is a **primitive** — including the already-resolved pill and dot class
- * names — so React can compare them cheaply and skip the rows that didn't
- * change. Passing the row object instead would defeat the memo entirely, since
- * the parent builds a new object each pass.
- *
- * Only rows whose grade actually crossed the threshold get new class strings,
- * so a typical slider tick re-renders a handful of rows rather than all 1100.
- */
+// Utils
+import { PCT_COL_W } from "../../../../../utils/severity";
+
 interface CategoryRowProps {
   category: number;
   label: string;
@@ -32,6 +22,19 @@ interface CategoryRowProps {
   onSelect: (category: number, isSelected: boolean) => void;
 }
 
+/**
+ * One row in the category list.
+ *
+ * Split out and memoized because a store can return 1100+ categories, and
+ * dragging the threshold slider re-renders the list on every tick. Every prop
+ * here is a **primitive** — including the already-resolved pill and dot class
+ * names — so React can compare them cheaply and skip the rows that didn't
+ * change. Passing the row object instead would defeat the memo entirely, since
+ * the parent builds a new object each pass.
+ *
+ * Only rows whose grade actually crossed the threshold get new class strings,
+ * so a typical slider tick re-renders a handful of rows rather than all 1100.
+ */
 const CategoryRow = ({
   category,
   label,
@@ -55,17 +58,17 @@ const CategoryRow = ({
     <button
       onClick={handleClick}
       className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSelected
-          ? "bg-row_selected border-row_selected_border"
-          : "border-transparent hover:bg-gray-50"
+        isSelected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-content truncate">{label}</div>
+        <div className="text-[13px] font-medium text-content truncate">
+          {label}
+        </div>
         {/* The comparison values themselves, so a percentage can be weighed
             against the size of what it moved. */}
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW <span className="font-semibold">{lwText}</span> · LY{" "}
           <span className="font-semibold">{lyText}</span>
         </div>

@@ -1,12 +1,15 @@
+// Hooks
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useCategoryData, useCategoriesCtx } from "./hooks";
+
+// Components
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
-import { useCategoryData } from "./useCategoryData";
-import CategoryListPanel from "./CategoryListPanel";
-import CategoryDetailPanel from "./CategoryDetailPanel";
-import ItemPerfMobile from "../../shared/itemPerf/prod/ItemPerfMobile";
+import ItemPerfMobile from "../../../components/itemPerf/ItemPerfMobile";
+import SearchPopup from "../../../components/SearchPopup";
+import CategoryListPanel from "./list/CategoryListPanel";
+import CategoryDetailPanel from "./detail/CategoryDetailPanel";
 
 /**
  * Categories — Performance.
@@ -20,22 +23,19 @@ import ItemPerfMobile from "../../shared/itemPerf/prod/ItemPerfMobile";
  * render what the container loaded and never reach for data themselves.
  */
 const Categories = () => {
-  const context = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.prod.categories);
+  const cats = useCategoriesCtx();
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.
   const { runSearch, loadHourly, applyLocation } = useCategoryData();
 
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [storeId, setStoreId] = useState(search.lastStore || 0);
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [storeId, setStoreId] = useState<number>(cats.lastStore || 0);
 
   // Mobile shares one ungraded screen with Sub Dept Margins and Vendors —
   // same item rows, grouped by category instead. It owns its own fetch, so
   // nothing above reaches categoriesSlice on this path.
-  if (context.isMobile)
+  if (cats.isMobile)
     return (
       <ItemPerfMobile
         dimension="category"
@@ -49,7 +49,7 @@ const Categories = () => {
       title="Category Performance"
       description="Pick a store and a week. Categories are graded against last week and the same week last year."
       buttonLabel="Load categories"
-      stores={user.assignedStores}
+      stores={cats.assignedStores}
       selectedStoreId={storeId}
       onStoreSelect={setStoreId}
       onSearch={() => {
@@ -86,12 +86,7 @@ const Categories = () => {
           the loaded week to change one field is the thing that pattern exists
           to prevent. */}
       {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          onClick={() => setSearchOpen(false)}
-        >
-          <div onClick={(e) => e.stopPropagation()}>{entry}</div>
-        </div>
+        <SearchPopup onClose={() => setSearchOpen(false)}>{entry}</SearchPopup>
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">

@@ -1,13 +1,19 @@
-import { getCats } from "../../../api/sales";
-import { getCatItems } from "../../../api/cats";
-import { fetchAllPages } from "../../../utils/paging";
+// API
+import { getCats } from "../../../../api/sales";
+import { getCatItems } from "../../../../api/cats";
+
+// Utils
+import { fetchAllPages } from "../../../../utils/paging";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "./index";
+
+// Interfaces
+import type { CategoryScope, PeriodRange } from "../interfaces";
 import type {
   CatItem,
   CatSalesDaily,
   CatSalesHourly,
   CatSalesResponse,
-} from "../../../interfaces";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "./categoriesUtils";
+} from "../../../../interfaces";
 
 /** Fetching for the Categories page.
  *
@@ -21,18 +27,6 @@ import { LW_OFFSET, LY_OFFSET, shiftIso } from "./categoriesUtils";
 
 const USE_GROUPS = 0;
 const SINGLE_STORE = 1;
-
-export interface CategoryScope {
-  url: string;
-  token: string;
-  /** storeid — the page never searches by group. */
-  storeid: number;
-}
-
-export interface PeriodRange {
-  start: string;
-  end: string;
-}
 
 /** The three ranges, derived from this week's. Offsets live in
  *  categoriesUtils so the fetch and the day-alignment can't drift apart. */

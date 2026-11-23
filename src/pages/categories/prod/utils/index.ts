@@ -1,8 +1,31 @@
-import { onlyStoreNumber } from "../../../utils/storeIdentity";
-import { coverageOf, gradeBasis } from "../../../utils/grading";
-import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
+// Utils
+import { onlyStoreNumber } from "../../../../utils/storeIdentity";
+import { countedRows } from "../../../../utils/hashSubs";
+import { coverageOf, gradeBasis } from "../../../../utils/grading";
+import {
+  type Severity,
+  severityDotClass,
+  severityHeaderBgClass,
+} from "../../../../utils/severity";
+
+// Interfaces
+import type {
+  CatSalesDaily,
+  CategoryMetric,
+  CategoryTier,
+  CategoryRow,
+  CategoryDay,
+  DayDetail,
+} from "../../../../interfaces";
+
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
-export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
+export type {
+  CategoryMetric,
+  CategoryTier,
+  CategoryRow,
+  CategoryDay,
+  DayDetail,
+} from "../../../../interfaces";
 
 /** Category performance: turning three weeks of daily rows into graded rows.
  *
@@ -17,8 +40,15 @@ export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail 
  */
 
 export const emptyDetail = (): DayDetail => ({
-  gross: 0, net: 0, tax: 0, qty: 0, weight: 0,
-  elecInstore: 0, elecStore: 0, digital: 0, storeCoupon: 0,
+  gross: 0,
+  net: 0,
+  tax: 0,
+  qty: 0,
+  weight: 0,
+  elecInstore: 0,
+  elecStore: 0,
+  digital: 0,
+  storeCoupon: 0,
 });
 
 /* ── date helpers ─────────────────────────────────────────────────────────
@@ -120,6 +150,20 @@ const buildLabels = (...sets: CatSalesDaily[][]) => {
  *  Strict rather than `scopeToStoreNumber`: a location can have a period the
  *  other one did not trade in, and the guarded form would hand those rows
  *  over rather than reporting no comparison. */
+/**
+ * The rows a store counts, for everything that totals them.
+ *
+ * `categories/cat_sales` returns hash sub departments -- fuel, lottery, cash
+ * accounts -- and `sales/weekly` leaves them out. The Categories header is
+ * summed from these rows and set beside the Sales header, so on a store with
+ * any hash department the two already disagree. Dropped on the way in, like
+ * the store comparison and the tracker.
+ *
+ * A row without the flag reads as "not known to be hash", so a response from
+ * an older deploy behaves as it did rather than silently dropping every row.
+ */
+export const countedCatRows = countedRows;
+
 export const scopePeriods = (
   raw: { tw: CatSalesDaily[]; lw: CatSalesDaily[]; ly: CatSalesDaily[] },
   storeNumber: string | null,
@@ -308,3 +352,86 @@ export const sortGraded = <T extends CategoryRow & { tier: CategoryTier }>(
     const bv = metric === "qty" ? b.twQty : b.twNet;
     return bv - av;
   });
+
+/** Ungraded has no severity colour of its own, so the header falls back to the
+ *  navy every other panel uses rather than borrowing a verdict colour. */
+export const headerBg = (tier: CategoryTier) =>
+  tier === "ungraded"
+    ? "bg-brand_navy"
+    : severityHeaderBgClass[tier as Severity];
+
+/** Grades a percent change: critical past minus the threshold, watch below zero, else healthy. */
+export const tierOf = (
+  pct: number | null,
+  threshold: number,
+): Severity | null => {
+  if (pct === null) return null;
+  if (pct < -threshold) return "critical";
+  if (pct < 0) return "watch";
+  return "healthy";
+};
+
+/** Written out rather than interpolated: Tailwind scans source text, so a class
+ *  assembled at runtime is never emitted into the stylesheet. */
+export const SEV_CHIP: Record<Severity, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+};
+
+/** The ring a severity chip wears while its filter is on. */
+export const SEV_CHIP_ON: Record<Severity, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+};
+
+/** An hour as its one-hour window, e.g. 09:00 – 10:00. */
+export const formatHour = (h: number) =>
+  `${String(h).padStart(2, "0")}:00 – ${String((h + 1) % 24).padStart(2, "0")}:00`;
+
+/** The list's Sales / Qty toggle. */
+export const TOGGLE_OPTS = [
+  { key: "sales" as const, label: "Sales" },
+  { key: "qty" as const, label: "Qty" },
+];
+
+/** Ungraded has no severity equivalent, so it falls back to the neutral dot
+ *  rather than borrowing a colour that would imply a verdict. */
+export const dotFor = (tier: CategoryTier) =>
+  tier === "ungraded"
+    ? "bg-fill_track_strong"
+    : severityDotClass[tier as Severity];
+
+/** Tier summary chips, in Sales' tinted-fill register rather than the solid
+ *  `chipClass` fill the Data pages use. Written out in full because Tailwind
+ *  scans source text and never sees a class assembled at runtime. */
+export const CHIP_BASE: Record<CategoryTier, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  ungraded: "bg-fill_muted text-content/95",
+};
+
+/** The ring a tier chip wears while its filter is on. */
+export const CHIP_ON: Record<CategoryTier, string> = {
+  critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
+  watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
+  healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
+  ungraded: "ring-2 ring-ungraded/40 shadow-sm",
+};
+
+/** One location's rows across all three periods, for the per-category drill
+ *  loads. They are fetched by storeid, so a co-located pair arrives as both
+ *  stores; the list beside them is showing one. */
+export const scopeStoreNumber = <T extends { store_number: string }>(
+  rows: { tw: T[]; lw: T[]; ly: T[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? rows
+    : {
+        tw: onlyStoreNumber(rows.tw, storeNumber),
+        lw: onlyStoreNumber(rows.lw, storeNumber),
+        ly: onlyStoreNumber(rows.ly, storeNumber),
+      };
