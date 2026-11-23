@@ -1,14 +1,12 @@
 // Hooks
-import { useEffect, useRef, useState } from "react";
-import { useSharedGroupsCtx } from "../hooks";
+import { useEffect, useState } from "react";
+import { useSharedGroupLists, useSharedGroupsCtx } from "../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 
 // API
 import {
   addSharedGroupStores,
   deleteSharedGroup,
-  getSharedGroupStores,
-  getSharedGroupUsers,
   removeSharedGroupStores,
   renameSharedGroup,
   shareSharedGroups,
@@ -16,23 +14,20 @@ import {
 } from "../../../../../api/sharedGroups";
 
 // Utils
-import { errorText, nameProblem, storeLabel } from "../utils";
+import { storeLabel } from "../utils";
 
 // Interfaces
 import type {
   SharedGroup,
   SharedGroupStoreRow,
-  SharedGroupStoresResp,
   SharedGroupUser,
-  SharedGroupUsersResp,
 } from "../../../../../interfaces";
-import type { Envelope } from "../interfaces";
 
 // Components
-import AssignPanel from "../../../../../components/AssignPanel";
-import IconButton from "../../../../../components/IconButton";
 import ConfirmModal from "../../../../../components/ConfirmModal";
-import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
+import GroupNameRow from "./GroupNameRow";
+import StoresTab from "./StoresTab";
+import UsersTab from "./UsersTab";
 
 interface SharedGroupDetailProps {
   group: SharedGroup;
@@ -52,105 +47,24 @@ const SharedGroupDetail = ({
 }: SharedGroupDetailProps) => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
-  const [editing, setEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState(group.name);
-  const saving = useRef(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [subTab, setSubTab] = useState<"users" | "stores">("stores");
-  const [users, setUsers] = useState<SharedGroupUser[] | null>(null);
-  const [stores, setStores] = useState<SharedGroupStoreRow[] | null>(null);
-  const activeGroupId = useRef(group.id);
+  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+  const { subTab, setSubTab, users, stores, loadUsers, loadStores, write } =
+    useSharedGroupLists(group);
 
   useEffect(() => {
-    setEditing(false);
-    setNameDraft(group.name);
     setConfirmDelete(false);
   }, [group.id, group.name]);
 
-  useEffect(() => {
-    activeGroupId.current = group.id;
-    setSubTab("stores");
-    setUsers(null);
-    setStores(null);
-  }, [group.id]);
-
-  const loadUsers = () => {
-    const forGroup = group.id;
-    getSharedGroupUsers(ctx.url, ctx.token)
-      .then((resp) => {
-        if (activeGroupId.current !== forGroup) return;
-        const j: SharedGroupUsersResp = resp.data;
-        if (j.error === 0) setUsers(j.users);
-        else toast.error(j.msg || "Could not load users");
-      })
-      .catch((err) => toast.error(errorText(err)));
-  };
-
-  const loadStores = () => {
-    const forGroup = group.id;
-    getSharedGroupStores(ctx.url, ctx.token, group.id)
-      .then((resp) => {
-        if (activeGroupId.current !== forGroup) return;
-        const j: SharedGroupStoresResp = resp.data;
-        if (j.error === 0) setStores(j.stores);
-        else toast.error(j.msg || "Could not load stores");
-      })
-      .catch((err) => toast.error(errorText(err)));
-  };
-
-  useEffect(() => {
-    if (subTab === "users") loadUsers();
-    else loadStores();
-  }, [group.id, subTab]);
-
-  /** Every write answers the same envelope; this reads it the same way. */
-  const write = (
-    p: Promise<{ data: Envelope }>,
-    ok: string,
-    fail: string,
-    after: () => void,
-  ): Promise<void> =>
-    p
-      .then((resp) => {
-        if (resp.data.error === 0) {
-          toast.success(ok);
-          after();
-        } else {
-          toast.error(resp.data.msg || fail);
-        }
-      })
-      .catch((err) => toast.error(errorText(err)));
-
-  const cancelRename = () => {
-    setNameDraft(group.name);
-    setEditing(false);
-  };
-
-  const handleSave = () => {
-    if (saving.current) return;
-    const name = nameDraft.trim();
-    if (name === group.name.trim()) {
-      setEditing(false);
-      return;
-    }
-    const problem = nameProblem(name);
-    if (problem) {
-      toast.error(problem);
-      return;
-    }
-    saving.current = true;
+  const handleRename = (name: string, done: () => void) =>
     write(
       renameSharedGroup(ctx.url, ctx.token, group.id, name),
       "Shared group renamed",
       "Could not rename the shared group",
       () => {
-        setEditing(false);
+        done();
         onRenamed();
       },
-    ).finally(() => {
-      saving.current = false;
-    });
-  };
+    );
 
   const handleDelete = () =>
     write(
@@ -200,39 +114,12 @@ const SharedGroupDetail = ({
 
   return (
     <div>
-      <div className="flex items-center gap-1">
-        {editing ? (
-          <input
-            autoFocus
-            value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSave();
-              if (e.key === "Escape") cancelRename();
-            }}
-            maxLength={100}
-            className="basic-input bg-custom-white py-0.5 px-2 text-[15px] font-medium"
-          />
-        ) : (
-          <span className="text-[16px] font-medium text-content mr-1.5">
-            {group.name}
-          </span>
-        )}
-        {!editing && (
-          <IconButton
-            icon={PencilIcon}
-            title="Rename"
-            onClick={() => setEditing(true)}
-          />
-        )}
-        <IconButton
-          icon={TrashIcon}
-          title="Delete shared group"
-          variant="danger"
-          onClick={() => setConfirmDelete(true)}
-        />
-      </div>
+      <GroupNameRow
+        groupId={group.id}
+        name={group.name}
+        onRename={handleRename}
+        onDelete={() => setConfirmDelete(true)}
+      />
       <div className="text-[11.5px] text-content/95 mb-2">
         {group.stores.length} store{group.stores.length === 1 ? "" : "s"} ·
         shared with {recipients} {recipients === 1 ? "person" : "people"}
@@ -258,88 +145,57 @@ const SharedGroupDetail = ({
         (stores === null ? (
           <div className="text-[11.5px] text-content/95">Loading stores…</div>
         ) : (
-          <>
-            <p className="text-[11px] text-content/95 mb-2">
-              From the stores you're assigned to. Changes reach everyone the
-              group is shared with. Once it's shared, it keeps at least one
-              store — unshare it or delete it to empty it.
-            </p>
-            <AssignPanel
-              leftTitle="Your stores"
-              rightTitle="In the group"
-              leftItems={stores
-                .filter((s) => !s.active && s.assigned)
-                .map(storeItem)}
-              rightItems={stores.filter((s) => s.active).map(storeItem)}
-              verbs={{ assign: "Add", unassign: "Remove" }}
-              onAssign={(ids) =>
-                write(
-                  addSharedGroupStores(ctx.url, ctx.token, group.id, ids),
-                  `${ids.length} store${ids.length === 1 ? "" : "s"} added`,
-                  "Could not add stores",
-                  afterStores,
-                )
-              }
-              onUnassign={(ids) =>
-                write(
-                  removeSharedGroupStores(ctx.url, ctx.token, group.id, ids),
-                  `${ids.length} store${ids.length === 1 ? "" : "s"} removed`,
-                  "Could not remove stores",
-                  afterStores,
-                )
-              }
-            />
-          </>
+          <StoresTab
+            available={stores
+              .filter((s) => !s.active && s.assigned)
+              .map(storeItem)}
+            inGroup={stores.filter((s) => s.active).map(storeItem)}
+            onAdd={(ids) =>
+              write(
+                addSharedGroupStores(ctx.url, ctx.token, group.id, ids),
+                `${ids.length} store${ids.length === 1 ? "" : "s"} added`,
+                "Could not add stores",
+                afterStores,
+              )
+            }
+            onRemove={(ids) =>
+              write(
+                removeSharedGroupStores(ctx.url, ctx.token, group.id, ids),
+                `${ids.length} store${ids.length === 1 ? "" : "s"} removed`,
+                "Could not remove stores",
+                afterStores,
+              )
+            }
+          />
         ))}
 
       {subTab === "users" &&
         (users === null ? (
           <div className="text-[11.5px] text-content/95">Loading users…</div>
         ) : (
-          <>
-            <p className="text-[11px] text-content/95 mb-2">
-              Sharing puts the group in their User Groups and store picker. It
-              doesn't change which stores they can open, and they only see the
-              group's stores they're assigned to. People at your level or below
-              who share a company with you.
-            </p>
-            <p className="text-[11px] text-content/95 mb-2">
-              You created this group, so you already have it — it's in your User
-              Groups and your store picker. You don't need to share it with
-              yourself.
-            </p>
-            {noStores && (
-              <p className="text-[11px] text-severity_watch_text mb-2">
-                This group has no stores yet. Add some on the Stores tab before
-                sharing it.
-              </p>
-            )}
-            <AssignPanel
-              leftTitle="Not shared with"
-              rightTitle="Shared with"
-              verbs={{ assign: "Share", unassign: "Unshare" }}
-              leftItems={shareable.map(userItem)}
-              rightItems={sharedWith.map(userItem)}
-              onAssign={(ids) =>
-                noStores
-                  ? toast.error("Add stores to the group before sharing it")
-                  : write(
-                      shareSharedGroups(ctx.url, ctx.token, [group.id], ids),
-                      `Shared with ${ids.length} ${ids.length === 1 ? "person" : "people"}`,
-                      "Could not share the group",
-                      afterShare,
-                    )
-              }
-              onUnassign={(ids) =>
-                write(
-                  unshareSharedGroups(ctx.url, ctx.token, [group.id], ids),
-                  `Unshared from ${ids.length} ${ids.length === 1 ? "person" : "people"}`,
-                  "Could not unshare the group",
-                  afterShare,
-                )
-              }
-            />
-          </>
+          <UsersTab
+            shareable={shareable.map(userItem)}
+            sharedWith={sharedWith.map(userItem)}
+            noStores={noStores}
+            onShare={(ids) =>
+              noStores
+                ? toast.error("Add stores to the group before sharing it")
+                : write(
+                    shareSharedGroups(ctx.url, ctx.token, [group.id], ids),
+                    `Shared with ${ids.length} ${ids.length === 1 ? "person" : "people"}`,
+                    "Could not share the group",
+                    afterShare,
+                  )
+            }
+            onUnshare={(ids) =>
+              write(
+                unshareSharedGroups(ctx.url, ctx.token, [group.id], ids),
+                `Unshared from ${ids.length} ${ids.length === 1 ? "person" : "people"}`,
+                "Could not unshare the group",
+                afterShare,
+              )
+            }
+          />
         ))}
 
       {confirmDelete && (
