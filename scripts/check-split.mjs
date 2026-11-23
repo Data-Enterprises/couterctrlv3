@@ -99,6 +99,7 @@ const norm = (text, tree) => {
   if (tree === "dev")
     t = t
       .replace(/\bstate\.dev\b/g, "state.prod").replace(/\bs\.dev\b/g, "s.prod")
+      .replace(/getState\(\)\.dev\./g, "getState().prod.")
       .replace(/features\/dev\/dev([A-Z])(\w*Slice)/g, (m, a, b) => `features/${a.toLowerCase()}${b}`)
       .replace(/components-dev\//g, "components/")
       .replace(/\bdev tree\b/g, "TREE").replace(/\bThe dev tree\b/g, "The TREE");
