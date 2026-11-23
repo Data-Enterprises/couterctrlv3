@@ -352,29 +352,6 @@
     "shape-extra-code": 4,
     "shape-props-name": 1
   },
-  "src/components/storePicker/SearchStore.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/SearchType.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/storePicker/SelectGroup.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/StorePicker.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/storePicker/index.ts": {
-    "labels": 1
-  },
   "src/components/toasts/Toast.tsx": {
     "doc-comment": 1,
     "labels": 1,
