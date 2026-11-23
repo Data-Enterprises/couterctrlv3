@@ -125,8 +125,8 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       const result = { changed: j.changed ?? [], skipped: j.skipped ?? [] };
       const summary =
         direction === "in"
-          ? summarizeAssign(result, store.store_number)
-          : summarizeUnassign(result, store.store_number);
+          ? summarizeAssign(result, store.store_name)
+          : summarizeUnassign(result, store.store_name);
       if (summary.tone === "success") toast.success(summary.text);
       else toast.error(summary.text);
     } catch (err) {
@@ -170,10 +170,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
     return (
       <div className="w-full" data-help="stores">
         <div className="mb-2">
-          <span className="text-[15px] font-semibold text-content">
-            {store.store_number}
-          </span>
-          <span className="text-[12.5px] text-content/95 ml-2 truncate">
+          <span className="text-[15px] font-semibold text-content truncate">
             {store.store_name}
           </span>
         </div>
@@ -189,10 +186,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
     <div className="w-full flex-1 min-h-0 flex flex-col" data-help="stores">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div className="min-w-0">
-          <span className="text-[15px] font-semibold text-content">
-            {store.store_number}
-          </span>
-          <span className="text-[12.5px] text-content/95 ml-2 truncate">
+          <span className="text-[15px] font-semibold text-content truncate">
             {store.store_name}
           </span>
         </div>
@@ -235,7 +229,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
             direction,
             ids,
             me: ctx.userid,
-            what: `store ${store.store_number}`,
+            what: store.store_name,
           })
         }
         leftPredicate={heldPredicate}
