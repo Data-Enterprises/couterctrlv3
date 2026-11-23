@@ -1,5 +1,6 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Company } from "../interfaces";
 
 // The Users grid's filter/search bar — kept in Redux (not local useState) so
 // switching to Create/Detail and back, or navigating away from Organization
@@ -9,6 +10,9 @@ export interface UsersGridFilters {
   statusFilter: string;
   levelFilter: string;
   roleFilter: string;
+  /** "" for everyone, else `all` (By group) or `selected` (By store) — the
+   *  values `access_mode` carries, so the filter compares without mapping. */
+  accessFilter: string;
   searchText: string;
   usernameFilter: string;
   emailFilter: string;
@@ -19,51 +23,39 @@ const defaultUsersGridFilters: UsersGridFilters = {
   statusFilter: "",
   levelFilter: "",
   roleFilter: "",
+  accessFilter: "",
   searchText: "",
   usernameFilter: "",
   emailFilter: "",
 };
 
+// What a share/unshare actually did, summarised across every user in the
+// batch. Worth surfacing rather than a bare success toast: a share reconciles
+// each user's store group down to the base group's list, so it can *revoke*
+// stores as well as grant them, and nothing else in the UI would say so.
 interface OrganizationState {
-  // Full company directory — only ever fetched/populated for DCR support
-  // staff (see BaseGroups.tsx), who need visibility across every client
-  // company. Regular users never trigger this fetch; their own companies
-  // come from ctx.companies (the login endpoint), not this list.
-  companies: Company[];
-  refresh: boolean;
   usersExportOpen: boolean;
-  baseGroupExportOpen: boolean;
-  storesExportOpen: boolean;
   usersGridFilters: UsersGridFilters;
+  /**
+   * Who an open Add or Edit has unsaved changes for ("Bob Smith", "the new
+   * user"), or null. The tab bar reads it to ask before a tab switch throws
+   * the form away.
+   */
+  unsavedWizard: string | null;
 }
 
 const initialState: OrganizationState = {
-  companies: [],
-  refresh: true,
   usersExportOpen: false,
-  baseGroupExportOpen: false,
-  storesExportOpen: false,
   usersGridFilters: defaultUsersGridFilters,
+  unsavedWizard: null,
 };
 
 const organizationSlice = createSlice({
   name: "organization",
   initialState,
   reducers: {
-    setCompanies: (state, action: PayloadAction<Company[]>) => {
-      state.companies = action.payload;
-    },
-    setRefresh: (state, action: PayloadAction<boolean>) => {
-      state.refresh = action.payload;
-    },
     setUsersExportOpen: (state, action: PayloadAction<boolean>) => {
       state.usersExportOpen = action.payload;
-    },
-    setBaseGroupExportOpen: (state, action: PayloadAction<boolean>) => {
-      state.baseGroupExportOpen = action.payload;
-    },
-    setStoresExportOpen: (state, action: PayloadAction<boolean>) => {
-      state.storesExportOpen = action.payload;
     },
     setUsersGridFilter: (
       state,
@@ -71,17 +63,17 @@ const organizationSlice = createSlice({
     ) => {
       state.usersGridFilters = { ...state.usersGridFilters, ...action.payload };
     },
+    setUnsavedWizard: (state, action: PayloadAction<string | null>) => {
+      state.unsavedWizard = action.payload;
+    },
     resetOrganizationState: () => initialState,
   },
 });
 
 export const {
-  setCompanies,
-  setRefresh,
   setUsersExportOpen,
-  setBaseGroupExportOpen,
-  setStoresExportOpen,
   setUsersGridFilter,
+  setUnsavedWizard,
   resetOrganizationState,
 } = organizationSlice.actions;
 export default organizationSlice.reducer;

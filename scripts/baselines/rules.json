@@ -252,9 +252,6 @@
   "src/features/ordersSlice.ts": {
     "labels": 1
   },
-  "src/features/organizationSlice.ts": {
-    "labels": 1
-  },
   "src/features/qsSlice.ts": {
     "labels": 1
   },
@@ -295,9 +292,6 @@
     "labels": 1
   },
   "src/features/userSlice.ts": {
-    "labels": 1
-  },
-  "src/features/usersSlice.ts": {
     "labels": 1
   },
   "src/features/vendorsSlice.ts": {

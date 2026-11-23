@@ -1,4 +1,8 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   User,
   BaseGroup,
@@ -6,6 +10,8 @@ import type {
   UnassignedStore,
   UserCompany,
   UserLevel,
+  Company,
+  GrantMode,
 } from "../interfaces";
 
 export type UserData = {
@@ -54,22 +60,43 @@ type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 type UserFilterType = "name" | "email";
 
 // Everything the create-wizard needs to pre-fill from a "Duplicate user"
-// click — role/level plus company/base-group/store assignments. Identity
-// fields (name/username/email/password) are deliberately excluded; those
-// always stay blank for the admin to fill in.
+// click — role/level, access type, and company/base-group/store assignments.
+// Identity fields (name/username/email/password) are deliberately excluded;
+// those always stay blank for the admin to fill in.
 export interface DuplicateSource {
   role: number;
   user_level: number;
   companyIds: number[];
   baseGroupIds: number[];
   groups: { id: number; name: string; company: number }[];
+  /** By group or by store, read from what the source holds. One answer per
+   *  person, so it copies rather than being asked again. */
+  mode: GrantMode;
+  /** Only the stores the source actually PICKED, each under the group it
+   *  was picked through — from `user_group_picks`, not inferred. Empty for a
+   *  By group source, whose groups name no stores. */
   stores: (Store & { base_group: number })[];
 }
 
 interface UsersState {
   users: User[];
   inactiveUsers: User[];
+  /**
+   * The users list read: running, or what went wrong. The grid said "No
+   * users found" while it loaded and when it failed, and a 200 carrying an
+   * error was dropped without a word.
+   */
+  usersLoading: boolean;
+  usersError: string | null;
   userInfo: UserData;
+  /**
+   * The person's details as they were when opened for Edit, or as last
+   * saved; null in Add. Kept here rather than in the wizard: switching tabs
+   * unmounts the wizard while `userInfo` keeps the edits, and a wizard that
+   * captured "before" on mount took the edited name as its starting point,
+   * so the change no longer counted and Save went grey.
+   */
+  userInfoBefore: UserData | null;
   baseGroups: BaseGroup[];
   refresh: boolean;
   selectedUserId: number;
@@ -77,6 +104,17 @@ interface UsersState {
   selectedUserStores: UserStores;
   companyModalOpen: boolean;
   userCompanyIds: number[];
+  /**
+   * Every company on the system, for programmers only.
+   *
+   * `state.user.companies` is what the signed-in user HOLDS — it comes off the
+   * login response — so the Companies tab could only ever offer a company the
+   * person doing the assigning was already in. A programmer setting up a new
+   * client holds none of it, which left the database as the only way to make
+   * the link. Fetched once on the page for level 9, empty for everybody else,
+   * who keep being offered their own.
+   */
+  allCompanies: Company[];
   baseGroupModalOpen: boolean;
   selectedCompanyId: number;
   userLevels: UserLevel[];
@@ -98,7 +136,10 @@ interface UsersState {
 const initialState: UsersState = {
   users: [],
   inactiveUsers: [],
+  usersLoading: false,
+  usersError: null,
   userInfo: defaultInfo,
+  userInfoBefore: null,
   baseGroups: [],
   refresh: true,
   selectedUserId: 0,
@@ -109,6 +150,7 @@ const initialState: UsersState = {
   },
   companyModalOpen: false,
   userCompanyIds: [],
+  allCompanies: [],
   baseGroupModalOpen: false,
   selectedCompanyId: 0,
   userLevels: [],
@@ -136,6 +178,11 @@ export const usersSlice = createSlice({
     },
     setInactiveUsers: (state, action: PayloadAction<User[]>) => {
       state.inactiveUsers = action.payload;
+    },
+    /** The users read started (null), or finished: "" for fine, else why not. */
+    setUsersLoad: (state, action: PayloadAction<string | null>) => {
+      state.usersLoading = action.payload === null;
+      state.usersError = action.payload ? action.payload : null;
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
@@ -180,6 +227,15 @@ export const usersSlice = createSlice({
         confirm_password: "",
       };
       state.userCompanyIds = companies.map((c) => c.company);
+      state.userInfoBefore = state.userInfo;
+      // The last person's stores go with them: B used to show A's direct
+      // stores until B's read landed, and kept them if it failed.
+      state.selectedUserStores = { assigned: [], unassigned: [] };
+      state.allStores = [];
+    },
+    /** The details on screen have been saved: they are the new "before". */
+    markUserInfoSaved: (state) => {
+      state.userInfoBefore = state.userInfo;
     },
     setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
@@ -188,6 +244,7 @@ export const usersSlice = createSlice({
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
+      state.userInfoBefore = null;
       state.userCompanyIds = [];
       state.selectedUserId = 0;
       state.usernameTextColor = "";
@@ -253,6 +310,9 @@ export const usersSlice = createSlice({
     },
     setUserCompanyIds: (state, action: PayloadAction<number[]>) => {
       state.userCompanyIds = action.payload;
+    },
+    setAllCompanies: (state, action: PayloadAction<Company[]>) => {
+      state.allCompanies = action.payload;
     },
     updateUserCompanies: (state, action: PayloadAction<UserCompany[]>) => {
       const id = state.selectedUserId;
@@ -322,8 +382,10 @@ export const usersSlice = createSlice({
 export const {
   setUsers,
   setInactiveUsers,
+  setUsersLoad,
   setUserInfo,
   setSelectedUserInfo,
+  markUserInfoSaved,
   resetUserInfo,
   setRefresh,
   setSelectedUserId,
@@ -333,6 +395,7 @@ export const {
   setStoresUnassignedForUser,
   setCompanyModalOpen,
   setUserCompanyIds,
+  setAllCompanies,
   updateUserCompanies,
   setBaseGroupModalOpen,
   setSelectedCompanyId,
