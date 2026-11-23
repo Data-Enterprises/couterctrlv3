@@ -113,7 +113,7 @@ const SharedGroupDetail = ({
   const recipients = group.userids.length;
 
   return (
-    <div>
+    <div className="flex-1 min-h-0 flex flex-col">
       <GroupNameRow
         groupId={group.id}
         name={group.name}

@@ -138,7 +138,7 @@ const SharedGroups = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto p-4">
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto p-4">
         {right.kind === "create" ? (
           <NewSharedGroup
             onCreate={handleCreate}
