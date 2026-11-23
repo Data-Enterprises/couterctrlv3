@@ -1,4 +1,8 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   FilterOption,
   GroupFormType,
@@ -12,7 +16,7 @@ import type {
  * Lived in the session `group` slice, which stays shared because the store
  * picker on every page reads its `groups` and `selectedGroup`. These fields
  * only ever mattered to the Groups page, so they are a page slice — forked for
- * the dev tree like every other page's (features/dev/devGroupsPageSlice).
+ * the prod tree like every other page's (features/dev/devGroupsPageSlice).
  */
 export interface GroupsPageState {
   refreshGroups: boolean;

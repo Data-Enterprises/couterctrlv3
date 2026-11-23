@@ -1,28 +1,39 @@
+// Hooks
 import { useState } from "react";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
+// Redux
+import {
+  setStoresWithGroupStatus,
+  updateStoresWithStatus,
+} from "../../../../features/groupsPageSlice";
 import { setSelectedGroup } from "../../../../features/groupSlice";
-import { setStoresWithGroupStatus, updateStoresWithStatus } from "../../../../features/groupsPageSlice";
-import type { StoreWithGroupStatus } from "../../../../interfaces";
-import type { JsonError } from "../../../../interfaces";
+
+// API
 import {
   addStoreToGroup,
   getStoresAssignedToUserGroup,
   removeStoreFromGroup,
 } from "../../../../api/groups";
 
+// Interfaces
+import type { StoreWithGroupStatus, JsonError } from "../../../../interfaces";
+
+// Components
 import SingleSelect from "../../../../components/SingleSelect";
 import Input from "../../../../components/inputs/Input";
 
+/** The phone's Assign form: pick one of your own groups, then tap stores in the searchable Unassigned and Assigned columns to move them. */
 const GroupStoreAssignMobile = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } =
     useGroupCtx();
 
-  const editableGroups = groups;
+  // Shared groups are built and maintained by whoever shared the base group they came from, so they are not offered as an edit target here
+  const editableGroups = groups.filter((g) => !g.is_shared);
 
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
@@ -109,7 +120,7 @@ const GroupStoreAssignMobile = () => {
                     <div
                       key={store.storeid}
                       data-testid={`unassigned-store-${store.storeid}`}
-                      className="bg-slate-100 flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
+                      className="bg-slate-100 flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-fill_soft hover:shadow-inner transition-all duration-200 md:flex-row"
                       onClick={() =>
                         handleStoreClick(store.storeid, "unassigned")
                       }
@@ -120,9 +131,6 @@ const GroupStoreAssignMobile = () => {
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      {/* <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full">
-                        Inactive
-                      </div> */}
                     </div>
                   ),
                 )}
@@ -141,7 +149,7 @@ const GroupStoreAssignMobile = () => {
                     <div
                       key={store.storeid}
                       data-testid={`assigned-store-${store.storeid}`}
-                      className="bg-slate-100 text-[9.5px] flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
+                      className="bg-slate-100 text-[9.5px] flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-fill_soft hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
                       onClick={() =>
                         handleStoreClick(store.storeid, "assigned")
                       }
@@ -152,9 +160,6 @@ const GroupStoreAssignMobile = () => {
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      {/* <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full">
-                        Active
-                      </div> */}
                     </div>
                   ),
                 )}

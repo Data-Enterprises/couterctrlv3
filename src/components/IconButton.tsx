@@ -5,6 +5,8 @@ interface IconButtonProps {
   variant?: "default" | "danger";
 }
 
+/** Small icon-only action button with a tooltip; the "danger" variant turns red
+ *  on hover. */
 // Shared small icon-only action button (rename/delete/etc.) used across
 // grid-style admin pages (Organization, Admin) wherever a row/section needs a
 // quiet inline action instead of a full labeled button.
@@ -21,8 +23,8 @@ const IconButton = ({
       aria-label={title}
       className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
         variant === "danger"
-          ? "text-content/85 hover:text-red-600 hover:bg-red-50"
-          : "text-content/85 hover:text-content hover:bg-gray-100"
+          ? "text-content/95 hover:text-brand_danger hover:bg-brand_danger_bg"
+          : "text-content/95 hover:text-content hover:bg-fill_muted"
       }`}
     >
       <Icon className="w-3.5 h-3.5" />

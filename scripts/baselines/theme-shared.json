@@ -1,7 +1,4 @@
 {
-  "src/components/ConfirmModal.tsx": {
-    "text-opacity-floor": 1
-  },
   "src/components/DayCardStrip.tsx": {
     "text-opacity-floor": 1
   },
@@ -14,10 +11,6 @@
   "src/components/HeaderIconButton.tsx": {
     "text-opacity-floor": 1
   },
-  "src/components/IconButton.tsx": {
-    "hardcoded-severity-palette": 1,
-    "text-opacity-floor": 2
-  },
   "src/components/InfoButton.tsx": {
     "bespoke-info-button": 2,
     "text-opacity-floor": 2
@@ -28,9 +21,6 @@
   "src/components/ItemMarginsTable.tsx": {
     "grey-text": 2,
     "text-opacity-floor": 2
-  },
-  "src/components/ResizeHandle.tsx": {
-    "text-opacity-floor": 1
   },
   "src/components/SearchCard.tsx": {
     "hardcoded-severity-palette": 1,
@@ -68,9 +58,6 @@
     "text-opacity-floor": 2
   },
   "src/components/filters/SelectFilter.tsx": {
-    "text-opacity-floor": 2
-  },
-  "src/components/filters/TextFilter.tsx": {
     "text-opacity-floor": 2
   },
   "src/components/mobile/MobileInfoSheet.tsx": {
