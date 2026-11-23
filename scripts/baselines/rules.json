@@ -274,9 +274,6 @@
   "src/features/qsSlice.ts": {
     "labels": 1
   },
-  "src/features/receiversSlice.ts": {
-    "labels": 1
-  },
   "src/features/salesLedgerSlice.ts": {
     "labels": 1
   },
