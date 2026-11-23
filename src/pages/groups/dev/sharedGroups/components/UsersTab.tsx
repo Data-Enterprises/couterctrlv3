@@ -22,7 +22,7 @@ const UsersTab = ({
   onShare,
   onUnshare,
 }: UsersTabProps) => (
-  <>
+  <div className="flex-1 min-h-0 flex flex-col">
     <p className="text-[11px] text-content/95 mb-2">
       Sharing puts the group in their User Groups and store picker. It doesn't
       change which stores they can open, and they only see the group's stores
@@ -47,8 +47,9 @@ const UsersTab = ({
       rightItems={sharedWith}
       onAssign={onShare}
       onUnassign={onUnshare}
+      fill
     />
-  </>
+  </div>
 );
 
 export default UsersTab;

@@ -225,7 +225,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const heldPredicate = useCompanyFilterPredicate(users, heldFilter);
 
   return (
-    <div className="w-full">
+    <div className="w-full flex-1 min-h-0 flex flex-col">
       {((loading && assigned.length + unassigned.length === 0) ||
         !levelsKnown) && (
         <div className="text-[11px] text-content/95 mb-2">Loading users…</div>
@@ -241,6 +241,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
           peopleConfirm({ direction, ids, me: ctx.userid, what: group.name })
         }
         onUnassign={handleUnassign}
+        fill
         leftPredicate={heldPredicate}
         leftFilters={
           <CompanyFilterSelect

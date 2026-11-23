@@ -186,7 +186,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
   }
 
   return (
-    <div className="w-full" data-help="stores">
+    <div className="w-full flex-1 min-h-0 flex flex-col" data-help="stores">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div className="min-w-0">
           <span className="text-[15px] font-semibold text-content">
@@ -220,6 +220,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       )}
 
       <AssignPanel
+        fill
         leftTitle="Not assigned"
         rightTitle="Assigned"
         leftItems={unassignedItems}
