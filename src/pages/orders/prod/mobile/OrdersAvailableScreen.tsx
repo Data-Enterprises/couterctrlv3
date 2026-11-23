@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/ordersSlice";
 import TextFilter from "../../../../components/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../../components/filters/SelectFilter";
+import SelectFilter from "../../../../components/filters/SelectFilter";
+import type { SelectFilterOption } from "../../../../components/filters/interfaces";
 import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
-import { ORDERS_INFO } from "../ordersInfo";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
 interface Props {
@@ -100,7 +100,7 @@ const OrdersAvailableScreen = ({
         storeName={scopeLabel}
         dateRange={weekLabel}
         onSearch={onOpenSearch}
-        info={ORDERS_INFO}
+        helpPage="orders"
       />
 
       {/* Type tabs */}
