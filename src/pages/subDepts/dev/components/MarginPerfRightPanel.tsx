@@ -1,7 +1,7 @@
 // Hooks
 import { useState } from "react";
 import { useAppDispatch, useCanSeeComingSoon } from "../../../../hooks";
-import { useCriticalReport } from "../../../../hooks/useCriticalReport";
+import { useCriticalReport } from "../../../../components-dev/hooks/index";
 import { useSubMarginCtx, useSubMarginActions } from "../hooks";
 import { useCostGrid, useRightPanelFigures } from "../hooks/rightPanel";
 

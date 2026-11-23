@@ -1,6 +1,6 @@
 // Hooks
 import { useMemo, useState } from "react";
-import { useCriticalReport } from "../../../../hooks/useCriticalReport";
+import { useCriticalReport } from "../../../../components-dev/hooks/index";
 import { useAppDispatch, useCanSeeComingSoon } from "../../../../hooks";
 import { useVendorsCtx } from "../hooks";
 

@@ -1,6 +1,6 @@
 // Hooks
 import { useCanSeeComingSoon } from "../../../../../hooks";
-import { useCriticalReport } from "../../../../../hooks/useCriticalReport";
+import { useCriticalReport } from "../../../../../components-dev/hooks/index";
 import { useSalesCtx } from "../../hooks";
 import { useStoreNames, useWeekWindow } from "../hooks";
 

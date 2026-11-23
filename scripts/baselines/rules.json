@@ -130,6 +130,10 @@
   "src/api/user.ts": {
     "labels": 1
   },
+  "src/components-dev/hooks/index.ts": {
+    "labels": 1,
+    "one-line-per-source": 1
+  },
   "src/components-dev/modals/ExportModal.tsx": {
     "any-in-props": 1
   },
@@ -306,10 +310,6 @@
   },
   "src/hooks/useApiContext.ts": {
     "labels": 1
-  },
-  "src/hooks/useCriticalReport.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
   },
   "src/hooks/useDevApi.ts": {
     "labels": 1
