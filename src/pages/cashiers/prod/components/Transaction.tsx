@@ -1,29 +1,30 @@
-import type { TransactionListItem } from "../../../../interfaces";
+// Hooks
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useCashierCtx } from "../hooks";
+
+// API
+import { emailTransaction } from "../../../../api/lossPrevention";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
 import { exportData } from "../../../../utils/export";
-import { useAppSelector } from "../../../../hooks";
-import { emailTransaction } from "../../../../api/lossPrevention";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { chipStyle, fmtTime } from "../utils";
+import { serverDetail } from "../../../../utils/serverError";
+
+// Interfaces
+import type { TransactionListItem } from "../../../../interfaces";
+
+// Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-const chipStyle = {
-  background: "rgb(var(--color-brand-navy) / 0.06)",
-  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
-};
-
-interface Props {
+interface TransactionProps {
   trans: TransactionListItem[];
 }
 
-const fmtTime = (raw: string) => {
-  const s = raw.length === 5 ? "0" + raw : raw;
-  return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
-};
-
-const Transaction = ({ trans }: Props) => {
+/** One transaction's receipt: its date and time, every line, and the sales, tax, void or refund and total figures. */
+const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
-  const context = useAppSelector((s) => s.app);
-  const { selectedSaleType } = useAppSelector((s) => s.prod.cashier);
+  const { url, token, selectedSaleType } = useCashierCtx();
 
   const first = trans[0];
   const saleId = first.sale_id.split("-")[1];
@@ -45,9 +46,8 @@ const Transaction = ({ trans }: Props) => {
     const t = trans.filter(
       (t) =>
         t.sale_type.toLowerCase() !== "tender" &&
-        // product_description is typed string but comes back null for
-        // unmapped UPCs — the exception explorer surfaces those deliberately,
-        // so this has to tolerate them rather than throw.
+        // product_description can be null for unmapped UPCs, which the
+        // explorer surfaces on purpose.
         (t.product_description ?? "").toLowerCase() !== "ewic",
     );
     totalTax = t.reduce(
@@ -157,37 +157,39 @@ const Transaction = ({ trans }: Props) => {
   };
 
   const handleEmail = () => {
-    emailTransaction(context.url, context.token, first.sale_id)
+    emailTransaction(url, token, first.sale_id)
       .then((resp) => {
         if (resp.data.error === 0)
           toast.success("Transaction emailed successfully");
       })
-      .catch(() => toast.error("Error emailing transaction"));
+      .catch((err) =>
+        toast.error(serverDetail(err) ?? "Error emailing transaction"),
+      );
   };
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Sub-header */}
-      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-gray-100">
+      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-line_hair">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
             <div className="text-[13px] font-medium text-brand_navy">
               {first.cashier_name}
             </div>
-            <div className="text-[11px] text-content/70 mt-0.5">
+            <div className="text-[11px] text-content/95 mt-0.5">
               #{saleId} · {fmtDate}
             </div>
           </div>
           <div className="flex gap-1.5 flex-shrink-0">
             <button
               onClick={handleEmail}
-              className="flex items-center gap-1 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1 text-[11px] font-medium bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white rounded-md px-2.5 py-1.5"
             >
               Email
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1.5 text-[11px] font-medium bg-brand_navy hover:bg-brand_navy_hover transition-colors text-custom-white rounded-md px-2.5 py-1.5"
             >
               <ArrowDownTrayIcon className="w-3 h-3" />
               CSV
@@ -205,7 +207,7 @@ const Transaction = ({ trans }: Props) => {
               className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
               style={chipStyle}
             >
-              <span className="text-[10px] text-content/60">{label}</span>
+              <span className="text-[10px] text-content/95">{label}</span>
               <span className="text-[11px] font-semibold text-content">
                 {value}
               </span>
@@ -215,16 +217,16 @@ const Transaction = ({ trans }: Props) => {
       </div>
 
       {/* Line items + sticky totals */}
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3 relative">
+      <div className="cc-scroll px-4 pt-3 relative">
         {/* Column headers */}
         <div
-          className="grid gap-2 pb-1.5 border-b border-gray-100 mb-1"
+          className="grid gap-2 pb-1.5 border-b border-line_hair mb-1"
           style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
         >
           {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
             <div
               key={h}
-              className="text-[9px] font-semibold uppercase tracking-wide text-content/55"
+              className="text-[9px] cc-caps"
               style={{ textAlign: i >= 2 ? "right" : "left" }}
             >
               {h}
@@ -239,25 +241,27 @@ const Transaction = ({ trans }: Props) => {
           return (
             <div
               key={i}
-              className="grid gap-2 py-1.5 border-b border-gray-50 items-center"
-              style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
+              className="grid gap-2 py-1.5 border-b border-line_faint items-center"
+              style={{
+                gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px",
+              }}
             >
-              <div className="text-[9px] text-content/65 truncate">
+              <div className="text-[9px] text-content/95 truncate">
                 {item.product_code || "—"}
               </div>
               <div className="text-[10px] text-content truncate">
                 {item.product_description}
               </div>
-              <div className="text-[10px] text-content/75 text-right">
+              <div className="text-[10px] text-content/95 text-right">
                 {item.qty ?? 0}
               </div>
               <div
-                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-red-500" : "text-content"}`}
+                className={`text-[10px] font-medium text-right ${isVoid ? "text-content/95 line-through" : isCoupon ? "text-delta_negative_text" : "text-content"}`}
               >
                 {formatCurrency2(item.net_sales)}
               </div>
               <div className="flex items-center justify-end">
-                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-gray-100 text-content/65">
+                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-fill_muted text-content/95">
                   {item.sale_type}
                 </span>
               </div>
@@ -267,19 +271,19 @@ const Transaction = ({ trans }: Props) => {
 
         {/* Sticky totals */}
         <div
-          className="flex justify-end pt-3 pb-3 border-t border-gray-100 bg-custom-white"
+          className="flex justify-end pt-3 pb-3 border-t border-line_hair bg-custom-white"
           style={{ position: "sticky", bottom: 0 }}
         >
           <div style={{ minWidth: 160 }}>
             <div className="flex justify-between text-[10px] py-0.5">
-              <span className="text-content/65">Net sales</span>
+              <span className="text-content/95">Net sales</span>
               <span className="font-medium text-content">
                 {formatCurrency2(netSales)}
               </span>
             </div>
             {totalTax > 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Tax</span>
+                <span className="text-content/95">Tax</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(totalTax)}
                 </span>
@@ -287,7 +291,7 @@ const Transaction = ({ trans }: Props) => {
             )}
             {voidAmount !== 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Voided</span>
+                <span className="text-content/95">Voided</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(voidAmount)}
                 </span>
@@ -295,13 +299,13 @@ const Transaction = ({ trans }: Props) => {
             )}
             {refundAmount !== 0 && (
               <div className="flex justify-between text-[10px] py-0.5">
-                <span className="text-content/65">Refunded</span>
+                <span className="text-content/95">Refunded</span>
                 <span className="font-medium text-content">
                   {formatCurrency2(refundAmount)}
                 </span>
               </div>
             )}
-            <div className="border-t border-dashed border-gray-200 mt-1 pt-1.5 flex justify-between">
+            <div className="border-t border-dashed border-line_field mt-1 pt-1.5 flex justify-between">
               <span className="text-[11px] font-semibold text-content">
                 Total
               </span>

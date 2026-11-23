@@ -1,4 +1,8 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+// Interfaces
 import type {
   CashierCard,
   StoreCard,

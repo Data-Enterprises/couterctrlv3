@@ -1,5 +1,8 @@
-import StorePicker from "../../../../components/storePicker/StorePicker";
+// Hooks
 import { useSearchPick } from "../../../../hooks";
+
+// Components
+import StorePicker from "../../../../components/storePicker/StorePicker";
 import DatePickers from "../../../../components/datePickers/DatePickers";
 import SelectFilter from "../../../../components/filters/SelectFilter";
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
@@ -18,10 +21,9 @@ interface ExplorerSearchProps {
   onBack?: () => void;
 }
 
-// Entry point for the exception explorer. Deliberately two-stage: the
-// exception list comes from cashiers/preflight, which itself needs the dates
-// and scope, so the dropdown can only be populated after those are chosen.
-// Upside is the user can never pick an exception that returns nothing.
+/** The Cashiers entry card for the exception explorer, in two stages: pick the store or group and dates, then an
+ *  exception type. Cashiers/preflight needs the dates and scope first, so the dropdown only offers exceptions
+ *  that return something. */
 const ExplorerSearch = ({
   saleTypes,
   exception,
@@ -46,15 +48,14 @@ const ExplorerSearch = ({
           <h2 className="text-base font-semibold text-content">
             Explore exceptions
           </h2>
-          <p className="text-[12px] text-content/60 mt-1">
+          <p className="text-[12px] text-content/95 mt-1">
             Pick a scope and date range, then choose an exception to break down
             by cashier, item, lane, or hour.
           </p>
         </div>
 
-        {/* The explore step walks every page of two endpoints, so it can run
-            for a while — the card needs a real indicator, not just a button
-            label, or it reads as hung. */}
+        {/* The explore step walks every page of two endpoints, so the card
+            shows a real indicator. */}
         {loading && (
           <div className="relative h-24">
             <LoadingIndicator message={message || "Loading…"} />
@@ -62,14 +63,14 @@ const ExplorerSearch = ({
         )}
 
         {rangeTooWide && (
-          <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+          <div className="cc-notice text-[11.5px] leading-snug">
             {rangeDays} days selected. Narrow to {maxRangeDays} or fewer — the
             same window Loss Prevention grades against.
           </div>
         )}
 
         {noExceptionsFound && !rangeTooWide && (
-          <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+          <div className="cc-notice text-[11.5px] leading-snug">
             No exceptions recorded for this scope and date range.
           </div>
         )}
@@ -80,7 +81,7 @@ const ExplorerSearch = ({
 
         {hasSaleTypes && (
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-content/70">
+            <span className="text-[11px] font-medium text-content/95">
               Exception
             </span>
             <SelectFilter
@@ -95,7 +96,12 @@ const ExplorerSearch = ({
 
         <button
           onClick={hasSaleTypes && exception ? onExplore : onFindExceptions}
-          disabled={loading || nothingPicked || rangeTooWide || (hasSaleTypes && !exception)}
+          disabled={
+            loading ||
+            nothingPicked ||
+            rangeTooWide ||
+            (hasSaleTypes && !exception)
+          }
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading
@@ -103,14 +109,14 @@ const ExplorerSearch = ({
             : nothingPicked
               ? pickLabel
               : hasSaleTypes
-              ? "Explore transactions"
-              : "Find exceptions"}
+                ? "Explore transactions"
+                : "Find exceptions"}
         </button>
 
         {onBack && (
           <button
             onClick={onBack}
-            className="w-full py-2 text-[12px] font-medium text-content/70 hover:text-content transition-colors"
+            className="w-full py-2 text-[12px] font-medium cc-muted-link"
           >
             Back to results
           </button>
