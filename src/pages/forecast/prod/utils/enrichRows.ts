@@ -1,23 +1,23 @@
-import type { PriceHistoryFromListResp } from "../../../interfaces";
-import type { AdListData, AdListRow } from "../../../features/forecastSlice";
-import { formatRowData, formatSinglePriceRowData } from ".";
+// Utils
 import {
   fitLinearDemand,
   predictQty,
   forecastUnits,
   estimateDaysActive,
-} from "../../../utils/forecastCalc";
+} from "../../../../utils/forecastCalc";
+import { formatRowData, formatSinglePriceRowData } from ".";
+
+// Interfaces
+import type { PriceHistoryFromListResp } from "../../../../interfaces";
+import type {
+  AdListData,
+  AdListRow,
+} from "../../../../features/forecastDevSlice";
 
 /**
- * Ad-list enrichment + row formatting, lifted verbatim out of `Forecasting.tsx`
- * so the dev page runs the exact same arithmetic rather than a second copy of
- * it. The only edit was making `adListRows` a parameter instead of a closure
- * over the component's selector — no figure it produces has changed.
- *
- * What it does: for any item on the AD list, the ad price is injected into the
- * price history as if it were real history (so the calculator treats it as
- * native rather than a custom row), then every metric on that row is refitted
- * at the ad price.
+ * Ad-list enrichment and row formatting, the same arithmetic as legacy (only
+ * `adListRows` became a parameter). An AD item's ad price is injected into the
+ * price history as if real, then every metric on its row is refitted at it.
  */
 
 export const enrichForecastRows = (
@@ -44,14 +44,19 @@ export const enrichForecastRows = (
       .sort((a, b) => b[1] - a[1]);
 
     const linear = fitLinearDemand(prices);
-    const rawPredicted = prices.length >= 3
-      ? predictQty(adPrice, linear, prices)
-      : linear.intercept + linear.slope * adPrice;
-    const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
-      ? rawPredicted
-      : prices[0][1];
+    const rawPredicted =
+      prices.length >= 3
+        ? predictQty(adPrice, linear, prices)
+        : linear.intercept + linear.slope * adPrice;
+    const safePredicted =
+      isFinite(rawPredicted) && !isNaN(rawPredicted)
+        ? rawPredicted
+        : prices[0][1];
     const predictedQty = Math.max(0, Math.round(safePredicted));
-    const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+    const estimatedDays = Math.max(
+      1,
+      estimateDaysActive(result.price_history, adPrice),
+    );
 
     return {
       ...result,
@@ -70,8 +75,12 @@ export const enrichForecastRows = (
   // Update the lookup map to use enriched results
   enrichedResults.forEach((r) => resultsByUpc.set(r.upc, r));
 
-  const singlePrices = enrichedResults.filter((item) => item.price_history.length === 1);
-  const multiPrices = enrichedResults.filter((item) => item.price_history.length > 1);
+  const singlePrices = enrichedResults.filter(
+    (item) => item.price_history.length === 1,
+  );
+  const multiPrices = enrichedResults.filter(
+    (item) => item.price_history.length > 1,
+  );
   const rawRows = [
     ...formatRowData(multiPrices),
     ...formatSinglePriceRowData(singlePrices),
@@ -93,16 +102,21 @@ export const enrichForecastRows = (
 
       const linear = fitLinearDemand(prices);
 
-      const rawPredicted = prices.length >= 3
-        ? predictQty(adPrice, linear, prices)
-        : linear.intercept + linear.slope * adPrice;
-      const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
-        ? rawPredicted
-        : prices[0][1]; // fall back to highest-volume historical qty
+      const rawPredicted =
+        prices.length >= 3
+          ? predictQty(adPrice, linear, prices)
+          : linear.intercept + linear.slope * adPrice;
+      const safePredicted =
+        isFinite(rawPredicted) && !isNaN(rawPredicted)
+          ? rawPredicted
+          : prices[0][1]; // fall back to highest-volume historical qty
       const predictedQty = Math.max(0, Math.round(safePredicted));
 
       // Guard against 0: forecastUnits divides by sellingDaysAtPrice internally
-      const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+      const estimatedDays = Math.max(
+        1,
+        estimateDaysActive(result.price_history, adPrice),
+      );
 
       const rawUnits = forecastUnits(
         adPrice,

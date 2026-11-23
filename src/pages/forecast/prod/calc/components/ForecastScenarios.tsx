@@ -1,25 +1,15 @@
+// Hooks
 import { useState } from "react";
-import { formatCurrency2 } from "../../../utils";
-import { buildScenarioRows } from "./scenarioRows";
-import type { PriceHistory } from "../../../interfaces";
-import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 
-/**
- * Price scenarios for the open item.
- *
- * Same figures as legacy's `ScenarioTable` — both call `buildScenarioRows` —
- * rendered on the CSS-grid convention the main grid uses, and carrying the same
- * column names it does (Ad fcst, Total) so a row means the same thing in both
- * places. The item's own price history isn't listed separately: Price and Hist
- * qty here are that history.
- */
+// Utils
+import { formatCurrency2 } from "../../../../../utils";
+import { buildScenarioRows, COLS, HEAD } from "../utils";
 
-const COLS = "1fr 60px 44px 60px 84px 84px 56px";
+// Interfaces
+import type { PriceHistory } from "../../../../../interfaces";
+import type { ForecastOutlierRow } from "../../../../../features/forecastDevSlice";
 
-const HEAD =
-  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0";
-
-interface Props {
+interface ForecastScenariosProps {
   pricesWithQty: number[][];
   priceHistory: PriceHistory[];
   regularRetail: number;
@@ -33,6 +23,11 @@ interface Props {
   onSetAdDays: (days: number) => void;
 }
 
+/**
+ * Price scenarios for the open item: legacy `ScenarioTable`'s figures (both
+ * call `buildScenarioRows`), with the main grid's column names (Ad fcst,
+ * Total).
+ */
 const ForecastScenarios = ({
   pricesWithQty,
   priceHistory,
@@ -45,7 +40,7 @@ const ForecastScenarios = ({
   onApply,
   onAddCustomPrice,
   onSetAdDays,
-}: Props) => {
+}: ForecastScenariosProps) => {
   const [customInput, setCustomInput] = useState("");
   const [adDaysInput, setAdDaysInput] = useState(
     liveAdDays > 0 ? liveAdDays.toString() : "",
@@ -64,10 +59,9 @@ const ForecastScenarios = ({
   const handleAdd = () => {
     const val = parseFloat(customInput);
     if (isNaN(val) || val <= 0) return;
-    const exists = [
-      ...pricesWithQty.map((pq) => pq[0]),
-      ...customPrices,
-    ].some((p) => Math.abs(p - val) < 0.001);
+    const exists = [...pricesWithQty.map((pq) => pq[0]), ...customPrices].some(
+      (p) => Math.abs(p - val) < 0.001,
+    );
     if (!exists) onAddCustomPrice(val);
     setCustomInput("");
   };
@@ -79,23 +73,21 @@ const ForecastScenarios = ({
   };
 
   return (
-    <div className="flex flex-col min-h-0 overflow-hidden border border-gray-200 rounded-lg">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/80">
-          Price scenarios
-        </span>
+    <div className="flex flex-col min-h-0 overflow-hidden border border-line_field rounded-lg">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
+        <span className="text-[11px] cc-caps">Price scenarios</span>
         <div className="ml-auto flex items-center gap-1.5">
           <input
             value={adDaysInput}
             onChange={(e) => setAdDaysInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSetAdDays()}
             placeholder="Ad days"
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button
             onClick={handleSetAdDays}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
           >
             Set
           </button>
@@ -104,12 +96,12 @@ const ForecastScenarios = ({
             onChange={(e) => setCustomInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Add price"
-            className="text-[11px] rounded px-2 py-1 border border-gray-200 bg-custom-white w-20"
+            className="text-[11px] rounded px-2 py-1 border border-line_field bg-custom-white w-20"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button
             onClick={handleAdd}
-            className="text-[11px] font-medium px-2 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors"
+            className="text-[11px] font-medium px-2 py-1 rounded border border-line_field text-content hover:bg-fill_muted transition-colors"
           >
             Add
           </button>
@@ -126,14 +118,16 @@ const ForecastScenarios = ({
         <span />
       </div>
 
-      <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+      <div className="cc-scroll">
         {rows.map((row) => {
           const isActive = Math.abs(row.price - liveFcstPrice) < 0.001;
           return (
             <div
               key={row.price}
-              className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 ${
-                isActive ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
+              className={`grid gap-1.5 items-center px-2 py-[7px] border-b last:border-b-0 ${
+                isActive
+                  ? "cc-row-selected"
+                  : "border-brand_navy/15 even:bg-row_stripe hover:bg-fill_soft"
               }`}
               style={{ gridTemplateColumns: COLS }}
             >
@@ -144,19 +138,18 @@ const ForecastScenarios = ({
               >
                 {formatCurrency2(row.price)}
                 {row.isCustom && (
-                  <span className="ml-1 text-[9px] bg-gray-200 text-content rounded px-0.5 font-medium">
+                  <span className="ml-1 text-[9px] bg-fill_track text-content rounded px-0.5 font-medium">
                     new
                   </span>
                 )}
               </span>
-              <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                 {row.histQty ?? "—"}
               </span>
-              {/* A typed price was never on the shelf, so it has no days at
-                  price to report. The forecast still needs one and uses
-                  `estimateDaysActive`, but that's an assumption of ours — it
-                  doesn't belong in a column of observed history. */}
-              <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+              {/* A typed price was never on the shelf, so no days at price:
+                  the forecast uses `estimateDaysActive`, an assumption, which
+                  doesn't belong in observed history. */}
+              <span className="text-right text-[12px] font-medium tabular-nums text-content/95">
                 {row.isCustom ? "—" : row.daysAtPrice}
               </span>
               <span className="text-right text-[12px] font-medium tabular-nums text-content">
@@ -169,7 +162,7 @@ const ForecastScenarios = ({
                 {formatCurrency2(Math.max(0, row.markdown))}
               </span>
               {isActive ? (
-                <span className="text-right text-[11px] font-medium text-content/85">
+                <span className="text-right text-[11px] font-medium text-content/95">
                   applied
                 </span>
               ) : (

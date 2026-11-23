@@ -1,37 +1,17 @@
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../../utils/forecastCalc";
-import type { PriceHistory } from "../../../interfaces";
-import type { ForecastOutlierRow } from "../../../features/forecastSlice";
+// Utils
+import {
+  calcFcstQty,
+  estimateDaysActive,
+  forecastUnits,
+} from "../../../../../utils/forecastCalc";
+
+// Interfaces
+import type { Args, ScenarioRow } from "../interfaces";
 
 /**
- * Price scenarios for one item.
- *
- * Lifted verbatim out of `ScenarioTable`'s `buildRow` so the dev modal and the
- * legacy table compute identical figures rather than keeping two copies of the
- * same chain. Not one operand changed: same `calcFcstQty`, same
- * `estimateDaysActive` fallback for a price with no history, same
- * `forecastUnits` argument order, same `(regularRetail - price) * adFcst`.
+ * Price scenarios for one item, verbatim from legacy `ScenarioTable`'s
+ * `buildRow`, so both compute identical figures.
  */
-
-export interface ScenarioRow {
-  price: number;
-  /** null when the price was typed rather than drawn from history. */
-  histQty: number | null;
-  daysAtPrice: number;
-  adFcst: number;
-  revenue: number;
-  markdown: number;
-  isCustom: boolean;
-}
-
-interface Args {
-  pricesWithQty: number[][];
-  priceHistory: PriceHistory[];
-  regularRetail: number;
-  selectedRow: ForecastOutlierRow;
-  overallUnits: number;
-  liveAdDays: number;
-  customPrices: number[];
-}
 
 export const buildScenarioRows = ({
   pricesWithQty,
@@ -74,4 +54,23 @@ export const buildScenarioRows = ({
       .map((p) => buildRow(p, false)),
     ...customPrices.map((p) => buildRow(p, true)),
   ].sort((a, b) => a.price - b.price);
+};
+
+/** Column widths shared by the scenario table's header and rows. */
+export const COLS = "1fr 60px 44px 60px 84px 84px 56px";
+
+/** The scenario table's header row. */
+export const HEAD =
+  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 flex-shrink-0";
+
+/** The calculator modal's bordered sections, their headings and field labels. */
+export const SECTION = "border border-line_field rounded-lg overflow-hidden";
+export const SECTION_HEAD =
+  "px-3 py-1.5 bg-fill_soft border-b border-line_hair text-[11px] font-semibold uppercase tracking-wide text-content/95";
+export const FIELD_LABEL = "text-[11px] font-medium text-content/95 ml-0.5";
+
+/** Keeps a typed value only while it is a number in the making: digits and
+ *  at most one point. */
+export const onlyNumeric = (v: string, set: (s: string) => void) => {
+  if (/^\d*\.?\d*$/.test(v)) set(v);
 };

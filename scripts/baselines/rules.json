@@ -228,10 +228,6 @@
   "src/features/dev/devExportBuilderSlice.ts": {
     "file-length": 1
   },
-  "src/features/forecastDevSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/features/forecastSlice.ts": {
     "file-length": 1,
     "labels": 1
