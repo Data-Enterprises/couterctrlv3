@@ -1,23 +1,36 @@
+// Hooks
 import { useState } from "react";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from "../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../../interfaces";
 
-import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
-import { setCreateInput, setRefreshGroups } from "../../../../features/groupsPageSlice";
+// Redux
+import {
+  setSelectedGroup,
+  type Group,
+  emptyGroup,
+} from "../../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+} from "../../../../features/groupsPageSlice";
 
+// API
 import { deleteGroup } from "../../../../api/groups";
 
+// Interfaces
+import type { JsonError } from "../../../../interfaces";
+
+// Components
 import Input from "../../../../components/inputs/Input";
 
+/** The phone's Delete form: tap one of your own (not shared) groups, press Delete, then confirm Yes or No. */
 const DeleteGroup = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
-
-  const editableGroups = groups;
+  const editableGroups = groups.filter((g) => !g.is_shared);
 
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
@@ -65,7 +78,7 @@ const DeleteGroup = () => {
             <div
               key={g.id}
               data-testid={`delete-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedGroup.id === g.id ? "bg-brand_navy/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md transition-all duration-200 cursor-pointer hover:bg-fill_soft`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -73,10 +86,15 @@ const DeleteGroup = () => {
           ))}
         </div>
         <div className="relative grid grid-cols-[67%_1fr] gap-3 items-end mt-4">
-          <Input label="Group Name" value={createInput} setValue={() => {}} className="py-1" />
+          <Input
+            label="Group Name"
+            value={createInput}
+            setValue={() => {}}
+            className="py-1"
+          />
           <button
             data-testid="delete-usergroup-btn"
-            className={`bg-red-600 text-custom-white py-2 rounded-xl border-2 border-red-600 mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-brand_danger text-custom-white py-2 rounded-xl border-2 border-brand_danger mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={() => setIsDeleting(true)}
           >
             Delete
@@ -95,19 +113,19 @@ const DeleteGroup = () => {
               <span className="font-medium">{selectedGroup.group_name}</span>
               <span>?</span>
             </div>
-            <div className="font-medium text-center text-content/60">
+            <div className="font-medium text-center text-content/95">
               Be advised, this action cannot be undone
             </div>
             <div className="grid grid-cols-2 gap-2 mt-4">
               <button
-                className={`bg-[rgb(30,45,80)] text-custom-white py-1.5 rounded-xl border-2 border-[rgb(30,45,80)] w-full`}
+                className={`bg-brand_navy text-custom-white py-1.5 rounded-xl border-2 border-brand_navy w-full`}
                 data-testid="delete-submit-btn"
                 onClick={handleDelete}
               >
                 Yes
               </button>
               <button
-                className={`bg-red-600 text-custom-white py-1.5 rounded-xl border-2 border-red-600 w-full`}
+                className={`bg-brand_danger text-custom-white py-1.5 rounded-xl border-2 border-brand_danger w-full`}
                 data-testid="delete-cancel-btn"
                 onClick={cleanup}
               >

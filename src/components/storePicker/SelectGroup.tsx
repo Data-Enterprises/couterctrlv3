@@ -1,11 +1,22 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
-import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from ".";
-import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+// Redux
+import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
+
+// API
+import { setUserPrefs } from "../../api/user";
+
+// Interfaces
 import type { Group } from "../../features/groupSlice";
 
+// Components
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+
+/** The store picker's group dropdown: type to narrow the groups, pick one, and
+ *  it becomes the selected and last-used group. */
 const SelectGroup = () => {
   const context = useStorePickerContext();
   const app = useAppSelector((state) => state.app);
@@ -16,8 +27,13 @@ const SelectGroup = () => {
   const [query, setQuery] = useState<string>("");
   const [filtered, setFiltered] = useState<Group[]>([]);
 
-  // Prod has no shared groups: only the user's own ordinary groups are offered.
-  const scopedGroups = context.groups.filter((g) => !g.is_shared);
+  // The dropdown shows one side or the other, never both: "Shared" lists the
+  // base groups a manager pushed to this user, "Group" the ones they built
+  // themselves. Both are ordinary user_groups rows, so everything downstream
+  // still treats the pick as a plain group id.
+  const scopedGroups = context.groups.filter((g) =>
+    context.type === "Shared" ? g.is_shared : !g.is_shared,
+  );
 
   useEffect(() => {
     setFiltered(scopedGroups);
@@ -97,7 +113,7 @@ const SelectGroup = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
+    "basic-input focus:border bg-custom-white hover:bg-fill_soft hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
   const width = app.isDesktop ? "relative w-full w-full" : "relative w-full";
   return (
@@ -148,7 +164,7 @@ const SelectGroup = () => {
                 key={`group-${idx}`}
                 onClick={() => handleSelect(group)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
+                <div className="p-1 hover:bg-fill_soft transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>
               </div>
