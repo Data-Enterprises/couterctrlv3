@@ -83,6 +83,7 @@ const drops = prodFiles.filter((f) => !devFiles.includes(DEV + f.slice(PROD.leng
 
 // ── slices and library the dev tree reaches ───────────────────────────────
 const sliceWrites = [];
+const slicesReached = []; // every forked slice the page uses, changed or not
 const libNew = [], libChanged = [];
 {
   const seen = new Set();
@@ -104,6 +105,7 @@ const libNew = [], libChanged = [];
         ? prodNameFromFile(twin)
         : readFileSync(twin, "utf8").match(/\bname:\s*"(\w+)"/)?.[1];
       const text = promoteSlice(f, readFileSync(f, "utf8"), prodName);
+      slicesReached.push({ f, twin });
       if (isNew || lf(readFileSync(twin, "utf8")) !== lf(text)) sliceWrites.push({ f, twin, text, isNew });
     }
     // Walk the dev tree, the dev library and dev slices; stop anywhere else.
@@ -130,6 +132,19 @@ const testDrops = [
   ...testFiles(TPROD).filter((f) => !existsSync(TDEV + f.slice(TPROD.length))),
   ...files.filter((f) => f.startsWith(PROD) && isTest(f)),
 ];
+// A written-back slice brings its tests the same way: tests/dev/features/devX*
+// -> tests/prod/features/x*, and a test still beside the prod slice goes to trash.
+for (const s of slicesReached) {
+  const devBase = P.basename(s.f).replace(/\.tsx?$/, "");
+  const prodBase = P.basename(s.twin).replace(/\.tsx?$/, "");
+  for (const f of testFiles("tests/dev/features/").filter((f) => P.basename(f).startsWith(`${devBase}.`))) {
+    const to = `tests/prod/features/${prodBase}${P.basename(f).slice(devBase.length)}`;
+    const text = promoteTest(readFileSync(f, "utf8"));
+    if (!existsSync(to) || lf(readFileSync(to, "utf8")) !== lf(text)) testWrites.set(to, text);
+  }
+  for (const f of files.filter((f) => isTest(f) && P.dirname(f) === "src/features" && P.basename(f).startsWith(`${prodBase}.`)))
+    testDrops.push(f);
+}
 
 // Who in prod uses a changed library file — the blast radius of --lib.
 const prodUsersOf = (libFile) => {
