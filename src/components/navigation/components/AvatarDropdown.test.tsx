@@ -30,12 +30,12 @@ const openMenu = (level: number, env: "dev" | "prod") => {
 };
 
 describe("AvatarDropdown", () => {
-  it("gives a client in prod only their name and Sign out", () => {
+  it("gives a client in prod their name, Release notes and Sign out", () => {
     openMenu(5, "prod");
     expect(screen.getByTestId("signout-btn")).toBeTruthy();
+    expect(screen.getByText("Release notes")).toBeTruthy();
     expect(screen.queryByText("Environment")).toBeNull();
     expect(screen.queryByText("Report an issue")).toBeNull();
-    expect(screen.queryByText("Release notes")).toBeNull();
   });
 
   it("gives level 7 the Environment panel with Mode, not View or Sign in as", () => {
