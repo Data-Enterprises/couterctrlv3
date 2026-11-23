@@ -38,7 +38,6 @@
         "hrefs": [],
         "text": "Pop-up windows soften the page behind them instead of darkening it."
       },
-
       {
         "kind": "new",
         "page": "Sales",
@@ -81,7 +80,6 @@
         "hrefs": ["sales"],
         "text": "Last week's figures line up correctly after the clocks change."
       },
-
       {
         "kind": "fix",
         "page": "Performance pages",
@@ -125,7 +123,6 @@
         "hrefs": ["sub-dept-margins", "categories", "vendors"],
         "text": "Sub Dept Margins, Vendors and Categories open on the store you were already looking at."
       },
-
       {
         "kind": "fix",
         "page": "Sub Dept Margins",
@@ -150,7 +147,6 @@
         "hrefs": ["coupon-sales"],
         "text": "A coupon sale's lines still show after you leave the page and come back."
       },
-
       {
         "kind": "improvement",
         "page": "Item Lookup",
@@ -169,7 +165,12 @@
         "hrefs": ["item-lookup"],
         "text": "Pressing Enter searches, and an item with no sales says so."
       },
-
+      {
+        "kind": "improvement",
+        "page": "Cashiers",
+        "hrefs": ["cashiers"],
+        "text": "On a phone, Cashiers looks like the other pages: pick the exception from the card's title, and amounts show in full."
+      },
       {
         "kind": "new",
         "page": "Upc List",
@@ -194,14 +195,18 @@
         "hrefs": ["upc-upload"],
         "text": "Download waits until your data has loaded."
       },
-
+      {
+        "kind": "fix",
+        "page": "Forecasting and Upc List",
+        "hrefs": ["forecasting", "upc-upload"],
+        "text": "A group search covers only the stores assigned to you."
+      },
       {
         "kind": "fix",
         "page": "Receivers",
         "hrefs": ["receivers"],
         "text": "Received quantities are counted in cases."
       },
-
       {
         "kind": "improvement",
         "page": "Coupons",
@@ -214,7 +219,6 @@
         "hrefs": ["coupons"],
         "text": "Column filters stay in place when you leave the page and come back."
       },
-
       {
         "kind": "new",
         "page": "Groups",
@@ -222,7 +226,6 @@
         "minLevel": 7,
         "text": "Share a group of stores with your team from the new Shared Groups tab."
       },
-
       {
         "kind": "improvement",
         "page": "User Management",
@@ -286,7 +289,6 @@
         "minLevel": 5,
         "text": "The user list sorts by any column, and the page asks before you lose unsaved changes."
       },
-
       {
         "kind": "new",
         "page": "Admin",
