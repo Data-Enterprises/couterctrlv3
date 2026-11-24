@@ -94,14 +94,7 @@
       {
         "kind": "improvement",
         "page": "Performance on a phone",
-        "hrefs": [
-          "sales",
-          "loss-prevention",
-          "sub-dept-margins",
-          "categories",
-          "vendors",
-          "coupon-sales"
-        ],
+        "hrefs": ["sales", "sub-dept-margins", "categories", "vendors"],
         "text": "Each row shows this week, last week and last year side by side, with a Sales / Units switch."
       },
       {
