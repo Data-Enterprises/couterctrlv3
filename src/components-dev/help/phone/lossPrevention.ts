@@ -89,7 +89,7 @@ export const LOSS_PREVENTION_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Sort by",
-      def: "Transactions and Amount put the biggest first. vs Avg puts the biggest rise over AVG first — the most extra exceptions, not the biggest percentage, so a cashier going from 1 to 3 does not outrank one going from 20 to 30. Store # and Name sort in order. Tap the same one again to reverse it, and once more to put the list back the way it arrived. Stores and Cashiers each remember their own sort.",
+      def: "Transactions and Amount put the biggest first. vs Avg puts the biggest rise over AVG first — the most extra exceptions, not the biggest percentage, so a cashier going from 1 to 3 does not outrank one going from 20 to 30. Store # sorts the stores in number order.Tap the same one again to reverse it, and once more to put the list back the way it arrived. Stores and Cashiers each remember their own sort.",
     },
     {
       term: "Filter by store",

@@ -18,7 +18,7 @@ export const CATEGORIES_HELP: HelpContent = {
           pre: "Choose a store and a week-ending date, then press",
           chip: "Load categories",
           post: ". You get the seven days ending on that date.",
-          see: "Every category in that store for the week, weakest first.",
+          see: "Every category in that store for the week, Crit first, then Watch and OK, biggest sellers first within each.",
           anchor: "search",
         },
         {
@@ -52,7 +52,7 @@ export const CATEGORIES_HELP: HelpContent = {
         },
         {
           title: "Look at the hours",
-          pre: "Open the Hours tab for the category hour by hour, each hour against the same hour last week and last year.",
+          pre: "Open the Hours tab for the category hour by hour, each hour against the same hour last year, or last week when last year is missing days.",
           see: "It takes a moment the first time — the hours are fetched when you ask for them.",
         },
       ],
@@ -68,7 +68,7 @@ export const CATEGORIES_HELP: HelpContent = {
           id: "which",
           title: "What is the row showing?",
           options: [
-            { label: "A grey percentage with a day count", result: "partial" },
+            { label: "A grey percentage, or “days matched”", result: "partial" },
             { label: "A grey dot and no grade", result: "ungraded" },
           ],
         },
@@ -112,7 +112,7 @@ export const CATEGORIES_HELP: HelpContent = {
     },
     {
       term: "Hours tab",
-      def: "The category hour by hour, each hour against the same hour last week and last year. Click an hour for its sales, tax, units and basket figures.",
+      def: "The category hour by hour, each hour against the same hour last year, or last week when last year is missing days. Click an hour for its sales, tax, units and basket figures.",
     },
   ],
 };

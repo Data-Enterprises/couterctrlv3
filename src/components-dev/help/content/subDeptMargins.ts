@@ -69,9 +69,9 @@ export const SUB_DEPT_MARGINS_HELP: HelpContent = {
           id: "which",
           title: "What is the row showing?",
           options: [
-            { label: "A grey percentage with a day count", result: "partial" },
+            { label: "A grey percentage, or “days matched”", result: "partial" },
             { label: "A grey dot and no grade", result: "ungraded" },
-            { label: "A dash instead of a margin", result: "no-sales" },
+            { label: "A dash instead of a change", result: "no-sales" },
           ],
         },
       ],
@@ -97,7 +97,7 @@ export const SUB_DEPT_MARGINS_HELP: HelpContent = {
           tone: "ok",
           badge: "Working as intended",
           title: "That period sold nothing",
-          why: "A period with no sales has no margin, and 0.00% would read as a week sold at cost. A margin delta needs sales on both sides of it, so where one side is empty the row is left ungraded rather than reporting a collapse that did not happen.",
+          why: "A period with no sales has no margin, and 0.00% would read as a week sold at cost, so a comparison with a period that sold nothing shows a dash. The grade then uses the other period if it has the full week; the row is left ungraded only when neither can be compared.",
           todo: [],
         },
       ],
@@ -122,7 +122,7 @@ export const SUB_DEPT_MARGINS_HELP: HelpContent = {
     },
     {
       term: "Cost and No Cost tabs",
-      def: "Cost shows each item's cost and the department's total cost of goods. No Cost lists items with no cost on file, whose margin cannot be worked out.",
+      def: "Cost shows each item's Unit Cost, Case Cost, Qty / Lb and COGS. No Cost lists items with no cost on file, whose margin cannot be worked out.",
     },
     {
       term: "Two locations",
