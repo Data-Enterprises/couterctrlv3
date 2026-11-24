@@ -3,7 +3,7 @@ import type { PhoneHelp } from "../helpTypes";
 
 /** Help for Store Groups on a phone. Ported from its `-mobile` help page. */
 export const STORE_GROUPS_PHONE_HELP: PhoneHelp = {
-  screen: "Store Groups",
+  screen: "Groups",
   purpose:
     "Build your own groups of stores so you can look at several stores together in one search.",
 
