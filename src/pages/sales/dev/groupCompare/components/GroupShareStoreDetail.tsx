@@ -77,6 +77,14 @@ const GroupShareStoreDetail = ({
     row.storeNumber,
     row.storeNumbersForId,
   );
+  // The other store by name, as the list beside this names it.
+  const otherName = other
+    ? applyStoreNumberToName(
+        other.storeName,
+        other.storeNumber,
+        other.storeNumbersForId,
+      )
+    : "";
 
   const points = trendPoints(trend);
   const fell = row.changePct < 0;
@@ -116,7 +124,7 @@ const GroupShareStoreDetail = ({
             {other && (
               <>
                 {" "}
-                — and {other.storeNumber} went the other way by{" "}
+                — and {otherName} went the other way by{" "}
                 <span className="font-bold">{signedValue(other.money)}</span>
               </>
             )}
@@ -257,7 +265,7 @@ const GroupShareStoreDetail = ({
             answer={
               other ? (
                 <>
-                  Store {other.storeNumber} {signedValue(other.money)}
+                  {otherName} {signedValue(other.money)}
                 </>
               ) : (
                 "Nobody moved the other way"
@@ -265,16 +273,24 @@ const GroupShareStoreDetail = ({
             }
             sub={
               other
-                ? `Almost exactly what ${row.storeNumber} ${fell ? "lost" : "gained"}`
+                ? `Almost exactly what ${name} ${fell ? "lost" : "gained"}`
                 : "Every counted store moved the same way"
             }
             figure={
               other && (
                 <span className="flex items-center gap-1 text-[11.5px] font-semibold">
-                  <span className={tone.text}>{row.storeNumber}</span>
+                  <span
+                    className={`truncate max-w-[110px] ${tone.text}`}
+                    title={name}
+                  >
+                    {name}
+                  </span>
                   <span className="text-content/95">&rarr;</span>
-                  <span className={DETAIL_TONE[other.standing].text}>
-                    {other.storeNumber}
+                  <span
+                    className={`truncate max-w-[110px] ${DETAIL_TONE[other.standing].text}`}
+                    title={otherName}
+                  >
+                    {otherName}
                   </span>
                 </span>
               )
