@@ -86,7 +86,7 @@ const UpcSearchCard = ({
           <div>
             <h2 className="text-base font-semibold text-content">UPC List</h2>
             <p className="text-[12px] text-content/95">
-              Sales comp · Forecast · Price opt · Trend · Association
+              {UPC_DEV_TABS.map((t) => t.label).join(" | ")}
             </p>
           </div>
           {onClose && (
