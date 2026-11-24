@@ -4,6 +4,7 @@ import { useForecastExport } from "./hooks";
 
 // Utils
 import { COLS, CUSTOM_CHECKBOX, CUSTOM_RADIO, SECTION_LABEL } from "./utils";
+import { getStoreName } from "../../../../utils";
 
 // Components
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
@@ -22,12 +23,12 @@ interface ForecastExportModalProps {
  * split. Presets are multi-select: each ticked one downloads as its own file.
  */
 const ForecastExportModal = ({ onClose }: ForecastExportModalProps) => {
-  const { storeids, search } = useForecastCtx();
+  const { storeids, search, assignedStores } = useForecastCtx();
   const x = useForecastExport(onClose);
 
   const scopeLabel = storeids.includes(",")
     ? `${storeids.split(",").length} stores`
-    : `Store ${storeids}`;
+    : getStoreName(assignedStores, Number(storeids));
 
   const tierScope = (
     <TierScope
