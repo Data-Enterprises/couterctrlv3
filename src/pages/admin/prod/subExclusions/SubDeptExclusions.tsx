@@ -111,7 +111,10 @@ const SubDeptExclusions = () => {
         excludedCount={excludedCount}
       />
 
-      <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
+      <div
+        data-help="excl-list"
+        className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col"
+      >
         <SubExclHead />
 
         <div className="cc-scroll divide-y divide-brand_navy/15">

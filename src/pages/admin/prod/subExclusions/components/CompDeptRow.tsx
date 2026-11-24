@@ -5,6 +5,7 @@ import {
   COLS,
   coverageText,
   prettyDate,
+  CATALOG_DAYS,
 } from "../utils";
 
 // Interfaces
@@ -108,12 +109,11 @@ const CompDeptRow = ({
           ))}
           {row.absent.length > 0 && (
             <p className="text-[11px] text-content/95 pt-1.5 leading-snug">
-              Not rung in this window at{" "}
+              Not rung in the last {CATALOG_DAYS} days at{" "}
               <span className="font-semibold text-content">
-                {row.absent.map((s) => s.store_number).join(", ")}
+                {row.absent.map((s) => s.store_name).join(", ")}
               </span>
-              . Nothing to exclude there — widen the window if the department is
-              seasonal.
+              . Nothing to exclude there.
             </p>
           )}
         </div>

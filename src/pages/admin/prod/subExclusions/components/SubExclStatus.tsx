@@ -1,3 +1,6 @@
+// Utils
+import { CATALOG_DAYS } from "../utils";
+
 interface SubExclStatusProps {
   loading: boolean;
   /** Catalogue batches read so far, when it takes more than one. */
@@ -35,7 +38,7 @@ const SubExclStatus = ({
       <div className="flex items-center justify-center py-8 text-[12px] text-content text-center px-6">
         {anyRows
           ? "No departments match that search"
-          : "No sub departments rang in this window. Try a longer one."}
+          : `No sub departments rang at these stores in the last ${CATALOG_DAYS} days.`}
       </div>
     )}
   </>
