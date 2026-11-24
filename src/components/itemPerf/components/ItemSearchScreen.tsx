@@ -15,7 +15,7 @@ import {
 } from "../../../features/itemPerfSlice";
 
 // Utils
-import { RECENTS_INLINE } from "../utils";
+import { RECENTS_INLINE, SEARCH_RESULT_TAG } from "../utils";
 import { TY_COLOR } from "../../mobile/perf/perfColors";
 
 // Components
@@ -175,8 +175,8 @@ const ItemSearchScreen = () => {
                 Search the whole store
               </p>
               <p className="mt-1 text-[12px] text-content/95">
-                Type a name or UPC, or scan a barcode. Results carry the
-                department they came from.
+                Type a name or UPC, or scan a barcode. Each result shows its UPC
+                and {SEARCH_RESULT_TAG[perf.active]}.
               </p>
             </section>
           ) : (

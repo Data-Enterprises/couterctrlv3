@@ -115,7 +115,7 @@ export const UPC_LIST_HELP: HelpContent = {
     },
     {
       term: "Trend",
-      def: "Compares each item's daily sales before and after a point in the range and labels it Growing, Declining, Accelerating or Reduced availability, biggest losses first. Confidence says how steady the pattern is.",
+      def: "Compares each item's daily sales before and after a point in the range and labels it Growing, Declining, Accelerating, Stopped selling, Reduced availability or New since pivot, biggest losses first. Confidence says how steady the pattern is.",
       anchor: "tabs",
     },
     {

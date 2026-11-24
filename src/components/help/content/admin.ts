@@ -41,7 +41,7 @@ export const ADMIN_HELP: HelpContent = {
           title: "Find the department",
           pre: "Type its name in",
           chip: "Search departments…",
-          post: ", or press Likely hash to bring the usual ones to the top.",
+          post: ", or press Likely hash to show only the usual ones.",
           anchor: "likely-hash",
         },
         {
@@ -56,11 +56,11 @@ export const ADMIN_HELP: HelpContent = {
       issues: [
         {
           q: "The department isn't in the list",
-          a: "It hasn't rung at your stores in the last 60 days, so there is nothing to exclude yet.",
+          a: "Likely hash or the search may be hiding it — turn Likely hash off and clear the search. Otherwise it hasn't rung at your stores in the last 60 days, so there is nothing to exclude yet.",
         },
         {
           q: "I want it to count again",
-          a: "Untick its box, and confirm. It counts toward net sales again at every store it was excluded at.",
+          a: "Untick its box. At more than one store you're asked first: press Yes, count at and the number of stores. It counts toward net sales again at every store it was excluded at.",
         },
       ],
     },
@@ -80,7 +80,7 @@ export const ADMIN_HELP: HelpContent = {
           title: "Rename it",
           pre: "Press the pencil at the end of the store's row, type the new name in",
           chip: "Store name",
-          post: "and save.",
+          post: "and press Save name.",
           see: "The new name in the list.",
           anchor: "store-list",
         },
@@ -104,15 +104,15 @@ export const ADMIN_HELP: HelpContent = {
         {
           title: "Pick the company",
           pre: "Choose one in",
-          chip: "Company",
-          post: "down the left. The list is the companies on your own account, and only one company is read at a time.",
+          chip: "Companies",
+          post: "down the left. Every company is listed, and only one company is read at a time.",
           anchor: "company",
         },
         {
           title: "Set the range",
-          pre: "Set a start and end in",
-          chip: "Dates",
-          post: ". Every figure on this screen counts whole days inside that range.",
+          pre: "Set",
+          chip: "Start Date",
+          post: "and End Date at the top left. Every figure on this screen counts whole days inside that range.",
           see: "Nothing yet — the range is only read when you search.",
           anchor: "dates",
         },
@@ -161,6 +161,12 @@ export const ADMIN_HELP: HelpContent = {
           pre: "Press the download icon in the page header.",
           see: "A dialog naming the company and the stores it will write.",
           anchor: "export",
+        },
+        {
+          title: "Download it",
+          pre: "Tick All stores, Missing only or both, then press",
+          chip: "Download CSV",
+          post: ".",
         },
       ],
     },
@@ -219,9 +225,9 @@ export const ADMIN_HELP: HelpContent = {
           title: "The register stopped sending on those days",
           why: "Scattered gaps with no weekday pattern usually mean the till could not reach us — a network outage, a machine switched off, or a day closed late enough to miss the collection.",
           todo: [
-            "Note the exact dates and the store number.",
+            "Note the exact dates and the store name.",
             "Ask whether anything happened at the store on those days.",
-            "Send the dates and store number to your CounterCtrl rep if nothing explains them.",
+            "Send the dates and the store name to the store's operator if nothing explains them.",
           ],
         },
         {
@@ -233,7 +239,7 @@ export const ADMIN_HELP: HelpContent = {
           todo: [
             "Widen the range and search again — if earlier days are present, the stop has a date.",
             "Check whether the store was open in this period.",
-            "Send the store number and the last date that reported to your rep.",
+            "Send the store name and the last date that reported to the store's operator.",
           ],
         },
       ],
@@ -253,21 +259,21 @@ export const ADMIN_HELP: HelpContent = {
     },
     {
       term: "Likely hash",
-      def: "Brings the departments that look like pass-through money, such as lottery, money orders and stamps, to the top. It doesn't tick anything for you.",
+      def: "Shows only the departments that look like pass-through money, such as lottery, money orders and stamps. Press it again to see them all. It doesn't tick anything for you.",
       anchor: "likely-hash",
     },
     {
-      term: "Dates",
+      term: "Start Date and End Date",
       def: "The range every figure on the screen is counted inside. Both ends are included.",
       anchor: "dates",
     },
     {
-      term: "Company",
-      def: "Which company's stores are read. One at a time, and the list is the companies on your own account.",
+      term: "Companies",
+      def: "Which company's stores are read. One at a time, from every company.",
       anchor: "company",
     },
     {
-      term: "Total",
+      term: "Total days",
       def: "Days in the range. The same for every store, and the number the other two are read against.",
       anchor: "activity-grid",
     },

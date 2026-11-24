@@ -50,7 +50,7 @@ export const COUPON_SALES_HELP: HelpContent = {
           title: "Narrow to one day",
           pre: "Click a day card to narrow the totals, the breakdown and the transactions. Click it again, or",
           chip: "All Week",
-          post: ", to go back. Each day is compared with the same weekday in the prior two weeks.",
+          post: ", to go back. The day cards compare each day with the same weekday in the prior two weeks. The Amount, Coupons and Trans figures above them compare the day you picked with an average week from those two weeks, not with that weekday.",
         },
         {
           title: "Open a receipt",
@@ -102,7 +102,7 @@ export const COUPON_SALES_HELP: HelpContent = {
           title: "The average coupon is over your dollar figure",
           why: "Avg $ ignores history entirely and only asks whether the average coupon is over the amount in the box. There are only two states here — Critical if it is over, OK if it is not.",
           todo: [
-            "Change the dollar amount beside the switch if the figure is set for a different kind of store.",
+            "Change the Avg Threshold amount if the figure is set for a different kind of store.",
             "Switch to Trend to see whether it is also a change for that store.",
           ],
         },

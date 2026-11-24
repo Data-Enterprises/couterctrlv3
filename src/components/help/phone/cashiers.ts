@@ -17,13 +17,13 @@ export const CASHIERS_PHONE_HELP: PhoneHelp = {
     {
       q: "Which exception am I looking at?",
       a: [
-        "The page opens on refunds or voids when the week has them. To switch, tap the Exception box beside the Store, Cashier, Item and Terminal buttons.",
+        "The page opens on refunds or voids when the week has them. To switch, tap the exception's name at the top of the first card and pick another. It only opens when the week has more than one.",
       ],
     },
     {
       q: "What do the figures across the top mean?",
       a: [
-        "They cover the whole week's search: exception lines, transactions, amount, and how many stores, cashiers and items are involved.",
+        "They cover the whole week's search: exception lines, transactions, amount, and how many cashiers and items are involved.",
       ],
     },
     {
@@ -41,7 +41,7 @@ export const CASHIERS_PHONE_HELP: PhoneHelp = {
     {
       q: "How do I see the transactions and receipts?",
       a: [
-        "Tap a row to see its transactions, then tap a transaction to open the full receipt. \"1 of 13\" shows how many of the receipt's lines were exceptions, and a \"last\" tag means the exception was the final line of the sale.",
+        "Tap a row to see its transactions, then tap a transaction to open the full receipt. The sentence above the list says how many of the exceptions were the final line of the sale.",
       ],
     },
     {
@@ -85,20 +85,16 @@ export const CASHIERS_PHONE_HELP: PhoneHelp = {
       def: "One receipt can contribute many exception lines — the same item voided eleven times in a single sale. The list counts both, and the drill-down collapses to one row per transaction so the two never contradict each other.",
     },
     {
-      term: "1 of 13 · last",
-      def: "Where the exception sat in the receipt: how many of that transaction's lines it accounts for, out of the total. The amber \"last\" tag means it was the final line of the sale — the classic pattern for ringing a full order, then voiding at the end. Worth a look, not proof.",
-    },
-    {
       term: "The summary line",
       def: "The sentence above the transactions is the page reading its own numbers back — how many cashiers and items are involved, the most repeated item, and how many landed on a last line. It is a starting point for the question, not an answer to it.",
     },
     {
       term: "Totals",
-      def: "The strip along the top covers the whole exception set for the week, not the selected signal: lines, transactions, dollars, and how many distinct stores, cashiers and items are involved.",
+      def: "The card at the top covers the whole exception set for the week, not the selected signal: lines, transactions, dollars, and how many distinct cashiers and items are involved.",
     },
     {
       term: "Receipts",
-      def: "Tapping a transaction opens the full receipt — every line of the sale, not only the exception lines. That is what makes the line position above meaningful.",
+      def: "Tapping a transaction opens the full receipt: every line of the sale, not only the exception lines.",
     },
   ],
 };
