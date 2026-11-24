@@ -1,6 +1,6 @@
 [
   {
-    "date": "2026-11-23",
+    "date": "2026-11-24",
     "items": [
       {
         "kind": "new",
@@ -165,6 +165,12 @@
         "text": "On a phone, Cashiers looks like the other pages: pick the exception from the card's title, and amounts show in full."
       },
       {
+        "kind": "fix",
+        "page": "Cashiers",
+        "hrefs": ["cashiers"],
+        "text": "Changing the store or dates after a search lets you find that store's exceptions again."
+      },
+      {
         "kind": "new",
         "page": "Upc List",
         "hrefs": ["upc-upload"],
@@ -196,9 +202,21 @@
       },
       {
         "kind": "fix",
+        "page": "Forecasting",
+        "hrefs": ["forecasting"],
+        "text": "Searching a shared group uses that group's stores."
+      },
+      {
+        "kind": "fix",
         "page": "Receivers",
         "hrefs": ["receivers"],
         "text": "Received quantities are counted in cases."
+      },
+      {
+        "kind": "fix",
+        "page": "Receivers",
+        "hrefs": ["receivers"],
+        "text": "Search again on the No receivers found card keeps your store and searches straight away."
       },
       {
         "kind": "improvement",

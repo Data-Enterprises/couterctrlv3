@@ -161,7 +161,7 @@ describe("releasesForLevel", () => {
 
 describe("the notes shipped with the app", () => {
   it("ships the first official release, and no sample notes", () => {
-    expect(RELEASES.map((r) => r.date)).toEqual(["2026-11-23"]);
+    expect(RELEASES.map((r) => r.date)).toEqual(["2026-11-24"]);
   });
 
   it("gives every level something to read", () => {
