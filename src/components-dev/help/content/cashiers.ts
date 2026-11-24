@@ -30,13 +30,14 @@ export const CASHIERS_HELP: HelpContent = {
           pre: "Press",
           chip: "Find exceptions",
           post: ".",
-          see: "A list of exceptions, with the figures across the top covering everything the search found.",
+          see: "An Exception box appears with only the exceptions found for that store or group and those dates, and the button changes to Explore transactions.",
         },
         {
           title: "Open one",
           pre: "Choose an exception and press",
           chip: "Explore transactions",
           post: "to work through what is behind it.",
+          see: "The exceptions grouped into rows, with the figures across the top covering everything the search found.",
         },
       ],
       issues: [

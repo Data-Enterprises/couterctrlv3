@@ -5,7 +5,7 @@ import type { PhoneHelp } from "../helpTypes";
 export const RECEIVERS_PHONE_HELP: PhoneHelp = {
   screen: "Receivers",
   purpose:
-    "Browse a store's receiving history by vendor, then drill into any invoice to see what was actually received and at what cost.",
+    "Browse a store's receiving history by date, then open any invoice to see what was actually received and at what cost.",
 
   questions: [
     {
@@ -54,16 +54,8 @@ export const RECEIVERS_PHONE_HELP: PhoneHelp = {
 
   terms: [
     {
-      term: "Records",
-      def: "Total line-item rows across all loaded invoices, not the number of invoices.",
-    },
-    {
-      term: "Vendor ID / Date filters",
-      def: "Exact match only, not partial search.",
-    },
-    {
       term: "Invoice totals",
-      def: "Calculated from the invoice's own line items, not pulled from a separate total on file.",
+      def: "Cases, units and cost come from the invoice's totals on file. Only when none come back are they added up from its lines.",
     },
   ],
 };

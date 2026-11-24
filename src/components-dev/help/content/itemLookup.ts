@@ -20,9 +20,9 @@ export const ITEM_LOOKUP_HELP: HelpContent = {
         },
         {
           title: "Enter the UPCs",
-          pre: "Type or paste them, separated by commas or new lines, then press",
+          pre: "Type or paste them, with a comma or Shift+Enter between each, then press",
           chip: "Search",
-          post: ".",
+          post: ". With more than one UPC the button reads Look up and the number of items.",
           see: "Every UPC you searched down the left, each loading on its own — so some finish before others, and anything that cannot be found says so.",
           anchor: "item-list",
         },
@@ -98,7 +98,7 @@ export const ITEM_LOOKUP_HELP: HelpContent = {
     },
     {
       term: "Longest gap",
-      def: "The longest earlier stretch of days with no sales.",
+      def: "The longest earlier stretch of two or more days with no sales. None means there wasn't one.",
       anchor: "report",
     },
     {
