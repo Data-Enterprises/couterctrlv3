@@ -9,7 +9,6 @@ import {
 
 // Redux
 import {
-  resetReceiverSlice,
   setReceiverDetails,
   setStoreId,
 } from "../../../features/receiversSlice";
@@ -65,9 +64,7 @@ const Receivers = () => {
           stores={assignedStores}
           selectedStoreId={state.storeid}
           onStoreSelect={setSelectedStore}
-          onSearch={() => {
-            dispatch(resetReceiverSlice());
-          }}
+          onSearch={getReceivers}
           datePicker={
             <DatePickers showBtn={false} handleQuery={getReceivers} />
           }
