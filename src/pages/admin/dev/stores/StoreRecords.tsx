@@ -93,7 +93,10 @@ const StoreRecords = () => {
         onNew={() => setCreating(true)}
       />
 
-      <div className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
+      <div
+        data-help="store-list"
+        className="border border-line_hair rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col"
+      >
         <StoreTableHead statusKnown={statusKnown} />
 
         <div className="cc-scroll divide-y divide-brand_navy/15">
@@ -122,7 +125,8 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      {!statusKnown && stores !== null && (
+      {/* Only support and level 9 get the close and re-open actions it speaks of. */}
+      {!statusKnown && stores !== null && context.canSeeAllStores && (
         <p className="text-[12px] text-content/95 mt-2 leading-snug max-w-[760px]">
           {UNKNOWN_NOTE}
         </p>

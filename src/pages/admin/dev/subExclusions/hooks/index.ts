@@ -175,7 +175,7 @@ export const useSubExclData = (context: ReturnType<typeof useAdminPageCtx>) => {
         dispatch(setSubExclCatalog({ rows: [], loadedFor: null }));
         toast.error(
           serverStatus(err) === 404
-            ? "The sub department catalogue endpoint is not on this API yet"
+            ? "Couldn't load the sub departments. Try again, or contact support."
             : reasonOf(err),
         );
       })

@@ -40,7 +40,7 @@ const SubExclToolbar = ({
   onHashOnly,
   suggestedLeft,
 }: SubExclToolbarProps) => (
-  <div className="flex items-end gap-2 mb-2 flex-shrink-0">
+  <div data-help="excl-filters" className="flex items-end gap-2 mb-2 flex-shrink-0">
     {companyOptions.length > 1 && (
       <Field label="Company">
         <SelectFilter
@@ -77,6 +77,7 @@ const SubExclToolbar = ({
       className="flex-1"
     />
     <button
+      data-help="likely-hash"
       onClick={onHashOnly}
       title="Lottery, money orders, stamps and the like"
       className={`text-[11.5px] font-medium px-3 py-1.5 rounded-md flex-shrink-0 border transition-colors ${

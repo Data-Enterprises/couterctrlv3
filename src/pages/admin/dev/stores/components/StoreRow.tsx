@@ -44,7 +44,7 @@ const StoreRow = ({
       title={
         canRename
           ? undefined
-          : "No company: only level 9 or support can change this store"
+          : "No company: contact support to change this store"
       }
     >
       {s.company_name || "No company"}
