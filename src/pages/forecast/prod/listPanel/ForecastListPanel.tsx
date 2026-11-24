@@ -10,6 +10,9 @@ import {
   setListFilter,
 } from "../../../../features/forecastDevSlice";
 
+// Utils
+import { getStoreName } from "../../../../utils";
+
 // Components
 import ListHeader from "./components/ListHeader";
 import ListFilterStrip from "./components/ListFilterStrip";
@@ -25,14 +28,20 @@ interface ForecastListPanelProps {
  */
 const ForecastListPanel = ({ onReSearch }: ForecastListPanelProps) => {
   const dispatch = useAppDispatch();
-  const { search, rowData, checkedUpcs, listFilter, adListRows } =
-    useForecastCtx();
+  const {
+    search,
+    rowData,
+    checkedUpcs,
+    listFilter,
+    adListRows,
+    assignedStores,
+  } = useForecastCtx();
   const [showSelectedOnly, setShowSelectedOnly] = useState<boolean>(false);
 
   const locationLabel =
     search.type === "Store"
       ? search.selectedStore.store_name ||
-        `Store ${search.selectedStore.storeid}`
+        getStoreName(assignedStores, search.selectedStore.storeid)
       : search.selectedGroup.group_name || "Group";
 
   const visible = useMemo(() => {
