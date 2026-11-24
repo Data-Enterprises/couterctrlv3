@@ -15,6 +15,14 @@ import type { SortOption } from "../../mobile/interfaces";
 /** How many recents sit in the page before the rest move to a sheet. */
 export const RECENTS_INLINE = 3;
 
+/** What a search result names beside its UPC: the dimension the page is not
+ *  grouped by, as itemPerfData's search subtitle picks it. */
+export const SEARCH_RESULT_TAG: Record<ItemDimension, string> = {
+  subdept: "vendor",
+  category: "vendor",
+  vendor: "sub department",
+};
+
 /** Which help page each grouping opens. One screen, three pages. */
 export const HELP_PAGE: Record<ItemDimension, HelpPage> = {
   subdept: "sub-dept-margins",
