@@ -175,8 +175,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
           </span>
         </div>
         <p className="text-[11.5px] text-content/95 leading-snug max-w-[680px]">
-          This store has no company, so only level 9 or support can manage its
-          users.
+          This store has no company, so contact support to manage its users.
         </p>
       </div>
     );
