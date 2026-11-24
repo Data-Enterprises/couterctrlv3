@@ -34,7 +34,7 @@ const UpcLeftPanel = ({ onReSearch }: UpcLeftPanelProps) => {
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[12px] cc-navy-title">UPC Upload</div>
+            <div className="text-[12px] cc-navy-title">UPC List</div>
           </div>
           <div className="text-right">
             {dateRange && (
