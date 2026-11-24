@@ -73,7 +73,7 @@ export const STORE_GROUPS_HELP: HelpContent = {
     },
     {
       term: "Whose groups these are",
-      def: "Only the groups you created. The search box at the top of the list finds one quickly.",
+      def: "The groups you created, plus any shared with you, marked Shared with you. A shared group is read-only here and shows only its stores you're assigned to. The search box at the top of the list finds one quickly.",
       anchor: "group-list",
     },
   ],

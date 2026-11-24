@@ -47,7 +47,7 @@ export const STORE_GROUPS_PHONE_HELP: PhoneHelp = {
     {
       q: "Why are some groups missing under Update, Delete or Assign?",
       a: [
-        "Shared groups can't be changed on your phone, so they are left out of those lists. Only the person who created a shared group can change it, from User Management on a computer.",
+        "Shared groups can't be changed on your phone, so they are left out of those lists. Only the owner who created a shared group can change it, from Groups > Shared Groups on a computer.",
       ],
     },
     {
