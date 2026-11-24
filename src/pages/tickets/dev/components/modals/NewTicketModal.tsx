@@ -202,7 +202,7 @@ const NewTicketModal = ({ from, onClose }: NewTicketModalProps) => {
           <p className="m-0 text-[12.5px] text-content/95">
             About{" "}
             <span className="font-medium text-content">
-              #{onlyStore.store_number} {onlyStore.store_name}
+              {onlyStore.store_name}
             </span>
             , your store.
           </p>

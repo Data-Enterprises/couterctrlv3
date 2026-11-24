@@ -55,7 +55,7 @@ describe("a ticket from a page with its own store picker", () => {
       start: "2026-10-27",
       end: "2026-11-02",
     });
-    expect(ticketLine(state, "item-report")).toMatch(/^IGA BOWLING GREEN 014/);
+    expect(ticketLine(state, "item-report")).toMatch(/^IGA BOWLING GREEN · /);
   });
 
   it("names nothing while nothing is picked", () => {

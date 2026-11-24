@@ -137,13 +137,7 @@ export const searchSummary = (
   if (!pageUsesSearch(href)) return null;
   const where =
     search.type === "Store"
-      ? search.selectedStore?.store_name
-        ? `${search.selectedStore.store_name}${
-            search.selectedStore.store_number
-              ? ` ${search.selectedStore.store_number}`
-              : ""
-          }`
-        : null
+      ? (search.selectedStore?.store_name ?? null)
       : (search.selectedGroup?.group_name ?? null);
   if (!where) return null;
 

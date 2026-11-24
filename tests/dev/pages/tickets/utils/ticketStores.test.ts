@@ -38,11 +38,12 @@ const ticket = (id: number, stores?: ReturnType<typeof store>[]) =>
   ({ id, stores }) as Ticket;
 
 describe("how a ticket's stores read", () => {
-  it("names up to three by number, then counts the rest", () => {
-    expect(storeChipText([store("54"), store("75")])).toBe("#54 · #75");
+  it("names the first store, then counts the rest", () => {
+    expect(storeChipText([store("54")])).toBe("S&C Foods 54");
+    expect(storeChipText([store("54"), store("75")])).toBe("S&C Foods 54 · +1");
     expect(
       storeChipText(["2", "5", "27", "136", "140"].map((n) => store(n))),
-    ).toBe("#2 · #5 · #27 · +2");
+    ).toBe("S&C Foods 2 · +4");
   });
 
   it("draws nothing on a row with no stores", () => {
@@ -51,7 +52,7 @@ describe("how a ticket's stores read", () => {
 
   it("says Not about a store in full, rather than nothing", () => {
     expect(storeFullText([])).toBe("Not about a store");
-    expect(storeFullText([store("54")])).toBe("#54 S&C Foods 54");
+    expect(storeFullText([store("54")])).toBe("S&C Foods 54");
   });
 });
 

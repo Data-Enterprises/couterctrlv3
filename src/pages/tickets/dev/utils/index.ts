@@ -17,12 +17,13 @@ import type { StoreCompanyGroup } from "../interfaces";
 export const storesOf = (ticket: Ticket): TicketStore[] => ticket.stores ?? [];
 
 /**
- * The compact form for a queue row: `#54 · #75 · +3`. Three numbers then a
- * count, so a ticket about a whole group does not wrap.
+ * The compact form for a queue row: `S&C Foods 54 · +3`. One store name then
+ * a count, so a ticket about a whole group does not wrap. The name already
+ * carries the store's number.
  */
-export const storeChipText = (stores: TicketStore[], shown = 3): string => {
+export const storeChipText = (stores: TicketStore[], shown = 1): string => {
   if (stores.length === 0) return "";
-  const head = stores.slice(0, shown).map((s) => `#${s.store_number}`);
+  const head = stores.slice(0, shown).map((s) => s.store_name);
   const rest = stores.length - shown;
   return rest > 0 ? [...head, `+${rest}`].join(" · ") : head.join(" · ");
 };
@@ -31,7 +32,7 @@ export const storeChipText = (stores: TicketStore[], shown = 3): string => {
 export const storeFullText = (stores: TicketStore[]): string =>
   stores.length === 0
     ? "Not about a store"
-    : stores.map((s) => `#${s.store_number} ${s.store_name}`).join(", ");
+    : stores.map((s) => s.store_name).join(", ");
 
 /**
  * What the inbox is showing, in words, from the server's `scope` (never from
