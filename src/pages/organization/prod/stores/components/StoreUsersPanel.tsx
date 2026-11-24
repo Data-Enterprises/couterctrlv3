@@ -51,8 +51,8 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
 
   const [assigned, setAssigned] = useState<StoreUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<StoreCandidateRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [moving, setMoving] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [moving, setMoving] = useState<boolean>(false);
 
   /** A response for a store the reader has already left must not land here. */
   const activeStoreId = useRef(store.storeid);

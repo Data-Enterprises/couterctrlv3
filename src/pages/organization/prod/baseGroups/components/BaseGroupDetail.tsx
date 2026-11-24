@@ -62,10 +62,10 @@ const BaseGroupDetail = ({
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();
-  const [editing, setEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState(group.name);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [nameDraft, setNameDraft] = useState<string>(group.name);
+  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+  const [exportOpen, setExportOpen] = useState<boolean>(false);
   const [subTab, setSubTab] = useState<"stores" | "users">("stores");
 
   // Another group opened: start it fresh. A rename is the same group, so it
